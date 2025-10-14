@@ -9,15 +9,17 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The ElementIndexSettingsController class is a controller that handles various element index settings-related actions.
@@ -79,7 +81,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 array_filter([
                     ($source['structureId'] ?? false)
                         ? [
-                            'label' => Craft::t('app', 'Structure'),
+                            'label' => t('Structure'),
                             'attr' => 'structure',
                             'defaultDir' => 'asc',
                         ]
@@ -138,7 +140,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;
                     $condition->queryParams = ['site', 'status'];
-                    $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+                    $condition->addRuleLabel = t('Add a filter');
 
                     $view->startJsBuffer();
                     $conditionBuilderHtml = $condition->getBuilderHtml();
@@ -188,10 +190,10 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get previewable custom fields that should be available for all custom sources
         $customFieldAttributes = [];
 
-        foreach (Craft::$app->getFields()->getLayoutsByType($elementType) as $fieldLayout) {
+        foreach (app(Fields::class)->getLayoutsByType($elementType) as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field instanceof PreviewableFieldInterface) {
-                    $customFieldAttributes[] = ["field:$field->uid", Craft::t('site', $field->name)];
+                    $customFieldAttributes[] = ["field:$field->uid", t($field->name, category: 'site')];
                 }
             }
         }
@@ -202,7 +204,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $condition->mainTag = 'div';
         $condition->forProjectConfig = true;
         $condition->queryParams = ['site', 'status'];
-        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+        $condition->addRuleLabel = t('Add a filter');
 
         $view->startJsBuffer();
         $conditionBuilderHtml = $condition->getBuilderHtml();
@@ -210,7 +212,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
             ->map(fn(UserGroup $group) => [
-                'label' => Craft::t('site', $group->name),
+                'label' => t($group->name, category: 'site'),
                 'value' => $group->uid,
             ])
             ->all();
@@ -322,7 +324,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
 
-        Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));
+        Craft::$app->getSession()->setSuccess(t('Source settings saved'));
 
         return $this->asSuccess(data: [
             'disabledSourceKeys' => $disabledSourceKeys,

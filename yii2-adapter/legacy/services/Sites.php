@@ -531,7 +531,7 @@ class Sites extends Component
         // Update the app language if this is a site request
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
-            Craft::$app->language = $this->_currentSite->language;
+            app()->setLocale($this->_currentSite->language);
         }
 
         // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars

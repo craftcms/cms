@@ -2,8 +2,6 @@
 
 namespace CraftCms\Cms\Support;
 
-use craft\web\Application;
-
 class Flash
 {
     public static function success(?string $default = null, array $settings = []): void
@@ -11,9 +9,7 @@ class Flash
         $message = request('successMessage', $default);
 
         if ($message !== null) {
-            /** @var Application $craft */
-            $craft = app('Craft');
-            $craft->getSession()->setSuccess($message, $settings);
+            \Craft::$app->getSession()->setSuccess($message, $settings);
         }
     }
 
@@ -22,9 +18,7 @@ class Flash
         $message = request('failMessage', $default);
 
         if ($message !== null) {
-            /** @var Application $craft */
-            $craft = app('Craft');
-            $craft->getSession()->setError($message, $settings);
+            \Craft::$app->getSession()->setError($message, $settings);
         }
     }
 }

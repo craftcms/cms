@@ -2,15 +2,16 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\fields\BaseRelationField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * Relation condition rule.
@@ -31,7 +32,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Related To');
+        return t('Related To');
     }
 
     /**
@@ -110,16 +111,15 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     private function _elementTypeOptions(): array
     {
-        $options = [];
-        foreach (Craft::$app->getFields()->getRelationalFieldTypes() as $field) {
+        return app(Fields::class)->getRelationalFieldTypes()->map(function(string $field) {
             /** @var class-string<BaseRelationField> $field */
             $elementType = $field::elementType();
-            $options[] = [
+
+            return [
                 'value' => $elementType,
                 'label' => $elementType::displayName(),
             ];
-        }
-        return $options;
+        })->all();
     }
 
     /**

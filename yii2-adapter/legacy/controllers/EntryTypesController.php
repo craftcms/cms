@@ -8,8 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -18,6 +16,9 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -26,6 +27,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * EntryTypesController handles various entry type-related tasks.
@@ -84,13 +86,13 @@ class EntryTypesController extends Controller
                 }
             }
 
-            $title = trim($entryType->name) ?: Craft::t('app', 'Edit Entry Type');
+            $title = trim($entryType->name) ?: t('Edit Entry Type');
         } else {
             if ($entryType === null) {
                 $entryType = new EntryType();
             }
 
-            $title = Craft::t('app', 'Create a new entry type');
+            $title = t('Create a new entry type');
         }
 
         $fieldLayout = $entryType->getFieldLayout();
@@ -110,8 +112,8 @@ class EntryTypesController extends Controller
         $response = $this->asCpScreen()
             ->editUrl($entryType->getCpEditUrl())
             ->title($title)
-            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => $entryTypeId,
                 'entryType' => $entryType,
@@ -124,14 +126,14 @@ class EntryTypesController extends Controller
             $response
                 ->action('entry-types/save')
                 ->redirectUrl('settings/entry-types')
-                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/entry-types/{id}',
                     'shortcut' => true,
                     'retainScroll' => true,
                 ]);
 
             if ($entryType->id) {
-                $response->addAltAction(Craft::t('app', 'Save as a new entry type'), [
+                $response->addAltAction(t('Save as a new entry type'), [
                     'params' => ['saveAsNew' => true],
                     'redirect' => 'settings/entry-types/{id}',
                 ]);
@@ -142,7 +144,7 @@ class EntryTypesController extends Controller
 
         if ($entryType->id) {
             if (!$this->readOnly) {
-                $response->addAltAction(Craft::t('app', 'Delete'), [
+                $response->addAltAction(t('Delete'), [
                     'action' => 'entry-types/delete',
                     'destructive' => true,
                 ]);
@@ -150,11 +152,11 @@ class EntryTypesController extends Controller
 
             $response
                 ->metaSidebarHtml(Cp::metadataHtml([
-                    Craft::t('app', 'ID') => $entryType->id,
-                    Craft::t('app', 'Used by') => function() use ($entryType) {
+                    t('ID') => $entryType->id,
+                    t('Used by') => function() use ($entryType) {
                         $usages = $entryType->findUsages();
                         if (empty($usages)) {
-                            return Html::tag('i', Craft::t('app', 'No usages'));
+                            return Html::tag('i', t('No usages'));
                         }
 
                         $labels = [];
@@ -249,7 +251,7 @@ class EntryTypesController extends Controller
         }
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = Entry::class;
         $entryType->setFieldLayout($fieldLayout);
 
@@ -259,7 +261,7 @@ class EntryTypesController extends Controller
                 $entryType->uid = $originalEntryType->uid;
             }
 
-            return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t save entry type.'), 'entryType');
+            return $this->asModelFailure($entryType, t('Couldn’t save entry type.'), 'entryType');
         }
 
         if ($saveAsNew) {
@@ -268,7 +270,7 @@ class EntryTypesController extends Controller
 
         // Save it
         $entriesService->saveEntryType($entryType, false);
-        return $this->asModelSuccess($entryType, Craft::t('app', 'Entry type saved.'), 'entryType');
+        return $this->asModelSuccess($entryType, t('Entry type saved.'), 'entryType');
     }
 
     /**
@@ -290,12 +292,12 @@ class EntryTypesController extends Controller
         }
 
         if (!$entriesService->deleteEntryType($entryType)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t delete “{name}”.', [
+            return $this->asFailure(t('Couldn’t delete “{name}”.', [
                 'name' => $entryType->getUiLabel(),
             ]));
         }
 
-        return $this->asSuccess(Craft::t('app', '“{name}” deleted.', [
+        return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryType->getUiLabel(),
         ]));
     }
@@ -383,7 +385,7 @@ class EntryTypesController extends Controller
             $entryType->validateHandleUniqueness = false;
 
             if (!$entryType->validate(array_keys($settings))) {
-                return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t apply changes.'), 'entryType');
+                return $this->asModelFailure($entryType, t('Couldn’t apply changes.'), 'entryType');
             }
         }
 

@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * ReplaceFile represents a Replace File element action.
@@ -23,7 +24,7 @@ class ReplaceFile extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Replace file');
+        return t('Replace file');
     }
 
     /**

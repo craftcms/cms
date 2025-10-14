@@ -1,10 +1,12 @@
 <?php
 
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
@@ -33,6 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::middleware([
         RequireAdmin::class.':false',
     ])->group(function () {
+        Route::get('settings/fields', [FieldsController::class, 'index']);
+        Route::get('settings/fields/new', [FieldsController::class, 'edit']);
+        Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
+
+        Route::get('settings/general', [GeneralSettingsController::class, 'index']);
+
         Route::get('settings/plugins', [PluginsController::class, 'index']);
         Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');

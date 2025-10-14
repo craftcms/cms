@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * ApplyFieldSaveEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\ApplyingFieldSave} instead.
  */
 class ApplyFieldSaveEvent extends Event
 {

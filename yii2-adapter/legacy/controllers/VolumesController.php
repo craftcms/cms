@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\Assets;
@@ -17,12 +16,15 @@ use craft\helpers\FileHelper;
 use craft\models\Volume;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
@@ -105,9 +107,9 @@ class VolumesController extends Controller
         $isNewVolume = !$volume->id;
 
         if ($isNewVolume) {
-            $title = Craft::t('app', 'Create a new asset volume');
+            $title = t('Create a new asset volume');
         } else {
-            $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
+            $title = trim($volume->name) ?: t('Edit Volume');
         }
 
         $fsHandle = $volume->getFsHandle();
@@ -118,19 +120,19 @@ class VolumesController extends Controller
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->map(fn(FsInterface $fs) => [
-                'label' => Craft::t('site', $fs->name),
+                'label' => t($fs->name, category: 'site'),
                 'value' => $fs->handle,
                 'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->sortBy(fn(array $option) => $option['label'])
             ->all();
-        array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
+        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '']);
 
         $response = $this->asCpScreen()
             ->title($title)
-            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
-            ->addCrumb(Craft::t('app', 'Volumes'), 'settings/assets')
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Assets'), 'settings/assets')
+            ->addCrumb(t('Volumes'), 'settings/assets')
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
@@ -146,7 +148,7 @@ class VolumesController extends Controller
                 ->action('volumes/save-volume')
                 ->redirectUrl('settings/assets')
                 ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
-                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/assets/volumes/{id}',
                     'shortcut' => true,
                     'retainScroll' => true,
@@ -201,15 +203,15 @@ class VolumesController extends Controller
         ]);
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
         if (!$volumesService->saveVolume($volume)) {
-            return $this->asModelFailure($volume, Craft::t('app', 'Couldn’t save volume.'), 'volume');
+            return $this->asModelFailure($volume, t('Couldn’t save volume.'), 'volume');
         }
 
-        return $this->asModelSuccess($volume, Craft::t('app', 'Volume saved.'), 'volume');
+        return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');
     }
 
     /**

@@ -16,6 +16,7 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
@@ -58,18 +59,18 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(t('That is not an allowed image type.'));
         }
 
         // Grab the uploaded file
         if (($file = UploadedFile::getInstanceByName('image')) === null) {
-            return $this->asFailure(Craft::t('app', 'There was an error uploading your photo'));
+            return $this->asFailure(t('There was an error uploading your photo'));
         }
 
         $filename = Assets::prepareAssetName($file->name, true, true);
 
         if (!Image::canManipulateAsImage($file->getExtension())) {
-            return $this->asFailure(Craft::t('app', 'The uploaded file is not an image.'));
+            return $this->asFailure(t('The uploaded file is not an image.'));
         }
 
         $targetPath = Craft::$app->getPath()->getRebrandPath() . '/' . $type . '/';
@@ -109,7 +110,7 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(t('That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);

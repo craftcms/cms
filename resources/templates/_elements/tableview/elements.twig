@@ -2,7 +2,7 @@
 
 {% set structure = structure is defined ? structure : null -%}
 {% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
-{% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
+{% set padding = craft.i18n.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set elementsService = craft.app.elements %}
 {% set hasStatusCol = attributes|contains(0, 'status') %}
 {% set showHeaderColumn = showHeaderColumn ?? false %}

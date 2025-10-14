@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * FieldEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use an event that extends {@see \CraftCms\Cms\Field\Events\FieldEvent} instead.
  */
 class FieldEvent extends Event
 {

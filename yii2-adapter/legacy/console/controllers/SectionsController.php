@@ -24,7 +24,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\helpers\Inflector;
+use function CraftCms\Cms\t;
 
 /**
  * Manages sections.
@@ -259,7 +259,7 @@ class SectionsController extends Controller
         if ($hasUrls) {
             $section->previewTargets = [
                 [
-                    'label' => Craft::t('app', 'Primary {type} page', [
+                    'label' => t('Primary {type} page', [
                         'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
@@ -296,7 +296,7 @@ class SectionsController extends Controller
             } else {
                 $entryType = new EntryType();
                 $entryType->name = $this->prompt('Entry type name:', [
-                    'default' => Inflector::singularize($section->name),
+                    'default' => Str::singular($section->name),
                 ]);
                 $entryType->handle = $this->prompt('Entry type handle:', [
                     'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error, EntryType::class),

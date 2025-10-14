@@ -8,8 +8,8 @@
 namespace craft\validators;
 
 use Countable;
-use Craft;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class ArrayValidator.
@@ -81,19 +81,19 @@ class ArrayValidator extends Validator
         }
 
         if (!isset($this->message)) {
-            $this->message = Craft::t('app', '{attribute} must be an array.');
+            $this->message = t('{attribute} must be an array.');
         }
 
         if (isset($this->min) && !isset($this->tooFew)) {
-            $this->tooFew = Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.');
+            $this->tooFew = t('{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.');
         }
 
         if (isset($this->max) && !isset($this->tooMany)) {
-            $this->tooMany = Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.');
+            $this->tooMany = t('{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.');
         }
 
         if (isset($this->count) && !isset($this->notEqual)) {
-            $this->notEqual = Craft::t('app', '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.');
+            $this->notEqual = t('{attribute} should contain {count, number} {count, plural, one{item} other{items}}.');
         }
     }
 

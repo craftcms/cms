@@ -9,9 +9,9 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\elements\Asset;
-use craft\i18n\Translation;
 use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 
 /**
@@ -35,7 +35,7 @@ class GeneratePendingTransforms extends BaseJob
         $totalIndexes = count($indexIds);
 
         foreach ($indexIds as $i => $id) {
-            $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
+            $this->setProgress($queue, $i / $totalIndexes, I18N::prep('{step, number} of {total, number}', [
                 'step' => $i + 1,
                 'total' => $totalIndexes,
             ]));
@@ -61,6 +61,6 @@ class GeneratePendingTransforms extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Generating pending image transforms');
+        return I18N::prep('Generating pending image transforms');
     }
 }

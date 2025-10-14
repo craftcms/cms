@@ -12,6 +12,7 @@ use craft\base\FsInterface;
 use craft\base\Model;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * The VolumeFolder model class.
@@ -165,8 +166,8 @@ class VolumeFolder extends Model
             $info += [
                 'key' => "volume:$volume->uid",
                 'icon' => 'home',
-                'label' => Craft::t('app', '{volume} root', [
-                    'volume' => Html::encode(Craft::t('site', $volume->name)),
+                'label' => t('{volume} root', [
+                    'volume' => Html::encode(t($volume->name, category: 'site')),
                 ]),
                 'handle' => $volume->handle,
             ];

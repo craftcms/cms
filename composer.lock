@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0c4abba107999c421306e8044f8835cd",
+    "content-hash": "cf407efe540224cafe642174d07625e5",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -637,7 +637,7 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "af841a929f06d3fea64db4799eef58b45a5b2f96"
+                "reference": "c9852f8ddcee818e992c07a99706f7db5c260d54"
             },
             "require": {
                 "craftcms/cms": "self.version",
@@ -681,6 +681,7 @@
                 "codeception/module-rest": "^3.3.2",
                 "codeception/module-yii2": "^1.1.9",
                 "craftcms/ecs": "dev-main",
+                "dg/bypass-finals": "^1.9",
                 "larastan/larastan": "^3.7",
                 "league/factory-muffin": "^3.3.0",
                 "orchestra/testbench": "^10.6",
@@ -10454,6 +10455,66 @@
             "time": "2025-02-01T05:26:03+00:00"
         },
         {
+            "name": "yiisoft/files",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/files.git",
+                "reference": "129a8f8220e1cd2530f424951b8c24f426bd219c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/files/zipball/129a8f8220e1cd2530f424951b8c24f426bd219c",
+                "reference": "129a8f8220e1cd2530f424951b8c24f426bd219c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0",
+                "yiisoft/strings": "^2.0"
+            },
+            "require-dev": {
+                "ext-zlib": "*",
+                "phpunit/phpunit": "^9.5",
+                "roave/infection-static-analysis-plugin": "^1.18",
+                "spatie/phpunit-watcher": "^1.23",
+                "vimeo/psalm": "^4.22"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yiisoft\\Files\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Helper to manage files and directories",
+            "homepage": "https://www.yiiframework.com/",
+            "keywords": [
+                "files"
+            ],
+            "support": {
+                "chat": "https://t.me/yii3en",
+                "forum": "https://www.yiiframework.com/forum/",
+                "irc": "irc://irc.freenode.net/yii",
+                "issues": "https://github.com/yiisoft/files/issues?state=open",
+                "source": "https://github.com/yiisoft/files",
+                "wiki": "https://www.yiiframework.com/wiki/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/yiisoft",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/yiisoft",
+                    "type": "open_collective"
+                }
+            ],
+            "time": "2022-07-05T06:43:38+00:00"
+        },
+        {
             "name": "yiisoft/html",
             "version": "3.11.0",
             "source": {
@@ -10514,6 +10575,66 @@
                 }
             ],
             "time": "2025-06-10T07:27:50+00:00"
+        },
+        {
+            "name": "yiisoft/i18n",
+            "version": "1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/i18n.git",
+                "reference": "c05e9e031fb36fc193152e18fa791bbf6d0582b8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/i18n/zipball/c05e9e031fb36fc193152e18fa791bbf6d0582b8",
+                "reference": "c05e9e031fb36fc193152e18fa791bbf6d0582b8",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5",
+                "rector/rector": "^0.17.0",
+                "roave/infection-static-analysis-plugin": "^1.16",
+                "spatie/phpunit-watcher": "^1.23",
+                "vimeo/psalm": "^4.30|^5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yiisoft\\I18n\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Yii Internationalization Library",
+            "homepage": "https://www.yiiframework.com/",
+            "keywords": [
+                "i18n",
+                "locale"
+            ],
+            "support": {
+                "chat": "https://t.me/yii3en",
+                "forum": "https://www.yiiframework.com/forum/",
+                "irc": "irc://irc.freenode.net/yii",
+                "issues": "https://github.com/yiisoft/i18n/issues?state=open",
+                "source": "https://github.com/yiisoft/i18n",
+                "wiki": "https://www.yiiframework.com/wiki/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/yiisoft",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/yiisoft",
+                    "type": "opencollective"
+                }
+            ],
+            "time": "2023-06-10T14:18:35+00:00"
         },
         {
             "name": "yiisoft/json",
@@ -10638,6 +10759,155 @@
                 }
             ],
             "time": "2025-02-09T16:30:52+00:00"
+        },
+        {
+            "name": "yiisoft/translator",
+            "version": "3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/translator.git",
+                "reference": "bcf86d7f454c7642441ec1ad3512b0f0e36b3fdd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/translator/zipball/bcf86d7f454c7642441ec1ad3512b0f0e36b3fdd",
+                "reference": "bcf86d7f454c7642441ec1ad3512b0f0e36b3fdd",
+                "shasum": ""
+            },
+            "require": {
+                "php": "8.0 - 8.4",
+                "psr/event-dispatcher": "1.0.0",
+                "yiisoft/files": "^1.0 || ^2.0",
+                "yiisoft/i18n": "^1.0"
+            },
+            "require-dev": {
+                "maglnet/composer-require-checker": "^4.4",
+                "phpunit/phpunit": "^9.6.29",
+                "rector/rector": "^2.1.7",
+                "roave/infection-static-analysis-plugin": "^1.25",
+                "spatie/phpunit-watcher": "^1.23.6",
+                "vimeo/psalm": "^4.30 || ^5.26.1 || ^6.8.9",
+                "yiisoft/di": "^1.2.1"
+            },
+            "suggest": {
+                "ext-intl": "Allows using intl message formatter",
+                "ext-tokenizer": "Allows using message extraction",
+                "yiisoft/event-dispatcher": "To listen for events about missing categories and messages"
+            },
+            "type": "library",
+            "extra": {
+                "config-plugin": {
+                    "di": "di.php",
+                    "params": "params.php"
+                },
+                "config-plugin-options": {
+                    "source-directory": "config"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Yiisoft\\Translator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Yii Message Translator",
+            "homepage": "https://www.yiiframework.com/",
+            "keywords": [
+                "i18n",
+                "internationalization",
+                "translation"
+            ],
+            "support": {
+                "chat": "https://t.me/yii3en",
+                "forum": "https://www.yiiframework.com/forum/",
+                "irc": "ircs://irc.libera.chat:6697/yii",
+                "issues": "https://github.com/yiisoft/translator/issues?state=open",
+                "source": "https://github.com/yiisoft/translator",
+                "wiki": "https://www.yiiframework.com/wiki/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/yiisoft",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/yiisoft",
+                    "type": "opencollective"
+                }
+            ],
+            "time": "2025-09-28T06:41:14+00:00"
+        },
+        {
+            "name": "yiisoft/translator-message-php",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/translator-message-php.git",
+                "reference": "67a0c64c132e5098f6824017ca4bccd45cc79030"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/translator-message-php/zipball/67a0c64c132e5098f6824017ca4bccd45cc79030",
+                "reference": "67a0c64c132e5098f6824017ca4bccd45cc79030",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0",
+                "yiisoft/translator": "^1.0|^2.0|^3.0"
+            },
+            "require-dev": {
+                "maglnet/composer-require-checker": "^4.2",
+                "phpunit/phpunit": "^9.5",
+                "rector/rector": "^0.15.4",
+                "roave/infection-static-analysis-plugin": "^1.16",
+                "spatie/phpunit-watcher": "^1.23",
+                "vimeo/psalm": "^4.30|^5.4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Yiisoft\\Translator\\Message\\Php\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Yii Translator PHP Message Storage",
+            "homepage": "https://www.yiiframework.com/",
+            "keywords": [
+                "formatting",
+                "i18n",
+                "internationalization",
+                "message storage"
+            ],
+            "support": {
+                "chat": "https://t.me/yii3en",
+                "forum": "https://www.yiiframework.com/forum/",
+                "irc": "irc://irc.freenode.net/yii",
+                "issues": "https://github.com/yiisoft/translator-message-php/issues?state=open",
+                "source": "https://github.com/yiisoft/translator-message-php",
+                "wiki": "https://www.yiiframework.com/wiki/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/yiisoft",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/yiisoft",
+                    "type": "open_collective"
+                }
+            ],
+            "time": "2023-02-19T11:29:34+00:00"
         },
         {
             "name": "yiisoft/yii2",

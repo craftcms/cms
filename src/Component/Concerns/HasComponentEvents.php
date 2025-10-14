@@ -8,17 +8,49 @@ use Illuminate\Support\Facades\Event;
 trait HasComponentEvents
 {
     /**
-     * Register a component event with the dispatcher.
+     * Listen for a component event.
      *
      * @param  QueuedClosure|callable|array|class-string  $callback
      */
-    protected static function registerModelEvent(string $event, QueuedClosure|callable|array|string $callback): void
+    public static function listen(string $event, QueuedClosure|callable|array|string $callback): void
     {
-        Event::listen(self::componentEventName($event), $callback);
+        foreach (static::getClasses() as $class) {
+            Event::listen(self::componentEventName($event, $class), $callback);
+        }
     }
 
-    public static function componentEventName(string $event): string
+    public function hasComponentListeners(string $event): bool
     {
-        return "component.{$event}: ".static::class;
+        return array_any(
+            static::getClasses(),
+            fn ($class) => Event::hasListeners(self::componentEventName($event, $class)),
+        );
+    }
+
+    public static function componentEventName(string $event, ?string $class = null): string
+    {
+        return "component.{$event}: ".($class ?? static::class);
+    }
+
+    public function dispatchComponentEvent(string $event, mixed $payload): void
+    {
+        foreach (static::getClasses() as $class) {
+            Event::dispatch(self::componentEventName($event, $class), $payload);
+
+            if (property_exists($payload, 'handled') && $payload->handled) {
+                return;
+            }
+        }
+    }
+
+    protected static function getClasses(): array
+    {
+        $class = static::class;
+
+        return array_merge(
+            [$class],
+            class_parents($class),
+            class_implements($class)
+        );
     }
 }

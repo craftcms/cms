@@ -1,0 +1,11 @@
+<?php
+
+namespace CraftCms\Cms\Element\Events;
+
+final class DefineElementCriteria
+{
+    public function __construct(
+        /** @var array The criteria that should be used to query for elements. */
+        public array $criteria = [],
+    ) {}
+}

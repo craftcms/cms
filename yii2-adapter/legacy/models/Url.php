@@ -7,8 +7,8 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\Model;
+use function CraftCms\Cms\t;
 
 /**
  * URL model.
@@ -29,7 +29,7 @@ class Url extends Model
     public function attributeLabels(): array
     {
         return [
-            'url' => Craft::t('app', 'URL'),
+            'url' => t('URL'),
         ];
     }
 

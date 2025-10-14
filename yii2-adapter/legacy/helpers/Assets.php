@@ -31,6 +31,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Class Assets
@@ -339,12 +340,12 @@ class Assets
     public static function periodList(): array
     {
         return [
-            TimePeriod::Seconds->value => Craft::t('app', 'Seconds'),
-            TimePeriod::Minutes->value => Craft::t('app', 'Minutes'),
-            TimePeriod::Hours->value => Craft::t('app', 'Hours'),
-            TimePeriod::Days->value => Craft::t('app', 'Days'),
-            TimePeriod::Months->value => Craft::t('app', 'Months'),
-            TimePeriod::Years->value => Craft::t('app', 'Years'),
+            TimePeriod::Seconds->value => t('Seconds'),
+            TimePeriod::Minutes->value => t('Minutes'),
+            TimePeriod::Hours->value => t('Hours'),
+            TimePeriod::Days->value => t('Days'),
+            TimePeriod::Months->value => t('Months'),
+            TimePeriod::Years->value => t('Years'),
         ];
     }
 
@@ -471,7 +472,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_AUDIO => [
-                    'label' => Craft::t('app', 'Audio'),
+                    'label' => t('Audio'),
                     'extensions' => [
                         '3gp',
                         'aac',
@@ -507,7 +508,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_CAPTIONS_SUBTITLES => [
-                    'label' => Craft::t('app', 'Captions/Subtitles'),
+                    'label' => t('Captions/Subtitles'),
                     'extensions' => [
                         'asc',
                         'cap',
@@ -531,7 +532,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_COMPRESSED => [
-                    'label' => Craft::t('app', 'Compressed'),
+                    'label' => t('Compressed'),
                     'extensions' => [
                         '7z',
                         'bz2',
@@ -569,7 +570,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_IMAGE => [
-                    'label' => Craft::t('app', 'Image'),
+                    'label' => t('Image'),
                     'extensions' => [
                         'avif',
                         'bmp',
@@ -638,14 +639,14 @@ class Assets
                     ],
                 ],
                 Asset::KIND_TEXT => [
-                    'label' => Craft::t('app', 'Text'),
+                    'label' => t('Text'),
                     'extensions' => [
                         'text',
                         'txt',
                     ],
                 ],
                 Asset::KIND_VIDEO => [
-                    'label' => Craft::t('app', 'Video'),
+                    'label' => t('Video'),
                     'extensions' => [
                         'asf',
                         'asx',

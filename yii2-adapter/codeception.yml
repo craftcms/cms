@@ -20,7 +20,6 @@ coverage:
     - legacy/test/internal/*
     - legacy/test/templates/*
     - legacy/migrations/*
-    - legacy/translations/*
     - legacy/views/*
     - legacy/web/assets/*
     - bootstrap/*

@@ -7,11 +7,11 @@
 
 namespace craft\gql\arguments\elements;
 
-use Craft;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\Address as AddressElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -53,7 +53,7 @@ class Address extends ElementArguments
     {
         $contentArguments = [];
 
-        $contentFields = Craft::$app->getFields()->getLayoutByType(AddressElement::class)->getCustomFields();
+        $contentFields = app(Fields::class)->getLayoutByType(AddressElement::class)->getCustomFields();
 
         foreach ($contentFields as $contentField) {
             if (!$contentField instanceof GqlInlineFragmentFieldInterface) {

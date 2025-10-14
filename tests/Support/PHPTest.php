@@ -13,7 +13,7 @@ test('configValueAsBool', function () {
     @ini_set('display_errors', $displayErrorsValue);
 
     $timezoneValue = ini_get('date.timezone');
-    @ini_set('date.timezone', Craft::$app->getTimeZone() ?: 'Europe/Amsterdam');
+    @ini_set('date.timezone', app()->getTimezone() ?: 'Europe/Amsterdam');
     expect(PHP::configValueAsBool('date.timezone'))->toBeFalse();
     @ini_set('date.timezone', $timezoneValue);
 

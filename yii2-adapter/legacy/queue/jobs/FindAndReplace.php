@@ -12,8 +12,8 @@ use craft\base\Batchable;
 use craft\db\Query;
 use craft\db\QueryBatcher;
 use craft\db\Table;
-use craft\i18n\Translation;
 use craft\queue\BaseBatchedJob;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\DB;
 
@@ -97,7 +97,7 @@ class FindAndReplace extends BaseBatchedJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Replacing “{find}” with “{replace}”', [
+        return I18N::prep('Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
             'replace' => $this->replace,
         ]);

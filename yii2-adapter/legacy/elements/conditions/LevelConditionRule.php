@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Element level condition rule.
@@ -20,7 +20,7 @@ class LevelConditionRule extends BaseNumberConditionRule implements ElementCondi
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Level');
+        return t('Level');
     }
 
     /**

@@ -29,6 +29,7 @@ use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -39,6 +40,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -321,7 +323,7 @@ class ElementIndexesController extends BaseElementsController
         $responseData = $this->elementResponseData(true, true);
 
         // Send updated badge counts
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
         foreach (Craft::$app->getElementSources()->getSources($this->elementType, $this->context) as $source) {
             if (isset($source['key'])) {
                 if (isset($source['badgeCount'])) {
@@ -390,7 +392,7 @@ class ElementIndexesController extends BaseElementsController
                     $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
                     break;
                 case Response::FORMAT_XML:
-                    Craft::$app->language = 'en-US';
+                    app()->setLocale('en-US');
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = Str::camel($this->elementType::pluralLowerDisplayName());
                     break;
             }
@@ -469,7 +471,7 @@ class ElementIndexesController extends BaseElementsController
 
         $condition->mainTag = 'div';
         $condition->id = $id;
-        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+        $condition->addRuleLabel = t('Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
         if ($this->source['type'] === ElementSources::TYPE_NATIVE) {
@@ -634,7 +636,7 @@ class ElementIndexesController extends BaseElementsController
             return [
                 'type' => ElementSources::TYPE_NATIVE,
                 'key' => '__IMP__',
-                'label' => Craft::t('app', 'All elements'),
+                'label' => t('All elements'),
                 'hasThumbs' => $this->elementType::hasThumbs(),
             ];
         }
@@ -869,7 +871,7 @@ class ElementIndexesController extends BaseElementsController
             $responseData['headHtml'] = $view->getHeadHtml();
             $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
-            $responseData['html'] = Html::tag('div', Craft::t('app', 'Nothing yet.'), [
+            $responseData['html'] = Html::tag('div', t('Nothing yet.'), [
                 'class' => ['zilch', 'small'],
             ]);
         }

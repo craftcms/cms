@@ -9,8 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
@@ -25,7 +23,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
-use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
@@ -39,10 +36,14 @@ use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -58,6 +59,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\t;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -808,7 +810,7 @@ class Entries extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Translation::prep('app', 'Applying new propagation method to {name} entries', [
+                        'description' => I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -819,7 +821,7 @@ class Entries extends Component
                     ]));
                 } elseif ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Translation::prep('app', 'Resaving {name} entries', [
+                        'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -1285,9 +1287,9 @@ class Entries extends Component
                 'url' => $section->getCpEditUrl(),
                 'handle' => $section->handle,
                 'type' => match ($section->type) {
-                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
-                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
-                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    Section::TYPE_SINGLE => t('Single'),
+                    Section::TYPE_CHANNEL => t('Channel'),
+                    Section::TYPE_STRUCTURE => t('Structure'),
                     null => null,
                 },
             ];
@@ -1644,11 +1646,11 @@ class Entries extends Component
                 $layout->id = $entryTypeRecord->fieldLayoutId;
                 $layout->type = Entry::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $entryTypeRecord->fieldLayoutId = $layout->id;
             } elseif ($entryTypeRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
                 $entryTypeRecord->fieldLayoutId = null;
             }
 
@@ -1710,7 +1712,7 @@ class Entries extends Component
         if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
-                'description' => Translation::prep('app', 'Resaving {type} entries', [
+                'description' => I18N::prep('Resaving {type} entries', [
                     'type' => $entryType->name,
                 ]),
                 'elementType' => Entry::class,
@@ -1851,7 +1853,7 @@ class Entries extends Component
 
             // Delete the field layout
             if ($entryTypeRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
             }
 
             // Delete the entry type.
@@ -1961,7 +1963,7 @@ class Entries extends Component
         }
 
         // Fields
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
             /** @var ElementContainerFieldInterface[] $fields */
             $fields = $fieldsService->getFieldsByType($type);

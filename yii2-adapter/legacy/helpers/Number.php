@@ -7,8 +7,8 @@
 
 namespace craft\helpers;
 
-use Craft;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class Number
@@ -27,15 +27,15 @@ class Number
     public static function word(int $num): string
     {
         $numberWordMap = [
-            1 => Craft::t('app', 'one'),
-            2 => Craft::t('app', 'two'),
-            3 => Craft::t('app', 'three'),
-            4 => Craft::t('app', 'four'),
-            5 => Craft::t('app', 'five'),
-            6 => Craft::t('app', 'six'),
-            7 => Craft::t('app', 'seven'),
-            8 => Craft::t('app', 'eight'),
-            9 => Craft::t('app', 'nine'),
+            1 => t('one'),
+            2 => t('two'),
+            3 => t('three'),
+            4 => t('four'),
+            5 => t('five'),
+            6 => t('six'),
+            7 => t('seven'),
+            8 => t('eight'),
+            9 => t('nine'),
         ];
 
         return $numberWordMap[$num] ?? (string)$num;

@@ -10,6 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\web\View;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class TemplateValidator.
@@ -33,7 +34,7 @@ class TemplateValidator extends Validator
         parent::init();
 
         if (!isset($this->message)) {
-            $this->message = str_replace('{template}', '{value}', Craft::t('app', 'Unable to find the template “{template}”.'));
+            $this->message = str_replace('{template}', '{value}', t('Unable to find the template “{template}”.'));
         }
     }
 

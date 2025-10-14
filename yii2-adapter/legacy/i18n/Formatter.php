@@ -7,22 +7,16 @@
 
 namespace craft\i18n;
 
-use Craft;
-use craft\helpers\DateTimeHelper;
 use DateTime;
-use DateTimeZone;
-use Exception;
-use IntlTimeZone;
-use NumberFormatter;
-use Yii;
+use Illuminate\Support\Facades\Date;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\FormatConverter;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Translation\Formatter} instead.
  */
 class Formatter extends \yii\i18n\Formatter
 {
@@ -66,6 +60,18 @@ class Formatter extends \yii\i18n\Formatter
      */
     public ?array $currencySymbols = null;
 
+    public $nullDisplay = '';
+
+    private function getFormatter(): \CraftCms\Cms\Translation\Formatter
+    {
+        $formatter = new \CraftCms\Cms\Translation\Formatter();
+        $formatter->locale = $this->locale;
+        $formatter->dateTimeFormats = $this->dateTimeFormats;
+        $formatter->sizeFormatBase = $this->sizeFormatBase;
+
+        return $formatter;
+    }
+
     /**
      * @inheritdoc
      * @param int|string|DateTime $value
@@ -76,70 +82,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asDate($value, $format = null): string
     {
-        if ($format === null) {
-            $format = $this->dateFormat;
-        }
-
-        if (isset($this->dateTimeFormats[$format]['date'])) {
-            $format = $this->dateTimeFormats[$format]['date'];
-        }
-
-        // https://github.com/craftcms/cms/issues/16953
-        $dateFormattedWithoutIntl = $this->formatDateWithoutIntl($value, $format);
-        if ($dateFormattedWithoutIntl !== null) {
-            return $dateFormattedWithoutIntl;
-        }
-
-        if (str_starts_with($format, 'php:')) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
-        }
-
-        return parent::asDate($value, $format);
-    }
-
-    /**
-     * Checks if the date should be formatted without the help of intl.
-     * This is needed for some "old" dates, like dates from 19th century from Europe/Amsterdam timezone
-     *
-     * @param int|string|DateTime $value
-     * @param string|null $format
-     * @return string|null
-     * @throws Exception
-     */
-    private function formatDateWithoutIntl(int|string|DateTime $value, ?string $format): ?string
-    {
-        // see https://github.com/craftcms/cms/issues/16953 for more details on why this method was added
-
-        if (!$value instanceof DateTime || !extension_loaded('intl')) {
-            return null;
-        }
-
-        $intlTimeZone = IntlTimeZone::fromDateTimeZone($value->getTimezone());
-        $intlTimeZone->getOffset($value->getTimestamp(), true, $o1, $o2);
-        $intlTimeZone->getOffset($value->getTimestamp(), false, $o3, $o4);
-
-        // get PHP DateTime offset for this date
-        $phpOffset = $value->getTimezone()->getOffset($value);
-        // get DST offset that intl time zone would use (divided by 1000, b/c different units)
-        $dstIntlOffset = ($intlTimeZone->getRawOffset() + $intlTimeZone->getDSTSavings()) / 1000;
-        // get raw offset that intl time zone would use (divided by 1000, b/c different units)
-        $rawIntlOffset = $intlTimeZone->getRawOffset() / 1000;
-
-        // compare the php and intl offsets
-        // if either are the same, we're good to proceed with the intl approach, as we used to;
-        // but if they're both different, we should use PHP to format the date
-        if ($phpOffset === $dstIntlOffset || $phpOffset === $rawIntlOffset) {
-            return null;
-        }
-
-        // copied from yii\i18n\Formatter::formatDateTimeValue()
-        if (str_starts_with($format, 'php:')) {
-            $format = substr($format, 4);
-        } else {
-            $format = FormatConverter::convertDateIcuToPhp($format, 'date', Yii::$app->language);
-        }
-
-        return $value->format($format);
+        return $this->getFormatter()->asDate($value, $format);
     }
 
     /**
@@ -152,19 +95,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asTime($value, $format = null): string
     {
-        if ($format === null) {
-            $format = $this->timeFormat;
-        }
-
-        if (isset($this->dateTimeFormats[$format]['time'])) {
-            $format = $this->dateTimeFormats[$format]['time'];
-        }
-
-        if (str_starts_with($format, 'php:')) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
-        }
-
-        return parent::asTime($value, $format);
+        return $this->getFormatter()->asTime($value, $format);
     }
 
     /**
@@ -177,19 +108,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asDatetime($value, $format = null): string
     {
-        if ($format === null) {
-            $format = $this->datetimeFormat;
-        }
-
-        if (isset($this->dateTimeFormats[$format]['datetime'])) {
-            $format = $this->dateTimeFormats[$format]['datetime'];
-        }
-
-        if (str_starts_with($format, 'php:')) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
-        }
-
-        return parent::asDatetime($value, $format);
+        return $this->getFormatter()->asDateTime($value, $format);
     }
 
     /**
@@ -220,35 +139,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asTimestamp($value, ?string $format = null, bool $withPreposition = false): string
     {
-        /** @var DateTime $timestamp */
-        /** @var bool $hasTimeInfo */
-        /** @var bool $hasDateInfo */
-        [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
-
-        // If it's today or missing date info, just return the local time.
-        if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
-            if ($hasTimeInfo) {
-                $time = $this->asTime($timestamp, $format);
-                return $withPreposition ? Craft::t('app', 'at {time}', ['time' => $time]) : $time;
-            }
-            return $withPreposition ? Craft::t('app', 'today') : Craft::t('app', 'Today');
-        }
-
-        // If it was yesterday, display 'Yesterday'
-        if (DateTimeHelper::isYesterday($timestamp)) {
-            return $withPreposition ? Craft::t('app', 'yesterday') : Craft::t('app', 'Yesterday');
-        }
-
-        // If it were up to 7 days ago, display the weekday name.
-        if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
-            $day = (int)$timestamp->format('w');
-            $dayName = Craft::$app->getLocale()->getWeekDayName($day);
-            return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
-        }
-
-        // Otherwise, just return the local date.
-        $date = $this->asDate($timestamp, $format);
-        return $withPreposition ? Craft::t('app', 'on {date}', ['date' => $date]) : $date;
+        return $this->getFormatter()->asTimestamp($value, $format, $withPreposition);
     }
 
     /**
@@ -256,13 +147,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asPercent($value, $decimals = null, $options = [], $textOptions = []): string
     {
-        if (empty($value)) {
-            $value = 0;
-        } elseif ($decimals === null && is_numeric($value)) {
-            $decimals = strpos(strrev((string)($value * 100)), '.') ?: 0;
-        }
-
-        return parent::asPercent($value, $decimals, $options, $textOptions);
+        return $this->getFormatter()->asPercent($value, $decimals);
     }
 
     /**
@@ -280,28 +165,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asCurrency($value, $currency = null, $options = [], $textOptions = [], bool $stripZeros = false): string
     {
-        $omitDecimals = ($stripZeros && (int)$value == $value);
-
-        if ($omitDecimals) {
-            $options[NumberFormatter::MAX_FRACTION_DIGITS] = 0;
-            $options[NumberFormatter::MIN_FRACTION_DIGITS] = 0;
-        }
-
-        return parent::asCurrency($value, $currency, $options, $textOptions);
-    }
-
-    /**
-     * @inheritdoc
-     * @param string|DateTime|null $value
-     * @return string
-     */
-    public function asText($value): string
-    {
-        if ($value instanceof DateTime) {
-            return $this->asDatetime($value);
-        }
-
-        return parent::asText($value);
+        return $this->getFormatter()->asCurrency($value, $currency, $stripZeros);
     }
 
     /**
@@ -310,7 +174,7 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asShortSize($value, $decimals = null, $options = [], $textOptions = []): string
     {
-        return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
+        return $this->getFormatter()->asShortSize($value, $decimals);
     }
 
     /**
@@ -328,53 +192,5 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         return $this->isNormalizedValueMispresented($value, $this->normalizeNumericValue($value));
-    }
-
-    /**
-     * Formats a value as a date, using a PHP date format.
-     *
-     * @param int|string|DateTime $value
-     * @param string $format
-     * @param string $type 'date', 'time', or 'datetime'.
-     * @return string
-     */
-    private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
-    {
-        // special cases for PHP format characters not supported by ICU
-        /** @var list<array{string, int<0, max>}|string> $split */
-        $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
-        $formatted = '';
-
-        foreach (array_filter($split) as $i => $seg) {
-            if ($i % 2 === 0) {
-                $formatted .= $this->asDate($value, FormatConverter::convertDatePhpToIcu($seg));
-            } else {
-                switch ($seg) {
-                    case 'A':
-                        $formatted .= mb_strtoupper($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
-                        break;
-                    case 'a':
-                        $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
-                        break;
-                    default:
-                        // Make sure we are formatting the date with the right timezone consistently
-                        if (!isset($timestamp)) {
-                            [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
-                            if ($type === 'date' && !$hasTimeInfo || $type === 'time' && !$hasDateInfo) {
-                                $timeZone = $this->defaultTimeZone;
-                            } else {
-                                $timeZone = $this->timeZone;
-                            }
-                            if ($timeZone) {
-                                $timestamp->setTimezone(new DateTimeZone($timeZone));
-                            }
-                        }
-
-                        $formatted .= $timestamp->format($seg);
-                }
-            }
-        }
-
-        return $formatted;
     }
 }

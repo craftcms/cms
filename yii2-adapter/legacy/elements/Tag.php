@@ -21,6 +21,7 @@ use CraftCms\Cms\Database\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
+use function CraftCms\Cms\t;
 
 /**
  * Tag represents a tag element.
@@ -36,7 +37,7 @@ class Tag extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Tag');
+        return t('Tag');
     }
 
     /**
@@ -44,7 +45,7 @@ class Tag extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'tag');
+        return t('tag');
     }
 
     /**
@@ -52,7 +53,7 @@ class Tag extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Tags');
+        return t('Tags');
     }
 
     /**
@@ -60,7 +61,7 @@ class Tag extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'tags');
+        return t('tags');
     }
 
     /**
@@ -123,7 +124,7 @@ class Tag extends Element
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
             $sources[] = [
                 'key' => 'taggroup:' . $tagGroup->uid,
-                'label' => Craft::t('site', $tagGroup->name),
+                'label' => t($tagGroup->name, category: 'site'),
                 'criteria' => ['groupId' => $tagGroup->id],
             ];
         }
@@ -236,7 +237,7 @@ class Tag extends Element
         }
 
         if ($query->exists()) {
-            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'));
         }
     }
 

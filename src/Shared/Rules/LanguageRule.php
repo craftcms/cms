@@ -3,8 +3,10 @@
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
-use Craft;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\Validation\ValidationRule;
+
+use function CraftCms\Cms\t;
 
 final readonly class LanguageRule implements ValidationRule
 {
@@ -20,12 +22,12 @@ final readonly class LanguageRule implements ValidationRule
             return;
         }
 
-        if ($this->onlySiteLanguages && ! in_array($value, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
-            $fail($this->message ?? Craft::t('app', '{value} is not a valid site language.', compact('value')));
+        if ($this->onlySiteLanguages && ! I18N::getSiteLocaleIds()->contains($value)) {
+            $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
 
-        if (! in_array($value, Craft::$app->getI18n()->getAllLocaleIds(), true)) {
-            $fail($this->message ?? Craft::t('app', '{value} is not a valid site language.', compact('value')));
+        if (! I18N::getAllLocaleIds()->contains($value)) {
+            $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
     }
 }

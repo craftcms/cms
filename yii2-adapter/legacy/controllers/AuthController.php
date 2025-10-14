@@ -10,11 +10,12 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
-use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Translation\Locale;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -22,6 +23,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -61,7 +63,7 @@ class AuthController extends Controller
         $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
         try {
-            $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
+            $html = Html::tag('h1', t('{name} Setup', [
                     'name' => $displayName,
                 ])) .
                 $view->namespaceInputs(
@@ -128,7 +130,7 @@ class AuthController extends Controller
             }
         }
 
-        return $this->asSuccess(Craft::t('app', 'Authentication method removed.'));
+        return $this->asSuccess(t('Authentication method removed.'));
     }
 
     /**
@@ -148,7 +150,7 @@ class AuthController extends Controller
             return $this->asFailure($authService->getAuthErrorMessage());
         }
 
-        return $this->asSuccess(Craft::t('app', 'Verification successful.'));
+        return $this->asSuccess(t('Verification successful.'));
     }
 
     /**
@@ -165,10 +167,10 @@ class AuthController extends Controller
         $authService = Craft::$app->getAuth();
 
         if (!$authService->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage(Craft::t('app', 'Invalid recovery code.')));
+            return $this->asFailure($authService->getAuthErrorMessage(t('Invalid recovery code.')));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Verification successful.'));
+        return $this->asSuccess(t('Verification successful.'));
     }
 
     /**
@@ -225,10 +227,10 @@ class AuthController extends Controller
         $verified = Craft::$app->getAuth()->verifyPasskeyCreationResponse($credentials, $credentialName);
 
         if (!$verified) {
-            return $this->asFailure(Craft::t('app', 'Passkey creation failed.'));
+            return $this->asFailure(t('Passkey creation failed.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Passkey created.'), [
+        return $this->asSuccess(t('Passkey created.'), [
             'tableHtml' => $this->passkeyTableHtml(),
         ]);
     }
@@ -247,7 +249,7 @@ class AuthController extends Controller
         $uid = $this->request->getRequiredBodyParam('uid');
         Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);
 
-        return $this->asSuccess(Craft::t('app', 'Passkey deleted.'), [
+        return $this->asSuccess(t('Passkey deleted.'), [
             'tableHtml' => $this->passkeyTableHtml(),
         ]);
     }
@@ -273,7 +275,7 @@ class AuthController extends Controller
         $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
         $codes = $recoveryCodes->generateRecoveryCodes();
 
-        return $this->asSuccess(Craft::t('app', 'Recovery codes generated.'), [
+        return $this->asSuccess(t('Recovery codes generated.'), [
             'codes' => $codes,
         ]);
     }
@@ -301,7 +303,7 @@ class AuthController extends Controller
             throw new InvalidConfigException('No recovery codes exist for this user.');
         }
 
-        $systemName = Craft::t('site', Craft::$app->getSystemName());
+        $systemName = t(Craft::$app->getSystemName(), category: 'site');
         $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
         $primarySite = Craft::$app->getSites()->getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
@@ -309,7 +311,7 @@ class AuthController extends Controller
         $generalConfig = app(GeneralConfig::class);
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
-        $generated = Craft::$app->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
+        $generated = I18N::getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
         $codeContent = implode('', array_map(
             fn(string $code) => $code ? "- $code\n" : "- ~~~~~~~~~~~~~\n",
             $codes,

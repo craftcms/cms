@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use RequirementsChecker;
 use RuntimeException;
 
+use function CraftCms\Cms\t;
+
 final readonly class CheckRequirements
 {
     public function __construct(
@@ -70,7 +72,7 @@ final readonly class CheckRequirements
                 }
             }
 
-            throw new RuntimeException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
+            throw new RuntimeException(t('The update can’t be installed :( {message}', ['message' => $message]));
         }
 
         return response(Craft::$app->getView()->renderPageTemplate('_special/cantrun.twig', [

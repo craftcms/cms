@@ -7,6 +7,8 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\t;
+
 final class Updates extends Widget
 {
     public function __construct(
@@ -22,7 +24,7 @@ final class Updates extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Updates');
+        return t('Updates');
     }
 
     /**
@@ -79,6 +81,6 @@ final class Updates extends Widget
                 ]);
         }
 
-        return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
+        return '<p class="centeralign">'.t('Checking for updates…').'</p>';
     }
 }

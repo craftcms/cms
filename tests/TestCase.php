@@ -30,6 +30,8 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
+        app()->setLocale('en-US');
+
         Edition::set(Edition::Solo);
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();

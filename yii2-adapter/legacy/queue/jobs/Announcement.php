@@ -11,10 +11,10 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\Db;
-use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
 use yii\base\Exception;
 
@@ -111,6 +111,6 @@ class Announcement extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Pushing announcement to control panel users');
+        return I18N::prep('Pushing announcement to control panel users');
     }
 }

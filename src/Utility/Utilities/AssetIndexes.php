@@ -4,13 +4,16 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\helpers\App;
-use craft\i18n\Locale;
 use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;
+
+use function CraftCms\Cms\t;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -23,7 +26,7 @@ final class AssetIndexes extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Asset Indexes');
+        return t('Asset Indexes');
     }
 
     /**
@@ -88,7 +91,7 @@ final class AssetIndexes extends Utility
         ]);
 
         $view->registerAssetBundle(AssetIndexesAsset::class);
-        $dateFormat = Craft::$app->getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
+        $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 

@@ -12,6 +12,7 @@ use craft\web\View;
 use CraftCms\Cms\Updates\Updates;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
+use function CraftCms\Cms\t;
 
 /**
  * Loads Craft templates into Twig.
@@ -52,7 +53,7 @@ class TemplateLoader implements LoaderInterface
         $template = $this->_resolveTemplate($name);
 
         if (!is_readable($template)) {
-            throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
+            throw new TemplateLoaderException($name, t('Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
         return new Source(file_get_contents($template), $name, $template);
@@ -106,6 +107,6 @@ class TemplateLoader implements LoaderInterface
             return $template;
         }
 
-        throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
+        throw new TemplateLoaderException($name, t('Unable to find the template “{template}”.', ['template' => $name]));
     }
 }

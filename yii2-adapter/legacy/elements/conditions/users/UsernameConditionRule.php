@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\users;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
+use function CraftCms\Cms\t;
 
 /**
  * Username condition rule.
@@ -23,7 +23,7 @@ class UsernameConditionRule extends BaseTextConditionRule implements ElementCond
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Username');
+        return t('Username');
     }
 
     /**

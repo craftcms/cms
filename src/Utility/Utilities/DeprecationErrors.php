@@ -7,6 +7,8 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  */
@@ -18,7 +20,7 @@ final class DeprecationErrors extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Deprecation Warnings');
+        return t('Deprecation Warnings');
     }
 
     /**

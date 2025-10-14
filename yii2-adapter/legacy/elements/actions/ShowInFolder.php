@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\Asset;
 use yii\base\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * ShowInFolder represents a Show In Folder element action.
@@ -25,7 +26,7 @@ class ShowInFolder extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Show in folder');
+        return t('Show in folder');
     }
 
     /**

@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
@@ -35,6 +34,8 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -2598,7 +2599,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function fieldLayouts(): array
     {
-        return Craft::$app->getFields()->getLayoutsByType($this->elementType);
+        return app(Fields::class)->getLayoutsByType($this->elementType)->all();
     }
 
     /**

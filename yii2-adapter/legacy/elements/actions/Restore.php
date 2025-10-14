@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Restore represents a Restore element action.
@@ -48,19 +49,19 @@ class Restore extends ElementAction
         parent::setElementType($elementType);
 
         if (!isset($this->successMessage)) {
-            $this->successMessage = Craft::t('app', '{type} restored.', [
+            $this->successMessage = t('{type} restored.', [
                 'type' => $elementType::pluralDisplayName(),
             ]);
         }
 
         if (!isset($this->partialSuccessMessage)) {
-            $this->partialSuccessMessage = Craft::t('app', 'Some {type} restored.', [
+            $this->partialSuccessMessage = t('Some {type} restored.', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ]);
         }
 
         if (!isset($this->failMessage)) {
-            $this->failMessage = Craft::t('app', '{type} not restored.', [
+            $this->failMessage = t('{type} not restored.', [
                 'type' => $elementType::pluralDisplayName(),
             ]);
         }
@@ -71,7 +72,7 @@ class Restore extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Restore');
+        return t('Restore');
     }
 
     /**

@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\datepickeri18n;
 
-use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
+use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * Datepicker I18n asset bundle.
@@ -22,10 +22,10 @@ class DatepickerI18nAsset extends AssetBundle
     public function init(): void
     {
         // Figure out which Datepicker i18n script to load
-        $languageId = Craft::$app->getLocale()->getLanguageID();
+        $languageId = I18N::getLocale()->getLanguageID();
 
         $languages = [
-            Craft::$app->language,
+            app()->getLocale(),
             $languageId,
         ];
 

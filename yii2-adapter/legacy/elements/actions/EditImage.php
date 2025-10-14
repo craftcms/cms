@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * EditImage represents an Edit Image action
@@ -29,7 +30,7 @@ class EditImage extends ElementAction
     public function init(): void
     {
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'Edit Image');
+            $this->label = t('Edit Image');
         }
     }
 

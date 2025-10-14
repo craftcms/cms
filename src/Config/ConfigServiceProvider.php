@@ -22,9 +22,7 @@ final class ConfigServiceProvider extends ServiceProvider
     {
         Env::extend(fn () => ConstAdapter::class);
 
-        $this->app->singleton(GeneralConfig::class, function () {
-            return $this->app['config']->get('craft.general');
-        });
+        $this->app->singleton(GeneralConfig::class, fn () => $this->app['config']->get('craft.general'));
     }
 
     public function boot(): void

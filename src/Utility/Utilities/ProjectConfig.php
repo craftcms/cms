@@ -8,6 +8,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Utility\Utility;
 use Symfony\Component\Yaml\Yaml;
 
+use function CraftCms\Cms\t;
+
 /**
  * ProjectConfig represents a ProjectConfig utility.
  */
@@ -19,7 +21,7 @@ final class ProjectConfig extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Project Config');
+        return t('Project Config');
     }
 
     /**

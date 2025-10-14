@@ -15,6 +15,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Facades\Config;
 use UnitTester;
 
 /**
@@ -154,8 +155,8 @@ class DateRangeHelperTest extends TestCase
         );
         Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
 
-        Craft::$app->setTimeZone('America/Los_Angeles');
-        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        Config::set('app.timezone', 'America/Los_Angeles');
+        $this->systemTimezone = new DateTimeZone(app()->getTimezone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
 

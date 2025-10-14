@@ -7,6 +7,8 @@ use craft\web\assets\updates\UpdatesAsset;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * Updates represents a Updates dashboard widget.
  */
@@ -18,7 +20,7 @@ final class Updates extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Updates');
+        return t('Updates');
     }
 
     /**

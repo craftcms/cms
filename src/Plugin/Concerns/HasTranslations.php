@@ -3,8 +3,11 @@
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use Craft;
-use craft\i18n\PhpMessageSource;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Support\Facades\I18N;
+use Yiisoft\Translator\CategorySource;
+use Yiisoft\Translator\IntlMessageFormatter;
+use Yiisoft\Translator\Message\Php\MessageSource;
 
 /**
  * @mixin Plugin
@@ -16,13 +19,8 @@ trait HasTranslations
     /** @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle. */
     public ?string $t9nCategory = null;
 
-    /** @var string The language that the plugin’s messages were written in */
-    public string $sourceLanguage = 'en-US';
-
     public function bootHasTranslations(): void
     {
-        // Translation category
-        $i18n = Craft::$app->getI18n();
         $plugin = self::getInstance();
         $plugin->t9nCategory ??= $plugin->handle;
 
@@ -34,16 +32,15 @@ trait HasTranslations
             default => $basePath.'/translations',
         };
 
-        /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (! isset($i18n->translations[$plugin->t9nCategory]) && ! isset($i18n->translations[$plugin->t9nCategory.'*'])) {
-            $i18n->translations[$plugin->t9nCategory] = [
-                'class' => PhpMessageSource::class,
-                'sourceLanguage' => $plugin->sourceLanguage,
-                'basePath' => $translationsPath,
-                'forceTranslation' => true,
-                'allowOverrides' => true,
-            ];
-        }
+        $pluginMessageSource = new MessageSource($translationsPath);
+        $formatter = new IntlMessageFormatter;
+        $category = new CategorySource(
+            name: $plugin->t9nCategory,
+            reader: $pluginMessageSource,
+            formatter: $formatter,
+        );
+
+        I18N::addCategorySources($category);
 
         $this->loadTranslationsFrom($translationsPath, $plugin->t9nCategory);
     }

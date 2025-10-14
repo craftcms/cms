@@ -11,6 +11,7 @@ use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
+use function CraftCms\Cms\t;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -60,8 +61,8 @@ class Gmail extends BaseTransportAdapter
     public function attributeLabels(): array
     {
         return [
-            'username' => Craft::t('app', 'Username'),
-            'password' => Craft::t('app', 'Password'),
+            'username' => t('Username'),
+            'password' => t('Password'),
         ];
     }
 

@@ -14,6 +14,7 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * PhotoField represents a Photo field that can be included in the user field layout.
@@ -69,7 +70,7 @@ class PhotoField extends BaseNativeField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Photo');
+        return t('Photo');
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string

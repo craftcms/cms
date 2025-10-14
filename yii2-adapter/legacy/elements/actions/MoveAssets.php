@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Asset;
+use function CraftCms\Cms\t;
 
 /**
  * MoveAssets represents a Move asset action.
@@ -24,7 +25,7 @@ class MoveAssets extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Move…');
+        return t('Move…');
     }
 
     /**

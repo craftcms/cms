@@ -7,9 +7,9 @@
 
 namespace craft\gql\resolvers;
 
-use craft\fields\data\MultiOptionsFieldData;
-use craft\fields\data\SingleOptionFieldData;
 use craft\gql\base\Resolver;
+use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

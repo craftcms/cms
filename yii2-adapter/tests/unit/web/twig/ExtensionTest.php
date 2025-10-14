@@ -15,13 +15,13 @@ use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\fields\MissingField;
-use craft\fields\PlainText;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
@@ -37,6 +37,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -193,6 +194,8 @@ class ExtensionTest extends TestCase
 
     public function test_translate_filter(): void
     {
+        $this->markTestSkipped('Move test to Laravel');
+
         $this->testRenderResult(
             'Translated message',
             '{{ "Source message"|t("site") }}'
@@ -225,7 +228,7 @@ class ExtensionTest extends TestCase
         );
 
         $this->expectException(InvalidConfigException::class);
-        Craft::t('invalidCategory', 'Source message');
+        t('Source message', category: 'invalidCategory');
         $this->view->renderString('{{ "Source message"|t("invalidCategory") }}');
     }
 

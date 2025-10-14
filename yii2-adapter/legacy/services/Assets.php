@@ -51,6 +51,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\db\Expression;
+use function CraftCms\Cms\t;
 
 /**
  * Assets service.
@@ -233,9 +234,10 @@ class Assets extends Component
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
-            throw new FsObjectExistsException(Craft::t('app',
+            throw new FsObjectExistsException(t(
                 'A folder with the name “{folderName}” already exists in the volume.',
-                ['folderName' => $folder->name]));
+                ['folderName' => $folder->name]
+            ));
         }
 
         $volume = $parent->getVolume();
@@ -262,13 +264,13 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new AssetOperationException(Craft::t('app', 'No folder exists with the ID “{id}”', [
+            throw new AssetOperationException(t('No folder exists with the ID “{id}”', [
                 'id' => $folderId,
             ]));
         }
 
         if (!$folder->parentId) {
-            throw new AssetOperationException(Craft::t('app', 'It’s not possible to rename the top folder of a Volume.'));
+            throw new AssetOperationException(t('It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([
@@ -277,7 +279,7 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new FsObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+            throw new FsObjectExistsException(t('A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $newName,
             ]));
         }
@@ -842,7 +844,7 @@ class Assets extends Component
             }
 
             if ($increment === 50) {
-                throw new AssetOperationException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
+                throw new AssetOperationException(t('Could not find a suitable replacement filename for “{filename}”.', [
                     'filename' => $originalFilename,
                 ]));
             }
@@ -1007,7 +1009,7 @@ class Assets extends Component
 
         if (!$volumeTopFolder) {
             $volumeTopFolder = new VolumeFolder();
-            $volumeTopFolder->name = Craft::t('app', 'Temporary Uploads');
+            $volumeTopFolder->name = t('Temporary Uploads');
             $this->storeFolderRecord($volumeTopFolder);
         }
 
@@ -1036,7 +1038,7 @@ class Assets extends Component
             throw new VolumeException('Unable to create directory for temporary uploads.');
         }
 
-        $folder->name = Craft::t('app', 'Temporary Uploads');
+        $folder->name = t('Temporary Uploads');
 
         return $this->_userTempFolders[$cacheKey] = $folder;
     }

@@ -15,6 +15,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * FieldLayoutTab model class.
@@ -60,8 +62,8 @@ class FieldLayoutTab extends FieldLayoutComponent
             ]) .
             ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
                 'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
-                'title' => Craft::t('app', 'This tab is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'title' => t('This tab is conditional'),
+                'aria' => ['label' => t('This tab is conditional')],
             ]) : '');
     }
 
@@ -179,7 +181,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Name'),
+            'label' => t('Name'),
             'name' => 'name',
             'value' => $this->name,
             'required' => true,
@@ -237,7 +239,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             throw new InvalidConfigException('Field layout tab is missing its field layout.');
         }
 
-        if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
+        if (($this->_layout = app(Fields::class)->getLayoutById($this->layoutId)) === null) {
             throw new InvalidConfigException('Invalid layout ID: ' . $this->layoutId);
         }
 
@@ -274,7 +276,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function setElements(array $elements): void
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $pluginsService = app(Plugins::class);
         $this->_elements = [];
 

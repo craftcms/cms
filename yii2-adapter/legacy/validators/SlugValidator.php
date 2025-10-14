@@ -7,12 +7,12 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class SlugValidator.
@@ -88,7 +88,7 @@ class SlugValidator extends Validator
             $model->$attribute = $slug;
         } elseif (!$isTemp) {
             if ($originalSlug !== '') {
-                $this->addError($model, $attribute, Craft::t('yii', '{attribute} is invalid.'));
+                $this->addError($model, $attribute, t('{attribute} is invalid.'));
             }
         }
     }
@@ -101,13 +101,13 @@ class SlugValidator extends Validator
         $value = (string)$value;
 
         if ($value === '') {
-            return [Craft::t('yii', '{attribute} cannot be blank.'), []];
+            return [t('{attribute} cannot be blank.'), []];
         }
 
         $slug = ElementHelper::normalizeSlug($value);
 
         if ($slug !== $value) {
-            return [Craft::t('yii', '{attribute} is invalid.'), []];
+            return [t('{attribute} is invalid.'), []];
         }
 
         return null;

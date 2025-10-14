@@ -7,18 +7,19 @@
 
 namespace craft\elements;
 
-use Craft;
 use craft\base\Element;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\elements\db\ContentBlockQuery;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use craft\records\ContentBlock as ContentBlockRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Content block element.
@@ -36,7 +37,7 @@ class ContentBlock extends Element implements NestedElementInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Content Block');
+        return t('Content Block');
     }
 
     /**
@@ -44,7 +45,7 @@ class ContentBlock extends Element implements NestedElementInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'content block');
+        return t('content block');
     }
 
     /**
@@ -52,7 +53,7 @@ class ContentBlock extends Element implements NestedElementInterface
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Content Blocks');
+        return t('Content Blocks');
     }
 
     /**
@@ -60,7 +61,7 @@ class ContentBlock extends Element implements NestedElementInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'content blocks');
+        return t('content blocks');
     }
 
     /**
@@ -110,7 +111,7 @@ class ContentBlock extends Element implements NestedElementInterface
     protected static function defineFieldLayouts(?string $source): array
     {
         /** @var ContentBlockField[] $fields */
-        $fields = Craft::$app->getFields()->getFieldsByType(ContentBlockField::class);
+        $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class)->all();
         return array_map(fn(ContentBlockField $field) => $field->getFieldLayout(), $fields);
     }
 

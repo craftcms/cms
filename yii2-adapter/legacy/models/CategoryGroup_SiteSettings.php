@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * CategoryGroup_SiteSettings model class.
@@ -114,8 +115,8 @@ class CategoryGroup_SiteSettings extends Model
     public function attributeLabels(): array
     {
         return [
-            'template' => Craft::t('app', 'Template'),
-            'uriFormat' => Craft::t('app', 'URI Format'),
+            'template' => t('Template'),
+            'uriFormat' => t('URI Format'),
         ];
     }
 

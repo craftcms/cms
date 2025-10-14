@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Console\Commands\Install;
 
 use craft\console\Application;
-use craft\helpers\Localization;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
@@ -11,6 +10,7 @@ use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Translation\I18N;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +43,7 @@ final class InstallCommand extends Command
 
     public function handle(
         GeneralConfig $generalConfig,
+        I18N $i18n,
         Migrator $migrator,
         #[Give('Craft')] Application $craft
     ): int {
@@ -101,13 +102,13 @@ final class InstallCommand extends Command
             ), 'siteUrl')
             ->addIf(! $this->option('language'), fn () => suggest(
                 label: 'What is the site language?',
-                options: fn (string $value) => collect(\Craft::$app->getI18n()->getAllLocaleIds())
+                options: fn (string $value) => $i18n->getAllLocaleIds()
                     ->filter(fn (string $locale) => str_contains($locale, $value))
                     ->all(),
                 default: $defaultSiteLanguage,
-                validate: function (string $value) {
+                validate: function (string $value) use ($i18n) {
                     try {
-                        $value = Localization::normalizeLanguage($value);
+                        $value = $i18n->normalizeLanguage($value);
                     } catch (Throwable) {
                         return "$value is not a valid language.";
                     }
@@ -116,7 +117,7 @@ final class InstallCommand extends Command
                         return 'The site language is required.';
                     }
 
-                    if (! in_array($value, \Craft::$app->getI18n()->getAllLocaleIds(), true)) {
+                    if (! $i18n->getAllLocaleIds()->contains($value)) {
                         return "$value is not a valid language.";
                     }
 

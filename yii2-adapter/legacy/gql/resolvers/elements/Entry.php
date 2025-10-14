@@ -13,6 +13,7 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Field\Fields;
 use yii\base\UnknownMethodException;
 
 /**
@@ -46,8 +47,8 @@ class Entry extends ElementResolver
             }
 
             if (isset($pairs['nestedentryfields'])) {
-                $fieldsService = Craft::$app->getFields();
-                $types = array_flip($fieldsService->getNestedEntryFieldTypes());
+                $fieldsService = app(Fields::class);
+                $types = $fieldsService->getNestedEntryFieldTypes()->flip();
                 $fieldIds = array_filter(array_map(function(string $uid) use ($fieldsService, $types) {
                     $field = $fieldsService->getFieldByUid($uid);
                     return $field && isset($types[$field::class]) ? $field->id : null;

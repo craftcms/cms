@@ -16,6 +16,7 @@ use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\types\elements\User;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * Class UserType
@@ -44,7 +45,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
             'name' => UserElement::GQL_TYPE_NAME,
             'fields' => function() use ($context) {
                 // Users don't have different types, so the context for a user will be the same every time.
-                $context ??= Craft::$app->getFields()->getLayoutByType(UserElement::class);
+                $context ??= app(Fields::class)->getLayoutByType(UserElement::class);
                 $contentFieldGqlTypes = self::getContentFields($context);
                 $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($userFields, UserElement::GQL_TYPE_NAME);

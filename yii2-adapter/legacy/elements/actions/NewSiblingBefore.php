@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * NewSibling represents a “Create a new X before” element action.
@@ -36,7 +37,7 @@ class NewSiblingBefore extends ElementAction
         parent::setElementType($elementType);
 
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'Create a new {type} before', [
+            $this->label = t('Create a new {type} before', [
                 'type' => $elementType::lowerDisplayName(),
             ]);
         }

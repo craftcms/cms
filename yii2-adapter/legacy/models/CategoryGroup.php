@@ -8,8 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Chippable;
-use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -18,11 +16,14 @@ use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Facades\DB;
+use function CraftCms\Cms\t;
 
 /**
  * CategoryGroup model.
@@ -130,7 +131,7 @@ class CategoryGroup extends Model implements
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -150,8 +151,8 @@ class CategoryGroup extends Model implements
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ];
     }
 
@@ -208,7 +209,7 @@ class CategoryGroup extends Model implements
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     /**

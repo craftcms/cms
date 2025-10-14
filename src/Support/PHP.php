@@ -3,13 +3,13 @@
 namespace CraftCms\Cms\Support;
 
 use Composer\Semver\Semver;
-use Craft;
 use craft\helpers\FileHelper;
 use HTMLPurifier_Encoder;
 use InvalidArgumentException;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\t;
 
 final class PHP
 {
@@ -268,7 +268,7 @@ final class PHP
         $installedVersion = self::version();
 
         if (! Semver::satisfies($installedVersion, $constraint)) {
-            return Craft::t('app', 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.', [
+            return t('This update requires PHP {v1}, but your environment is currently running PHP {v2}.', [
                 'v1' => $constraint,
                 'v2' => $installedVersion,
             ]);
@@ -284,13 +284,13 @@ final class PHP
             return null;
         }
 
-        $error = Craft::t('app', 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.', [
+        $error = t('This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.', [
             'v1' => $constraint,
             'v2' => $composerVersion,
         ]);
 
         if ($withLink) {
-            $error .= ' '.Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/knowledge-base/resolving-php-requirement-conflicts', [
+            $error .= ' '.Html::a(t('Learn more'), 'https://craftcms.com/knowledge-base/resolving-php-requirement-conflicts', [
                 'class' => 'go',
             ]);
         }

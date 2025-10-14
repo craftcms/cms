@@ -15,6 +15,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * AddressField represents an Address field that can be included within an Address field layout designer.
@@ -86,7 +87,7 @@ class AddressField extends BaseField
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         // we need it for the card view designer
-        return Craft::t('app', 'Address');
+        return t('Address');
     }
 
     /**
@@ -94,7 +95,7 @@ class AddressField extends BaseField
      */
     protected function selectorLabel(): ?string
     {
-        return Craft::t('app', 'Address');
+        return t('Address');
     }
 
     /**

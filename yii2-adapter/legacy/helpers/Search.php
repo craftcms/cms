@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -50,7 +49,7 @@ class Search
         $str = mb_strtolower($str);
 
         if ($processCharMap) {
-            $str = strtr($str, Str::asciiCharMap(true, $language ?? Craft::$app->language));
+            $str = strtr($str, Str::asciiCharMap(true, $language ?? app()->getLocale()));
 
             $str = preg_replace(self::_getElisionsRegex(), '', $str);
 

@@ -8,8 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\i18n\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -19,6 +20,7 @@ use Exception;
 use Throwable;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class DateTimeHelper
@@ -134,7 +136,7 @@ class DateTimeHelper
             return false;
         }
 
-        $defaultTimeZone = ($assumeSystemTimeZone ? Craft::$app->getTimeZone() : 'UTC');
+        $defaultTimeZone = ($assumeSystemTimeZone ? app()->getTimezone() : 'UTC');
 
         if (is_array($value)) {
             if (empty($value['datetime']) && empty($value['date']) && empty($value['time'])) {
@@ -142,9 +144,9 @@ class DateTimeHelper
             }
 
             // Did they specify a locale?
-            $locale = Craft::$app->getFormattingLocale();
+            $locale = I18N::getFormattingLocale();
             if (!empty($value['locale']) && $value['locale'] !== $locale->id) {
-                $locale = Craft::$app->getI18n()->getLocaleById($value['locale']);
+                $locale = I18N::getLocaleById($value['locale']);
             }
 
             // Did they specify a timezone?
@@ -194,7 +196,7 @@ class DateTimeHelper
         }
 
         if ($setToSystemTimeZone) {
-            $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+            $dt->setTimezone(new DateTimeZone(app()->getTimezone()));
         }
 
         return $dt;
@@ -345,7 +347,7 @@ class DateTimeHelper
         // Is time paused?
         if (!empty(self::$_now)) {
             $date = clone self::$_now[0];
-            $date->setTimezone($timeZone ?? new DateTimeZone(Craft::$app->getTimeZone()));
+            $date->setTimezone($timeZone ?? new DateTimeZone(app()->getTimezone()));
             return $date;
         }
 
@@ -780,34 +782,34 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{year} other{years}}', [
                 'num' => $dateInterval->y,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{month} other{months}}', [
                 'num' => $dateInterval->m,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($dateInterval->d) {
             // Is it an exact number of weeks?
             if ($dateInterval->d % 7 === 0) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', [
+                $timeComponents[] = t('{num, number} {num, plural, =1{week} other{weeks}}', [
                     'num' => $dateInterval->d / 7,
-                ], $language);
+                ], locale: $language);
             } else {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', [
+                $timeComponents[] = t('{num, number} {num, plural, =1{day} other{days}}', [
                     'num' => $dateInterval->d,
-                ], $language);
+                ], locale: $language);
             }
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{hour} other{hours}}', [
                 'num' => $dateInterval->h,
-            ], $language);
+            ], locale: $language);
         }
 
         $minutes = $dateInterval->i;
@@ -817,20 +819,20 @@ class DateTimeHelper
             if ($addlMinutes) {
                 $minutes += $addlMinutes;
             } elseif ($secondsOnly) {
-                return Craft::t('app', 'less than a minute');
+                return t('less than a minute');
             }
         }
 
         if ($minutes) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{minute} other{minutes}}', [
                 'num' => $minutes,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{second} other{seconds}}', [
                 'num' => $dateInterval->s,
-            ], $language);
+            ], locale: $language);
         }
 
         $last = array_pop($timeComponents);
@@ -839,7 +841,7 @@ class DateTimeHelper
             if (count($timeComponents) > 1) {
                 $string .= ',';
             }
-            $string .= ' ' . Craft::t('app', 'and', language: $language) . ' ';
+            $string .= ' ' . t('and', locale: $language) . ' ';
         } else {
             $string = '';
         }

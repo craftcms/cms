@@ -27,7 +27,9 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Translation\I18N;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -207,6 +209,16 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
+     * Returns the fields service.
+     *
+     * @return \CraftCms\Cms\Field\Fields
+     */
+    public function fields(): Fields
+    {
+        return app(Fields::class);
+    }
+
+    /**
      * Returns a new [global set query](https://craftcms.com/docs/5.x/reference/element-types/globals.html#querying-globals).
      *
      * @param array $criteria
@@ -218,6 +230,11 @@ class CraftVariable extends ServiceLocator
         $query = GlobalSet::find();
         Craft::configure($query, $criteria);
         return $query;
+    }
+
+    public function i18n(): I18N
+    {
+        return app(I18N::class);
     }
 
     /**

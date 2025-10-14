@@ -15,6 +15,7 @@ use craft\web\twig\Environment;
 use craft\web\View;
 use CraftCms\Cms\Support\Html;
 use Throwable;
+use function CraftCms\Cms\t;
 
 /**
  * Template represents a UI element based on a custom template that can be included in field layouts.
@@ -59,7 +60,7 @@ class Template extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        return $this->template ?: Craft::t('app', 'Template');
+        return $this->template ?: t('Template');
     }
 
     /**
@@ -104,9 +105,9 @@ class Template extends BaseUiElement
     protected function settingsHtml(): ?string
     {
         return Cp::autosuggestFieldHtml([
-            'label' => Craft::t('app', 'Template'),
-            'instructions' => Craft::t('app', 'The path to a template file within your `templates/` folder.'),
-            'tip' => Craft::t('app', 'The template will be rendered with an `element` variable.'),
+            'label' => t('Template'),
+            'instructions' => t('The path to a template file within your `templates/` folder.'),
+            'tip' => t('The template will be rendered with an `element` variable.'),
             'class' => 'code',
             'id' => 'template',
             'name' => 'template',
@@ -121,7 +122,7 @@ class Template extends BaseUiElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$this->template) {
-            return $this->_error(Craft::t('app', 'No template path has been chosen yet.'), 'warning');
+            return $this->_error(t('No template path has been chosen yet.'), 'warning');
         }
 
         $view = Craft::$app->getView();

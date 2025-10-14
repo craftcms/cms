@@ -7,23 +7,19 @@
 
 namespace craft\base;
 
-/**
- * InlineEditableFieldInterface defines the common interface to be implemented by field classes
- * that wish to be editable via inline edit forms.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- * @mixin Field
- */
-interface InlineEditableFieldInterface extends PreviewableFieldInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the HTML that should be shown for this field’s inline inputs.
+     * InlineEditableFieldInterface defines the common interface to be implemented by field classes
+     * that wish to be editable via inline edit forms.
      *
-     * @param mixed $value The field’s value
-     * @param ElementInterface|null $element The element the field is associated with
-     * @return string The HTML that should be shown for this field’s inline input
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface} instead.
      */
-    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string;
+    interface InlineEditableFieldInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface::class, InlineEditableFieldInterface::class);

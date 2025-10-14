@@ -9,13 +9,11 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\validators\UserPasswordValidator;
@@ -40,14 +38,18 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use yii\web\JqueryAsset;
+use function CraftCms\Cms\t;
 
 /**
  * Asset bundle for the control panel
@@ -503,8 +505,8 @@ JS;
         $request = Craft::$app->getRequest();
         $generalConfig = app(GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
-        $formattingLocale = Craft::$app->getFormattingLocale();
-        $locale = Craft::$app->getLocale();
+        $formattingLocale = I18N::getFormattingLocale();
+        $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
@@ -517,7 +519,7 @@ JS;
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
+            'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
@@ -525,7 +527,7 @@ JS;
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => Assets::getFileKinds(),
-            'language' => Craft::$app->language,
+            'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
             'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
@@ -542,7 +544,7 @@ JS;
             'scriptName' => basename($request->getScriptFile()),
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
-            'timezone' => Craft::$app->getTimeZone(),
+            'timezone' => app()->getTimezone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
@@ -600,7 +602,7 @@ JS;
             'edition' => Edition::get()->value,
             'elementTypeNames' => $elementTypeNames,
             'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
-            'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
+            'fieldsWithoutContent' => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
@@ -650,8 +652,8 @@ JS;
             'firstDay' => DateTimeHelper::firstWeekDay(),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
-            'nextText' => Craft::t('app', 'Next'),
-            'prevText' => Craft::t('app', 'Prev'),
+            'nextText' => t('Next'),
+            'prevText' => t('Prev'),
             'yearRange' => 'c-100:c+100',
         ];
     }
@@ -675,7 +677,7 @@ JS;
             $groups[] = [
                 'handle' => $group->handle,
                 'id' => (int)$group->id,
-                'name' => Craft::t('site', $group->name),
+                'name' => t($group->name, category: 'site'),
                 'uid' => $group->uid,
             ];
         }
@@ -734,7 +736,7 @@ JS;
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
                     'id' => (int)$section->id,
-                    'name' => Craft::t('site', $section->name),
+                    'name' => t($section->name, category: 'site'),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                     'uid' => $section->uid,
@@ -754,7 +756,7 @@ JS;
             $types[] = [
                 'handle' => $type->handle,
                 'id' => (int)$type->id,
-                'name' => Craft::t('site', $type->name),
+                'name' => t($type->name, category: 'site'),
             ];
         }
 
@@ -770,7 +772,7 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
-                'name' => Craft::t('site', $site->getName()),
+                'name' => t($site->getName(), category: 'site'),
             ];
         }
 

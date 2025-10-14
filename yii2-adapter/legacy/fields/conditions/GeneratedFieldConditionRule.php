@@ -11,6 +11,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
+use function CraftCms\Cms\t;
 
 /**
  * Generated field condition rule.
@@ -57,7 +58,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
      */
     public function getGroupLabel(): ?string
     {
-        return Craft::t('app', 'Fields');
+        return t('Fields');
     }
 
     /**

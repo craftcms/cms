@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\users;
 
-use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
+use function CraftCms\Cms\t;
 
 /**
  * Last login date condition rule.
@@ -23,7 +23,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Last Login Date');
+        return t('Last Login Date');
     }
 
     /**

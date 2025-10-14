@@ -8,21 +8,23 @@
 namespace craft\fieldlayoutelements;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
-use craft\base\PreviewableFieldInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
-use craft\helpers\Inflector;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -237,7 +239,7 @@ class CustomField extends BaseField
             if (!isset($this->_fieldUid)) {
                 throw new InvalidConfigException('No field UUID set.');
             }
-            if (($field = Craft::$app->getFields()->getFieldByUid($this->_fieldUid)) === null) {
+            if (($field = app(Fields::class)->getFieldByUid($this->_fieldUid)) === null) {
                 throw new FieldNotFoundException($this->_fieldUid);
             }
             $this->setField($field);
@@ -264,6 +266,7 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        /** @phpstan-ignore-next-line */
         $this->_field->required = $this->required;
     }
 
@@ -407,7 +410,7 @@ class CustomField extends BaseField
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($this->_originalName !== '' && $this->_originalName !== null && $this->_originalName !== '__blank__') {
-            return Craft::t('site', $this->_originalName);
+            return t($this->_originalName, category: 'site');
         }
         return null;
     }
@@ -451,13 +454,13 @@ class CustomField extends BaseField
 
         if (isset($this->label) || isset($this->instructions) || isset($this->handle)) {
             $attributes = array_values(array_filter([
-                isset($this->label) ? Craft::t('app', 'Name') : null,
-                isset($this->instructions) ? Craft::t('app', 'Instructions') : null,
-                isset($this->handle) ? Craft::t('app', 'Handle') : null,
+                isset($this->label) ? t('Name') : null,
+                isset($this->instructions) ? t('Instructions') : null,
+                isset($this->handle) ? t('Handle') : null,
             ]));
             array_unshift($indicators, [
-                'label' => Craft::t('app', 'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
-                    'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                'label' => t('This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                    'attributes' => mb_strtolower(collect($attributes)->sentence()),
                     'totalAttributes' => count($attributes),
                 ]),
                 'icon' => 'pencil',
@@ -525,7 +528,7 @@ class CustomField extends BaseField
      */
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->_originalInstructions ? Craft::t('site', $this->_originalInstructions) : null;
+        return $this->_originalInstructions ? t($this->_originalInstructions, category: 'site') : null;
     }
 
     /**
@@ -542,11 +545,11 @@ class CustomField extends BaseField
         $editCondition->forProjectConfig = true;
 
         $html .= Html::beginTag('fieldset', ['class' => 'pane']) .
-            Html::tag('legend', Craft::t('app', 'Editability Conditions')) .
+            Html::tag('legend', t('Editability Conditions')) .
             Html::beginTag('div') .
             Cp::fieldHtml($editCondition->getBuilderHtml(), [
-                'label' => Craft::t('app', 'Current User Condition'),
-                'instructions' => Craft::t('app', 'Only make editable for users who match the following rules:'),
+                'label' => t('Current User Condition'),
+                'instructions' => t('Only make editable for users who match the following rules:'),
             ]) .
             Html::endTag('div') .
             Html::endTag('fieldset');
@@ -676,7 +679,7 @@ class CustomField extends BaseField
         try {
             $field = $this->getField();
         } catch (FieldNotFoundException) {
-            return Craft::$app->getLocale()->getOrientation();
+            return I18N::getLocale()->getOrientation();
         }
 
         return $field->getOrientation($element);

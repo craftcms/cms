@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Date Modified condition rule.
@@ -23,7 +23,7 @@ class DateModifiedConditionRule extends BaseDateRangeConditionRule implements El
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'File Modification Date');
+        return t('File Modification Date');
     }
 
     /**

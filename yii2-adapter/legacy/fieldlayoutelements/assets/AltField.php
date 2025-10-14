@@ -7,15 +7,15 @@
 
 namespace craft\fieldlayoutelements\assets;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
@@ -102,7 +102,7 @@ class AltField extends TextareaField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Alternative Text');
+        return t('Alternative Text');
     }
 
     /**

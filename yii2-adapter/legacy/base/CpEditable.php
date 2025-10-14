@@ -1,25 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\base;
 
-/**
- * CpEditable defines the common interface to be implemented by components that
- * have a dedicated edit page in the control panel.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-interface CpEditable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the URL to the component’s edit page in the control panel.
-     *
-     * @return string|null
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\CpEditable} instead.
      */
-    public function getCpEditUrl(): ?string;
+    interface CpEditable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Component\Contracts\CpEditable::class, CpEditable::class);

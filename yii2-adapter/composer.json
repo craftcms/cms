@@ -57,6 +57,7 @@
     "codeception/module-rest": "^3.3.2",
     "codeception/module-yii2": "^1.1.9",
     "craftcms/ecs": "dev-main",
+    "dg/bypass-finals": "^1.9",
     "larastan/larastan": "^3.7",
     "league/factory-muffin": "^3.3.0",
     "orchestra/testbench": "^10.6",

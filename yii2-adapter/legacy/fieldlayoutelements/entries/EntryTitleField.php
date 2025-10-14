@@ -8,10 +8,10 @@
 namespace craft\fieldlayoutelements\entries;
 
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
 

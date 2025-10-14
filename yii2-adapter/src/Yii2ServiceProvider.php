@@ -6,6 +6,7 @@ use craft\console\controllers\HelpController;
 use craft\events\EditionChangeEvent;
 use craft\services\Addresses;
 use craft\services\Dashboard;
+use craft\services\Fields;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
 use craft\services\SystemMessages;
@@ -17,9 +18,11 @@ use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
@@ -35,6 +38,10 @@ use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use yii\BaseYii;
+use Yiisoft\Translator\CategorySource;
+use Yiisoft\Translator\IntlMessageFormatter;
+use Yiisoft\Translator\Message\Php\MessageSource;
+use Yiisoft\Translator\Translator;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -42,6 +49,7 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         $this->registerMultiEnvironmentConfigs();
         $this->registerConstants();
+        $this->registerMacros();
         $this->registerLegacyApp();
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
@@ -110,6 +118,19 @@ class Yii2ServiceProvider extends ServiceProvider
         }
     }
 
+    private function registerMacros(): void
+    {
+        Field::macro('trigger', function($name, mixed $event = null): void {
+            Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
+
+            $event ??= new \yii\base\Event();
+
+            \yii\base\Event::trigger($this, $name, $event);
+
+            $this->dispatchComponentEvent($name, $event);
+        });
+    }
+
     protected function registerLegacyApp(): void
     {
         $this->app->singleton('Craft', function() {
@@ -142,6 +163,10 @@ class Yii2ServiceProvider extends ServiceProvider
                     $app->controller = $controller;
                 }
             }
+
+            /** @var \craft\web\Application|\craft\console\Application $app */
+            $app->setTimeZone(app()->getTimezone());
+            $app->language = app()->getLocale();
 
             \Craft::$app = $app;
 
@@ -187,6 +212,20 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         $connection = Config::get('database.default');
         Config::set("database.connections.{$connection}.prefix", Env::get('DB_TABLE_PREFIX'));
+
+        /**
+         * Add fallback for when translations are still stored in `/translations`
+         */
+        if (is_dir(base_path('translations'))) {
+            Deprecator::log('translations-path', 'Storing site translations in `/translations` is deprecated. Rename the folder to `lang` instead.');
+
+            $translator = app(Translator::class);
+            $translator->addCategorySources(new CategorySource(
+                'site',
+                new MessageSource(base_path('translations')),
+                new IntlMessageFormatter(),
+            ));
+        }
 
         /**
          * Load Craft
@@ -308,6 +347,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        Fields::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();

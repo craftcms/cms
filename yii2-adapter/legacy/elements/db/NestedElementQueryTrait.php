@@ -7,13 +7,13 @@
 
 namespace craft\elements\db;
 
-use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Db;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 
 /**
@@ -97,7 +97,7 @@ trait NestedElementQueryTrait
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getFields()->getFieldByHandle($item);
+                $item = app(Fields::class)->getFieldByHandle($item);
             }
             return $item instanceof ElementContainerFieldInterface ? $item->id : null;
         })) {
@@ -347,7 +347,7 @@ trait NestedElementQueryTrait
         if ($this->fieldId) {
             $fieldLayouts = [];
             foreach ($this->fieldId as $fieldId) {
-                $field = Craft::$app->getFields()->getFieldById($fieldId);
+                $field = app(Fields::class)->getFieldById($fieldId);
                 if ($field instanceof ElementContainerFieldInterface) {
                     foreach ($field->getFieldLayoutProviders() as $provider) {
                         $fieldLayouts[] = $provider->getFieldLayout();

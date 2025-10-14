@@ -13,8 +13,10 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use function CraftCms\Cms\t;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.
@@ -278,7 +280,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($this->requirable() && $this->required) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field is required'),
+                'label' => t('This field is required'),
                 'icon' => 'asterisk',
                 'iconColor' => 'rose',
             ];
@@ -286,7 +288,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if (isset($this->tip)) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field has a tip'),
+                'label' => t('This field has a tip'),
                 'icon' => 'lightbulb',
                 'iconColor' => 'sky',
             ];
@@ -294,7 +296,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if (isset($this->warning)) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field has a warning'),
+                'label' => t('This field has a warning'),
                 'icon' => 'alert',
                 'iconColor' => 'amber',
             ];
@@ -302,7 +304,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($this->hasConditions()) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field is conditional'),
+                'label' => t('This field is conditional'),
                 'icon' => 'diamond',
                 'iconColor' => 'orange',
             ];
@@ -310,7 +312,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($this->thumbable() && $this->providesThumbs) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
+                'label' => t('This field provides thumbnails for elements'),
                 'icon' => 'image',
                 'iconColor' => 'violet',
             ];
@@ -318,7 +320,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($this->previewable() && $this->includeInCards) {
             $indicators[] = [
-                'label' => Craft::t('app', 'This field is included in element cards'),
+                'label' => t('This field is included in element cards'),
                 'icon' => 'eye',
                 'iconColor' => 'blue',
             ];
@@ -389,7 +391,7 @@ abstract class BaseField extends FieldLayoutElement
             $actionMenuItems = array_filter([
                 [
                     'icon' => 'clone',
-                    'label' => Craft::t('app', 'Copy value from site…'),
+                    'label' => t('Copy value from site…'),
                     'attributes' => [
                         'data' => [
                             'cross-site-copy' => true,
@@ -653,7 +655,7 @@ abstract class BaseField extends FieldLayoutElement
     public function label(): ?string
     {
         if (isset($this->label) && $this->label !== '' && $this->label !== '__blank__') {
-            return Craft::t('site', $this->label);
+            return t($this->label, category: 'site');
         }
         return $this->defaultLabel();
     }
@@ -732,7 +734,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function instructions(ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static);
+        return $this->instructions ? t($this->instructions, category: 'site') : $this->defaultInstructions($element, $static);
     }
 
     /**
@@ -765,7 +767,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? Craft::t('site', $this->tip) : null;
+        return $this->tip ? t($this->tip, category: 'site') : null;
     }
 
     /**
@@ -777,7 +779,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? Craft::t('site', $this->warning) : null;
+        return $this->warning ? t($this->warning, category: 'site') : null;
     }
 
     /**
@@ -795,7 +797,7 @@ abstract class BaseField extends FieldLayoutElement
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
         } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
-            $locale = Craft::$app->getLocale();
+            $locale = I18N::getLocale();
         } else {
             // Use the site’s language
             $locale = $element->getSite()->getLocale();

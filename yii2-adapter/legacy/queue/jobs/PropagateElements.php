@@ -13,8 +13,8 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
-use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
+use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * PropagateElements job
@@ -112,7 +112,7 @@ class PropagateElements extends BaseBatchedElementJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Propagating {type}', [
+        return I18N::prep('Propagating {type}', [
             'type' => $this->totalItems() == 1
                 ? $this->elementType::lowerDisplayName()
                 : $this->elementType::pluralLowerDisplayName(),

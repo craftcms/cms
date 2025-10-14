@@ -22,6 +22,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
@@ -80,7 +81,7 @@ class SitesController extends Controller
         }
 
         $crumbs = [
-            ['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::cpUrl('settings')],
+            ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
         ];
 
         $view = $this->getView();
@@ -122,8 +123,8 @@ class SitesController extends Controller
         $view = Craft::$app->getView();
         $view->startJsBuffer();
         $html = $view->namespaceInputs(fn() => Cp::autosuggestFieldHtml([
-            'label' => Craft::t('app', 'Group Name'),
-            'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
+            'label' => t('Group Name'),
+            'instructions' => t('What this group will be called in the control panel.'),
             'id' => 'name',
             'name' => 'name',
             'value' => $this->request->getBodyParam('name') ?? '',
@@ -167,7 +168,7 @@ class SitesController extends Controller
         }
 
         $attr = $group->getAttributes();
-        $attr['name'] = Craft::t('site', $attr['name']);
+        $attr['name'] = t($attr['name'], category: 'site');
 
         return $this->asSuccess(data: [
             'group' => $attr,
@@ -190,7 +191,7 @@ class SitesController extends Controller
             return $this->asFailure();
         }
 
-        return $this->asSuccess(Craft::t('app', 'Group deleted.'));
+        return $this->asSuccess(t('Group deleted.'));
     }
 
     // Sites
@@ -225,7 +226,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = trim($siteModel->getName()) ?: Craft::t('app', 'Edit Site');
+            $title = trim($siteModel->getName()) ?: t('Edit Site');
         } else {
             if ($siteModel === null) {
                 $siteModel = new Site();
@@ -233,7 +234,7 @@ class SitesController extends Controller
                 $brandNewSite = true;
             }
 
-            $title = Craft::t('app', 'Create a new site');
+            $title = t('Create a new site');
         }
 
         // Groups
@@ -260,7 +261,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => Craft::t('site', $group->getName()),
+                'label' => t($group->getName(), category: 'site'),
             ];
         }
 
@@ -270,11 +271,11 @@ class SitesController extends Controller
         // Breadcrumbs
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Settings'),
+                'label' => t('Settings'),
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => Craft::t('app', 'Sites'),
+                'label' => t('Sites'),
                 'url' => UrlHelper::url('settings/sites'),
             ],
         ];
@@ -324,7 +325,7 @@ class SitesController extends Controller
 
         // Save it
         if (!$sitesService->saveSite($site)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save the site.'));
+            $this->setFailFlash(t('Couldn’t save the site.'));
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -334,7 +335,7 @@ class SitesController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Site saved.'));
+        $this->setSuccessFlash(t('Site saved.'));
         return $this->redirectToPostedUrl($site);
     }
 

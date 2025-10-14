@@ -29,7 +29,6 @@ ignore:
   - 'src/icons'
   - 'src/migrations'
   - 'src/test/internal'
-  - 'src/translations'
   - 'src/views'
   - 'src/web/assets'
   - 'tests'

@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Testing\TestResponse;
 
@@ -9,17 +10,17 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    \Craft::$app->setIsInstalled(false);
+    Info::setIsInstalled(false);
 });
 
 it('aborts when Craft is already installed', function () {
-    \Craft::$app->setIsInstalled();
+    Info::setIsInstalled();
 
     get(action([InstallController::class, 'index']))->assertNotFound();
 });
 
 it('shows the install page', function () {
-    \Craft::$app->setIsInstalled(false);
+    Info::setIsInstalled(false);
 
     get(action([InstallController::class, 'index']))
         ->assertSee('Copyright © Pixel & Tonic, Inc.') // License

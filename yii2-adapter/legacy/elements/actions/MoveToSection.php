@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
 use yii\base\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * MoveToSection represents a Move to Section element action.
@@ -25,7 +26,7 @@ class MoveToSection extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Move to…');
+        return t('Move to…');
     }
 
     /**

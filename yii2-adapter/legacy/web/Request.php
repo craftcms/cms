@@ -26,6 +26,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\NotFoundHttpException;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -1365,7 +1366,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     public function resolve(): array
     {
         if (($result = Craft::$app->getUrlManager()->parseRequest($this)) === false) {
-            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+            throw new NotFoundHttpException(t('Page not found.'));
         }
 
         [$route, $params] = $result;

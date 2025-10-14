@@ -2,7 +2,7 @@
 {% set id = (id ?? "time#{random()}") ~ '-time' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
-{% set locale = craft.app.getFormattingLocale() %}
+{% set locale = craft.i18n.getFormattingLocale() %}
 {% set outputLocaleParam = outputLocaleParam ?? true %}
 {% set timeZone = timeZone ?? null %}
 {% set outputTzParam = outputTzParam ?? true %}

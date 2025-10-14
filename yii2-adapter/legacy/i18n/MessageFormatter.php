@@ -11,6 +11,7 @@ namespace craft\i18n;
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.13
+ * @deprecated 6.0.0
  * @internal
  */
 class MessageFormatter extends \yii\i18n\MessageFormatter

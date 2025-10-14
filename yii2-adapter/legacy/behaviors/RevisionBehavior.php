@@ -7,10 +7,10 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\Element;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
+use function CraftCms\Cms\t;
 
 /**
  * RevisionBehavior is applied to element revisions.
@@ -56,7 +56,7 @@ class RevisionBehavior extends BaseRevisionBehavior
      */
     public function getRevisionLabel(): string
     {
-        return Craft::t('app', 'Revision {num}', [
+        return t('Revision {num}', [
             'num' => $this->revisionNum,
         ]);
     }

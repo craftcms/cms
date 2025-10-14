@@ -3,7 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\fields\Lightswitch;
+use CraftCms\Cms\Field\Lightswitch;
 use yii\base\InvalidConfigException;
 
 /**

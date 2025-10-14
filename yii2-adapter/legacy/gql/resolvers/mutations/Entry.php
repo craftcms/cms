@@ -11,7 +11,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
 use craft\behaviors\DraftBehavior;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
@@ -19,6 +18,7 @@ use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
 use craft\models\Section;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
+use function CraftCms\Cms\t;
 
 /**
  * The User component provides APIs for managing the user authentication status.
@@ -238,7 +239,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function guestRequired(): Response
     {
         if (!$this->checkRedirectAcceptable()) {
-            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
+            throw new ForbiddenHttpException(t('Guest Required'));
         }
         return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }

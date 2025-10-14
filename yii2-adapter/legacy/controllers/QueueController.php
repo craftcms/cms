@@ -22,6 +22,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -212,7 +213,7 @@ class QueueController extends Controller
             $details += $this->queue->getJobDetails($jobId);
         } catch (InvalidArgumentException) {
             $details += [
-                'description' => Craft::t('app', 'Completed job'),
+                'description' => t('Completed job'),
                 'status' => Queue::STATUS_DONE,
             ];
         }

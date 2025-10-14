@@ -8,7 +8,7 @@
 {%- set hasSuffix = suffix is not same as(false) %}
 
 {% if formatNumber %}
-    {{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
+    {{ hiddenInput("#{field.handle}[locale]", craft.i18n.formattingLocale.id) }}
 {% endif %}
 
 {% if hasPrefix or hasSuffix %}

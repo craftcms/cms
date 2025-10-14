@@ -14,10 +14,10 @@ use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
-use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -200,7 +200,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Applying new propagation method to elements');
+        return I18N::prep('Applying new propagation method to elements');
     }
 
     /**

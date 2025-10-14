@@ -19,6 +19,7 @@ use yii\web\JsonResponseFormatter;
 use yii\web\Request;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Control panel screen response formatter.
@@ -143,9 +144,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
-                'label' => Craft::t('site', $behavior->site->name),
+                'label' => t($behavior->site->name, category: 'site'),
                 'menu' => [
-                    'label' => Craft::t('app', 'Select site'),
+                    'label' => t('Select site'),
                     'items' => !empty($behavior->selectableSites)
                         ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
                             'includeOmittedSites' => true,
@@ -181,11 +182,11 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contextMenu' => $this->_contextMenu($behavior),
                 'toolbar' => $toolbar,
                 'actionMenu' => $this->_actionMenu($behavior, config: [
-                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
                         'id' => 'action-btn',
                         'class' => ['action-btn', 'hairline-dark', 'm'],
-                        'title' => Craft::t('app', 'Actions'),
+                        'title' => t('Actions'),
                     ],
                 ]),
                 'submitButtonLabel' => $behavior->submitButtonLabel,
@@ -221,7 +222,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'id' => 'context-menu',
             'class' => 'padded',
             'autoLabel' => true,
-            'hiddenLabel' => Craft::t('app', 'Select context'),
+            'hiddenLabel' => t('Select context'),
         ], $namespace);
     }
 

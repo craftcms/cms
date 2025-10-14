@@ -2,11 +2,11 @@
 
 namespace CraftCms\Cms\ProjectConfig\Commands;
 
-use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Console\Command;
 use Symfony\Component\Yaml\Yaml;
 
@@ -89,7 +89,7 @@ final class ExportCommand extends Command
             }
         );
 
-        $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
+        $size = I18N::getFormatter()->asShortSize(filesize($path));
 
         $this->components->info("Exported to <fg=cyan>{$path}</> ($size)");
 

@@ -10,10 +10,10 @@ use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\fields\Entries;
-use craft\fields\Matrix;
-use craft\fields\PlainText;
-use craft\fields\Table;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Table;
 
 return [
     [

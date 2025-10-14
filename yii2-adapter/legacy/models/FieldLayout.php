@@ -9,8 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
@@ -29,6 +27,9 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\validators\HandleValidator;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -36,6 +37,7 @@ use Generator;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * FieldLayout model class.
@@ -80,7 +82,7 @@ class FieldLayout extends Model
      * ```php
      * use craft\models\FieldLayout;
      * use craft\events\DefineFieldLayoutFieldsEvent;
-     * use craft\fields\PlainText;
+     * use CraftCms\Cms\Field\PlainText;
      * use yii\base\Event;
      *
      * Event::on(
@@ -323,12 +325,12 @@ class FieldLayout extends Model
 
         foreach ($this->getCustomFields() as $field) {
             if (isset($this->reservedFieldHandles) && in_array($field->handle, $this->reservedFieldHandles, true)) {
-                $this->addError('customFields', Craft::t('app', '“{handle}” is a reserved word.', [
+                $this->addError('customFields', t('“{handle}” is a reserved word.', [
                     'handle' => $field->handle,
                 ]));
             } elseif (isset($handles[$field->handle])) {
-                $this->addError('customFields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
-                    'attribute' => Craft::t('app', 'Handle'),
+                $this->addError('customFields', t('{attribute} "{value}" has already been taken.', [
+                    'attribute' => t('Handle'),
                     'value' => $field->handle,
                 ]));
             } else {
@@ -358,8 +360,8 @@ class FieldLayout extends Model
                 $error = null;
                 $validator->validate($field['handle'], $error);
                 if ($error === null && isset($handles[$field['handle']])) {
-                    $error = Craft::t('yii', '{attribute} "{value}" has already been taken.', [
-                        'attribute' => Craft::t('app', 'Handle'),
+                    $error = t('{attribute} "{value}" has already been taken.', [
+                        'attribute' => t('Handle'),
                         'value' => $field['handle'],
                     ]);
                 }
@@ -577,7 +579,7 @@ class FieldLayout extends Model
         if (!isset($this->_availableCustomFields)) {
             $customFields = [];
 
-            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            foreach (app(Fields::class)->getAllFields() as $field) {
                 $customFields[] = Craft::createObject([
                     'class' => CustomField::class,
                     'layout' => $this,
@@ -585,7 +587,7 @@ class FieldLayout extends Model
             }
 
             $this->_availableCustomFields = [
-                Craft::t('app', 'Custom Fields') => $customFields,
+                t('Custom Fields') => $customFields,
             ];
 
             // Fire a 'defineCustomFields' event
@@ -952,7 +954,7 @@ class FieldLayout extends Model
             $this->_tabs[] = $tab = new FieldLayoutTab([
                 'layout' => $this,
                 'layoutId' => $this->id,
-                'name' => Craft::t('app', 'Content'),
+                'name' => t('Content'),
                 'sortOrder' => 1,
                 'elements' => [],
             ]);
@@ -1095,7 +1097,7 @@ class FieldLayout extends Model
                     if ($layoutElement === null) {
                         $fieldId = $cardElement['fieldId'];
                         if ($fieldId) {
-                            $field = Craft::$app->getFields()->getFieldById($fieldId);
+                            $field = app(Fields::class)->getFieldById($fieldId);
                             $layoutElement = new CustomField();
                             $layoutElement->setField($field);
                         } else {

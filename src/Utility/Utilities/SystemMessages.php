@@ -8,6 +8,8 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\SystemMessage\SystemMessages as SystemMessagesService;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * SystemMessages represents a System Messages utility.
  */
@@ -19,7 +21,7 @@ final class SystemMessages extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'System Messages');
+        return t('System Messages');
     }
 
     /**

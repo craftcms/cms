@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use CraftCms\Cms\Support\Arr;
+use function CraftCms\Cms\t;
 
 /**
  * Tag group condition rule.
@@ -24,7 +25,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Tag Group');
+        return t('Tag Group');
     }
 
     /**

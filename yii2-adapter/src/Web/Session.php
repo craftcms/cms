@@ -12,6 +12,7 @@ namespace CraftCms\Yii2Adapter\Web;
 use ArrayIterator;
 use Illuminate\Session\Store;
 use yii\base\Component;
+use function Psy\debug;
 
 /**
  * Session allows usage of the Laravel Session for Yii one.

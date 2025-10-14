@@ -7,12 +7,12 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
-use craft\i18n\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
@@ -93,12 +93,10 @@ class FormatDateTime extends Directive
             }
 
             if (!empty($arguments['locale'])) {
-                $formatter = Craft::$app->getI18n()->getLocaleById($arguments['locale'])->getFormatter();
+                $formatter = I18N::getLocaleById($arguments['locale'])->getFormatter();
             } else {
-                $formatter = Craft::$app->getFormatter();
+                $formatter = I18N::getFormatter();
             }
-
-            $formatter->datetimeFormat = $format;
 
             // Leave timezone alone, unless directed to modify with arguments.
             if (!empty($arguments['timezone'])) {
@@ -122,6 +120,6 @@ class FormatDateTime extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : self::DEFAULT_TIMEZONE;
+        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : self::DEFAULT_TIMEZONE;
     }
 }

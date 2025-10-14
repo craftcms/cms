@@ -27,6 +27,7 @@ use CraftCms\Cms\Addresses\Models\Address as AddressModel;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Address element class
@@ -49,7 +50,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Address');
+        return t('Address');
     }
 
     /**
@@ -57,7 +58,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'address');
+        return t('address');
     }
 
     /**
@@ -65,7 +66,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Addresses');
+        return t('Addresses');
     }
 
     /**
@@ -73,7 +74,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'addresses');
+        return t('addresses');
     }
 
     /**
@@ -124,7 +125,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
-            'country' => ['label' => Craft::t('app', 'Country')],
+            'country' => ['label' => t('Country')],
         ]);
     }
 
@@ -148,27 +149,27 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         return [
             [
-                'label' => Craft::t('app', 'Label'),
+                'label' => t('Label'),
                 'orderBy' => 'title',
                 'attribute' => 'title',
             ],
             [
-                'label' => Craft::t('app', 'Country'),
+                'label' => t('Country'),
                 'orderBy' => 'countryCode',
                 'attribute' => 'country',
             ],
             [
-                'label' => Craft::t('app', 'Date Created'),
+                'label' => t('Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Updated'),
+                'label' => t('Date Updated'),
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'ID'),
+                'label' => t('ID'),
                 'orderBy' => 'id',
             ],
         ];
@@ -344,13 +345,13 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         return match ($attribute) {
-            'title' => Craft::t('app', 'Label'),
-            'organizationTaxId' => Craft::t('app', 'Organization Tax ID'),
-            'fullName' => Craft::t('app', 'Full Name'),
-            'firstName' => Craft::t('app', 'First Name'),
-            'lastName' => Craft::t('app', 'Last Name'),
-            'latitude' => Craft::t('app', 'Latitude'),
-            'longitude' => Craft::t('app', 'Longitude'),
+            'title' => t('Label'),
+            'organizationTaxId' => t('Organization Tax ID'),
+            'fullName' => t('Full Name'),
+            'firstName' => t('First Name'),
+            'lastName' => t('Last Name'),
+            'latitude' => t('Latitude'),
+            'longitude' => t('Longitude'),
             default => parent::getAttributeLabel($attribute),
         };
     }
@@ -467,7 +468,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getCountry(): Country
     {
-        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, Craft::$app->language);
+        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, app()->getLocale());
     }
 
     /**
@@ -571,7 +572,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getLocale(): string
     {
-        return Craft::$app->language;
+        return app()->getLocale();
     }
 
     /**

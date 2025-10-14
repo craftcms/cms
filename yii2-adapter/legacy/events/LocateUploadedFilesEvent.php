@@ -15,6 +15,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.2
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\LocateUploadedFiles} instead.
  */
 class LocateUploadedFilesEvent extends Event
 {

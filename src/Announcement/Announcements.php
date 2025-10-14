@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Announcement;
 
 use craft\helpers\Queue;
-use craft\i18n\Translation;
 use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Models\Announcement;
@@ -16,6 +15,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use yii\helpers\Markdown;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 final readonly class Announcements
 {
@@ -27,7 +28,7 @@ final readonly class Announcements
      * Pushes a new announcement out to all control panel users.
      *
      * ::: tip
-     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *
@@ -90,8 +91,8 @@ final readonly class Announcements
                 'id' => $announcement->id,
                 'icon' => $icon,
                 'label' => $label,
-                'heading' => Html::widont(Html::encode(Translation::translate($announcement->heading))),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($announcement->body)))),
+                'heading' => Html::widont(Html::encode(t($announcement->heading))),
+                'body' => Html::widont(Markdown::processParagraph(Html::encode(t($announcement->body)))),
                 'unread' => $announcement->unread,
             ];
         })->all();

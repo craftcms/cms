@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use yii\base\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * CopyReferenceTag represents a Copy Reference Tag element action.
@@ -24,7 +25,7 @@ class CopyReferenceTag extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Copy reference tag');
+        return t('Copy reference tag');
     }
 
     /**
@@ -48,7 +49,7 @@ class CopyReferenceTag extends ElementAction
                 value: '{' + $refHandle + ':' + selectedItems.find('.element').data('id') + '}',
             });
         },
-    });
+    })
 })();
 JS, [static::class, $refHandle]);
 

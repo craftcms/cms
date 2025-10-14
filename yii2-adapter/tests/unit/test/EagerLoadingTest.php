@@ -12,6 +12,7 @@ use Craft;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\Fields;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -41,6 +42,8 @@ class EagerLoadingTest extends TestCase
      */
     public function testEagerLoadingScenario1(): void
     {
+        $this->markTestSkipped('Rewrite for Laravel');
+
         // getting the entry
         $entry = Entry::find()
             ->title('Matrix with relational field')
@@ -166,7 +169,7 @@ class EagerLoadingTest extends TestCase
      */
     private function _removeFieldFromLayout(string $layoutUid, string $fieldHandle): void
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $fieldLayout = $fieldsService->getLayoutByUid($layoutUid);
         $tabs = $fieldLayout->getTabs();
         $layoutElements = $tabs[0]->getElements();

@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Json;
 use DateTime;
 use PragmaRX\Recovery\Recovery;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Recovery codes authentication method.
@@ -29,7 +30,7 @@ class RecoveryCodes extends BaseAuthMethod
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Recovery Codes');
+        return t('Recovery Codes');
     }
 
     /**
@@ -37,7 +38,7 @@ class RecoveryCodes extends BaseAuthMethod
      */
     public static function description(): string
     {
-        return Craft::t('app', 'Generate recovery codes that can be used as a backup.');
+        return t('Generate recovery codes that can be used as a backup.');
     }
 
     /**
@@ -58,7 +59,7 @@ class RecoveryCodes extends BaseAuthMethod
         $view = Craft::$app->getView();
 
         $view->registerJsWithVars(fn($containerId) => <<<JS
-new Craft.RecoveryCodesSetup($containerId);
+new Craft.RecoveryCodesSetup($containerId)
 JS, [$containerId]);
 
         return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
@@ -81,7 +82,7 @@ JS, [$containerId]);
     {
         return [
             [
-                'label' => Craft::t('app', 'Download codes'),
+                'label' => t('Download codes'),
                 'icon' => 'download',
                 'action' => 'auth/download-recovery-codes',
                 'requireElevatedSession' => true,

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use Throwable;
+use function CraftCms\Cms\t;
 
 /**
  * UnsuspendUsers represents an Unsuspend Users element action.
@@ -26,7 +27,7 @@ class UnsuspendUsers extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Unsuspend');
+        return t('Unsuspend');
     }
 
     /**
@@ -86,11 +87,11 @@ JS, [
         }));
 
         if ($successCount !== count($users)) {
-            $this->setMessage(Craft::t('app', 'Couldn’t unsuspend all users.'));
+            $this->setMessage(t('Couldn’t unsuspend all users.'));
             return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Users unsuspended.'));
+        $this->setMessage(t('Users unsuspended.'));
         return true;
     }
 }

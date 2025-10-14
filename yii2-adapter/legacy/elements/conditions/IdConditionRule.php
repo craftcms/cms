@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * ID condition rule.
@@ -20,7 +20,7 @@ class IdConditionRule extends BaseNumberConditionRule implements ElementConditio
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'ID');
+        return t('ID');
     }
 
     public static function supportsProjectConfig(): bool

@@ -7,11 +7,11 @@
 
 namespace craft\gql\arguments\elements;
 
-use Craft;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\User as UserElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -98,7 +98,7 @@ class User extends ElementArguments
     {
         $contentArguments = [];
 
-        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getCustomFields();
+        $contentFields = app(Fields::class)->getLayoutByType(UserElement::class)->getCustomFields();
 
         foreach ($contentFields as $contentField) {
             if (!$contentField instanceof GqlInlineFragmentFieldInterface) {

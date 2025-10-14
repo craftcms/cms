@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use CraftCms\Cms\Support\Str;
+use function CraftCms\Cms\t;
 
 /**
  * Class StringValidator.
@@ -37,7 +38,7 @@ class StringValidator extends \yii\validators\StringValidator
         parent::init();
 
         if (!isset($this->containsMb4)) {
-            $this->containsMb4 = Craft::t('app', '{attribute} cannot contain emoji.');
+            $this->containsMb4 = t('{attribute} cannot contain emoji.');
         }
     }
 

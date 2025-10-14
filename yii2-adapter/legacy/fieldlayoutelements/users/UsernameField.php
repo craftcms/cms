@@ -7,12 +7,12 @@
 
 namespace craft\fieldlayoutelements\users;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\TextField;
 use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * UsernameField represents a Username field that can be included in the user field layout.
@@ -82,7 +82,7 @@ class UsernameField extends TextField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Username');
+        return t('Username');
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string

@@ -9,9 +9,9 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\elements\Asset;
-use craft\i18n\Translation;
 use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 
 /**
@@ -53,6 +53,6 @@ class GenerateImageTransform extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Generating image transform');
+        return I18N::prep('Generating image transform');
     }
 }

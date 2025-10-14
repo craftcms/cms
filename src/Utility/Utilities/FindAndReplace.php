@@ -6,6 +6,8 @@ use Craft;
 use craft\web\assets\findreplace\FindReplaceAsset;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * FindAndReplace represents a FindAndReplace dashboard widget.
  */
@@ -17,7 +19,7 @@ final class FindAndReplace extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Find and Replace');
+        return t('Find and Replace');
     }
 
     /**

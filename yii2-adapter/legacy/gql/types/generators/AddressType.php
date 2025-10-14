@@ -16,6 +16,7 @@ use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Address as AddressInterface;
 use craft\gql\types\elements\Address;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * Class AddressType
@@ -43,7 +44,7 @@ class AddressType extends Generator implements GeneratorInterface, SingleGenerat
         return GqlEntityRegistry::getOrCreate(AddressElement::GQL_TYPE_NAME, fn() => new Address([
             'name' => AddressElement::GQL_TYPE_NAME,
             'fields' => function() use ($context) {
-                $context ??= Craft::$app->getFields()->getLayoutByType(AddressElement::class);
+                $context ??= app(Fields::class)->getLayoutByType(AddressElement::class);
                 $contentFieldGqlTypes = self::getContentFields($context);
                 $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions(

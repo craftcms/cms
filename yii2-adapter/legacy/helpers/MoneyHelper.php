@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Formatter\DecimalMoneyFormatter;
@@ -86,7 +86,7 @@ class MoneyHelper
             return false;
         }
 
-        $locale = $formatLocale ?? Craft::$app->getFormattingLocale()->id;
+        $locale = $formatLocale ?? I18N::getFormattingLocale()->id;
 
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
         return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
@@ -109,7 +109,7 @@ class MoneyHelper
             return false;
         }
 
-        $locale = $formatLocale ?? Craft::$app->getFormattingLocale()->id;
+        $locale = $formatLocale ?? I18N::getFormattingLocale()->id;
 
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::DECIMAL);
         return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
@@ -123,7 +123,7 @@ class MoneyHelper
      */
     public static function normalizeString(string $value, ?Currency $fallbackCurrency = null): string
     {
-        $locale = Craft::$app->getFormattingLocale()->id;
+        $locale = I18N::getFormattingLocale()->id;
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
         $moneyParser = new IntlMoneyParser($numberFormatter, self::_getIsoCurrencies());
 

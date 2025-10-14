@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
+use function CraftCms\Cms\t;
 
 /**
  * Duplicate represents a Duplicate element action.
@@ -37,7 +38,7 @@ class Copy extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Copy');
+        return t('Copy');
     }
 
     /**
@@ -67,7 +68,7 @@ class Copy extends ElementAction
       });
       Craft.cp.copyElements(elements);
     },
-  });
+  })
 })();
 JS, [static::class]);
 
@@ -91,14 +92,14 @@ JS, [static::class]);
 
         // Did all of them fail?
         if ($successCount === 0) {
-            $this->setMessage(Craft::t('app', 'Could not duplicate elements due to validation errors.'));
+            $this->setMessage(t('Could not duplicate elements due to validation errors.'));
             return false;
         }
 
         if ($failCount !== 0) {
-            $this->setMessage(Craft::t('app', 'Could not duplicate all elements due to validation errors.'));
+            $this->setMessage(t('Could not duplicate all elements due to validation errors.'));
         } else {
-            $this->setMessage(Craft::t('app', 'Elements duplicated.'));
+            $this->setMessage(t('Elements duplicated.'));
         }
 
         return true;

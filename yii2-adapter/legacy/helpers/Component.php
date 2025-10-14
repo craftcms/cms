@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\errors\MissingComponentException;
@@ -142,9 +141,7 @@ class Component
         // Typecast the properties
         Typecast::properties($class, $config);
 
-        // Instantiate and return
-        $config['class'] = $class;
-        return Craft::createObject(static::cleanseConfig($config));
+        return app()->make($class, ['config' => static::cleanseConfig($config)]);
     }
 
     /**

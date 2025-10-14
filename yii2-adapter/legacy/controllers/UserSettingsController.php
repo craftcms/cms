@@ -17,6 +17,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The UserSettingsController class is a controller that handles various user group and user settings related tasks such as
@@ -93,22 +94,22 @@ class UserSettingsController extends Controller
         }
 
         $crumbs = [
-            ['label' => Craft::t('app', 'Settings'), 'url' => 'settings'],
-            ['label' => Craft::t('app', 'Users'), 'url' => 'settings/users'],
-            ['label' => Craft::t('app', 'User Groups'), 'url' => 'settings/users'],
+            ['label' => t('Settings'), 'url' => 'settings'],
+            ['label' => t('Users'), 'url' => 'settings/users'],
+            ['label' => t('User Groups'), 'url' => 'settings/users'],
         ];
 
         if ($group->id) {
-            $title = trim($group->name) ?: Craft::t('app', 'Edit User Group');
+            $title = trim($group->name) ?: t('Edit User Group');
         } else {
-            $title = Craft::t('app', 'Create a new user group');
+            $title = t('Create a new user group');
         }
 
         $response = $this->asCpScreen()
             ->editUrl($group->getCpEditUrl())
             ->title($title)
             ->crumbs($crumbs)
-            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+            ->addAltAction(t('Save and continue editing'), [
                 'redirect' => 'settings/users/groups/{id}',
                 'shortcut' => true,
                 'retainScroll' => true,
@@ -171,7 +172,7 @@ JS, [
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
-            return $this->asModelFailure($group, Craft::t('app', 'Couldn’t save group.'), 'group');
+            return $this->asModelFailure($group, t('Couldn’t save group.'), 'group');
         }
 
         // Save the new permissions
@@ -201,8 +202,8 @@ JS, [
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
         $message = Edition::get() === Edition::Team
-            ? Craft::t('app', 'Permissions saved.')
-            : Craft::t('app', 'Group saved.');
+            ? t('Permissions saved.')
+            : t('Group saved.');
 
         return $this->asModelSuccess($group, $message, 'group');
     }
@@ -254,7 +255,7 @@ JS, [
 
         $projectConfig->set('users', $settings, 'Update user settings');
 
-        $this->setSuccessFlash(Craft::t('app', 'User settings saved.'));
+        $this->setSuccessFlash(t('User settings saved.'));
         return $this->redirectToPostedUrl();
     }
 }

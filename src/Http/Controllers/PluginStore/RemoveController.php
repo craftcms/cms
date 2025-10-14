@@ -2,8 +2,9 @@
 
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
-use Craft;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -16,7 +17,7 @@ final class RemoveController extends BaseUpdaterController
     #[\Override]
     protected function pageTitle(): string
     {
-        return Craft::t('app', 'Plugin Uninstaller');
+        return t('Plugin Uninstaller');
     }
 
     /**
@@ -54,7 +55,7 @@ final class RemoveController extends BaseUpdaterController
     protected function postComposerInstallState(): array
     {
         return $this->actionState(self::ACTION_FINISH, [
-            'status' => Craft::t('app', 'The plugin was removed successfully.'),
+            'status' => t('The plugin was removed successfully.'),
         ]);
     }
 

@@ -9,9 +9,10 @@ namespace craft\gql\arguments\elements;
 
 use Craft;
 use craft\elements\ContentBlock as ContentBlockElement;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -59,7 +60,7 @@ class ContentBlock extends ElementArguments
         $gqlService = Craft::$app->getGql();
         return $gqlService->getOrSetContentArguments(ContentBlockElement::class, function() use ($gqlService): array {
             /** @var ContentBlockField[] $fields */
-            $fields = Craft::$app->getFields()->getFieldsByType(ContentBlockField::class);
+            $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class);
 
             $arguments = [];
             foreach ($fields as $field) {

@@ -40,11 +40,11 @@ use yii\web\Response;
 interface ElementInterface extends
     ComponentInterface,
     ModelInterface,
-    Chippable,
-    CpEditable,
+    \CraftCms\Cms\Component\Contracts\Chippable,
+    \CraftCms\Cms\Component\Contracts\CpEditable,
     Thumbable,
     Statusable,
-    Actionable
+    \CraftCms\Cms\Component\Contracts\Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -471,7 +471,7 @@ interface ElementInterface extends
      * ```php
      * return [
      *     [
-     *         'label' => Craft::t('app', 'Attribute Label'),
+     *         'label' => \CraftCms\Cms\t('Attribute Label'),
      *         'orderBy' => 'columnName',
      *         'attribute' => 'attributeName',
      *         'defaultDir' => 'asc',
@@ -484,7 +484,7 @@ interface ElementInterface extends
      *
      * ```php
      * return [
-     *     'columnName' => Craft::t('app', 'Attribute Label'),
+     *     'columnName' => \CraftCms\Cms\t('Attribute Label'),
      * ];
      * ```
      *
@@ -510,7 +510,7 @@ interface ElementInterface extends
      * return [
      *     [
      *         'mode' => 'table',
-     *         'title' => Craft::t('app', 'Display in a table'),
+     *         'title' => \CraftCms\Cms\t('Display in a table'),
      *         'icon' => 'list',
      *         'availableOnMobile' => false,
      *     ],

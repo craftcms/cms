@@ -7,6 +7,8 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * Migrations represents a Migrations utility.
  */
@@ -18,7 +20,7 @@ final class Migrations extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Migrations');
+        return t('Migrations');
     }
 
     /**

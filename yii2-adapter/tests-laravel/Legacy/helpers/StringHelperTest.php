@@ -710,7 +710,7 @@ class StringHelperTest extends TestCase
     }
 
     #[DataProvider('slugifyDataProvider')]
-    public function test_slugify(string $expected, string $string, string $replacement = '-', ?string $language = null): void
+    public function test_slugify(string $expected, string $string, string $replacement = '-', ?string $language = 'en'): void
     {
         $actual = StringHelper::slugify($string, $replacement, $language);
         self::assertSame($expected, $actual);
@@ -845,7 +845,7 @@ class StringHelperTest extends TestCase
     }
 
     #[DataProvider('toAsciiDataProvider')]
-    public function test_to_ascii(string $expected, string $string, ?string $language = null): void
+    public function test_to_ascii(string $expected, string $string, ?string $language = 'en'): void
     {
         $actual = StringHelper::toAscii($string, $language);
         self::assertSame($expected, $actual);

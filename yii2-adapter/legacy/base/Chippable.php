@@ -1,33 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\base;
 
-/**
- * Chippable defines the common interface to be implemented by components that
- * can be displayed as chips in the control panel.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-interface Chippable extends Identifiable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns a component by its ID.
-     *
-     * @param string|int $id
-     * @return static|null
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Chippable} instead.
      */
-    public static function get(string|int $id): ?static;
-
-    /**
-     * Returns what the component should be called within the control panel.
-     *
-     * @return string
-     */
-    public function getUiLabel(): string;
+    interface Chippable extends \CraftCms\Cms\Component\Contracts\Identifiable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Component\Contracts\Chippable::class, Chippable::class);

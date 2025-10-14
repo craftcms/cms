@@ -8,7 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\i18n\Locale;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
@@ -17,6 +18,7 @@ use yii\i18n\MissingTranslationEvent;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see I18N} instead.
  */
 class Localization
 {
@@ -34,17 +36,7 @@ class Localization
      */
     public static function normalizeLanguage(string $language): string
     {
-        $language = strtolower(str_replace('_', '-', $language));
-
-        $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
-        $lcLanguages = array_map('strtolower', $allLanguages);
-        $allLanguages = array_combine($lcLanguages, $allLanguages);
-
-        if (!isset($allLanguages[$language])) {
-            throw new InvalidArgumentException('Invalid language: ' . $language);
-        }
-
-        return $allLanguages[$language];
+        return I18N::normalizeLanguage($language);
     }
 
     /**
@@ -59,23 +51,7 @@ class Localization
      */
     public static function normalizeNumber(mixed $number, ?string $localeId = null): mixed
     {
-        if (is_string($number)) {
-            if ($localeId === null) {
-                $locale = Craft::$app->getFormattingLocale();
-            } elseif ($localeId === Craft::$app->language) {
-                $locale = Craft::$app->getLocale();
-            } else {
-                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
-            }
-
-            $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
-
-            // Remove any group symbols and use a period for the decimal symbol
-            $number = str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
-        }
-
-        return $number;
+        return I18N::normalizeNumber($number, $localeId);
     }
 
     /**

@@ -10,8 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
-use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\FieldNotFoundException;
@@ -21,11 +19,15 @@ use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
+use function CraftCms\Cms\t;
 
 /**
  * The Element Sources service provides APIs for managing element indexes.
@@ -303,7 +305,7 @@ class ElementSources extends Component
             if (str_starts_with($sourceKey, 'custom:')) {
                 $source = $this->_sourceConfig($elementType, $sourceKey);
                 if (empty($source['condition'])) {
-                    return Craft::$app->getFields()->getLayoutsByType($elementType);
+                    return app(Fields::class)->getLayoutsByType($elementType)->all();
                 }
                 /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($source['condition']);
@@ -466,7 +468,7 @@ class ElementSources extends Component
                         } else {
                             // The handle was overridden, so it gets its own table attribute
                             $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $layoutElement->label()),
+                                'label' => t($layoutElement->label(), category: 'site'),
                             ];
                         }
                     }
@@ -478,7 +480,7 @@ class ElementSources extends Component
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
-                'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+                'label' => count($labels) === 1 ? $labels[0] : t($field->name, category: 'site'),
             ];
         }
 

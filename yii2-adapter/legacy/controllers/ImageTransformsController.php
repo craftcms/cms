@@ -10,13 +10,14 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
-use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The ImageTransformsController class is a controller that handles various actions related to image transforms,
@@ -98,17 +99,17 @@ class ImageTransformsController extends Controller
         $bundle = $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
         if ($transform->id) {
-            $title = trim($transform->name) ?: Craft::t('app', 'Edit Image Transform');
+            $title = trim($transform->name) ?: t('Edit Image Transform');
         } else {
-            $title = Craft::t('app', 'Create a new image transform');
+            $title = t('Create a new image transform');
         }
 
         $qualityPickerOptions = [
-            ['label' => Craft::t('app', 'Low'), 'value' => 10],
-            ['label' => Craft::t('app', 'Medium'), 'value' => 30],
-            ['label' => Craft::t('app', 'High'), 'value' => 60],
-            ['label' => Craft::t('app', 'Very High'), 'value' => 80],
-            ['label' => Craft::t('app', 'Maximum'), 'value' => 100],
+            ['label' => t('Low'), 'value' => 10],
+            ['label' => t('Medium'), 'value' => 30],
+            ['label' => t('High'), 'value' => 60],
+            ['label' => t('Very High'), 'value' => 80],
+            ['label' => t('Maximum'), 'value' => 100],
         ];
 
         if ($transform->quality) {
@@ -168,22 +169,22 @@ class ImageTransformsController extends Controller
         $errors = false;
 
         if (empty($transform->width) && empty($transform->height)) {
-            $this->setFailFlash(Craft::t('app', 'You must set at least one of the dimensions.'));
+            $this->setFailFlash(t('You must set at least one of the dimensions.'));
             $errors = true;
         }
 
         if ($transform->quality && ($transform->quality > 100 || $transform->quality < 1)) {
-            $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
+            $this->setFailFlash(t('Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
         if (!empty($transform->format) && !Image::isWebSafe($transform->format)) {
-            $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
+            $this->setFailFlash(t('That is not an allowed format.'));
             $errors = true;
         }
 
         if ($transform->mode === 'letterbox') {
-            $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
+            $transform->fill = $transform->fill ? ColorRule::normalizeColor($transform->fill) : 'transparent';
         }
 
         if (!$errors) {
@@ -198,7 +199,7 @@ class ImageTransformsController extends Controller
 
         return $this->asModelSuccess(
             $transform,
-            Craft::t('app', 'Transform saved.'),
+            t('Transform saved.'),
         );
     }
 

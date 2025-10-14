@@ -19,6 +19,7 @@ use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use yii\base\Event;
 use yii\base\Model;
+use function CraftCms\Cms\t;
 
 /**
  * Class MailerHelper
@@ -146,10 +147,10 @@ class MailerHelper
     {
         $transportType = $transportAdapter ? get_class($transportAdapter) : App::mailSettings()->transportType;
         $settings = [
-            Craft::t('app', 'From') => self::_emailList($mailer->from),
-            Craft::t('app', 'Reply To') => self::_emailList($mailer->replyTo),
-            Craft::t('app', 'Template') => $mailer->template,
-            Craft::t('app', 'Transport Type') => $transportType,
+            t('From') => self::_emailList($mailer->from),
+            t('Reply To') => self::_emailList($mailer->replyTo),
+            t('Template') => $mailer->template,
+            t('Transport Type') => $transportType,
         ];
 
         $transportSettings = [];

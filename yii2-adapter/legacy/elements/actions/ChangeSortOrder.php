@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Updates the sort order for the selected elements
@@ -38,7 +39,7 @@ class ChangeSortOrder extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Move to page…');
+        return t('Move to page…');
     }
 
     /**
@@ -82,7 +83,7 @@ class ChangeSortOrder extends ElementAction
         moveToPage(selectedItems, elementIndex, page, button, hud);
       });
     },
-  });
+  })
 
   async function moveToPage(selectedItems, elementIndex, page, button, hud) {
     button.addClass('loading');
@@ -91,7 +92,7 @@ class ChangeSortOrder extends ElementAction
     const data = Object.assign($params, {
       elementIds: elementIndex.getSelectedElementIds(),
       offset: (page - 1) * elementIndex.settings.batchSize,
-    });
+    })
 
     // swap out the ownerId with the new draft ownerId
     const elementEditor = elementIndex.\$container.closest('form').data('elementEditor');

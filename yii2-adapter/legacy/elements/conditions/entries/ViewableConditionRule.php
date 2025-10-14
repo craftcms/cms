@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use function CraftCms\Cms\t;
 
 /**
  * Entry viewable condition rule.
@@ -23,7 +24,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Viewable');
+        return t('Viewable');
     }
 
     /**
