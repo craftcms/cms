@@ -7,6 +7,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
@@ -3050,6 +3051,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
+     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
      */
     public ?string $timezone = null;
 
@@ -6739,10 +6742,15 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
      * @see $timezone
      */
     public function timezone(?string $value): self
     {
+        Config::set('app.timezone', $value);
+
+        Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
+
         $this->timezone = $value;
 
         return $this;

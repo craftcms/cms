@@ -199,8 +199,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function setTimezone(): void
     {
-        $timezone = app(GeneralConfig::class)->timezone
-            ?? app(ProjectConfig::class)->get('system.timeZone')
+        $timezone = app(ProjectConfig::class)->get('system.timeZone')
             ?? $this->app['config']->get('app.timezone')
             ?? 'UTC';
 
