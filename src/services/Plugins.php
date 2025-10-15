@@ -1165,8 +1165,14 @@ class Plugins extends Component
      */
     public function getPluginLicenseKey(string $handle): ?string
     {
-        $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
+        $licenseKey = App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+
+        // Is it set to a nonexistent environment variable?
+        if (is_string($licenseKey) && preg_match('/^\$\w+$/', $licenseKey)) {
+            return null;
+        }
+
+        return $this->normalizePluginLicenseKey($licenseKey);
     }
 
     /**
@@ -1190,7 +1196,7 @@ class Plugins extends Component
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            App::env($matches[1]) === '' &&
+            in_array(App::env($matches[1]), ['', null], true) &&
             file_exists(Craft::$app->getConfig()->getDotEnvPath())
         ) {
             Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
