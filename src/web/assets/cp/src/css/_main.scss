@@ -3117,12 +3117,6 @@ table {
 
   // data tables
   &.data {
-    --primary-checkbox-focus-ring: var(--focus-ring);
-
-    .sel {
-      --primary-checkbox-focus-ring: var(--focus-ring-light);
-    }
-
     th,
     td {
       position: relative;
@@ -3140,10 +3134,6 @@ table {
         div.checkbox {
           position: absolute;
           inset-block-start: calc(50% - 8rem / 16);
-        }
-
-        div.checkbox:focus {
-          box-shadow: var(--primary-checkbox-focus-ring);
         }
       }
     }
@@ -8424,7 +8414,7 @@ div.checkbox.indeterminate::before {
 }
 
 input.checkbox:focus-visible + label::before,
-:focus-visible div.checkbox::before {
+div.checkbox:focus-visible > ::before {
   @include mixins.input-focused-styles;
 }
 
