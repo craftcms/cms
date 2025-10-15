@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Fixed a bug where plugin license keys were getting generated for environments that didn’t allow admin changes, which could result in an error that prevented the Plugin Store from loading. ([#17942](https://github.com/craftcms/cms/issues/17942))
 
 ## 4.16.14 - 2025-10-06
 
