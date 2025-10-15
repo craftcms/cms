@@ -5,7 +5,10 @@ namespace CraftCms\Cms\Site\Data;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Unique;
@@ -15,6 +18,7 @@ use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 final class SiteGroup extends Dto
 {
     public function __construct(
+        #[Exists(Table::SITEGROUPS, 'id')]
         public ?int $id = null,
 
         #[Max(255)]
@@ -72,5 +76,21 @@ final class SiteGroup extends Dto
             'uid' => $this->uid,
             'name' => $this->getName(),
         ];
+    }
+
+    /**
+     * We override the way errors are returned as the frontend does
+     * not accept errors in Laravel's format at this time.
+     *
+     * @todo: Update frontend
+     */
+    public static function validate(array|Arrayable $payload): Arrayable|array
+    {
+        try {
+            return parent::validate($payload);
+        } catch (ValidationException $e) {
+            $errors = array_values(array_map(fn ($errors) => reset($errors), $e->errors()));
+            throw ValidationException::withMessages($errors);
+        }
     }
 }

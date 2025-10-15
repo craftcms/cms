@@ -4,11 +4,13 @@ namespace CraftCms\Cms\Site\Models;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Site extends BaseModel
 {
+    use HasUid;
     use SoftDeletes;
 
     protected $table = Table::SITES;

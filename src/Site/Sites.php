@@ -413,7 +413,7 @@ final class Sites
             throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
         }
 
-        $primarySite = empty($this->allSitesById) ? null : $this->getPrimarySite();
+        $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
         if (Event::hasListeners(SavingSite::class)) {
             Event::dispatch(new SavingSite(

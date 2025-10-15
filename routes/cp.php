@@ -7,9 +7,11 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
+use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 
 /**
  * Admin requests that do not require a login
@@ -40,6 +42,9 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
 
         Route::get('settings/general', [GeneralSettingsController::class, 'index']);
+        Route::get('settings/sites', [SitesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
+        Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
 
         Route::get('settings/plugins', [PluginsController::class, 'index']);
         Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);

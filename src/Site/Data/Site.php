@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Site\Data;
 
-use craft\validators\HandleValidator;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Models\Info;
@@ -17,6 +16,7 @@ use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rules\Unique;
 use RuntimeException;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -44,14 +44,18 @@ final class Site extends Dto implements Chippable, Stringable
         #[Rule(new LanguageRule(false))]
         string $language,
 
+        #[MapInputName('siteId')]
         public ?int $id = null,
 
+        #[MapInputName('group')]
         public ?int $groupId = null,
 
         #[Url]
         ?string $baseUrl = null,
 
-        public bool $primary = false,
+        public ?bool $primary = false {
+            get => (bool) $this->primary;
+        },
 
         public bool $hasUrls = true,
 
@@ -59,10 +63,10 @@ final class Site extends Dto implements Chippable, Stringable
 
         public ?string $uid = null,
 
-        #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s', type: Carbon::class)]
+        #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateCreated = null,
 
-        #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s', type: Carbon::class)]
+        #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateUpdated = null,
 
         private bool|string $enabled = true,
@@ -83,13 +87,13 @@ final class Site extends Dto implements Chippable, Stringable
             'handle' => array_filter([
                 'required',
                 'string',
-                new HandleValidator(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id']) : null,
+                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
+                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null) : null,
             ]),
             'name' => array_filter([
                 'required',
                 'string',
-                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id']) : null,
+                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null) : null,
             ]),
         ];
     }

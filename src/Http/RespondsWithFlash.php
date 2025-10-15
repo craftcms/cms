@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Http;
 use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,24 +44,26 @@ trait RespondsWithFlash
     }
 
     public function asModelFailure(
-        ValidatableComponentInterface $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
     ): Response {
         $modelName ??= 'model';
-        $data += [
+        $data += array_filter([
             'modelName' => $modelName,
             'modelClass' => get_class($model),
             $modelName => Arr::toArray($model),
-            'errors' => $model->getErrors(),
-        ];
+            'errors' => method_exists($model, 'getErrors')
+                ? $model->getErrors()
+                : null,
+        ]);
 
         return $this->asFailure($message, $data);
     }
 
     public function asModelSuccess(
-        ValidatableComponentInterface $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

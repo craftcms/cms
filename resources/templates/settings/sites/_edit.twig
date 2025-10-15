@@ -33,7 +33,7 @@
         id: 'group',
         name: 'group',
         options: groupOptions,
-        value: groupId,
+        value: old('groupId', groupId),
         disabled: readOnly,
     }) }}
 
@@ -44,7 +44,7 @@
             instructions: "What this site will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
-            value: site.getName(false),
+            value: old('name', site.getName(false)),
             suggestEnvVars: true,
             errors: errors.get('name'),
             autofocus: true,
@@ -60,7 +60,7 @@
             class: 'code',
             autocorrect: false,
             autocapitalize: false,
-            value: site.handle,
+            value: old('handle', site.handle),
             errors: errors.get('handle'),
             required: true,
             disabled: readOnly,
@@ -71,7 +71,7 @@
             instructions: "The language content in this site will use."|t('app'),
             id: 'language',
             name: 'language',
-            value: site.getLanguage(false),
+            value: old('language', site.getLanguage(false)),
             options: craft.cp.getLanguageOptions(true),
             errors: errors.get('language'),
             includeEnvVars: true,
@@ -86,7 +86,7 @@
                 yesLabel: 'Enabled'|t('app'),
                 noLabel: 'Disabled'|t('app'),
                 includeEnvVars: true,
-                value: site.getEnabled(false),
+                value: old('enabled', site.getEnabled(false)),
                 disabled: site.primary,
                 tip: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
                 disabled: readOnly,
@@ -99,7 +99,7 @@
                 instructions: "The primary site will be loaded by default on the front end."|t('app'),
                 id: 'primary',
                 name: 'primary',
-                on: site.primary,
+                on: old('primary', site.primary),
                 disabled: readOnly,
             }) }}
         {% else %}
@@ -112,7 +112,7 @@
             label: "This site has its own base URL"|t('app'),
             id: 'has-urls',
             name: 'hasUrls',
-            on: site.hasUrls,
+            on: old('hasUrls', site.hasUrls),
             toggle: 'url-settings',
             disabled: readOnly,
         }) }}
@@ -126,7 +126,7 @@
                 suggestEnvVars: true,
                 suggestAliases: true,
                 name: 'baseUrl',
-                value: site.getBaseUrl(false),
+                value: old('baseUrl', site.getBaseUrl(false)),
                 errors: errors.get('baseUrl'),
                 disabled: readOnly,
             }) }}

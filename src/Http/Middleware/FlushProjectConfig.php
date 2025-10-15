@@ -3,21 +3,19 @@
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use craft\web\Application;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Http\Request;
 
 final readonly class FlushProjectConfig
 {
     public function __construct(
-        #[Give('Craft')] private Application $craft,
         private ProjectConfig $projectConfig,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $this->craft->getIsInstalled()) {
+        if (! Info::isInstalled()) {
             return $next($request);
         }
 

@@ -1434,6 +1434,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [Env::class, 'get']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
+            new TwigFunction('old', [$this, 'oldFunction']),
             new TwigFunction('parseEnv', [Env::class, 'parse']),
             new TwigFunction('parseBooleanEnv', [Env::class, 'parseBoolean']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
@@ -1640,6 +1641,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Gets old input from the session
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public function oldFunction(?string $key = null, mixed $default = null): mixed
+    {
+        return Session::getOldInput($key, $default);
+    }
+
+    /**
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
@@ -1792,7 +1806,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'app' => $variable,
             'craft' => $variable,
-            'errors' => Session::get('errors') ?: new ViewErrorBag,
+            'errors' => Session::get('errors') ?: new ViewErrorBag(),
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

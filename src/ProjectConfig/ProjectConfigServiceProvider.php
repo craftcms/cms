@@ -12,6 +12,9 @@ use CraftCms\Cms\ProjectConfig\Commands\RemoveCommand;
 use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\ServiceProvider;
 
 final class ProjectConfigServiceProvider extends ServiceProvider
@@ -56,13 +59,13 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
             ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleDeletedTransform'))
             // Site groups
-            ->onAdd(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', $this->proxy('sites', 'handleChangedGroup'))
-            ->onUpdate(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', $this->proxy('sites', 'handleChangedGroup'))
-            ->onRemove(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', $this->proxy('sites', 'handleDeletedGroup'))
+            ->onAdd(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))
+            ->onUpdate(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))
+            ->onRemove(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleDeletedGroup($event))
             // Sites
-            ->onAdd(ProjectConfig::PATH_SITES.'.{uid}', $this->proxy('sites', 'handleChangedSite'))
-            ->onUpdate(ProjectConfig::PATH_SITES.'.{uid}', $this->proxy('sites', 'handleChangedSite'))
-            ->onRemove(ProjectConfig::PATH_SITES.'.{uid}', $this->proxy('sites', 'handleDeletedSite'))
+            ->onAdd(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleChangedSite($event))
+            ->onUpdate(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleChangedSite($event))
+            ->onRemove(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleDeletedSite($event))
             // Tags
             ->onAdd(ProjectConfig::PATH_TAG_GROUPS.'.{uid}', $this->proxy('tags', 'handleChangedTagGroup'))
             ->onUpdate(ProjectConfig::PATH_TAG_GROUPS.'.{uid}', $this->proxy('tags', 'handleChangedTagGroup'))

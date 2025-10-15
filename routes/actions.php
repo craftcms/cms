@@ -16,6 +16,8 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -150,6 +152,18 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+        });
+
+        // Sites & Site Groups
+        Route::middleware([
+            RequireAdmin::class,
+        ])->group(function () {
+            Route::post('sites/rename-group-field', [SiteGroupsController::class, 'showGroupRenameField']);
+            Route::post('sites/save-group', [SiteGroupsController::class, 'store']);
+            Route::post('sites/delete-group', [SiteGroupsController::class, 'destroy']);
+            Route::post('sites/save-site', [SitesController::class, 'store']);
+            Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
+            Route::post('sites/delete-site', [SitesController::class, 'destroy']);
         });
 
         // SystemMessages
