@@ -12,7 +12,10 @@ use craft\base\Model;
 use craft\validators\SingleSectionUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -108,7 +111,7 @@ class Section_SiteSettings extends Model
             throw new InvalidConfigException('Section site settings model is missing its site ID');
         }
 
-        if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
+        if (($site = Sites::getSiteById($this->siteId)) === null) {
             throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 

@@ -81,6 +81,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -1438,7 +1439,7 @@ class Gql extends Component
 
         try {
             $cacheKey = self::CACHE_TAG .
-                '::' . Craft::$app->getSites()->getCurrentSite()->id .
+                '::' . Sites::getCurrentSite()->id .
                 '::' . $schema->uid .
                 '::' . md5($query) .
                 '::' . serialize($rootValue) .
@@ -1596,13 +1597,13 @@ class Gql extends Component
      */
     private function siteSchemaComponents(): array
     {
-        $sites = Craft::$app->getSites()->getAllSites(true);
+        $sites = Sites::getAllSites(true);
         $queryComponents = [];
 
         foreach ($sites as $site) {
             $queryComponents["sites.{$site->uid}:read"] = [
                 'label' => t('Query for elements in the “{site}” site', [
-                    'site' => $site->name,
+                    'site' => $site->getName(),
                 ]),
             ];
         }

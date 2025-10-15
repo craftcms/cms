@@ -7,7 +7,7 @@
 
 namespace craft\validators;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 
@@ -32,7 +32,7 @@ class SiteIdValidator extends Validator
     {
         $siteId = $model->$attribute;
 
-        if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds($this->allowDisabled), false)) {
+        if ($siteId && !Sites::getAllSiteIds($this->allowDisabled)->contains($siteId)) {
             $message = t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
             $this->addError($model, $attribute, $message);
         }

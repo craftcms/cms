@@ -50,6 +50,7 @@ use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -513,7 +514,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
 
         if (! $owner) {
-            return [Craft::$app->getSites()->getPrimarySite()->id];
+            return [Sites::getPrimarySite()->id];
         }
 
         return $this->entryManager()->getSupportedSiteIds($owner);
@@ -1509,7 +1510,7 @@ JS;
             } else {
                 $resaveSiteIds = [];
 
-                foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+                foreach (Sites::getAllSites(true) as $site) {
                     $oldUriFormat = $this->oldSettings['siteSettings'][$site->uid]['uriFormat'] ?? null;
                     $newUriFormat = $this->siteSettings[$site->uid]['uriFormat'] ?? null;
                     if ($oldUriFormat !== $newUriFormat) {

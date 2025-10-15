@@ -14,6 +14,7 @@ use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use Throwable;
@@ -305,7 +306,7 @@ class AuthController extends Controller
 
         $systemName = t(Craft::$app->getSystemName(), category: 'site');
         $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
-        $primarySite = Craft::$app->getSites()->getPrimarySite();
+        $primarySite = Sites::getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
         $user = Craft::$app->getUser()->getIdentity();
         $generalConfig = app(GeneralConfig::class);

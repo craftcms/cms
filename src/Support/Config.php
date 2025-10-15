@@ -3,6 +3,7 @@
 namespace CraftCms\Cms\Support;
 
 use Carbon\CarbonInterval;
+use CraftCms\Cms\Support\Facades\Sites;
 use DateInterval;
 
 final class Config
@@ -56,7 +57,7 @@ final class Config
 
         if ($siteHandle === null) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $siteHandle = \Craft::$app->getSites()->getCurrentSite()->handle;
+            $siteHandle = Sites::getCurrentSite()->handle;
         }
 
         if (is_callable($value, true)) {

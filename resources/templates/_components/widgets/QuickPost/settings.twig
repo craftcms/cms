@@ -2,7 +2,7 @@
 
 {% if sections %}
     {% if craft.app.getIsMultiSite() %}
-        {% set editableSites = craft.app.sites.getEditableSites() %}
+        {% set editableSites = craft.sites.getEditableSites() %}
 
         {% if editableSites|length > 1 %}
             {% set siteInput %}

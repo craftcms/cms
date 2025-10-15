@@ -9,6 +9,7 @@ use craft\services\Dashboard;
 use craft\services\Fields;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
+use craft\services\Sites;
 use craft\services\SystemMessages;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
@@ -352,6 +353,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         ProjectConfig::registerEvents();
+        Sites::registerEvents();
         SystemMessages::registerEvents();
 
         /**

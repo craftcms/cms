@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
 use craft\elements\Category as CategoryElement;
+use CraftCms\Cms\Support\Facades\Sites;
 
 /**
  * Category link type.
@@ -19,7 +20,7 @@ final class Category extends BaseElementLinkType
     {
         $sources = [];
         $groups = Craft::$app->getCategories()->getAllGroups();
-        $sites = Craft::$app->getSites()->getAllSites();
+        $sites = Sites::getAllSites();
 
         foreach ($groups as $group) {
             $siteSettings = $group->getSiteSettings();

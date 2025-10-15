@@ -31,6 +31,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         app()->setLocale('en-US');
+        Config::set('app.timezone', 'America/Los_Angeles');
 
         Edition::set(Edition::Solo);
 

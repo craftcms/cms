@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Craft;
 use craft\elements\User;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Facades\Sites;
 use crafttests\fixtures\SitesFixture;
 use UnitTester;
 
@@ -118,7 +119,7 @@ class SitesTest extends TestCase
      */
     public function testGetSiteByHandle(bool $expectedNotEmpty, string $handle): void
     {
-        $sites = Craft::$app->getSites()->getSiteByHandle($handle);
+        $sites = Sites::getSiteByHandle($handle);
         self::assertEquals($expectedNotEmpty, !empty($sites));
     }
 

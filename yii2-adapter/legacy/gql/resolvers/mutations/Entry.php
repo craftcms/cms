@@ -19,6 +19,7 @@ use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
 use craft\models\Section;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Support\Facades\Sites;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -254,7 +255,7 @@ class Entry extends ElementMutationResolver
 
         if ($canIdentify) {
             // Prepare the element query
-            $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
+            $siteId = $arguments['siteId'] ?? Sites::getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
             $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);

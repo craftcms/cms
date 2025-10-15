@@ -10,20 +10,21 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
-use craft\errors\SiteNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use DateTimeZone;
 use Throwable;
@@ -342,27 +343,26 @@ class GraphqlController extends Controller
      */
     private function _enforceSiteAccess(GqlSchema $schema): void
     {
-        $sitesService = Craft::$app->getSites();
         $allowedSites = GqlHelper::getAllowedSites($schema);
         $allowedSiteIds = array_flip(array_map(fn(Site $site) => $site->id, $allowedSites));
 
         // check if schema has access to the current site
-        $currentSite = $sitesService->getCurrentSite();
+        $currentSite = Sites::getCurrentSite();
         if (isset($allowedSiteIds[$currentSite->id])) {
             return;
         }
 
         // if not, check if it has access to the primary site (if different from the current site)
-        $primarySite = $sitesService->getPrimarySite();
+        $primarySite = Sites::getPrimarySite();
         if ($currentSite->id !== $primarySite->id && isset($allowedSiteIds[$primarySite->id])) {
-            $sitesService->setCurrentSite($primarySite);
+            Sites::setCurrentSite($primarySite);
             return;
         }
 
         // otherwise, loop through all sites until we find one that the token has access to
-        foreach ($sitesService->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             if (isset($allowedSiteIds[$site->id])) {
-                $sitesService->setCurrentSite($site);
+                Sites::setCurrentSite($site);
                 return;
             }
         }

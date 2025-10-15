@@ -14,6 +14,7 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use function CraftCms\Cms\t;
@@ -794,7 +795,7 @@ abstract class BaseField extends FieldLayoutElement
         // If there’s only one site, go with its language
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
-            $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
+            $locale = Sites::getPrimarySite()->getLocale();
         } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
             $locale = I18N::getLocale();

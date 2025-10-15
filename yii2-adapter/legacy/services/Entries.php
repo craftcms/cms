@@ -27,7 +27,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
@@ -42,8 +41,10 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -828,7 +829,7 @@ class Entries extends Component
                         'criteria' => [
                             'sectionId' => $sectionRecord->id,
                             'siteId' => array_values($siteIdMap),
-                            'preferSites' => [Craft::$app->getSites()->getPrimarySite()->id],
+                            'preferSites' => [Sites::getPrimarySite()->id],
                             'unique' => true,
                             'status' => null,
                             'drafts' => null,
@@ -947,10 +948,9 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $siteIds = Collection::make(Craft::$app->getSites()->getAllSites())
-            // Only include it if it's one of this section's sites
+        $siteIds = \CraftCms\Cms\Support\Facades\Sites::getAllSites()
             ->filter(fn(Site $site) => isset($siteSettings[$site->uid]))
-            ->map(fn(Site $site) => $site->id)
+            ->pluck('id')
             ->values()
             ->all();
 
@@ -2066,7 +2066,7 @@ class Entries extends Component
     public function getSingleEntriesByHandle(array $handles): array
     {
         $entries = [];
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId = Sites::getCurrentSite()->id;
         $missingEntries = [];
 
         if (!isset($this->_singleEntries[$siteId])) {

@@ -69,7 +69,7 @@
                 <div class="uri-container">
                     {%- apply spaceless %}
                         {% if craft.app.getIsMultiSite() %}
-                            <span class="site">{{ route.siteUid ? craft.app.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
+                            <span class="site">{{ route.siteUid ? craft.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
                         {% endif %}
                         <span class="uri">{{ route.uriDisplayHtml|raw }}</span>
                     {% endapply -%}

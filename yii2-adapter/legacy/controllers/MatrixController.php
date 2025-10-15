@@ -16,6 +16,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -100,7 +101,7 @@ class MatrixController extends Controller
             throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
         }
 
-        $site = Craft::$app->getSites()->getSiteById($siteId, true);
+        $site = Sites::getSiteById($siteId, true);
         if (!$site) {
             throw new BadRequestHttpException("Invalid site ID: $siteId");
         }

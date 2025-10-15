@@ -46,7 +46,7 @@ final class SiteGroups
     {
         return $this->groups ??= new MemoizableArray(
             $this->createGroupQuery()->get()->all(),
-            fn (object $result) => SiteGroup::from($result),
+            fn (object $result) => new SiteGroup(...(array) $result),
         );
     }
 
@@ -72,7 +72,6 @@ final class SiteGroups
 
     /**
      * @param  SiteGroup  $group  The site group to be saved
-     * @param  bool  $runValidation  Whether the group should be validated
      * @return bool Whether the site group was saved successfully
      */
     public function saveGroup(SiteGroup $group): bool
@@ -182,7 +181,7 @@ final class SiteGroups
      */
     public function deleteGroup(SiteGroup $group): bool
     {
-        if (Sites::getSitesByGroupId($group->id)) {
+        if (Sites::getSitesByGroupId($group->id)->isNotEmpty()) {
             Log::warning('Attempted to delete a site group that still had sites assigned to it.', [__METHOD__]);
 
             return false;

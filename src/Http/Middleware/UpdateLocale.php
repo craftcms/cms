@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Auth\AuthManager;
@@ -39,7 +40,7 @@ final readonly class UpdateLocale
         }
 
         if (! $request->isCpRequest()) {
-            return \Craft::$app->getSites()->getCurrentSite()->language;
+            return Sites::getCurrentSite()->getLanguage();
         }
 
         /** @var ?\CraftCms\Cms\User\Models\User $user */

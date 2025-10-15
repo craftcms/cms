@@ -11,12 +11,13 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\models\Site;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -158,7 +159,7 @@ class ElementRelationParamParser extends BaseObject
                 if ($relCriteria['sourceSite'] instanceof Site) {
                     $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
                 } else {
-                    $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                    $site = Sites::getSiteByHandle($relCriteria['sourceSite']);
                     if (!$site) {
                         // Invalid handle
                         throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");

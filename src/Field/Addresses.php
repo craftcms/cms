@@ -32,6 +32,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
@@ -243,7 +244,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
 
         if (! $owner) {
-            return [Craft::$app->getSites()->getPrimarySite()->id];
+            return [Sites::getPrimarySite()->id];
         }
 
         return $this->addressManager()->getSupportedSiteIds($owner);

@@ -8,8 +8,9 @@
 namespace craft\filters;
 
 use Craft;
-use craft\models\Site;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -55,14 +56,16 @@ trait SiteFilterTrait
     private function getSiteId(int|string|Site $value): int
     {
         if (is_string($value)) {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            $site = Sites::getSiteByHandle($value);
 
             if ($site === null) {
                 throw new InvalidArgumentException("Invalid site handle: $value");
             }
 
             return $site->id;
-        } elseif ($value instanceof Site) {
+        }
+
+        if ($value instanceof Site) {
             return $value->id;
         }
 
@@ -75,6 +78,6 @@ trait SiteFilterTrait
             return false;
         }
 
-        return $this->siteIds === null || in_array(Craft::$app->getSites()->getCurrentSite()->id, $this->siteIds, true);
+        return $this->siteIds === null || in_array(Sites::getCurrentSite()->id, $this->siteIds, true);
     }
 }

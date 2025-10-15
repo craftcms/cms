@@ -2,9 +2,9 @@
 
 namespace CraftCms\Cms\Site\Data;
 
-use craft\models\Site;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -14,14 +14,16 @@ use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 
 final class SiteGroup extends Dto
 {
-    public ?int $id = null;
+    public function __construct(
+        public ?int $id = null,
 
-    #[Max(255)]
-    public ?string $uid = null;
+        #[Max(255)]
+        public ?string $uid = null,
 
-    #[Required]
-    #[Unique(Table::SITEGROUPS, 'name', ignore: new RouteParameterReference('id', nullable: true))]
-    public string $name = '';
+        #[Required]
+        #[Unique(Table::SITEGROUPS, 'name', ignore: new RouteParameterReference('id', nullable: true))]
+        public string $name = '',
+    ) {}
 
     public function getName(bool $parse = true): string
     {
@@ -40,7 +42,7 @@ final class SiteGroup extends Dto
      */
     public function getSites(): Collection
     {
-        return collect(\Craft::$app->getSites()->getSitesByGroupId($this->id));
+        return Sites::getSitesByGroupId($this->id);
     }
 
     /**

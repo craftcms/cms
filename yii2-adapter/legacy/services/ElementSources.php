@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\FieldNotFoundException;
-use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
@@ -23,7 +22,9 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
@@ -138,12 +139,10 @@ class ElementSources extends Component
         // Normalize the site IDs
         foreach ($sources as &$source) {
             if (isset($source['sites'])) {
-                $sitesService = null;
-                $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
+                $source['sites'] = array_filter(array_map(function(int|string $siteId): ?int {
                     if (is_string($siteId) && Str::isUuid($siteId)) {
-                        $sitesService ??= Craft::$app->getSites();
                         try {
-                            return $sitesService->getSiteByUid($siteId)->id;
+                            return Sites::getSiteByUid($siteId)->id;
                         } catch (SiteNotFoundException) {
                             return null;
                         }

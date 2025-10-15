@@ -28,6 +28,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
@@ -598,7 +599,7 @@ class Search extends Component
 
         // Clean 'em up
         $site = $element->getSite();
-        $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->language);
+        $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->getLanguage());
 
         // Fire a 'beforeIndexKeywords' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
@@ -974,9 +975,9 @@ class Search extends Component
 
         if (!array_key_exists($term, $terms)) {
             if ($siteId && !is_array($siteId)) {
-                $site = Craft::$app->getSites()->getSiteById($siteId);
+                $site = Sites::getSiteById($siteId);
             }
-            $terms[$term] = SearchHelper::normalizeKeywords($term, [], true, $site->language ?? null);
+            $terms[$term] = SearchHelper::normalizeKeywords($term, [], true, isset($site) ? $site->getLanguage() : null);
         }
 
         return $terms[$term];

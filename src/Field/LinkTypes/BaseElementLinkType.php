@@ -5,10 +5,11 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\errors\SiteNotFoundException;
 use craft\helpers\Cp;
 use craft\services\ElementSources;
 use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -265,7 +266,7 @@ JS, [
             $value = sprintf('{%s:%s@%s:url}',
                 static::elementType()::refHandle(),
                 $value,
-                Craft::$app->getSites()->getCurrentSite()->id,
+                Sites::getCurrentSite()->id,
             );
         }
 
@@ -301,7 +302,7 @@ JS, [
             $query
                 ->site('*')
                 ->unique()
-                ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+                ->preferSites([Sites::getCurrentSite()->id]);
         }
 
         return $query;

@@ -144,7 +144,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
-                'label' => t($behavior->site->name, category: 'site'),
+                'label' => t($behavior->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => !empty($behavior->selectableSites)

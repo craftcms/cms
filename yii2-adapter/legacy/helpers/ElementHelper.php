@@ -23,6 +23,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
@@ -315,7 +316,7 @@ class ElementHelper
         bool $withUnpropagatedSites = false,
     ): array {
         $sites = [];
-        $siteUidMap = Arr::pluck(Craft::$app->getSites()->getAllSites(true), 'uid', 'id');
+        $siteUidMap = Sites::getAllSites(true)->pluck('uid', 'id');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
@@ -364,7 +365,7 @@ class ElementHelper
         $propagatedSiteIds = array_map(fn($site) => $site['siteId'], $propagatedSites);
 
         if ($editableOnly) {
-            $propagatedSiteIds = array_intersect($propagatedSiteIds, Craft::$app->getSites()->getEditableSiteIds());
+            $propagatedSiteIds = array_intersect($propagatedSiteIds, Sites::getEditableSiteIds()->all());
         }
 
         if (!$element->enabled || !$element->id) {
@@ -453,7 +454,7 @@ class ElementHelper
                     }
                 }
             } else {
-                $siteIds[] = Craft::$app->getSites()->getPrimarySite()->id;
+                $siteIds[] = Sites::getPrimarySite()->id;
             }
         }
 
@@ -785,7 +786,7 @@ class ElementHelper
             case Field::TRANSLATION_METHOD_SITE_GROUP:
                 return (string)$element->getSite()->groupId;
             case Field::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
+                return $element->getSite()->getLanguage();
             default:
                 // Translate for each site if a translation key format wasn’t specified
                 if ($translationKeyFormat === null) {

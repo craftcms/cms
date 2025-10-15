@@ -33,6 +33,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -341,9 +342,8 @@ class ResaveController extends Controller
         if (isset($this->propagateTo)) {
             $siteHandles = str($this->propagateTo)->explode(',')->filter()->all();
             $this->propagateTo = [];
-            $sitesService = Craft::$app->getSites();
             foreach ($siteHandles as $siteHandle) {
-                $site = $sitesService->getSiteByHandle($siteHandle, true);
+                $site = Sites::getSiteByHandle($siteHandle, true);
                 if (!$site) {
                     $this->stderr("Invalid site handle: $siteHandle" . PHP_EOL, Console::FG_RED);
                     return false;

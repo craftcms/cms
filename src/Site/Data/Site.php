@@ -33,13 +33,9 @@ final class Site extends Dto implements Chippable, Stringable
 
     private ?string $baseUrl;
 
-    private ?string $language;
+    private string $language;
 
     public function __construct(
-        public ?int $id,
-
-        public ?int $groupId,
-
         string $name,
 
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
@@ -47,6 +43,10 @@ final class Site extends Dto implements Chippable, Stringable
 
         #[Rule(new LanguageRule(false))]
         string $language,
+
+        public ?int $id = null,
+
+        public ?int $groupId = null,
 
         #[Url]
         ?string $baseUrl = null,

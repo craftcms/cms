@@ -50,6 +50,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
@@ -1701,7 +1702,7 @@ JS);
 
             // keep track of which site they registered from
             // (do this even if it's not a multi-site install, in case it becomes one later.)
-            $user->affiliatedSiteId = Craft::$app->getSites()->getCurrentSite()->id;
+            $user->affiliatedSiteId = Sites::getCurrentSite()->id;
         }
 
         // If this is Craft Pro, grab any profile content from post

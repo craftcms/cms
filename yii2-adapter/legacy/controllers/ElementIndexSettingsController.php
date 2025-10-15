@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use yii\web\Response;
 use function CraftCms\Cms\t;
@@ -149,9 +150,8 @@ class ElementIndexSettingsController extends BaseElementsController
                 }
 
                 if (isset($source['sites'])) {
-                    $sitesService = Craft::$app->getSites();
                     $source['sites'] = array_values(array_filter(array_map(
-                        fn(int $siteId) => $sitesService->getSiteById($siteId)?->uid,
+                        fn(int $siteId) => Sites::getSiteById($siteId)?->uid,
                         $source['sites'] ?: [],
                     )));
                 }

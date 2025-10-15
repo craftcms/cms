@@ -10,7 +10,6 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\helpers\MailerHelper;
-use craft\models\Site;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**

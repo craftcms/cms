@@ -33,6 +33,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
@@ -253,7 +254,7 @@ final class Sites
         // Update the app language if this is a site request
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (! request()->isCpRequest()) {
-            app()->setLocale($this->currentSite->language);
+            app()->setLocale($this->currentSite->getLanguage());
         }
 
         // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
@@ -299,9 +300,7 @@ final class Sites
 
         $userSession = \Craft::$app->getUser();
 
-        return $this->editableSiteIds = $this->getAllSites(true)->filter(function (Site $site) use ($userSession) {
-            return $userSession->checkPermission("editSite:$site->uid");
-        })->pluck('id')->values();
+        return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $userSession->checkPermission("editSite:$site->uid"))->pluck('id')->values();
     }
 
     /**
@@ -402,7 +401,6 @@ final class Sites
      * Saves a site.
      *
      * @param  Site  $site  The site to be saved
-     * @param  bool  $runValidation  Whether the site should be validated
      *
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws Throwable if reasons
@@ -884,7 +882,11 @@ final class Sites
         }
 
         foreach ($results as $result) {
-            $site = Site::from($result);
+            $result = (array) $result;
+            $result['dateCreated'] = Date::parse($result['dateCreated']);
+            $result['dateUpdated'] = Date::parse($result['dateUpdated']);
+
+            $site = new Site(...$result);
             $this->allSitesById[$site->id] = $site;
 
             if ($site->getEnabled()) {

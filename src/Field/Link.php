@@ -31,6 +31,7 @@ use CraftCms\Cms\Field\LinkTypes\Phone;
 use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
@@ -849,7 +850,7 @@ JS;
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $url = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? 'https://craftcms.com/';
+            $url = Sites::getPrimarySite()->getBaseUrl() ?? 'https://craftcms.com/';
             $value = new LinkData($url, new UrlType);
         }
 

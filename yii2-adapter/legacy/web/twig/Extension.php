@@ -63,6 +63,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -75,7 +76,9 @@ use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Stringable;
+use Illuminate\Support\ViewErrorBag;
 use IteratorAggregate;
 use Money\Money;
 use Throwable;
@@ -1763,9 +1766,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $updates = app(Updates::class);
 
         if ($isInstalled && !$updates->isCraftUpdatePending()) {
-            $sitesService = Craft::$app->getSites();
-            $currentSite = $sitesService->getCurrentSite();
-            $primarySite = $sitesService->getPrimarySite();
+            $currentSite = Sites::getCurrentSite();
+            $primarySite = Sites::getPrimarySite();
 
             $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -1790,6 +1792,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'app' => $variable,
             'craft' => $variable,
+            'errors' => Session::get('errors') ?: new ViewErrorBag,
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

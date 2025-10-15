@@ -71,7 +71,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
@@ -90,10 +89,12 @@ use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
@@ -2031,7 +2032,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $sourceSiteId = $sourceElements[0]->siteId;
         $otherSiteIds = [];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             if ($site->id != $sourceSiteId) {
                 $otherSiteIds[] = $site->id;
             }
@@ -2711,7 +2712,7 @@ abstract class Element extends Component implements ElementInterface
         parent::init();
 
         if (!isset($this->siteId) && Craft::$app->getIsInstalled()) {
-            $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+            $this->siteId = Sites::getPrimarySite()->id;
         }
 
         if (static::hasTitles()) {
@@ -2954,7 +2955,7 @@ abstract class Element extends Component implements ElementInterface
 
         if (static::hasUris()) {
             try {
-                $language = $this->getSite()->language;
+                $language = $this->getSite()->getLanguage();
             } catch (InvalidConfigException) {
                 $language = null;
             }
@@ -3394,10 +3395,10 @@ abstract class Element extends Component implements ElementInterface
     public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
-            return Craft::$app->getSites()->getAllSiteIds();
+            return Sites::getAllSiteIds()->all();
         }
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        return [Sites::getPrimarySite()->id];
     }
 
     /**
@@ -6246,7 +6247,7 @@ JS, [
     protected function statusFieldHtml(): string
     {
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);
-        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $allEditableSiteIds = Sites::getEditableSiteIds()->all();
         $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
         $propSiteIds = array_column($propSites, 'siteId');
         $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
@@ -6905,10 +6906,10 @@ JS, [
     public function getSite(): Site
     {
         if (isset($this->siteId)) {
-            $site = Craft::$app->getSites()->getSiteById($this->siteId, true);
+            $site = Sites::getSiteById($this->siteId, true);
         }
 
-        if (empty($site)) {
+        if (!isset($site)) {
             throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
@@ -6921,7 +6922,7 @@ JS, [
      */
     public function getLanguage(): string
     {
-        return $this->getSite()->language;
+        return $this->getSite()->getLanguage();
     }
 
     /**

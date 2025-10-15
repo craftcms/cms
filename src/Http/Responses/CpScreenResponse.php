@@ -5,10 +5,10 @@ namespace CraftCms\Cms\Http\Responses;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\Site;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Responsable;
@@ -775,7 +775,7 @@ final class CpScreenResponse implements Responsable
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
-                'label' => t($this->site->name, category: 'site'),
+                'label' => t($this->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)

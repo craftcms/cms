@@ -8,11 +8,10 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\models\Site;
-use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Data\Site;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
@@ -72,17 +71,18 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo',
-        ]));
+        \CraftCms\Cms\Support\Facades\Sites::setCurrentSite(new Site(
+            name: 'Default',
+            handle: 'default',
+            language: 'en-US',
+            baseUrl: 'http://craft.test',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
         $request = new Request([
             'isCpRequest' => false,
-            'sites' => $sites,
+            'sites' => \CraftCms\Cms\Support\Facades\Sites::getFacadeRoot(),
         ]);
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
@@ -161,17 +161,18 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo/bar',
-        ]));
+        \CraftCms\Cms\Support\Facades\Sites::setCurrentSite(new Site(
+            name: 'Default',
+            handle: 'default',
+            language: 'en-US',
+            baseUrl: 'http://craft.test',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
         $request = new Request([
             'isCpRequest' => false,
-            'sites' => $sites,
+            'sites' => \CraftCms\Cms\Support\Facades\Sites::getFacadeRoot(),
         ]);
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());

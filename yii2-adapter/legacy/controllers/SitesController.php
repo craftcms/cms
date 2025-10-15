@@ -10,12 +10,12 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\Site;
-use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Site\SiteGroups;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -70,16 +70,14 @@ class SitesController extends Controller
      */
     public function actionSettingsIndex(?int $groupId = null): Response
     {
-        $sitesService = Craft::$app->getSites();
-
         if ($groupId) {
-            if (($group = $sitesService->getGroupById($groupId)) === null) {
+            if (($group = SiteGroups::getGroupById($groupId)) === null) {
                 throw new NotFoundHttpException('Invalid site group ID: ' . $groupId);
             }
-            $sites = $sitesService->getSitesByGroupId($groupId);
+            $sites = Sites::getSitesByGroupId($groupId);
         } else {
             $group = null;
-            $sites = $sitesService->getAllSites();
+            $sites = Sites::getAllSites();
         }
 
         $crumbs = [
@@ -152,7 +150,7 @@ class SitesController extends Controller
         $groupId = $this->request->getBodyParam('id');
 
         if ($groupId) {
-            $group = app(SiteGroups::class)->getGroupById($groupId);
+            $group = SiteGroups::getGroupById($groupId);
             if (!$group) {
                 throw new BadRequestHttpException("Invalid site group ID: $groupId");
             }
@@ -166,11 +164,11 @@ class SitesController extends Controller
             $group->validate($this->request->getBodyParams());
         } catch (ValidationException $e) {
             return $this->asFailure(data: [
-                'errors' => array_values(array_map(fn ($errors) => reset($errors), $e->errors())),
+                'errors' => array_values(array_map(fn($errors) => reset($errors), $e->errors())),
             ]);
         }
 
-        app(SiteGroups::class)->saveGroup($group);
+        SiteGroups::saveGroup($group);
 
         $attr = $group->toArray();
         $attr['name'] = t($attr['name'], category: 'site');
@@ -192,7 +190,7 @@ class SitesController extends Controller
 
         $groupId = $this->request->getRequiredBodyParam('id');
 
-        if (!Craft::$app->getSites()->deleteGroupById($groupId)) {
+        if (!SiteGroups::deleteGroupById($groupId)) {
             return $this->asFailure();
         }
 
@@ -206,36 +204,37 @@ class SitesController extends Controller
      * Edit a category group.
      *
      * @param int|null $siteId The site’s ID, if editing an existing site
-     * @param Site|null $siteModel The site being edited, if there were any validation errors
+     * @param Site|null $siteData The site being edited, if there were any validation errors
      * @param int|null $groupId The default group ID that the site should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(?int $siteId = null, ?Site $siteModel = null, ?int $groupId = null): Response
+    public function actionEditSite(?int $siteId = null, ?Site $siteData = null, ?int $groupId = null): Response
     {
         if ($siteId === null && $this->readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
 
-        $sitesService = Craft::$app->getSites();
-
         $brandNewSite = false;
 
         if ($siteId !== null) {
-            if ($siteModel === null) {
-                $siteModel = $sitesService->getSiteById($siteId);
+            if ($siteData === null) {
+                $siteData = Sites::getSiteById($siteId);
 
-                if (!$siteModel) {
+                if (!$siteData) {
                     throw new NotFoundHttpException('Site not found');
                 }
             }
 
-            $title = trim($siteModel->getName()) ?: t('Edit Site');
+            $title = trim($siteData->getName()) ?: t('Edit Site');
         } else {
-            if ($siteModel === null) {
-                $siteModel = new Site();
-                $siteModel->language = $sitesService->getPrimarySite()->language;
+            if ($siteData === null) {
+                $siteData = new Site(
+                    name: '',
+                    handle: '',
+                    language: Sites::getPrimarySite()->getLanguage(false),
+                );
                 $brandNewSite = true;
             }
 
@@ -245,17 +244,17 @@ class SitesController extends Controller
         // Groups
         // ---------------------------------------------------------------------
 
-        $allGroups = $sitesService->getAllGroups();
+        $allGroups = SiteGroups::getAllGroups();
 
-        if (empty($allGroups)) {
+        if ($allGroups->isEmpty()) {
             throw new ServerErrorHttpException('No site groups exist');
         }
 
         if ($groupId === null) {
-            $groupId = $siteModel->groupId ?? $allGroups[0]->id;
+            $groupId = $siteData->groupId ?? $allGroups[0]->id;
         }
 
-        $siteGroup = $sitesService->getGroupById($groupId);
+        $siteGroup = SiteGroups::getGroupById($groupId);
 
         if ($siteGroup === null) {
             throw new NotFoundHttpException('Site group not found');
@@ -289,7 +288,7 @@ class SitesController extends Controller
             'brandNewSite' => $brandNewSite,
             'title' => $title,
             'crumbs' => $crumbs,
-            'site' => $siteModel,
+            'site' => $siteData,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
             'readOnly' => $this->readOnly,
@@ -306,30 +305,33 @@ class SitesController extends Controller
     {
         $this->requirePostRequest();
 
-        $sitesService = Craft::$app->getSites();
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($siteId) {
-            $site = $sitesService->getSiteById($siteId);
+            $site = Sites::getSiteById($siteId);
             if (!$site) {
                 throw new BadRequestHttpException("Invalid site ID: $siteId");
             }
         } else {
-            $site = new Site();
+            $site = new Site(
+                name: '',
+                handle: '',
+                language: Sites::getPrimarySite()->getLanguage(false),
+            );
             $site->id = $this->request->getBodyParam('siteId');
         }
 
         $site->groupId = $this->request->getBodyParam('group');
         $site->setName($this->request->getBodyParam('name'));
         $site->handle = $this->request->getBodyParam('handle');
-        $site->language = $this->request->getBodyParam('language');
+        $site->setLanguage($this->request->getBodyParam('language'));
         $site->primary = (bool)$this->request->getBodyParam('primary');
         $site->setEnabled($site->primary ? true : $this->request->getBodyParam('enabled', true));
         $site->hasUrls = (bool)$this->request->getBodyParam('hasUrls');
         $site->setBaseUrl($site->hasUrls ? $this->request->getBodyParam('baseUrl') : null);
 
         // Save it
-        if (!$sitesService->saveSite($site)) {
+        if (!Sites::saveSite($site)) {
             $this->setFailFlash(t('Couldn’t save the site.'));
 
             // Send the site back to the template
@@ -356,7 +358,7 @@ class SitesController extends Controller
 
         /** @var int[] $siteIds */
         $siteIds = Json::decode($this->request->getRequiredBodyParam('ids'));
-        Craft::$app->getSites()->reorderSites($siteIds);
+        Sites::reorderSites($siteIds);
 
         return $this->asSuccess();
     }
@@ -374,7 +376,7 @@ class SitesController extends Controller
         $siteId = $this->request->getRequiredBodyParam('id');
         $transferContentTo = $this->request->getBodyParam('transferContentTo');
 
-        Craft::$app->getSites()->deleteSiteById($siteId, $transferContentTo);
+        Sites::deleteSiteById($siteId, $transferContentTo);
 
         return $this->asSuccess();
     }

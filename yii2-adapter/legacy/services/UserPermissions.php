@@ -26,6 +26,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -560,7 +561,7 @@ class UserPermissions extends Component
 
         $sitePermissions = [];
 
-        foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+        foreach (Sites::getAllSites(true) as $site) {
             $sitePermissions["editSite:$site->uid"] = [
                 'label' => t('Edit “{title}”', [
                     'title' => t($site->getName(), category: 'site'),

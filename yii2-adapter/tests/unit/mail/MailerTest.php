@@ -9,13 +9,14 @@ namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
 use craft\test\TestCase;
 use craft\test\TestMailer;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Facades\Event;
@@ -215,7 +216,7 @@ class MailerTest extends TestCase
     {
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', $isCpRequest);
 
-        Craft::$app->getSites()->getPrimarySite()->language = 'nl';
+        Sites::getPrimarySite()->setLanguage('nl');
         app()->setLocale('en-US');
 
         $this->mailer->send($this->mailer->composeFromKey('account_activation', [
@@ -225,7 +226,7 @@ class MailerTest extends TestCase
 
         self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
 
-        Craft::$app->getSites()->getPrimarySite()->language = 'en-US';
+        Sites::getPrimarySite()->setLanguage('en-US');
     }
 
     /**

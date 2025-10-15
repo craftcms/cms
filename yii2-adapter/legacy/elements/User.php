@@ -33,7 +33,6 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\records\WebAuthn as WebAuthnRecord;
@@ -50,8 +49,10 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
@@ -1612,7 +1613,7 @@ class User extends Element implements IdentityInterface
             return null;
         }
 
-        return Craft::$app->getSites()->getSiteById($this->affiliatedSiteId, true);
+        return Sites::getSiteById($this->affiliatedSiteId, true);
     }
 
     /**

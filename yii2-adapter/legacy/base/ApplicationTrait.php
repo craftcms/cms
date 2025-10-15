@@ -18,7 +18,6 @@ use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\DbConnectException;
-use craft\errors\SiteNotFoundException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\fieldlayoutelements\addresses\AddressField;
@@ -99,6 +98,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
@@ -363,7 +363,7 @@ trait ApplicationTrait
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        return $this->getSites()->getCurrentSite()->language;
+        return \CraftCms\Cms\Support\Facades\Sites::getCurrentSite()->getLanguage();
     }
 
     /**
@@ -495,7 +495,7 @@ trait ApplicationTrait
         if (!$refresh && isset($this->_isMultiSite)) {
             return $this->_isMultiSite;
         }
-        return $this->_isMultiSite = count($this->getSites()->getAllSites(true)) > 1;
+        return $this->_isMultiSite = count(\CraftCms\Cms\Support\Facades\Sites::getAllSites(true)) > 1;
     }
 
     /**
@@ -772,7 +772,7 @@ trait ApplicationTrait
         }
 
         try {
-            $name = $this->getSites()->getPrimarySite()->getName();
+            $name = \CraftCms\Cms\Support\Facades\Sites::getPrimarySite()->getName();
         } catch (SiteNotFoundException) {
             $name = null;
         }
@@ -1212,9 +1212,12 @@ trait ApplicationTrait
      * Returns the sites service.
      *
      * @return Sites The sites service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Sites} instead.
      */
     public function getSites(): Sites
     {
+        DeprecatorFacade::log('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
+
         return $this->get('sites');
     }
 
