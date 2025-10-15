@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 
 final class RequireAdminChanges
