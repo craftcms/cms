@@ -3271,7 +3271,7 @@ table {
             --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
-            --focus-ring: 0 0 0 3px hsl(--focus-light);
+            --focus-ring: var(--focus-ring-light);
 
             .status-label .status-label-text {
               --status-label-text-color: var(--white) !important;
