@@ -28,6 +28,31 @@ $iconSize: 46px;
     margin-top: 24px;
   }
 
+  #ready-to-upgrade {
+    margin-top: 24px;
+
+    ul {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      @include padding-left(0);
+
+      li {
+        margin-top: 0;
+        list-style-type: none;
+
+        &:not(:first-child) {
+          &:before {
+            content: '∙';
+            padding-right: 7px;
+          }
+        }
+      }
+    }
+  }
+
   #plugins {
     margin-top: 24px;
 

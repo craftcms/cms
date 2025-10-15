@@ -1065,6 +1065,11 @@
     padding-bottom: 14px;
     padding-top: 14px;
     position: sticky;
+
+    .so-body & {
+      margin-bottom: 0;
+      position: static;
+    }
   }
 
   .detail-cursor-pointer {

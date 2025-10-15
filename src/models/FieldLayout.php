@@ -509,10 +509,10 @@ class FieldLayout extends Model
      */
     public function getConfig(): ?array
     {
-        $tabConfigs = array_values(array_map(
+        $tabConfigs = array_map(
             fn(FieldLayoutTab $tab) => $tab->getConfig(),
             $this->getTabs(),
-        ));
+        );
 
         if (empty($tabConfigs)) {
             return null;

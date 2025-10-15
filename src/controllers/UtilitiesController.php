@@ -115,7 +115,7 @@ class UtilitiesController extends Controller
         }
 
         if ($utilitiesService->checkAuthorization($class) === false) {
-            throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
+            throw new ForbiddenHttpException(sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
         $this->getView()->registerAssetBundle(UtilitiesAsset::class);

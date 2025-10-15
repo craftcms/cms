@@ -14,7 +14,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -374,7 +373,7 @@ class Section extends Model
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

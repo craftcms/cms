@@ -1248,6 +1248,17 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.settings.previewParamValue = response.data.previewParamValue;
             this._afterUpdateFieldLayout(data, selectedTabId, response);
 
+            if (response.data.deltaNames?.length) {
+              let deltaNames = this.$container.data('delta-names');
+              deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
+              for (const name of response.data.deltaNames) {
+                if (deltaNames.indexOf(name) === -1) {
+                  deltaNames.push(name);
+                }
+              }
+              this.$container.data('delta-names', deltaNames);
+            }
+
             const createdProvisionalDraft = !this.settings.draftId;
 
             if (createdProvisionalDraft) {
@@ -1415,7 +1426,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.settings.canonicalUpdatedTimestamp =
               response.data.canonicalUpdatedTimestamp;
 
-            this.afterUpdate(data);
+            this.afterUpdate(this.lastSerializedValue);
 
             if (Craft.broadcaster) {
               Craft.broadcaster.postMessage({
@@ -1746,7 +1757,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               } else {
                 $newElement.appendTo($tabContainer);
               }
-              Craft.initUiElements($newElement);
               changedElements = true;
             }
           } else {
@@ -1824,6 +1834,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       Craft.appendHeadHtml(response.data.headHtml);
       Craft.appendBodyHtml(response.data.bodyHtml);
+      Craft.initUiElements(this.$contentContainer);
 
       // Did any layout elements get added or removed?
       if (changedElements) {

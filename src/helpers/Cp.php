@@ -1578,11 +1578,10 @@ JS;
         self::_setLayoutOnElements($availableNativeFields, $fieldLayout);
         self::_setLayoutOnElements($availableUiElements, $fieldLayout);
 
-        // Don't call FieldLayout::getConfig() here because we want to include *all* tabs, not just non-empty ones
-        $fieldLayoutConfig = [
-            'uid' => $fieldLayout->uid,
-            'tabs' => array_map(fn(FieldLayoutTab $tab) => $tab->getConfig(), $tabs),
-        ];
+        $fieldLayoutConfig = array_merge(
+            ['uid' => $fieldLayout->uid],
+            (array)$fieldLayout->getConfig(),
+        );
 
         if ($fieldLayout->id) {
             $fieldLayoutConfig['id'] = $fieldLayout->id;

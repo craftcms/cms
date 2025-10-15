@@ -458,11 +458,11 @@ class GraphqlController extends Controller
                 throw new NotFoundHttpException('Token not found');
             }
 
-            $title = trim($token->name) ?: Craft::t('app', 'Edit GraphQL Token');
+            $title = trim($token->name ?? '') ?: Craft::t('app', 'Edit GraphQL Token');
         } else {
             $token = new GqlToken();
             $accessToken = $this->_generateToken();
-            $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
+            $title = trim($token->name ?? '') ?: Craft::t('app', 'Create a new GraphQL token');
         }
 
         $schemas = $gqlService->getSchemas();

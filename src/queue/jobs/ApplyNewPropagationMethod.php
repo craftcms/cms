@@ -95,6 +95,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
         $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
 
         if (empty($otherSiteIds)) {
+            $this->resaveItem($item);
             return;
         }
 
@@ -111,6 +112,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
             ->all();
 
         if (empty($otherSiteElements)) {
+            $this->resaveItem($item);
             return;
         }
 
@@ -187,15 +189,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
             }
         }
 
-        // Now resave the original element
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->resaving = true;
-
-        try {
-            $elementsService->saveElement($item, updateSearchIndex: false);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        $this->resaveItem($item);
     }
 
     /**
@@ -204,5 +198,24 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
     protected function defaultDescription(): ?string
     {
         return Translation::prep('app', 'Applying new propagation method to elements');
+    }
+
+    /**
+     * Resave item that's being processed.
+     *
+     * @param mixed $item
+     * @return void
+     */
+    private function resaveItem(mixed $item): void
+    {
+        // Now resave the original element
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        try {
+            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false);
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+        }
     }
 }

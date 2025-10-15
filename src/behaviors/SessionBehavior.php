@@ -24,6 +24,8 @@ use yii\web\AssetBundle;
  */
 class SessionBehavior extends Behavior
 {
+    private const AUTH_LOCK_NAME = 'authAccess';
+
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
@@ -266,11 +268,18 @@ JS
      */
     public function authorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
 
         if (!in_array($action, $access, true)) {
             $access[] = $action;
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 
@@ -281,12 +290,19 @@ JS
      */
     public function deauthorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 

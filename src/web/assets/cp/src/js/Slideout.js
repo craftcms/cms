@@ -10,6 +10,7 @@
       $container: null,
       $shade: null,
       isOpen: false,
+      isOpening: false,
       useMobileStyles: null,
 
       init: function (contents, settings) {
@@ -98,6 +99,8 @@
           });
         }
 
+        this.isOpening = true;
+
         if (this.useMobileStyles) {
           this.$container
             .css('top', '100vh')
@@ -109,7 +112,8 @@
         }
 
         this.$container.one('transitionend.slideout', () => {
-          Craft.setFocusWithin(this.$container);
+          this.isOpening = false;
+          this.setFocusWithin();
         });
 
         if (this.$shade) {
@@ -132,6 +136,10 @@
 
         this.isOpen = true;
         this.trigger('open');
+      },
+
+      setFocusWithin: function () {
+        Craft.setFocusWithin(this.$container);
       },
 
       updateWidthsForPreviewPane: function (activePreview) {

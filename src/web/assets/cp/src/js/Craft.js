@@ -530,6 +530,9 @@ $.extend(Craft, {
    * @returns {string}
    */
   getCpUrl: function (path, params) {
+    if (!Craft.baseCpUrl) {
+      throw 'Craft.baseCpUrl is undefined.';
+    }
     return this.getUrl(path, params, Craft.baseCpUrl);
   },
 

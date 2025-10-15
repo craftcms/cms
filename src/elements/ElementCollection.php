@@ -175,6 +175,7 @@ class ElementCollection extends Collection
     public function map(callable $callback)
     {
         $result = parent::map($callback);
+        /** @phpstan-ignore-next-line */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -192,6 +193,7 @@ class ElementCollection extends Collection
     public function mapWithKeys(callable $callback)
     {
         $result = parent::mapWithKeys($callback);
+        /** @phpstan-ignore-next-line */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -297,7 +299,6 @@ class ElementCollection extends Collection
             return parent::unique($key, $strict);
         }
 
-        /** @phpstan-ignore-next-line */
         return $this->keyBy('id')->values();
     }
 

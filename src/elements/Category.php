@@ -820,7 +820,7 @@ class Category extends Element
             $record->groupId = (int)$this->groupId;
             $record->save(false);
 
-            if (!$this->duplicateOf) {
+            if (!$this->duplicateOf || $this->updatingFromDerivative) {
                 // Has the parent changed?
                 if ($this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $group);

@@ -619,7 +619,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?int
     {
-        $licenseInfo = $this->getCache()->get(App::licenseInfoCacheKey()) ?: [];
+        $licenseInfo = $this->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;

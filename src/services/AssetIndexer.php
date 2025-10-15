@@ -317,7 +317,6 @@ class AssetIndexer extends Component
                     ->where([
                         'sessionId' => $indexingSession->id,
                         'completed' => false,
-                        'inProgress' => false,
                     ])
                     ->count();
 

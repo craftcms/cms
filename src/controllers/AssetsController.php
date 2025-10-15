@@ -1114,40 +1114,45 @@ class AssetsController extends Controller
      *
      * @param int|null $transformId
      * @return Response
-     * @throws NotFoundHttpException if the transform can't be found
-     * @throws ServerErrorHttpException if the transform can't be generated
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {
-        try {
-            // If a transform ID was not passed in, see if a file ID and handle were.
-            if ($transformId) {
-                $transformer = Craft::createObject(ImageTransformer::class);
-                $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
-                $assetId = $transformIndexModel?->assetId;
-                $transform = $transformIndexModel?->getTransform();
-            } else {
-                $assetId = $this->request->getRequiredBodyParam('assetId');
-                $handle = $this->request->getRequiredBodyParam('handle');
-                if (!is_string($handle)) {
-                    throw new BadRequestHttpException('Invalid transform handle.');
-                }
-                $transform = ImageTransforms::normalizeTransform($handle);
-                $transformer = $transform?->getImageTransformer();
+        // If a transform ID was not passed in, see if a file ID and handle were.
+        if ($transformId) {
+            $transformer = Craft::createObject(ImageTransformer::class);
+            $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
+            if (!$transformIndexModel) {
+                throw new BadRequestHttpException("Invalid transform ID: $transformId");
             }
-        } catch (\Exception $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
-            throw new ServerErrorHttpException('Image transform cannot be created.', 0, $exception);
-        }
-
-        if (!$transform || !$transformer) {
-            throw new NotFoundHttpException();
+            $assetId = $transformIndexModel->assetId;
+            try {
+                $transform = $transformIndexModel->getTransform();
+            } catch (Throwable $e) {
+                throw new ServerErrorHttpException('Image transform cannot be created.', previous: $e);
+            }
+        } else {
+            $assetId = $this->request->getRequiredBodyParam('assetId');
+            $handle = $this->request->getRequiredBodyParam('handle');
+            if (!is_string($handle)) {
+                throw new BadRequestHttpException('Invalid transform handle.');
+            }
+            try {
+                $transform = ImageTransforms::normalizeTransform($handle);
+            } catch (Throwable $e) {
+                throw new ServerErrorHttpException('Image transform cannot be created.', previous: $e);
+            }
+            if (!$transform) {
+                throw new BadRequestHttpException("Invalid transform handle: $handle");
+            }
+            $transformer = $transform->getImageTransformer();
         }
 
         $asset = Asset::findOne(['id' => $assetId]);
 
         if (!$asset) {
-            throw new NotFoundHttpException();
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         $url = $transformer->getTransformUrl($asset, $transform, true);

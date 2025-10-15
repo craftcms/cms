@@ -489,7 +489,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get(App::licenseInfoCacheKey()) !== false);
+        return (Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) !== false);
     }
 
     /**
@@ -791,7 +791,7 @@ class Cp extends Component
     public function getFsOptions(): array
     {
         $options = array_map(fn(FsInterface $fs) => [
-            'label' => $fs->name,
+            'label' => Craft::t('site', $fs->name),
             'value' => $fs->handle,
         ], Craft::$app->getFs()->getAllFilesystems());
 

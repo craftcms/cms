@@ -223,6 +223,8 @@ class Plugins extends Component
             $this->_storedPluginInfo[$handle] = $row;
         }
 
+        $anyVersionsChanged = false;
+
         foreach ($this->_storedPluginInfo as $handle => $row) {
             // Skip disabled plugins
             if (!$row['enabled']) {
@@ -262,12 +264,19 @@ class Plugins extends Component
                     ], [
                         'id' => $row['id'],
                     ]);
+
+                    $anyVersionsChanged = true;
                 }
 
                 $this->_registerPlugin($plugin);
             }
         }
         unset($row);
+
+        if ($anyVersionsChanged) {
+            // Clear the license info cache
+            Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+        }
 
         // Sort enabled plugins by their names
         ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
@@ -862,6 +871,9 @@ class Plugins extends Component
         if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
             Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
         }
+
+        // Clear the license info cache
+        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
     }
 
     /**
@@ -1013,7 +1025,7 @@ class Plugins extends Component
         $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
-        $licenseInfo = Craft::$app->getCache()->get(App::licenseInfoCacheKey()) ?? [];
+        $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?? [];
         $pluginCacheKey = StringHelper::ensureLeft($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
@@ -1193,14 +1205,8 @@ class Plugins extends Component
             }
         }
 
-        // Clear the plugin's cached license key status
-        $cache = Craft::$app->getCache();
-        $cacheKey = App::licenseInfoCacheKey();
-        $licenseInfo = $cache->get($cacheKey) ?? [];
-        if (isset($licenseInfo[$handle])) {
-            unset($licenseInfo[$handle]);
-            $cache->set($cacheKey, $licenseInfo);
-        }
+        // Clear the license info cache
+        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

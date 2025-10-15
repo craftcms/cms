@@ -1432,12 +1432,15 @@ JS, [
             if ($this->request->getIsCpRequest()) {
                 [$docTitle, $title] = $this->_editElementTitles($element);
                 $previewTargets = $element->getPreviewTargets();
-                $data += $this->_fieldLayoutData($element);
+                $data += $this->_fieldLayoutData($element, [
+                    'registerDeltas' => true,
+                ]);
                 $data += [
                     'docTitle' => $docTitle,
                     'title' => $title,
                     'previewTargets' => $previewTargets,
                     'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(StringHelper::randomString(10)) : null,
+                    'deltaNames' => Craft::$app->getView()->getDeltaNames(),
                     'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                     'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                     'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
@@ -1718,12 +1721,12 @@ JS, [
         return $this->_asSuccess('Field layout updated.', $element, $data, true);
     }
 
-    private function _fieldLayoutData(ElementInterface $element): array
+    private function _fieldLayoutData(ElementInterface $element, array $formConfig = []): array
     {
         $view = Craft::$app->getView();
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         $fieldLayout = $element->getFieldLayout();
-        $form = $fieldLayout->createForm($element, false, [
+        $form = $fieldLayout->createForm($element, false, $formConfig + [
             'namespace' => $namespace,
             'registerDeltas' => false,
             'visibleElements' => $this->_visibleLayoutElements,

@@ -45,7 +45,7 @@ class GeneralConfig extends BaseConfig
     public const SNAKE_CASE = 'snake';
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
@@ -5036,7 +5036,7 @@ class GeneralConfig extends BaseConfig
      * @see $lazyGqlTypes
      * @since 4.11.0
      */
-    public function lazyGqlTypes(bool $value): self
+    public function lazyGqlTypes(bool $value = true): self
     {
         $this->lazyGqlTypes = $value;
         return $this;

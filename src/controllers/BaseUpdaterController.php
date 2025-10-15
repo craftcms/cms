@@ -484,10 +484,9 @@ abstract class BaseUpdaterController extends Controller
      * Runs the migrations for a given list of handles.
      *
      * @param string[] $handles
-     * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
+    protected function runMigrations(array $handles): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
@@ -512,21 +511,11 @@ abstract class BaseUpdaterController extends Controller
             Craft::error($error, __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
 
-            $options = [];
-
-            // Do we have a database backup to restore?
-            if ($restoreAction !== null && !empty($this->data['dbBackupPath'])) {
-                if (!empty($this->data['install'])) {
-                    $restoreLabel = Craft::t('app', 'Revert update');
-                } else {
-                    $restoreLabel = Craft::t('app', 'Restore database');
-                }
-                $options[] = $this->actionOption($restoreLabel, $restoreAction);
-            }
-
-            $options[] = [
-                'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
+            $options = [
+                [
+                    'label' => Craft::t('app', 'Troubleshoot'),
+                    'url' => 'https://craftcms.com/knowledge-base/failed-updates',
+                ],
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {

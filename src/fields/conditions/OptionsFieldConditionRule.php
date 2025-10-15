@@ -74,7 +74,6 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
         }
 
         if ($value instanceof MultiOptionsFieldData) {
-            /** @phpstan-ignore-next-line */
             $value = array_map(fn(OptionData $option) => $option->value, (array)$value);
         } elseif ($value instanceof SingleOptionFieldData) {
             $value = $value->value;

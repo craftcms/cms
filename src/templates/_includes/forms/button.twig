@@ -5,12 +5,16 @@
 {% set successMessage = successMessage ?? false %}
 {% set label = label ?? null %}
 {% set labelHtml = labelHtml ?? null %}
+
+{% set hasLabel = label or label is same as('0') %}
+{% set hasLabelHtml = labelHtml or labelHtml is same as('0') %}
+
 {% set attributes = {
     type: type ?? 'button',
     id: id ?? false,
     class: (class ?? [])|explodeClass|merge([
         'btn',
-        not (label or labelHtml) ? 'btn-empty' : null,
+        not (hasLabel or hasLabelHtml) ? 'btn-empty' : null,
     ]|filter),
     data: {
         'busy-message': busyMessage,
@@ -25,10 +29,10 @@
         <div role="status" class="visually-hidden"></div>
     {% endif %}
     {% tag 'button' with attributes %}
-        {{ (label or labelHtml) ? tag('div', {
+        {{ (hasLabel or hasLabelHtml) ? tag('div', {
             class: ['label', 'inline-flex'],
-            text: label ?? null,
-            html: labelHtml ?? null
+            text: hasLabel ? label : null,
+            html: hasLabelHtml ? labelHtml : null,
         }) }}
         {% if spinner %}
             <div class="spinner spinner-absolute">

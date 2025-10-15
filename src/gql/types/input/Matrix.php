@@ -35,6 +35,7 @@ class Matrix extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
+            'description' => sprintf('Defines a block within the “%s” Matrix field’s data.', $context->name),
             'fields' => function() use ($context) {
                 // All the different field block types now get wrapped in a container input.
                 // If two different block types are passed, the selected block type to parse is undefined.

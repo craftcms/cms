@@ -133,11 +133,15 @@ Craft.ui = {
       class: 'copytext',
     });
 
-    let $input = this.createTextInput(
-      $.extend({}, config, {
-        readonly: true,
-      })
-    ).appendTo($container);
+    const inputConfig = $.extend({}, config, {
+      readonly: true,
+    });
+    if (config.textarea) {
+    }
+    const $input = config.textarea
+      ? this.createTextarea(inputConfig)
+      : this.createTextInput(inputConfig);
+    $input.appendTo($container);
 
     let $btn = $('<button/>', {
       type: 'button',

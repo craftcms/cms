@@ -223,7 +223,7 @@ abstract class Element extends Component implements ElementInterface
      * ```php
      * use craft\base\Element;
      * use craft\elements\Entry;
-     * use craft\events\PrepareElementQueryForTableAttributeEvent;
+     * use craft\events\ElementIndexTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
      * use craft\events\SetElementTableAttributeHtmlEvent;
      * use craft\helpers\Cp;
@@ -240,7 +240,7 @@ abstract class Element extends Component implements ElementInterface
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
-     *     function(PrepareElementQueryForTableAttributeEvent $e) {
+     *     function(ElementIndexTableAttributeEvent $e) {
      *         $query = $e->query;
      *         $attr = $e->attribute;
      *
@@ -2377,6 +2377,7 @@ abstract class Element extends Component implements ElementInterface
     public function extraFields(): array
     {
         return [
+            ...parent::extraFields(),
             'ancestors',
             'canonical',
             'canonicalUid',

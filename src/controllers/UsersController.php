@@ -440,8 +440,7 @@ class UsersController extends Controller
                 ? User::AUTH_ACCOUNT_COOLDOWN
                 : User::AUTH_ACCOUNT_LOCKED;
 
-            $message = UserHelper::getLoginFailureMessage($authError, $e->user);
-
+            [, $message] = UserHelper::getLoginFailureInfo($authError, $e->user);
             return $this->asFailure($message);
         }
 
@@ -627,7 +626,11 @@ class UsersController extends Controller
         // POST request. They've just set the password.
         $code = $this->request->getRequiredBodyParam('code');
         $uid = $this->request->getRequiredParam('id');
-        $user = Craft::$app->getUsers()->getUserByUid($uid);
+        $user = User::find()
+            ->uid($uid)
+            ->status(null)
+            ->addSelect(['users.password'])
+            ->one();
 
         if (!$user) {
             throw new BadRequestHttpException("Invalid user UID: $uid");
@@ -2198,7 +2201,7 @@ JS,
      */
     private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
-        $message = UserHelper::getLoginFailureMessage($authError, $user);
+        [$authError, $message] = UserHelper::getLoginFailureInfo($authError, $user);
 
         // Fire a 'loginFailure' event
         $event = new LoginFailureEvent([

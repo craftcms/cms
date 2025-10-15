@@ -854,6 +854,7 @@ class ProjectConfig extends Component
 
         if ($this->_updateYaml && ($writeExternalConfig ?? $this->writeYamlAutomatically)) {
             $this->updateYamlFiles();
+            $this->_updateYaml = false;
         }
     }
 
@@ -1271,7 +1272,11 @@ class ProjectConfig extends Component
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
-        $processChanges = fn($path, $triggerUpdate = false) => $this->getCurrentWorkingConfig()->commitChanges($existingConfig->get($path), $incomingConfig->get($path), $path, $triggerUpdate, null, true);
+        $processChanges = function($path, $triggerUpdate = false) use ($existingConfig, $incomingConfig) {
+            $oldValue = $existingConfig->get($path);
+            $newValue = $incomingConfig->get($path);
+            $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path, $triggerUpdate, null, true);
+        };
 
         // If we're parsing all the changes, we better work the actual config map.
         if (!empty($changes['removedItems'])) {

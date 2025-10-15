@@ -2009,7 +2009,7 @@ EOD;
 
             $record->save(false);
 
-            if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
+            if ((!$this->duplicateOf || $this->updatingFromDerivative) && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $section);

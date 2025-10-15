@@ -13,6 +13,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\Session;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
@@ -54,7 +55,7 @@ class Api extends Component
      *
      * @param string[] $include
      * @return array
-     * @throws RequestException if the API gave a non-2xx response
+     * @throws GuzzleException if the API gave a non-2xx response
      */
     public function getLicenseInfo(array $include = []): array
     {
@@ -92,7 +93,7 @@ class Api extends Component
      * Returns all country data.
      *
      * @return array
-     * @throws RequestException if the API gave a non-2xx response
+     * @throws GuzzleException if the API gave a non-2xx response
      */
     public function getCountries(): array
     {
@@ -115,7 +116,7 @@ class Api extends Component
      * @param string $uri
      * @param array $options
      * @return ResponseInterface
-     * @throws RequestException
+     * @throws GuzzleException
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {

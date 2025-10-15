@@ -11,6 +11,7 @@ use Craft;
 use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
@@ -371,6 +372,9 @@ class Updates extends Component
         }
 
         $this->_isCraftUpdatePending = null;
+
+        // Clear the license info cache
+        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

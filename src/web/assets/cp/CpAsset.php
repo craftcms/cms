@@ -417,14 +417,11 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
-            'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'clientOs' => $request->getClientOs(),
-            'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => Assets::getFileKinds(),
@@ -451,9 +448,19 @@ JS;
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
+        if ($request->getIsCpRequest()) {
+            $data += [
+                'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
+                'baseCpUrl' => UrlHelper::cpUrl(),
+                'cpTrigger' => $generalConfig->cpTrigger,
+            ];
+        }
+
         if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = $request->csrfParam;
-            $data['csrfTokenValue'] = $request->getCsrfToken();
+            $data += [
+                'csrfTokenName' => $request->csrfParam,
+                'csrfTokenValue' => $request->getCsrfToken(),
+            ];
         }
 
         // If no one's logged in yet, leave it at that
