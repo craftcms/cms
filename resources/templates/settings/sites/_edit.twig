@@ -29,7 +29,7 @@
         first: true,
         label: "Group"|t('app'),
         instructions: "Which group should this site belong to?"|t('app'),
-        warning: site.id and craft.app.isMultiSite ? 'Changing this may result in data loss.'|t('app'),
+        warning: site.id and craft.sites.isMultiSite() ? 'Changing this may result in data loss.'|t('app'),
         id: 'group',
         name: 'group',
         options: groupOptions,
@@ -78,7 +78,7 @@
             disabled: readOnly,
         }) }}
 
-        {% if (craft.app.isMultiSite or not site.id) %}
+        {% if (craft.sites.isMultiSite() or not site.id) %}
             {{ forms.booleanMenuField({
                 label: 'Status'|t('app'),
                 id: 'enabled',
@@ -93,7 +93,7 @@
             }) }}
         {% endif %}
 
-        {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
+        {% if (craft.sites.isMultiSite() or not site.id) and not site.primary %}
             {{ forms.lightswitchField({
                 label: 'Make this the primary site'|t('app'),
                 instructions: "The primary site will be loaded by default on the front end."|t('app'),
