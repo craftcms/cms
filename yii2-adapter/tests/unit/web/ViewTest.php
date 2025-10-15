@@ -91,6 +91,8 @@ class ViewTest extends TestCase
      */
     public function testResolveTemplate(string|false $expected, string $name, ?string $templateMode = null): void
     {
+        Sites::setCurrentSite(Sites::getSiteByHandle('default'));
+
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
         }
