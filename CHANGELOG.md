@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4
 
 ## Unreleased
+
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
 
 ## 4.16.14 - 2025-10-06
