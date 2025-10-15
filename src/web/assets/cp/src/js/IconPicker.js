@@ -113,7 +113,9 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
         this.selectIcon($button);
       });
 
-      this.modal = new Garnish.Modal($container);
+      this.modal = new Garnish.Modal($container, {
+        triggerElement: this.$chooseBtn,
+      });
       this.updateIcons();
     },
 

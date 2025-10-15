@@ -53,7 +53,7 @@ export default Base.extend(
       }
 
       if (this.settings.triggerElement) {
-        this.$triggerElement = this.settings.triggerElement;
+        this.$triggerElement = $(this.settings.triggerElement);
       } else {
         this.$triggerElement = Garnish.getFocusedElement();
       }
@@ -230,6 +230,10 @@ export default Base.extend(
 
       if ($focusTarget?.length) {
         $focusTarget.focus();
+      } else {
+        console.error(
+          'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+        );
       }
 
       this.visible = false;

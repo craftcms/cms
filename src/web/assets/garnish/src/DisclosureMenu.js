@@ -896,12 +896,17 @@ export default Base.extend(
         const $prevVisibleItems = $el
           .prevUntil('h3,hr')
           .filter(':not(.hidden):not(.filtered)');
-        if (!$prevVisibleItems.length) {
+        const $nextVisibleItems = $el
+          .nextUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if ($prevVisibleItems.length && $nextVisibleItems.length) {
+          $el.removeClass('hidden');
+        } else {
           $el.addClass('hidden');
         }
       });
 
-      this.$container.find('h3,hr').each((i, el) => {
+      this.$container.find('h3').each((i, el) => {
         const $el = $(el);
         const $nextVisibleItems = $el
           .nextUntil('h3,hr')

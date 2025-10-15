@@ -1660,6 +1660,8 @@ class ProjectConfig extends Component
 
         // Let plugins know about it
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
+
+        $this->_updateYaml = false;
     }
 
     /**

@@ -1553,7 +1553,7 @@ class Users extends Component
         $impersonateePermissions = $permissionsService->getPermissionsByUserId($impersonatee->id);
 
         foreach ($impersonateePermissions as $permission) {
-            if (!isset($impersonatorPermissions[$permission])) {
+            if (!isset($impersonatorPermissions[$permission]) && $permissionsService->validatePermission($permission)) {
                 return false;
             }
         }

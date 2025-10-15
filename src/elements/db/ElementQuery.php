@@ -2778,6 +2778,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        $generatedFieldsByHandle = [];
+        if (!empty($this->generatedFields)) {
+            // Group the generated fields by handle and field UUID
+            foreach ($this->generatedFields as $field) {
+                if (!empty($field['handle'])) {
+                    $generatedFieldsByHandle[$field['handle']][$field['uid']] = $field;
+                }
+            }
+        }
+
+        /** @var CustomFieldBehavior $fieldAttributes */
         $fieldAttributes = $this->getBehavior('customFields');
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
@@ -2794,8 +2805,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                     continue;
                 }
 
-                // Make sure the custom field exists in one of the field layouts
-                if (!isset($fieldsByHandle[$handle])) {
+                // Make sure the custom field exists in one of the field layouts or there's a generated field with that handle
+                if (!isset($fieldsByHandle[$handle]) && !isset($generatedFieldsByHandle[$handle])) {
                     // If it looks like null/:empty: is a valid option, let it slide
                     $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
                         ? $fieldAttributes->$handle['value']
@@ -2808,52 +2819,98 @@ class ElementQuery extends Query implements ElementQueryInterface
                         }
                     }
 
-                    throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
+                    throw new QueryAbortedException("No custom or generated field with the handle \"$handle\" exists in the field layouts involved with this element query.");
                 }
 
                 $conditions = [];
                 $params = [];
 
-                foreach ($fieldsByHandle[$handle] as $instances) {
-                    $firstInstance = $instances[0];
-                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                if (isset($fieldsByHandle[$handle])) {
+                    foreach ($fieldsByHandle[$handle] as $instances) {
+                        $firstInstance = $instances[0];
+                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
-                    // aborting?
-                    if ($condition === false) {
-                        throw new QueryAbortedException();
+                        // aborting?
+                        if ($condition === false) {
+                            throw new QueryAbortedException();
+                        }
+
+                        if ($condition !== null) {
+                            $conditions[] = $condition;
+
+                            // if we have a generated field with the same handle, we need to add it into the condition
+                            if (isset($generatedFieldsByHandle[$handle])) {
+                                $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
+                                    $generatedFieldsByHandle,
+                                    $fieldAttributes,
+                                    $fieldsByHandle,
+                                    false
+                                );
+                                $conditions = array_merge($conditions, $generatedFieldsConditions);
+                            }
+                        }
                     }
 
-                    if ($condition !== null) {
-                        $conditions[] = $condition;
-                    }
-                }
-
-                if (!empty($conditions)) {
-                    if (count($conditions) === 1) {
-                        $this->subQuery->andWhere(reset($conditions), $params);
-                    } else {
-                        $this->subQuery->andWhere(['or', ...$conditions], $params);
+                    if (!empty($conditions)) {
+                        if (count($conditions) === 1) {
+                            $this->subQuery->andWhere(reset($conditions), $params);
+                        } else {
+                            // if we're querying for empty, we need to glue the conditions with 'and'
+                            $glue = $fieldAttributes->$handle === ':empty:' ? QueryParam::AND : QueryParam::OR;
+                            $this->subQuery->andWhere([$glue, ...$conditions], $params);
+                        }
                     }
                 }
             }
         }
 
         if (!empty($this->generatedFields)) {
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            $generatedFieldColumns = [];
-            foreach ($this->generatedFields as $field) {
-                $handle = $field['handle'] ?? '';
-                if ($handle !== '' && isset($fieldAttributes->$handle) && !isset($fieldsByHandle[$handle])) {
+            $conditions = $this->_conditionsForGeneratedFields($generatedFieldsByHandle, $fieldAttributes, $fieldsByHandle);
+            if (!empty($conditions)) {
+                if (count($conditions) === 1) {
+                    $this->subQuery->andWhere(reset($conditions));
+                } else {
+                    $this->subQuery->andWhere(['and', ...$conditions]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get query conditions for generated fields
+     *
+     * @param array $generatedFieldsByHandle
+     * @param CustomFieldBehavior $fieldAttributes
+     * @param array $fieldsByHandle
+     * @param bool $checkCustomField whether to check if the custom field with that handle exists
+     * @return array
+     */
+    private function _conditionsForGeneratedFields(
+        array $generatedFieldsByHandle,
+        CustomFieldBehavior $fieldAttributes,
+        array $fieldsByHandle,
+        bool $checkCustomField = true,
+    ): array {
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+        $conditions = [];
+        $generatedFieldColumns = [];
+
+        foreach ($generatedFieldsByHandle as $handle => $fields) {
+            if (isset($fieldAttributes->$handle) && (!$checkCustomField || !isset($fieldsByHandle[$handle]))) {
+                foreach ($fields as $field) {
                     $generatedFieldColumns[$handle][] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
                 }
             }
-            foreach ($generatedFieldColumns as $handle => $columns) {
-                $column = count($columns) === 1
-                    ? $columns[0]
-                    : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
-                $this->subQuery->andWhere(Db::parseParam($column, $fieldAttributes->$handle));
-            }
         }
+
+        foreach ($generatedFieldColumns as $handle => $columns) {
+            $column = count($columns) === 1
+                ? $columns[0]
+                : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
+            $conditions[] = Db::parseParam($column, $fieldAttributes->$handle);
+        }
+
+        return $conditions;
     }
 
     /**

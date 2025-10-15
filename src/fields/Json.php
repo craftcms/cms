@@ -121,30 +121,43 @@ class Json extends Field implements MergeableFieldInterface, CrossSiteCopyableFi
         $view->registerJsWithVars(fn($id, $static) => <<<JS
 (() => {
   const textarea = document.getElementById($id);
-  const editor = CodeMirror.fromTextArea(textarea, {
-    mode: {
-      name: 'javascript',
-      json: true,
-    },
-    viewportMargin: Infinity,
-    readOnly: $static,
-    theme: [
-      'default',
-      $static ? 'readonly' : null,
-    ].filter(v => v).join(' '),
+  const init = () => {
+    const editor = CodeMirror.fromTextArea(textarea, {
+      mode: {
+        name: 'javascript',
+        json: true,
+      },
+      viewportMargin: Infinity,
+      readOnly: $static,
+      theme: [
+        'default',
+        $static ? 'readonly' : null,
+      ].filter(v => v).join(' '),
+    });
+    editor.on('change', (editor) => {
+      editor.save();
+    });
+  };
+
+  const intersectionObserver = new IntersectionObserver((entries) => {
+    // was the field just made visible?
+    if (entries[0].intersectionRatio !== 0) {
+      intersectionObserver.disconnect();
+      init();
+    }
   });
-  editor.on('change', (editor) => {
-    editor.save();
-  });
+  intersectionObserver.observe(textarea);
 })();
 JS, [
             $view->namespaceInputId($id),
             $static,
         ]);
 
-        return Html::textarea($this->handle, $value?->getJson(true), [
-            'id' => $id,
-        ]);
+        return Html::beginTag('div', ['class' => 'json-field']) .
+            Html::textarea($this->handle, $value?->getJson(true), [
+                'id' => $id,
+            ]) .
+            Html::endTag('div');
     }
 
     /**

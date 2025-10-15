@@ -590,8 +590,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Are there additional sites that can be added?
       if (
         this.settings.additionalSites &&
-        this.settings.additionalSites.length &&
-        this.isFullPage
+        this.settings.additionalSites.length
       ) {
         this._createAddlSiteField();
       }
@@ -685,6 +684,9 @@ Craft.ElementEditor = Garnish.Base.extend(
           await Craft.appendHeadHtml(headHtml);
           await Craft.appendBodyHtml(bodyHtml);
           Craft.initUiElements($newField);
+
+          // Set new focus target since the old one just got replaced
+          modal.$triggerElement = $newField.find('[data-disclosure-trigger]');
 
           Craft.cp.displaySuccess(message);
         } finally {

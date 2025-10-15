@@ -19,8 +19,8 @@
           name: 'groups[]',
           options: craft.app.userGroups.getAssignableGroups(user),
           values: user.getGroups(),
-          showHandles: true,
           showDescription: true,
+          sortable: false,
           createAction: currentUser.admin and craft.app.config.general.allowAdminChanges ? 'user-settings/edit-group' : null,
         } %}
       {% endblock %}

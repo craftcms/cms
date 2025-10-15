@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'في السلة بالفعل',
     'Alternative Text' => 'نص بديل',
     'Amber' => 'عنبري',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'حدث خطأ عند عمل نسخة مماثلة من الفئة.',
     'An error occurred when duplicating the entry.' => 'حدث خطأ عند عمل نسخة مماثلة من الإدخال.',
     'An error occurred when installing {name}.' => 'حدث خطأ عند تثبيت {name}.',

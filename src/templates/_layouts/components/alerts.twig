@@ -34,7 +34,7 @@
                 },
               } only %}
                 {% block content %}
-                  {% if alert is string or alert.showIcon ?? true %}
+                  {% if alert is string or (alert.showIcon ?? true) %}
                     {% include '_layouts/components/tag.twig' with {
                       type: 'span',
                       attributes: {

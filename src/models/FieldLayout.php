@@ -34,6 +34,7 @@ use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 use Generator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -901,7 +902,17 @@ class FieldLayout extends Model
      */
     public function getCustomFieldElements(): array
     {
-        return $this->getElementsByType(CustomField::class);
+        return Collection::make($this->getElementsByType(CustomField::class))
+            ->filter(function(CustomField $layoutElement) {
+                try {
+                    $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    return false;
+                }
+                return true;
+            })
+            ->values()
+            ->all();
     }
 
     /**
@@ -913,8 +924,19 @@ class FieldLayout extends Model
      */
     public function getVisibleCustomFieldElements(ElementInterface $element): array
     {
-        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
-        return iterator_to_array($this->_elements($filter, $element));
+        return iterator_to_array($this->_elements(function(FieldLayoutElement $layoutElement) {
+            if (!$layoutElement instanceof CustomField) {
+                return false;
+            }
+
+            try {
+                $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                return false;
+            }
+
+            return true;
+        }, $element));
     }
 
     /**
@@ -1025,7 +1047,7 @@ class FieldLayout extends Model
 
         // filter only the selected attributes
         $attributes = array_filter(
-            $this->type::cardAttributes(),
+            $this->type::cardAttributes($this),
             fn($cardAttribute, $key) => in_array($key, $cardViewValues),
             ARRAY_FILTER_USE_BOTH
         );
@@ -1135,13 +1157,23 @@ class FieldLayout extends Model
     {
         return array_map(
             fn(CustomField $layoutElement) => $layoutElement->getField(),
-            iterator_to_array($this->_elements(
-                fn(FieldLayoutElement $layoutElement) => (
-                    $layoutElement instanceof CustomField &&
-                    (!$filter || $filter($layoutElement))
-                ),
-                $element,
-            )),
+            iterator_to_array($this->_elements(function(FieldLayoutElement $layoutElement) use ($filter) {
+                if (
+                    !$layoutElement instanceof CustomField ||
+                    ($filter && !$filter($layoutElement))
+                ) {
+                    return false;
+                }
+
+                // make sure the field exists
+                try {
+                    $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    return false;
+                }
+
+                return true;
+            }, $element)),
         );
     }
 

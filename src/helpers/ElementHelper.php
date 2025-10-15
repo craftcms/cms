@@ -16,6 +16,7 @@ use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\FieldNotFoundException;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
@@ -784,7 +785,12 @@ class ElementHelper
             foreach ($fieldLayout->getTabs() as $tab) {
                 foreach ($tab->getElements() as $layoutElement) {
                     if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                        try {
+                            $field = $layoutElement->getField();
+                        } catch (FieldNotFoundException) {
+                            continue;
+                        }
+                        return $field->isValueEmpty($element->getFieldValue($attribute), $element);
                     }
                 }
             }
@@ -1010,40 +1016,15 @@ class ElementHelper
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
-        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
-        if (!$user) {
-            return;
-        }
-
-        // filter out drafts and revisions
-        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
-        $canonicalElements = array_filter(
-            $elements,
-            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
-        );
-
-        if (empty($canonicalElements)) {
-            return;
-        }
-
-        $first = reset($canonicalElements);
-
         /** @var T[] $drafts */
-        $drafts = $first::find()
-            ->draftOf($canonicalElements)
-            ->draftCreator($user)
-            ->provisionalDrafts()
-            ->siteId($first->siteId)
-            ->status(null)
-            ->indexBy('canonicalId')
-            ->all();
+        $drafts = self::provisionalDrafts($elements);
 
         if (empty($drafts)) {
             return;
         }
 
         // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
-        foreach ($canonicalElements as $i => $element) {
+        foreach ($elements as $i => $element) {
             if (isset($drafts[$element->id])) {
                 $draft = $drafts[$element->id];
                 $draft->setCanonical($element);
@@ -1065,6 +1046,72 @@ class ElementHelper
                 $elements[$i] = $draft;
             }
         }
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @template T of ElementInterface
+     * @param T[] $elements
+     * @since 5.9.0
+     */
+    public static function loadProvisionalChanges(array $elements): void
+    {
+        $drafts = self::provisionalDrafts($elements);
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($elements as $element) {
+            if (isset($drafts[$element->id])) {
+                $draft = $drafts[$element->id];
+                $element->hasProvisionalChanges = true;
+
+                foreach ($draft->getModifiedAttributes() as $name) {
+                    $element->$name = $draft->$name;
+                }
+
+                foreach ($draft->getModifiedFields() as $handle) {
+                    $element->setFieldValue($handle, $draft->getFieldValue($handle));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param ElementInterface[] $elements
+     * @return ElementInterface[]
+     */
+    private static function provisionalDrafts(array $elements): array
+    {
+        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return [];
+        }
+
+        // filter out drafts and revisions
+        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
+        $canonicalElements = array_filter(
+            $elements,
+            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
+        );
+
+        if (empty($canonicalElements)) {
+            return [];
+        }
+
+        $first = reset($canonicalElements);
+
+        return $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
     }
 
     /**

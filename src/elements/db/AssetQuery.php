@@ -955,6 +955,9 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderPath) {
+            if (!str_ends_with($this->folderPath, '/') && Db::escapeParam($this->folderPath) === $this->folderPath) {
+                $this->folderPath .= '/';
+            }
             $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $this->folderPath));
         }
 

@@ -30,6 +30,7 @@ use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
+use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
@@ -351,6 +352,7 @@ class Cp
             'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
+            'overrides' => [],
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -387,6 +389,7 @@ class Cp
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
                     'showDescription' => $config['showDescription'],
+                    'overrides' => $config['overrides'],
                     'size' => $config['size'],
                     'ui' => 'chip',
                 ] : false,
@@ -578,7 +581,10 @@ class Cp
             );
         }
 
-        if ($element->isProvisionalDraft && ($config['showProvisionalDraftLabel'] ?? $config['showLabel'])) {
+        if (
+            ($config['showProvisionalDraftLabel'] ?? $config['showLabel']) &&
+            ($element->isProvisionalDraft || $element->hasProvisionalChanges)
+        ) {
             $config['labelHtml'] = ($config['labelHtml'] ?? '') . self::changeStatusLabelHtml();
         }
 
@@ -723,7 +729,7 @@ JS, [
 
         $labels = array_filter([
             $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
-            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+            $element->isProvisionalDraft || $element->hasProvisionalChanges ? self::changeStatusLabelHtml() : null,
         ]);
 
         if (!empty($labels)) {
@@ -1311,10 +1317,13 @@ JS, [
                 'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => sprintf(
-                    'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
-                    Json::encode($otherHtml),
-                ),
+                'tabindex' => 0,
+                'data' => [
+                    'other' => Json::encode($otherHtml),
+                ],
+                'aria-expanded' => 'false',
+                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, true)', // have to use keydown or the page will scroll
+                'onclick' => 'Craft.cp.previewCountBadge(event, this, true)',
             ]);
         }
 
@@ -1349,10 +1358,12 @@ JS, [
                 'title' => implode(', ', array_map(fn(Chippable $component) => $component->getId(), $components)),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => sprintf(
-                    'const r=jQuery(%s);jQuery(this).replaceWith(r);',
-                    Json::encode($otherHtml),
-                ),
+                'tabindex' => '0',
+                'data' => [
+                    'other' => Json::encode($otherHtml),
+                ],
+                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, false)', // have to use keydown or the page will scroll
+                'onclick' => 'Craft.cp.previewCountBadge(event, this, false)',
             ]);
         }
 
@@ -2738,7 +2749,7 @@ JS, [
             'disabled' => false,
         ];
 
-        $allOptions = $fieldLayout->type::cardAttributes();
+        $allOptions = $fieldLayout->type::cardAttributes($fieldLayout);
 
         foreach ($fieldLayout->getAllElements() as $layoutElement) {
             if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
@@ -2952,7 +2963,12 @@ JS, [
 
         foreach ($cardElements as $cardElement) {
             if ($cardElement instanceof CustomField) {
-                $previewHtml .= Html::tag('div', $cardElement->getField()->previewPlaceholderHtml(null, null));
+                try {
+                    $field = $cardElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+                $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
             } elseif ($cardElement instanceof BaseField) {
                 $previewHtml .= Html::tag('div', $cardElement->previewPlaceholderHtml(null, null));
             } elseif (is_array($cardElement) && isset($cardElement['html'])) {
@@ -3237,6 +3253,15 @@ JS;
         bool $forLibrary = false,
         array $attributes = [],
     ): string {
+        // ignore invalid custom fields
+        if ($element instanceof CustomField) {
+            try {
+                $element->getField();
+            } catch (FieldNotFoundException) {
+                return '';
+            }
+        }
+
         if ($element instanceof BaseField) {
             $attributes = ArrayHelper::merge($attributes, [
                 'data' => [
@@ -3309,7 +3334,7 @@ JS;
             $field->isMultiInstance() ||
             !$fieldLayout->isFieldIncluded(function(BaseField $field) use ($attribute, $uid) {
                 if ($field instanceof CustomField) {
-                    return $field->getField()->uid === $uid;
+                    return $field->getFieldUid() === $uid;
                 }
                 return $field->attribute() === $attribute;
             })

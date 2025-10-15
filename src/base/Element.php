@@ -40,6 +40,7 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
 use craft\enums\Color;
+use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAltActionsEvent;
@@ -1362,8 +1363,8 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        // See if there are any provisional drafts we should swap these out with
-        ElementHelper::swapInProvisionalDrafts($elements);
+        // See if there are any provisional changes we should show
+        ElementHelper::loadProvisionalChanges($elements);
 
         if ($request->getParam('prevalidate')) {
             foreach ($elements as $element) {
@@ -1623,13 +1624,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function cardAttributes(): array
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
         $cardAttributes = static::defineCardAttributes();
 
         // Fire a 'registerCardAttributes' event
         if (Event::hasHandlers(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES)) {
-            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes]);
+            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes, 'fieldLayout' => $fieldLayout]);
             Event::trigger(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES, $event);
             return $event->cardAttributes;
         }
@@ -2820,6 +2821,7 @@ abstract class Element extends Component implements ElementInterface
     public function extraFields(): array
     {
         return [
+            ...parent::extraFields(),
             'ancestors',
             'canonical',
             'canonicalUid',
@@ -3531,6 +3533,7 @@ abstract class Element extends Component implements ElementInterface
                         'html' => Cp::elementChipHtml($owner, [
                             'showDraftName' => false,
                             'class' => 'chromeless',
+                            'hyperlink' => true,
                         ]),
                     ],
                 ];
@@ -6022,7 +6025,13 @@ JS, [
                         $field = Craft::$app->getFields()->getFieldByUid($uid);
                     } else {
                         $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
-                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+                        if ($layoutElement instanceof CustomField) {
+                            try {
+                                $field = $layoutElement->getField();
+                            } catch (FieldNotFoundException) {
+                            }
+                        }
+                        $field ??= null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -6067,7 +6076,10 @@ JS, [
             $instanceUid = $matches[1];
             $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
             if ($layoutElement instanceof CustomField) {
-                $field = $layoutElement->getField();
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                }
             }
         }
 

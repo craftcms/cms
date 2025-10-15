@@ -83,6 +83,16 @@ interface NestedElementInterface extends ElementInterface
     public function setOwner(?ElementInterface $owner): void;
 
     /**
+     * Returns each of the element’s owners
+     *
+     * @param array $criteria
+     * @return ElementInterface[]
+     * @throws InvalidConfigException if the element is misconfigured
+     * @since 5.8.17
+     */
+    public function getOwners(array $criteria = []): array;
+
+    /**
      * Returns the field that contains the element.
      *
      * @return ElementContainerFieldInterface|null
