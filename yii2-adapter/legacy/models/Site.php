@@ -40,6 +40,28 @@ class Site extends Model implements Chippable
         return Craft::$app->getSites()->getSiteById($id);
     }
 
+    public static function fromSiteData(\CraftCms\Cms\Site\Data\Site $site): static
+    {
+        $model = new self([
+            'id' => $site->id,
+            'groupId' => $site->groupId,
+            'handle' => $site->handle,
+            'primary' => $site->primary,
+            'hasUrls' => $site->hasUrls,
+            'sortOrder' => $site->sortOrder,
+            'uid' => $site->uid,
+            'dateCreated' => $site->dateCreated,
+            'dateUpdated' => $site->dateUpdated,
+        ]);
+
+        $model->setBaseUrl($site->getBaseUrl(false));
+        $model->setName($site->getName(false));
+        $model->setLanguage($site->getLanguage(false));
+        $model->setEnabled($site->getEnabled(false));
+
+        return $model;
+    }
+
     /**
      * @var int|null ID
      */

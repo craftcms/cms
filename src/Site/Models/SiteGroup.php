@@ -15,6 +15,6 @@ final class SiteGroup extends BaseModel
 
     public function sites(): HasMany
     {
-        return $this->hasMany(Site::class);
+        return $this->hasMany(Site::class, 'groupId');
     }
 }

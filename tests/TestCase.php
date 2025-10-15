@@ -3,11 +3,11 @@
 namespace CraftCms\Cms\Tests;
 
 use Craft;
-use craft\models\Site;
 use craft\test\TestSetup;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Data\Site;
 use Dotenv\Dotenv;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -69,16 +69,14 @@ class TestCase extends Orchestra
         Schema::drop('sessions');
         Schema::drop('users');
 
-        $siteConfig = [
-            'name' => 'Craft test site',
-            'handle' => 'defaultSite',
-            'hasUrls' => true,
-            'baseUrl' => 'https://localhost/',
-            'language' => 'en-US',
-            'primary' => true,
-        ];
-
-        $site = new Site($siteConfig);
+        $site = new Site(
+            name: 'Craft test site',
+            handle: 'defaultSite',
+            language: 'en-US',
+            baseUrl: 'https://localhost/',
+            primary: true,
+            hasUrls: true,
+        );
 
         $migration = new Install(
             username: 'craftcms',

@@ -13,6 +13,7 @@ use CraftCms\Cms\Site\Events\DeletingSiteGroup;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,11 +31,10 @@ final class SiteGroups
      *
      * @see groups()
      */
-    private ?MemoizableArray $_groups = null;
+    private ?MemoizableArray $groups = null;
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
-        private readonly Sites $sites,
     ) {}
 
     /**
@@ -44,7 +44,7 @@ final class SiteGroups
      */
     private function groups(): MemoizableArray
     {
-        return $this->_groups ??= new MemoizableArray(
+        return $this->groups ??= new MemoizableArray(
             $this->createGroupQuery()->get()->all(),
             fn (object $result) => SiteGroup::from($result),
         );
@@ -84,7 +84,7 @@ final class SiteGroups
         }
 
         if ($isNewGroup) {
-            $group->uid = Str::uuid7()->toString();
+            $group->uid = Str::uuid()->toString();
         } elseif (! $group->uid) {
             $group->uid = DB::table(Table::SITEGROUPS)->uidById($group->id);
         }
@@ -124,7 +124,7 @@ final class SiteGroups
         $groupModel->save();
 
         // Clear caches
-        $this->_groups = null;
+        $this->groups = null;
 
         if (Event::hasListeners(SavedSiteGroup::class)) {
             Event::dispatch(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
@@ -152,7 +152,7 @@ final class SiteGroups
         $groupModel->delete();
 
         // Clear caches
-        $this->_groups = null;
+        $this->groups = null;
 
         if (Event::hasListeners(DeletedSiteGroup::class)) {
             Event::dispatch(new DeletedSiteGroup($group));
@@ -182,7 +182,7 @@ final class SiteGroups
      */
     public function deleteGroup(SiteGroup $group): bool
     {
-        if ($this->sites->getSitesByGroupId($group->id)) {
+        if (Sites::getSitesByGroupId($group->id)) {
             Log::warning('Attempted to delete a site group that still had sites assigned to it.', [__METHOD__]);
 
             return false;

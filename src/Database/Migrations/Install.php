@@ -12,7 +12,6 @@ use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
 use craft\models\Section;
-use craft\models\Site;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migration;
@@ -27,6 +26,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1188,12 +1188,12 @@ class Install extends Migration
             $site = $sitesService->getPrimarySite();
             $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
-            $site->language = $this->site->language;
+            $site->setLanguage($this->site->getLanguage(false));
             $site->setName($this->site->getName(false));
             $sitesService->saveSite($site);
         }
 
-        app()->setLocale($this->site->language);
+        app()->setLocale($this->site->getLanguage());
 
         $this->components->task('Saving the first user', function () use ($generalConfig) {
             $user = new User([
@@ -1206,7 +1206,7 @@ class Install extends Migration
             Craft::$app->getElements()->saveElement($user);
 
             Craft::$app->getUsers()->saveUserPreferences($user, [
-                'language' => $this->site->language,
+                'language' => $this->site->getLanguage(),
             ]);
 
             if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
@@ -1314,7 +1314,7 @@ class Install extends Migration
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
-                    'language' => $this->site->language,
+                    'language' => $this->site->getLanguage(false),
                     'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,
