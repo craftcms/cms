@@ -3639,7 +3639,7 @@ JS, [
      * @since 5.0.0
      */
     public static function siteMenuItems(
-        ?array $sites = null,
+        array|Collection|null $sites = null,
         \craft\models\Site|Site|null $selectedSite = null,
         array $config = [],
     ): array {
