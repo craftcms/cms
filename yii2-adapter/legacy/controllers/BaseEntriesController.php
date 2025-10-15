@@ -34,7 +34,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function editableSiteIds(Section $section): array
     {
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             return [Sites::getPrimarySite()->id];
         }
 
@@ -57,7 +57,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enforceSitePermission(Site $site): void
     {
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
         }
     }

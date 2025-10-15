@@ -448,7 +448,7 @@ class CategoriesController extends Controller
      */
     private function _enforceEditCategoryPermissions(Category $category): void
     {
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             // Make sure they have access to this site
             $this->requirePermission('editSite:' . $category->getSite()->uid);
         }

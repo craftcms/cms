@@ -75,7 +75,7 @@
 
 {{ missingFieldPlaceholder|raw }}
 
-{% if craft.app.getIsMultiSite() %}
+{% if craft.sites.isMultiSite() %}
   {% set translationMethods = field.supportedTranslationMethods %}
   {% if translationMethods|length > 1 %}
     <div id="translation-settings">

@@ -13,6 +13,7 @@ use craft\fields\conditions\GeneratedFieldConditionRule;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidConfigException;
 
 /**
@@ -170,7 +171,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             SlugConditionRule::class,
         ];
 
-        if (Craft::$app->getIsMultiSite() && ($this->elementType === null || $this->elementType::isLocalized())) {
+        if (Sites::isMultiSite() && ($this->elementType === null || $this->elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
             $types[] = LanguageConditionRule::class;
 

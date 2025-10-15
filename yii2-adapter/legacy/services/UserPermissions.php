@@ -555,7 +555,7 @@ class UserPermissions extends Component
 
     private function _sitePermissions(array &$permissions): void
     {
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             return;
         }
 
@@ -618,7 +618,7 @@ class UserPermissions extends Component
             } else {
                 $hasCustomPropagation = (
                     $section->propagationMethod === PropagationMethod::Custom &&
-                    Craft::$app->getIsMultiSite()
+                    Sites::isMultiSite()
                 );
 
                 $sectionPermissions = [

@@ -741,7 +741,7 @@ JS, [
         }
 
         // Include site name if localized
-        if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
+        if ($element::isLocalized() && Sites::isMultiSite()) {
             $docTitle .= sprintf(' - %s', $element->getSite()->getUiLabel());
         }
 
@@ -1433,7 +1433,7 @@ JS, [
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
                 $element,
-                crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+                crossSiteValidate: ($namespace === null && Sites::isMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
@@ -2126,7 +2126,7 @@ JS, [
         }
 
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 
@@ -2531,7 +2531,7 @@ JS, [
                 if (!$site) {
                     throw new BadRequestHttpException("Invalid side ID: $siteId");
                 }
-                if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
+                if (Sites::isMultiSite() && !$user->can("editSite:$site->uid")) {
                     throw new ForbiddenHttpException('User not authorized to edit content for this site.');
                 }
             } else {

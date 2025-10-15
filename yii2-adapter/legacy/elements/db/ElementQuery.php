@@ -1703,7 +1703,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyWhereParam();
 
-        if (Craft::$app->getIsMultiSite(false, true)) {
+        if (Sites::isMultiSite(withTrashed: true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
@@ -3711,7 +3711,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (
             !$this->unique ||
-            !Craft::$app->getIsMultiSite(false, true) ||
+            !Sites::isMultiSite(withTrashed: true) ||
             (
                 $this->siteId &&
                 (!is_array($this->siteId) || count($this->siteId) === 1)

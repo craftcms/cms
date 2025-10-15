@@ -1655,7 +1655,7 @@ JS, [
             $label = null;
         }
 
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+        $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
@@ -1692,7 +1692,7 @@ JS, [
         $required = (bool)($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
-        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $translatable = Sites::isMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
 
         $fieldClass = array_merge(array_filter([
             'field',

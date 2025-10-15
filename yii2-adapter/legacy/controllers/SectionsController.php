@@ -199,7 +199,7 @@ class SectionsController extends Controller
             $postedSettings = $this->request->getBodyParam('sites.' . $site->handle);
 
             // Skip disabled sites if this is a multi-site install
-            if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
+            if (Sites::isMultiSite() && empty($postedSettings['enabled'])) {
                 continue;
             }
 

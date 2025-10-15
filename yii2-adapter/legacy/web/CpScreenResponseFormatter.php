@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
@@ -140,7 +141,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $pageSidebar = is_callable($behavior->pageSidebarHtml) ? call_user_func($behavior->pageSidebarHtml) : $behavior->pageSidebarHtml;
         $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
 
-        if (Craft::$app->getIsMultiSite() && isset($behavior->site)) {
+        if (Sites::isMultiSite() && isset($behavior->site)) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),

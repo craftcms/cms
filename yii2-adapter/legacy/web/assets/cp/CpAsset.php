@@ -607,7 +607,7 @@ JS;
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
-            'isMultiSite' => Craft::$app->getIsMultiSite(),
+            'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'notificationDuration' => (int)(

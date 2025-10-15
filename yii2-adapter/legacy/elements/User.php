@@ -497,7 +497,7 @@ class User extends Element implements IdentityInterface
             'firstName' => ['label' => t('First Name')],
             'lastName' => ['label' => t('Last Name')],
             'groups' => ['label' => t('Groups')],
-            'affiliatedSite' => Craft::$app->getIsMultiSite() ? ['label' => t('Affiliated Site')] : null,
+            'affiliatedSite' => Sites::isMultiSite() ? ['label' => t('Affiliated Site')] : null,
             'preferredLanguage' => ['label' => t('Preferred Language')],
             'preferredLocale' => ['label' => t('Preferred Locale')],
             'lastLoginDate' => ['label' => t('Last Login')],
@@ -1609,7 +1609,7 @@ class User extends Element implements IdentityInterface
      */
     public function getAffiliatedSite(): ?Site
     {
-        if ($this->affiliatedSiteId === null || !Craft::$app->getIsMultiSite()) {
+        if ($this->affiliatedSiteId === null || !Sites::isMultiSite()) {
             return null;
         }
 

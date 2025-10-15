@@ -3911,7 +3911,7 @@ abstract class Element extends Component implements ElementInterface
 
         $params = [];
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $params['site'] = $this->getSite()->handle;
         }
 
@@ -5809,7 +5809,7 @@ JS, [
     {
         if (!isset($this->_isCrossSiteCopyable)) {
             $this->_isCrossSiteCopyable = (
-                Craft::$app->getIsMultiSite() &&
+                Sites::isMultiSite() &&
                 // check if user can edit this element in other sites
                 count(ElementHelper::editableSiteIdsForElement($this)) > 1 &&
                 // also check if the element exists in other sites

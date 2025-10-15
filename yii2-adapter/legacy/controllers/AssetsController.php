@@ -36,6 +36,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use Throwable;
@@ -193,7 +194,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByAsset('saveAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             // Make sure they have access to this site
             $this->requirePermission('editSite:' . $asset->getSite()->uid);
         }

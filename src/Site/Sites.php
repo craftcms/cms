@@ -46,73 +46,6 @@ use function CraftCms\Cms\maxPowerCaptain;
 final class Sites
 {
     /**
-     * @event SiteGroupEvent The event that is triggered before a site group is saved.
-     */
-    public const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
-
-    /**
-     * @event SiteGroupEvent The event that is triggered after a site group is saved.
-     */
-    public const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
-
-    /**
-     * @event SiteGroupEvent The event that is triggered before a site group is deleted.
-     */
-    public const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
-
-    /**
-     * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
-     */
-    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
-
-    /**
-     * @event SiteGroupEvent The event that is triggered after a site group is deleted.
-     */
-    public const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
-
-    /**
-     * @event SiteEvent The event that is triggered before a site is saved.
-     */
-    public const EVENT_BEFORE_SAVE_SITE = 'beforeSaveSite';
-
-    /**
-     * @event SiteEvent The event that is triggered after a site is saved.
-     */
-    public const EVENT_AFTER_SAVE_SITE = 'afterSaveSite';
-
-    /**
-     * @event ReorderSitesEvent The event that is triggered before the sites are reordered.
-     */
-    public const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
-
-    /**
-     * @event ReorderSitesEvent The event that is triggered after the sites are reordered.
-     */
-    public const EVENT_AFTER_REORDER_SITES = 'afterReorderSites';
-
-    /**
-     * @event SiteEvent The event that is triggered after the primary site has changed
-     */
-    public const EVENT_AFTER_CHANGE_PRIMARY_SITE = 'afterChangePrimarySite';
-
-    /**
-     * @event DeleteSiteEvent The event that is triggered before a site is deleted.
-     *
-     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the site from getting deleted.
-     */
-    public const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
-
-    /**
-     * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
-     */
-    public const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
-
-    /**
-     * @event DeleteSiteEvent The event that is triggered after a site is deleted.
-     */
-    public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
-
-    /**
      * This value can be configured as needed, but exists as a safeguard against performance issues.
      *
      * ::: warning
@@ -158,11 +91,42 @@ final class Sites
      */
     private ?Site $primarySite = null;
 
+    private bool $isMultiSite;
+
+    private bool $isMultiSiteWithTrashed;
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly Updates $updates,
     ) {
         $this->loadAllSites();
+    }
+
+    public function isMultiSite(bool $refresh = false, bool $withTrashed = false): bool
+    {
+        if ($withTrashed) {
+            return $this->isMultiSiteWithTrashed($refresh);
+        }
+
+        if ($refresh) {
+            unset($this->isMultiSite);
+        }
+
+        return $this->isMultiSite ??= $this->getAllSites(true)->count() > 1;
+    }
+
+    public function isMultiSiteWithTrashed(bool $refresh = false): bool
+    {
+        if ($refresh) {
+            unset($this->isMultiSiteWithTrashed);
+        }
+
+        return $this->isMultiSiteWithTrashed ??= DB::table(
+            table: DB::table(Table::SITES)
+                ->selectRaw('1')
+                ->limit(2),
+            as: 'x'
+        )->count() !== 1;
     }
 
     /**
@@ -290,7 +254,7 @@ final class Sites
      */
     public function getEditableSiteIds(): Collection
     {
-        if (! \Craft::$app->getIsMultiSite()) {
+        if (! $this->isMultiSite()) {
             return $this->getAllSiteIds(true);
         }
 
@@ -837,7 +801,7 @@ final class Sites
         $this->enabledSitesById = null;
         $this->editableSiteIds = null;
         $this->loadAllSites();
-        \Craft::$app->getIsMultiSite(true);
+        $this->isMultiSite(true);
     }
 
     private function loadAllSites(): void

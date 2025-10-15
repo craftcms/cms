@@ -196,7 +196,7 @@ final class RecentEntries extends Widget
      */
     private function getTargetSiteId(): ?int
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (! Sites::isMultiSite()) {
             return $this->siteId;
         }
 

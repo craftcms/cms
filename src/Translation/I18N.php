@@ -248,7 +248,7 @@ final class I18N
      */
     public function getEditableLocales(): Collection
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (! Sites::isMultiSite()) {
             return $this->getSiteLocales();
         }
 

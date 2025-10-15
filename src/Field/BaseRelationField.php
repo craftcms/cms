@@ -1076,7 +1076,7 @@ JS, [
         $criteria = [];
 
         // Is a single target site selected?
-        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+        if ($this->targetSiteId && Sites::isMultiSite()) {
             try {
                 $criteria['siteId'] = Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {
@@ -1293,7 +1293,7 @@ JS, [
     {
         $class = static::elementType();
 
-        if (! Craft::$app->getIsMultiSite() || ! $class::isLocalized()) {
+        if (! Sites::isMultiSite() || ! $class::isLocalized()) {
             return null;
         }
 
@@ -1674,7 +1674,7 @@ JS, [
 
     private function _targetSiteId(): ?int
     {
-        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+        if ($this->targetSiteId && Sites::isMultiSite()) {
             try {
                 return Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {

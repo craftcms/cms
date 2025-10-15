@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
-    {% if craft.app.getIsMultiSite() %}
+    {% if craft.sites.isMultiSite() %}
         {% set editableSites = craft.sites.getEditableSites() %}
 
         {% if editableSites|length > 1 %}

@@ -12,8 +12,6 @@ use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
@@ -420,7 +418,7 @@ class ElementHelper
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user && Craft::$app->getElements()->canView($element, $user)) {
-            if (!Craft::$app->getIsMultiSite()) {
+            if (!Sites::isMultiSite()) {
                 return true;
             }
 
@@ -447,7 +445,7 @@ class ElementHelper
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user && Craft::$app->getElements()->canView($element, $user)) {
-            if (Craft::$app->getIsMultiSite()) {
+            if (Sites::isMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
                         $siteIds[] = $siteInfo['siteId'];
@@ -970,7 +968,7 @@ class ElementHelper
     {
         $params = [];
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $params['site'] = $element->getSite()->handle;
         }
 

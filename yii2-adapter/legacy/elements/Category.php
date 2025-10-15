@@ -259,7 +259,7 @@ class Category extends Element
             if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
-                if (Craft::$app->getIsMultiSite()) {
+                if (Sites::isMultiSite()) {
                     $newChildUrl .= '?site=' . $site->handle;
                 }
 

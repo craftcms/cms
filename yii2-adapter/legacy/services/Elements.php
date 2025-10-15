@@ -2450,7 +2450,7 @@ class Elements extends Component
             }
         }
 
-        if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
+        if ($siteId === null && $elementType::isLocalized() && Sites::isMultiSite()) {
             // Get a site this element is enabled in
             $siteId = (int)DB::table(Table::ELEMENTS_SITES)
                 ->where('elementId', $elementId)
@@ -3780,7 +3780,7 @@ class Elements extends Component
         $dirtyAttributes = [];
 
         // Force propagation for new elements
-        $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
+        $propagate = $propagate && $element::isLocalized() && Sites::isMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
         $originalIsNewForSite = $element->isNewForSite;
@@ -4513,7 +4513,7 @@ class Elements extends Component
 
         // check user can edit this element for the site that throws validation error on propagation
         if ($user &&
-            Craft::$app->getIsMultiSite() &&
+            Sites::isMultiSite() &&
             $user->can("editSite:{$propagateToSite?->uid}") &&
             $siteElement->canSave($user)
         ) {
@@ -4831,7 +4831,7 @@ class Elements extends Component
     {
         return (
             !$element::isLocalized() ||
-            !Craft::$app->getIsMultiSite() ||
+            !Sites::isMultiSite() ||
             $user->can(sprintf('editSite:%s', $element->getSite()->uid))
         );
     }

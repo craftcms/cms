@@ -793,7 +793,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         // If there’s only one site, go with its language
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             // Only one site so use its language
             $locale = Sites::getPrimarySite()->getLocale();
         } elseif (!$element || !$this->translatable($element, $static)) {

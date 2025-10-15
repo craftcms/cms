@@ -82,7 +82,7 @@
     disabled: readOnly,
 }) }}
 
-{% if craft.app.getIsMultiSite() %}
+{% if craft.sites.isMultiSite() %}
     <hr>
 
     {{ forms.selectField({

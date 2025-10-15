@@ -1085,7 +1085,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 
-        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Craft::$app->getIsMultiSite()) {
+        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Sites::isMultiSite()) {
             $this->subQuery->andWhere(['users.affiliatedSiteId' => $this->affiliatedSiteId]);
         }
 

@@ -445,7 +445,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
 
-                if (Craft::$app->getIsMultiSite()) {
+                if (Sites::isMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
                 }
 
@@ -518,7 +518,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             (
                 !$section &&
                 str_starts_with($source, 'custom:') &&
-                Craft::$app->getIsMultiSite() &&
+                Sites::isMultiSite() &&
                 Collection::make(Craft::$app->getEntries()->getEditableSections())
                     ->contains(fn(Section $section) => $section->propagationMethod === PropagationMethod::Custom)
             )
@@ -1874,7 +1874,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $enabled = true;
         }
 
-        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
             $entry->setEnabledForSite($enabled);
         } else {

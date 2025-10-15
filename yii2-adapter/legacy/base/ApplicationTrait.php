@@ -233,18 +233,6 @@ trait ApplicationTrait
 
     /**
      * @var bool
-     * @see getIsMultiSite()
-     */
-    private bool $_isMultiSite;
-
-    /**
-     * @var bool
-     * @see getIsMultiSite()
-     */
-    private bool $_isMultiSiteWithTrashed;
-
-    /**
-     * @var bool
      */
     private bool $_gettingLanguage = false;
 
@@ -474,28 +462,13 @@ trait ApplicationTrait
      * @param bool $refresh Whether to ignore the cached result and check again
      * @param bool $withTrashed Whether to factor in soft-deleted sites
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Sites::isMultiSite} instead.
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
-        if ($withTrashed) {
-            if (!$refresh && isset($this->_isMultiSiteWithTrashed)) {
-                return $this->_isMultiSiteWithTrashed;
-            }
-            // This is a ridiculous microoptimization for the `sites` table, but all we need to know is whether there is
-            // 1 or "more than 1" rows, and this is the fastest way to do it.
-            // (https://stackoverflow.com/a/14916838/1688568)
-            return $this->_isMultiSiteWithTrashed = DB::table(
-                    table: DB::table(Table::SITES)
-                        ->selectRaw('1')
-                        ->limit(2),
-                    as: 'x'
-                )->count() !== 1;
-        }
+        DeprecatorFacade::log('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
 
-        if (!$refresh && isset($this->_isMultiSite)) {
-            return $this->_isMultiSite;
-        }
-        return $this->_isMultiSite = count(\CraftCms\Cms\Support\Facades\Sites::getAllSites(true)) > 1;
+        return \CraftCms\Cms\Support\Facades\Sites::isMultiSite($refresh, $withTrashed);
     }
 
     /**
@@ -1485,7 +1458,7 @@ trait ApplicationTrait
                     $event->fields[] = UserFullNameField::class;
                     $event->fields[] = PhotoField::class;
                     $event->fields[] = EmailField::class;
-                    if (Craft::$app->getIsMultiSite()) {
+                    if (\CraftCms\Cms\Support\Facades\Sites::isMultiSite()) {
                         $event->fields[] = AffiliatedSiteField::class;
                     }
                     break;

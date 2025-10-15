@@ -38,7 +38,7 @@
   {% endblock %}
 {% endembed %}
 
-{% if craft.app.getIsMultiSite() %}
+{% if craft.sites.isMultiSite() %}
   {{ forms.selectField({
     label: 'Propagation Method'|t('app'),
     instructions: 'Which sites should entries be saved to?'|t('app'),

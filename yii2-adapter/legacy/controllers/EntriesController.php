@@ -128,7 +128,7 @@ class EntriesController extends BaseEntriesController
             $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
-        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
             $entry->setEnabledForSite($enabled);
         } else {

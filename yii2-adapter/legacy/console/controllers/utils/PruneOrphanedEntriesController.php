@@ -31,7 +31,7 @@ class PruneOrphanedEntriesController extends Controller
      */
     public function actionIndex(): int
     {
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             $this->stdout("This command should only be run for multi-site installs.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }

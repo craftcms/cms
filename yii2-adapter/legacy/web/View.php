@@ -2534,7 +2534,7 @@ JS;
         $context['context'] = 'index';
         $context['sources'] = Craft::$app->getElementSources()->getSources($elementType, withDisabled: true);
 
-        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
             $context['showSiteMenu'] = $elementType::isLocalized();
         }
@@ -2560,7 +2560,7 @@ JS;
         if ($context['showStatusMenu'] === 'auto') {
             $context['showStatusMenu'] = $elementType::hasStatuses();
         }
-        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
             $context['showSiteMenu'] = $elementType::isLocalized();
         }

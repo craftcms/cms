@@ -215,7 +215,7 @@ class GlobalsController extends Controller
         // Make sure the user is allowed to edit this global set and site
         $this->requirePermission('editGlobalSet:' . $globalSet->uid);
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
         }
 

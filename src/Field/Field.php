@@ -642,7 +642,7 @@ JS, [
     {
         $locale = match (true) {
             // Only one site so use its language
-            ! Craft::$app->getIsMultiSite() => Sites::getPrimarySite()->getLocale(),
+            ! Sites::isMultiSite() => Sites::getPrimarySite()->getLocale(),
             // Not translatable, so use the user’s language
             ! $element || ! $this->getIsTranslatable($element) => I18N::getLocale(),
             // Use the site’s language

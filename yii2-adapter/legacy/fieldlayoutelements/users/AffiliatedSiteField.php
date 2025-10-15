@@ -7,7 +7,6 @@
 
 namespace craft\fieldlayoutelements\users;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
@@ -88,7 +87,7 @@ class AffiliatedSiteField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             return null;
         }
 
