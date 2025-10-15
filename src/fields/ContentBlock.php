@@ -260,7 +260,7 @@ class ContentBlock extends Field implements
     public function setFieldLayouts(array $layouts): void
     {
         $config = reset($layouts);
-        $layout = Craft::$app->getFields()->createLayout($config);
+        $layout = Craft::$app->getFields()->createLayout($config ?: []);
         $layout->uid = array_key_first($layouts);
         $layout->type = ContentBlockElement::class;
 
@@ -344,7 +344,26 @@ class ContentBlock extends Field implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        return $owner && Craft::$app->getElements()->canSave($owner, $user);
+
+        if (!$owner) {
+            return false;
+        }
+
+        if (Craft::$app->getElements()->canSave($owner, $user)) {
+            return true;
+        }
+
+        // Check all the owners. Maybe the user can save one of the other ones?
+        /** @phpstan-ignore-next-line  */
+        if (!Craft::$app->getElements()->canSave($owner, $user) && !$owner->getIsRevision()) {
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -932,6 +951,11 @@ JS, [
         // Set the content post location on the content block if we can
         if ($baseFieldNamespace) {
             $contentBlock->setFieldParamNamespace("$baseFieldNamespace.fields");
+        }
+
+        // if the owner is fresh, ensure the content block's content gets propagated to all sites
+        if ($element->getIsFresh()) {
+            $contentBlock->propagateAll = true;
         }
 
         if (isset($value['fields'])) {
