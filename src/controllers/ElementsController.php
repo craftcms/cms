@@ -1643,6 +1643,15 @@ JS, [
             'draftId' => null,
         ];
 
+        if ($asUnpublishedDraft &&
+            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
+            $element->slug === $element->getCanonical()->slug
+        ) {
+            $newAttributes += [
+                'slug' => null,
+            ];
+        }
+
         if ($element instanceof NestedElementInterface) {
             $newAttributes += [
                 'primaryOwnerId' => $element->getOwnerId(),
