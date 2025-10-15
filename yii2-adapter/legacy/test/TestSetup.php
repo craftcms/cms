@@ -421,7 +421,7 @@ class TestSetup
             }
         }
 
-        $site = Site::from($siteConfig);
+        $site = new Site(...$siteConfig);
 
         $migration = new Install(
             username: self::USERNAME,

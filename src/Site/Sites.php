@@ -849,7 +849,7 @@ final class Sites
         $this->allSitesById = collect();
         $this->enabledSitesById = collect();
 
-        if (! Info::isInstalled()) {
+        if (! Info::isInstalled(true)) {
             return;
         }
 
