@@ -382,7 +382,6 @@ JS;
             'Sort direction',
             'Source settings saved',
             'Source settings',
-            'Source',
             'Sources',
             'Structure',
             'Submit',

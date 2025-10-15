@@ -68,15 +68,20 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.$body = $('<div class="cs-body"/>').appendTo($container);
 
-    this.$sourcesSidebar = $('<div class="cs-sidebar cs-selected-screen"/>')
-      .appendTo(this.$body)
-      .attr({
-        role: 'navigation',
-        'aria-label': Craft.t('app', 'Source'),
-      });
+    const headerId = `cs-header-${Math.floor(Math.random() * 1000000)}`;
+    this.$sourcesSidebar = $('<div/>', {
+      class: 'cs-sidebar cs-selected-screen',
+      role: 'navigation',
+      'aria-labelledby': headerId,
+    }).appendTo(this.$body);
     this.$sourcesHeader = $('<div class="cs-header"/>')
       .appendTo(this.$sourcesSidebar)
-      .append($('<h2 class="h3"/>').text(Craft.t('app', 'Sources')));
+      .append(
+        $('<h2/>', {
+          id: headerId,
+          class: 'h3',
+        }).text(Craft.t('app', 'Sources'))
+      );
     this.$sourcesSidebarContent = $(
       '<div class="cs-sidebar-content"/>'
     ).appendTo(this.$sourcesSidebar);
@@ -266,14 +271,20 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   createPagesSidebar: async function (response) {
     this.$sourcesSidebar.removeClass('cs-selected-screen');
-    this.$pagesSidebar = $('<div class="cs-sidebar cs-selected-screen"/>')
-      .insertBefore(this.$sourcesSidebar)
-      .attr({
-        role: 'navigation',
-      });
+    const headerId = `cs-header-${Math.floor(Math.random() * 1000000)}`;
+    this.$pagesSidebar = $('<div/>', {
+      class: 'cs-sidebar cs-selected-screen',
+      role: 'navigation',
+      'aria-labelledby': headerId,
+    }).insertBefore(this.$sourcesSidebar);
     $('<div class="cs-header"/>')
       .appendTo(this.$pagesSidebar)
-      .append($('<h2 class="h3"/>').text(Craft.t('app', 'Pages')));
+      .append(
+        $('<h2/>', {
+          id: headerId,
+          class: 'h3',
+        }).text(Craft.t('app', 'Pages'))
+      );
 
     this.$pagesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
       this.$pagesSidebar
