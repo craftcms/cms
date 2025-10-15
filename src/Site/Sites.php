@@ -262,9 +262,9 @@ final class Sites
             return $this->editableSiteIds;
         }
 
-        $userSession = \Craft::$app->getUser();
+        $user = Auth::user();
 
-        return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $userSession->checkPermission("editSite:$site->uid"))->pluck('id')->values();
+        return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
     }
 
     /**
@@ -347,7 +347,7 @@ final class Sites
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): Collection
     {
         return $this->allSites($withDisabled)
-            ->where('language', $language)
+            ->where(fn (Site $site) => $site->getLanguage() === $language)
             ->values();
     }
 
