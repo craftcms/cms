@@ -1806,7 +1806,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'app' => $variable,
             'craft' => $variable,
-            'errors' => Session::get('errors') ?: new ViewErrorBag(),
+            'sessionErrors' => Session::get('errors') ?: new ViewErrorBag(),
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

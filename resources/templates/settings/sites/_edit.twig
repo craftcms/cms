@@ -46,7 +46,7 @@
             name: 'name',
             value: old('name', site.getName(false)),
             suggestEnvVars: true,
-            errors: errors.get('name'),
+            errors: sessionErrors.get('name'),
             autofocus: true,
             required: true,
             disabled: readOnly,
@@ -61,7 +61,7 @@
             autocorrect: false,
             autocapitalize: false,
             value: old('handle', site.handle),
-            errors: errors.get('handle'),
+            errors: sessionErrors.get('handle'),
             required: true,
             disabled: readOnly,
         }) }}
@@ -73,7 +73,7 @@
             name: 'language',
             value: old('language', site.getLanguage(false)),
             options: craft.cp.getLanguageOptions(true),
-            errors: errors.get('language'),
+            errors: sessionErrors.get('language'),
             includeEnvVars: true,
             disabled: readOnly,
         }) }}
@@ -127,7 +127,7 @@
                 suggestAliases: true,
                 name: 'baseUrl',
                 value: old('baseUrl', site.getBaseUrl(false)),
-                errors: errors.get('baseUrl'),
+                errors: sessionErrors.get('baseUrl'),
                 disabled: readOnly,
             }) }}
         </div>
