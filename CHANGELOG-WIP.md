@@ -259,6 +259,24 @@ Moved the following controllers:
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
 
+## Sites
+
+- Deprecated `craft\services\Sites`. `CraftCms\Cms\Site\Sites` should be used instead.
+- Deprecated `craft\models\Site`. `CraftCms\Cms\Site\Data\Site` should be used instead.
+- Deprecated `craft\models\SiteGroup`. `CraftCms\Cms\Site\Data\SiteGroup` should be used instead.
+- Deprecated `craft\records\Site`. `CraftCms\Cms\Site\Models\Site` should be used instead.
+- Deprecated `craft\records\SiteGroup`. `CraftCms\Cms\Site\Models\SiteGroup` should be used instead.
+- Deprecated `craft\events\SiteEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\events\DeleteSiteEvent`. One of `CraftCms\Cms\Site\Events\DeletingSite` or `CraftCms\Cms\Site\Events\SiteDeleted` should be used instead.
+- Deprecated `craft\events\ReorderSitesEvent`. One of `CraftCms\Cms\Site\Events\ReorderingSites` or `CraftCms\Cms\Site\Events\SitesReordered` should be used instead.
+- Deprecated `craft\events\SiteGroupEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\errors\SiteNotFoundException`. `CraftCms\Cms\Site\Exceptions\SiteNotFoundException` should be used instead.
+- Deprecated `craft\errors\SiteGroupNotFoundException`.
+
+- Removed `craft\controllers\SitesController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController` 
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController` 
+
 ## System Messages
 
 - Deprecated `craft\services\SystemMessages`. `CraftCms\Cms\SystemMessage\SystemMessages` should be used instead.
