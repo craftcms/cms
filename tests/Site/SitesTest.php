@@ -222,6 +222,8 @@ it('can reorder sites', function () {
         groupId: SiteGroup::first()->id,
     ));
 
+    $defaultSite = Site::first();
+
     Event::fake([
         ReorderingSites::class,
         SitesReordered::class,
@@ -229,12 +231,12 @@ it('can reorder sites', function () {
 
     $this->projectConfig->rebuild();
 
-    $this->sites->reorderSites([$otherSite->id, Site::first()->id]);
+    $this->sites->reorderSites([$otherSite->id, $defaultSite->id]);
 
     Event::assertDispatchedOnce(ReorderingSites::class);
     Event::assertDispatchedOnce(SitesReordered::class);
 
-    expect(Site::first()->sortOrder)->toBe(2);
+    expect($defaultSite->fresh()->sortOrder)->toBe(2);
     expect(Site::findOrFail($otherSite->id)->sortOrder)->toBe(1);
 });
 

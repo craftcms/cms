@@ -164,8 +164,10 @@ it('can reorder sites', function () {
 
     ProjectConfig::rebuild();
 
+    $defaultSite = Site::first();
+
     expect($newSite->sortOrder)->toBe(2);
-    expect(Site::first()->sortOrder)->toBe(1);
+    expect($defaultSite->sortOrder)->toBe(1);
 
     postJson(action([SitesController::class, 'reorder']), [
         'ids' => Json::encode([
@@ -175,7 +177,7 @@ it('can reorder sites', function () {
     ])->assertOk();
 
     expect(Site::findOrFail($newSite->id)->sortOrder)->toBe(1);
-    expect(Site::first()->sortOrder)->toBe(2);
+    expect($defaultSite->fresh()->sortOrder)->toBe(2);
 });
 
 it('can delete a site', function () {
