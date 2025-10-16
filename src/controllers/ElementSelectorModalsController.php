@@ -7,7 +7,9 @@
 
 namespace craft\controllers;
 
+use craft\elements\conditions\StatusConditionRule;
 use craft\helpers\Cp;
+use Illuminate\Support\Collection;
 use yii\web\Response;
 
 /**
@@ -27,13 +29,38 @@ class ElementSelectorModalsController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
+        $elementType = $this->elementType();
+        $hasStatuses = $elementType::hasStatuses();
+
+        if ($hasStatuses) {
+            $statuses = $elementType::statuses();
+            $condition = $this->condition();
+
+            if ($condition) {
+                /** @var StatusConditionRule|null $statusRule */
+                $statusRule = Collection::make($condition->getConditionRules())
+                    ->firstWhere(fn($rule) => $rule instanceof StatusConditionRule);
+
+                if ($statusRule) {
+                    $statusValues = $statusRule->getValues();
+                    $statuses = Collection::make($statuses)
+                        ->filter(function($info, string $status) use ($statusRule, $statusValues) {
+                            $inValues = in_array($status, $statusValues);
+                            return $statusRule->operator === 'in' ? $inValues : !$inValues;
+                        });
+                }
+            }
+        }
+
         return $this->asJson([
-            'html' => Cp::elementIndexHtml($this->elementType(), [
-                'context' => $this->context(),
+            'html' => Cp::elementIndexHtml($elementType, [
                 'class' => 'content',
-                'sources' => $this->request->getParam('sources'),
-                'showSiteMenu' => $this->request->getParam('showSiteMenu', 'auto'),
+                'context' => $this->context(),
                 'registerJs' => false,
+                'showSiteMenu' => $this->request->getParam('showSiteMenu', 'auto'),
+                'showStatusMenu' => $hasStatuses,
+                'sources' => $this->request->getParam('sources'),
+                'statuses' => $statuses ?? null,
             ]),
         ]);
     }

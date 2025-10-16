@@ -15,6 +15,7 @@
 - Users’ User Groups settings now show a component select input, and support inline group editing/creation on environments that allow administrative changes.
 - Relational fields now have an “Inline list” view mode. ([#17744](https://github.com/craftcms/cms/pull/17744))
 - Relational fields and Matrix fields now have a “Card grid” view mode, replacing the “Show cards in a grid” setting. ([#17744](https://github.com/craftcms/cms/pull/17744))
+- Relational fields’ selectable element conditions can now have “Status” condition rules. ([#17945](https://github.com/craftcms/cms/discussions/17945))
 - Added the “Show ON/OFF labels in cards” setting to Lightswitch fields. ([#17743](https://github.com/craftcms/cms/discussions/17743))
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 - “Generate image transform” jobs now include the asset’s filename in the job description. ([#17753](https://github.com/craftcms/cms/issues/17753))

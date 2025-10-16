@@ -2563,7 +2563,10 @@ JS;
         $context['idPrefix'] = sprintf('elementtoolbar%s-', mt_rand());
 
         if ($context['showStatusMenu']) {
-            $context['elementStatuses'] = $elementType::statuses();
+            $context['elementStatuses'] ??= $elementType::statuses();
+            if (count($context['elementStatuses']) < 2) {
+                $context['showStatusMenu'] = false;
+            }
         }
 
         return null;
