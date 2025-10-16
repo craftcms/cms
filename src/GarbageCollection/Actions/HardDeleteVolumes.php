@@ -6,6 +6,7 @@ use craft\records\Volume;
 use craft\records\VolumeFolder;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 /**
  * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
@@ -28,7 +29,7 @@ final class HardDeleteVolumes extends GarbageCollectionAction
                     ->get()
                     ->all();
 
-                usort($folders, fn ($a, $b) => substr_count($a['path'], '/') < substr_count($b['path'], '/'));
+                usort($folders, fn (stdClass $a, stdClass $b) => (int) (substr_count($a->path, '/') < substr_count($b->path, '/')));
 
                 foreach ($folders as $folder) {
                     VolumeFolder::deleteAll(['id' => $folder['id']]);
