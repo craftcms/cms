@@ -29,11 +29,11 @@ class ElementSelectorModalsController extends BaseElementsController
 
         return $this->asJson([
             'html' => Cp::elementIndexHtml($this->elementType(), [
-                'context' => $this->context(),
                 'class' => 'content',
-                'sources' => $this->request->getParam('sources'),
-                'showSiteMenu' => $this->request->getParam('showSiteMenu', 'auto'),
+                'context' => $this->context(),
                 'registerJs' => false,
+                'showSiteMenu' => $this->request->getParam('showSiteMenu', 'auto'),
+                'sources' => $this->request->getParam('sources'),
             ]),
         ]);
     }
