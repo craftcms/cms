@@ -41,7 +41,6 @@ final class Site extends Dto implements Chippable, Stringable
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
         public string $handle,
 
-        #[Rule(new LanguageRule(false))]
         string $language,
 
         #[MapInputName('siteId')]
@@ -84,6 +83,10 @@ final class Site extends Dto implements Chippable, Stringable
     public static function rules(?ValidationContext $context = null): array
     {
         return [
+            'language' => [
+                'required',
+                new LanguageRule(false),
+            ],
             'handle' => array_filter([
                 'required',
                 'string',

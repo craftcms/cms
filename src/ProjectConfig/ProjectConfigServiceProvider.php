@@ -13,6 +13,7 @@ use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\ServiceProvider;
@@ -47,9 +48,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
             ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
             // Fields
-            ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', $this->proxy('fields', 'handleChangedField'))
-            ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', $this->proxy('fields', 'handleChangedField'))
-            ->onRemove(ProjectConfig::PATH_FIELDS.'.{uid}', $this->proxy('fields', 'handleDeletedField'))
+            ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
+            ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
+            ->onRemove(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleDeletedField($event))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))

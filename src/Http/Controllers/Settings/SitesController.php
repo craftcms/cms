@@ -75,8 +75,11 @@ final readonly class SitesController
         $allGroups = $this->siteGroups->getAllGroups();
 
         abort_if($allGroups->isEmpty(), 500, 'No site groups exist.');
-        abort_if($request->has('groupId') && ! $this->siteGroups->getGroupById($request->get('groupId')), 404,
-            'Site group not found');
+        abort_if(
+            $request->has('groupId') && ! $this->siteGroups->getGroupById($request->get('groupId')),
+            404,
+            'Site group not found'
+        );
 
         return view('craftcms::settings/sites/_edit', [
             'brandNewSite' => true,
@@ -140,6 +143,7 @@ final readonly class SitesController
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
+            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
         ]);
 
         $siteData->id = $request->get('siteId');

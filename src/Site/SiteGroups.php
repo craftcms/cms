@@ -123,7 +123,7 @@ final class SiteGroups
         $groupModel->save();
 
         // Clear caches
-        $this->groups = null;
+        $this->refreshGroups();
 
         if (Event::hasListeners(SavedSiteGroup::class)) {
             Event::dispatch(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
@@ -151,7 +151,7 @@ final class SiteGroups
         $groupModel->delete();
 
         // Clear caches
-        $this->groups = null;
+        $this->refreshGroups();
 
         if (Event::hasListeners(DeletedSiteGroup::class)) {
             Event::dispatch(new DeletedSiteGroup($group));
@@ -201,6 +201,11 @@ final class SiteGroups
         );
 
         return true;
+    }
+
+    public function refreshGroups(): void
+    {
+        $this->groups = null;
     }
 
     private function createGroupQuery(): QueryBuilder

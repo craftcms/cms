@@ -328,9 +328,7 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, [$this, 'handleChangeEvent']);
         Event::listen(ItemRemoved::class, [$this, 'handleChangeEvent']);
 
-        // @TODO:
-        // $this->readOnly = \Craft::$app->getIsInstalled() && !$generalConfig->allowAdminChanges;
-        $this->readOnly = ! $generalConfig->allowAdminChanges;
+        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
     }
 

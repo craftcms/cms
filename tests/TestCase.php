@@ -57,6 +57,9 @@ class TestCase extends Orchestra
             TestSetup::tearDownCraft();
         }
 
+        unset($_SERVER['CRAFT_SITE']);
+        unset($_SERVER['CRAFT_SITE_UPPER']);
+
         parent::tearDown();
     }
 

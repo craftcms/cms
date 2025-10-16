@@ -1,4 +1,5 @@
 providers:
+  - Spatie\LaravelData\LaravelDataServiceProvider
   - Laravel\Tinker\TinkerServiceProvider
   - CraftCms\Aliases\AliasesServiceProvider
   - CraftCms\DependencyAwareCache\CacheServiceProvider

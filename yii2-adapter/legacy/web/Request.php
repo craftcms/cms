@@ -11,6 +11,7 @@ use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -1411,7 +1412,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             } else {
                 $site = Sites::getSiteByHandle($siteId, false);
             }
-            if (!$site && Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (!$site && Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
             return $site;
