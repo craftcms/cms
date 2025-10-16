@@ -1,11 +1,13 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 test('Should show developer details', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store/developer/610');
+  await page.goto('./plugin-store/developer/989727');
 
   // Wait for developer request to be done
   await page.waitForResponse((response) =>
-    response.url().includes('//api.craftcms.com/v1/developer/610')
+    response.url().includes('//api.craftcms.com/v1/developer/989727')
   );
 
   // Wait for the plugins request to be done
@@ -18,7 +20,9 @@ test('Should show developer details', async ({page, baseURL}) => {
   await expect(title).toContainText('PutYourLightsOn');
 
   // Developer website
-  const website = page.locator('.developer-card .developer-buttons a');
+  const website = page.locator(
+    '.developer-card .developer-buttons li:first-child a'
+  );
   await expect(website).toContainText('Website');
 
   // Plugins

@@ -115,4 +115,38 @@ return [
         'slug' => 'recursive-reference-c',
         'plainTextField' => 'Value from C',
     ],
+
+    // playwright
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 1',
+        'plainTextField5' => '1',
+        'numberField' => 1,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 2',
+        'plainTextField5' => '2',
+        'numberField' => 2,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 3',
+        'plainTextField5' => '3',
+        'numberField' => 3,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 10',
+        'plainTextField5' => '10',
+        'numberField' => 10,
+    ],
 ];
