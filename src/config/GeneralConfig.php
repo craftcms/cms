@@ -3213,15 +3213,17 @@ class GeneralConfig extends BaseConfig
     public bool $useEmailAsUsername = false;
 
     /**
-     * @var bool Whether [nontransitional processing](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode) should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     * @var bool Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
      *
-     * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
-     * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
      *
-     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003, unless explicit action is taken.
-     * Those characters are: German eszett, Greek final sigma, joiner characters (ZWJ and ZWNJ). [More info](https://unicode.org/reports/tr46/#Deviations))
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
      *
-     * For example, by default, `ß` will be translated to `ss` by the `idn_to_utf8` method. If you'd like to preseve it as `ß`, you need to set the `useIdnaNontransitionalToUnicode` to `true`.
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
      *
      * ::: code
      * ```php Static Config
@@ -6988,15 +6990,17 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether [nontransitional processing](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode) should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     * Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
      *
-     * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
-     * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
      *
-     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003, unless explicit action is taken.
-     * Those characters are: German eszett, Greek final sigma, joiner characters (ZWJ and ZWNJ). [More info](https://unicode.org/reports/tr46/#Deviations))
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
      *
-     * For example, by default, `ß` will be translated to `ss` by the `idn_to_utf8` method. If you'd like to preseve it as `ß`, you need to set the `useIdnaNontransitionalToUnicode` to `true`.
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
      *
      * ```php
      * ->useIdnaNontransitionalToUnicode(true)
