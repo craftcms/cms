@@ -105,7 +105,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
 
         $this->publishes([
-            __DIR__.'/../../resources/build/' => public_path('vendor/craft'),
+            "{$this->root}/resources/build/" => public_path('vendor/craft'),
         ], ['craftcms', 'craftcms-assets']);
     }
 

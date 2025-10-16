@@ -64,9 +64,6 @@ export default defineConfig(({mode}) => {
         hotFile: 'resources/hot',
         refresh: [
           // The defaults
-          'app/Livewire/**',
-          'app/View/Components/**',
-          'lang/**',
           'resources/lang/**',
           'resources/views/**',
           'routes/**',
