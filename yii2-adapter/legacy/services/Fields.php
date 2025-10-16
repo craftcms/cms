@@ -410,8 +410,6 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event): void
     {
-        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-
         app(\CraftCms\Cms\Field\Fields::class)->handleChangedField($event);
     }
 
