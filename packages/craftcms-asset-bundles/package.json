@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "webpack --node-env=production --progress",
-    "dev": "webpack --node-env=dev --mode=development --progress",
+    "dev": "webpack --node-env=dev --mode=development --progress -w",
     "serve": "webpack-dev-server --node-env=development"
   },
   "engines": {
