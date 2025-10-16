@@ -7,7 +7,10 @@
 
 namespace craft\controllers;
 
+use Craft;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\services\ElementSources;
 use craft\web\Controller;
@@ -67,5 +70,43 @@ abstract class BaseElementsController extends Controller
     protected function context(): string
     {
         return $this->request->getParam('context') ?? ElementSources::CONTEXT_INDEX;
+    }
+
+    /**
+     * Returns the condition that should be applied to the element query.
+     *
+     * @return ElementConditionInterface|null
+     * @since 5.9.0
+     */
+    protected function condition(): ?ElementConditionInterface
+    {
+        /** @var array|null $conditionConfig */
+        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
+        $conditionConfig = $this->request->getBodyParam('condition');
+
+        if (!$conditionConfig) {
+            return null;
+        }
+
+        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+
+        if ($condition instanceof ElementCondition) {
+            $referenceElementId = $this->request->getBodyParam('referenceElementId');
+            if ($referenceElementId) {
+                $ownerId = $this->request->getBodyParam('referenceElementOwnerId');
+                $siteId = $this->request->getBodyParam('referenceElementSiteId');
+                $criteria = [];
+                if ($ownerId) {
+                    $criteria['ownerId'] = $ownerId;
+                }
+                $condition->referenceElement = Craft::$app->getElements()->getElementById(
+                    (int)$referenceElementId,
+                    siteId: $siteId,
+                    criteria: $criteria,
+                );
+            }
+        }
+
+        return $condition;
     }
 }

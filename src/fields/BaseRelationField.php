@@ -1469,7 +1469,6 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
-            $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [

@@ -1408,6 +1408,7 @@ JS, [
             'registerJs' => true,
             'showSiteMenu' => 'auto',
             'showStatusMenu' => 'auto',
+            'statuses' => null,
             'sources' => null,
         ];
 
@@ -1591,6 +1592,7 @@ JS, [
                 'elementType' => $elementType,
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
+                'elementStatuses' => $config['statuses'],
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
