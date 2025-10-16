@@ -19,6 +19,7 @@ use CraftCms\Cms\Console\Commands\UpCommand;
 use CraftCms\Cms\Console\Commands\Utils\AsciiFilenamesCommand;
 use CraftCms\Cms\Console\Commands\Utils\DeleteEmptyVolumeFoldersCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
+use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -42,6 +43,9 @@ final class ConsoleServiceProvider extends ServiceProvider
         EnvShowCommand::class,
         EnvSetCommand::class,
         EnvRemoveCommand::class,
+
+        // Gc
+        RunCommand::class,
 
         // Twig
         TwigCacheCommand::class,
