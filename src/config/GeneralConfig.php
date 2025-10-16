@@ -3213,6 +3213,33 @@ class GeneralConfig extends BaseConfig
     public bool $useEmailAsUsername = false;
 
     /**
+     * @var bool Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
+     *
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_USE_IDNA_NONTRANSITIONAL_TO_UNICODE=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 5.9.0
+     */
+    public bool $useIdnaNontransitionalToUnicode = false;
+
+    /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
      *
      * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
@@ -6959,6 +6986,35 @@ class GeneralConfig extends BaseConfig
     public function useEmailAsUsername(bool $value = true): self
     {
         $this->useEmailAsUsername = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
+     *
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
+     *
+     * ```php
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $useIdnaNontransitionalToUnicode
+     * @since 5.9.0
+     */
+    public function useIdnaNontransitionalToUnicode(bool $value = false): self
+    {
+        $this->useIdnaNontransitionalToUnicode = $value;
         return $this;
     }
 

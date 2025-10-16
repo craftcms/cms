@@ -145,7 +145,7 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         return [
             ['trim'],
-            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
+            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => App::supportsIdn()],
         ];
     }
 
