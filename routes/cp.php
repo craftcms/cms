@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 
@@ -23,7 +24,8 @@ Route::get('install', [InstallController::class, 'index']);
  * Admin requests that require a login
  */
 Route::middleware('auth')->group(function () {
-    Route::get('dashboard', DashboardController::class);
+    Route::get('dashboard', DashboardController::class)
+        ->middleware([HandleInertiaRequests::class]);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}', [UtilitiesController::class, 'show']);

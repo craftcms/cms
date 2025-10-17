@@ -1,0 +1,11 @@
+/**
+Maps our old custom utility classes to tailwind.
+ */
+
+.fullwidth {
+  @apply tw:w-full;
+}
+
+.visually-hidden {
+  @apply tw:sr-only;
+}

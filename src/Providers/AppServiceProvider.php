@@ -36,6 +36,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use IntlDateFormatter;
 use IntlException;
@@ -106,6 +107,9 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
+        $this->loadViewsFrom("{$this->root}/resources/views", 'c');
+
+        Vite::useHotFile("{$this->root}/resources/hot");
 
         $this->app->booted(function () {
             if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {

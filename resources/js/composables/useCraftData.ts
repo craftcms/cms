@@ -1,0 +1,33 @@
+import {usePage} from '@inertiajs/vue3';
+
+export interface CraftData {
+  system: {
+    name: string;
+    icon: string;
+  };
+  app: {
+    version: string;
+    edition: 'Solo' | 'Team' | 'Pro' | 'Enterprise';
+  };
+  site: {
+    url: string;
+  };
+  currentUser: any;
+  nav: any[];
+  [key: string]: any;
+}
+
+export default function useCraftData() {
+  const page = usePage<{
+    craft: CraftData;
+  }>();
+
+  // return page.props.craft;
+
+  // This is what Statamic does, I'm not sure if it's smart or overly complicated
+  return new Proxy({} as CraftData, {
+    get(target, prop: string) {
+      return page.props.craft?.[prop];
+    },
+  });
+}

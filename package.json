@@ -26,6 +26,7 @@
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.52.0",
+    "@vueuse/core": "^13.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "lit": "^3.3.1",
@@ -45,6 +46,7 @@
     "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
   },
   "dependencies": {
+    "@craftcms/cp": "file:../npm-packages/packages/cp",
     "@inertiajs/vue3": "^2.2.7",
     "laravel-vite-plugin": "^2.0.1",
     "vue": "^3.5.22"
