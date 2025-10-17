@@ -14,6 +14,7 @@ use craft\models\FieldLayout;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;
+use yii\log\Logger;
 use yii\test\ActiveFixture as YiiActiveFixture;
 use yii\test\BaseActiveFixture;
 
@@ -55,7 +56,15 @@ class ActiveFixture extends YiiActiveFixture
                 $fieldLayoutType = ArrayHelper::remove($row, 'fieldLayoutType');
                 $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout->id === null) {
-                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    if (function_exists('codecept_debug')) {
+                        codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    } else {
+                        Craft::getLogger()->log(
+                            "Field layout with type: $fieldLayoutType could not be found",
+                            Logger::LEVEL_WARNING,
+                            'testing'
+                        );
+                    }
                 }
             } elseif (isset($row['fieldLayoutUid'])) {
                 $fieldLayoutUid = ArrayHelper::remove($row, 'fieldLayoutUid');

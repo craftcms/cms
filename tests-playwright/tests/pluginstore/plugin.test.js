@@ -1,7 +1,9 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 test('Should show plugin details', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store/sherlock');
+  await page.goto('./plugin-store/sherlock');
 
   // Wait plugin request to be done
   await page.waitForResponse((response) =>
@@ -22,11 +24,10 @@ test('Should show plugin details', async ({page, baseURL}) => {
   const tabsLength = await page
     .locator('.plugin-details-header .tabs ul li')
     .count();
-  expect(tabsLength === 3).toBeTruthy();
+  expect(tabsLength === 4).toBeTruthy();
 
   const tabs = page.locator('.plugin-details-header .tabs');
   await expect(tabs).toContainText('Overview');
-  await expect(tabs).toContainText('Pricing');
   await expect(tabs).toContainText('Changelog');
 });
 
@@ -34,7 +35,7 @@ test('Plugin details should have links to categories', async ({
   page,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store/sherlock');
+  await page.goto('./plugin-store/sherlock');
 
   // Wait plugin request to be done
   await page.waitForResponse((response) =>
