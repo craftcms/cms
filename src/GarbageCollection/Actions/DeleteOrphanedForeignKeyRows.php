@@ -8,7 +8,7 @@ use Throwable;
 
 final class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting orphaned foreign key rows',

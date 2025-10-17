@@ -9,7 +9,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 final class DeleteOrphanedDraftsAndRevisions extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting orphaned drafts and revisions',

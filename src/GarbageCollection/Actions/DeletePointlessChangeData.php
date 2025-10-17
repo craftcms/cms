@@ -9,7 +9,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 final class DeletePointlessChangeData extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $db = \Craft::$app->getDb();
         $schema = $db->getSchema();

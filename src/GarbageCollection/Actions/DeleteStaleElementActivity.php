@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 final class DeleteStaleElementActivity extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting stale element activity records',

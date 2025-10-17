@@ -24,7 +24,7 @@ final class DeleteOrphanedFieldLayouts extends GarbageCollectionAction
         parent::__construct($garbageCollection, $generalConfig);
     }
 
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             sprintf('deleting orphaned %s field layouts', $this->elementType::lowerDisplayName()),

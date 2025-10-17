@@ -24,7 +24,7 @@ final class DeletePartialElements extends GarbageCollectionAction
         parent::__construct($garbageCollection, $generalConfig);
     }
 
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             sprintf('deleting partial %s data', $this->elementType::lowerDisplayName()),

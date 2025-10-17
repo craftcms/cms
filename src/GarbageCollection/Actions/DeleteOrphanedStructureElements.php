@@ -8,7 +8,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 final class DeleteOrphanedStructureElements extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting orphaned structure elements',

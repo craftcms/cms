@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 final class DeleteStaleSessions extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         if ($this->generalConfig->purgeStaleUserSessionDuration === 0) {
             return;

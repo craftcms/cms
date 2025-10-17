@@ -4,7 +4,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 final class DeleteOrphanedSearchIndexes extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting orphaned search indexes',

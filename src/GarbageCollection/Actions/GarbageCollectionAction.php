@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\GarbageCollection\Contracts\GarbageCollectionActionInterface;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\OutputStyle;
@@ -13,7 +12,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
 
-abstract class GarbageCollectionAction implements GarbageCollectionActionInterface
+abstract class GarbageCollectionAction
 {
     use InteractsWithIO;
 
@@ -27,6 +26,8 @@ abstract class GarbageCollectionAction implements GarbageCollectionActionInterfa
             : new OutputStyle($this->input, new ConsoleOutput);
         $this->components = new Factory($this->output);
     }
+
+    abstract public function __invoke(): void;
 
     protected function shouldHardDelete(): bool
     {

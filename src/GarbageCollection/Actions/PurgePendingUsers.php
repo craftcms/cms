@@ -4,7 +4,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 final class PurgePendingUsers extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         if ($this->generalConfig->purgePendingUsersDuration === 0) {
             return;

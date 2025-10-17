@@ -11,7 +11,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  */
 final class RemoveEmptyTempFolders extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'removing empty temp folders',

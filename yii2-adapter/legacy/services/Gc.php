@@ -47,6 +47,7 @@ class Gc extends Component
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
     public int $probability {
+        /** @phpstan-ignore-next-line */
         get => app(GarbageCollection::class)->probability;
         set(int $value) => app(GarbageCollection::class)->probability = $value;
     }
@@ -57,6 +58,7 @@ class Gc extends Component
      * for hard-deletion per the <config5:softDeleteDuration> config setting.
      */
     public bool $deleteAllTrashed {
+        /** @phpstan-ignore-next-line */
         get => app(GarbageCollection::class)->deleteAllTrashed;
         set(bool $value) => app(GarbageCollection::class)->deleteAllTrashed = $value;
     }
@@ -66,6 +68,7 @@ class Gc extends Component
      * @since 5.4.9
      */
     public bool $silent {
+        /** @phpstan-ignore-next-line */
         get => app(GarbageCollection::class)->silent;
         set(bool $value) => app(GarbageCollection::class)->silent = $value;
     }
@@ -87,7 +90,7 @@ class Gc extends Component
      */
     public function hardDeleteVolumes(): void
     {
-        app(HardDeleteVolumes::class)->run();
+        app(HardDeleteVolumes::class)->__invoke();
     }
 
     /**
@@ -100,7 +103,7 @@ class Gc extends Component
      */
     public function hardDeleteElements(): void
     {
-        app(HardDeleteElements::class)->run();
+        app(HardDeleteElements::class)->__invoke();
     }
 
     /**
@@ -111,7 +114,7 @@ class Gc extends Component
      */
     public function hardDelete(array|string $tables): void
     {
-        app(HardDelete::class, ['tables' => $tables])->run();
+        app(HardDelete::class, ['tables' => $tables])->__invoke();
     }
 
     /**
@@ -130,7 +133,7 @@ class Gc extends Component
             'elementType' => $elementType,
             'table' => $table,
             'foreignKey' => $fk,
-        ])->run();
+        ])->__invoke();
     }
 
     /**
@@ -144,7 +147,7 @@ class Gc extends Component
      */
     public function removeEmptyTempFolders(): void
     {
-        app(RemoveEmptyTempFolders::class)->run();
+        app(RemoveEmptyTempFolders::class)->__invoke();
     }
 
     /**
@@ -164,7 +167,7 @@ class Gc extends Component
             'elementType' => $elementType,
             'table' => $table,
             'fieldForeignKey' => $fieldFk,
-        ])->run();
+        ])->__invoke();
     }
 
     /**
@@ -183,7 +186,7 @@ class Gc extends Component
             'elementType' => $elementType,
             'table' => $table,
             'foreignKey' => $fk,
-        ])->run();
+        ])->__invoke();
     }
 
     public static function registerEvents(): void

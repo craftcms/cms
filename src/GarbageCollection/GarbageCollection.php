@@ -25,6 +25,8 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleSessions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteUnsupportedSiteEntries;
+use CraftCms\Cms\GarbageCollection\Actions\FireRunEvent;
+use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteStructures;
@@ -32,8 +34,6 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
-use CraftCms\Cms\GarbageCollection\Contracts\GarbageCollectionActionInterface;
-use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
@@ -114,16 +114,12 @@ final class GarbageCollection
             [DeleteOrphanedNestedElements::class, ['elementType' => Address::class, 'table' => Table::ADDRESSES]],
             [DeleteOrphanedNestedElements::class, ['elementType' => ContentBlock::class, 'table' => Table::CONTENTBLOCKS]],
             [DeleteOrphanedNestedElements::class, ['elementType' => Entry::class, 'table' => Table::ENTRIES]],
-        ]);
 
-        // Fire a 'run' event
-        // Note this should get fired *before* orphaned drafts & revisions are deleted
-        // (see https://github.com/craftcms/cms/issues/14309)
-        if (Event::hasListeners(RunningGarbageCollection::class)) {
-            Event::dispatch(new RunningGarbageCollection);
-        }
+            // Fire a 'run' event
+            // Note this should get fired *before* orphaned drafts & revisions are deleted
+            // (see https://github.com/craftcms/cms/issues/14309)
+            FireRunEvent::class,
 
-        $this->runActions([
             DeleteOrphanedDraftsAndRevisions::class,
             DeleteOrphanedSearchIndexes::class,
             DeleteOrphanedRelations::class,
@@ -145,9 +141,9 @@ final class GarbageCollection
 
     /**
      * @param array<array{
-     *     0: class-string<GarbageCollectionActionInterface>,
+     *     0: class-string<GarbageCollectionAction>,
      *     1: array
-     * }|class-string<GarbageCollectionActionInterface>> $actions
+     * }|class-string<GarbageCollectionAction>> $actions
      */
     private function runActions(array $actions): void
     {
@@ -156,8 +152,7 @@ final class GarbageCollection
                 [$action, $params] = $action;
             }
 
-            $action = app($action, $params ?? []);
-            $action->run();
+            app($action, $params ?? [])();
         }
     }
 }

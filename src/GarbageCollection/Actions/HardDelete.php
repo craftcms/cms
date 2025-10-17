@@ -23,7 +23,7 @@ final class HardDelete extends GarbageCollectionAction
         parent::__construct($garbageCollection, $generalConfig);
     }
 
-    public function run(): void
+    public function __invoke(): void
     {
         if (! $this->shouldHardDelete()) {
             return;

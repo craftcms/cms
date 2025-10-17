@@ -15,7 +15,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  */
 final class HardDeleteElements extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         if (! $this->shouldHardDelete()) {
             return;

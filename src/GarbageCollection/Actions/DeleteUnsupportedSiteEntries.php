@@ -28,7 +28,7 @@ final class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
         parent::__construct($garbageCollection, $generalConfig);
     }
 
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             'deleting entries in unsupported sites',

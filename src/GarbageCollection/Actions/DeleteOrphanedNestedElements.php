@@ -26,7 +26,7 @@ final class DeleteOrphanedNestedElements extends GarbageCollectionAction
         parent::__construct($garbageCollection, $generalConfig);
     }
 
-    public function run(): void
+    public function __invoke(): void
     {
         $this->components->task(
             sprintf('deleting orphaned nested %s', $this->elementType::pluralLowerDisplayName()),

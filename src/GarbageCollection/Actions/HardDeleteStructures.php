@@ -9,7 +9,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 final class HardDeleteStructures extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         // get IDs of structures that can be deleted;
         // those are the ones for which the elements don't have any revisions

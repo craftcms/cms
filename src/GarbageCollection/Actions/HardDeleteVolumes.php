@@ -13,7 +13,7 @@ use stdClass;
  */
 final class HardDeleteVolumes extends GarbageCollectionAction
 {
-    public function run(): void
+    public function __invoke(): void
     {
         if (! $this->shouldHardDelete()) {
             return;
