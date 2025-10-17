@@ -341,10 +341,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   isPageNameUnique: function (name, page) {
-    const slug = Craft.CustomizeSourcesModal.Page.nameId(name);
+    const nameId = Craft.CustomizeSourcesModal.Page.nameId(name);
     return !this.pages.find(
       (p) =>
-        p !== page && Craft.CustomizeSourcesModal.Page.nameId(p.name) === slug
+        p !== page && Craft.CustomizeSourcesModal.Page.nameId(p.name) === nameId
     );
   },
 
