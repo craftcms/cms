@@ -1076,8 +1076,9 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       if (this.isSelected()) {
         this.deselect();
         closestPage?.select();
-        Garnish.setFocusWithin(this.modal.$sourceSettingsContainer);
       }
+
+      closestPage.$actionBtn.focus();
 
       const $sourceContainer = this.getSourceContainer(false);
       if ($sourceContainer) {
