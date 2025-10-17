@@ -475,6 +475,7 @@ JS;
         ]);
 
         $view->registerTranslations('yii', [
+            '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
             '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
         ]);

@@ -323,6 +323,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       new Craft.CustomizeSourcesModal.PageSettingsModal(this, {
         triggerElement: this.$newPageBtn,
         validateName: (name) => {
+          if (Craft.CustomizeSourcesModal.Page.nameId(name ?? '') === '') {
+            return Craft.t('yii', '{attribute} cannot be blank.', {
+              attribute: Craft.t('app', 'Page Name'),
+            });
+          }
           if (!this.isPageNameUnique(name)) {
             return Craft.t('app', 'Another page already has that name.');
           }
@@ -657,6 +662,7 @@ Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
       .createTextField({
         label: Craft.t('app', 'Page Name'),
         value: this.name,
+        required: true,
       })
       .appendTo($body);
     const $iconField = Craft.ui
@@ -701,6 +707,7 @@ Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
         if (result !== true) {
           Craft.ui.addErrorsToField($nameField, [result]);
           this.updateSizeAndPosition();
+          $nameInput.focus();
           return;
         }
 
