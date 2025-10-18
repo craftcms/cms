@@ -1160,12 +1160,6 @@ class Plugins extends Component
     public function getPluginLicenseKey(string $handle): ?string
     {
         $licenseKey = App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
-
-        // Is it set to a nonexistent environment variable?
-        if (is_string($licenseKey) && preg_match('/^\$\w+$/', $licenseKey)) {
-            return null;
-        }
-
         return $this->normalizePluginLicenseKey($licenseKey);
     }
 
