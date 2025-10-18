@@ -751,7 +751,7 @@ trait ApplicationTrait
             $name = null;
         }
 
-        return $name ?: 'Craft';
+        return $name ?: config('app.name', 'Craft');
     }
 
     /**
@@ -810,6 +810,7 @@ trait ApplicationTrait
      *
      * @return Announcements The announcements service
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Announcement\Announcements} instead.
      */
     public function getAnnouncements(): Announcements
     {
@@ -892,7 +893,7 @@ trait ApplicationTrait
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
-     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Dashboard\Dashboard::class)` instead.
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Dashboard\Dashboard} instead.
      */
     public function getDashboard(): Dashboard
     {
@@ -917,6 +918,7 @@ trait ApplicationTrait
      * Returns the deprecator service.
      *
      * @return Deprecator The deprecator service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Deprecator\Deprecator} instead.
      */
     public function getDeprecator(): Deprecator
     {
