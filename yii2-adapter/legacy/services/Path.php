@@ -59,17 +59,7 @@ class Path extends Component
      */
     public function getConfigPath(): string
     {
-        if (isset($this->_configPath)) {
-            return $this->_configPath;
-        }
-
-        $configPath = config_path('craft');
-
-        if ($configPath === false) {
-            throw new Exception('There was a problem getting the config path.');
-        }
-
-        return $this->_configPath = FileHelper::normalizePath($configPath);
+        return $this->_configPath ??= FileHelper::normalizePath(config_path('craft'));
     }
 
     /**
