@@ -4096,6 +4096,7 @@ class GeneralConfig extends BaseConfig
         ) {
             try {
                 $value = I18N::normalizeLanguage($value);
+                /** @phpstan-ignore catch.neverThrown */
             } catch (\InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
@@ -4737,6 +4738,7 @@ class GeneralConfig extends BaseConfig
             foreach ($value as &$localeId) {
                 try {
                     $localeId = I18N::normalizeLanguage($localeId);
+                    /** @phpstan-ignore catch.neverThrown */
                 } catch (\InvalidArgumentException $e) {
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
