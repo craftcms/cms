@@ -1,0 +1,22 @@
+# Release Notes for Craft CMS 4.17 (WIP)
+
+### Administration
+- Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
+
+### Development
+- Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
+
+### Extensibility
+- Added `craft\web\GqlResponseFormatter`.
+- Added `craft\web\Response::FORMAT_GQL`.
+- Added `craft\web\twig\nodes\BaseNode`.
+- `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
+- `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
+- `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
+- `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
+
+### System
+- GraphQL API responses now set their `Content-Type` header to `application/graphql-response+json`.
+- GraphQL API responses now set cache headers based on whether a mutation was performed, regardless of the request type.
+- Global set queries no longer register cache tags.
+- Updated Twig to 3.19. ([#17603](https://github.com/craftcms/cms/discussions/17603))

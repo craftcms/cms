@@ -48,7 +48,7 @@ class RedirectTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RedirectNode($nodes, [], $lineno, $this->getTag());
+        return new RedirectNode($nodes, [], $lineno);
     }
 
     /**

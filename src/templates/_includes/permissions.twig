@@ -59,7 +59,7 @@
 
 {% for group in permissions %}
     {# Include a placeholder for the user group being created? #}
-    {% if includeGroupPlaceholder ?? false and group.permissions.editUsers is defined %}
+    {% if (includeGroupPlaceholder ?? false) and group.permissions.editUsers is defined %}
         {% set group = group|merge({
             permissions: {
                 editUsers: {
