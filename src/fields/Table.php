@@ -375,18 +375,18 @@ class Table extends Field
      */
     public function beforeSave(bool $isNew): bool
     {
-        if (!$this->staticRows || empty($this->defaults)) {
-            parent::beforeSave($isNew);
+        if (!parent::beforeSave($isNew)) {
+            return false;
         }
 
-        // if we don't have rowIds - assign them
-        foreach ($this->defaults as $key => $value) {
-            if (!isset($this->defaults[$key]['rowId'])) {
-                $this->defaults[$key]['rowId'] = $key;
+        if ($this->staticRows && !empty($this->defaults)) {
+            // make sure the default rows have IDs assigned
+            foreach ($this->defaults as $key => $value) {
+                $this->defaults[$key]['rowId'] ??= $key;
             }
         }
 
-        return parent::beforeSave($isNew);
+        return true;
     }
 
     /**
@@ -637,12 +637,14 @@ class Table extends Field
                     $serializedRow[$colId] = parent::serializeValue($value, $element);
                 }
             }
+
             // if the table has static rows, store the rowId too
             if ($this->staticRows) {
                 if (isset($row['rowId'])) {
                     $serializedRow['rowId'] = $row['rowId'];
                 }
             }
+
             $serialized[] = $serializedRow;
         }
 

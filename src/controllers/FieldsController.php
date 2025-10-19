@@ -360,8 +360,6 @@ JS;
             $fieldUid = null;
         }
 
-        $settings = $this->request->getBodyParam('types.' . $type);
-
         $field = $fieldsService->createField([
             'type' => $type,
             'id' => $fieldId,
