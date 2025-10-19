@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use craft\db\TableSchema;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -20,46 +20,30 @@ final class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
                     $disabledFkChecks = false;
                 }
 
-                $db = \Craft::$app->getDb();
+                foreach (Schema::getTables() as $table) {
+                    $tableName = $table['name'];
 
-                $isMysql = $db->getIsMysql();
-
-                foreach ($db->getSchema()->getTableSchemas() as $table) {
-                    /** @var TableSchema $table */
-                    $extendedFkInfo = $table->getExtendedForeignKeys();
-                    $counter = 0;
-
-                    foreach ($table->foreignKeys as $fk) {
-                        if ($extendedFkInfo[$counter]['deleteType'] !== 'CASCADE') {
+                    foreach (Schema::getForeignKeys($tableName) as $foreignKey) {
+                        if (strtoupper($foreignKey['on_delete']) !== 'CASCADE') {
                             continue;
                         }
 
-                        $fk = array_merge($fk);
-                        $refTable = array_shift($fk);
+                        $referencedTable = $foreignKey['foreign_table'];
+                        $localColumns = $foreignKey['columns'];
+                        $foreignColumns = $foreignKey['foreign_columns'];
 
-                        foreach ($fk as $fkColumn => $pkColumn) {
-                            if ($isMysql) {
-                                $sql = <<<SQL
-                                DELETE t.* FROM $table->name t
-                                LEFT JOIN $refTable t2 ON t2.$pkColumn = t.$fkColumn
-                                WHERE t.$fkColumn IS NOT NULL
-                                AND t2.$pkColumn IS NULL
-                                SQL;
-                            } else {
-                                $sql = <<<SQL
-                                DELETE FROM $table->name t
-                                WHERE t."$fkColumn" IS NOT NULL
-                                AND NOT EXISTS (
-                                    SELECT * FROM $refTable
-                                    WHERE "$pkColumn" = t."$fkColumn"
-                                )
-                                SQL;
-                            }
+                        foreach (array_combine($localColumns, $foreignColumns) as $localCol => $foreignCol) {
+                            // Build a subquery for missing parents
+                            $orphans = DB::table($tableName.' as child')
+                                ->leftJoin($referencedTable.' as parent', "child.$localCol", '=', "parent.$foreignCol")
+                                ->whereNotNull("child.$localCol")
+                                ->whereNull("parent.$foreignCol")
+                                ->pluck("child.$localCol");
 
-                            $db->createCommand($sql)->execute();
+                            DB::table($tableName)
+                                ->whereIn('id', $orphans)
+                                ->delete();
                         }
-
-                        $counter++;
                     }
                 }
 
