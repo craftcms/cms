@@ -145,7 +145,7 @@ final class GarbageCollection
      *     1: array
      * }|class-string<GarbageCollectionAction>> $actions
      */
-    private function runActions(array $actions): void
+    public function runActions(array $actions): void
     {
         foreach ($actions as $action) {
             if (is_array($action)) {

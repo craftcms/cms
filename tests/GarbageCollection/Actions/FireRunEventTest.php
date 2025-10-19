@@ -9,6 +9,5 @@ it('fires the event', function () {
 
     app(FireRunEvent::class)();
 
-
     Event::assertDispatchedOnce(RunningGarbageCollection::class);
 });
