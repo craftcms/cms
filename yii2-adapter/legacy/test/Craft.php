@@ -218,6 +218,9 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        \Craft::$app->getDb()->close();
+        \Craft::$app->getDb2()->close();
+
         parent::_after($test);
 
         DB::disconnect();
