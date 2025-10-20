@@ -33,7 +33,6 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
-use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 
