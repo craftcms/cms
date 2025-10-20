@@ -22,6 +22,10 @@ arch('All actions extend GarbageCollectionAction')
     ->expect('CraftCms\Cms\GarbageCollection\Actions')
     ->toExtend(GarbageCollectionAction::class);
 
+it('is not a singleton', function () {
+    expect(app(GarbageCollection::class))->not()->toBe(app(GarbageCollection::class));
+});
+
 it('runs on a lottery', function () {
     Lottery::fix([false, true]);
 

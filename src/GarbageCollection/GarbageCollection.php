@@ -37,7 +37,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 
-#[Singleton]
 final class GarbageCollection
 {
     /**
