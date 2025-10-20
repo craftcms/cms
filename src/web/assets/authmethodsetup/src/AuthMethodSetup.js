@@ -57,7 +57,6 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
             .then(async ({data}) => {
               this.showingSlideout = true;
               const slideout = new Craft.AuthMethodSetup.Slideout(data);
-
               slideout.on('close', () => {
                 this.showingSlideout = false;
               });
