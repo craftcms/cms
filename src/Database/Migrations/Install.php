@@ -13,6 +13,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\web\Response;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
@@ -1149,8 +1150,8 @@ class Install extends Migration
         $this->components->task('Populating the info table', function () {
             Info::create([
                 'id' => 1,
-                'version' => Craft::$app->getVersion(),
-                'schemaVersion' => Craft::$app->schemaVersion,
+                'version' => Cms::VERSION,
+                'schemaVersion' => Cms::SCHEMA_VERSION,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
                 'fieldVersion' => Str::random(12),
@@ -1228,7 +1229,7 @@ class Install extends Migration
         }
 
         $expectedSchemaVersion = (string) app(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
-        $craftSchemaVersion = Craft::$app->schemaVersion;
+        $craftSchemaVersion = Cms::SCHEMA_VERSION;
 
         if (! version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
             $error = "Craft CMS is Composer-installed with schema version $craftSchemaVersion, but project.yaml expects $expectedSchemaVersion.";
@@ -1325,7 +1326,7 @@ class Install extends Migration
                 'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
                 'live' => true,
-                'schemaVersion' => Craft::$app->schemaVersion,
+                'schemaVersion' => Cms::SCHEMA_VERSION,
                 'timeZone' => 'America/Los_Angeles',
             ],
             'users' => [

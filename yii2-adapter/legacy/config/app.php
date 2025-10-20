@@ -48,15 +48,16 @@ use craft\services\Webpack;
 use craft\web\UrlManager;
 use craft\web\UrlRule;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
     'id' => 'CraftCMS',
-    'name' => 'Craft CMS',
-    'version' => '6.0.0',
-    'schemaVersion' => '6.0.0.0',
-    'minVersionRequired' => '4.5.0',
+    'name' => Cms::NAME,
+    'version' => Cms::VERSION,
+    'schemaVersion' => Cms::SCHEMA_VERSION,
+    'minVersionRequired' => Cms::MIN_VERSION_REQUIRED,
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',

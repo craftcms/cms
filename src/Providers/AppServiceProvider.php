@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Providers;
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
@@ -96,8 +97,8 @@ final class AppServiceProvider extends ServiceProvider
 
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => Edition::get()->name,
-            'Schema' => Craft::$app->schemaVersion,
-            'Version' => Craft::$app->getVersion(),
+            'Schema' => Cms::SCHEMA_VERSION,
+            'Version' => Cms::VERSION,
         ]);
 
         $this->setTimezone();
@@ -167,7 +168,7 @@ final class AppServiceProvider extends ServiceProvider
             $generalConfig = app(GeneralConfig::class);
 
             return $this->throw()
-                ->withUserAgent('Craft/'.Craft::$app->getVersion().' '.Utils::defaultUserAgent())
+                ->withUserAgent('Craft/'.Cms::VERSION.' '.Utils::defaultUserAgent())
                 ->when(
                     Config::has('craft.guzzle'),
                     fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions(Config::get('craft.guzzle')),

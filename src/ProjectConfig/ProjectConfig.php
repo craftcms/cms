@@ -17,6 +17,7 @@ use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\services\ElementSources;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -856,7 +857,7 @@ final class ProjectConfig
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
         $incomingSchema = (string) $this->getExternalConfig()->get(self::PATH_SCHEMA_VERSION);
-        $existingSchema = Craft::$app->schemaVersion;
+        $existingSchema = Cms::SCHEMA_VERSION;
 
         // Compare existing Craft schema version with the one that is being applied.
         if (! version_compare($existingSchema, $incomingSchema, '=')) {

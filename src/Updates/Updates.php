@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Updates;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\License\License;
@@ -245,7 +246,7 @@ final class Updates
      */
     public function hasCraftVersionChanged(): bool
     {
-        return \Craft::$app->getVersion() != Info::fetch()->version;
+        return Info::fetch()->version != Cms::VERSION;
     }
 
     /**
@@ -254,7 +255,7 @@ final class Updates
      */
     public function wasCraftBreakpointSkipped(): bool
     {
-        return version_compare(\Craft::$app->minVersionRequired, Info::fetch()->version, '>');
+        return version_compare(Cms::SCHEMA_VERSION, Info::fetch()->version, '>');
     }
 
     /**
@@ -264,7 +265,7 @@ final class Updates
     {
         $storedSchemaVersion = Info::fetch()->schemaVersion;
 
-        return version_compare(\Craft::$app->schemaVersion, $storedSchemaVersion, '>=');
+        return version_compare(Cms::SCHEMA_VERSION, $storedSchemaVersion, '>=');
     }
 
     /**
@@ -274,7 +275,7 @@ final class Updates
     {
         if (! isset($this->isCraftUpdatePending)) {
             $storedSchemaVersion = Info::fetch()->schemaVersion;
-            $this->isCraftUpdatePending = version_compare(\Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+            $this->isCraftUpdatePending = version_compare(Cms::SCHEMA_VERSION, $storedSchemaVersion, '>');
         }
 
         return $this->isCraftUpdatePending;
@@ -287,8 +288,8 @@ final class Updates
     {
         $info = Info::fetch();
         $info->update([
-            'version' => \Craft::$app->getVersion(),
-            'schemaVersion' => \Craft::$app->schemaVersion,
+            'version' => Cms::VERSION,
+            'schemaVersion' => Cms::SCHEMA_VERSION,
         ]);
 
         $this->projectConfig->set(

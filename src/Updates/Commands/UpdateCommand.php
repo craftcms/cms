@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Updates\Commands;
 
 use Closure;
 use Composer\Semver\VersionParser;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\BackupTrait;
@@ -113,7 +114,7 @@ final class UpdateCommand extends Command
         $constraints = [];
 
         if ($this->option('minor-only') || $this->option('patch-only')) {
-            $cmsConstraint = $this->constraint(\Craft::$app->getVersion());
+            $cmsConstraint = $this->constraint(Cms::VERSION);
 
             if ($cmsConstraint !== null) {
                 $constraints['cms'] = $cmsConstraint;
@@ -176,7 +177,7 @@ final class UpdateCommand extends Command
                     continue;
                 }
 
-                $this->updateRequirements($requirements, $info, 'craft', \Craft::$app->version, $version, 'craftcms/cms', $updates->cms);
+                $this->updateRequirements($requirements, $info, 'craft', Cms::VERSION, $version, 'craftcms/cms', $updates->cms);
 
                 continue;
             }
