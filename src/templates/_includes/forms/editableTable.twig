@@ -122,7 +122,6 @@
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
-            {% set rowIndex = loop.index0 %}
             {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
             {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
             <tr data-id="{{ rowId }}">
