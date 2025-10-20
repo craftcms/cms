@@ -97,7 +97,6 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Composer;
