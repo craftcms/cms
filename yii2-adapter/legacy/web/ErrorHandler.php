@@ -11,7 +11,7 @@ use Craft;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
 use craft\helpers\Template;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Config;
@@ -213,7 +213,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $exception instanceof NotFoundHttpException &&
             $request &&
             $request->getAcceptsImage() &&
-            app(GeneralConfig::class)->brokenImagePath
+            Cms::config()->brokenImagePath
         ) {
             $this->errorAction = 'app/broken-image';
         }

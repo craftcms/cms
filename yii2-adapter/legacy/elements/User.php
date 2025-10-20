@@ -41,7 +41,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -435,7 +435,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSortOptions(): array
     {
-        if (app(GeneralConfig::class)->useEmailAsUsername) {
+        if (Cms::config()->useEmailAsUsername) {
             $attributes = [
                 'email' => t('Email'),
                 'fullName' => t('Full Name'),
@@ -858,7 +858,7 @@ class User extends Element implements IdentityInterface
         // Is this user in cooldown mode, and are they past their window?
         if (
             $this->locked &&
-            app(GeneralConfig::class)->cooldownDuration &&
+            Cms::config()->cooldownDuration &&
             !$this->getRemainingCooldownTime()
         ) {
             Craft::$app->getUsers()->unlockUser($this);
@@ -872,7 +872,7 @@ class User extends Element implements IdentityInterface
             $this->email = Str::idnToUtf8Email($this->email);
         }
 
-        if (empty($this->username) && app(GeneralConfig::class)->useEmailAsUsername) {
+        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -999,7 +999,7 @@ class User extends Element implements IdentityInterface
         if ($scenario === self::SCENARIO_LIVE) {
             $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
             if ($fullNameElement && $fullNameElement->required) {
-                if (app(GeneralConfig::class)->showFirstAndLastNameFields) {
+                if (Cms::config()->showFirstAndLastNameFields) {
                     (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
                 } else {
                     (new RequiredValidator())->validateAttribute($this, 'fullName');
@@ -1031,7 +1031,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
-        if (!app(GeneralConfig::class)->useEmailAsUsername) {
+        if (!Cms::config()->useEmailAsUsername) {
             $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
@@ -1046,7 +1046,7 @@ class User extends Element implements IdentityInterface
                 'when' => $treatAsActive,
             ];
 
-            if (!app(GeneralConfig::class)->useEmailAsUsername) {
+            if (!Cms::config()->useEmailAsUsername) {
                 $rules[] = [
                     ['username'],
                     UniqueValidator::class,
@@ -1359,7 +1359,7 @@ class User extends Element implements IdentityInterface
     {
         Craft::$app->getUsers()->handleInvalidLogin($this);
         // Was that one bad password/2fa code/passkey too many?
-        if ($this->locked && !app(GeneralConfig::class)->preventUserEnumeration) {
+        if ($this->locked && !Cms::config()->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->_getAuthError();
         } else {
@@ -1867,7 +1867,7 @@ XML;
         // passed their cooldownDuration already, but there account status is still locked.
         // If that’s the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
             $cooldownEnd = clone $this->lockoutDate;
             $cooldownEnd->add($interval);
@@ -2440,7 +2440,7 @@ JS, [
             t('Cooldown Time Remaining') => function() use ($formatter) {
                 if (
                     !$this->locked ||
-                    !app(GeneralConfig::class)->cooldownDuration ||
+                    !Cms::config()->cooldownDuration ||
                     ($duration = $this->getRemainingCooldownTime()) === null
                 ) {
                     return false;
@@ -2498,7 +2498,7 @@ JS, [
             return false;
         }
 
-        if (app(GeneralConfig::class)->useEmailAsUsername) {
+        if (Cms::config()->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -2690,7 +2690,7 @@ JS, [
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (!app(GeneralConfig::class)->requireMatchingUserAgentForSession) {
+        if (!Cms::config()->requireMatchingUserAgentForSession) {
             return true;
         }
 
@@ -2729,7 +2729,7 @@ JS, [
             case self::STATUS_ACTIVE:
                 if ($this->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (app(GeneralConfig::class)->cooldownDuration) {
+                    if (Cms::config()->cooldownDuration) {
                         return self::AUTH_ACCOUNT_COOLDOWN;
                     }
 

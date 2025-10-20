@@ -15,7 +15,7 @@ use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\models\Volume;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Json;
@@ -56,7 +56,7 @@ class VolumesController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         return true;
     }

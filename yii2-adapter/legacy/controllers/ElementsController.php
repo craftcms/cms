@@ -36,7 +36,7 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
@@ -800,7 +800,7 @@ JS, [
             $drafts = [];
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $revisionsPageUrl = null;
         $hasMoreRevisions = false;
 

@@ -22,6 +22,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -191,7 +192,7 @@ class Application extends \yii\web\Application
             $isCpRequest = $request->getIsCpRequest();
             $response = $this->getResponse();
             $headers = $response->getHeaders();
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
 
             // Set no-cache headers for all action and CP requests
             if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
@@ -347,7 +348,7 @@ class Application extends \yii\web\Application
      */
     protected function ensureResourcePathExists(): void
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
 
@@ -368,7 +369,7 @@ class Application extends \yii\web\Application
      */
     protected function authenticate(): void
     {
-        if (!app(GeneralConfig::class)->enableBasicHttpAuth) {
+        if (!Cms::config()->enableBasicHttpAuth) {
             return;
         }
 
@@ -475,7 +476,7 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(): void
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $request = $this->getRequest();
 
         // Does this look like a resource request?

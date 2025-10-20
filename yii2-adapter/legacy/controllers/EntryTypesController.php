@@ -15,7 +15,7 @@ use craft\helpers\Cp;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -58,7 +58,7 @@ class EntryTypesController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         return parent::beforeAction($action);
     }

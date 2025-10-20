@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Models\Site;
@@ -37,7 +37,7 @@ it('requires authentication', function () {
 });
 
 it('requires admin changes', function () {
-    app(GeneralConfig::class)->allowAdminChanges = false;
+    Cms::config()->allowAdminChanges = false;
 
     // Read only
     get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertSee(t('Changes to these settings aren’t permitted in this environment.'));

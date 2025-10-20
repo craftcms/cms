@@ -19,9 +19,9 @@ use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -261,7 +261,7 @@ class Volume extends Model implements
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
 
-        $tempAssetUploadFs = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
+        $tempAssetUploadFs = Env::parse(Cms::config()->tempAssetUploadFs);
         if ($tempAssetUploadFs) {
             $rules[] = [
                 ['fsHandle'],

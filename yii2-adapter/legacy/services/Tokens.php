@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\records\Token as TokenRecord;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use DateTime;
@@ -70,7 +70,7 @@ class Tokens extends Component
         }
 
         if (!$expiryDate) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $interval = DateTimeHelper::secondsToInterval($generalConfig->defaultTokenDuration);
             $expiryDate = DateTimeHelper::currentUTCDateTime();
             $expiryDate->add($interval);
@@ -107,7 +107,7 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $interval = DateTimeHelper::secondsToInterval(app(GeneralConfig::class)->previewTokenDuration);
+        $interval = DateTimeHelper::secondsToInterval(Cms::config()->previewTokenDuration);
         $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
         return $this->createToken($route, $usageLimit, $expiryDate, $token);
     }

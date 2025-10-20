@@ -56,7 +56,7 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
@@ -301,7 +301,7 @@ class TestSetup
         Craft::setAlias('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         // Set any custom aliases
         $customAliases = $generalConfig->aliases ?? $generalConfig->environmentVariables ?? null;

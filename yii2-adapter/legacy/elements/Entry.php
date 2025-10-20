@@ -54,9 +54,9 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -2172,7 +2172,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            app(GeneralConfig::class)->allowAdminChanges
+            Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
             $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
@@ -3209,7 +3209,7 @@ JS;
             $templates[] = [
                 'template' => sprintf(
                     '%s/%s/%s',
-                    app(GeneralConfig::class)->partialTemplatesPath,
+                    Cms::config()->partialTemplatesPath,
                     static::refHandle(),
                     $entryType->original->handle,
                 ),

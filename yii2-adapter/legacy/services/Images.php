@@ -14,7 +14,7 @@ use craft\helpers\Image as ImageHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
@@ -63,7 +63,7 @@ class Images extends Component
      */
     public function init(): void
     {
-        if (strtolower(app(GeneralConfig::class)->imageDriver) === 'gd') {
+        if (strtolower(Cms::config()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
         } elseif ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
@@ -321,7 +321,7 @@ class Images extends Component
 
         // Special case for SVG files.
         if (FileHelper::isSvg($filePath)) {
-            if (!app(GeneralConfig::class)->sanitizeSvgUploads) {
+            if (!Cms::config()->sanitizeSvgUploads) {
                 return;
             }
 
@@ -338,12 +338,12 @@ class Images extends Component
             return;
         }
 
-        if (FileHelper::isGif($filePath) && !app(GeneralConfig::class)->transformGifs) {
+        if (FileHelper::isGif($filePath) && !Cms::config()->transformGifs) {
             return;
         }
 
         try {
-            if (app(GeneralConfig::class)->rotateImagesOnUploadByExifData) {
+            if (Cms::config()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 

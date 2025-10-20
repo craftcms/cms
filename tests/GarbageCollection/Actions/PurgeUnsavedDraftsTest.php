@@ -1,12 +1,12 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 
 it('purges unsaved drafts that have gone stale', function () {
-    app(GeneralConfig::class)->purgeUnsavedDraftsDuration = 60;
+    Cms::config()->purgeUnsavedDraftsDuration = 60;
 
     $savedDraftId = DB::table(Table::DRAFTS)->insertGetId([
         'name' => 'Saved draft',

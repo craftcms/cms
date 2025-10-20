@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\App;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
@@ -194,7 +195,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         parent::init();
 
         if (!isset($this->generalConfig)) {
-            $this->generalConfig = app(GeneralConfig::class);
+            $this->generalConfig = Cms::config();
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
 

@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
@@ -29,7 +29,7 @@ it('needs authentication and admin changes for the routes', function (string $me
     actingAs(User::first());
 
     if ($requireAdminChanges) {
-        app(GeneralConfig::class)->allowAdminChanges(false);
+        Cms::config()->allowAdminChanges(false);
 
         $this->$method(action($route))->assertForbidden();
     }

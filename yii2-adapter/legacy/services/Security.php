@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -43,7 +43,7 @@ class Security extends \yii\base\Security
     {
         parent::init();
 
-        $this->_blowFishHashCost = app(GeneralConfig::class)->blowfishHashCost;
+        $this->_blowFishHashCost = Cms::config()->blowfishHashCost;
 
         // normalize the sensitive keywords
         $this->sensitiveKeywords = array_map(
@@ -97,7 +97,7 @@ class Security extends \yii\base\Security
     public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = app(GeneralConfig::class)->securityKey;
+            $key = Cms::config()->securityKey;
         }
 
         return parent::hashData($data, $key, $rawHash);
@@ -122,7 +122,7 @@ class Security extends \yii\base\Security
     public function validateData($data, $key = null, $rawHash = false): string|false
     {
         if ($key === null) {
-            $key = app(GeneralConfig::class)->securityKey;
+            $key = Cms::config()->securityKey;
         }
 
         return parent::validateData($data, $key, $rawHash);
@@ -142,7 +142,7 @@ class Security extends \yii\base\Security
     public function encryptByKey($data, $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
-            $inputKey = app(GeneralConfig::class)->securityKey;
+            $inputKey = Cms::config()->securityKey;
         }
 
         return parent::encryptByKey($data, $inputKey, $info);
@@ -161,7 +161,7 @@ class Security extends \yii\base\Security
     public function decryptByKey($data, $inputKey = null, $info = null): string|false
     {
         if ($inputKey === null) {
-            $inputKey = app(GeneralConfig::class)->securityKey;
+            $inputKey = Cms::config()->securityKey;
         }
 
         return parent::decryptByKey($data, $inputKey, $info);

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\config\DbConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
@@ -115,7 +116,7 @@ class Config extends Component
     private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
         if ($category === self::CATEGORY_GENERAL) {
-            return app(GeneralConfig::class);
+            return Cms::config();
         }
 
         $config = ConfigFacade::get("craft.$filename", []);
@@ -237,9 +238,9 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
-        Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `app.config.craft.general` (Twig) instead.');
+        Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `CraftCms\Cms\Cms::config()` (PHP) or `app.config.craft.general` (Twig) instead.');
 
-        return app(GeneralConfig::class);
+        return Cms::config();
     }
 
     /**

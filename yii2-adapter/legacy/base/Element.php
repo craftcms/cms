@@ -78,7 +78,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -5984,7 +5984,7 @@ JS, [
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = app(GeneralConfig::class)->slugWordSeparator;
+                        $wordSeparator = Cms::config()->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
@@ -7018,18 +7018,16 @@ JS, [
         }
 
         $templates = [];
-        $generalConfig = app(GeneralConfig::class);
-
         $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
         if ($providerHandle !== null) {
             $templates[] = [
-                'template' => sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle),
+                'template' => sprintf('%s/%s/%s', Cms::config()->partialTemplatesPath, $refHandle, $providerHandle),
                 'priority' => 1,
             ];
         }
 
         $templates[] = [
-            'template' => sprintf('%s/%s', $generalConfig->partialTemplatesPath, $refHandle),
+            'template' => sprintf('%s/%s', Cms::config()->partialTemplatesPath, $refHandle),
             'priority' => 10,
         ];
 

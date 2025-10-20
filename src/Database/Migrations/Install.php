@@ -14,7 +14,6 @@ use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\web\Response;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -1158,7 +1157,6 @@ class Install extends Migration
             ]);
         });
 
-        $generalConfig = app(GeneralConfig::class);
         $projectConfig = app(ProjectConfig::class);
 
         if ($this->applyProjectConfigYaml) {
@@ -1196,7 +1194,7 @@ class Install extends Migration
 
         app()->setLocale($this->site->getLanguage());
 
-        $this->components->task('Saving the first user', function () use ($generalConfig) {
+        $this->components->task('Saving the first user', function () {
             $user = new User([
                 'active' => true,
                 'admin' => true,
@@ -1211,7 +1209,7 @@ class Install extends Migration
             ]);
 
             if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+                Craft::$app->getUser()->login($user, Cms::config()->userSessionDuration);
             }
         });
     }

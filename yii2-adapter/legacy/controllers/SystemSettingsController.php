@@ -20,7 +20,7 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         return true;
     }
@@ -177,7 +177,7 @@ class SystemSettingsController extends Controller
      */
     public function actionTestEmailSettings(): void
     {
-        if (app(GeneralConfig::class)->allowAdminChanges) {
+        if (Cms::config()->allowAdminChanges) {
             $this->requirePostRequest();
 
             $settings = $this->_createMailSettingsFromPost();

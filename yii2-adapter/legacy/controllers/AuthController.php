@@ -12,7 +12,7 @@ use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\web\Controller;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -309,7 +309,7 @@ class AuthController extends Controller
         $primarySite = Sites::getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
         $generated = I18N::getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);

@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
@@ -29,18 +29,16 @@ use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
-$generalConfig = app(GeneralConfig::class);
-
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix($generalConfig->actionTrigger)->group(function () {
+Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
 });
 
 Route::prefix(implode('/', [
-    $generalConfig->cpTrigger,
-    $generalConfig->actionTrigger,
+    Cms::config()->cpTrigger,
+    Cms::config()->actionTrigger,
 ]))->middleware(['craft.cp'])->group(function () {
     /**
      * Actions not needing auth

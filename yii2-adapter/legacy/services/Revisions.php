@@ -15,7 +15,7 @@ use craft\errors\MutexException;
 use craft\events\RevisionEvent;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -198,7 +198,7 @@ class Revisions extends Component
         }
 
         // Prune any excess revisions
-        if (app(GeneralConfig::class)->maxRevisions) {
+        if (Cms::config()->maxRevisions) {
             Queue::push(new PruneRevisions([
                 'elementType' => get_class($canonical),
                 'canonicalId' => $canonical->id,

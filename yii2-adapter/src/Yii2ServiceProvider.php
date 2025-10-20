@@ -16,6 +16,7 @@ use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -403,7 +404,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!app(GeneralConfig::class)->allowAdminChanges) {
+            if (!Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
             }
 

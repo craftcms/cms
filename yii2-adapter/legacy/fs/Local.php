@@ -15,7 +15,7 @@ use craft\errors\FsObjectNotFoundException;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\models\FsListing;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
@@ -92,7 +92,7 @@ class Local extends Fs implements LocalFsInterface
     {
         parent::init();
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if ($generalConfig->defaultFileMode) {
             $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;

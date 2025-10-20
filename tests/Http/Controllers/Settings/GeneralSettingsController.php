@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Models\User;
@@ -31,7 +31,7 @@ it('can show the settings screen', function () {
 });
 
 it('shows a readonly settings screen when admin changes is disabled', function () {
-    app(GeneralConfig::class)->allowAdminChanges = false;
+    Cms::config()->allowAdminChanges = false;
 
     get(action([GeneralSettingsController::class, 'index']))
         ->assertOk()

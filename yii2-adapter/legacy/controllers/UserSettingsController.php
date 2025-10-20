@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\web\BadRequestHttpException;
@@ -50,7 +50,7 @@ class UserSettingsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         if ($action->id !== 'save-user-settings') {
             Edition::require(Edition::Team);

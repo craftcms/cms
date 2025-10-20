@@ -14,7 +14,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\BadRequestHttpException;
@@ -53,7 +53,7 @@ class SectionsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         return true;
     }

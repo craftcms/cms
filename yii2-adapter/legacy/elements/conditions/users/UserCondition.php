@@ -3,7 +3,7 @@
 namespace craft\elements\conditions\users;
 
 use craft\elements\conditions\ElementCondition;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
 
 /**
@@ -29,7 +29,7 @@ class UserCondition extends ElementCondition
             LastNameConditionRule::class,
         ]);
 
-        if (!app(GeneralConfig::class)->useEmailAsUsername) {
+        if (!Cms::config()->useEmailAsUsername) {
             $types[] = UsernameConditionRule::class;
         }
 

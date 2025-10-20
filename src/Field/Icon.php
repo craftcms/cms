@@ -7,7 +7,7 @@ use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\gql\types\generators\IconDataType;
 use craft\helpers\Cp;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -139,7 +139,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
             'disabled' => $readOnly,
         ]);
 
-        if (app(GeneralConfig::class)->enableGql) {
+        if (Cms::config()->enableGql) {
             $html .= Html::tag('hr').
             Html::button(t('Advanced'), attributes: [
                 'class' => 'fieldtoggle',

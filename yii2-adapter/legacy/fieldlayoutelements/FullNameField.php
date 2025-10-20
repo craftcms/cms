@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use function CraftCms\Cms\t;
 
@@ -68,7 +68,7 @@ class FullNameField extends TextField
     {
         if (
             $element &&
-            app(GeneralConfig::class)->showFirstAndLastNameFields &&
+            Cms::config()->showFirstAndLastNameFields &&
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) === 2
         ) {
             return $this->firstAndLastNameFields($element, $static);
@@ -126,7 +126,7 @@ class FullNameField extends TextField
      */
     protected function settingsHtml(): ?string
     {
-        if (app(GeneralConfig::class)->showFirstAndLastNameFields) {
+        if (Cms::config()->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?
             return null;
         }

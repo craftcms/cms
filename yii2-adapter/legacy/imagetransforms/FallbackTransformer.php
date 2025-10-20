@@ -15,7 +15,7 @@ use craft\helpers\Assets;
 use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 
 /**
  * FallbackTransformer transforms image assets using GD or ImageMagick, and stores them in the storage folder.
@@ -31,8 +31,8 @@ class FallbackTransformer extends Component implements ImageTransformerInterface
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         if (match ($asset->getMimeType()) {
-            'image/gif' => app(GeneralConfig::class)->transformGifs,
-            'image/svg+xml' => app(GeneralConfig::class)->transformSvgs,
+            'image/gif' => Cms::config()->transformGifs,
+            'image/svg+xml' => Cms::config()->transformSvgs,
             default => true,
         }) {
             $transformString = ltrim(ImageTransforms::getTransformString($imageTransform, true), '_');

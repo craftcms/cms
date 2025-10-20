@@ -36,6 +36,7 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
@@ -505,7 +506,7 @@ JS;
     {
         $upToDate = Craft::$app->getIsInstalled() && !app(Updates::class)->areMigrationsPending();
         $request = Craft::$app->getRequest();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();

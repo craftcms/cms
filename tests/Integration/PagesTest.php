@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 
@@ -10,7 +10,7 @@ use function Pest\Laravel\get;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->cpTrigger = app(GeneralConfig::class)->cpTrigger;
+    $this->cpTrigger = Cms::config()->cpTrigger;
 
     Edition::set(Edition::Pro);
 });

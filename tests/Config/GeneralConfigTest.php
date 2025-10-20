@@ -1,10 +1,12 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
 
 it('can get from container', function () {
     expect(app(GeneralConfig::class))->toBe(Config::get('craft.general'));
+    expect(app(GeneralConfig::class))->toBe(Cms::config());
 });
 
 it('can get renamed settings', function () {
@@ -35,5 +37,5 @@ test('env overrides get precedence over config', function () {
     // Simulate the application being loaded
     app(ConfigServiceProvider::class, ['app' => app()])->boot();
 
-    expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+    expect(Cms::config()->cpTrigger)->toBe('adminus');
 });

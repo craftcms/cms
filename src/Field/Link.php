@@ -13,7 +13,7 @@ use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
 use craft\validators\StringValidator;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -426,7 +426,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'disabled' => $readOnly,
             ]);
 
-        if (app(GeneralConfig::class)->enableGql) {
+        if (Cms::config()->enableGql) {
             $html .=
                 Cp::selectFieldHtml([
                     'label' => t('GraphQL Mode'),

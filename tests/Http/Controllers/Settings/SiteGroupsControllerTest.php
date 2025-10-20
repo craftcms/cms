@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
@@ -27,7 +27,7 @@ it('requires authentication', function () {
 });
 
 it('requires admin changes', function () {
-    app(GeneralConfig::class)->allowAdminChanges = false;
+    Cms::config()->allowAdminChanges = false;
 
     postJson(action([SiteGroupsController::class, 'showGroupRenameField']))->assertForbidden();
     postJson(action([SiteGroupsController::class, 'store']))->assertForbidden();

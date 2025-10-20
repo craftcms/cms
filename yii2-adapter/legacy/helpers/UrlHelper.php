@@ -10,7 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\console\Request as ConsoleRequest;
 use craft\web\Request as WebRequest;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -184,7 +184,7 @@ class UrlHelper
         $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
-            app(GeneralConfig::class)->tokenParam => $token,
+            Cms::config()->tokenParam => $token,
         ]);
     }
 
@@ -396,7 +396,7 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
 
         $request = Craft::$app->getRequest();
@@ -451,7 +451,7 @@ class UrlHelper
      */
     public static function getSchemeForTokenizedUrl(bool $cp = false): string
     {
-        $useSslOnTokenizedUrls = app(GeneralConfig::class)->useSslOnTokenizedUrls;
+        $useSslOnTokenizedUrls = Cms::config()->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
@@ -526,7 +526,7 @@ class UrlHelper
     public static function baseCpUrl(): string
     {
         // Is a custom base control panel URL being defined in the config?
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
@@ -613,7 +613,7 @@ class UrlHelper
      */
     public static function prependCpTrigger(string $path): string
     {
-        return implode('/', array_filter([app(GeneralConfig::class)->cpTrigger, $path]));
+        return implode('/', array_filter([Cms::config()->cpTrigger, $path]));
     }
 
     /**
@@ -646,7 +646,7 @@ class UrlHelper
         $params = array_merge($baseParams, $params);
         $fragment ??= $baseFragment;
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {

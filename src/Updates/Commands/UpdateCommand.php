@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Updates\Commands;
 use Closure;
 use Composer\Semver\VersionParser;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\BackupTrait;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
@@ -377,6 +376,6 @@ final class UpdateCommand extends Command
 
     protected function getDefaultConfirmCallback(): Closure
     {
-        return fn () => ! app(GeneralConfig::class)->allowUpdates;
+        return fn () => ! Cms::config()->allowUpdates;
     }
 }

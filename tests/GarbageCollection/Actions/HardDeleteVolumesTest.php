@@ -1,13 +1,13 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 
 it('deletes trashed volumes and their folders', function () {
     createVolume(['dateDeleted' => null]);
     createVolume(['dateDeleted' => now()]);
-    createVolume(['dateDeleted' => now()->subSeconds(app(GeneralConfig::class)->softDeleteDuration + 1)]);
+    createVolume(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
 
     expect(DB::table(Table::VOLUMES)->count())->toBe(3);
     expect(DB::table(Table::VOLUMEFOLDERS)->count())->toBe(3);

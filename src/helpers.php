@@ -4,7 +4,6 @@ namespace CraftCms\Cms;
 
 use Closure;
 use craft\helpers\Number;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -19,7 +18,7 @@ function t(string|Stringable|null $id, array $parameters = [], ?string $category
 
 function cp_url(string $url): string
 {
-    return Str::start($url, Str::finish(app(GeneralConfig::class)->cpTrigger, '/'));
+    return Str::start($url, Str::finish(Cms::config()->cpTrigger, '/'));
 }
 
 function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool $secure = null): RedirectResponse
@@ -105,7 +104,7 @@ function maxPowerCaptain(): void
     $memoryLimit = PHP::configValueInBytes('memory_limit');
 
     if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
-        $maxMemoryLimit = app(GeneralConfig::class)->phpMaxMemoryLimit;
+        $maxMemoryLimit = Cms::config()->phpMaxMemoryLimit;
         @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
     }
 

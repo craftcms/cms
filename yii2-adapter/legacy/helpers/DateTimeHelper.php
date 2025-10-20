@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateInterval;
@@ -1107,6 +1107,6 @@ class DateTimeHelper
     public static function firstWeekDay(): int
     {
         $user = Craft::$app->getUser()->getIdentity();
-        return (int)(($user?->getPreference('weekStartDay')) ?? app(GeneralConfig::class)->defaultWeekStartDay);
+        return (int)(($user?->getPreference('weekStartDay')) ?? Cms::config()->defaultWeekStartDay);
     }
 }

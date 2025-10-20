@@ -25,7 +25,7 @@ use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -439,7 +439,7 @@ class View extends \yii\web\View
             $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
-            if (app(GeneralConfig::class)->preloadSingles) {
+            if (Cms::config()->preloadSingles) {
                 $twig->addExtension(new SinglePreloaderExtension());
             }
         }
@@ -1798,7 +1798,7 @@ JS;
             $this->_privateTemplateTrigger = '_';
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
             $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
             $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
@@ -2444,7 +2444,7 @@ JS;
             'charset' => Craft::$app->charset,
         ];
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
             $this->_twigOptions['autoescape'] = 'js';

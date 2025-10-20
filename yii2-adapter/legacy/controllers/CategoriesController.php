@@ -17,7 +17,7 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use Throwable;
@@ -64,7 +64,7 @@ class CategoriesController extends Controller
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
-            'readOnly' => !app(GeneralConfig::class)->allowAdminChanges,
+            'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
     }
 
@@ -80,7 +80,7 @@ class CategoriesController extends Controller
     {
         $this->requireAdmin(false);
 
-        $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $readOnly = !Cms::config()->allowAdminChanges;
 
         if ($groupId === null && $readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');

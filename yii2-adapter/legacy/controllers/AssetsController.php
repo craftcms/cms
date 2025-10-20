@@ -28,7 +28,7 @@ use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Field\Assets as AssetsField;
@@ -946,7 +946,7 @@ class AssetsController extends Controller
             $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $upscale = $generalConfig->upscaleImages;
         $generalConfig->upscaleImages = true;
 

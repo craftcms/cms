@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteStructures;
@@ -18,7 +18,7 @@ it('hard deletes soft deleted structures', function () {
     createStructureElement($element->id, $s2->id);
 
     // Old deleted
-    $s3 = Structure::factory()->create(['dateDeleted' => now()->subSeconds(app(GeneralConfig::class)->softDeleteDuration + 1)]);
+    $s3 = Structure::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
     createStructureElement($element->id, $s3->id);
 
     $currentCount = DB::table(Table::STRUCTURES)->count();

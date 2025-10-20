@@ -31,13 +31,13 @@ use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -153,7 +153,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (!$user) {

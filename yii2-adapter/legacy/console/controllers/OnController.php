@@ -9,7 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\Console;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use Throwable;
 use yii\console\ExitCode;
 
@@ -35,7 +35,7 @@ class OnController extends BaseSystemStatusController
     public function actionIndex(): int
     {
         // If the isSystemLive config setting is set, then we can’t control it from here
-        if (is_bool(app(GeneralConfig::class)->isSystemLive)) {
+        if (is_bool(Cms::config()->isSystemLive)) {
             $this->stderr('It\'s not possible to toggle the system status when the `isSystemLive` config setting is set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

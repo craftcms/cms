@@ -6,7 +6,6 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
@@ -77,10 +76,10 @@ final class AppServiceProvider extends ServiceProvider
 
         Authenticate::redirectUsing(function () {
             if (\request()->isCpRequest()) {
-                return app(GeneralConfig::class)->cpTrigger.'/login';
+                return Cms::config()->cpTrigger.'/login';
             }
 
-            return app(GeneralConfig::class)->loginPath;
+            return Cms::config()->loginPath;
         });
     }
 
@@ -119,7 +118,7 @@ final class AppServiceProvider extends ServiceProvider
     private function registerMacros(): void
     {
         Application::macro('isLive', function (): bool {
-            if (is_bool($live = app(GeneralConfig::class)->isSystemLive)) {
+            if (is_bool($live = Cms::config()->isSystemLive)) {
                 return $live;
             }
 
@@ -137,15 +136,15 @@ final class AppServiceProvider extends ServiceProvider
         );
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
-            app(GeneralConfig::class)->cpTrigger, // /admin
-            app(GeneralConfig::class)->cpTrigger.'/*' // /admin/foo
+            Cms::config()->cpTrigger, // /admin
+            Cms::config()->cpTrigger.'/*' // /admin/foo
             // NOT /adminsarefun
         ));
 
         Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
 
         Request::macro('actionSegments', function (): array {
-            $actionTrigger = app(GeneralConfig::class)->actionTrigger;
+            $actionTrigger = Cms::config()->actionTrigger;
 
             $segmentIndex = $this->isCpRequest() ? 2 : 1;
 
@@ -164,26 +163,22 @@ final class AppServiceProvider extends ServiceProvider
             return [];
         });
 
-        Factory::macro('create', function (array $options = []) {
-            $generalConfig = app(GeneralConfig::class);
-
-            return $this->throw()
-                ->withUserAgent('Craft/'.Cms::VERSION.' '.Utils::defaultUserAgent())
-                ->when(
-                    Config::has('craft.guzzle'),
-                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions(Config::get('craft.guzzle')),
-                )
-                ->when(
-                    $options,
-                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions($options),
-                )
-                ->when(
-                    $generalConfig->httpProxy,
-                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions([
-                        'proxy' => $generalConfig->httpProxy,
-                    ]),
-                );
-        });
+        Factory::macro('create', fn (array $options = []) => $this->throw()
+            ->withUserAgent('Craft/'.Cms::VERSION.' '.Utils::defaultUserAgent())
+            ->when(
+                Config::has('craft.guzzle'),
+                fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions(Config::get('craft.guzzle')),
+            )
+            ->when(
+                $options,
+                fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions($options),
+            )
+            ->when(
+                Cms::config()->httpProxy,
+                fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions([
+                    'proxy' => Cms::config()->httpProxy,
+                ]),
+            ));
     }
 
     protected function bootMiddleware(): void

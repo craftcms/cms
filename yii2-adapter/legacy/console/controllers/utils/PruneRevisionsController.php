@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\helpers\Console;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +79,7 @@ class PruneRevisionsController extends Controller
 
         if (!isset($this->maxRevisions)) {
             $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
-                'default' => app(GeneralConfig::class)->maxRevisions,
+                'default' => Cms::config()->maxRevisions,
                 'validator' => fn($input) => filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0,
             ]);
         }

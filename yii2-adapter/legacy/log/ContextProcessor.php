@@ -8,7 +8,7 @@
 namespace craft\log;
 
 use Craft;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
@@ -44,7 +44,7 @@ class ContextProcessor implements ProcessorInterface
     {
         $data['environment'] = Craft::$app->env;
 
-        if (app(GeneralConfig::class)->storeUserIps) {
+        if (Cms::config()->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {

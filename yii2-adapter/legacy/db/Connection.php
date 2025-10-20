@@ -20,7 +20,6 @@ use craft\events\RestoreEvent;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -303,7 +302,7 @@ class Connection extends DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $backupCommand = app(GeneralConfig::class)->backupCommand;
+        $backupCommand = Cms::config()->backupCommand;
 
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
@@ -324,7 +323,7 @@ class Connection extends DatabaseConnection
             ]));
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if ($generalConfig->maxBackups) {
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
@@ -366,7 +365,7 @@ class Connection extends DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $restoreCommand = app(GeneralConfig::class)->restoreCommand;
+        $restoreCommand = Cms::config()->restoreCommand;
 
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');

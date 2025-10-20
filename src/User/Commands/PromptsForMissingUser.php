@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\User\Commands;
 
 use Craft;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Validation\Rules\Password;
@@ -28,7 +28,7 @@ trait PromptsForMissingUser
                         ->whereNull(Table::ELEMENTS.'.dateDeleted')
                         ->select(['username', 'email', Table::USERS.'.id'])
                         ->get()
-                        ->mapWithKeys(fn (User $user) => [$user->id => "{$user->username} ".(app(GeneralConfig::class)->useEmailAsUsername ? '' : "({$user->email})")])
+                        ->mapWithKeys(fn (User $user) => [$user->id => "{$user->username} ".(Cms::config()->useEmailAsUsername ? '' : "({$user->email})")])
                         ->all()
                     : []
             ),

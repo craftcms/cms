@@ -12,7 +12,7 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -105,7 +105,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             'message' => $message,
         ]));
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();

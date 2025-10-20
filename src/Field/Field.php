@@ -14,6 +14,7 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -589,7 +589,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 
         $view = Craft::$app->getView();
 
-        if (app(GeneralConfig::class)->allowAdminChanges) {
+        if (Cms::config()->allowAdminChanges) {
             // Edit field
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

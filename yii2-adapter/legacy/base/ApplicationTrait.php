@@ -94,7 +94,7 @@ use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -347,7 +347,7 @@ trait ApplicationTrait
             }
 
             // Fall back on the default control panel language, if there is one, otherwise the browser language
-            return app(GeneralConfig::class)->defaultCpLanguage ?? $this->_getFallbackLanguage();
+            return Cms::config()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -1450,7 +1450,7 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    if (!app(GeneralConfig::class)->useEmailAsUsername) {
+                    if (!Cms::config()->useEmailAsUsername) {
                         $event->fields[] = UsernameField::class;
                     }
                     $event->fields[] = UserFullNameField::class;

@@ -12,7 +12,7 @@ use craft\elements\User;
 use craft\mail\Message;
 use craft\test\TestCase;
 use craft\test\TestMailer;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -151,7 +151,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddress(): void
     {
-        app(GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
+        Cms::config()->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
@@ -167,7 +167,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddressWithCustomName(): void
     {
-        app(GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
+        Cms::config()->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();

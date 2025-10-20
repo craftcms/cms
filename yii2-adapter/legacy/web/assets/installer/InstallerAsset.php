@@ -9,7 +9,7 @@ namespace craft\web\assets\installer;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 
 /**
@@ -50,7 +50,7 @@ class InstallerAsset extends AssetBundle
     {
         parent::registerAssetFiles($view);
 
-        $redirect = Json::encode(app(GeneralConfig::class)->postCpLoginRedirect);
+        $redirect = Json::encode(Cms::config()->postCpLoginRedirect);
         $view->registerJs("window.postCpLoginRedirect = $redirect;");
     }
 }

@@ -28,7 +28,7 @@ use craft\models\VolumeFolder;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -339,7 +339,7 @@ final class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element): void
     {
-        $maxSize = app(GeneralConfig::class)->maxUploadFileSize;
+        $maxSize = Cms::config()->maxUploadFileSize;
 
         $filenames = [];
 
@@ -939,12 +939,11 @@ final class Assets extends BaseRelationField
             }
 
             // Sanitize the subpath
-            $generalConfig = app(GeneralConfig::class);
             $subpath = str($renderedSubpath)
                 ->explode('/')
                 ->filter(fn (string $segment): bool => $segment !== ':ignore:')
                 ->map(fn (string $segment): string => FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+                    'asciiOnly' => Cms::config()->convertFilenamesToAscii,
                 ]))
                 ->implode('/');
         }

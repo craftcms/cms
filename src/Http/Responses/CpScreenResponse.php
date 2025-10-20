@@ -7,7 +7,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -800,12 +800,11 @@ final class CpScreenResponse implements Responsable
 
         $security = Craft::$app->getSecurity();
         $view = Craft::$app->getView();
-        $generalConfig = app(GeneralConfig::class);
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (
             $request->get('x-craft-live-preview') !== null &&
-            $generalConfig->useIframeResizer
+            Cms::config()->useIframeResizer
         ) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }

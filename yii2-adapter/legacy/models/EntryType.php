@@ -19,12 +19,12 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -289,7 +289,7 @@ class EntryType extends Model implements
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            app(GeneralConfig::class)->allowAdminChanges
+            Cms::config()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

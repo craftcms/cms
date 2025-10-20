@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
@@ -11,7 +11,7 @@ it('hard deletes soft deleted elements', function () {
     // Recently deleted
     Element::factory()->create(['dateDeleted' => now()]);
     // Old deleted
-    Element::factory()->create(['dateDeleted' => now()->subSeconds(app(GeneralConfig::class)->softDeleteDuration + 1)]);
+    Element::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
 
     $currentCount = DB::table(Table::ELEMENTS)->count();
 

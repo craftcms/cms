@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -103,7 +103,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !app(GeneralConfig::class)->omitScriptNameInUrls;
+        $config['showScriptName'] = !Cms::config()->omitScriptNameInUrls;
 
         parent::__construct($config);
     }
@@ -176,7 +176,7 @@ class UrlManager extends \yii\web\UrlManager
         unset($params[0]);
 
         // Create the action URL manually here, so it doesn't get treated as a control panel request
-        $path = app(GeneralConfig::class)->actionTrigger . '/' . $route;
+        $path = Cms::config()->actionTrigger . '/' . $route;
 
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
@@ -403,7 +403,7 @@ class UrlManager extends \yii\web\UrlManager
         if (
             !Craft::$app->getIsInstalled() ||
             !$request->getIsSiteRequest() ||
-            app(GeneralConfig::class)->headlessMode
+            Cms::config()->headlessMode
         ) {
             $this->setMatchedElement(false);
             return false;
@@ -473,7 +473,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
         $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? app(GeneralConfig::class)->getSetPasswordRequestPath(Sites::getCurrentSite()->handle)
+            ? Cms::config()->getSetPasswordRequestPath(Sites::getCurrentSite()->handle)
             : null;
 
         if (app()->hasDebugModeEnabled()) {
@@ -505,7 +505,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _isPublicTemplatePath(Request $request): bool
     {
-        if ($request->getIsSiteRequest() && !app(GeneralConfig::class)->privateTemplateTrigger) {
+        if ($request->getIsSiteRequest() && !Cms::config()->privateTemplateTrigger) {
             // If privateTemplateTrigger is set to an empty value, disable all public template routing
             return false;
         }
@@ -521,7 +521,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getTemplateRoute(Request $request): array|false
     {
-        if ($request->getIsSiteRequest() && app(GeneralConfig::class)->headlessMode) {
+        if ($request->getIsSiteRequest() && Cms::config()->headlessMode) {
             return false;
         }
 

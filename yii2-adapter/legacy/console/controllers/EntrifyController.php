@@ -20,7 +20,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\services\Entries as EntriesService;
 use craft\services\Structures;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;
@@ -621,8 +621,7 @@ class EntrifyController extends Controller
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
                 $usersService = Craft::$app->getUsers();
-                $generalConfig = app(GeneralConfig::class);
-                $what = $generalConfig->useEmailAsUsername ? 'email' : 'username or email';
+                $what = Cms::config()->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
                     'validator' => fn(string $value) => $usersService->getUserByUsernameOrEmail($value) !== null,

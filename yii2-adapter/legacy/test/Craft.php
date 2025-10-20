@@ -21,7 +21,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
@@ -148,7 +148,7 @@ class Craft extends Yii2
          */
         new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
             $generalConfig->$key = $value;
         }

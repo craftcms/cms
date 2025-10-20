@@ -19,9 +19,9 @@ use craft\helpers\Search;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -473,7 +473,7 @@ class AppController extends Controller
      */
     public function actionBrokenImage(): Response
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
