@@ -1383,11 +1383,6 @@ trait ApplicationTrait
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
-
-        if ($this->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
-            // Possibly run garbage collection
-            app(GarbageCollection::class)->run();
-        }
     }
 
     /**
