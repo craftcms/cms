@@ -381,8 +381,8 @@ class Table extends Field
 
         if ($this->staticRows && !empty($this->defaults)) {
             // make sure the default rows have IDs assigned
-            foreach ($this->defaults as $key => $value) {
-                $this->defaults[$key]['rowId'] ??= $key;
+            foreach ($this->defaults as &$row) {
+                $row['rowId'] ??= StringHelper::UUID();
             }
         }
 

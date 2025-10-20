@@ -170,7 +170,7 @@ Craft.EditableTable = Garnish.Base.extend(
         return;
       }
 
-      const $deleteBtn = $row.find('button.delete');
+      const $deleteBtn = $row.children('td.action').find('.delete');
 
       if ($deleteBtn.length) {
         $deleteBtn.attr(
@@ -620,17 +620,11 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (staticRows && includeRowId) {
-        $('<td/>', {
-          class: 'hidden',
-        })
-          .append(
-            $('<input/>', {
-              type: 'hidden',
-              name: baseName + '[' + rowId + '][rowId]',
-              value: Craft.uuid(),
-            })
-          )
-          .appendTo($tr);
+        $('<input/>', {
+          type: 'hidden',
+          name: `${baseName}[${rowId}][rowId]`,
+          value: Craft.uuid(),
+        }).appendTo($tr);
       }
 
       return $tr;
@@ -795,7 +789,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         }
       }
 
-      var $deleteBtn = this.$tr.children().find('.delete').last();
+      const $deleteBtn = this.$tr.children('td.action').find('.delete');
       this.addListener($deleteBtn, 'click', 'deleteRow');
 
       var $inputs = this.$tr.find('input,textarea,select,.lightswitch');

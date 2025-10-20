@@ -245,7 +245,7 @@
                     </td>
                 {%- endif -%}
                 {% if includeRowId %}
-                    <td class="hidden"><input type="hidden" name="{{ name~'['~rowId~'][rowId]' }}" value="{{ row['rowId'] is defined ? row['rowId'] : uuid() }}" /></td>
+                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId ?? uuid()) }}
                 {% endif %}
             </tr>
         {% endfor %}
