@@ -15,7 +15,7 @@ final class FieldFactory extends Factory
     {
         return [
             'name' => $this->faker->words(asText: true),
-            'handle' => $this->faker->slug(),
+            'handle' => $this->faker->slug(1),
             'type' => PlainText::class,
             'dateCreated' => $created = $this->faker->dateTime(),
             'dateUpdated' => $created,

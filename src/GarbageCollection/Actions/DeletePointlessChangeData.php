@@ -11,15 +11,12 @@ final class DeletePointlessChangeData extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
-        $db = \Craft::$app->getDb();
-        $schema = $db->getSchema();
-
         foreach ([
             Table::CHANGEDATTRIBUTES,
             Table::CHANGEDFIELDS,
         ] as $table) {
             $this->components->task(
-                sprintf('deleting pointless rows in the %s table', $schema->getRawTableName($table)),
+                sprintf('deleting pointless rows in the %s table', $table),
                 function () use ($table) {
                     // fetch any rows in the table for canonical elements that don't have any drafts
                     DB::table($table, 't')
