@@ -16,6 +16,7 @@ it('deletes orphaned data', function () {
         'fieldId' => $field->id,
         'siteId' => Sites::getCurrentSite()->id,
         'keywords' => 'foo',
+        'keywords_vector' => 'foo',
     ]);
 
     DB::table(Table::SEARCHINDEX)->insert([
@@ -24,6 +25,7 @@ it('deletes orphaned data', function () {
         'fieldId' => $field->id,
         'siteId' => Sites::getCurrentSite()->id,
         'keywords' => 'foo',
+        'keywords_vector' => 'foo',
     ]);
 
     $originalCount = DB::table(Table::SEARCHINDEX)->count();
