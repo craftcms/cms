@@ -2,9 +2,9 @@
 
 namespace CraftCms\Cms\Plugin\Testing;
 
-use craft\models\Site;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -22,16 +22,14 @@ abstract class PluginTestCase extends BaseTestCase
         /** Install migration adds their own */
         Schema::drop('migrations');
 
-        $siteConfig = [
-            'name' => 'Craft test site',
-            'handle' => 'default',
-            'hasUrls' => true,
-            'baseUrl' => 'https://localhost/',
-            'language' => 'en-US',
-            'primary' => true,
-        ];
-
-        $site = new Site($siteConfig);
+        $site = new Site(
+            name: 'Craft test site',
+            handle: 'default',
+            language: 'en-US',
+            baseUrl: 'https://localhost/',
+            primary: true,
+            hasUrls: true,
+        );
 
         $migration = new Install(
             username: 'craftcms',

@@ -59,6 +59,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use PDO;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -565,6 +566,8 @@ final class Fields
      */
     public function handleChangedField(ConfigEvent $event): void
     {
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 

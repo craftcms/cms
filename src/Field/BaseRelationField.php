@@ -19,7 +19,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
 use craft\elements\db\OrderByPlaceholderExpression;
 use craft\elements\ElementCollection;
-use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
@@ -37,7 +36,9 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -1075,9 +1076,9 @@ JS, [
         $criteria = [];
 
         // Is a single target site selected?
-        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+        if ($this->targetSiteId && Sites::isMultiSite()) {
             try {
-                $criteria['siteId'] = Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+                $criteria['siteId'] = Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {
                 Craft::warning($exception->getMessage(), __METHOD__);
             }
@@ -1292,7 +1293,7 @@ JS, [
     {
         $class = static::elementType();
 
-        if (! Craft::$app->getIsMultiSite() || ! $class::isLocalized()) {
+        if (! Sites::isMultiSite() || ! $class::isLocalized()) {
             return null;
         }
 
@@ -1301,7 +1302,7 @@ JS, [
         $showTargetSite = ! empty($this->targetSiteId);
         $siteOptions = [];
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $siteOptions[] = [
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
@@ -1668,14 +1669,14 @@ JS, [
             return $element->siteId;
         }
 
-        return Craft::$app->getSites()->getCurrentSite()->id;
+        return Sites::getCurrentSite()->id;
     }
 
     private function _targetSiteId(): ?int
     {
-        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+        if ($this->targetSiteId && Sites::isMultiSite()) {
             try {
-                return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+                return Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {
                 Craft::warning($exception->getMessage(), __METHOD__);
             }

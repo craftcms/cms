@@ -13,6 +13,7 @@ use craft\events\RouteEvent;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
@@ -72,8 +73,7 @@ class Routes extends Component
         }
 
         // Check for any site-specific routes
-        $sitesService = Craft::$app->getSites();
-        foreach ($sitesService->getAllSites(true) as $site) {
+        foreach (Sites::getAllSites(true) as $site) {
             if (
                 isset($routes[$site->handle]) &&
                 is_array($routes[$site->handle]) &&
@@ -83,7 +83,7 @@ class Routes extends Component
                 $siteRoutes = Arr::pull($routes, $site->handle);
 
                 /** @noinspection PhpUnhandledExceptionInspection */
-                if ($site->handle === $sitesService->getCurrentSite()->handle) {
+                if ($site->handle === Sites::getCurrentSite()->handle) {
                     // Merge them so that the localized routes come first
                     $routes = array_merge($siteRoutes, $routes);
                 }
@@ -113,7 +113,7 @@ class Routes extends Component
         $routes = Collection::make(app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [])
             ->sortBy('sortOrder', SORT_NUMERIC)
             ->all();
-        $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
+        $currentSiteUid = Sites::getCurrentSite()->uid;
         $this->_projectConfigRoutes = [];
 
         foreach ($routes as $route) {

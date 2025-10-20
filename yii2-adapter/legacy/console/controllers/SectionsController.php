@@ -15,9 +15,10 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
@@ -244,15 +245,14 @@ class SectionsController extends Controller
         }
 
         if (empty($section->getSiteSettings())) {
-            $section->setSiteSettings(array_map(
+            $section->setSiteSettings(Sites::getAllSites(true)->map(
                 fn(Site $site) => new Section_SiteSettings([
                     'siteId' => $site->id,
                     'hasUrls' => $this->uriFormat !== null,
                     'uriFormat' => $this->uriFormat,
                     'template' => $this->template,
-                ]),
-                Craft::$app->getSites()->getAllSites(true),
-            ));
+                ])
+            )->all());
         }
 
         $hasUrls = Collection::make($section->getSiteSettings())->contains(fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);

@@ -33,7 +33,6 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\records\WebAuthn as WebAuthnRecord;
@@ -50,8 +49,10 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
@@ -496,7 +497,7 @@ class User extends Element implements IdentityInterface
             'firstName' => ['label' => t('First Name')],
             'lastName' => ['label' => t('Last Name')],
             'groups' => ['label' => t('Groups')],
-            'affiliatedSite' => Craft::$app->getIsMultiSite() ? ['label' => t('Affiliated Site')] : null,
+            'affiliatedSite' => Sites::isMultiSite() ? ['label' => t('Affiliated Site')] : null,
             'preferredLanguage' => ['label' => t('Preferred Language')],
             'preferredLocale' => ['label' => t('Preferred Locale')],
             'lastLoginDate' => ['label' => t('Last Login')],
@@ -1608,11 +1609,11 @@ class User extends Element implements IdentityInterface
      */
     public function getAffiliatedSite(): ?Site
     {
-        if ($this->affiliatedSiteId === null || !Craft::$app->getIsMultiSite()) {
+        if ($this->affiliatedSiteId === null || !Sites::isMultiSite()) {
             return null;
         }
 
-        return Craft::$app->getSites()->getSiteById($this->affiliatedSiteId, true);
+        return Sites::getSiteById($this->affiliatedSiteId, true);
     }
 
     /**

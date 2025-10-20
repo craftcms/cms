@@ -9,13 +9,14 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
-use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
-use craft\models\Site;
-use craft\services\Sites;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
@@ -82,12 +83,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * @since 3.5.10
      */
     public GeneralConfig|string|array $generalConfig;
-
-    /**
-     * @var Sites|array|string|null
-     * @since 3.5.10
-     */
-    public string|array|null|Sites $sites = 'sites';
 
     /**
      * @var string
@@ -221,12 +216,10 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         // ---------------------------------------------------------------------
 
         try {
-            $this->sites = Instance::ensure($this->sites, Sites::class);
-
             // Only check if a site was requested if don’t know for sure that it’s a control panel request
             if ($this->_isCpRequest !== true) {
-                if ($this->sites->getHasCurrentSite()) {
-                    $site = $this->sites->getCurrentSite();
+                if (Sites::getHasCurrentSite()) {
+                    $site = Sites::getCurrentSite();
                 } else {
                     $site = $this->_requestedSite($siteScore);
                 }
@@ -272,9 +265,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         }
 
         // Set the current site for the request
-        if ($this->sites instanceof Sites) {
-            $this->sites->setCurrentSite($site ?? null);
-        }
+        Sites::setCurrentSite($site ?? null);
 
         // If this is a control panel request and the path begins with the control panel trigger, remove it
         if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
@@ -1417,19 +1408,19 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         $siteId = Env::get('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
         if ($siteId !== null) {
             if (is_numeric($siteId)) {
-                $site = $this->sites->getSiteById($siteId, false);
+                $site = Sites::getSiteById($siteId, false);
             } else {
-                $site = $this->sites->getSiteByHandle($siteId, false);
+                $site = Sites::getSiteByHandle($siteId, false);
             }
-            if (!$site && Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (!$site && Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
             return $site;
         }
 
-        $sites = $this->sites->getAllSites(false);
+        $sites = Sites::getAllSites(false);
 
-        if (empty($sites)) {
+        if ($sites->isEmpty()) {
             throw new SiteNotFoundException('No sites exist');
         }
 
@@ -1441,7 +1432,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         // Sort by scores descending
         arsort($scores, SORT_NUMERIC);
         $first = array_key_first($scores);
-        $siteScore = reset($scores);
+        $siteScore = reset($scores) ?: 0;
         return $sites[$first];
     }
 
@@ -1459,7 +1450,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if (!is_numeric($siteId)) {
             throw new BadRequestHttpException('Invalid site token');
         }
-        $site = $this->sites->getSiteById((int)$siteId, true);
+        $site = Sites::getSiteById((int)$siteId, true);
         if (!$site) {
             throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
         }

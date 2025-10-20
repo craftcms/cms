@@ -14,8 +14,6 @@ use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\Section;
-use craft\models\Site;
-use craft\models\SiteGroup;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\services\ElementSources;
@@ -37,7 +35,11 @@ use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -326,9 +328,7 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, [$this, 'handleChangeEvent']);
         Event::listen(ItemRemoved::class, [$this, 'handleChangeEvent']);
 
-        // @TODO:
-        // $this->readOnly = \Craft::$app->getIsInstalled() && !$generalConfig->allowAdminChanges;
-        $this->readOnly = ! $generalConfig->allowAdminChanges;
+        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
     }
 
@@ -1744,7 +1744,7 @@ final class ProjectConfig
      */
     private function _getSiteGroupData(): array
     {
-        return collect(Craft::$app->getSites()->getAllGroups())
+        return SiteGroups::getAllGroups()
             ->mapWithKeys(fn (SiteGroup $group) => [$group->uid => $group->getConfig()])
             ->all();
     }
@@ -1754,7 +1754,7 @@ final class ProjectConfig
      */
     private function _getSiteData(): array
     {
-        return collect(Craft::$app->getSites()->getAllSites(true))
+        return Sites::getAllSites(true)
             ->mapWithKeys(fn (Site $site) => [$site->uid => $site->getConfig()])
             ->all();
     }

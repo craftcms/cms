@@ -9,10 +9,11 @@ namespace craft\helpers;
 
 use Craft;
 use craft\console\Request as ConsoleRequest;
-use craft\errors\SiteNotFoundException;
 use craft\web\Request as WebRequest;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use yii\base\Exception;
 
@@ -359,19 +360,17 @@ class UrlHelper
         }
 
         // Does this URL point to a different site?
-        $sites = Craft::$app->getSites();
-
-        if ($siteId !== null && $siteId != $sites->getCurrentSite()->id) {
+        if ($siteId !== null && $siteId != Sites::getCurrentSite()->id) {
             // Get the site
-            $site = $sites->getSiteById($siteId, true);
+            $site = Sites::getSiteById($siteId, true);
 
             if (!$site) {
                 throw new Exception('Invalid site ID: ' . $siteId);
             }
 
             // Swap the current site
-            $currentSite = $sites->getCurrentSite();
-            $sites->setCurrentSite($site);
+            $currentSite = Sites::getCurrentSite();
+            Sites::setCurrentSite($site);
         }
 
         $path = trim($path, '/');
@@ -380,7 +379,7 @@ class UrlHelper
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
-            $sites->setCurrentSite($currentSite);
+            Sites::setCurrentSite($currentSite);
         }
 
         return $url;
@@ -504,7 +503,7 @@ class UrlHelper
     public static function baseSiteUrl(): string
     {
         try {
-            $currentSite = Craft::$app->getSites()->getCurrentSite();
+            $currentSite = Sites::getCurrentSite();
             if (($baseUrl = $currentSite->getBaseUrl()) !== null) {
                 return $baseUrl;
             }
@@ -652,7 +651,7 @@ class UrlHelper
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Craft::$app->getIsInitialized() && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
+            if (!isset($params['site']) && Craft::$app->getIsInitialized() && Sites::isMultiSite() && Cp::requestedSite() !== null) {
                 $params['site'] = Cp::requestedSite()->handle;
             }
         } else {

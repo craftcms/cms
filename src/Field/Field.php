@@ -35,6 +35,7 @@ use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -641,7 +642,7 @@ JS, [
     {
         $locale = match (true) {
             // Only one site so use its language
-            ! Craft::$app->getIsMultiSite() => Craft::$app->getSites()->getPrimarySite()->getLocale(),
+            ! Sites::isMultiSite() => Sites::getPrimarySite()->getLocale(),
             // Not translatable, so use the user’s language
             ! $element || ! $this->getIsTranslatable($element) => I18N::getLocale(),
             // Use the site’s language

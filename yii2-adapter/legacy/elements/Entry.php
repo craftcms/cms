@@ -48,7 +48,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
@@ -66,8 +65,10 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use DateInterval;
 use DateTime;
@@ -419,8 +420,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $elementQuery = null;
         }
         $site = $elementQuery && $elementQuery->siteId
-            ? Craft::$app->getSites()->getSiteById($elementQuery->siteId)
-            : Craft::$app->getSites()->getCurrentSite();
+            ? Sites::getSiteById($elementQuery->siteId)
+            : Sites::getCurrentSite();
 
         // Get the section we need to check permissions on
         if (preg_match('/^section:(\d+)$/', $source, $matches)) {
@@ -444,7 +445,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
 
-                if (Craft::$app->getIsMultiSite()) {
+                if (Sites::isMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
                 }
 
@@ -517,7 +518,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             (
                 !$section &&
                 str_starts_with($source, 'custom:') &&
-                Craft::$app->getIsMultiSite() &&
+                Sites::isMultiSite() &&
                 Collection::make(Craft::$app->getEntries()->getEditableSections())
                     ->contains(fn(Section $section) => $section->propagationMethod === PropagationMethod::Custom)
             )
@@ -1107,7 +1108,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $section = $this->getSection();
         /** @var Site[] $allSites */
-        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(true), 'id');
+        $allSites = Sites::getAllSites(true)->keyBy('id')->all();
         $sites = [];
 
         // If the section is leaving it up to entries to decide which sites to be propagated to,
@@ -1150,15 +1151,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         foreach ($section->getSiteSettings() as $siteSettings) {
             switch ($section->propagationMethod) {
                 case PropagationMethod::None:
-                    $include = $siteSettings->siteId == $this->siteId;
+                    $include = $siteSettings->siteId === $this->siteId;
                     $propagate = true;
                     break;
                 case PropagationMethod::SiteGroup:
-                    $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
+                    $include = $allSites[$siteSettings->siteId]->groupId === $allSites[$this->siteId]->groupId;
                     $propagate = true;
                     break;
                 case PropagationMethod::Language:
-                    $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
+                    $include = $allSites[$siteSettings->siteId]->getLanguage() === $allSites[$this->siteId]->getLanguage();
                     $propagate = true;
                     break;
                 case PropagationMethod::Custom:
@@ -1166,7 +1167,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     // Only actually propagate to this site if it's the current site, or the entry has been assigned
                     // a status for this site, or the entry already exists for this site
                     $propagate = (
-                        $siteSettings->siteId == $this->siteId ||
+                        $siteSettings->siteId === $this->siteId ||
                         $this->getEnabledForSite($siteSettings->siteId) !== null ||
                         isset($currentSites[$siteSettings->siteId])
                     );
@@ -1873,7 +1874,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $enabled = true;
         }
 
-        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
             $entry->setEnabledForSite($enabled);
         } else {
@@ -2698,8 +2699,8 @@ JS;
         $locale = I18N::getLocale();
         $formattingLocale = I18N::getFormattingLocale();
         $site = $this->getSite();
-        $tempLocale = I18N::getLocaleById($site->language);
-        app()->setLocale($site->language);
+        $tempLocale = I18N::getLocaleById($site->getLanguage());
+        app()->setLocale($site->getLanguage());
         Craft::$app->set('locale', $tempLocale);
         Craft::$app->set('formattingLocale', $tempLocale);
         $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);

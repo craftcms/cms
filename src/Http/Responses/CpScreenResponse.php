@@ -5,10 +5,11 @@ namespace CraftCms\Cms\Http\Responses;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\Site;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Responsable;
@@ -771,11 +772,11 @@ final class CpScreenResponse implements Responsable
         $pageSidebar = is_callable($this->pageSidebarHtml) ? call_user_func($this->pageSidebarHtml) : $this->pageSidebarHtml;
         $errorSummary = is_callable($this->errorSummary) ? call_user_func($this->errorSummary) : $this->errorSummary;
 
-        if (isset($this->site) && Craft::$app->getIsMultiSite()) {
+        if (isset($this->site) && Sites::isMultiSite()) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
-                'label' => t($this->site->name, category: 'site'),
+                'label' => t($this->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)

@@ -3,7 +3,7 @@
 <header class="header">
     <h1 class="left">{{ "Edit Message"|t('app') }}</h1>
 
-    {% if craft.app.getIsMultiSite() %}
+    {% if craft.sites.isMultiSite() %}
         <ul class="right">
             <li class="select language">
                 <select>

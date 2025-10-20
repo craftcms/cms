@@ -84,7 +84,7 @@
     {% set siteRows = [] %}
     {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
 
-    {% for site in craft.app.sites.getAllSites() %}
+    {% for site in craft.sites.getAllSites() %}
         {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
         {% if siteSettings %}
             {% for attribute, errors in siteSettings.getErrors() %}
@@ -154,7 +154,7 @@
     {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
-        {% for site in craft.app.sites.getAllSites() %}
+        {% for site in craft.sites.getAllSites() %}
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]',

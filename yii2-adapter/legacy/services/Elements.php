@@ -33,7 +33,6 @@ use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidElementException;
-use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -64,8 +63,10 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -1013,7 +1014,7 @@ class Elements extends Component
 
         if ($siteId === null) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+            $siteId = Sites::getCurrentSite()->id;
         }
 
         // See if we already have a placeholder for this element URI
@@ -2178,8 +2179,8 @@ class Elements extends Component
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void
     {
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            if ($siteId == $element->siteId) {
+        foreach (Sites::getAllSiteIds() as $siteId) {
+            if ($siteId === $element->siteId) {
                 continue;
             }
 
@@ -2449,7 +2450,7 @@ class Elements extends Component
             }
         }
 
-        if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
+        if ($siteId === null && $elementType::isLocalized() && Sites::isMultiSite()) {
             // Get a site this element is enabled in
             $siteId = (int)DB::table(Table::ELEMENTS_SITES)
                 ->where('elementId', $elementId)
@@ -3070,7 +3071,6 @@ class Elements extends Component
 
         // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
         // and replace them with placeholder tokens
-        $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
             '/
@@ -3084,7 +3084,6 @@ class Elements extends Component
             /x',
             function(array $matches) use (
                 $defaultSiteId,
-                $sitesService,
                 &$allRefTagTokens
             ) {
                 $fullMatch = $matches[0];
@@ -3109,8 +3108,8 @@ class Elements extends Component
                     } else {
                         try {
                             $site = Str::isUuid($siteId)
-                                ? $sitesService->getSiteByUid($siteId)
-                                : $sitesService->getSiteByHandle($siteId);
+                                ? Sites::getSiteByUid($siteId)
+                                : Sites::getSiteByHandle($siteId);
                         } catch (SiteNotFoundException) {
                             $site = null;
                         }
@@ -3781,7 +3780,7 @@ class Elements extends Component
         $dirtyAttributes = [];
 
         // Force propagation for new elements
-        $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
+        $propagate = $propagate && $element::isLocalized() && Sites::isMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
         $originalIsNewForSite = $element->isNewForSite;
@@ -4506,15 +4505,15 @@ class Elements extends Component
         ElementInterface $element,
     ): bool {
         // get site we're propagating to
-        $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
+        $propagateToSite = Sites::getSiteById($siteElement->siteId);
         $user = Craft::$app->getUser()->getIdentity();
         $message = t('Validation errors for site: “{siteName}“', [
-            'siteName' => $propagateToSite?->name,
+            'siteName' => $propagateToSite?->getName(),
         ]);
 
         // check user can edit this element for the site that throws validation error on propagation
         if ($user &&
-            Craft::$app->getIsMultiSite() &&
+            Sites::isMultiSite() &&
             $user->can("editSite:{$propagateToSite?->uid}") &&
             $siteElement->canSave($user)
         ) {
@@ -4832,7 +4831,7 @@ class Elements extends Component
     {
         return (
             !$element::isLocalized() ||
-            !Craft::$app->getIsMultiSite() ||
+            !Sites::isMultiSite() ||
             $user->can(sprintf('editSite:%s', $element->getSite()->uid))
         );
     }

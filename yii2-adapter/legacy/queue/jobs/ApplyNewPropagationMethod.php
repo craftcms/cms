@@ -18,6 +18,7 @@ use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -52,7 +53,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
     {
         $query = $this->elementType::find()
             ->site('*')
-            ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
+            ->preferSites([Sites::getPrimarySite()->id])
             ->unique()
             ->status(null)
             ->drafts(null)
@@ -82,7 +83,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
 
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
-        $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
+        $allSiteIds = Sites::getAllSiteIds()->all();
 
         // See what sites the element should exist in going forward
         /** @var ElementInterface $item */

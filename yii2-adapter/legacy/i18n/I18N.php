@@ -10,6 +10,7 @@ namespace craft\i18n;
 use Craft;
 use craft\i18n\Locale as LegacyLocale;
 use CraftCms\Cms\Support\Facades\I18N as I18NFacade;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use yii\base\Exception;
 
@@ -135,7 +136,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocale(): LegacyLocale
     {
-        return LegacyLocale::fromNewLocale(Craft::$app->getSites()->getPrimarySite()->getLocale());
+        return LegacyLocale::fromNewLocale(Sites::getPrimarySite()->getLocale());
     }
 
     /**
@@ -147,7 +148,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocaleId(): string
     {
-        return Craft::$app->getSites()->getPrimarySite()->language;
+        return Sites::getPrimarySite()->getLanguage();
     }
 
     /**

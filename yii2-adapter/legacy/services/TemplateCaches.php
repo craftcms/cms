@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -401,7 +402,7 @@ class TemplateCaches extends Component
      */
     private function _cacheKey(string $key, bool $global, ?int $siteId = null): string
     {
-        $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
+        $cacheKey = "template::$key::" . ($siteId ?? Sites::getCurrentSite()->id);
 
         if (!$global) {
             $cacheKey .= '::' . $this->_path();

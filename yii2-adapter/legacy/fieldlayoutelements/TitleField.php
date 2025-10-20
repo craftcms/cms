@@ -101,7 +101,7 @@ class TitleField extends TextField
         if ($element?->getIsFresh() && !$static) {
             $view = Craft::$app->getView();
 
-            $language = $element->getSite()->language;
+            $language = $element->getSite()->getLanguage();
             $charMap = $language !== app()->getLocale()
                 ? Str::asciiCharMap(true, $language)
                 : null;

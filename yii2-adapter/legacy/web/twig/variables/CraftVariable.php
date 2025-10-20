@@ -28,6 +28,8 @@ use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Site\SiteGroups;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Support\Facades\Config;
@@ -235,6 +237,16 @@ class CraftVariable extends ServiceLocator
     public function i18n(): I18N
     {
         return app(I18N::class);
+    }
+
+    public function sites(): Sites
+    {
+        return app(Sites::class);
+    }
+
+    public function siteGroups(): SiteGroups
+    {
+        return app(SiteGroups::class);
     }
 
     /**

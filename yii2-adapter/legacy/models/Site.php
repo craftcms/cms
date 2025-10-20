@@ -17,6 +17,8 @@ use craft\validators\UrlValidator;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
@@ -31,13 +33,36 @@ use function CraftCms\Cms\t;
  * @property string $language The site’s language
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Data\Site} instead.
  */
 class Site extends Model implements Chippable
 {
     public static function get(int|string $id): ?static
     {
+        return self::fromSiteData(Sites::getSiteById($id));
+    }
+
+    public static function fromSiteData(\CraftCms\Cms\Site\Data\Site $site): static
+    {
+        $model = new self([
+            'id' => $site->id,
+            'groupId' => $site->groupId,
+            'handle' => $site->handle,
+            'primary' => $site->primary,
+            'hasUrls' => $site->hasUrls,
+            'sortOrder' => $site->sortOrder,
+            'uid' => $site->uid,
+            'dateCreated' => $site->dateCreated,
+            'dateUpdated' => $site->dateUpdated,
+        ]);
+
+        $model->setBaseUrl($site->getBaseUrl(false));
+        $model->setName($site->getName(false));
+        $model->setLanguage($site->getLanguage(false));
+        $model->setEnabled($site->getEnabled(false));
+
         /** @phpstan-ignore-next-line */
-        return Craft::$app->getSites()->getSiteById($id);
+        return $model;
     }
 
     /**
@@ -304,11 +329,11 @@ class Site extends Model implements Chippable
             throw new InvalidConfigException('Site is missing its group ID');
         }
 
-        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+        if (($group = SiteGroups::getGroupById($this->groupId)) === null) {
             throw new InvalidConfigException('Invalid site group ID: ' . $this->groupId);
         }
 
-        return $group;
+        return \craft\services\Sites::siteGroupFromSiteGroupData($group);
     }
 
     /**

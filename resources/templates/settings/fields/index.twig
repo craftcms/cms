@@ -109,7 +109,7 @@
     new Craft.VueAdminTable(config);
   })({{
     {
-      isMultiSite: craft.app.isMultiSite,
+      isMultiSite: craft.sites.isMultiSite(),
       emptyMessage: emptyMessage,
     }|json_encode|raw
   }});

@@ -17,6 +17,7 @@ use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use PDO;
 use yii\test\DbFixture;
@@ -52,7 +53,7 @@ abstract class BaseElementFixture extends DbFixture
     {
         parent::init();
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $this->siteIds[$site->handle] = $site->id;
         }
     }

@@ -16,6 +16,7 @@ use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
 
@@ -412,7 +413,7 @@ class UrlManager extends \yii\web\UrlManager
 
         // Don't allow routing to the homepage via /__home__
         if ($path !== Element::HOMEPAGE_URI) {
-            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
+            $element = Craft::$app->getElements()->getElementByUri($path, Sites::getCurrentSite()->id, true);
         } else {
             $element = null;
         }
@@ -472,7 +473,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
         $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? app(GeneralConfig::class)->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
+            ? app(GeneralConfig::class)->getSetPasswordRequestPath(Sites::getCurrentSite()->handle)
             : null;
 
         if (app()->hasDebugModeEnabled()) {

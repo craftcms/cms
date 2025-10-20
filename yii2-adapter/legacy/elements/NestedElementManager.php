@@ -21,13 +21,14 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\models\Site;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
@@ -292,7 +293,7 @@ class NestedElementManager extends Component
                     'group' => t($owner->getSite()->getGroup()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::Language:
-                $language = I18N::getLocaleById($owner->getSite()->language)
+                $language = I18N::getLocaleById($owner->getSite()->getLanguage())
                     ->getDisplayName(app()->getLocale());
                 return t('{type} will be saved across all {language}-language sites.', [
                     'type' => $this->elementType::pluralDisplayName(),
@@ -313,7 +314,7 @@ class NestedElementManager extends Component
     public function getSupportedSiteIds(ElementInterface $owner): array
     {
         /** @var Site[] $allSites */
-        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(), 'id');
+        $allSites = Sites::getAllSites()->keyBy('id')->all();
         $ownerSiteIds = array_map(
             fn(array $siteInfo) => $siteInfo['siteId'],
             ElementHelper::supportedSitesForElement($owner),
@@ -330,13 +331,13 @@ class NestedElementManager extends Component
         foreach ($ownerSiteIds as $siteId) {
             switch ($this->propagationMethod) {
                 case PropagationMethod::None:
-                    $include = $siteId == $owner->siteId;
+                    $include = $siteId === $owner->siteId;
                     break;
                 case PropagationMethod::SiteGroup:
-                    $include = $allSites[$siteId]->groupId == $allSites[$owner->siteId]->groupId;
+                    $include = $allSites[$siteId]->groupId === $allSites[$owner->siteId]->groupId;
                     break;
                 case PropagationMethod::Language:
-                    $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
+                    $include = $allSites[$siteId]->getLanguage() === $allSites[$owner->siteId]->getLanguage();
                     break;
                 case PropagationMethod::Custom:
                     if (!isset($propagationKey)) {
@@ -1324,7 +1325,7 @@ JS, [
      */
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+        foreach (Sites::getAllSiteIds() as $siteId) {
             $elementsService = Craft::$app->getElements();
             $query = $this->nestedElementQuery($owner)
                 ->status(null)

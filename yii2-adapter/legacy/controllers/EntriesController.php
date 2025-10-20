@@ -21,6 +21,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Exception;
 use Illuminate\Support\Collection;
@@ -66,11 +67,10 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
 
-        $sitesService = Craft::$app->getSites();
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($siteId) {
-            $site = $sitesService->getSiteById($siteId);
+            $site = Sites::getSiteById($siteId);
             if (!$site) {
                 throw new BadRequestHttpException("Invalid site ID: $siteId");
             }
@@ -93,7 +93,7 @@ class EntriesController extends BaseEntriesController
             }
 
             // Go with the first one
-            $site = $sitesService->getSiteById($editableSiteIds[0]);
+            $site = Sites::getSiteById($editableSiteIds[0]);
         }
 
         $user = static::currentUser();
@@ -128,7 +128,7 @@ class EntriesController extends BaseEntriesController
             $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
-        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
             $entry->setEnabledForSite($enabled);
         } else {
@@ -154,7 +154,7 @@ class EntriesController extends BaseEntriesController
         $entry->title = $this->request->getParam('title');
         $entry->slug = $this->request->getParam('slug');
         if ($entry->title && !$entry->slug) {
-            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->language);
+            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->getLanguage());
         }
         if (!$entry->slug) {
             $entry->slug = ElementHelper::tempSlug();

@@ -24,7 +24,6 @@ use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\elements\User;
-use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
@@ -33,10 +32,12 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -1037,29 +1038,41 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value === null) {
             $this->siteId = null;
-        } elseif ($value === '*') {
-            $this->siteId = Craft::$app->getSites()->getAllSiteIds();
-        } elseif ($value instanceof Site) {
+            return $this;
+        }
+
+        if ($value === '*') {
+            $this->siteId = Sites::getAllSiteIds()->all();
+            return $this;
+        }
+
+        if ($value instanceof Site) {
             $this->siteId = $value->id;
-        } elseif (is_string($value)) {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            return $this;
+        }
+
+        if (is_string($value)) {
+            $site = Sites::getSiteByHandle($value);
             if (!$site) {
                 throw new InvalidArgumentException('Invalid site handle: ' . $value);
             }
             $this->siteId = $site->id;
-        } else {
-            if ($not = (strtolower(reset($value)) === 'not')) {
-                array_shift($value);
+            return $this;
+        }
+
+        if ($not = (strtolower(reset($value)) === 'not')) {
+            array_shift($value);
+        }
+
+        $this->siteId = [];
+        foreach (Sites::getAllSites() as $site) {
+            if (in_array($site->handle, $value, true) === !$not) {
+                $this->siteId[] = $site->id;
             }
-            $this->siteId = [];
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                if (in_array($site->handle, $value, true) === !$not) {
-                    $this->siteId[] = $site->id;
-                }
-            }
-            if (empty($this->siteId)) {
-                throw new InvalidArgumentException('Invalid site param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
-            }
+        }
+
+        if (empty($this->siteId)) {
+            throw new InvalidArgumentException('Invalid site param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
         }
 
         return $this;
@@ -1074,7 +1087,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($value) && strtolower(reset($value)) === 'not') {
             array_shift($value);
             $this->siteId = [];
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Sites::getAllSites() as $site) {
                 if (!in_array($site->id, $value)) {
                     $this->siteId[] = $site->id;
                 }
@@ -1094,18 +1107,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function language($value): self
     {
         if (is_string($value)) {
-            $sites = Craft::$app->getSites()->getSitesByLanguage($value);
-            if (empty($sites)) {
+            $sites = Sites::getSitesByLanguage($value);
+            if ($sites->isEmpty()) {
                 throw new InvalidArgumentException("Invalid language: $value");
             }
-            $this->siteId = array_map(fn(Site $site) => $site->id, $sites);
+            $this->siteId = $sites->pluck('id')->all();
         } else {
             if ($not = (strtolower(reset($value)) === 'not')) {
                 array_shift($value);
             }
             $this->siteId = [];
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                if (in_array($site->language, $value, true) === !$not) {
+            foreach (Sites::getAllSites() as $site) {
+                if (in_array($site->getLanguage(), $value, true) === !$not) {
                     $this->siteId[] = $site->id;
                 }
             }
@@ -1590,7 +1603,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         try {
             if (!$class::isLocalized()) {
                 // The criteria *must* be set to the primary site ID
-                $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+                $this->siteId = Sites::getPrimarySite()->id;
             } else {
                 $this->_normalizeSiteId();
             }
@@ -1690,7 +1703,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyWhereParam();
 
-        if (Craft::$app->getIsMultiSite(false, true)) {
+        if (Sites::isMultiSite(withTrashed: true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
@@ -3343,20 +3356,27 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeSiteId(): void
     {
-        $sitesService = Craft::$app->getSites();
         if (!$this->siteId) {
             // Default to the current site
-            $this->siteId = $sitesService->getCurrentSite()->id;
-        } elseif ($this->siteId === '*') {
-            $this->siteId = $sitesService->getAllSiteIds();
-        } elseif (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
+            $this->siteId = Sites::getCurrentSite()->id;
+            return;
+        }
+
+        if ($this->siteId === '*') {
+            $this->siteId = Sites::getAllSiteIds()->all();
+            return;
+        }
+
+        if (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
             // Filter out any invalid site IDs
             $siteIds = Collection::make((array)$this->siteId)
-                ->filter(fn($siteId) => $sitesService->getSiteById($siteId, true) !== null)
+                ->filter(fn($siteId) => Sites::getSiteById($siteId, true) !== null)
                 ->all();
+
             if (empty($siteIds)) {
                 throw new QueryAbortedException();
             }
+
             $this->siteId = is_array($this->siteId) ? $siteIds : reset($siteIds);
         }
     }
@@ -3691,7 +3711,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (
             !$this->unique ||
-            !Craft::$app->getIsMultiSite(false, true) ||
+            !Sites::isMultiSite(withTrashed: true) ||
             (
                 $this->siteId &&
                 (!is_array($this->siteId) || count($this->siteId) === 1)
@@ -3700,16 +3720,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $sitesService = Craft::$app->getSites();
-
         if (!$this->preferSites) {
-            $preferSites = [$sitesService->getCurrentSite()->id];
+            $preferSites = [Sites::getCurrentSite()->id];
         } else {
             $preferSites = [];
             foreach ($this->preferSites as $preferSite) {
                 if (is_numeric($preferSite)) {
                     $preferSites[] = $preferSite;
-                } elseif ($site = $sitesService->getSiteByHandle($preferSite)) {
+                } elseif ($site = Sites::getSiteByHandle($preferSite)) {
                     $preferSites[] = $site->id;
                 }
             }

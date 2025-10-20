@@ -17,7 +17,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Aliases;
@@ -25,10 +24,12 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities;
@@ -984,7 +985,7 @@ class Cp extends Component
         $templates = [];
         $sites = [];
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $sites[$site->handle] = t($site->getName(), category: 'site');
         }
 

@@ -2,13 +2,11 @@
 
 namespace CraftCms\Cms\SystemMessage;
 
-use craft\console\Application as CraftConsoleApplication;
-use craft\web\Application as CraftWebApplication;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -26,11 +24,6 @@ final class SystemMessages
     /** @var Collection<SystemMessage>|null */
     private ?Collection $defaultMessages = null;
 
-    public function __construct(
-        #[Give('Craft')]
-        private readonly CraftWebApplication|CraftConsoleApplication $craft,
-    ) {}
-
     /**
      * Returns all the default system email messages, without subject/body overrides.
      *
@@ -45,7 +38,7 @@ final class SystemMessages
         // If the current language isn't one of the site's languages, switch to the primary site's language
         $language = app()->getLocale();
         if (! I18N::getSiteLocaleIds()->contains($language)) {
-            app()->setLocale($this->craft->getSites()->getPrimarySite()->language);
+            app()->setLocale(Sites::getPrimarySite()->getLanguage());
         }
 
         $messages = collect([
@@ -114,7 +107,7 @@ final class SystemMessages
     public function getAllMessages(?string $language = null): Collection
     {
         if ($language === null) {
-            $language = $this->craft->getSites()->getPrimarySite()->language;
+            $language = Sites::getPrimarySite()->getLanguage();
         }
 
         // Start with the defaults
@@ -157,7 +150,7 @@ final class SystemMessages
         $message = clone $default;
 
         if ($language === null) {
-            $language = $this->craft->getSites()->getPrimarySite()->language;
+            $language = Sites::getPrimarySite()->getLanguage();
         }
 
         if (($pos = strpos($language, '-')) !== false) {

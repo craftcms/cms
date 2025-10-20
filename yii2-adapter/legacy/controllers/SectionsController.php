@@ -16,6 +16,7 @@ use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -194,11 +195,11 @@ class SectionsController extends Controller
         // Site-specific settings
         $allSiteSettings = [];
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $postedSettings = $this->request->getBodyParam('sites.' . $site->handle);
 
             // Skip disabled sites if this is a multi-site install
-            if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
+            if (Sites::isMultiSite() && empty($postedSettings['enabled'])) {
                 continue;
             }
 

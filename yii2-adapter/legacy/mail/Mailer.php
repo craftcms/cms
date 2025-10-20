@@ -11,11 +11,11 @@ use Craft;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
-use craft\models\Site;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -106,7 +106,6 @@ class Mailer extends \yii\symfonymailer\Mailer
         ]));
 
         $generalConfig = app(GeneralConfig::class);
-        $sitesService = Craft::$app->getSites();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();
@@ -118,11 +117,11 @@ class Mailer extends \yii\symfonymailer\Mailer
 
         try {
             if ($message instanceof Message && isset($message->siteId)) {
-                $currentSite = $sitesService->getCurrentSite();
+                $currentSite = Sites::getCurrentSite();
                 if ($message->siteId !== $currentSite->id) {
-                    $messageSite = $sitesService->getSiteById($message->siteId);
+                    $messageSite = Sites::getSiteById($message->siteId);
                     if ($messageSite) {
-                        $sitesService->setCurrentSite($messageSite);
+                        Sites::setCurrentSite($messageSite);
                         // reset Twig so any global sets and singles get reloaded for the new site
                         $twig = $view->getTwig();
                         $view->setTwig($view->createTwig());
@@ -130,7 +129,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 }
             }
 
-            $overrides = $this->siteOverrides[$sitesService->getCurrentSite()->uid] ?? [];
+            $overrides = $this->siteOverrides[Sites::getCurrentSite()->uid] ?? [];
             if (isset($overrides['fromEmail']) || isset($overrides['fromName'])) {
                 $originalSettings['from'] = $this->from;
                 $fromEmail = $overrides['fromEmail'] ?? array_key_first($this->from);
@@ -153,12 +152,12 @@ class Mailer extends \yii\symfonymailer\Mailer
                 if ($message->language === null) {
                     // If a site was specified, go with its language
                     if ($messageSite) {
-                        $message->language = $messageSite->language;
+                        $message->language = $messageSite->getLanguage();
                     } else {
                         // Default to the current language
                         $message->language = Craft::$app->getRequest()->getIsSiteRequest()
                             ? app()->getLocale()
-                            : Craft::$app->getSites()->getPrimarySite()->language;
+                            : Sites::getPrimarySite()->getLanguage();
                     }
                 }
 
@@ -235,7 +234,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
             if ($currentSite && $messageSite) {
-                $sitesService->setCurrentSite($currentSite);
+                Sites::setCurrentSite($currentSite);
             }
 
             $view->setTemplateMode($originalTemplateMode);

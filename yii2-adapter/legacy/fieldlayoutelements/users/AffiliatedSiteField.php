@@ -7,12 +7,12 @@
 
 namespace craft\fieldlayoutelements\users;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
-use craft\models\Site;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -87,7 +87,7 @@ class AffiliatedSiteField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             return null;
         }
 
@@ -96,10 +96,10 @@ class AffiliatedSiteField extends BaseNativeField
             'id' => 'affiliated-site',
             'options' => [
                 ['label' => t('None'), 'value' => ''],
-                ...array_map(fn(Site $site) => [
+                ...Sites::getAllSites()->map(fn(Site $site) => [
                     'label' => $site->getUiLabel(),
                     'value' => $site->id,
-                ], Craft::$app->getSites()->getAllSites()),
+                ])->all(),
             ],
             'value' => $element?->affiliatedSiteId,
         ]);

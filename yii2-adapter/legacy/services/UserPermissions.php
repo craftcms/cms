@@ -26,6 +26,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -554,13 +555,13 @@ class UserPermissions extends Component
 
     private function _sitePermissions(array &$permissions): void
     {
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             return;
         }
 
         $sitePermissions = [];
 
-        foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+        foreach (Sites::getAllSites(true) as $site) {
             $sitePermissions["editSite:$site->uid"] = [
                 'label' => t('Edit “{title}”', [
                     'title' => t($site->getName(), category: 'site'),
@@ -617,7 +618,7 @@ class UserPermissions extends Component
             } else {
                 $hasCustomPropagation = (
                     $section->propagationMethod === PropagationMethod::Custom &&
-                    Craft::$app->getIsMultiSite()
+                    Sites::isMultiSite()
                 );
 
                 $sectionPermissions = [

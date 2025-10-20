@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\helpers\App;
-use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
@@ -214,13 +214,13 @@ final readonly class InstallController
             }
         }
 
-        $site = new Site([
-            'name' => $request->string('site-name'),
-            'handle' => 'default',
-            'hasUrls' => true,
-            'baseUrl' => $siteUrl,
-            'language' => $request->string('site-language'),
-        ]);
+        $site = new Site(
+            name: $request->string('site-name'),
+            handle: 'default',
+            language: $request->string('site-language'),
+            baseUrl: $siteUrl,
+            hasUrls: true,
+        );
 
         $migration = new Install(
             username: $username,

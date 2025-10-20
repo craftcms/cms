@@ -28,6 +28,7 @@ use craft\records\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\QueryException;
@@ -449,7 +450,7 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting entries in unsupported sites ... ');
 
-        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
+        $siteIds = Sites::getAllSiteIds(true);
         $deleteIds = Collection::make();
 
         // get sections that are not enabled for given site

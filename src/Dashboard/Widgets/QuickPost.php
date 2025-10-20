@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use craft\models\EntryType;
 use craft\models\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 
@@ -229,15 +230,13 @@ JS, [
 
     private function siteId(): ?int
     {
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $editableSiteIds = Sites::getEditableSiteIds();
 
-        if ($this->siteId && in_array($this->siteId, $editableSiteIds)) {
+        if ($this->siteId && $editableSiteIds->contains($this->siteId)) {
             return $this->siteId;
         }
 
-        $possibleSiteIds = array_intersect($editableSiteIds, $this->section()->getSiteIds());
-
-        return Arr::first($possibleSiteIds);
+        return $editableSiteIds->intersect($this->section()->getSiteIds())->first();
     }
 
     private function section(): ?Section

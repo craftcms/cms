@@ -2,14 +2,14 @@
 
 namespace craft\elements\conditions\users;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use craft\models\Site;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use function CraftCms\Cms\t;
 
 /**
@@ -41,10 +41,12 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
      */
     protected function options(): array
     {
-        return array_map(fn(Site $site) => [
-            'label' => $site->getUiLabel(),
-            'value' => $site->uid,
-        ], Craft::$app->getSites()->getAllSites());
+        return Sites::getAllSites()
+            ->map(fn(Site $site) => [
+                'label' => $site->getUiLabel(),
+                'value' => $site->uid,
+            ])
+            ->all();
     }
 
     /**
@@ -52,9 +54,8 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $sites = Craft::$app->getSites();
         /** @var UserQuery $query */
-        $query->affiliatedSiteId($this->paramValue(fn($uid) => $sites->getSiteByUid($uid, true)->id ?? null));
+        $query->affiliatedSiteId($this->paramValue(fn($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
     /**

@@ -27,6 +27,7 @@ use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
@@ -270,7 +271,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         }
 
         if (! $owner) {
-            return [Craft::$app->getSites()->getPrimarySite()->id];
+            return [Sites::getPrimarySite()->id];
         }
 
         return $this->contentBlockManager()->getSupportedSiteIds($owner);

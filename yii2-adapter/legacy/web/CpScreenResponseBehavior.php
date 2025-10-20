@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
+use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Support\Html;
 use yii\base\Behavior;
 
@@ -64,14 +65,14 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $selectedSubnavItem = null;
 
     /**
-     * @var Site|null The site that should be displayed within the breadcrumbs.
+     * @var Site|SiteData|null The site that should be displayed within the breadcrumbs.
      * @see site()
      * @since 5.0.0
      */
-    public ?Site $site = null;
+    public Site|SiteData|null $site = null;
 
     /**
-     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
+     * @var array<Site|SiteData|array{site:Site|SiteData,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
      * @see selectableSites()
      * @since 5.0.0
      */
@@ -348,11 +349,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the site that should be displayed within the breadcrumbs.
      *
-     * @param Site|null $value
+     * @param Site|SiteData|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function site(?Site $value): Response
+    public function site(Site|SiteData|null $value): Response
     {
         $this->site = $value;
         return $this->owner;
@@ -361,7 +362,7 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the sites that should be selectable by the site breadcrumb menu.
      *
-     * @param array<Site|array{site:Site,status?:string}>|null $value
+     * @param array<Site|SiteData|array{site:Site|SiteData,status?:string}>|null $value
      * @return Response
      * @since 5.0.0
      */

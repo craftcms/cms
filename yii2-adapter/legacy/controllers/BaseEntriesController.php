@@ -10,8 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Entry;
 use craft\models\Section;
-use craft\models\Site;
 use craft\web\Controller;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -33,13 +34,13 @@ abstract class BaseEntriesController extends Controller
      */
     protected function editableSiteIds(Section $section): array
     {
-        if (!Craft::$app->getIsMultiSite()) {
-            return [Craft::$app->getSites()->getPrimarySite()->id];
+        if (!Sites::isMultiSite()) {
+            return [Sites::getPrimarySite()->id];
         }
 
         // Only use the sites that the user has access to
         $sectionSiteIds = array_keys($section->getSiteSettings());
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $editableSiteIds = Sites::getEditableSiteIds()->all();
         $siteIds = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
         if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites supported by this section');
@@ -56,7 +57,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enforceSitePermission(Site $site): void
     {
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
         }
     }
@@ -98,7 +99,7 @@ abstract class BaseEntriesController extends Controller
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (is_array($enabledForSite)) {
             // Make sure they are allowed to edit all of the posted site IDs
-            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            $editableSiteIds = Sites::getEditableSiteIds()->all();
             if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
                 throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
             }

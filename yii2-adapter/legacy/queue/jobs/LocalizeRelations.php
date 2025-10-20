@@ -7,10 +7,10 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +39,7 @@ class LocalizeRelations extends BaseJob
             ->get();
 
         $totalRelations = count($relations);
-        $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
+        $allSiteIds = Sites::getAllSiteIds()->all();
         $primarySiteId = array_shift($allSiteIds);
 
         $now = now();

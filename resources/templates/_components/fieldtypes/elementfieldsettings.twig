@@ -160,7 +160,7 @@
                 on: field.allowSelfRelations,
             }) }}
 
-            {% if craft.app.getIsMultiSite() %}
+            {% if craft.sites.isMultiSite() %}
 
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}

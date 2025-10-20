@@ -27,7 +27,6 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -48,10 +47,13 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -1418,7 +1420,7 @@ JS, [
             ? $elementType::isLocalized()
             : (bool)$config['showSiteMenu'];
 
-        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = Sites::getEditableSiteIds()->all();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -1653,7 +1655,7 @@ JS, [
             $label = null;
         }
 
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+        $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
@@ -1679,7 +1681,7 @@ JS, [
         }
 
         if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
+            $site = Sites::getSiteById($siteId);
             if (!$site) {
                 throw new InvalidArgumentException("Invalid site ID: $siteId");
             }
@@ -1690,7 +1692,7 @@ JS, [
         $required = (bool)($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
-        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $translatable = Sites::isMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -3631,18 +3633,18 @@ JS, [
      * Returns a menu item array for the given sites, possibly grouping them by site group.
      *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
-     * @param Site|null $selectedSite
+     * @param \craft\models\Site|Site|null $selectedSite
      * @param array $config
      * @return array
      * @since 5.0.0
      */
     public static function siteMenuItems(
-        ?array $sites = null,
-        ?Site $selectedSite = null,
+        array|Collection|null $sites = null,
+        \craft\models\Site|Site|null $selectedSite = null,
         array $config = [],
     ): array {
         if ($sites === null) {
-            $sites = Craft::$app->getSites()->getEditableSites();
+            $sites = Sites::getEditableSites()->all();
         }
 
         $config += [
@@ -3652,12 +3654,12 @@ JS, [
 
         $items = [];
 
-        $siteGroups = Craft::$app->getSites()->getAllGroups();
+        $siteGroups = SiteGroups::getAllGroups();
         $config['showSiteGroupHeadings'] ??= count($siteGroups) > 1;
 
         // Normalize and index the sites
         /** @var array<int,array{site:Site,status?:string}> $sites */
-        $sites = Collection::make($sites)
+        $sites = collect($sites)
             ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
             ->keyBy(fn(array $site) => $site['site']->id)
             ->all();
@@ -3670,16 +3672,16 @@ JS, [
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
             if (!$config['includeOmittedSites']) {
-                $groupSites = array_filter($groupSites, fn(Site $site) => isset($sites[$site->id]));
+                $groupSites = $groupSites->filter(fn(Site $site) => isset($sites[$site->id]));
             }
 
-            if (empty($groupSites)) {
+            if ($groupSites->isEmpty()) {
                 continue;
             }
 
-            $groupSiteItems = array_map(fn(Site $site) => [
+            $groupSiteItems = $groupSites->map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
-                'label' => t($site->name, category: 'site'),
+                'label' => t($site->getName(), category: 'site'),
                 'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => !isset($sites[$site->id]),
                 'selected' => $site->id === $selectedSite?->id,
@@ -3688,13 +3690,13 @@ JS, [
                         'site-id' => $site->id,
                     ],
                 ],
-            ], $groupSites);
+            ]);
 
             if ($config['showSiteGroupHeadings']) {
                 $items[] = [
                     'heading' => t($siteGroup->name, category: 'site'),
                     'items' => $groupSiteItems,
-                    'hidden' => !Collection::make($groupSiteItems)->contains(fn(array $item) => !$item['hidden']),
+                    'hidden' => !$groupSiteItems->contains(fn(array $item) => !$item['hidden']),
                 ];
             } else {
                 array_push($items, ...$groupSiteItems);
@@ -3898,24 +3900,23 @@ JS, [
     public static function requestedSite(): ?Site
     {
         if (!isset(self::$_requestedSite)) {
-            $sitesService = Craft::$app->getSites();
-            $editableSiteIds = $sitesService->getEditableSiteIds();
+            $editableSiteIds = Sites::getEditableSiteIds()->all();
 
             if (!empty($editableSiteIds)) {
                 $request = Craft::$app->getRequest();
                 if (
                     !$request->getIsConsoleRequest() &&
                     ($handle = $request->getQueryParam('site')) !== null &&
-                    ($site = $sitesService->getSiteByHandle($handle, true)) !== null &&
+                    ($site = Sites::getSiteByHandle($handle, true)) !== null &&
                     in_array($site->id, $editableSiteIds, false)
                 ) {
                     self::$_requestedSite = $site;
                 } else {
-                    self::$_requestedSite = $sitesService->getCurrentSite();
+                    self::$_requestedSite = Sites::getCurrentSite();
 
                     if (!in_array(self::$_requestedSite->id, $editableSiteIds, false)) {
                         // Just go with the first editable site
-                        self::$_requestedSite = $sitesService->getSiteById($editableSiteIds[0]);
+                        self::$_requestedSite = Sites::getSiteById($editableSiteIds[0]);
                     }
                 }
             } else {

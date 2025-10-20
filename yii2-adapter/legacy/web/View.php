@@ -27,6 +27,7 @@ use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -973,7 +974,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->handle;
+            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
@@ -2533,7 +2534,7 @@ JS;
         $context['context'] = 'index';
         $context['sources'] = Craft::$app->getElementSources()->getSources($elementType, withDisabled: true);
 
-        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
             $context['showSiteMenu'] = $elementType::isLocalized();
         }
@@ -2559,7 +2560,7 @@ JS;
         if ($context['showStatusMenu'] === 'auto') {
             $context['showStatusMenu'] = $elementType::hasStatuses();
         }
-        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
             $context['showSiteMenu'] = $elementType::isLocalized();
         }

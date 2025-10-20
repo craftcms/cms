@@ -41,6 +41,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -324,9 +325,8 @@ class ElementsController extends Controller
         $canonical = $element->getCanonical(true);
 
         // Site info
-        $sitesService = Craft::$app->getSites();
         $supportedSites = ElementHelper::supportedSitesForElement($element, true);
-        $allEditableSiteIds = $sitesService->getEditableSiteIds();
+        $allEditableSiteIds = Sites::getEditableSiteIds()->all();
         $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
         $propSiteIds = array_column($propSites, 'siteId');
         $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
@@ -395,7 +395,7 @@ class ElementsController extends Controller
             ->title($title)
             ->site($element::isLocalized() ? $element->getSite() : null)
             ->selectableSites(array_map(fn(int $siteId) => [
-                'site' => $sitesService->getSiteById($siteId),
+                'site' => Sites::getSiteById($siteId),
                 'status' => isset($enabledSiteIds[$siteId]) ? 'enabled' : 'disabled',
             ], $propEditableSiteIds))
             ->crumbs($this->_crumbs($element))
@@ -462,7 +462,7 @@ class ElementsController extends Controller
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => (!app()->isLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
+                        'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
@@ -599,7 +599,7 @@ JS, [
         }
 
         $copyFromSiteId = (int)$this->request->getRequiredBodyParam('fromSiteId');
-        $site = Craft::$app->getSites()->getSiteById($copyFromSiteId);
+        $site = Sites::getSiteById($copyFromSiteId);
         if (!$site) {
             throw new BadRequestHttpException("Invalid site ID: $copyFromSiteId");
         }
@@ -741,7 +741,7 @@ JS, [
         }
 
         // Include site name if localized
-        if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
+        if ($element::isLocalized() && Sites::isMultiSite()) {
             $docTitle .= sprintf(' - %s', $element->getSite()->getUiLabel());
         }
 
@@ -1433,7 +1433,7 @@ JS, [
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
                 $element,
-                crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+                crossSiteValidate: ($namespace === null && Sites::isMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
@@ -2126,7 +2126,7 @@ JS, [
         }
 
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 
@@ -2527,11 +2527,11 @@ JS, [
 
         if ($elementType::isLocalized()) {
             if ($siteId) {
-                $site = Craft::$app->getSites()->getSiteById($siteId, true);
+                $site = Sites::getSiteById($siteId, true);
                 if (!$site) {
                     throw new BadRequestHttpException("Invalid side ID: $siteId");
                 }
-                if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
+                if (Sites::isMultiSite() && !$user->can("editSite:$site->uid")) {
                     throw new ForbiddenHttpException('User not authorized to edit content for this site.');
                 }
             } else {
@@ -2545,7 +2545,7 @@ JS, [
                 $siteId = $site->id;
                 $preferSites = null;
             } else {
-                $siteId = Craft::$app->getSites()->getEditableSiteIds();
+                $siteId = Sites::getEditableSiteIds()->all();
                 $preferSites = [$site->id];
             }
         } else {
@@ -2795,7 +2795,7 @@ JS, [
         if (isset($this->_enabledForSite)) {
             if (is_array($this->_enabledForSite)) {
                 // Make sure they are allowed to edit all of the posted site IDs
-                $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+                $editableSiteIds = Sites::getEditableSiteIds()->all();
                 if (array_diff(array_keys($this->_enabledForSite), $editableSiteIds)) {
                     throw new ForbiddenHttpException('User not authorized to edit element statuses for all the submitted site IDs.');
                 }

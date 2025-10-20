@@ -21,6 +21,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
 use function CraftCms\Cms\t;
@@ -388,7 +389,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public function getHasMultiSiteEntries(): bool
     {
         return (
-            Craft::$app->getIsMultiSite() &&
+            Sites::isMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
             $this->propagationMethod !== PropagationMethod::None
         );

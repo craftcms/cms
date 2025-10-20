@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Events\ReorderingSites} or {@see \CraftCms\Cms\Site\Events\SitesReordered}
  */
 class ReorderSitesEvent extends Event
 {

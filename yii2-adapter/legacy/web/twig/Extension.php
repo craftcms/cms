@@ -63,6 +63,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -75,7 +76,9 @@ use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Stringable;
+use Illuminate\Support\ViewErrorBag;
 use IteratorAggregate;
 use Money\Money;
 use Throwable;
@@ -1431,6 +1434,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [Env::class, 'get']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
+            new TwigFunction('old', [$this, 'oldFunction']),
             new TwigFunction('parseEnv', [Env::class, 'parse']),
             new TwigFunction('parseBooleanEnv', [Env::class, 'parseBoolean']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
@@ -1637,6 +1641,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Gets old input from the session
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public function oldFunction(?string $key = null, mixed $default = null): mixed
+    {
+        return Session::getOldInput($key, $default);
+    }
+
+    /**
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
@@ -1763,9 +1780,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $updates = app(Updates::class);
 
         if ($isInstalled && !$updates->isCraftUpdatePending()) {
-            $sitesService = Craft::$app->getSites();
-            $currentSite = $sitesService->getCurrentSite();
-            $primarySite = $sitesService->getPrimarySite();
+            $currentSite = Sites::getCurrentSite();
+            $primarySite = Sites::getPrimarySite();
 
             $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -1790,6 +1806,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'app' => $variable,
             'craft' => $variable,
+            'sessionErrors' => Session::get('errors') ?: new ViewErrorBag(),
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
