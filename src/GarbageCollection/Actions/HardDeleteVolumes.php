@@ -32,7 +32,7 @@ final class HardDeleteVolumes extends GarbageCollectionAction
                 usort($folders, fn (stdClass $a, stdClass $b) => (int) (substr_count($a->path, '/') < substr_count($b->path, '/')));
 
                 foreach ($folders as $folder) {
-                    VolumeFolder::deleteAll(['id' => $folder['id']]);
+                    VolumeFolder::deleteAll(['id' => $folder->id]);
                 }
 
                 Volume::deleteAll(['id' => $volumeIds]);

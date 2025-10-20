@@ -23,7 +23,6 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAnnouncements;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
-use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleSessions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteUnsupportedSiteEntries;
 use CraftCms\Cms\GarbageCollection\Actions\FireRunEvent;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;

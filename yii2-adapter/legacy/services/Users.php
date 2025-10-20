@@ -1306,13 +1306,13 @@ class Users extends Component
             return;
         }
 
-        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgePendingUsersDuration);
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
-
         $query = User::find()
             ->status('pending')
-            ->andWhere(['<', 'users.verificationCodeIssuedDate', DbHelper::prepareDateForDb($pastTime)]);
+            ->andWhere([
+                '<',
+                'users.verificationCodeIssuedDate',
+                now()->subSeconds($generalConfig->purgePendingUsersDuration)->format('Y-m-d H:i:s'),
+            ]);
 
         $elementsService = Craft::$app->getElements();
 
