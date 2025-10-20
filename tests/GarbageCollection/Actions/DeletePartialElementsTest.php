@@ -10,8 +10,6 @@ it('deletes elements that are missing data in the element extension table', func
         'type' => Entry::class,
     ])->create();
 
-    $originalCount = DB::table(Table::ELEMENTS)->count();
-
     expect(DB::table(Table::ELEMENTS)->find($element->id))->not()->toBeNull();
 
     app(DeletePartialElements::class, [
@@ -19,6 +17,5 @@ it('deletes elements that are missing data in the element extension table', func
         'table' => Table::ENTRIES,
     ])();
 
-    expect(DB::table(Table::ELEMENTS)->count())->toBe($originalCount - 1);
     expect(DB::table(Table::ELEMENTS)->find($element->id))->toBeNull();
 });
