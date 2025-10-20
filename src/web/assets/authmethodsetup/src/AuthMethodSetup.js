@@ -57,6 +57,10 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
             .then(async ({data}) => {
               this.showingSlideout = true;
               const slideout = new Craft.AuthMethodSetup.Slideout(data);
+              slideout.on('open', () => {
+                console.log('hello');
+              });
+
               slideout.on('close', () => {
                 this.showingSlideout = false;
               });
@@ -127,23 +131,33 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
     this.methodName = data.methodName;
 
     const contents = `
-<div class="so-body">${data.html}</div>
-<div class="so-footer">
-  <div class="flex-grow"></div>
-  <div class="flex flex-nowrap">
-    <button type="button" class="btn auth-method-close-btn">${Craft.t(
-      'app',
-      'Cancel'
-    )}</button>
-  </div>
-</div>
-`;
+      <div class="so-body">${data.html}</div>
+      <div class="so-footer">
+        <div class="flex-grow"></div>
+        <div class="flex flex-nowrap">
+          <button type="button" class="btn auth-method-close-btn">${Craft.t(
+            'app',
+            'Cancel'
+          )}</button>
+        </div>
+      </div>
+    `;
 
     this.base(contents, {
       containerAttributes: {
         id: data.containerId,
       },
     });
+
+    // Apply accessibility information
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR code'),
+      });
+    }
   },
 
   showSuccess() {
