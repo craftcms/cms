@@ -16,7 +16,7 @@ final class DeletePartialElements extends GarbageCollectionAction
     public function __construct(
         GarbageCollection $garbageCollection,
         GeneralConfig $generalConfig,
-        /** @param class-string<\craft\base\ElementInterface> */
+        /** @var class-string<\craft\base\ElementInterface> */
         private readonly string $elementType,
         private readonly string $table,
         private readonly string $foreignKey = 'id',
