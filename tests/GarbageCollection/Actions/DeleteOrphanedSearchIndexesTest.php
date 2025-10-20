@@ -10,23 +10,23 @@ it('deletes orphaned data', function () {
     $element = Element::factory()->create();
     $field = Field::factory()->create();
 
-    DB::table(Table::SEARCHINDEX)->insert([
+    DB::table(Table::SEARCHINDEX)->insert(array_filter([
         'elementId' => $element->id,
         'attribute' => 'foo',
         'fieldId' => $field->id,
         'siteId' => Sites::getCurrentSite()->id,
         'keywords' => 'foo',
-        'keywords_vector' => 'foo',
-    ]);
+        'keywords_vector' => DB::connection()->getDriverName() === 'pgsql' ? 'foo' : null,
+    ]));
 
-    DB::table(Table::SEARCHINDEX)->insert([
+    DB::table(Table::SEARCHINDEX)->insert(array_filter([
         'elementId' => 999,
         'attribute' => 'foo',
         'fieldId' => $field->id,
         'siteId' => Sites::getCurrentSite()->id,
         'keywords' => 'foo',
-        'keywords_vector' => 'foo',
-    ]);
+        'keywords_vector' => DB::connection()->getDriverName() === 'pgsql' ? 'foo' : null,
+    ]));
 
     $originalCount = DB::table(Table::SEARCHINDEX)->count();
 
