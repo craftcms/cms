@@ -33,6 +33,7 @@ export default defineConfig(({mode}) => {
     },
 
     build: {
+      sourcemap: true,
       assetsDir: '',
       emptyOutDir: true,
       rollupOptions: {

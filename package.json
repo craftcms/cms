@@ -48,6 +48,7 @@
   "dependencies": {
     "@craftcms/cp": "file:../npm-packages/packages/cp",
     "@inertiajs/vue3": "^2.2.7",
+    "axios": "^1.12.2",
     "laravel-vite-plugin": "^2.0.1",
     "vue": "^3.5.22"
   }

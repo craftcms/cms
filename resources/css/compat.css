@@ -6,6 +6,14 @@ Maps our old custom utility classes to tailwind.
   @apply tw:w-full;
 }
 
+.nowrap {
+  @apply tw:whitespace-nowrap;
+}
+
+.centeralign {
+  @apply tw:text-center;
+}
+
 .visually-hidden {
   @apply tw:sr-only;
 }

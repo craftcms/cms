@@ -3,6 +3,7 @@
   import {usePage} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
   import {computed, ref} from 'vue';
+  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
 
   interface Widget {
     id: number;
@@ -35,7 +36,7 @@
     };
   }>();
 
-  const widgets = ref(props.widgets)
+  const widgets = ref(props.widgets);
 
   const openDrawer = (id: string) => {
     const drawer = document.querySelector(`#${id}`);
@@ -59,7 +60,7 @@
       settingsHtml: info.settingsHtml,
       settingsJs: info.settingsJs,
       settings: {},
-    })
+    });
   }
 </script>
 
@@ -97,12 +98,13 @@
                 <craft-icon name="gear"></craft-icon>
               </craft-button>
             </div>
-            <div v-html="widget.bodyHtml"></div>
+
+            <DynamicHtmlRenderer :html="widget.bodyHtml"></DynamicHtmlRenderer>
 
             <template v-if="widget.settingsHtml">
               <hr class="tw:my-4 tw:border-0 tw:border-b tw:border-b-subtle" />
               <form action="">
-                <input type="hidden" name="action" value="">
+                <input type="hidden" name="action" value="" />
                 <div v-html="widget.settingsHtml"></div>
 
                 <div class="tw:flex tw:gap-2 tw:mt-4">

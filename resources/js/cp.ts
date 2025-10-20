@@ -5,6 +5,11 @@ import {createInertiaApp} from '@inertiajs/vue3';
 import '@craftcms/cp/cp.css';
 import '@craftcms/cp';
 
+import Updates from '@/widgets/UpdatesWidget.vue';
+
+// @ts-ignore @TODO
+window.Craft = window.Craft || {};
+
 // noinspection JSIgnoredPromiseFromCall
 createInertiaApp({
   resolve: (name) =>
@@ -13,8 +18,11 @@ createInertiaApp({
       import.meta.glob<DefineComponent>('./pages/**/*.vue')
     ),
   setup({el, App, props, plugin}) {
-    createApp({render: () => h(App, props)})
-      .use(plugin)
-      .mount(el);
+    const app = createApp({render: () => h(App, props)});
+
+    app.component('updates-widget', Updates);
+
+    app.use(plugin);
+    app.mount(el);
   },
 });
