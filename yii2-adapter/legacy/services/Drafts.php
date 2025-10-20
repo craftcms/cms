@@ -14,7 +14,6 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -420,16 +419,12 @@ class Drafts extends Component
             return;
         }
 
-        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeUnsavedDraftsDuration);
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
-
         $drafts = DB::table(Table::ELEMENTS, 'elements')
             ->select('elements.draftId', 'elements.type')
             ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
-            ->where('elements.dateUpdated', '<', $pastTime)
+            ->where('elements.dateUpdated', '<', now()->subSeconds($generalConfig->purgeUnsavedDraftsDuration))
             ->get();
 
         $elementsService = Craft::$app->getElements();

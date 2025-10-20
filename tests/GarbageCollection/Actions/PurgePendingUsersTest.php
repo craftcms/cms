@@ -1,0 +1,52 @@
+<?php
+
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
+use CraftCms\Cms\User\Models\User;
+
+it('purges pending users with stale activation codes', function () {
+    $this->markTestSkipped('Currently causes lock timeouts');
+
+    app(GeneralConfig::class)->purgePendingUsersDuration = 60 * 60 * 24;
+
+    $user1Element = Element::factory()->create([
+        'type' => \craft\elements\User::class,
+        'dateDeleted' => null,
+    ]);
+    DB::table(Table::ELEMENTS_SITES)->insert([
+        'elementId' => $user1Element->id,
+        'siteId' => 1,
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+    ]);
+
+    User::factory()->create([
+        'id' => $user1Element->id,
+        'pending' => true,
+        'verificationCodeIssuedDate' => now(),
+    ]);
+
+    $user2Element = Element::factory()->create([
+        'type' => \craft\elements\User::class,
+        'dateDeleted' => null,
+    ]);
+    DB::table(Table::ELEMENTS_SITES)->insert([
+        'elementId' => $user2Element->id,
+        'siteId' => 1,
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+    ]);
+
+    User::factory()->create([
+        'id' => $user2Element->id,
+        'pending' => true,
+        'verificationCodeIssuedDate' => now()->subWeek()->format('Y-m-d H:i:s'),
+    ]);
+
+    app(PurgePendingUsers::class)();
+
+    expect($user1Element->fresh()->dateDeleted)->toBeNull();
+    expect($user2Element->fresh()->dateDeleted)->not()->toBeNull();
+});

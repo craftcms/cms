@@ -7,6 +7,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -17,7 +18,9 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -103,6 +106,13 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
+
+        $this->app->booted(function () {
+            if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+                // Possibly run garbage collection
+                app(GarbageCollection::class)->run();
+            }
+        });
     }
 
     private function registerMacros(): void

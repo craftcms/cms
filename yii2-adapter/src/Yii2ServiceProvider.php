@@ -7,6 +7,7 @@ use craft\events\EditionChangeEvent;
 use craft\services\Addresses;
 use craft\services\Dashboard;
 use craft\services\Fields;
+use craft\services\Gc;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
 use craft\services\Sites;
@@ -351,6 +352,7 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         Addresses::registerEvents();
         Fields::registerEvents();
+        Gc::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();

@@ -150,6 +150,7 @@ class CraftConnector extends Yii2
         parent::startApp($logger);
 
         Craft::$app->db->close();
+        Craft::$app->db2->close();
     }
 
     public function doRequest(object $request): Response

@@ -1029,6 +1029,7 @@ trait ApplicationTrait
      * Returns the garbage collection service.
      *
      * @return Gc The garbage collection service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\GarbageCollection\GarbageCollection} instead.
      */
     public function getGc(): Gc
     {
@@ -1380,11 +1381,6 @@ trait ApplicationTrait
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
-        }
-
-        if ($this->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
-            // Possibly run garbage collection
-            $this->getGc()->run();
         }
     }
 
