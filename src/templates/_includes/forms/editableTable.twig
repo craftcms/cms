@@ -105,7 +105,6 @@
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
-            {% set rowIndex = loop.index0 %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
