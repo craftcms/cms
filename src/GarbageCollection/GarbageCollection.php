@@ -81,7 +81,6 @@ final class GarbageCollection
         $this->runActions([
             PurgeUnsavedDrafts::class,
             PurgePendingUsers::class,
-            DeleteStaleSessions::class,
             DeleteStaleAnnouncements::class,
             DeleteStaleElementActivity::class,
             DeleteStaleBulkOpData::class,
