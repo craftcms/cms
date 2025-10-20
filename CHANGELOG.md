@@ -5,6 +5,7 @@
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
 - Fixed a bug where plugin license keys were getting generated for environments that didn’t allow admin changes, which could result in an error that prevented the Plugin Store from loading. ([#17942](https://github.com/craftcms/cms/issues/17942))
 - Fixed a bug where new plugin license keys weren’t getting saved to `.env` if the environment variable didn’t exist yet. ([#17942](https://github.com/craftcms/cms/issues/17942))
+- Fixed a bug where pressing <kbd>Return</kbd> within an editable table within a slideout would submit the slideout.
 
 ## 4.16.14 - 2025-10-06
 
