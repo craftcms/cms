@@ -48,6 +48,11 @@
     value: volume.transformFsHandle(false),
     options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
     errors: volume.getErrors('transformFsHandle'),
+    selectizeOptions: {
+        extraPlugins: false,
+        allowEmptyOption: true,
+        placeholder: 'Same as asset filesystem'|t('app'),
+    },
 }) }}
 
 {{ forms.textField({
