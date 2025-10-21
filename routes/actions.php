@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
@@ -27,6 +28,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
+use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
 /**
@@ -47,6 +49,10 @@ Route::prefix(implode('/', [
     Route::post('install/validate-account', [InstallController::class, 'validateAccount']);
     Route::post('install/validate-site', [InstallController::class, 'validateSite']);
     Route::post('install/install', [InstallController::class, 'install']);
+
+    Route::any('app/api-headers', [ApiController::class, 'headers']);
+    Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
+    Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
 
     // Updater
     Route::prefix('updater')->group(function () {

@@ -10,6 +10,7 @@ use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\cp_redirect;
@@ -20,6 +21,13 @@ final readonly class UtilitiesController
         protected Utilities $utilitiesService,
         #[Give('Craft')] protected Application $craft,
     ) {}
+
+    public function badgeCount(): JsonResponse
+    {
+        return new JsonResponse([
+            'badgeCount' => $this->utilitiesService->getUtilitiesBadgeCount(),
+        ]);
+    }
 
     public function index()
     {
