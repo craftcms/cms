@@ -22,8 +22,9 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
+    "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
-    "@playwright/test": "^1.19.2",
+    "@playwright/test": "^1.52.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "3.1.1",
