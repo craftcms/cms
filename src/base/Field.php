@@ -337,7 +337,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
             $value = $value['value'];
         }
 
-        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: self::dbType() ?? Schema::TYPE_JSON);
+        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
     }
 
     /**

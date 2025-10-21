@@ -193,18 +193,4 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $value = $this->db->quoteValue(Json::encode($value));
         return "JSON_CONTAINS($targetSql, $value)";
     }
-
-    /**
-     * Builds the SQL expression used to compare the length of a target JSON value.
-     *
-     * @param string $targetSql SQL that expresses the JSON value
-     * @param int $value The value to compare the target JSON length against
-     * @param string $operator The operator that should be used to compare the actual length against the $value
-     * @return string
-     * @since 5.8.16
-     */
-    public function jsonLength(string $targetSql, int $value, string $operator = '='): string
-    {
-        return "JSON_LENGTH($targetSql) $operator $value";
-    }
 }
