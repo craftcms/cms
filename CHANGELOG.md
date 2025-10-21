@@ -12,6 +12,7 @@
 - Fixed an error that could occur if the `_includes/field.twig` template was included without passing an `element` variable. ([#17926](https://github.com/craftcms/cms/issues/17926))
 - Fixed a bug where orphaned content block data wasn’t getting garbage collected. ([#17936](https://github.com/craftcms/cms/pull/17936))
 - Fixed a bug where newly-uploaded assets within Assets fields weren’t getting action menus. ([#17941](https://github.com/craftcms/cms/issues/17941))
+- Fixed a bug where Checkboxes and Multi-select fields weren’t handling `:empty:`/`:notempty:` params properly. ([#17763](https://github.com/craftcms/cms/pull/17763))
 
 ## 5.8.18 - 2025-10-06
 
