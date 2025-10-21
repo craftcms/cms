@@ -80,15 +80,15 @@
 
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
-        elementTypeName: '{{ elementDisplayName|e("js") }}',
-        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
         context: '{{ context }}',
-        storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
-        toolbarSelector: '#toolbar',
         defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
+        elementTypeName: '{{ elementDisplayName|e("js") }}',
+        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        toolbarSelector: '#toolbar',
     });
 {% endblock %}
 

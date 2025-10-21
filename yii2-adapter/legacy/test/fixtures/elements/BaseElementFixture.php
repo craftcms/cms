@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use PDO;
+use yii\log\Logger;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 
@@ -77,7 +78,15 @@ abstract class BaseElementFixture extends DbFixture
                 $fieldLayoutType = Arr::pull($data, 'fieldLayoutType');
                 $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout->id === null) {
-                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    if (function_exists('codecept_debug')) {
+                        codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    } else {
+                        Craft::getLogger()->log(
+                            "Field layout with type: $fieldLayoutType could not be found",
+                            Logger::LEVEL_WARNING,
+                            'testing'
+                        );
+                    }
                 }
             } elseif (isset($data['fieldLayoutUid'])) {
                 $fieldLayoutUid = Arr::pull($data, 'fieldLayoutUid');

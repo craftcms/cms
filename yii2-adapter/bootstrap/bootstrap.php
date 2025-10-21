@@ -9,7 +9,7 @@
 
 use craft\helpers\App;
 use craft\services\Config;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Yii2Adapter\Container;
@@ -42,7 +42,12 @@ $configService->appType = $appType;
 $configService->env = $app->environment();
 $configService->configDir = $app->configPath();
 $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-$generalConfig = Cms::config();
+$generalConfig = app(GeneralConfig::class);
+
+if (is_null($generalConfig)) {
+    $generalConfig = GeneralConfig::create();
+    app()->instance(GeneralConfig::class, $generalConfig);
+}
 
 // Log errors to storage/logs/phperrors.log or php://stderr
 if (Env::parseBoolean('$CRAFT_LOG_PHP_ERRORS') !== false) {

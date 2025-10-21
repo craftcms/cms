@@ -211,7 +211,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
-        'id' => SORT_DESC,
+        'elements.id' => SORT_DESC,
     ];
 
     /**

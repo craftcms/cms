@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Str;
 use function CraftCms\Cms\t;
 
@@ -98,7 +99,11 @@ class TitleField extends TextField
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        if ($element?->getIsFresh() && !$static) {
+        if (
+            $element &&
+            !$static &&
+            (!isset($element->slug) || ElementHelper::isTempSlug($element->slug))
+        ) {
             $view = Craft::$app->getView();
 
             $language = $element->getSite()->getLanguage();

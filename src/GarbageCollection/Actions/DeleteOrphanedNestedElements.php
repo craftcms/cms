@@ -31,6 +31,7 @@ final class DeleteOrphanedNestedElements extends GarbageCollectionAction
         $this->components->task(
             sprintf('deleting orphaned nested %s', $this->elementType::pluralLowerDisplayName()),
             function () {
+                // IDs of nested elements where the owner no longer exists
                 $ids1 = DB::table(Table::ELEMENTS, 'el')
                     ->join(new Alias($this->table, 't'), 't.id', 'el.id')
                     ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', 'el.id')
@@ -38,6 +39,7 @@ final class DeleteOrphanedNestedElements extends GarbageCollectionAction
                     ->whereNull('eo.elementId')
                     ->pluck('el.id');
 
+                // IDs of nested elements where the field no longer exists
                 $ids2 = DB::table(Table::ELEMENTS, 'el')
                     ->join(new Alias($this->table, 't'), 't.id', 'el.id')
                     ->leftJoin(new Alias(Table::FIELDS, 'f'), 'f.id', "t.{$this->fieldForeignKey}")

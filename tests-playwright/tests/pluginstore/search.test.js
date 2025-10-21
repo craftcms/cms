@@ -1,14 +1,14 @@
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
+
 // Should search plugins and get results
-// Should search plugins and get no results
-
-const {test, expect} = require('@playwright/test');
-
 test('Should search plugins and get results', async ({
   page,
   context,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
 
   // Search for “commerce” plugins
   await page.fill('#searchQuery', 'commerce');
@@ -28,12 +28,13 @@ test('Should search plugins and get results', async ({
   expect(pluginsLength > 0).toBeTruthy();
 });
 
+// Should search plugins and get no results
 test('Should search plugins and get no results', async ({
   page,
   context,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
 
   // Search for “commerce” plugins
   await page.fill('#searchQuery', 'query-with-no-results');

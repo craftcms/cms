@@ -541,7 +541,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected array $defaultOrderBy = [
         'elements.dateCreated' => SORT_DESC,
-        'id' => SORT_DESC,
+        'elements.id' => SORT_DESC,
     ];
 
     // For internal use
@@ -595,11 +595,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     private array $_columnMap = [];
 
     /**
-     * @var string|null The joined element table’s alias
+     * @var bool Whether an element table has been joined for the query
      * @see prepare()
      * @see joinElementTable()
      */
-    private ?string $_joinedElementTable = null;
+    private bool $_joinedElementTable = false;
 
     /**
      * @var array<string,string|string[]> Column alias => cast type
@@ -1659,17 +1659,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Keep track of whether an element table is joined into the query
-        $this->_joinedElementTable = null;
+        $this->_joinedElementTable = false;
 
         // Give other classes a chance to make changes up front
         if (!$this->beforePrepare()) {
             throw new QueryAbortedException();
-        }
-
-        if (isset($this->_joinedElementTable)) {
-            // override the `id` mapping to the element table’s `id` column instead
-            // (see https://github.com/craftcms/cms/issues/16401)
-            $this->_columnMap['id'] = "$this->_joinedElementTable.id";
         }
 
         // Gather custom fields and generated field handles
@@ -1786,7 +1780,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // If an element table was never joined in, explicitly filter based on the element type
-        if (!isset($this->_joinedElementTable) && $this->elementType) {
+        if (!$this->_joinedElementTable && $this->elementType) {
             try {
                 $ref = new ReflectionClass($this->elementType);
             } catch (ReflectionException) {
@@ -2668,7 +2662,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $joinTable = [$alias => $table];
         $this->query->innerJoin($joinTable, "[[$alias.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[$alias.id]] = [[elements.id]]");
-        $this->_joinedElementTable = $alias;
+        $this->_joinedElementTable = true;
 
         // Add element table cols to the column map
         foreach (Craft::$app->getDb()->getTableSchema($table)->columns as $column) {

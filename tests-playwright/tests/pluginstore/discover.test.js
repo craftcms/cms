@@ -1,5 +1,6 @@
-const {test, expect} = require('@playwright/test');
-const {waitForPluginStore} = require('./.playwright/utils.js');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 const waitForDiscoverPage = async ({page}) => {
   await Promise.all([
@@ -23,15 +24,19 @@ const waitForDiscoverPage = async ({page}) => {
 };
 
 test('Shoud show the Discover page', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
   const title = page.locator('h1');
   await expect(title).toHaveText('Plugin Store');
 });
 
-test('Should show featured plugins', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store');
+test('Should show featured plugins', async ({
+  craftPluginStore,
+  page,
+  baseURL,
+}) => {
+  await page.goto('./plugin-store');
 
-  await waitForPluginStore({page});
+  await craftPluginStore.waitForPluginStore(page);
   await waitForDiscoverPage({page});
 
   // Check that the page shows featured sections

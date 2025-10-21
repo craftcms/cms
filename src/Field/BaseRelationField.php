@@ -772,8 +772,10 @@ JS, [
             $query->id(false);
         }
 
-        // Prepare the query for lazy eager loading
-        $query->prepForEagerLoading($this->handle, $element);
+        // Prepare the query for lazy eager loading, but only when element exists
+        if ($element !== null) {
+            $query->prepForEagerLoading($this->handle, $element);
+        }
 
         if ($this->allowLimit && $this->maxRelations) {
             $query->limit($this->maxRelations);
@@ -1430,7 +1432,6 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
-            $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [

@@ -75,6 +75,7 @@ test('it deletes partial elements', function (string $elementType, string $table
     [Address::class, Table::ADDRESSES],
     [Asset::class, Table::ASSETS],
     [Category::class, Table::CATEGORIES],
+    [ContentBlock::class, Table::CONTENTBLOCKS],
     [Entry::class, Table::ENTRIES],
     [GlobalSet::class, Table::GLOBALSETS],
     [Tag::class, Table::TAGS],

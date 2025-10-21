@@ -97,6 +97,7 @@ final class GarbageCollection
             [DeletePartialElements::class, ['elementType' => Address::class, 'table' => Table::ADDRESSES]],
             [DeletePartialElements::class, ['elementType' => Asset::class, 'table' => Table::ASSETS]],
             [DeletePartialElements::class, ['elementType' => Category::class, 'table' => Table::CATEGORIES]],
+            [DeletePartialElements::class, ['elementType' => ContentBlock::class, 'table' => Table::CONTENTBLOCKS]],
             [DeletePartialElements::class, ['elementType' => Entry::class, 'table' => Table::ENTRIES]],
             [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => Table::GLOBALSETS]],
             [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => Table::TAGS]],

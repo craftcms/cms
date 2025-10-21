@@ -328,17 +328,21 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `class` – Class name(s) that should be added to the container element
+     * - `hyperlink` – Whether the chip label should be hyperlinked to the component’s URL (only applies if the component implements [[CpEditable]])
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
-     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set.
-     *   Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `overrides` – Any config overrides that should persist when the chip is re-rendered
      * - `selectable` – Whether the chip should include a checkbox input
-     * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showLabel` – Whether the component’s label should be shown
+     * - `showActionMenu` – Whether the chip should include an action menu (only applies if the component implements [[Actionable]])
+     * - `showDescription` – Whether the chip should include the component’s description (only applies if the component implements [[Describable]])
      * - `showHandle` – Whether the component’s handle should be show (only applies if the component implements [[Grippable]])
-     * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
-     * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
+     * - `showIndicators` – Whether the component’s indicators should be shown (only applies if the component implements [[Indicative]])
+     * - `showLabel` – Whether the component’s label should be shown
+     * - `showStatus` – Whether the component’s status should be shown (only applies if the component implements [[Statusable]])
+     * - `showThumb` – Whether the component’s thumbnail should be shown (only applies if the component implements [[Thumbable]] or [[Iconic]])
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
@@ -352,23 +356,23 @@ class Cp
         $config += [
             'attributes' => [],
             'autoReload' => true,
-            'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
             'hyperlink' => false,
+            'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
+            'overrides' => [],
             'selectable' => false,
             'showActionMenu' => false,
-            'showLabel' => true,
+            'showDescription' => false,
             'showHandle' => false,
+            'showIndicators' => false,
+            'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'showIndicators' => false,
-            'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
-            'overrides' => [],
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -536,15 +540,24 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
      * - `id` – The chip’s `id` attribute
-     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `overrides` – Any config overrides that should persist when the chip is re-rendered
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
+     * - `showDescription` – Whether the chip should include the element’s description
      * - `showDraftName` – Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showHandle` – Whether the element’s handle should be show (only applies if the element implements [[Grippable]])
+     * - `showIndicators` – Whether the element’s indicators should be shown (only applies if the element implements [[Indicative]])
      * - `showLabel` – Whether the element’s label should be shown
-     * - `showStatus` – Whether the element’s status should be shown (if the element type has statuses)
-     * - `showThumb` – Whether the element’s thumbnail should be shown (if the element has one)
+     * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
+     * - `showStatus` – Whether the element’s status should be shown
+     * - `showThumb` – Whether the element’s thumbnail should be shown
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
@@ -631,11 +644,13 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the card
      * - `autoReload` – Whether the card should auto-reload itself when it’s saved
-     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `context` – The context the card is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the card label should be hyperlinked to the element’s URL
      * - `id` – The card’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `selectable` – Whether the card should include a checkbox input
      * - `showActionMenu` – Whether the card should include an action menu
+     * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
@@ -649,12 +664,12 @@ class Cp
             'attributes' => [],
             'autoReload' => true,
             'context' => 'index',
-            'id' => sprintf('card-%s', mt_rand()),
             'hyperlink' => false,
+            'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
-            'showEditButton' => true,
             'showActionMenu' => false,
+            'showEditButton' => true,
             'sortable' => false,
         ];
 
@@ -1398,18 +1413,19 @@ JS, [
     public static function elementIndexHtml(string $elementType, array $config = []): string
     {
         $config += [
-            'context' => 'index',
-            'id' => sprintf('element-index-%s', mt_rand()),
             'class' => null,
-            'sources' => null,
-            'showStatusMenu' => 'auto',
-            'showSiteMenu' => 'auto',
-            'fieldLayouts' => [],
+            'context' => 'index',
             'defaultSort' => null,
             'defaultTableColumns' => null,
-            'registerJs' => true,
-            'jsSettings' => [],
             'defaultViewMode' => 'table',
+            'fieldLayouts' => [],
+            'id' => sprintf('element-index-%s', mt_rand()),
+            'jsSettings' => [],
+            'registerJs' => true,
+            'showSiteMenu' => 'auto',
+            'showStatusMenu' => 'auto',
+            'statuses' => null,
+            'sources' => null,
         ];
 
         if ($config['showStatusMenu'] !== 'auto') {
@@ -1592,6 +1608,7 @@ JS, [
                 'elementType' => $elementType,
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
+                'elementStatuses' => $config['statuses'],
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
