@@ -15,8 +15,6 @@ use craft\models\Section_SiteSettings;
 use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
-use craft\records\Section as SectionRecord;
-use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -28,6 +26,8 @@ use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Models\Section as SectionModel;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
@@ -485,21 +485,23 @@ final class Sections
             $siteSettingData = $data['siteSettings'];
 
             // Basic data
-            $sectionRecord = $this->_getSectionRecord($sectionUid, true);
-            $sectionRecord->uid = $sectionUid;
-            $sectionRecord->name = $data['name'];
-            $sectionRecord->handle = $data['handle'];
-            $sectionRecord->type = $data['type'];
-            $sectionRecord->enableVersioning = (bool) $data['enableVersioning'];
-            $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
-            $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
-            $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
-            $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
+            $sectionModel = $this->getSectionModel($sectionUid, true);
+            $oldPropagationMethod = $sectionModel->propagationMethod;
+
+            $sectionModel->uid = $sectionUid;
+            $sectionModel->name = $data['name'];
+            $sectionModel->handle = $data['handle'];
+            $sectionModel->type = $data['type'];
+            $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
+            $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
+            $sectionModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
+            $sectionModel->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
+            $sectionModel->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
 
-            $isNewSection = $sectionRecord->getIsNewRecord();
-            $propagationMethodChanged = $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod');
+            $isNewSection = ! $sectionModel->exists;
+            $propagationMethodChanged = $sectionModel->propagationMethod != $oldPropagationMethod;
 
             if ($data['type'] === Section::TYPE_STRUCTURE) {
                 $structuresService = \Craft::$app->getStructures();
@@ -517,43 +519,42 @@ final class Sections
                     $isNewStructure &&
                     ($event->oldValue['type'] ?? null) === Section::TYPE_STRUCTURE &&
                     ($event->oldValue['structure']['uid'] ?? null) !== $structureUid &&
-                    $sectionRecord->structureId
+                    $sectionModel->structureId
                 ) {
-                    $structuresService->deleteStructureById($sectionRecord->structureId);
+                    $structuresService->deleteStructureById($sectionModel->structureId);
                 }
 
                 $structuresService->saveStructure($structure);
-                $sectionRecord->structureId = $structure->id;
+                $sectionModel->structureId = $structure->id;
             } else {
-                if ($sectionRecord->structureId) {
+                if ($sectionModel->structureId) {
                     // Delete the old one
-                    \Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+                    \Craft::$app->getStructures()->deleteStructureById($sectionModel->structureId);
                 }
 
-                $sectionRecord->structureId = null;
+                $sectionModel->structureId = null;
                 $isNewStructure = false;
             }
 
             $resaveEntries = (
-                $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
-                $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
+                $sectionModel->handle !== $sectionModel->getOriginal('handle') ||
+                $sectionModel->type !== $sectionModel->getOriginal('type') ||
                 $propagationMethodChanged ||
-                $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
+                $sectionModel->structureId !== $sectionModel->getOriginal('structureId')
             );
 
-            $wasTrashed = $sectionRecord->dateDeleted;
-            if ($wasTrashed) {
-                $sectionRecord->restore();
+            if ($wasTrashed = $sectionModel->dateDeleted) {
+                $sectionModel->dateDeleted = null;
                 $resaveEntries = true;
-            } else {
-                $sectionRecord->save(false);
             }
+
+            $sectionModel->save();
 
             // Update the entry type relations
             // -----------------------------------------------------------------
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
-                ->where('sectionId', $sectionRecord->id)
+                ->where('sectionId', $sectionModel->id)
                 ->delete();
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
@@ -561,7 +562,7 @@ final class Sections
                     ->map(fn ($entryType) => \Craft::$app->getEntries()->getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [
-                        'sectionId' => $sectionRecord->id,
+                        'sectionId' => $sectionModel->id,
                         'typeId' => $entryType->id,
                         'sortOrder' => $i + 1,
                         'name' => isset($entryType->original) && $entryType->name !== $entryType->original->name ? $entryType->name : null,
@@ -576,12 +577,12 @@ final class Sections
 
             if (! $isNewSection) {
                 // Get the old section site settings
-                $allOldSiteSettingsRecords = Section_SiteSettingsRecord::find()
-                    ->where(['sectionId' => $sectionRecord->id])
-                    ->indexBy('siteId')
-                    ->all();
+                $allOldSiteSettingsModels = SectionSiteSettings::query()
+                    ->where('sectionId', $sectionModel->id)
+                    ->get()
+                    ->keyBy('siteId');
             } else {
-                $allOldSiteSettingsRecords = [];
+                $allOldSiteSettingsModels = [];
             }
 
             $siteIdMap = DB::table(Table::SITES)
@@ -595,34 +596,34 @@ final class Sections
                 $siteId = $siteIdMap[$siteUid];
 
                 // Was this already selected?
-                if (! $isNewSection && isset($allOldSiteSettingsRecords[$siteId])) {
-                    /** @var Section_SiteSettingsRecord $siteSettingsRecord */
-                    $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
+                if (! $isNewSection && isset($allOldSiteSettingsModels[$siteId])) {
+                    /** @var SectionSiteSettings $siteSettingsModel */
+                    $siteSettingsModel = $allOldSiteSettingsModels[$siteId];
                 } else {
-                    $siteSettingsRecord = new Section_SiteSettingsRecord;
-                    $siteSettingsRecord->sectionId = $sectionRecord->id;
-                    $siteSettingsRecord->siteId = $siteId;
+                    $siteSettingsModel = new SectionSiteSettings;
+                    $siteSettingsModel->sectionId = $sectionModel->id;
+                    $siteSettingsModel->siteId = $siteId;
                     $resaveEntries = true;
                     $hasNewSite = true;
                 }
 
-                $siteSettingsRecord->enabledByDefault = $siteSettings['enabledByDefault'];
+                $siteSettingsModel->enabledByDefault = $siteSettings['enabledByDefault'];
 
-                if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
-                    $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'];
-                    $siteSettingsRecord->template = $siteSettings['template'];
+                if ($siteSettingsModel->hasUrls = $siteSettings['hasUrls']) {
+                    $siteSettingsModel->uriFormat = $siteSettings['uriFormat'];
+                    $siteSettingsModel->template = $siteSettings['template'];
                 } else {
-                    $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'] = null;
-                    $siteSettingsRecord->template = $siteSettings['template'] = null;
+                    $siteSettingsModel->uriFormat = $siteSettings['uriFormat'] = null;
+                    $siteSettingsModel->template = $siteSettings['template'] = null;
                 }
 
                 $resaveEntries = (
                     $resaveEntries ||
-                    $siteSettingsRecord->hasUrls != $siteSettingsRecord->getOldAttribute('hasUrls') ||
-                    $siteSettingsRecord->uriFormat !== $siteSettingsRecord->getOldAttribute('uriFormat')
+                    $siteSettingsModel->hasUrls !== $siteSettingsModel->getOriginal('hasUrls') ||
+                    $siteSettingsModel->uriFormat !== $siteSettingsModel->getOriginal('uriFormat')
                 );
 
-                $siteSettingsRecord->save(false);
+                $siteSettingsModel->save();
             }
 
             if (! $isNewSection) {
@@ -630,10 +631,10 @@ final class Sections
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
+                foreach ($allOldSiteSettingsModels as $siteId => $siteSettingsModel) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (! in_array($siteUid, $affectedSiteUids, false)) {
-                        $siteSettingsRecord->delete();
+                        $siteSettingsModel->delete();
                         $resaveEntries = true;
                     }
                 }
@@ -644,11 +645,11 @@ final class Sections
             // -----------------------------------------------------------------
 
             if (
-                $sectionRecord->type === Section::TYPE_STRUCTURE &&
+                $sectionModel->type === Section::TYPE_STRUCTURE &&
                 ! $isNewSection &&
                 $isNewStructure
             ) {
-                $this->_populateNewStructure($sectionRecord);
+                $this->populateNewStructure($sectionModel);
             }
 
             // Finally, deal with the existing entries...
@@ -659,22 +660,22 @@ final class Sections
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
                         'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                            'name' => $sectionRecord->name,
+                            'name' => $sectionModel->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [
-                            'sectionId' => $sectionRecord->id,
-                            'structureId' => $sectionRecord->structureId,
+                            'sectionId' => $sectionModel->id,
+                            'structureId' => $sectionModel->structureId,
                         ],
                     ]));
                 } elseif ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
                         'description' => I18N::prep('Resaving {name} entries', [
-                            'name' => $sectionRecord->name,
+                            'name' => $sectionModel->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [
-                            'sectionId' => $sectionRecord->id,
+                            'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
                             'preferSites' => [Sites::getPrimarySite()->id],
                             'unique' => true,
@@ -700,7 +701,7 @@ final class Sections
         if ($wasTrashed) {
             /** @var Entry[] $entries */
             $entries = Entry::find()
-                ->sectionId($sectionRecord->id)
+                ->sectionId($sectionModel->id)
                 ->drafts(null)
                 ->draftOf(false)
                 ->status(null)
@@ -724,7 +725,7 @@ final class Sections
         }
 
         /** @var Section $section */
-        $section = $this->getSectionById($sectionRecord->id);
+        $section = $this->getSectionById($sectionModel->id);
 
         // If this is a Single, ensure that the section has its one and only entry
         if (! $isNewSection && $section->type === Section::TYPE_SINGLE) {
@@ -747,11 +748,11 @@ final class Sections
      *
      * @see saveSection()
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord): void
+    private function populateNewStructure(SectionModel $sectionModel): void
     {
         // Add all of the entries to the structure
         $query = Entry::find()
-            ->sectionId($sectionRecord->id)
+            ->sectionId($sectionModel->id)
             ->drafts(null)
             ->draftOf(false)
             ->site('*')
@@ -764,7 +765,7 @@ final class Sections
 
         foreach (DbHelper::each($query) as $entry) {
             /** @var Entry $entry */
-            $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
+            $structuresService->appendToRoot($sectionModel->structureId, $entry, Structures::MODE_INSERT);
         }
     }
 
@@ -966,7 +967,7 @@ final class Sections
     public function handleDeletedSection(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
-        $sectionRecord = $this->_getSectionRecord($uid);
+        $sectionRecord = $this->getSectionModel($uid);
 
         if (! $sectionRecord->id) {
             return;
@@ -1033,18 +1034,16 @@ final class Sections
     }
 
     /**
-     * Gets a sections's record by uid.
+     * Gets a sections's model by uid.
      *
      * @param  bool  $withTrashed  Whether to include trashed sections in search
      */
-    private function _getSectionRecord(string $uid, bool $withTrashed = false): SectionRecord
+    private function getSectionModel(string $uid, bool $withTrashed = false): SectionModel
     {
-        $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
-        $query->andWhere(['uid' => $uid]);
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var SectionRecord */
-        return $query->one() ?? new SectionRecord;
+        return SectionModel::query()
+            ->when($withTrashed, fn (Builder $query) => $query->withTrashed())
+            ->where('uid', $uid)
+            ->first() ?? new SectionModel;
     }
 
     /**
