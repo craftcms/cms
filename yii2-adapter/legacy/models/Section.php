@@ -36,6 +36,7 @@ use function CraftCms\Cms\t;
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Section\Data\Section} instead.
  */
 class Section extends Model implements Chippable, CpEditable, Iconic
 {

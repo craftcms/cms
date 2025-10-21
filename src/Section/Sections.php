@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -155,7 +156,7 @@ final class Sections
 
                 if ($siteSettings = Arr::pull($siteSettingsBySection, $section->id)) {
                     $section->setSiteSettings(
-                        array_map(fn (object $config) => new SectionSiteSettings(...(array) $config), $siteSettings),
+                        array_map(fn (object $config) => SectionSiteSettings::from($config), $siteSettings),
                     );
                 }
 
@@ -505,13 +506,13 @@ final class Sections
             $isNewSection = ! $sectionModel->exists;
             $propagationMethodChanged = $sectionModel->propagationMethod != $oldPropagationMethod;
 
-            if ($data['type'] === SectionType::Structure) {
+            if ($data['type'] === SectionType::Structure->value) {
                 $structuresService = \Craft::$app->getStructures();
 
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
-                $structure = $structuresService->getStructureByUid($structureUid,
-                    true) ?? new Structure(['uid' => $structureUid]);
+                $structure = $structuresService->getStructureByUid($structureUid, true)
+                    ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 
@@ -1043,7 +1044,7 @@ final class Sections
     private function getSectionModel(string $uid, bool $withTrashed = false): SectionModel
     {
         return SectionModel::query()
-            ->when($withTrashed, fn (Builder $query) => $query->withTrashed())
+            ->when($withTrashed, fn (EloquentBuilder $query) => $query->withTrashed())
             ->where('uid', $uid)
             ->first() ?? new SectionModel;
     }

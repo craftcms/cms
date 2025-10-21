@@ -34,8 +34,6 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
         return Sections::getSectionById($id);
     }
 
-    private array $entryTypes;
-
     public function __construct(
         public ?int $id = null,
         public ?int $structureId = null,
@@ -49,8 +47,9 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
         public DefaultPlacement $defaultPlacement = DefaultPlacement::End,
         public ?array $previewTargets = null,
         public ?string $uid = null,
-        /** @var SectionSiteSettings[] */
+        /** @var SectionSiteSettings[] $siteSettings */
         private ?array $siteSettings = null,
+        private ?array $entryTypes = null,
     ) {
         $this->previewTargets ??= [
             [
@@ -91,42 +90,59 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                 'string',
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($context->payload['id'] ?? null),
+                Rule::unique(Table::SECTIONS)->ignore($context->payload['sectionId'] ?? null),
             ],
+            'entryTypes' => ['required'],
             'type' => ['required', Rule::enum(SectionType::class)],
             'defaultPlacement' => ['nullable', Rule::enum(DefaultPlacement::class)],
             'propagationMethod' => ['required', Rule::enum(PropagationMethod::class)],
-            'siteSettings' => ['required', 'array', function (string $attribute, array $value, Closure $fail) use ($context) {
-                if (! $context->payload['id']) {
+            'sites' => ['required', 'array', function (string $attribute, array $value, Closure $fail) use ($context) {
+                if (! isset($context->payload['sectionId'])) {
                     return;
                 }
+
+                $siteIds = [];
+                foreach (Sites::getAllSites() as $site) {
+                    $postedSettings = $value[$site->handle];
+
+                    if (Sites::isMultiSite() && empty($postedSettings['enabled'])) {
+                        continue;
+                    }
+
+                    $siteIds[] = $site->id;
+                }
+
                 $currentSiteIds = DB::table(Table::SECTIONS_SITES)
-                    ->where('sectionId', $this->id)
+                    ->where('sectionId', $context->payload['sectionId'])
                     ->pluck('siteId')
                     ->all();
 
-                if (empty(array_intersect($currentSiteIds, array_keys($value)))) {
+                if (empty(array_intersect($currentSiteIds, $siteIds))) {
                     $fail(t('At least one currently-enabled site must remain enabled.'));
                 }
             }],
-            'previewTargets' => ['nullable', 'array', function (string $attribute, array $value, Closure $fail) {
-                $hasErrors = false;
+            'previewTargets' => [
+                'nullable',
+                'array',
+                function (string $attribute, array $value, Closure $fail) {
+                    $hasErrors = false;
 
-                foreach ($this->previewTargets as &$target) {
-                    $target['label'] = trim($target['label']);
-                    $target['urlFormat'] = trim($target['urlFormat']);
+                    foreach ($value as &$target) {
+                        $target['label'] = trim($target['label']);
+                        $target['urlFormat'] = trim($target['urlFormat']);
 
-                    if ($target['label'] === '') {
-                        $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
-                        $hasErrors = true;
+                        if ($target['label'] === '') {
+                            $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
+                            $hasErrors = true;
+                        }
                     }
-                }
-                unset($target);
+                    unset($target);
 
-                if ($hasErrors) {
-                    $fail(t('All targets must have a label.'));
-                }
-            }],
+                    if ($hasErrors) {
+                        $fail(t('All targets must have a label.'));
+                    }
+                },
+            ],
         ];
     }
 
