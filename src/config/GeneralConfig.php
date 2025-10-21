@@ -380,7 +380,7 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
-     * @var bool Whether users should automatically be logged in after activating their account or resetting their password.
+     * @var bool Whether users should automatically be logged in after activating their account.
      *
      * ::: code
      * ```php Static Config
@@ -3729,7 +3729,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether users should automatically be logged in after activating their account or resetting their password.
+     * Whether users should automatically be logged in after activating their account.
      *
      * ```php
      * ->autoLoginAfterAccountActivation(true)
