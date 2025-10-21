@@ -27,7 +27,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Structure;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use CraftCms\Cms\Database\Table;
@@ -37,19 +36,22 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
-use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -62,7 +64,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
-use function CraftCms\Cms\t;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -173,16 +174,6 @@ class Entries extends Component
      */
     private array $_singleEntries = [];
 
-    /**
-     * Serializer
-     */
-    public function __serialize()
-    {
-        $vars = get_object_vars($this);
-        unset($vars['_sections']);
-        return $vars;
-    }
-
     // Sections
     // -------------------------------------------------------------------------
 
@@ -203,7 +194,7 @@ class Entries extends Component
      */
     public function getAllSectionIds(): array
     {
-        return app(Sections::class)->getAllSectionIds()->values()->all();
+        return Sections::getAllSectionIds()->values()->all();
     }
 
     /**
@@ -223,7 +214,7 @@ class Entries extends Component
      */
     public function getEditableSectionIds(): array
     {
-        return app(Sections::class)->getEditableSectionIds()->values()->all();
+        return Sections::getEditableSectionIds()->values()->all();
     }
 
     /**
@@ -243,7 +234,9 @@ class Entries extends Component
      */
     public function getAllSections(): array
     {
-        return app(Sections::class)->getAllSections()->values()->all();
+        return Sections::getAllSections()->values()
+            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
+            ->all();
     }
 
     /**
@@ -263,7 +256,9 @@ class Entries extends Component
      */
     public function getEditableSections(): array
     {
-        return app(Sections::class)->geteditableSections()->values()->all();
+        return Sections::geteditableSections()->values()
+            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
+            ->all();
     }
 
     /**
@@ -287,7 +282,9 @@ class Entries extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return app(Sections::class)->getSectionsByType($type)->values()->all();
+        return Sections::getSectionsByType($type)->values()
+            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
+            ->all();
     }
 
     /**
@@ -307,7 +304,7 @@ class Entries extends Component
      */
     public function getTotalSections(): int
     {
-        return app(Sections::class)->getTotalSections();
+        return Sections::getTotalSections();
     }
 
     /**
@@ -327,7 +324,7 @@ class Entries extends Component
      */
     public function getTotalEditableSections(): int
     {
-        return app(Sections::class)->getTotalEditableSections();
+        return Sections::getTotalEditableSections();
     }
 
     /**
@@ -349,7 +346,13 @@ class Entries extends Component
      */
     public function getSectionById(int $sectionId): ?Section
     {
-        return app(Sections::class)->getSectionById($sectionId);
+        $sectionData = Sections::getSectionById($sectionId);
+
+        if (!$sectionData) {
+            return null;
+        }
+
+        return self::sectionFromSectionData($sectionData);
     }
 
     /**
@@ -371,7 +374,13 @@ class Entries extends Component
      */
     public function getSectionByUid(string $uid): ?Section
     {
-        return app(Sections::class)->getSectionByUid($uid);
+        $sectionData = Sections::getSectionByUid($uid);
+
+        if (!$sectionData) {
+            return null;
+        }
+
+        return self::sectionFromSectionData($sectionData);
     }
 
     /**
@@ -393,7 +402,13 @@ class Entries extends Component
      */
     public function getSectionByHandle(string $sectionHandle): ?Section
     {
-        return app(Sections::class)->getSectionByHandle($sectionHandle);
+        $sectionData = Sections::getSectionByHandle($sectionHandle);
+
+        if (!$sectionData) {
+            return null;
+        }
+
+        return self::sectionFromSectionData($sectionData);
     }
 
     /**
@@ -406,7 +421,9 @@ class Entries extends Component
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return app(Sections::class)->getSectionSiteSettings($sectionId);
+        return array_map(function(SectionSiteSettings $data) {
+            return self::sectionSiteSettingsFromSiteSettingsData($data);
+        }, Sections::getSectionSiteSettings($sectionId));
     }
 
     /**
@@ -446,7 +463,18 @@ class Entries extends Component
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
-        return app(Sections::class)->saveSection($section);
+        if ($runValidation) {
+            $section->validate();
+        }
+
+        $data = $section->toArray();
+        if (is_array($data['propagationMethod'])) {
+            $data['propagationMethod'] = $data['propagationMethod']['value'];
+        }
+
+        $section = \CraftCms\Cms\Section\Data\Section::from($data);
+
+        return Sections::saveSection($section);
     }
 
     /**
@@ -458,7 +486,7 @@ class Entries extends Component
      */
     public function handleChangedSection(ConfigEvent $event): void
     {
-        app(Sections::class)->handleChangedSection($event);
+        Sections::handleChangedSection($event);
     }
 
     /**
@@ -478,7 +506,7 @@ class Entries extends Component
      */
     public function deleteSectionById(int $sectionId): bool
     {
-        return app(Sections::class)->deleteSectionById($sectionId);
+        return Sections::deleteSectionById($sectionId);
     }
 
     /**
@@ -498,7 +526,14 @@ class Entries extends Component
      */
     public function deleteSection(Section $section): bool
     {
-        return app(Sections::class)->deleteSection($section);
+        $data = $section->toArray();
+        if (is_array($data['propagationMethod'])) {
+            $data['propagationMethod'] = $data['propagationMethod']['value'];
+        }
+
+        $section = \CraftCms\Cms\Section\Data\Section::from($data);
+
+        return Sections::deleteSection($section);
     }
 
     /**
@@ -510,7 +545,7 @@ class Entries extends Component
      */
     public function handleDeletedSection(ConfigEvent $event): void
     {
-        app(Sections::class)->handleDeletedSection($event);
+        Sections::handleDeletedSection($event);
     }
 
     /**
@@ -522,7 +557,9 @@ class Entries extends Component
      */
     public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
-        app(Sections::class)->pruneDeletedSite($event);
+        $event = new SiteDeleted(Site::from($event->site->toArray()));
+
+        Sections::pruneDeletedSite($event);
     }
 
     /**
@@ -551,7 +588,7 @@ class Entries extends Component
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        return app(Sections::class)->getSectionTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+        return Sections::getSectionTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
     }
 
     /**
@@ -1539,13 +1576,29 @@ class Entries extends Component
         return true;
     }
 
+    private static function sectionFromSectionData(\CraftCms\Cms\Section\Data\Section $section): Section
+    {
+        $yiiSection = new Section(Utils::getPublicProperties($section));
+        $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
+            return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
+        }, $section->getSiteSettings()));
+        $yiiSection->setEntryTypes($section->getEntryTypes());
+
+        return $yiiSection;
+    }
+
+    private static function sectionSiteSettingsFromSiteSettingsData(\CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings): Section_SiteSettings
+    {
+        return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
+    }
+
     public static function registerEvents(): void
     {
         Event::listen(SavingSection::class, function(SavingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
                 // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
-                    'section' => $event->section,
+                    'section' => self::sectionFromSectionData($event->section),
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -1553,9 +1606,8 @@ class Entries extends Component
 
         Event::listen(SectionSaved::class, function(SectionSaved $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                    'section' => $event->section,
+                    'section' => self::sectionFromSectionData($event->section),
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -1563,27 +1615,24 @@ class Entries extends Component
 
         Event::listen(DeletingSection::class, function(DeletingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
-                    'section' => $event->section,
+                    'section' => self::sectionFromSectionData($event->section),
                 ]));
             }
         });
 
         Event::listen(ApplyingSectionDelete::class, function(ApplyingSectionDelete $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SECTION_DELETE)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_SECTION_DELETE, new SectionEvent([
-                    'section' => $event->section,
+                    'section' => self::sectionFromSectionData($event->section),
                 ]));
             }
         });
 
         Event::listen(SectionDeleted::class, function(SectionDeleted $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-                    'section' => $event->section,
+                    'section' => self::sectionFromSectionData($event->section),
                 ]));
             }
         });

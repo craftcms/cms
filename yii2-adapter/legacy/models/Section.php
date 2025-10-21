@@ -20,6 +20,8 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -37,21 +39,21 @@ use function CraftCms\Cms\t;
  */
 class Section extends Model implements Chippable, CpEditable, Iconic
 {
-    public const TYPE_SINGLE = 'single';
-    public const TYPE_CHANNEL = 'channel';
-    public const TYPE_STRUCTURE = 'structure';
+    public const TYPE_SINGLE = SectionType::Single->value;
+    public const TYPE_CHANNEL = SectionType::Channel->value;
+    public const TYPE_STRUCTURE = SectionType::Structure->value;
 
-    public const PROPAGATION_METHOD_NONE = 'none';
-    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    public const PROPAGATION_METHOD_LANGUAGE = 'language';
-    public const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_NONE = PropagationMethod::None->value;
+    public const PROPAGATION_METHOD_SITE_GROUP = PropagationMethod::SiteGroup->value;
+    public const PROPAGATION_METHOD_LANGUAGE = PropagationMethod::Language->value;
+    public const PROPAGATION_METHOD_ALL = PropagationMethod::All->value;
     /** @since 3.5.0 */
-    public const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_CUSTOM = PropagationMethod::Custom->value;
 
     /** @since 3.7.0 */
-    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    public const DEFAULT_PLACEMENT_BEGINNING = DefaultPlacement::Beginning->value;
     /** @since 3.7.0 */
-    public const DEFAULT_PLACEMENT_END = 'end';
+    public const DEFAULT_PLACEMENT_END = DefaultPlacement::End->value;
 
     /**
      * @inheritdoc
@@ -144,6 +146,19 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      * @var EntryType[]|null
      */
     private ?array $_entryTypes = null;
+
+    public function __construct($config = [])
+    {
+        if (isset($config['type']) && $config['type'] instanceof SectionType) {
+            $config['type'] = $config['type']->value;
+        }
+
+        if (isset($config['defaultPlacement']) && $config['defaultPlacement'] instanceof DefaultPlacement) {
+            $config['defaultPlacement'] = $config['defaultPlacement']->value;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

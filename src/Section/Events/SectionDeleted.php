@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Section\Events;
 
-use craft\models\Section;
+use CraftCms\Cms\Section\Data\Section;
 
 final class SectionDeleted
 {

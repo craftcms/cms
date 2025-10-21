@@ -1,0 +1,94 @@
+<?php
+
+namespace CraftCms\Cms\Section\Data;
+
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Rules\SingleSectionUriRule;
+use CraftCms\Cms\Shared\Rules\SiteIdRule;
+use CraftCms\Cms\Shared\Rules\UriFormatRule;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use RuntimeException;
+use Spatie\LaravelData\Dto;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
+
+final class SectionSiteSettings extends Dto
+{
+    private ?Section $section = null;
+
+    public function __construct(
+        public ?int $id = null,
+        public ?int $sectionId = null,
+        public ?int $siteId = null,
+        public bool $enabledByDefault = true,
+        public bool $hasUrls = false,
+        public ?string $uriFormat = null,
+        public ?string $template = null,
+    ) {}
+
+    /**
+     * Returns the section.
+     *
+     * @throws \RuntimeException if [[sectionId]] is missing or invalid
+     */
+    public function getSection(): Section
+    {
+        if (isset($this->section)) {
+            return $this->section;
+        }
+
+        if (! $this->sectionId) {
+            throw new RuntimeException('Section site settings model is missing its section ID');
+        }
+
+        if (($this->section = Sections::getSectionById($this->sectionId)) === null) {
+            throw new RuntimeException('Invalid section ID: '.$this->sectionId);
+        }
+
+        return $this->section;
+    }
+
+    /**
+     * Sets the section.
+     */
+    public function setSection(Section $section): void
+    {
+        $this->section = $section;
+    }
+
+    /**
+     * Returns the site.
+     *
+     * @throws RuntimeException if [[siteId]] is missing or invalid
+     */
+    public function getSite(): Site
+    {
+        if (! $this->siteId) {
+            throw new RuntimeException('Section site settings model is missing its site ID');
+        }
+
+        if (($site = Sites::getSiteById($this->siteId)) === null) {
+            throw new RuntimeException('Invalid site ID: '.$this->siteId);
+        }
+
+        return $site;
+    }
+
+    public static function rules(?ValidationContext $context = null): array
+    {
+        return [
+            'id' => ['nullable', 'integer'],
+            'sectionId' => ['nullable', 'integer'],
+            'siteId' => ['nullable', 'integer', new SiteIdRule],
+            'template' => ['nullable', 'string', 'max:500'],
+            'uriFormat' => array_merge(
+                ['required_if:hasUrls,true'],
+                $context?->payload['type'] === SectionType::Single->value
+                    ? [new SingleSectionUriRule]
+                    : [new UriFormatRule],
+            ),
+            'hasUrls' => ['nullable', 'boolean'],
+        ];
+    }
+}

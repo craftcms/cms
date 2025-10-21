@@ -10,8 +10,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
 use craft\models\EntryType;
-use craft\models\Section;
-use craft\models\Section_SiteSettings;
 use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
@@ -21,13 +19,17 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
-use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
@@ -149,11 +151,11 @@ final class Sections
                     $result->previewTargets = [];
                 }
 
-                $section = new Section((array) $result);
+                $section = Section::from($result);
 
                 if ($siteSettings = Arr::pull($siteSettingsBySection, $section->id)) {
                     $section->setSiteSettings(
-                        array_map(fn (object $config) => new Section_SiteSettings((array) $config), $siteSettings),
+                        array_map(fn (object $config) => new SectionSiteSettings(...(array) $config), $siteSettings),
                     );
                 }
 
@@ -349,14 +351,14 @@ final class Sections
      * Returns a section’s site-specific settings.
      *
      *
-     * @return Section_SiteSettings[] The section’s site-specific settings.
+     * @return SectionSiteSettings[] The section’s site-specific settings.
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
         return $this->_createSectionSiteSettingsQuery()
             ->where('sections_sites.sectionId', $sectionId)
             ->get()
-            ->map(fn (object $result) => new Section_SiteSettings((array) $result))
+            ->map(fn (object $result) => new SectionSiteSettings(...(array) $result))
             ->all();
     }
 
@@ -386,14 +388,14 @@ final class Sections
      *
      * ```php
      * use craft\models\Section;
-     * use craft\models\Section_SiteSettings;
+     * use craft\models\SectionSiteSettings;
      *
      * $section = new Section([
      *     'name' => 'News',
      *     'handle' => 'news',
      *     'type' => Section::TYPE_CHANNEL,
      *     'siteSettings' => [
-     *         new Section_SiteSettings([
+     *         new SectionSiteSettings([
      *             'siteId' => \Craft::$app->sites->getPrimarySite()->id,
      *             'enabledByDefault' => true,
      *             'hasUrls' => true,
@@ -426,7 +428,7 @@ final class Sections
         }
 
         // Main section settings
-        if ($section->type === Section::TYPE_SINGLE) {
+        if ($section->type === SectionType::Single) {
             $section->propagationMethod = PropagationMethod::All;
         }
 
@@ -453,7 +455,7 @@ final class Sections
             // Special handling for Single sections
             // -----------------------------------------------------------------
 
-            if ($section->type === Section::TYPE_SINGLE) {
+            if ($section->type === SectionType::Single) {
                 // Ensure single entry
                 $this->_ensureSingleEntry($section, $configData['siteSettings']);
             }
@@ -495,7 +497,7 @@ final class Sections
             $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
             $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
-            $sectionModel->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
+            $sectionModel->defaultPlacement = $data['defaultPlacement'] ?? DefaultPlacement::End;
             $sectionModel->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
@@ -503,7 +505,7 @@ final class Sections
             $isNewSection = ! $sectionModel->exists;
             $propagationMethodChanged = $sectionModel->propagationMethod != $oldPropagationMethod;
 
-            if ($data['type'] === Section::TYPE_STRUCTURE) {
+            if ($data['type'] === SectionType::Structure) {
                 $structuresService = \Craft::$app->getStructures();
 
                 // Save the structure
@@ -517,7 +519,7 @@ final class Sections
                 // see https://github.com/craftcms/cms/issues/16450
                 if (
                     $isNewStructure &&
-                    ($event->oldValue['type'] ?? null) === Section::TYPE_STRUCTURE &&
+                    ($event->oldValue['type'] ?? null) === SectionType::Structure &&
                     ($event->oldValue['structure']['uid'] ?? null) !== $structureUid &&
                     $sectionModel->structureId
                 ) {
@@ -577,7 +579,7 @@ final class Sections
 
             if (! $isNewSection) {
                 // Get the old section site settings
-                $allOldSiteSettingsModels = SectionSiteSettings::query()
+                $allOldSiteSettingsModels = SectionSiteSettingsModel::query()
                     ->where('sectionId', $sectionModel->id)
                     ->get()
                     ->keyBy('siteId');
@@ -597,10 +599,10 @@ final class Sections
 
                 // Was this already selected?
                 if (! $isNewSection && isset($allOldSiteSettingsModels[$siteId])) {
-                    /** @var SectionSiteSettings $siteSettingsModel */
+                    /** @var SectionSiteSettingsModel $siteSettingsModel */
                     $siteSettingsModel = $allOldSiteSettingsModels[$siteId];
                 } else {
-                    $siteSettingsModel = new SectionSiteSettings;
+                    $siteSettingsModel = new SectionSiteSettingsModel;
                     $siteSettingsModel->sectionId = $sectionModel->id;
                     $siteSettingsModel->siteId = $siteId;
                     $resaveEntries = true;
@@ -645,7 +647,7 @@ final class Sections
             // -----------------------------------------------------------------
 
             if (
-                $sectionModel->type === Section::TYPE_STRUCTURE &&
+                $sectionModel->type === SectionType::Structure &&
                 ! $isNewSection &&
                 $isNewStructure
             ) {
@@ -728,7 +730,7 @@ final class Sections
         $section = $this->getSectionById($sectionModel->id);
 
         // If this is a Single, ensure that the section has its one and only entry
-        if (! $isNewSection && $section->type === Section::TYPE_SINGLE) {
+        if (! $isNewSection && $section->type === SectionType::Single) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }
 
@@ -1094,12 +1096,7 @@ final class Sections
                 'name' => $label,
                 'url' => $section->getCpEditUrl(),
                 'handle' => $section->handle,
-                'type' => match ($section->type) {
-                    Section::TYPE_SINGLE => t('Single'),
-                    Section::TYPE_CHANNEL => t('Channel'),
-                    Section::TYPE_STRUCTURE => t('Structure'),
-                    null => null,
-                },
+                'type' => $section->type->label(),
             ];
         }
 

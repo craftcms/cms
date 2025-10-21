@@ -3,6 +3,9 @@
 namespace CraftCms\Cms\Section\Models;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Structure\Models\Structure;
@@ -23,6 +26,9 @@ final class Section extends BaseModel
             'enableVersioning' => 'boolean',
             'maxAuthors' => 'integer',
             'previewTargets' => 'json',
+            'type' => SectionType::class,
+            'defaultPlacement' => DefaultPlacement::class,
+            'propagationMethod' => PropagationMethod::class,
         ];
     }
 
