@@ -81,14 +81,12 @@ final class CreateCommand extends Command
                 validate: ['name' => $rules['name']],
                 name: 'name'
             )
-            ->add(function ($responses) use ($rules) {
-                return text(
-                    label: 'Section handle',
-                    default: $this->option('handle') ?? Str::toHandle($responses['name']),
-                    required: true,
-                    validate: ['handle' => $rules['handle']],
-                );
-            }, 'handle')
+            ->add(fn ($responses) => text(
+                label: 'Section handle',
+                default: $this->option('handle') ?? Str::toHandle($responses['name']),
+                required: true,
+                validate: ['handle' => $rules['handle']],
+            ), 'handle')
             ->select(
                 label: 'Section type',
                 options: collect(SectionType::cases())
@@ -103,29 +101,21 @@ final class CreateCommand extends Command
                 required: true,
                 name: 'enableVersioning',
             )
-            ->addIf(empty($entryTypes) && ! empty($allEntryTypes), function () {
-                return confirm(
-                    label: 'Have you already created an entry type for this section?'
-                );
-            }, 'createdEntryType')
+            ->addIf(empty($entryTypes) && ! empty($allEntryTypes), fn () => confirm(
+                label: 'Have you already created an entry type for this section?'
+            ), 'createdEntryType')
             ->addIf(
-                condition: function ($responses) {
-                    return isset($responses['createdEntryType']) && $responses['createdEntryType'];
-                },
-                step: function () use ($allEntryTypes) {
-                    return select(
-                        label: 'Which entry type should be used?',
-                        options: array_map(
-                            fn (EntryType $entryType) => $entryType->name,
-                            $allEntryTypes,
-                        ),
-                    );
-                },
+                condition: fn ($responses) => isset($responses['createdEntryType']) && $responses['createdEntryType'],
+                step: fn () => select(
+                    label: 'Which entry type should be used?',
+                    options: array_map(
+                        fn (EntryType $entryType) => $entryType->name,
+                        $allEntryTypes,
+                    ),
+                ),
                 name: 'entryTypeHandle')
             ->addIf(
-                condition: function ($responses) {
-                    return ! isset($responses['entryTypeHandle']);
-                },
+                condition: fn ($responses) => ! isset($responses['entryTypeHandle']),
                 step: function ($responses) use (&$saveEntryType) {
                     $saveEntryType = true;
 
@@ -139,22 +129,18 @@ final class CreateCommand extends Command
                 name: 'entryTypeName'
             )
             ->addIf(
-                condition: function ($responses) {
-                    return ! isset($responses['entryTypeHandle']);
-                },
-                step: function ($responses) {
-                    return text(
-                        label: 'Entry type handle',
-                        default: Str::toHandle($responses['entryTypeName']),
-                        required: true,
-                        validate: ['handle' => [
-                            'string',
-                            'max:255',
-                            new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                            Rule::unique(Table::ENTRYTYPES, 'handle'),
-                        ]],
-                    );
-                },
+                condition: fn ($responses) => ! isset($responses['entryTypeHandle']),
+                step: fn ($responses) => text(
+                    label: 'Entry type handle',
+                    default: Str::toHandle($responses['entryTypeName']),
+                    required: true,
+                    validate: ['handle' => [
+                        'string',
+                        'max:255',
+                        new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
+                        Rule::unique(Table::ENTRYTYPES, 'handle'),
+                    ]],
+                ),
                 name: 'entryTypeHandle'
             )
             ->submit();
