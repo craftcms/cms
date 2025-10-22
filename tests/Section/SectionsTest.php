@@ -79,16 +79,16 @@ it('can get a section by uid', function () {
     $section = Section::factory()->create();
     $this->sections->refreshSections();
 
-    expect($this->sections->getSectionById($section->uid))->toBeInstanceOf(SectionData::class);
-    expect($this->sections->getSectionById(Str::uuid()->toString()))->toBeNull();
+    expect($this->sections->getSectionByUid($section->uid))->toBeInstanceOf(SectionData::class);
+    expect($this->sections->getSectionByUid(Str::uuid()->toString()))->toBeNull();
 });
 
 it('can get a section by handle', function () {
     $section = Section::factory()->create();
     $this->sections->refreshSections();
 
-    expect($this->sections->getSectionById($section->handle))->toBeInstanceOf(SectionData::class);
-    expect($this->sections->getSectionById('some-other-handle'))->toBeNull();
+    expect($this->sections->getSectionByHandle($section->handle))->toBeInstanceOf(SectionData::class);
+    expect($this->sections->getSectionByHandle('some-other-handle'))->toBeNull();
 });
 
 it('can get a section\'s site settings', function () {
