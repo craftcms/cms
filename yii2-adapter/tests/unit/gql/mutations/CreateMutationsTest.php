@@ -21,12 +21,14 @@ use craft\gql\types\elements\Tag as TagGqlType;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
-use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use Exception;
 use UnitTester;
 use yii\base\InvalidConfigException;
@@ -71,21 +73,21 @@ class CreateMutationsTest extends TestCase
             'handle' => 'article',
         ]);
 
-        $section = $this->make(Section::class, [
-            'type' => Section::TYPE_CHANNEL,
-            'uid' => 'sectionUid',
-            'handle' => 'news',
-            'getEntryTypes' => [
+        $section = new Section(
+            handle: 'news',
+            type: SectionType::Channel,
+            uid: 'sectionUid',
+            entryTypes: [
                 $entryType,
             ],
-        ]);
+        );
+
+        Sections::shouldReceive('getAllSections')
+            ->andReturn(collect([$section]));
 
         $this->tester->mockCraftMethods('entries', [
             'getAllEntryTypes' => [
                 $entryType,
-            ],
-            'getAllSections' => [
-                $section,
             ],
         ]);
     }
@@ -310,11 +312,11 @@ class CreateMutationsTest extends TestCase
                 default => throw new UnknownMethodException("Calling unknown method: $name()"),
             },
         ]);
-        $sectionA = new Section([
-            'handle' => 'sectionA',
-            'type' => Section::TYPE_SINGLE,
-            'entryTypes' => [$typeA],
-        ]);
+        $sectionA = new Section(
+            handle: 'sectionA',
+            type: SectionType::Single,
+            entryTypes: [$typeA],
+        );
 
         $typeB = $this->make(EntryType::class, [
             'handle' => 'typeB',
@@ -325,11 +327,11 @@ class CreateMutationsTest extends TestCase
                 default => throw new UnknownMethodException("Calling unknown method: $name()"),
             },
         ]);
-        $sectionB = new Section([
-            'handle' => 'sectionB',
-            'type' => Section::TYPE_CHANNEL,
-            'entryTypes' => [$typeB],
-        ]);
+        $sectionB = new Section(
+            handle: 'sectionB',
+            type: SectionType::Channel,
+            entryTypes: [$typeB],
+        );
 
         $typeC = $this->make(EntryType::class, [
             'handle' => 'typeC',
@@ -340,11 +342,11 @@ class CreateMutationsTest extends TestCase
                 default => throw new UnknownMethodException("Calling unknown method: $name()"),
             },
         ]);
-        $sectionC = new Section([
-            'handle' => 'sectionC',
-            'type' => Section::TYPE_STRUCTURE,
-            'entryTypes' => [$typeC],
-        ]);
+        $sectionC = new Section(
+            handle: 'sectionC',
+            type: SectionType::Structure,
+            entryTypes: [$typeC],
+        );
 
         [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionA, $typeA, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);

@@ -15,7 +15,6 @@ use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
 use CraftCms\Cms\Database\Table;
@@ -26,6 +25,8 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
@@ -577,9 +578,9 @@ class UserPermissions extends Component
 
     private function _entryPermissions(array &$permissions): void
     {
-        $sections = Craft::$app->getEntries()->getAllSections();
+        $sections = Sections::getAllSections();
 
-        if (!$sections) {
+        if ($sections->isEmpty()) {
             return;
         }
 
@@ -587,7 +588,7 @@ class UserPermissions extends Component
         $pluralType = Entry::pluralLowerDisplayName();
 
         foreach ($sections as $section) {
-            if ($section->type == Section::TYPE_SINGLE) {
+            if ($section->type === SectionType::Single) {
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
                         'label' => mb_ucfirst(t('View {type}', ['type' => $type])),

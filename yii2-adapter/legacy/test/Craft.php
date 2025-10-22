@@ -29,6 +29,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -155,6 +156,9 @@ class Craft extends Yii2
         Config::set('craft.general', $generalConfig);
 
         Config::set('app.timezone', 'America/Los_Angeles');
+
+        Config::set('data', require CRAFT_VENDOR_PATH . '/spatie/laravel-data/config/data.php');
+
         date_default_timezone_set('America/Los_Angeles');
 
         File::cleanDirectory(config_path('project'));
@@ -218,6 +222,9 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        app()->forgetInstance(Sections::class);
+        \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
+
         \Craft::$app->getDb()->close();
         \Craft::$app->getDb2()->close();
 

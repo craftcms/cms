@@ -21,6 +21,8 @@ use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\Structures;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
@@ -57,14 +59,14 @@ class RepairController extends Controller
      */
     public function actionSectionStructure(string $handle): int
     {
-        $section = Craft::$app->getEntries()->getSectionByHandle($handle);
+        $section = Sections::getSectionByHandle($handle);
 
         if (!$section) {
             $this->stderr("Invalid section handle: $handle" . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if ($section->type !== Section::TYPE_STRUCTURE) {
+        if ($section->type !== SectionType::Structure) {
             $this->stderr("$section->name is not a Structure section" . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

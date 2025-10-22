@@ -68,7 +68,6 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Cms;
@@ -80,7 +79,9 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -1643,8 +1644,7 @@ class Gql extends Component
         $queryComponents = [];
         $mutationComponents = [];
 
-        $entriesService = Craft::$app->getEntries();
-        $singles = $entriesService->getSectionsByType(Section::TYPE_SINGLE);
+        $singles = Sections::getSectionsByType(SectionType::Single);
 
         foreach ($singles as $section) {
             $name = t($section->name, category: 'site');
@@ -1657,8 +1657,8 @@ class Gql extends Component
             ];
         }
 
-        foreach ($entriesService->getAllSections() as $section) {
-            if ($section->type === Section::TYPE_SINGLE) {
+        foreach (Sections::getAllSections() as $section) {
+            if ($section->type === SectionType::Single) {
                 continue;
             }
 

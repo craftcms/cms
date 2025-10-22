@@ -17,6 +17,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
@@ -156,6 +157,15 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+        });
+
+        // Sections
+        Route::get('sections/table-data', [SectionsController::class, 'tableData']);
+        Route::middleware([
+            RequireAdmin::class,
+        ])->group(function () {
+            Route::post('sections/save-section', [SectionsController::class, 'store']);
+            Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
         });
 
         // Sites & Site Groups

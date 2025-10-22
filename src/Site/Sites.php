@@ -25,6 +25,7 @@ use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
@@ -632,7 +633,7 @@ final class Sites
         $soloSectionIds = [];
 
         foreach ($sectionIds as $sectionId) {
-            $sectionSiteSettings = \Craft::$app->getEntries()->getSectionSiteSettings($sectionId);
+            $sectionSiteSettings = Sections::getSectionSiteSettings($sectionId);
 
             if (count($sectionSiteSettings) === 1 && $sectionSiteSettings[0]->siteId === $site->id) {
                 $soloSectionIds[] = $sectionId;
@@ -724,7 +725,7 @@ final class Sites
             } else {
                 // Delete those sections
                 foreach ($soloSectionIds as $sectionId) {
-                    \Craft::$app->getEntries()->deleteSectionById($sectionId);
+                    Sections::deleteSectionById($sectionId);
                 }
             }
         }

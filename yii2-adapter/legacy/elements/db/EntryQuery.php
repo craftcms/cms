@@ -14,11 +14,13 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
 use craft\models\EntryType;
-use craft\models\Section;
 use craft\models\UserGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -325,11 +327,11 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     public function section(mixed $value): static
     {
         // If the value is a section handle, swap it with the section
-        if (is_string($value) && ($section = Craft::$app->getEntries()->getSectionByHandle($value))) {
+        if (is_string($value) && ($section = Sections::getSectionByHandle($value))) {
             $value = $section;
         }
 
-        if ($value instanceof Section) {
+        if ($value instanceof \CraftCms\Cms\Section\Data\Section) {
             // Special case for a single section, since we also want to capture the structure ID
             $this->sectionId = [$value->id];
             if ($value->structureId) {
@@ -338,12 +340,12 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 $this->withStructure = false;
             }
         } elseif ($value === '*') {
-            $this->sectionId = Craft::$app->getEntries()->getAllSectionIds();
+            $this->sectionId = Sections::getAllSectionIds()->values()->all();
         } elseif (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getEntries()->getSectionByHandle($item);
+                $item = Sections::getSectionByHandle($item);
             }
-            return $item instanceof Section ? $item->id : null;
+            return $item instanceof \CraftCms\Cms\Section\Data\Section ? $item->id : null;
         })) {
             $this->sectionId = $value;
         } else {
@@ -1026,9 +1028,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        $sections = Craft::$app->getEntries()->getAllSections();
+        $sections = Sections::getAllSections();
 
-        if (empty($sections)) {
+        if ($sections->isEmpty()) {
             return;
         }
 
@@ -1040,7 +1042,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 continue;
             }
 
-            $excludePeerEntries = $section->type !== Section::TYPE_SINGLE && !$user->can("$peerPermissionPrefix:$section->uid");
+            $excludePeerEntries = $section->type !== SectionType::Single && !$user->can("$peerPermissionPrefix:$section->uid");
             $excludePeerDrafts = $this->drafts !== false && !$user->can("$peerDraftPermissionPrefix:$section->uid");
 
             if ($excludePeerEntries || $excludePeerDrafts) {
@@ -1130,8 +1132,8 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 !isset($this->structureId) &&
                 count($this->sectionId) === 1
             ) {
-                $section = Craft::$app->getEntries()->getSectionById(reset($this->sectionId));
-                if ($section && $section->type === Section::TYPE_STRUCTURE) {
+                $section = Sections::getSectionById(reset($this->sectionId));
+                if ($section && $section->type === SectionType::Structure) {
                     $this->structureId = $section->structureId;
                 } else {
                     $this->withStructure = false;
@@ -1243,8 +1245,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 }
             } else {
                 foreach ($this->sectionId as $sectionId) {
-                    $section = $sectionsService->getSectionById($sectionId);
-                    if ($section) {
+                    if ($section = Sections::getSectionById($sectionId)) {
                         foreach ($section->getEntryTypes() as $entryType) {
                             $fieldLayouts[] = $entryType->getFieldLayout();
                         }

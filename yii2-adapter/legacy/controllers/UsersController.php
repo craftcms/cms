@@ -50,6 +50,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -2090,7 +2091,7 @@ JS);
 
         $summary = [];
 
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+        foreach (Sections::getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userId)

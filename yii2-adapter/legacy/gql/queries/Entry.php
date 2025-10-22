@@ -18,6 +18,7 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -137,7 +138,7 @@ class Entry extends Query
                 EntryResolver::resolve(null, $arguments + ['section' => $section->handle], $context, $resolveInfo),
             ];
 
-            if ($section->type === Section::TYPE_SINGLE) {
+            if ($section->type === SectionType::Single) {
                 $name = "{$section->handle}Entry";
                 $gqlTypes[$name] = [
                     'name' => $name,

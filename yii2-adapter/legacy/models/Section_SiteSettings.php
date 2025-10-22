@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\validators\SingleSectionUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidConfigException;
@@ -23,6 +24,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Section\Data\SectionSiteSettings} instead.
  */
 class Section_SiteSettings extends Model
 {
@@ -127,7 +129,7 @@ class Section_SiteSettings extends Model
             'template' => t('Template'),
         ];
 
-        if ($this->getSection()->type == Section::TYPE_SINGLE) {
+        if ($this->getSection()->type === SectionType::Single->value) {
             $labels['uriFormat'] = t('URI');
         } else {
             $labels['uriFormat'] = t('Entry URI Format');
@@ -147,7 +149,7 @@ class Section_SiteSettings extends Model
         $rules[] = [['uriFormat', 'template'], 'trim'];
         $rules[] = [['template'], 'string', 'max' => 500];
 
-        if ($this->getSection()->type == Section::TYPE_SINGLE) {
+        if ($this->getSection()->type === SectionType::Single->value) {
             $rules[] = ['uriFormat', SingleSectionUriValidator::class];
         } else {
             $rules[] = ['uriFormat', UriFormatValidator::class];

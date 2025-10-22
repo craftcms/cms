@@ -19,7 +19,6 @@ use craft\records\CategoryGroup;
 use craft\records\Element;
 use craft\records\EntryType;
 use craft\records\GlobalSet;
-use craft\records\Section;
 use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
@@ -28,6 +27,10 @@ use craft\services\Entries;
 use craft\test\TestCase;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use UnitTester;
@@ -89,7 +92,7 @@ class PrepareQueryTest extends TestCase
         $this->_volume->delete();
         $this->_structure->delete();
         $this->_categoryGroup->delete();
-        $this->_section->delete();
+        Sections::deleteSection($this->_section);
         $this->_entryType->delete();
         $this->_element->delete();
         $this->_globalSet->delete();
@@ -172,7 +175,7 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
+                    $section = Sections::getSectionByUid(self::SECTION_UID);
                     return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
             ],
@@ -276,15 +279,18 @@ class PrepareQueryTest extends TestCase
         ]);
         $this->_entryType->save();
 
-        $this->_section = new Section([
-            'uid' => self::SECTION_UID,
-            'name' => Str::random(),
-            'handle' => Str::random(),
-            'type' => 'channel',
-            'enableVersioning' => true,
-            'propagationMethod' => PropagationMethod::All->value,
-        ]);
-        $this->_section->save();
+        $this->_section = new Section(
+            name: Str::random(),
+            handle: Str::random(),
+            type: SectionType::Channel,
+            enableVersioning: true,
+            propagationMethod: PropagationMethod::All,
+            uid: self::SECTION_UID,
+            siteSettings: [
+                1 => new SectionSiteSettings(),
+            ],
+        );
+        Sections::saveSection($this->_section);
         Craft::$app->set('entries', new Entries());
 
         DB::table(Table::SECTIONS_ENTRYTYPES)->insert([

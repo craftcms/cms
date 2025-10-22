@@ -28,7 +28,9 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Facades\Sections;
 use function CraftCms\Cms\t;
 
 /**
@@ -515,7 +517,7 @@ JS, [
         $usages = [];
 
         // Sections
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+        foreach (Sections::getAllSections() as $section) {
             foreach ($section->getEntryTypes() as $entryType) {
                 if ($entryType->id === $this->id) {
                     $usages[] = $section;

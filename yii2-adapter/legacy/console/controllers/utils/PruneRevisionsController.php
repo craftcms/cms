@@ -13,6 +13,7 @@ use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -64,9 +65,8 @@ class PruneRevisionsController extends Controller
     {
         $sectionIds = [];
         if ($this->section) {
-            $sectionsService = Craft::$app->getEntries();
-            $sectionIds = str($this->section)->explode(',')->map(function(string $sectionHandle) use ($sectionsService) {
-                $section = $sectionsService->getSectionByHandle($sectionHandle);
+            $sectionIds = str($this->section)->explode(',')->map(function(string $sectionHandle) {
+                $section = Sections::getSectionByHandle($sectionHandle);
 
                 if (!$section) {
                     $this->stderr("$sectionHandle isn’t a valid section handle.\n", Console::FG_RED);

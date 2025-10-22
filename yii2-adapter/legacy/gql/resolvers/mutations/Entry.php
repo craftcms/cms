@@ -17,8 +17,9 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
-use craft\models\Section;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sites;
 use Exception;
 use GraphQL\Error\Error;
@@ -235,7 +236,7 @@ class Entry extends ElementMutationResolver
 
         // Figure out whether the mutation is about an already saved entry
         $canIdentify = (
-            $section?->type === Section::TYPE_SINGLE ||
+            $section?->type === SectionType::Single ||
             !empty($arguments['id']) ||
             !empty($arguments['uid']) ||
             !empty($arguments['draftId'])
@@ -315,7 +316,7 @@ class Entry extends ElementMutationResolver
             if (array_key_exists('provisional', $arguments)) {
                 $entryQuery->provisionalDrafts($arguments['provisional']);
             }
-        } elseif ($section?->type === Section::TYPE_SINGLE) {
+        } elseif ($section?->type === SectionType::Single) {
             $entryQuery->typeId($entryType->id);
         } elseif (!empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);

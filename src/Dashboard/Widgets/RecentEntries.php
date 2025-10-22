@@ -6,6 +6,8 @@ use Craft;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 
@@ -80,14 +82,10 @@ final class RecentEntries extends Widget
     #[\Override]
     public function getTitle(): string
     {
-        if (is_numeric($this->section)) {
-            $section = Craft::$app->getEntries()->getSectionById((int) $this->section);
-
-            if ($section) {
-                $title = t('Recent {section} Entries', [
-                    'section' => t($section->name, category: 'site'),
-                ]);
-            }
+        if (is_numeric($this->section) && $section = Sections::getSectionById((int) $this->section)) {
+            $title = t('Recent {section} Entries', [
+                'section' => t($section->name, category: 'site'),
+            ]);
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
@@ -182,8 +180,8 @@ final class RecentEntries extends Widget
     {
         $sectionIds = [];
 
-        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE) {
+        foreach (Sections::getEditableSections() as $section) {
+            if ($section->type !== SectionType::Single) {
                 $sectionIds[] = $section->id;
             }
         }
