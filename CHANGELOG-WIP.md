@@ -274,6 +274,9 @@ Moved the following controllers:
   - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SavingSection`
   - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
 - Removed `craft\controllers\SectionsController` in favor of `CraftCms\Cms\Http\Controllers\SectionsController`
+- Removed `craft\console\controllers\SectionsController` in favor of:
+  - `CraftCms\Cms\Section\Commands\CreateCommand`
+  - `CraftCms\Cms\Section\Commands\DeleteCommand`
 - Added `CraftCms\Cms\Section\Enums\DefaultPlacement`
 - Added `CraftCms\Cms\Section\Enums\SectionType`
 
