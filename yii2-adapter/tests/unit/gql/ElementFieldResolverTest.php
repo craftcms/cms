@@ -29,11 +29,11 @@ use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\ImageTransform;
-use craft\models\Section;
 use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -88,7 +88,7 @@ class ElementFieldResolverTest extends TestCase
                 '__get' => fn($property) =>
                     // Assume fields 'plainTextField' and 'typeface'
                     in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property,
-                'getSection' => fn() => $this->make(Section::class, ['handle' => $sectionHandle]),
+                'getSection' => fn() => new Section(handle: $sectionHandle),
                 'getType' => fn() => $this->make(EntryType::class, ['handle' => $typeHandle]),
             ]
         );
