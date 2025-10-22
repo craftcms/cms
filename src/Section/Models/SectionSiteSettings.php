@@ -6,10 +6,12 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Site\Models\Site;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SectionSiteSettings extends BaseModel
 {
+    use HasFactory;
     use HasUid;
 
     protected $table = Table::SECTIONS_SITES;

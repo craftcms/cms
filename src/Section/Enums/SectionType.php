@@ -9,7 +9,6 @@ enum SectionType: string
     case Single = 'single';
     case Channel = 'channel';
     case Structure = 'structure';
-    case Custom = 'custom';
 
     public function label(): string
     {
@@ -17,7 +16,6 @@ enum SectionType: string
             self::Single => t('Single'),
             self::Channel => t('Channel'),
             self::Structure => t('Structure'),
-            default => null,
         };
     }
 }

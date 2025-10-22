@@ -9,12 +9,14 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Structure\Models\Structure;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Section extends BaseModel
 {
+    use HasFactory;
     use HasUid;
     use SoftDeletes;
 

@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\ServiceProvider;
@@ -92,9 +93,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS.'.{uid}', $this->proxy('globals', 'handleChangedGlobalSet'))
             ->onRemove(ProjectConfig::PATH_GLOBAL_SETS.'.{uid}', $this->proxy('globals', 'handleDeletedGlobalSet'))
             // Sections
-            ->onAdd(ProjectConfig::PATH_SECTIONS.'.{uid}', $this->proxy('entries', 'handleChangedSection'))
-            ->onUpdate(ProjectConfig::PATH_SECTIONS.'.{uid}', $this->proxy('entries', 'handleChangedSection'))
-            ->onRemove(ProjectConfig::PATH_SECTIONS.'.{uid}', $this->proxy('entries', 'handleDeletedSection'))
+            ->onAdd(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))
+            ->onUpdate(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))
+            ->onRemove(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleDeletedSection($event))
             // Entry types
             ->onAdd(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', $this->proxy('entries', 'handleChangedEntryType'))
             ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', $this->proxy('entries', 'handleChangedEntryType'))

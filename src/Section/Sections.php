@@ -462,7 +462,7 @@ final class Sections
 
             if ($section->type === SectionType::Single) {
                 // Ensure single entry
-                $this->_ensureSingleEntry($section, $configData['siteSettings']);
+                $this->ensureSingleEntry($section, $configData['siteSettings']);
             }
 
             DB::commit();
@@ -703,7 +703,7 @@ final class Sections
         }
 
         // Clear caches
-        $this->sections = null;
+        $this->refreshSections();
 
         if ($wasTrashed) {
             /** @var Entry[] $entries */
@@ -736,7 +736,7 @@ final class Sections
 
         // If this is a Single, ensure that the section has its one and only entry
         if (! $isNewSection && $section->type === SectionType::Single) {
-            $this->_ensureSingleEntry($section, $siteSettingData);
+            $this->ensureSingleEntry($section, $siteSettingData);
         }
 
         if (Event::hasListeners(SectionSaved::class)) {
@@ -745,6 +745,12 @@ final class Sections
 
         // Invalidate entry caches
         \Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+    }
+
+    public function refreshSections(): void
+    {
+        $this->sections = null;
+        $this->_sections();
     }
 
     /**
@@ -786,7 +792,7 @@ final class Sections
      *
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    private function ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
     {
         // Get the section's supported sites
         // ---------------------------------------------------------------------
@@ -974,14 +980,14 @@ final class Sections
     public function handleDeletedSection(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
-        $sectionRecord = $this->getSectionModel($uid);
+        $sectionModel = $this->getSectionModel($uid);
 
-        if (! $sectionRecord->id) {
+        if (! $sectionModel->id) {
             return;
         }
 
         /** @var Section $section */
-        $section = $this->getSectionById($sectionRecord->id);
+        $section = $this->getSectionById($sectionModel->id);
 
         if (Event::hasListeners(ApplyingSectionDelete::class)) {
             Event::dispatch(new ApplyingSectionDelete($section));
@@ -1016,12 +1022,12 @@ final class Sections
                 ->update(['deletedWithSection' => true]);
 
             // Delete the structure
-            if ($sectionRecord->structureId) {
-                \Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+            if ($sectionModel->structureId) {
+                \Craft::$app->getStructures()->deleteStructureById($sectionModel->structureId);
             }
 
             // Delete the section
-            DB::table(Table::SECTIONS)->softDelete($sectionRecord->id);
+            DB::table(Table::SECTIONS)->softDelete($sectionModel->id);
 
             DB::commit();
         } catch (Throwable $e) {
@@ -1030,7 +1036,7 @@ final class Sections
         }
 
         // Clear caches
-        $this->sections = null;
+        $this->refreshSections();
 
         if (Event::hasListeners(SectionDeleted::class)) {
             Event::dispatch(new SectionDeleted($section));
@@ -1078,7 +1084,7 @@ final class Sections
     public function getSectionTableData(
         int $page,
         int $limit,
-        ?string $searchTerm,
+        ?string $searchTerm = null,
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
