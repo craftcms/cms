@@ -28,6 +28,7 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use Exception;
 use UnitTester;
 use yii\base\InvalidConfigException;
@@ -81,12 +82,12 @@ class CreateMutationsTest extends TestCase
             ],
         );
 
+        Sections::shouldReceive('getAllSections')
+            ->andReturn(collect([$section]));
+
         $this->tester->mockCraftMethods('entries', [
             'getAllEntryTypes' => [
                 $entryType,
-            ],
-            'getAllSections' => [
-                $section,
             ],
         ]);
     }
