@@ -706,9 +706,8 @@ final class ProjectConfig
         }
 
         $deltaChanges = [];
-        $db = Craft::$app->getDb();
 
-        DB::transaction(function () use ($db, &$deltaChanges) {
+        DB::transaction(function () use (&$deltaChanges) {
             foreach ($this->_appliedChanges as $changeSet) {
                 // Allow modification of the array being looped over.
                 $currentSet = $changeSet;
@@ -718,7 +717,7 @@ final class ProjectConfig
                 }
 
                 if (! empty($changeSet['added'])) {
-                    $isMysql = $db->getIsMysql();
+                    $isMysql = DB::connection()->getDriverName() === 'mysql';
                     $batch = [];
                     $pathsToInsert = [];
                     $additionalCleanupPaths = [];

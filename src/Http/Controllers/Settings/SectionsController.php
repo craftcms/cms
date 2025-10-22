@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers;
+namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\base\Element;
 use craft\helpers\Cp;

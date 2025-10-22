@@ -998,10 +998,11 @@ final class Sections
         DB::beginTransaction();
         try {
             // Delete the entries
-            $now = now();
-
-            $condition = fn (Builder $query) => $query
-                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
+            $condition = fn (Builder $query) => $query->whereNull([
+                'elements.canonicalId',
+                'elements.revisionId',
+                'elements.dateDeleted',
+            ]);
 
             DB::table(Table::ELEMENTS, 'elements')
                 ->whereIn(
@@ -1011,7 +1012,7 @@ final class Sections
                         ->select('entries.id'),
                 )
                 ->where($condition)
-                ->update(['dateDeleted' => $now]);
+                ->softDelete();
 
             DB::table(Table::ENTRIES, 'entries')
                 ->whereIn(
