@@ -40,6 +40,7 @@ use craft\test\TestCase;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
@@ -307,15 +308,15 @@ class GqlTest extends TestCase
         ]);
 
         $entriesService = $this->make(Entries::class, [
-            'getAllSections' => [
-                $sectionA,
-                $sectionB,
-            ],
             'getAllEntryTypes' => [
                 $typeA,
                 $typeB,
             ],
         ]);
+
+        Sections::partialMock()
+            ->shouldReceive('getAllSections')
+            ->andReturn(collect([$sectionA, $sectionB]));
 
         $volumeService = $this->make(Volumes::class, [
             'getAllVolumes' => [
