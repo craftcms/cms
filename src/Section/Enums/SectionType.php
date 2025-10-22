@@ -18,4 +18,13 @@ enum SectionType: string
             self::Structure => t('Structure'),
         };
     }
+
+    public function descriptiveLabel(): string
+    {
+        return match ($this) {
+            self::Single => t('Single: for one-off content'),
+            self::Channel => t('Channel: for repeating content'),
+            self::Structure => t('Structure: for ordered/hierarchical content'),
+        };
+    }
 }
