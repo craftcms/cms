@@ -2,10 +2,10 @@
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use craft\models\Section;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\EntryType;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Query\Builder;
@@ -58,7 +58,7 @@ class BaseEntryTypeMergeMigration extends Migration
             ->join(new Alias(Table::ENTRIES, 'e'), 'e.id', '=', 'es.elementId')
             ->leftJoin(new Alias(Table::SECTIONS, 's'), 'e.sectionId', '=', 's.id')
             ->whereNotNull('es.content')
-            ->where('s.type', Section::TYPE_SINGLE);
+            ->where('s.type', SectionType::Single->value);
 
         if ($query->count() > 0) {
             $this->info('Updating singles');

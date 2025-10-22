@@ -14,7 +14,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Section;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\animationblocker\AnimationBlockerAsset;
@@ -40,8 +39,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -732,8 +733,8 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
+        foreach (Sections::getEditableSections() as $section) {
+            if ($section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -750,7 +751,7 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(Section $section): array
+    private function _entryTypes(\CraftCms\Cms\Section\Data\Section $section): array
     {
         $types = [];
 

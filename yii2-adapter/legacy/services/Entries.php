@@ -37,6 +37,8 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
@@ -282,7 +284,8 @@ class Entries extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return Sections::getSectionsByType($type)->values()
+        return Sections::getSectionsByType(SectionType::from($type))
+            ->values()
             ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
             ->all();
     }
@@ -1247,7 +1250,7 @@ class Entries extends Component
         $usages = [];
 
         // Sections
-        foreach ($this->getAllSections() as $section) {
+        foreach (Sections::getAllSections() as $section) {
             foreach ($section->getEntryTypes() as $entryType) {
                 $usages[$entryType->id][] = $section;
             }
@@ -1376,10 +1379,7 @@ class Entries extends Component
 
         if (!empty($missingEntries)) {
             /** @var array<string,Section> $singleSections */
-            $singleSections = Arr::keyBy(
-                $this->getSectionsByType(Section::TYPE_SINGLE),
-                fn(Section $section) => $section->handle,
-            );
+            $singleSections = Sections::getSectionsByType(SectionType::Single)->keyBy('handle');
             $fetchSectionIds = [];
             $fetchSectionHandles = [];
             foreach ($missingEntries as $handle) {
@@ -1424,13 +1424,13 @@ class Entries extends Component
      * @throws UnsupportedSiteException
      * @since 5.3.0
      */
-    public function moveEntryToSection(Entry $entry, Section $section): bool
+    public function moveEntryToSection(Entry $entry, Section|\CraftCms\Cms\Section\Data\Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
         if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
             $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
                 'entry' => $entry,
-                'section' => $section,
+                'section' => self::sectionFromSectionData($section),
             ]));
         }
 
@@ -1506,12 +1506,12 @@ class Entries extends Component
 
                 if (
                     $entry->getIsCanonical() &&
-                    in_array(Section::TYPE_STRUCTURE, [$oldSection->type, $section->type])
+                    in_array(SectionType::Structure, [$oldSection->type, $section->type])
                 ) {
                     $structuresService = Craft::$app->getStructures();
 
                     // if we're moving it from a Structure section, remove it from the structure
-                    if ($oldSection->type === Section::TYPE_STRUCTURE) {
+                    if ($oldSection->type === SectionType::Structure) {
                         $structuresService->remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
@@ -1531,8 +1531,8 @@ class Entries extends Component
                     }
 
                     // if we're moving it to a Structure section, place it at the root
-                    if ($section->type === Section::TYPE_STRUCTURE) {
-                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                    if ($section->type === SectionType::Structure) {
+                        if ($section->defaultPlacement === DefaultPlacement::Beginning) {
                             $structuresService->prependToRoot($section->structureId, $entry, Structures::MODE_INSERT);
                         } else {
                             $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
@@ -1569,7 +1569,7 @@ class Entries extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
             $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
                 'entry' => $entry,
-                'section' => $section,
+                'section' => self::sectionFromSectionData($section),
             ]));
         }
 

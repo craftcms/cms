@@ -13,11 +13,13 @@ use craft\elements\Entry;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
-use craft\models\Section;
-use craft\models\Section_SiteSettings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -142,10 +144,10 @@ class SectionsController extends Controller
      */
     public function actionCreate(): int
     {
-        $section = new Section([
+        $section = new \CraftCms\Cms\Section\Data\Section(
             // Avoid the default preview target
-            'previewTargets' => [],
-        ]);
+            previewTargets: [],
+        );
 
         $validateAttribute = function($attributes, ?string &$error = null, string $class = Section::class): bool {
             $model = new $class($attributes);
@@ -175,14 +177,14 @@ class SectionsController extends Controller
             }
             $section->name = $getDefaultAttribute('name', $categoryGroup->name);
             $section->handle = $getDefaultAttribute('handle', $categoryGroup->handle);
-            $section->type = Section::TYPE_STRUCTURE;
+            $section->type = SectionType::Structure;
             $section->setSiteSettings(array_map(
-                fn(CategoryGroup_SiteSettings $siteSettings) => new Section_SiteSettings([
-                    'siteId' => $siteSettings->siteId,
-                    'hasUrls' => $siteSettings->hasUrls,
-                    'uriFormat' => $siteSettings->uriFormat,
-                    'template' => $siteSettings->template,
-                ]),
+                fn(CategoryGroup_SiteSettings $siteSettings) => new SectionSiteSettings(
+                    siteId: $siteSettings->siteId,
+                    hasUrls: $siteSettings->hasUrls,
+                    uriFormat: $siteSettings->uriFormat,
+                    template: $siteSettings->template,
+                ),
                 $categoryGroup->getSiteSettings(),
             ));
             $section->maxLevels = $categoryGroup->maxLevels;
@@ -196,7 +198,7 @@ class SectionsController extends Controller
             }
             $section->name = $getDefaultAttribute('name', $tagGroup->name);
             $section->handle = $getDefaultAttribute('handle', $tagGroup->handle);
-            $section->type = Section::TYPE_CHANNEL;
+            $section->type = SectionType::Channel;
             $sourceFieldLayout = $tagGroup->getFieldLayout();
             $saveEntryType = true;
         } elseif ($this->fromGlobalSet) {
@@ -207,7 +209,7 @@ class SectionsController extends Controller
             }
             $section->name = $getDefaultAttribute('name', $globalSet->name);
             $section->handle = $getDefaultAttribute('handle', $globalSet->handle);
-            $section->type = Section::TYPE_SINGLE;
+            $section->type = SectionType::Single;
             $sourceFieldLayout = $globalSet->getFieldLayout();
             $saveEntryType = true;
         }
@@ -225,16 +227,16 @@ class SectionsController extends Controller
         ]);
 
         if (isset($this->type)) {
-            $section->type = $this->type;
+            $section->type = SectionType::from($this->type);
         } elseif (!$section->type) {
             if ($this->interactive) {
-                $section->type = $this->select('Section type:', [
-                    Section::TYPE_SINGLE => 'for one-off content',
-                    Section::TYPE_CHANNEL => 'for repeating content',
-                    Section::TYPE_STRUCTURE => 'for ordered/hierarchical content',
-                ]);
+                $section->type = SectionType::from($this->select('Section type:', [
+                    SectionType::Single->value => 'for one-off content',
+                    SectionType::Channel->value => 'for repeating content',
+                    SectionType::Structure->value => 'for ordered/hierarchical content',
+                ]));
             } else {
-                $section->type = Section::TYPE_CHANNEL;
+                $section->type = SectionType::Channel;
             }
         }
 
@@ -246,16 +248,16 @@ class SectionsController extends Controller
 
         if (empty($section->getSiteSettings())) {
             $section->setSiteSettings(Sites::getAllSites(true)->map(
-                fn(Site $site) => new Section_SiteSettings([
-                    'siteId' => $site->id,
-                    'hasUrls' => $this->uriFormat !== null,
-                    'uriFormat' => $this->uriFormat,
-                    'template' => $this->template,
-                ])
+                fn(Site $site) => new SectionSiteSettings(
+                    siteId: $site->id,
+                    hasUrls: $this->uriFormat !== null,
+                    uriFormat: $this->uriFormat,
+                    template: $this->template,
+                )
             )->all());
         }
 
-        $hasUrls = Collection::make($section->getSiteSettings())->contains(fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);
+        $hasUrls = Collection::make($section->getSiteSettings())->contains(fn(SectionSiteSettings $siteSettings) => $siteSettings->hasUrls);
         if ($hasUrls) {
             $section->previewTargets = [
                 [
@@ -326,10 +328,9 @@ class SectionsController extends Controller
         $section->setEntryTypes($entryTypes);
 
         try {
-            $this->do('Saving the section', function() use ($section, $entriesService) {
-                if (!$entriesService->saveSection($section)) {
-                    $message = Arr::first($section->getFirstErrors()) ?? 'Unable to save the section';
-                    throw new InvalidConfigException($message);
+            $this->do('Saving the section', function() use ($section) {
+                if (!Sections::saveSection($section)) {
+                    throw new InvalidConfigException('Unable to save the section');
                 }
             });
         } catch (InvalidConfigException) {
@@ -349,7 +350,7 @@ class SectionsController extends Controller
     public function actionDelete(string $handle): int
     {
         $sectionsService = Craft::$app->getEntries();
-        $section = $sectionsService->getSectionByHandle($handle);
+        $section = Sections::getSectionByHandle($handle);
 
         if (!$section) {
             $this->stderr("Invalid section handle: $handle\n", Console::FG_RED);
@@ -361,10 +362,9 @@ class SectionsController extends Controller
             return ExitCode::OK;
         }
 
-        $this->do('Deleting section', function() use ($sectionsService, $section) {
-            if (!$sectionsService->deleteSection($section)) {
-                $message = Arr::first($section->getFirstErrors()) ?? 'Unable to delete the section.';
-                throw new InvalidConfigException($message);
+        $this->do('Deleting section', function() use ($section) {
+            if (!Sections::deleteSection($section)) {
+                throw new InvalidConfigException('Unable to delete the section.');
             }
         });
 

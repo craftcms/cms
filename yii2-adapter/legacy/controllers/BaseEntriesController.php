@@ -28,11 +28,11 @@ abstract class BaseEntriesController extends Controller
     /**
      * Returns the editable site IDs for a section.
      *
-     * @param Section $section
+     * @param \CraftCms\Cms\Section\Data\Section $section
      * @return int[]
      * @throws ForbiddenHttpException
      */
-    protected function editableSiteIds(Section $section): array
+    protected function editableSiteIds(\CraftCms\Cms\Section\Data\Section $section): array
     {
         if (!Sites::isMultiSite()) {
             return [Sites::getPrimarySite()->id];

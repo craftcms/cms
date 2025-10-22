@@ -260,7 +260,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
     /**
      * {@inheritdoc}
      */
-    public function getIcon(): ?string
+    public function getIcon(): string
     {
         return 'newspaper';
     }

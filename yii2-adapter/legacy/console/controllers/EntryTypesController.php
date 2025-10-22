@@ -14,13 +14,14 @@ use craft\elements\Entry;
 use craft\helpers\Console;
 use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
-use craft\models\Section;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -98,7 +99,7 @@ MD) . "\n\n");
 
         /** @var EntryType $persistingEntryType */
         /** @var EntryType $outgoingEntryType */
-        /** @var array<Section|ElementContainerFieldInterface> $outgoingUsages */
+        /** @var array<\CraftCms\Cms\Section\Data\Section|ElementContainerFieldInterface> $outgoingUsages */
         [$persistingEntryType, $outgoingEntryType, $outgoingUsages] = $choice === $entryTypeA->handle
             ? [$entryTypeA, $entryTypeB, $usagesB]
             : [$entryTypeB, $entryTypeA, $usagesA];
@@ -226,17 +227,16 @@ MD));
         }
 
         $this->do('Updating usages', function() use (
-            $entriesService,
             $fieldsService,
             $persistingEntryType,
             $outgoingEntryType,
             $outgoingUsages,
         ) {
             foreach ($outgoingUsages as $usage) {
-                if ($usage->canGetProperty('entryTypes') && $usage->canSetProperty('entryTypes')) {
-                    $usage->entryTypes = $this->modifyEntryTypes($usage->entryTypes, $persistingEntryType, $outgoingEntryType);
+                if (method_exists($usage, 'getEntryTypes') && method_exists($usage, 'setEntryTypes')) {
+                    $usage->setEntryTypes($this->modifyEntryTypes($usage->getEntryTypes(), $persistingEntryType, $outgoingEntryType));
                     if ($usage instanceof Section) {
-                        $entriesService->saveSection($usage, false);
+                        Sections::saveSection($usage);
                     } else {
                         $fieldsService->saveField($usage, false);
                     }

@@ -13,7 +13,6 @@ use craft\helpers\FileHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\ImageTransform;
-use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\services\ElementSources;
@@ -34,11 +33,13 @@ use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -1765,7 +1766,7 @@ final class ProjectConfig
      */
     private function _getSectionData(): array
     {
-        return collect(Craft::$app->getEntries()->getAllSections())
+        return Sections::getAllSections()
             ->mapWithKeys(fn (Section $section) => [$section->uid => $section->getConfig()])
             ->all();
     }

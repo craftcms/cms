@@ -19,7 +19,6 @@ use craft\events\SectionEvent;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
-use craft\models\Section;
 use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use craft\services\Structures;
@@ -30,7 +29,10 @@ use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Tags;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -164,7 +166,7 @@ class EntrifyController extends Controller
         }
 
         if (
-            $section->type === Section::TYPE_CHANNEL &&
+            $section->type === SectionType::Channel &&
             !$this->confirm("The categories’ structure data will be lost because “{$section->name}” is a Channel section. Are you sure you want to continue?\n")
         ) {
             $this->stdout("Aborted.\n");
@@ -226,7 +228,7 @@ class EntrifyController extends Controller
                         ->where('elementId', $category->id)
                         ->delete();
 
-                    if ($section->type === Section::TYPE_STRUCTURE) {
+                    if ($section->type === SectionType::Structure) {
                         $entry = Entry::find()
                             ->id($category->id)
                             ->drafts(null)
@@ -638,15 +640,15 @@ class EntrifyController extends Controller
                 throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
             }
 
-            $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
+            $section = Sections::getSectionByHandle($this->section);
             if (!$section) {
                 throw new InvalidConfigException("Invalid section handle: $this->section");
             }
             if ($this->_forSingle) {
-                if ($section->type !== Section::TYPE_SINGLE) {
+                if ($section->type !== SectionType::Single) {
                     throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
                 }
-            } elseif ($section->type === Section::TYPE_SINGLE) {
+            } elseif ($section->type === SectionType::Single) {
                 throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
             }
             $this->_section = $section;

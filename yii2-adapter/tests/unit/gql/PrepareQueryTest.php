@@ -28,6 +28,7 @@ use craft\services\Entries;
 use craft\test\TestCase;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use UnitTester;
@@ -172,7 +173,7 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
+                    $section = Sections::getSectionByUid(self::SECTION_UID);
                     return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
             ],

@@ -9,7 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
-class UriFormatRule implements ValidationRule
+final class UriFormatRule implements ValidationRule
 {
     public function __construct(
         /**
@@ -30,7 +30,9 @@ class UriFormatRule implements ValidationRule
         }
 
         if ($this->requireSlug && ! ElementHelper::doesUriFormatHaveSlugTag($value)) {
-            $fail(t('{attribute} must contain “{slug}”'), []);
+            $fail(t('{attribute} must contain “{slug}”', [
+                'attribute' => $attribute,
+            ]));
 
             return;
         }
@@ -43,17 +45,19 @@ class UriFormatRule implements ValidationRule
         $firstSeg = explode('/', $value, 2)[0];
 
         if ($firstSeg === $generalConfig->actionTrigger) {
-            $fail(t('{attribute} cannot start with the {setting} config setting.'), [
+            $fail(t('{attribute} cannot start with the {setting} config setting.', [
+                'attribute' => $attribute,
                 'setting' => 'actionTrigger',
-            ]);
+            ]));
 
             return;
         }
 
         if ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
-            $fail(t('{attribute} cannot start with the {setting} config setting.'), [
+            $fail(t('{attribute} cannot start with the {setting} config setting.', [
+                'attribute' => $attribute,
                 'setting' => 'cpTrigger',
-            ]);
+            ]));
         }
     }
 }

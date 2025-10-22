@@ -7,6 +7,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -37,7 +38,7 @@ final class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
                 $deleteIds = collect();
 
                 // get sections that are not enabled for given site
-                foreach (\Craft::$app->getEntries()->getAllSections() as $section) {
+                foreach (Sections::getAllSections() as $section) {
                     $sectionSettings = $section->getSiteSettings();
 
                     foreach ($siteIds as $siteId) {

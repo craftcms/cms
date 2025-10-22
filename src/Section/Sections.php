@@ -143,7 +143,8 @@ final class Sections
                 ->all();
         }
 
-        $this->sections = new MemoizableArray(
+        /** @var MemoizableArray<Section> $sections */
+        $sections = new MemoizableArray(
             elements: $results->all(),
             normalizer: function (object $result) use (&$siteSettingsBySection) {
                 if (! empty($result->previewTargets) && is_string($result->previewTargets)) {
@@ -163,7 +164,7 @@ final class Sections
                 return $section;
             });
 
-        return $this->sections;
+        return $this->sections = $sections;
     }
 
     private function createSectionQuery(): Builder
@@ -255,10 +256,10 @@ final class Sections
      * {% set singles = craft.app.entries.getSectionsByType('single') %}
      * ```
      *
-     * @param  string  $type  The section type (`single`, `channel`, or `structure`)
+     * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
      * @return Collection<Section> All the sections of the given type.
      */
-    public function getSectionsByType(string $type): Collection
+    public function getSectionsByType(SectionType $type): Collection
     {
         return collect($this->_sections()->where('type', $type, true)->all());
     }
@@ -388,25 +389,28 @@ final class Sections
      * ---
      *
      * ```php
-     * use craft\models\Section;
-     * use craft\models\SectionSiteSettings;
+     * use CraftCms\Cms\Section\Data\Section;
+     * use CraftCms\Cms\Section\Data\SectionSiteSettings;
+     * use CraftCms\Cms\Section\Enums\SectionType;
+     * use CraftCms\Cms\Support\Facades\Sections;
+     * use CraftCms\Cms\Support\Facades\Sites;
      *
-     * $section = new Section([
-     *     'name' => 'News',
-     *     'handle' => 'news',
-     *     'type' => Section::TYPE_CHANNEL,
-     *     'siteSettings' => [
-     *         new SectionSiteSettings([
-     *             'siteId' => \Craft::$app->sites->getPrimarySite()->id,
-     *             'enabledByDefault' => true,
-     *             'hasUrls' => true,
-     *             'uriFormat' => 'foo/{slug}',
-     *             'template' => 'foo/_entry',
-     *         ]),
-     *     ]
-     * ]);
+     * $section = new Section(
+     *     name: 'News',
+     *     handle: 'news',
+     *     type: SectionType::Channel,
+     *     siteSettings: [
+     *         new SectionSiteSettings(
+     *             siteId: Sites::getPrimarySite()->id,
+     *             enabledByDefault: true,
+     *             hasUrls: true,
+     *             uriFormat: 'foo/{slug}',
+     *             template: 'foo/_entry',
+     *         ),
+     *     ],
+     * );
      *
-     * $success = \CraftCms\Cms\Support\Facades\Sections::saveSection($section);
+     * $success = Sections::saveSection($section);
      * ```
      *
      * @param  Section  $section  The section to be saved

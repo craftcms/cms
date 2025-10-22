@@ -4,11 +4,11 @@ namespace CraftCms\Cms\Section\Rules;
 
 use Closure;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Shared\Rules\UriFormatRule;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use Exception;
 use Illuminate\Contracts\Validation\DataAwareRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -16,7 +16,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final class SingleSectionUriRule extends UriFormatRule implements DataAwareRule
+final class SingleSectionUriRule implements DataAwareRule, ValidationRule
 {
     /**
      * All of the data under validation.
@@ -27,18 +27,6 @@ final class SingleSectionUriRule extends UriFormatRule implements DataAwareRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $message = null;
-
-        parent::validate($attribute, $value, function ($error) use (&$message) {
-            $message = $error;
-        });
-
-        if (! is_null($message)) {
-            $fail($message);
-
-            return;
-        }
-
         $sectionId = $this->data['sectionId'];
         $section = Sections::getSectionById($sectionId);
 

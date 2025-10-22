@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
@@ -239,7 +240,7 @@ class Cp extends Component
             ],
         ];
 
-        if (Craft::$app->getEntries()->getTotalEditableSections()) {
+        if (Sections::getTotalEditableSections()) {
             $navItems[] = [
                 'label' => t('Entries'),
                 'url' => 'entries',

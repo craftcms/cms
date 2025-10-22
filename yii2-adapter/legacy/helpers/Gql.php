@@ -15,11 +15,12 @@ use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
-use craft\models\Section;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -599,10 +600,9 @@ class Gql
      */
     public static function getSchemaContainedSections(?GqlSchema $schema = null): array
     {
-        return array_filter(
-            Craft::$app->getEntries()->getAllSections(),
-            fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema),
-        );
+        return Sections::getAllSections()
+            ->filter(fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema))
+            ->all();
     }
 
     /**

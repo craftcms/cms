@@ -11,7 +11,6 @@ use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
-use craft\models\Section;
 use craft\web\Response;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
@@ -24,6 +23,8 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
@@ -590,23 +591,23 @@ class Install extends Migration
             $table->primary(['jobId', 'fieldHandle']);
         });
 
-        Schema::create(Table::SECTIONS, function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId')->nullable();
             $table->string('name');
             $table->string('handle');
             $table->enum('type', [
-                Section::TYPE_SINGLE,
-                Section::TYPE_CHANNEL,
-                Section::TYPE_STRUCTURE,
-            ])->default(Section::TYPE_CHANNEL);
+                SectionType::Single->value,
+                SectionType::Channel->value,
+                SectionType::Structure->value,
+            ])->default(SectionType::Channel->value);
             $table->boolean('enableVersioning')->default(false);
             $table->unsignedSmallInteger('maxAuthors')->nullable();
             $table->string('propagationMethod')->default(PropagationMethod::All->value);
             $table->enum('defaultPlacement', [
-                Section::DEFAULT_PLACEMENT_BEGINNING,
-                Section::DEFAULT_PLACEMENT_END,
-            ])->default(Section::DEFAULT_PLACEMENT_END);
+                DefaultPlacement::Beginning->value,
+                DefaultPlacement::End->value,
+            ])->default(DefaultPlacement::End->value);
             $table->jsonb('previewTargets')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -614,7 +615,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::SECTIONS_ENTRYTYPES, function (Blueprint $table) {
+        Schema::create('sections_entrytypes', function (Blueprint $table) {
             $table->integer('sectionId');
             $table->integer('typeId');
             $table->unsignedSmallInteger('sortOrder');
@@ -625,7 +626,7 @@ class Install extends Migration
             $table->primary(['sectionId', 'typeId']);
         });
 
-        Schema::create(Table::SECTIONS_SITES, function (Blueprint $table) {
+        Schema::create('sections_sites', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sectionId');
             $table->integer('siteId');

@@ -126,7 +126,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      * @phpstan-var self::DEFAULT_PLACEMENT_*
      * @since 3.7.0
      */
-    public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+    public string $defaultPlacement = DefaultPlacement::End->value;
 
     /**
      * @var array|null Preview targets
@@ -205,7 +205,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'handle' => t('Handle'),
             'name' => t('Name'),
             'type' => t('Section Type'),
-            'entryTypes' => $this->type === self::TYPE_SINGLE
+            'entryTypes' => $this->type === SectionType::Single->value
                 ? t('Entry Type')
                 : t('Entry Types'),
         ];
@@ -228,16 +228,16 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
-                self::TYPE_SINGLE,
-                self::TYPE_CHANNEL,
-                self::TYPE_STRUCTURE,
+                SectionType::Single->value,
+                SectionType::Channel->value,
+                SectionType::Structure->value,
             ],
         ];
         $rules[] = [['handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
-        $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
+        $rules[] = [['defaultPlacement'], 'in', 'range' => [DefaultPlacement::Beginning->value, DefaultPlacement::End->value]];
         $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
@@ -447,14 +447,14 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement ?? DefaultPlacement::End->value,
         ];
 
         if (!empty($this->previewTargets)) {
             $config['previewTargets'] = array_values($this->previewTargets);
         }
 
-        if ($this->type === self::TYPE_STRUCTURE) {
+        if ($this->type === SectionType::Structure->value) {
             $config['structure'] = [
                 'uid' => $this->structureId ? \Illuminate\Support\Facades\DB::table(Table::STRUCTURES)->uidById($this->structureId) : Str::uuid()->toString(),
                 'maxLevels' => (int)$this->maxLevels ?: null,

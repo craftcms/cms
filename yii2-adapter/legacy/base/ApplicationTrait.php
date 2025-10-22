@@ -1474,7 +1474,6 @@ trait ApplicationTrait
             if (!app(ProjectConfig::class)->isApplyingExternalChanges) {
                 $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
-                $this->getEntries()->pruneDeletedSite($event);
             }
         });
     }

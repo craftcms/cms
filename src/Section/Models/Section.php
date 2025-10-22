@@ -20,17 +20,14 @@ final class Section extends BaseModel
 
     protected $table = Table::SECTIONS;
 
-    protected function casts(): array
-    {
-        return [
-            'enableVersioning' => 'boolean',
-            'maxAuthors' => 'integer',
-            'previewTargets' => 'json',
-            'type' => SectionType::class,
-            'defaultPlacement' => DefaultPlacement::class,
-            'propagationMethod' => PropagationMethod::class,
-        ];
-    }
+    protected $casts = [
+        'previewTargets' => 'array',
+        'enableVersioning' => 'boolean',
+        'maxAuthors' => 'integer',
+        'type' => SectionType::class,
+        'defaultPlacement' => DefaultPlacement::class,
+        'propagationMethod' => PropagationMethod::class,
+    ];
 
     public function structure(): BelongsTo
     {

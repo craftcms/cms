@@ -82,10 +82,10 @@ final class SectionSiteSettings extends Dto
             'siteId' => ['nullable', 'integer', new SiteIdRule],
             'template' => ['nullable', 'string', 'max:500'],
             'uriFormat' => array_merge(
-                ['required_if:hasUrls,true'],
+                ['required_if:hasUrls,true', new UriFormatRule],
                 $context?->fullPayload['type'] === SectionType::Single->value
                     ? [new SingleSectionUriRule]
-                    : [new UriFormatRule],
+                    : [],
             ),
             'hasUrls' => ['nullable', 'boolean'],
         ];
