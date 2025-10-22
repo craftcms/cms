@@ -40,6 +40,9 @@ class GetAttrNode extends GetAttrExpression
      */
     public function compile(Compiler $compiler): void
     {
+        // The following code is based on GetAttrExpression::compile().
+        // Differences noted below with `DIFF` comments.
+
         $env = $compiler->getEnvironment();
         $arrayAccessSandbox = false;
 
@@ -63,7 +66,7 @@ class GetAttrNode extends GetAttrExpression
                     ->raw($var)
                     ->raw(' instanceof ArrayAccess ? (')
                     ->raw($var)
-                    ->raw('[')
+                    ->raw('[(string)') // DIFF: `(string)` added
                     ->subcompile($this->getNode('attribute'))
                     ->raw('] ?? null) : null)')
                 ;
@@ -80,13 +83,13 @@ class GetAttrNode extends GetAttrExpression
                 ->raw($var . '::class')
                 ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
-                ->raw('[')
+                ->raw('[(string)') // DIFF: `(string)` added
                 ->subcompile($this->getNode('attribute'))
                 ->raw('] ?? null) : ')
             ;
         }
 
-        // This is the only line that should be different from GetAttrExpression::compile()
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
         $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
 
         if ($this->getAttribute('ignore_strict_check')) {
