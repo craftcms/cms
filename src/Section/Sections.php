@@ -50,8 +50,6 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
-use function CraftCms\Cms\t;
-
 #[Singleton]
 final class Sections
 {
@@ -152,6 +150,10 @@ final class Sections
                 } else {
                     $result->previewTargets = [];
                 }
+
+                $result->type = SectionType::from($result->type);
+                $result->propagationMethod = PropagationMethod::from($result->propagationMethod);
+                $result->defaultPlacement = DefaultPlacement::from($result->defaultPlacement);
 
                 $section = Section::from($result);
 

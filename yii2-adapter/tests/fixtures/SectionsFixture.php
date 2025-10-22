@@ -13,6 +13,7 @@ use craft\services\Entries;
 use craft\test\ActiveFixture;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -51,6 +52,7 @@ class SectionsFixture extends ActiveFixture
 
         $entriesService = new Entries();
         Craft::$app->set('entries', $entriesService);
+        Sections::refreshSections();
 
         foreach ($this->entryTypeIds as $key => $entryTypeIds) {
             DB::table(Table::SECTIONS_ENTRYTYPES)
