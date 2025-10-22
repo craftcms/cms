@@ -367,6 +367,10 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
+        if (is_dir($file)) {
+            return 'directory';
+        }
+
         try {
             $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
         } catch (ErrorException $e) {
