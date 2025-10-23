@@ -239,7 +239,7 @@ class Cp extends Component
                 $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
                 foreach ($entryPages as $page) {
                     $navItems[] = [
-                        'label' => Craft::t('site', $page),
+                        'label' => $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
                         'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
                         'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
                     ];

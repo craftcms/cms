@@ -72,7 +72,11 @@ class ElementIndexSettingsController extends BaseElementsController
 
         foreach ($sources as &$source) {
             if ($multiPage) {
+                // ensure we're using the EN translation here
+                $language = Craft::$app->language;
+                Craft::$app->language = Craft::$app->sourceLanguage;
                 $source['page'] ??= $elementType::pluralDisplayName();
+                Craft::$app->language = $language;
             }
 
             if ($source['type'] === ElementSources::TYPE_HEADING) {
