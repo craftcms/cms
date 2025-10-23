@@ -1551,7 +1551,10 @@ td.right {
 
         & > .cs-sidebar-list {
           padding-inline-start: 0;
-          margin-block-end: var(--m);
+
+          &:not(:empty) {
+            margin-block-end: var(--m);
+          }
         }
       }
     }
