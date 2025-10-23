@@ -62,6 +62,9 @@
   --focus-ring-inner: inset 0 0 0 1px var(--focus-outline-medium),
     inset 0 0 0 3px
       hsl(from var(--focus-outline-medium) h s l / var(--focus-ring-alpha));
+  --focus-ring-inner-light: inset 0 0 0 1px var(--focus-outline-light),
+    inset 0 0 0 3px
+      hsl(from var(--focus-outline-light) h s l / var(--focus-ring-alpha));
 
   /*
   Border Radius
