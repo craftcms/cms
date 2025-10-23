@@ -19,11 +19,13 @@ use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
 use CraftCms\Cms\EntryType\Events\SavingEntryType;
 use CraftCms\Cms\EntryType\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -106,7 +108,13 @@ final class EntryTypes
         /** @var MemoizableArray<EntryType> $entryTypes */
         $entryTypes = new MemoizableArray(
             $this->_createEntryTypeQuery()->get()->all(),
-            fn (object $result) => EntryType::from((array) $result),
+            function (object $result) {
+                $result->titleTranslationMethod = TranslationMethod::from($result->titleTranslationMethod);
+                $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
+                $result->color = $result->color ? Color::from($result->color) : null;
+
+                return EntryType::from($result);
+            },
         );
 
         return $this->entryTypes = $entryTypes;
