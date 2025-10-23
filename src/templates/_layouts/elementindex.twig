@@ -22,6 +22,7 @@
     {% endif %}
 
     {% set docTitle = "#{title} - #{selectedSite.uiLabel}" %}
+    {% set siteMenuItems = siteMenuItems(selectableSites, selectedSite) %}
 
     {% set crumbs = (crumbs ?? [])|unshift({
         id: 'site-crumb',
@@ -29,7 +30,7 @@
         iconAltText: 'Site'|t('app'),
         label: selectedSite.name|t('site'),
         menu: {
-            items: siteMenuItems(selectableSites, selectedSite),
+            items: siteMenuItems|length > 1 ? siteMenuItems : null,
             label: 'Select site'|t('app')
         }
     }) %}
