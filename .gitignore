@@ -18,3 +18,5 @@ vendor/
 cpresources/*
 .ddev/
 test-results/
+resources/build
+resources/hot

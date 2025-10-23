@@ -2,35 +2,51 @@
   "name": "craftcms",
   "private": true,
   "main": "webpack.config.js",
+  "type": "module",
   "scripts": {
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
     "prepare": "husky",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "prebuild:bundles": "npm run fix-prettier",
-    "build:bundles": "npm run build -w @craftcms/asset-bundles"
+    "build:bundles": "npm run build -w @craftcms/asset-bundles",
+    "build": "vite build",
+    "dev": "vite"
   },
   "workspaces": [
     "packages/*"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.52.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
+    "lit": "^3.3.1",
     "prettier": "3.1.1",
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.0",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.0",
-    "stylelint-use-logical-spec": "^5.0.1"
+    "stylelint-use-logical-spec": "^5.0.1",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vue-tsc": "^3.1.1"
   },
-  "dependencies": {},
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
+  },
+  "dependencies": {
+    "@inertiajs/vue3": "^2.2.7",
+    "laravel-vite-plugin": "^2.0.1",
+    "vue": "^3.5.22"
   }
 }

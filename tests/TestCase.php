@@ -43,6 +43,8 @@ class TestCase extends Orchestra
         );
 
         Http::preventStrayRequests();
+
+        $this->withoutVite();
     }
 
     #[\Override]
