@@ -87,6 +87,7 @@
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
         elementTypeName: '{{ elementDisplayName|e("js") }}',
         elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        page: {{ (page ?? null)|json_encode|raw }},
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         toolbarSelector: '#toolbar',
     });

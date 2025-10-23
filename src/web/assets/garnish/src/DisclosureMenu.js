@@ -726,6 +726,10 @@ export default Base.extend(
       return li;
     },
 
+    addList: function () {
+      return $('<ul/>').appendTo(this.$container)[0];
+    },
+
     addItem: function (item, ul, prepend = false) {
       const li = this.createItem(item);
 
@@ -917,6 +921,10 @@ export default Base.extend(
           $el.addClass('hidden');
         }
       });
+    },
+
+    hasVisibleItems: function () {
+      return !!this.$container.find('li:not(.hidden)').length;
     },
 
     /**

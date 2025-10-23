@@ -10,6 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\elements\Entry;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -231,11 +232,25 @@ class Cp extends Component
         ];
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-                'icon' => 'newspaper',
-            ];
+            $elementSourcesService = Craft::$app->getElementSources();
+            $entryPages = $elementSourcesService->getPages(Entry::class);
+
+            if (!empty($entryPages)) {
+                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
+                foreach ($entryPages as $page) {
+                    $navItems[] = [
+                        'label' => $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                        'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
+                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
+                    ];
+                }
+            } else {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'Entries'),
+                    'url' => 'content/entries',
+                    'icon' => 'newspaper',
+                ];
+            }
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {

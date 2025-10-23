@@ -1758,6 +1758,17 @@ $.extend(Craft, {
   },
 
   /**
+   * Reduces an array to only unique items.
+   *
+   * @param {Array} arr
+   * @returns {Array}
+   */
+  uniqueArray: function (arr) {
+    // h/t https://stackoverflow.com/a/33121880/1688568
+    return [...new Set(arr)];
+  },
+
+  /**
    * Makes the first character of a string uppercase.
    *
    * @param {string} str
