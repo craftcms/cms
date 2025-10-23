@@ -1291,10 +1291,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Content'),
-                'url' => 'content',
-            ],
-            [
                 'label' => $page ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
                 'url' => sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'),
             ],
