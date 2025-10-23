@@ -96,7 +96,10 @@ final readonly class SectionsController
                 'readOnly' => $this->readOnly,
             ])
             ->when(
-                ! $this->readOnly,
+                $this->readOnly,
+                function (CpScreenResponse $response) {
+                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                },
                 function (CpScreenResponse $response) {
                     $response
                         ->action('sections/save-section')
@@ -106,9 +109,6 @@ final readonly class SectionsController
                             'shortcut' => true,
                             'retainScroll' => true,
                         ]);
-                },
-                function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
                 },
             );
     }

@@ -94,7 +94,7 @@ Route::prefix(implode('/', [
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit', [EntryTypesController::class, 'edit']);
+        Route::get('entry-types/edit/{entryTypeId?}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
@@ -175,7 +175,7 @@ Route::prefix(implode('/', [
 
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
-        Route::get('sections/edit', [SectionsController::class, 'edit']);
+        Route::get('sections/edit/{sectionId?}', [SectionsController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
