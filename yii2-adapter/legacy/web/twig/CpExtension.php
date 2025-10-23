@@ -9,7 +9,9 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\helpers\Cp;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Facades\Vite;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -65,10 +67,19 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
 
     public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft'): string
     {
-        return Vite::useHotFile(Craft::getAlias('@resources/hot'))
-            ->withEntryPoints($entryPoints)
-            ->useBuildDirectory($buildDirectory)
-            ->toHtml();
+        try {
+            return Vite::useHotFile(Craft::getAlias('@resources/hot'))
+                ->withEntryPoints($entryPoints)
+                ->useBuildDirectory($buildDirectory)
+                ->toHtml();
+        } catch (ViteException $e) {
+            if (Cms::config()->devMode) {
+                Craft::$app->getView()->registerJsWithVars(fn($message) => "console.error($message)", [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+            return '';
+        }
     }
 
     /**
