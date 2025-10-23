@@ -573,7 +573,7 @@ final class EntryTypes
     public function getTableData(
         int $page,
         int $limit,
-        ?string $searchTerm,
+        ?string $searchTerm = null,
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
