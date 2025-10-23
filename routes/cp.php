@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
 
-    Route::middleware(RequireAdmin::class)->group(function () {
+    Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
     });
 
@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
      * Routes that require admin, but do not require admin changes
      */
     Route::middleware([
-        RequireAdmin::class.':false',
+        RequireAdmin::class,
     ])->group(function () {
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('settings/filesystems')->group(function () {
         Route::middleware([
-            RequireAdmin::class.':false',
+            RequireAdmin::class,
         ])->group(function () {
             Route::get('/', [FilesystemsController::class, 'index']);
             Route::get('new', [FilesystemsController::class, 'create']);
@@ -72,7 +72,7 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware([
-            RequireAdmin::class.':true',
+            RequireAdminChanges::class,
         ])->group(function () {
             Route::post('{handle}', [FilesystemsController::class, 'save']);
         });
