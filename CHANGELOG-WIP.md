@@ -3,6 +3,7 @@
 ### Administration
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
 - The `clear-cache` command now accepts a space-delimited list of cache IDs that should be cleared.
+- Compiled templates are now deleted by the `up` command rather than from `migrate` commands.
 
 ### Development
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
