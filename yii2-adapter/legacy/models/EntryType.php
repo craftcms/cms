@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
-use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -39,6 +39,7 @@ use function CraftCms\Cms\t;
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\EntryType\Data\EntryType} instead.
  */
 class EntryType extends Model implements
     FieldLayoutProviderInterface,

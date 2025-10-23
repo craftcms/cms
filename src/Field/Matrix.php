@@ -30,7 +30,6 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Queue;
-use craft\models\EntryType;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\validators\ArrayValidator;
@@ -41,6 +40,8 @@ use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\EntryType\EntryTypes;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -460,9 +461,9 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $entriesService = Craft::$app->getEntries();
+        $entryTypesService = app(EntryTypes::class);
         $this->_entryTypes = array_values(array_filter(array_map(
-            fn ($entryType) => $entriesService->getEntryType($entryType),
+            fn ($entryType) => $entryTypesService->getEntryType($entryType),
             $entryTypes,
         )));
     }

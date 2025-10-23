@@ -8,10 +8,10 @@
     instructions: "What this entry type will be called in the control panel."|t('app'),
     id: 'name',
     name: 'name',
-    value: entryType.name,
+    value: old('name', entryType.name),
     autofocus: true,
     required: true,
-    errors: entryType.getErrors('name'),
+    errors: sessionErrors.get('name'),
     data: {'error-key': 'name'},
     disabled: readOnly,
 }) }}
@@ -24,9 +24,9 @@
     class: 'code',
     autocorrect: false,
     autocapitalize: false,
-    value: entryType.handle,
+    value: old('handle', entryType.handle),
     required: true,
-    errors: entryType.getErrors('handle'),
+    errors: sessionErrors.get('handle'),
     data: {'error-key': 'handle'},
     disabled: readOnly,
 }) }}
@@ -36,8 +36,8 @@
     id: 'description',
     class: 'nicetext',
     name: 'description',
-    value: entryType.description ?? null,
-    errors: entryType.getErrors('description'),
+    value: old('description', entryType.description ?? null),
+    errors: sessionErrors.get('description'),
     disabled: readOnly,
 }) }}
 
@@ -45,8 +45,8 @@
     label: 'Icon'|t('app'),
     id: 'icon',
     name: 'icon',
-    value: entryType.icon,
-    errors: entryType.getErrors('icon'),
+    value: old('icon', entryType.icon),
+    errors: sessionErrors.get('icon'),
     data: {
         'error-key': 'icon',
     },
@@ -57,8 +57,8 @@
     label: 'Color'|t('app'),
     id: 'color',
     name: 'color',
-    value: entryType.color,
-    errors: entryType.getErrors('color'),
+    value: old('color', entryType.color),
+    errors: sessionErrors.get('color'),
     data: {
         'error-key': 'color',
     },
@@ -85,13 +85,13 @@
                 { value: 'language', label: 'Translate for each language'|t('app') },
                 { value: 'custom', label: 'Custom…'|t('app') },
             ]|filter,
-            value: entryType.titleTranslationMethod,
+            value: old('titleTranslationMethod', entryType.titleTranslationMethod.value),
             toggle: true,
             targetPrefix: 'translation-method-',
             disabled: readOnly,
         }) }}
 
-        <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        <div id="translation-method-custom" {% if old('titleTranslationMethod', entryType.titleTranslationMethod.value) != 'custom' %}class="hidden"{% endif %}>
             {{ forms.textField({
                 label: '{name} Translation Key Format'|t('app', {
                     name: 'Title'|t('app'),
@@ -101,8 +101,8 @@
                 }),
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
-                value: entryType.titleTranslationKeyFormat,
-                errors: entryType.getErrors('titleTranslationKeyFormat'),
+                value: old('titleTranslationKeyFormat', entryType.titleTranslationKeyFormat),
+                errors: sessionErrors.get('titleTranslationKeyFormat'),
                 data: {
                     'error-key': 'titleTranslationKeyFormat',
                 },
@@ -118,8 +118,8 @@
     id: 'titleFormat',
     name: 'titleFormat',
     class: 'code',
-    value: entryType.titleFormat,
-    errors: entryType.getErrors('titleFormat'),
+    value: old('titleFormat', entryType.titleFormat),
+    errors: sessionErrors.get('titleFormat'),
     data: {
         'error-key': 'titleFormat',
     },
@@ -131,12 +131,12 @@
     name: 'showSlugField',
     toggle: 'slug-container',
     reverseToggle: '#slugFormat-container, #field-layout .fld-slug-field-icon',
-    on: entryType.showSlugField,
+    on: old('showSlugField', entryType.showSlugField),
     disabled: readOnly,
 }) }}
 
 {% if craft.sites.isMultiSite() %}
-    <div id="slug-container"{% if not entryType.showSlugField %} class="hidden"{% endif %}>
+    <div id="slug-container"{% if not old('showSlugField', entryType.showSlugField) %} class="hidden"{% endif %}>
         {{ forms.selectField({
             label: '{name} Translation Method'|t('app', {
                 name: 'Slug'|t('app'),
@@ -153,13 +153,13 @@
                 { value: 'language', label: 'Translate for each language'|t('app') },
                 { value: 'custom', label: 'Custom…'|t('app') },
             ]|filter,
-            value: entryType.slugTranslationMethod,
+            value: old('slugTranslationMethod', entryType.slugTranslationMethod.value),
             toggle: true,
             targetPrefix: 'slug-translation-method-',
             disabled: readOnly,
         }) }}
 
-        <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        <div id="slug-translation-method-custom" {% if old('slugTranslationMethod', entryType.slugTranslationMethod.value) != 'custom' %}class="hidden"{% endif %}>
             {{ forms.textField({
                 label: '{name} Translation Key Format'|t('app', {
                     name: 'Slug'|t('app'),
@@ -169,8 +169,8 @@
                 }),
                 id: 'slug-translation-key-format',
                 name: 'slugTranslationKeyFormat',
-                value: entryType.slugTranslationKeyFormat,
-                errors: entryType.getErrors('slugTranslationKeyFormat'),
+                value: old('slugTranslationKeyFormat', entryType.slugTranslationKeyFormat),
+                errors: sessionErrors.get('slugTranslationKeyFormat'),
                 data: {
                     'error-key': 'slugTranslationKeyFormat',
                 },
@@ -184,8 +184,8 @@
     label: "Show the Status field"|t('app'),
     id: 'showStatusField',
     name: 'showStatusField',
-    on: entryType.showStatusField,
-    errors: entryType.getErrors('showStatusField'),
+    on: old('showStatusField', entryType.showStatusField),
+    errors: sessionErrors.get('showStatusField'),
     data: {
         'error-key': 'showStatusField',
     },
@@ -196,12 +196,12 @@
 
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
-    fieldLayout: entryType.getFieldLayout(),
+    fieldLayout: session('oldFieldLayout', entryType.getFieldLayout()),
     withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,
 }) }}
 
-{% if not entryType.handle %}
+{% if not old('handle', entryType.handle) %}
     {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
 {% endif %}

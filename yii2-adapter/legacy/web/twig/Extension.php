@@ -26,7 +26,6 @@ use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
 use craft\web\twig\nodes\expressions\binaries\HasSomeBinary;
 use craft\web\twig\nodevisitors\EventTagAdder;
@@ -57,11 +56,13 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -1441,6 +1442,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('seq', [$this, 'seqFunction']),
+            new TwigFunction('session', [$this, 'sessionFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
@@ -1596,10 +1598,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function entryTypeFunction(string $handle): EntryType
     {
-        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle($handle);
+        $entryType = EntryTypes::getEntryTypeByHandle($handle);
+
         if ($entryType === null) {
             throw new InvalidArgumentException("Invalid entry type handle: $handle");
         }
+
         return $entryType;
     }
 
@@ -1695,6 +1699,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function renderObjectTemplate(string $template, mixed $object): string
     {
         return Craft::$app->getView()->renderObjectTemplate($template, $object);
+    }
+
+    /**
+     * Get / set the specified session value.
+     *
+     * If an array is passed as the key, we will assume you want to set an array of values.
+     *
+     * @param  array<string, mixed>|string|null  $key
+     * @param  mixed  $default
+     * @return ($key is null ? \Illuminate\Session\SessionManager : ($key is string ? mixed : null))
+     */
+    public function sessionFunction(array|string|null $key = null, mixed $default = null): mixed
+    {
+        return session($key, $default);
     }
 
     /**

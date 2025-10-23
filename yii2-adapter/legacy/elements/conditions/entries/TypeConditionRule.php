@@ -2,13 +2,14 @@
 
 namespace craft\elements\conditions\entries;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use function CraftCms\Cms\t;
 
 /**
@@ -53,11 +54,9 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     protected function options(): array
     {
-        $options = [];
-        foreach (Craft::$app->getEntries()->getAllEntryTypes() as $entryType) {
-            $options[$entryType->uid] = $entryType->getUiLabel();
-        }
-        return $options;
+        return EntryTypes::getAllEntryTypes()
+            ->mapWithKeys(fn(EntryType $entryType) => [$entryType->uid => $entryType->getUiLabel()])
+            ->all();
     }
 
     /**
@@ -66,8 +65,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $entriesService = Craft::$app->getEntries();
-        $query->typeId($this->paramValue(fn($uid) => $entriesService->getEntryTypeByUid($uid)->id ?? null));
+        $query->typeId($this->paramValue(fn($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
     }
 
     /**

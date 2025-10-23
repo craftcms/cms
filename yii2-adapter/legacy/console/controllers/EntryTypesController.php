@@ -7,15 +7,15 @@
 
 namespace craft\console\controllers;
 
-use Craft;
 use craft\base\FieldLayoutElement;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Console;
-use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\EntryType\EntryTypes;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -44,7 +44,7 @@ class EntryTypesController extends Controller
      */
     public function actionMerge(string $handleA, string $handleB): int
     {
-        $entriesService = Craft::$app->getEntries();
+        $entriesService = app(EntryTypes::class);
         $fieldsService = app(Fields::class);
 
         $entryTypeA = $entriesService->getEntryTypeByHandle($handleA);
@@ -223,7 +223,7 @@ MD));
                 $tab->setElements($layoutElements);
             });
 
-            $entriesService->saveEntryType($persistingEntryType, false);
+            $entriesService->saveEntryType($persistingEntryType);
         }
 
         $this->do('Updating usages', function() use (

@@ -3,16 +3,16 @@
 namespace CraftCms\Cms\Section\Commands;
 
 use craft\elements\Entry;
-use craft\models\EntryType;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\EntryType\EntryTypes;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -46,7 +46,7 @@ final class CreateCommand extends Command
 
     protected $aliases = ['sections/create'];
 
-    public function handle(ProjectConfig $projectConfig): void
+    public function handle(ProjectConfig $projectConfig, EntryTypes $entryTypesService): void
     {
         $this->confirmToProceed(
             warning: 'Project config changes aren’t allowed on this environment.',
@@ -57,11 +57,11 @@ final class CreateCommand extends Command
 
         $entryTypes = collect($this->option('entryTypes'))
             ->flatMap(fn (string $entryType) => explode(',', $entryType))
-            ->map(function (string $entryType) {
-                $entryType = \Craft::$app->getEntries()->getEntryTypeByHandle($entryType);
+            ->map(function (string $entryTypeHandle) use ($entryTypesService) {
+                $entryType = $entryTypesService->getEntryTypeByHandle($entryTypeHandle);
 
                 if (! $entryType) {
-                    throw new \RuntimeException("Invalid entry type handle: {$entryType}");
+                    throw new \RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
                 }
 
                 return $entryType->handle;
@@ -69,8 +69,7 @@ final class CreateCommand extends Command
             ->filter()
             ->all();
 
-        /** @var EntryType[] $allEntryTypes */
-        $allEntryTypes = Arr::keyBy(\Craft::$app->getEntries()->getAllEntryTypes(), 'handle');
+        $allEntryTypes = $entryTypesService->getAllEntryTypes()->keyBy('handle');
         $saveEntryType = false;
 
         $responses = form()
@@ -101,17 +100,16 @@ final class CreateCommand extends Command
                 required: true,
                 name: 'enableVersioning',
             )
-            ->addIf(empty($entryTypes) && ! empty($allEntryTypes), fn () => confirm(
+            ->addIf(empty($entryTypes) && $allEntryTypes->isNotEmpty(), fn () => confirm(
                 label: 'Have you already created an entry type for this section?'
             ), 'createdEntryType')
             ->addIf(
                 condition: fn ($responses) => isset($responses['createdEntryType']) && $responses['createdEntryType'],
                 step: fn () => select(
                     label: 'Which entry type should be used?',
-                    options: array_map(
+                    options: $allEntryTypes->map(
                         fn (EntryType $entryType) => $entryType->name,
-                        $allEntryTypes,
-                    ),
+                    )->all(),
                 ),
                 name: 'entryTypeHandle')
             ->addIf(
@@ -180,16 +178,16 @@ final class CreateCommand extends Command
         if ($saveEntryType) {
             $this->components->task(
                 description: 'Saving the entry type',
-                task: function () use ($responses, &$entryType) {
+                task: function () use ($entryTypesService, $responses, &$entryType) {
                     $entryType = new EntryType;
                     $entryType->name = $responses['entryTypeName'];
                     $entryType->handle = $responses['entryTypeHandle'];
 
-                    \Craft::$app->getEntries()->saveEntryType($entryType);
+                    $entryTypesService->saveEntryType($entryType);
                 }
             );
         } else {
-            $entryType = \Craft::$app->getEntries()->getEntryTypeByHandle($responses['entryTypeHandle']);
+            $entryType = $entryTypesService->getEntryTypeByHandle($responses['entryTypeHandle']);
         }
 
         $section->setEntryTypes([$entryType]);

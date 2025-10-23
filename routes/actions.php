@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
+use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
@@ -90,6 +91,17 @@ Route::prefix(implode('/', [
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
+
+        // Entry Types
+        Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
+        Route::middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('entry-types/save', [EntryTypesController::class, 'store']);
+            Route::post('entry-types/delete', [EntryTypesController::class, 'destroy']);
+            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
+            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
+        });
 
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {

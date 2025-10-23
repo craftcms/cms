@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\MemoizableArray;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
@@ -30,8 +29,6 @@ use CraftCms\Cms\EntryType\Events\EntryTypeDeleted;
 use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
 use CraftCms\Cms\EntryType\Events\SavingEntryType;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -138,28 +135,6 @@ class Entries extends Component
      * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
-
-    /**
-     * @var bool Whether entries should be resaved after a section or entry type has been updated.
-     *
-     * ::: tip
-     * Entries will be resaved regardless of what this is set to, when a section’s Propagation Method setting changes.
-     * :::
-     *
-     * ::: warning
-     * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
-     * :::
-     *
-     * @since 5.0.0
-     */
-    public bool $autoResaveEntries = true;
-
-    /**
-     * @var MemoizableArray<EntryType>|null
-     * @see _entryTypes()
-     */
-    private ?MemoizableArray $_entryTypes = null;
 
     /**
      * @var array<int,array<string,Entry|false>>
@@ -1113,7 +1088,9 @@ class Entries extends Component
         $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
             return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
         }, $section->getSiteSettings()));
-        $yiiSection->setEntryTypes($section->getEntryTypes());
+        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData) {
+            return self::entryTypeFromEntryTypeData($entryTypeData);
+        }, $section->getEntryTypes()));
 
         return $yiiSection;
     }
@@ -1139,7 +1116,6 @@ class Entries extends Component
     {
         Event::listen(SavingSection::class, function(SavingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
                     'section' => self::sectionFromSectionData($event->section),
                     'isNew' => $event->isNew,

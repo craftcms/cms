@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCastable;
 use Spatie\LaravelData\Dto;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
@@ -43,6 +44,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public ?string $handle = null,
         public ?string $description = null,
         public ?string $icon = null,
+        #[WithCastable(Color::class)]
         public ?Color $color = null,
         public bool $hasTitleField = true,
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
@@ -196,8 +198,16 @@ JS, [
     {
         $rules = [
             'id' => ['nullable', 'integer'],
+            'color' => [
+                'nullable',
+                'string',
+                Rule::in(array_merge(
+                    array_map(fn (Color $color) => $color->value, Color::cases()),
+                    ['__blank__']
+                )),
+            ],
             'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
-                $fieldLayout = $this->getFieldLayout();
+                $fieldLayout = Fields::assembleLayoutFromPost();
                 $fieldLayout->reservedFieldHandles = [
                     'author',
                     'authorId',
@@ -223,7 +233,7 @@ JS, [
         ];
 
         if ($validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle');
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null);
         }
 
         return $rules;

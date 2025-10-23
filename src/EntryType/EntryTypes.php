@@ -99,16 +99,17 @@ final class EntryTypes
      */
     private function entryTypes(): MemoizableArray
     {
-        if (! isset($this->entryTypes)) {
-            $this->entryTypes = new MemoizableArray(
-                $this->_createEntryTypeQuery()->get()->all(),
-                function (object $result) {
-                    return EntryType::from((array) $result);
-                },
-            );
+        if (isset($this->entryTypes)) {
+            return $this->entryTypes;
         }
 
-        return $this->entryTypes;
+        /** @var MemoizableArray<EntryType> $entryTypes */
+        $entryTypes = new MemoizableArray(
+            $this->_createEntryTypeQuery()->get()->all(),
+            fn (object $result) => EntryType::from((array) $result),
+        );
+
+        return $this->entryTypes = $entryTypes;
     }
 
     private function _createEntryTypeQuery(): Builder

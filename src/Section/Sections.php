@@ -9,13 +9,13 @@ use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
-use craft\models\EntryType;
 use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -33,6 +33,7 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -568,7 +569,7 @@ final class Sections
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
                 ->insert(Collection::make($data['entryTypes'] ?? [])
-                    ->map(fn ($entryType) => \Craft::$app->getEntries()->getEntryType($entryType))
+                    ->map(fn ($entryType) => EntryTypes::getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [
                         'sectionId' => $sectionModel->id,
@@ -815,11 +816,10 @@ final class Sections
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
-
-        $entryTypeIds = array_values(array_map(
-            fn (EntryType $entryType) => $entryType->id,
-            \Craft::$app->getEntries()->getEntryTypesBySectionId($section->id),
-        ));
+        $entryTypeIds = EntryTypes::getEntryTypesBySectionId($section->id)
+            ->pluck('id')
+            ->values()
+            ->all();
 
         // There should always be at least one entry type by the time this is called
         if (empty($entryTypeIds)) {

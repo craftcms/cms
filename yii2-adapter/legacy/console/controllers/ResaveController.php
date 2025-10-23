@@ -25,14 +25,15 @@ use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -551,9 +552,9 @@ class ResaveController extends Controller
         }
 
         if (!empty($this->withFields)) {
-            $handles = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
+            $handles = EntryTypes::getAllEntryTypes()
                 ->filter(fn(EntryType $entryType) => $this->hasTheFields($entryType->getFieldLayout()))
-                ->map(fn(EntryType $entryType) => $entryType->handle)
+                ->pluck('handle')
                 ->all();
             if (isset($criteria['type'])) {
                 $criteria['type'] = array_intersect($criteria['type'], $handles);

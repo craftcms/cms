@@ -11,7 +11,6 @@ use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\TagGroup;
 use craft\models\Volume;
@@ -19,6 +18,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
@@ -38,6 +38,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -1797,7 +1798,7 @@ final class ProjectConfig
      */
     private function _getEntryTypeData(): array
     {
-        return collect(Craft::$app->getEntries()->getAllEntryTypes())
+        return EntryTypes::getAllEntryTypes()
             ->mapWithKeys(fn (EntryType $entryType) => [$entryType->uid => $entryType->getConfig()])
             ->all();
     }

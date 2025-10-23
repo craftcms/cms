@@ -65,8 +65,6 @@ return [
             ],
         ],
     ],
-    'settings/entry-types/new' => 'entry-types/edit',
-    'settings/entry-types/<entryTypeId:\d+>' => 'entry-types/edit',
     'settings/tags' => 'tags/index',
     'settings/tags/new' => 'tags/edit-tag-group',
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',

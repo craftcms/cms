@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\elements\Entry;
-use craft\models\EntryType;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
