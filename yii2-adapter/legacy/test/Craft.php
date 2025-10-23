@@ -24,6 +24,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\EntryType\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -222,7 +223,10 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);
+
+        \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();

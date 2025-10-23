@@ -28,6 +28,7 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Exception;
 use UnitTester;
@@ -68,10 +69,10 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $entryType = $this->make(EntryType::class, [
-            'uid' => 'uid',
-            'handle' => 'article',
-        ]);
+        $entryType = new \CraftCms\Cms\EntryType\Data\EntryType(
+            handle: 'article',
+            uid: 'uid',
+        );
 
         $section = new Section(
             handle: 'news',
@@ -85,11 +86,8 @@ class CreateMutationsTest extends TestCase
         Sections::shouldReceive('getAllSections')
             ->andReturn(collect([$section]));
 
-        $this->tester->mockCraftMethods('entries', [
-            'getAllEntryTypes' => [
-                $entryType,
-            ],
-        ]);
+        EntryTypes::shouldReceive('getAllEntryTypes')
+            ->andReturn(collect([$entryType]));
     }
 
     protected function _after(): void
