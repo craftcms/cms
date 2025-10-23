@@ -20,6 +20,7 @@ use craft\helpers\Gql;
 use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
@@ -181,7 +182,7 @@ class Entry extends Mutation
      * @throws InvalidConfigException
      */
     public static function createSaveMutations(
-        \CraftCms\Cms\Section\Data\Section $section,
+        Section $section,
         EntryTypeData $entryType,
         bool $createSaveDraftMutation,
     ): array {
