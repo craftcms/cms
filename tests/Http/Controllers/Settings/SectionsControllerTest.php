@@ -96,7 +96,7 @@ function validSectionData(array $overrides = []): array
 it('can save a section', function () {
     expect(Section::count())->toBe(1);
 
-    post(action([SectionsController::class, 'store']), validEntryTypeData())
+    post(action([SectionsController::class, 'store']), validSectionData())
         ->assertSessionDoesntHaveErrors()
         ->assertRedirectBack();
 
@@ -110,7 +110,7 @@ it('can save a section', function () {
 });
 
 test('values are validated', function (string $attribute, string $value = '') {
-    post(action([SectionsController::class, 'store']), validEntryTypeData([
+    post(action([SectionsController::class, 'store']), validSectionData([
         $attribute => $value,
     ]))->assertSessionHasErrors($attribute);
 })->with([
