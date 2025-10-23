@@ -15,13 +15,14 @@ use craft\models\Section;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class SectionEvent extends Event
 {
     /**
-     * @var Section The section model associated with the event.
+     * @var Section|\CraftCms\Cms\Section\Data\Section The section model associated with the event.
      */
-    public Section $section;
+    public Section|\CraftCms\Cms\Section\Data\Section $section;
 
     /**
      * @var bool Whether the section is brand new

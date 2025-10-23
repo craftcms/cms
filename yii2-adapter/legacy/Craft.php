@@ -8,7 +8,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -184,7 +184,7 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (!isset(self::$_baseCookieConfig)) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
 
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
@@ -440,7 +440,7 @@ EOD;
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
         $guzzleConfig = config('craft.guzzle', []);
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         // Merge everything together
         $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);

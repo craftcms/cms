@@ -19,6 +19,7 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 
@@ -115,8 +116,7 @@ final class Entries extends BaseRelationField
             /** @var string[] $sources */
             $sources = $this->getInputSources($element);
             if (preg_match('/^section:(.+)$/', reset($sources), $matches)) {
-                $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
-                if ($section) {
+                if ($section = Sections::getSectionByUid($matches[1])) {
                     $variables['jsSettings']['sectionId'] = $section->id;
                 }
             }
@@ -165,7 +165,7 @@ final class Entries extends BaseRelationField
         $sectionIds = [];
         $entryTypeIds = [];
 
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+        foreach (Sections::getAllSections() as $section) {
             if (isset($sectionUids[$section->uid])) {
                 $sectionIds[] = $section->id;
                 array_push(
@@ -214,9 +214,9 @@ final class Entries extends BaseRelationField
         $mockup = new Entry;
         $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
         if ($this->sources === '*') {
-            $section = Craft::$app->getEntries()->getAllSections()[0];
+            $section = Sections::getAllSections()->first();
         } else {
-            $section = Craft::$app->getEntries()->getSectionByUid(str_replace('section:', '', $this->sources[0]));
+            $section = Sections::getSectionByUid(str_replace('section:', '', $this->sources[0]));
         }
 
         if (! $section) {

@@ -12,7 +12,7 @@ use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\Gql;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -84,7 +84,7 @@ class Transform extends Directive
                 }
             }
         } elseif ($source instanceof Asset) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $allowTransform = match ($source->getMimeType()) {
                 'image/gif' => $generalConfig->transformGifs,
                 'image/svg+xml' => $generalConfig->transformSvgs,

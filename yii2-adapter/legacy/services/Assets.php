@@ -40,7 +40,7 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -941,7 +941,7 @@ class Assets extends Component
      */
     public function getTempAssetUploadFs(): FsInterface
     {
-        $handle = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
+        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
         if (!$handle) {
             return new Temp();
         }

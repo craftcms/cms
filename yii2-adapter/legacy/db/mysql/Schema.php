@@ -15,7 +15,7 @@ use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
@@ -214,7 +214,7 @@ class Schema extends \yii\db\mysql\Schema
         $serverVersion = normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
-        $commandFromConfig = app(GeneralConfig::class)->backupCommand;
+        $commandFromConfig = Cms::config()->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
         $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
@@ -263,7 +263,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $commandFromConfig = app(GeneralConfig::class)->restoreCommand;
+        $commandFromConfig = Cms::config()->restoreCommand;
         $command = (new ShellCommand('mysql'))
             ->addArg('--defaults-file=', $this->_createDumpConfigFile())
             ->addArg('{database}');

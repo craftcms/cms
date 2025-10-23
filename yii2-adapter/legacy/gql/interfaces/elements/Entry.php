@@ -15,8 +15,8 @@ use craft\gql\interfaces\Structure;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
-use craft\models\Section;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Section\Enums\SectionType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -80,7 +80,7 @@ class Entry extends Structure
             foreach ($section->getEntryTypes() as $entryType) {
                 $entryTypeArguments = $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
                 $sectionFieldArguments += $entryTypeArguments;
-                if ($section->type === Section::TYPE_STRUCTURE) {
+                if ($section->type === SectionType::Structure) {
                     $structureSectionFieldArguments += $entryTypeArguments;
                 }
             }

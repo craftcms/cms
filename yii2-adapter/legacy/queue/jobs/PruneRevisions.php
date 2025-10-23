@@ -10,7 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**
@@ -49,11 +49,10 @@ class PruneRevisions extends BaseJob
     {
         if (!$this->maxRevisions) {
             // Make sure maxRevisions is still set
-            $generalConfig = app(GeneralConfig::class);
-            if (!$generalConfig->maxRevisions) {
+            if (!Cms::config()->maxRevisions) {
                 return;
             }
-            $this->maxRevisions = $generalConfig->maxRevisions;
+            $this->maxRevisions = Cms::config()->maxRevisions;
         }
 
         $extraRevisions = $this->elementType::find()

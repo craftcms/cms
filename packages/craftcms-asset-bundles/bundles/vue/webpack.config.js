@@ -14,12 +14,18 @@ module.exports = getConfig({
       new MergeIntoSingleFilePlugin({
         files: {
           'vue.js': [
-            path.resolve(pkgDir.sync(), '../../node_modules/vue/dist/vue.min.js'),
+            path.resolve(
+              pkgDir.sync(),
+              '../../node_modules/vue/dist/vue.min.js'
+            ),
             path.resolve(
               pkgDir.sync(),
               '../../node_modules/vue-router/dist/vue-router.min.js'
             ),
-            path.resolve(pkgDir.sync(), '../../node_modules/vuex/dist/vuex.min.js'),
+            path.resolve(
+              pkgDir.sync(),
+              '../../node_modules/vuex/dist/vuex.min.js'
+            ),
             path.resolve(
               pkgDir.sync(),
               '../../node_modules/vue-autosuggest/dist/vue-autosuggest.js'

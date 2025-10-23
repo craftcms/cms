@@ -3,7 +3,7 @@
 {% set fullPageForm = true %}
 {% set retainScrollOnSaveShortcut = true %}
 
-{% if craft.app.getIsMultiSite() %}
+{% if craft.sites.isMultiSite() %}
     {% set crumbs = [{
         id: 'site-crumb',
         icon: 'world',

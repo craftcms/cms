@@ -23,7 +23,7 @@ use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
@@ -154,7 +154,7 @@ class Auth extends Component
     public function setUser(?User $user, ?int $sessionDuration = null): void
     {
         $this->_user = $user ?? false;
-        $this->_sessionDuration = $user ? ($sessionDuration ?? app(GeneralConfig::class)->userSessionDuration) : false;
+        $this->_sessionDuration = $user ? ($sessionDuration ?? Cms::config()->userSessionDuration) : false;
 
         if ($user) {
             SessionHelper::set($this->userIdParam, $user->id);

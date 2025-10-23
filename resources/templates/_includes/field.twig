@@ -7,7 +7,7 @@
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set instructions = field.instructions ? field.instructions|t('site') %}
 {% set translatable = field.getIsTranslatable(element) %}
-{% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
+{% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.sites.currentSite.id) %}
 
 {% if not static %}
     {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}

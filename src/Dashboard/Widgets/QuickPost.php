@@ -5,8 +5,11 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\elements\Entry;
 use craft\models\EntryType;
-use craft\models\Section;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 
@@ -103,8 +106,8 @@ final class QuickPost extends Widget
         // Find the sections the user has permission to create entries in
         $sections = [];
 
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE) {
+        foreach (Sections::getAllSections() as $section) {
+            if ($section->type !== SectionType::Single) {
                 if (Auth::user()->can('createEntries:'.$section->uid)) {
                     $sections[] = $section;
                 }
@@ -229,23 +232,20 @@ JS, [
 
     private function siteId(): ?int
     {
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $editableSiteIds = Sites::getEditableSiteIds();
 
-        if ($this->siteId && in_array($this->siteId, $editableSiteIds)) {
+        if ($this->siteId && $editableSiteIds->contains($this->siteId)) {
             return $this->siteId;
         }
 
-        $possibleSiteIds = array_intersect($editableSiteIds, $this->section()->getSiteIds());
-
-        return Arr::first($possibleSiteIds);
+        return $editableSiteIds->intersect($this->section()->getSiteIds())->first();
     }
 
     private function section(): ?Section
     {
         if (! isset($this->_section)) {
             if (isset($this->section)) {
-                $section = Arr::first(
-                    Craft::$app->getEntries()->getEditableSections(),
+                $section = Sections::getEditableSections()->first(
                     fn (Section $section) => $section->id === $this->section,
                 );
             } else {

@@ -7,12 +7,12 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\validators\TemplateValidator;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\validators\EmailValidator;
 use function CraftCms\Cms\t;
 
@@ -105,7 +105,6 @@ class MailSettings extends Model
         $rules[] = [['template'], TemplateValidator::class];
 
         $rules[] = [['siteOverrides'], function() {
-            $sitesService = Craft::$app->getSites();
             foreach ($this->siteOverrides as $siteUid => $overrides) {
                 foreach (['fromEmail', 'replyToEmail'] as $key) {
                     if (isset($overrides[$key]) && !str_starts_with($overrides[$key], '$')) {
@@ -113,7 +112,7 @@ class MailSettings extends Model
                             'message' => t('{attribute} is not a valid email address.', [
                                 'attribute' => sprintf(
                                     '%s - %s',
-                                    $sitesService->getSiteByUid($siteUid)->getUiLabel(),
+                                    Sites::getSiteByUid($siteUid)->getUiLabel(),
                                     $this->attributeLabels()[$key],
                                 ),
                             ]),

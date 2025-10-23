@@ -387,6 +387,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         context: 'modal',
         elementType: this.elementType,
         sources: this.settings.sources,
+        condition: this.settings.condition,
       };
 
       if (

@@ -27,18 +27,17 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -48,10 +47,13 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -151,7 +153,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (!$user) {
@@ -326,17 +328,21 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `class` – Class name(s) that should be added to the container element
+     * - `hyperlink` – Whether the chip label should be hyperlinked to the component’s URL (only applies if the component implements [[CpEditable]])
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
-     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set.
-     *   Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `overrides` – Any config overrides that should persist when the chip is re-rendered
      * - `selectable` – Whether the chip should include a checkbox input
-     * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showLabel` – Whether the component’s label should be shown
+     * - `showActionMenu` – Whether the chip should include an action menu (only applies if the component implements [[Actionable]])
+     * - `showDescription` – Whether the chip should include the component’s description (only applies if the component implements [[Describable]])
      * - `showHandle` – Whether the component’s handle should be show (only applies if the component implements [[Grippable]])
-     * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
-     * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
+     * - `showIndicators` – Whether the component’s indicators should be shown (only applies if the component implements [[Indicative]])
+     * - `showLabel` – Whether the component’s label should be shown
+     * - `showStatus` – Whether the component’s status should be shown (only applies if the component implements [[Statusable]])
+     * - `showThumb` – Whether the component’s thumbnail should be shown (only applies if the component implements [[Thumbable]] or [[Iconic]])
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
@@ -350,23 +356,23 @@ class Cp
         $config += [
             'attributes' => [],
             'autoReload' => true,
-            'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
             'hyperlink' => false,
+            'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
+            'overrides' => [],
             'selectable' => false,
             'showActionMenu' => false,
-            'showLabel' => true,
+            'showDescription' => false,
             'showHandle' => false,
+            'showIndicators' => false,
+            'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'showIndicators' => false,
-            'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
-            'overrides' => [],
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -534,15 +540,24 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
      * - `id` – The chip’s `id` attribute
-     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `overrides` – Any config overrides that should persist when the chip is re-rendered
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
+     * - `showDescription` – Whether the chip should include the element’s description
      * - `showDraftName` – Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showHandle` – Whether the element’s handle should be show (only applies if the element implements [[Grippable]])
+     * - `showIndicators` – Whether the element’s indicators should be shown (only applies if the element implements [[Indicative]])
      * - `showLabel` – Whether the element’s label should be shown
-     * - `showStatus` – Whether the element’s status should be shown (if the element type has statuses)
-     * - `showThumb` – Whether the element’s thumbnail should be shown (if the element has one)
+     * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
+     * - `showStatus` – Whether the element’s status should be shown
+     * - `showThumb` – Whether the element’s thumbnail should be shown
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
@@ -629,11 +644,13 @@ class Cp
      *
      * - `attributes` – Any custom HTML attributes that should be set on the card
      * - `autoReload` – Whether the card should auto-reload itself when it’s saved
-     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `context` – The context the card is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the card label should be hyperlinked to the element’s URL
      * - `id` – The card’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `selectable` – Whether the card should include a checkbox input
      * - `showActionMenu` – Whether the card should include an action menu
+     * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
@@ -647,12 +664,12 @@ class Cp
             'attributes' => [],
             'autoReload' => true,
             'context' => 'index',
-            'id' => sprintf('card-%s', mt_rand()),
             'hyperlink' => false,
+            'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
-            'showEditButton' => true,
             'showActionMenu' => false,
+            'showEditButton' => true,
             'sortable' => false,
         ];
 
@@ -1396,18 +1413,19 @@ JS, [
     public static function elementIndexHtml(string $elementType, array $config = []): string
     {
         $config += [
-            'context' => 'index',
-            'id' => sprintf('element-index-%s', mt_rand()),
             'class' => null,
-            'sources' => null,
-            'showStatusMenu' => 'auto',
-            'showSiteMenu' => 'auto',
-            'fieldLayouts' => [],
+            'context' => 'index',
             'defaultSort' => null,
             'defaultTableColumns' => null,
-            'registerJs' => true,
-            'jsSettings' => [],
             'defaultViewMode' => 'table',
+            'fieldLayouts' => [],
+            'id' => sprintf('element-index-%s', mt_rand()),
+            'jsSettings' => [],
+            'registerJs' => true,
+            'showSiteMenu' => 'auto',
+            'showStatusMenu' => 'auto',
+            'statuses' => null,
+            'sources' => null,
         ];
 
         if ($config['showStatusMenu'] !== 'auto') {
@@ -1418,7 +1436,7 @@ JS, [
             ? $elementType::isLocalized()
             : (bool)$config['showSiteMenu'];
 
-        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = Sites::getEditableSiteIds()->all();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -1590,6 +1608,7 @@ JS, [
                 'elementType' => $elementType,
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
+                'elementStatuses' => $config['statuses'],
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
@@ -1653,7 +1672,7 @@ JS, [
             $label = null;
         }
 
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+        $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
@@ -1679,7 +1698,7 @@ JS, [
         }
 
         if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
+            $site = Sites::getSiteById($siteId);
             if (!$site) {
                 throw new InvalidArgumentException("Invalid site ID: $siteId");
             }
@@ -1690,7 +1709,7 @@ JS, [
         $required = (bool)($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
-        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $translatable = Sites::isMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -3631,18 +3650,18 @@ JS, [
      * Returns a menu item array for the given sites, possibly grouping them by site group.
      *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
-     * @param Site|null $selectedSite
+     * @param \craft\models\Site|Site|null $selectedSite
      * @param array $config
      * @return array
      * @since 5.0.0
      */
     public static function siteMenuItems(
-        ?array $sites = null,
-        ?Site $selectedSite = null,
+        array|Collection|null $sites = null,
+        \craft\models\Site|Site|null $selectedSite = null,
         array $config = [],
     ): array {
         if ($sites === null) {
-            $sites = Craft::$app->getSites()->getEditableSites();
+            $sites = Sites::getEditableSites()->all();
         }
 
         $config += [
@@ -3652,12 +3671,12 @@ JS, [
 
         $items = [];
 
-        $siteGroups = Craft::$app->getSites()->getAllGroups();
+        $siteGroups = SiteGroups::getAllGroups();
         $config['showSiteGroupHeadings'] ??= count($siteGroups) > 1;
 
         // Normalize and index the sites
         /** @var array<int,array{site:Site,status?:string}> $sites */
-        $sites = Collection::make($sites)
+        $sites = collect($sites)
             ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
             ->keyBy(fn(array $site) => $site['site']->id)
             ->all();
@@ -3670,16 +3689,16 @@ JS, [
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
             if (!$config['includeOmittedSites']) {
-                $groupSites = array_filter($groupSites, fn(Site $site) => isset($sites[$site->id]));
+                $groupSites = $groupSites->filter(fn(Site $site) => isset($sites[$site->id]));
             }
 
-            if (empty($groupSites)) {
+            if ($groupSites->isEmpty()) {
                 continue;
             }
 
-            $groupSiteItems = array_map(fn(Site $site) => [
+            $groupSiteItems = $groupSites->map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
-                'label' => t($site->name, category: 'site'),
+                'label' => t($site->getName(), category: 'site'),
                 'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => !isset($sites[$site->id]),
                 'selected' => $site->id === $selectedSite?->id,
@@ -3688,13 +3707,13 @@ JS, [
                         'site-id' => $site->id,
                     ],
                 ],
-            ], $groupSites);
+            ]);
 
             if ($config['showSiteGroupHeadings']) {
                 $items[] = [
                     'heading' => t($siteGroup->name, category: 'site'),
                     'items' => $groupSiteItems,
-                    'hidden' => !Collection::make($groupSiteItems)->contains(fn(array $item) => !$item['hidden']),
+                    'hidden' => !$groupSiteItems->contains(fn(array $item) => !$item['hidden']),
                 ];
             } else {
                 array_push($items, ...$groupSiteItems);
@@ -3898,24 +3917,23 @@ JS, [
     public static function requestedSite(): ?Site
     {
         if (!isset(self::$_requestedSite)) {
-            $sitesService = Craft::$app->getSites();
-            $editableSiteIds = $sitesService->getEditableSiteIds();
+            $editableSiteIds = Sites::getEditableSiteIds()->all();
 
             if (!empty($editableSiteIds)) {
                 $request = Craft::$app->getRequest();
                 if (
                     !$request->getIsConsoleRequest() &&
                     ($handle = $request->getQueryParam('site')) !== null &&
-                    ($site = $sitesService->getSiteByHandle($handle, true)) !== null &&
+                    ($site = Sites::getSiteByHandle($handle, true)) !== null &&
                     in_array($site->id, $editableSiteIds, false)
                 ) {
                     self::$_requestedSite = $site;
                 } else {
-                    self::$_requestedSite = $sitesService->getCurrentSite();
+                    self::$_requestedSite = Sites::getCurrentSite();
 
                     if (!in_array(self::$_requestedSite->id, $editableSiteIds, false)) {
                         // Just go with the first editable site
-                        self::$_requestedSite = $sitesService->getSiteById($editableSiteIds[0]);
+                        self::$_requestedSite = Sites::getSiteById($editableSiteIds[0]);
                     }
                 }
             } else {

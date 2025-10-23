@@ -51,30 +51,11 @@ class LegacyMiddleware
         $this->restoreEmptyStrings($request);
 
         try {
-            /** @var \craft\web\Application $app */
-            $app = $this->app->get('Craft');
-
-            /**
-             * Reset the request as it could have been set before,
-             * this can happen in tests or when Craft is run
-             * through the Laravel artisan console.
-             *
-             * @var \craft\web\Request $request
-             */
-            $request = Craft::createObject(\craft\helpers\App::webRequestConfig());
-            $request->csrfCookie = Craft::cookieConfig([], $request);
-            $request->setIsConsoleRequest(false);
-            $app->set('request', $request);
-
             /**
              * Reset the user as it could have been set before.
-             *
-             * @var \craft\web\User $user
              */
-            $user = Craft::createObject(\craft\helpers\App::userConfig());
-            $app->set('user', $user);
-
-            $app->run();
+            Craft::$app->set('user', Craft::createObject(\craft\helpers\App::userConfig()));
+            Craft::$app->run();
 
             return $this->createResponse();
         } catch (YiiHttpException $e) {

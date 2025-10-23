@@ -53,7 +53,7 @@ export default Base.extend(
       }
 
       if (this.settings.triggerElement) {
-        this.$triggerElement = this.settings.triggerElement;
+        this.$triggerElement = $(this.settings.triggerElement);
       } else {
         this.$triggerElement = Garnish.getFocusedElement();
       }

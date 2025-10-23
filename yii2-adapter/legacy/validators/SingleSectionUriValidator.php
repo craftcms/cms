@@ -7,9 +7,9 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -53,7 +53,7 @@ class SingleSectionUriValidator extends UriFormatValidator
             );
 
         if ($query->exists()) {
-            $site = Craft::$app->getSites()->getSiteById($model->siteId);
+            $site = Sites::getSiteById($model->siteId);
 
             if (!$site) {
                 throw new Exception('Invalid site ID: ' . $model->siteId);

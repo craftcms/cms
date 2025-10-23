@@ -109,7 +109,7 @@
         }) }}
     {% endif %}
 
-    {% if craft.app.isMultiSite %}
+    {% if craft.sites.isMultiSite() %}
         {{ forms.editableTableField({
             label: 'Site Overrides'|t('app'),
             instructions: 'Blank values will default to the settings above.'|t('app'),
@@ -144,7 +144,7 @@
                     code: true,
                 }
             }|filter,
-            rows: collect(craft.app.sites.getAllSites())
+            rows: collect(craft.sites.getAllSites())
                 .keyBy(site => site.uid)
                 .map(site => {
                     heading: site.getUiLabel(),

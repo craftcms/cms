@@ -13,12 +13,10 @@ use craft\helpers\FileHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\ImageTransform;
-use craft\models\Section;
-use craft\models\Site;
-use craft\models\SiteGroup;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\services\ElementSources;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -35,9 +33,15 @@ use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -326,9 +330,7 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, [$this, 'handleChangeEvent']);
         Event::listen(ItemRemoved::class, [$this, 'handleChangeEvent']);
 
-        // @TODO:
-        // $this->readOnly = \Craft::$app->getIsInstalled() && !$generalConfig->allowAdminChanges;
-        $this->readOnly = ! $generalConfig->allowAdminChanges;
+        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
     }
 
@@ -704,9 +706,8 @@ final class ProjectConfig
         }
 
         $deltaChanges = [];
-        $db = Craft::$app->getDb();
 
-        DB::transaction(function () use ($db, &$deltaChanges) {
+        DB::transaction(function () use (&$deltaChanges) {
             foreach ($this->_appliedChanges as $changeSet) {
                 // Allow modification of the array being looped over.
                 $currentSet = $changeSet;
@@ -716,7 +717,7 @@ final class ProjectConfig
                 }
 
                 if (! empty($changeSet['added'])) {
-                    $isMysql = $db->getIsMysql();
+                    $isMysql = DB::connection()->getDriverName() === 'mysql';
                     $batch = [];
                     $pathsToInsert = [];
                     $additionalCleanupPaths = [];
@@ -856,7 +857,7 @@ final class ProjectConfig
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
         $incomingSchema = (string) $this->getExternalConfig()->get(self::PATH_SCHEMA_VERSION);
-        $existingSchema = Craft::$app->schemaVersion;
+        $existingSchema = Cms::SCHEMA_VERSION;
 
         // Compare existing Craft schema version with the one that is being applied.
         if (! version_compare($existingSchema, $incomingSchema, '=')) {
@@ -1744,7 +1745,7 @@ final class ProjectConfig
      */
     private function _getSiteGroupData(): array
     {
-        return collect(Craft::$app->getSites()->getAllGroups())
+        return SiteGroups::getAllGroups()
             ->mapWithKeys(fn (SiteGroup $group) => [$group->uid => $group->getConfig()])
             ->all();
     }
@@ -1754,7 +1755,7 @@ final class ProjectConfig
      */
     private function _getSiteData(): array
     {
-        return collect(Craft::$app->getSites()->getAllSites(true))
+        return Sites::getAllSites(true)
             ->mapWithKeys(fn (Site $site) => [$site->uid => $site->getConfig()])
             ->all();
     }
@@ -1764,7 +1765,7 @@ final class ProjectConfig
      */
     private function _getSectionData(): array
     {
-        return collect(Craft::$app->getEntries()->getAllSections())
+        return Sections::getAllSections()
             ->mapWithKeys(fn (Section $section) => [$section->uid => $section->getConfig()])
             ->all();
     }

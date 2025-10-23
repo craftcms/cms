@@ -27,7 +27,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
@@ -589,7 +589,7 @@ class App
      */
     public static function assetManagerConfig(): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         return [
             'class' => AssetManager::class,
@@ -609,7 +609,7 @@ class App
      */
     public static function cacheConfig(): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         return [
             'class' => \CraftCms\Yii2Adapter\Cache::class,
@@ -761,7 +761,7 @@ class App
      */
     public static function mutexConfig(): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         return [
             'class' => FileMutex::class,
@@ -777,7 +777,7 @@ class App
     {
         return [
             'class' => \craft\services\ProjectConfig::class,
-            'readOnly' => Craft::$app->getIsInstalled() && !app(GeneralConfig::class)->allowAdminChanges,
+            'readOnly' => Craft::$app->getIsInstalled() && !Cms::config()->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
@@ -808,7 +808,7 @@ class App
      */
     public static function userConfig(): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
@@ -861,7 +861,7 @@ class App
      */
     public static function webRequestConfig(): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         $config = [
             'class' => WebRequest::class,
@@ -911,7 +911,7 @@ class App
         if (
             Craft::$app->has('request', true) &&
             Craft::$app->getRequest()->getIsSiteRequest() &&
-            app(GeneralConfig::class)->headlessMode
+            Cms::config()->headlessMode
         ) {
             $config['format'] = WebResponse::FORMAT_JSON;
         }

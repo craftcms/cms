@@ -14,7 +14,7 @@ use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use UnitTester;
 
 /**
@@ -54,7 +54,7 @@ class UserTest extends TestCase
         DateTimeHelper::pause();
 
         // Send the cookie with a hardcoded time value
-        app(GeneralConfig::class)->rememberUsernameDuration = 20;
+        Cms::config()->rememberUsernameDuration = 20;
         $this->user->sendUsernameCookie($this->userElement);
 
         // Assert that the cookie is correct
@@ -75,7 +75,7 @@ class UserTest extends TestCase
         $this->user->sendUsernameCookie($this->userElement);
 
         // Setting this to (int)0 will trigger sendUsernameCookie to set the values to null in the existing cookie.
-        app(GeneralConfig::class)->rememberUsernameDuration = 0;
+        Cms::config()->rememberUsernameDuration = 0;
         $this->user->sendUsernameCookie($this->userElement);
 
         $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
@@ -127,7 +127,7 @@ class UserTest extends TestCase
         $this->user->setIdentity(null);
         self::assertSame(0, $this->user->getElevatedSessionTimeout());
 
-        app(GeneralConfig::class)->elevatedSessionDuration = 0;
+        Cms::config()->elevatedSessionDuration = 0;
 
         self::assertFalse($this->user->getElevatedSessionTimeout());
     }
@@ -141,7 +141,7 @@ class UserTest extends TestCase
         // Session must return null
         $this->_sessionGetStub(null);
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $oldValue = $generalConfig->elevatedSessionDuration;
         $generalConfig->elevatedSessionDuration = 0;
         self::assertSame(false, $this->user->getElevatedSessionTimeout());

@@ -10,7 +10,7 @@ namespace crafttests\unit\helpers;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use crafttests\fixtures\EntryFixture;
 use Exception;
@@ -48,7 +48,7 @@ class ElementHelperTest extends TestCase
      */
     public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null): void
     {
-        $glue = app(GeneralConfig::class)->slugWordSeparator;
+        $glue = Cms::config()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::generateSlug($input, $ascii, $language));
@@ -61,7 +61,7 @@ class ElementHelperTest extends TestCase
      */
     public function testNormalizeSlug(string $expected, string $slug): void
     {
-        $glue = app(GeneralConfig::class)->slugWordSeparator;
+        $glue = Cms::config()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::normalizeSlug($slug));
@@ -72,7 +72,7 @@ class ElementHelperTest extends TestCase
      */
     public function testLowerRemoveFromCreateSlug(): void
     {
-        $general = app(GeneralConfig::class);
+        $general = Cms::config();
         $general->allowUppercaseInSlug = false;
 
         self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::normalizeSlug('word WORD'));
@@ -109,8 +109,8 @@ class ElementHelperTest extends TestCase
      */
     public function testMaxSlugIncrementDoesntThrow(): void
     {
-        $oldValue = app(GeneralConfig::class)->maxSlugIncrement;
-        app(GeneralConfig::class)->maxSlugIncrement = 0;
+        $oldValue = Cms::config()->maxSlugIncrement;
+        Cms::config()->maxSlugIncrement = 0;
 
         $this->tester->expectThrowable(OperationAbortedException::class, function() {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
@@ -118,7 +118,7 @@ class ElementHelperTest extends TestCase
         });
 
         // reset
-        app(GeneralConfig::class)->maxSlugIncrement = $oldValue;
+        Cms::config()->maxSlugIncrement = $oldValue;
     }
 
     /**

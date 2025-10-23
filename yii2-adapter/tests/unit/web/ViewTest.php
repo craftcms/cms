@@ -15,6 +15,7 @@ use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
@@ -73,7 +74,7 @@ class ViewTest extends TestCase
     public function testDoesTemplateExistWithCustomSite(): void
     {
         // Ensure that the current site is the one with the testSite3 handle
-        Craft::$app->getSites()->setCurrentSite(Craft::$app->getSites()->getSiteByHandle('testSite3'));
+        Sites::setCurrentSite(Sites::getSiteByHandle('testSite3'));
 
         self::assertSame(
             Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
@@ -90,6 +91,8 @@ class ViewTest extends TestCase
      */
     public function testResolveTemplate(string|false $expected, string $name, ?string $templateMode = null): void
     {
+        Sites::setCurrentSite(Sites::getSiteByHandle('default'));
+
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
         }

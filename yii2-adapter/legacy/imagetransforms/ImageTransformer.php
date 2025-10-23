@@ -27,7 +27,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GenerateImageTransform;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -81,7 +81,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         $fs = $asset->getVolume()->getTransformFs();
         $mimeType = $asset->getMimeType();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if (!$fs->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
@@ -173,7 +173,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
 
-        if (app(GeneralConfig::class)->revAssetUrls) {
+        if (Cms::config()->revAssetUrls) {
             return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
         }
 

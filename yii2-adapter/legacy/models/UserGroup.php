@@ -13,11 +13,11 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
-use CraftCms\Cms\Config\GeneralConfig;
 
 use function CraftCms\Cms\t;
 
@@ -118,7 +118,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            app(GeneralConfig::class)->allowAdminChanges
+            Cms::config()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

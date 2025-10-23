@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
@@ -80,7 +80,7 @@ class FakeProjectConfig extends CraftCms\Cms\ProjectConfig\ProjectConfig
 
 function getFakeProjectConfig(?array $internal = null, ?array $external = null): FakeProjectConfig
 {
-    $projectConfig = new FakeProjectConfig(app(GeneralConfig::class));
+    $projectConfig = new FakeProjectConfig(Cms::config());
 
     if (! is_null($internal)) {
         $projectConfig->internal = $internal;

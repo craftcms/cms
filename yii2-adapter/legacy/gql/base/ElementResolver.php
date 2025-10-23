@@ -15,7 +15,7 @@ use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -129,7 +129,7 @@ abstract class ElementResolver extends Resolver
         }
 
         // Apply max result config
-        $maxGraphqlResults = app(GeneralConfig::class)->maxGraphqlResults;
+        $maxGraphqlResults = Cms::config()->maxGraphqlResults;
 
         // Reset negative limit to zero
         if ((int)$query->limit < 0) {

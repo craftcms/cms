@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Database\Commands;
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
@@ -61,7 +61,7 @@ trait BackupTrait
             return $flag;
         }
 
-        $backupOnUpdate = app(GeneralConfig::class)->getBackupOnUpdate();
+        $backupOnUpdate = Cms::config()->getBackupOnUpdate();
 
         if (! $this->input->isInteractive()) {
             return $backupOnUpdate;

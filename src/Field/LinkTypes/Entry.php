@@ -5,8 +5,10 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Cp;
-use craft\models\Section;
 use craft\services\ElementSources;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -70,12 +72,12 @@ final class Entry extends BaseElementLinkType
     protected function availableSourceKeys(): array
     {
         // find the sections that don't have a URL format in any site
-        $sections = Craft::$app->getEntries()->getAllSections();
-        $sites = Craft::$app->getSites()->getAllSites();
+        $sections = Sections::getAllSections();
+        $sites = Sites::getAllSites();
         $excludeKeys = [];
 
         foreach ($sections as $section) {
-            if ($section->type !== Section::TYPE_SINGLE) {
+            if ($section->type !== SectionType::Single) {
                 $sectionSiteSettings = $section->getSiteSettings();
                 foreach ($sites as $site) {
                     if (isset($sectionSiteSettings[$site->id]) && $sectionSiteSettings[$site->id]->hasUrls) {

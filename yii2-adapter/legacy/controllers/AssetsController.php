@@ -28,7 +28,7 @@ use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Field\Assets as AssetsField;
@@ -36,6 +36,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use Throwable;
@@ -193,7 +194,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByAsset('saveAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             // Make sure they have access to this site
             $this->requirePermission('editSite:' . $asset->getSite()->uid);
         }
@@ -945,7 +946,7 @@ class AssetsController extends Controller
             $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $upscale = $generalConfig->upscaleImages;
         $generalConfig->upscaleImages = true;
 

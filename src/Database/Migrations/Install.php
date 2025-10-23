@@ -11,10 +11,8 @@ use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
-use craft\models\Section;
-use craft\models\Site;
 use craft\web\Response;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -25,8 +23,12 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -589,23 +591,23 @@ class Install extends Migration
             $table->primary(['jobId', 'fieldHandle']);
         });
 
-        Schema::create(Table::SECTIONS, function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId')->nullable();
             $table->string('name');
             $table->string('handle');
             $table->enum('type', [
-                Section::TYPE_SINGLE,
-                Section::TYPE_CHANNEL,
-                Section::TYPE_STRUCTURE,
-            ])->default(Section::TYPE_CHANNEL);
+                SectionType::Single->value,
+                SectionType::Channel->value,
+                SectionType::Structure->value,
+            ])->default(SectionType::Channel->value);
             $table->boolean('enableVersioning')->default(false);
             $table->unsignedSmallInteger('maxAuthors')->nullable();
             $table->string('propagationMethod')->default(PropagationMethod::All->value);
             $table->enum('defaultPlacement', [
-                Section::DEFAULT_PLACEMENT_BEGINNING,
-                Section::DEFAULT_PLACEMENT_END,
-            ])->default(Section::DEFAULT_PLACEMENT_END);
+                DefaultPlacement::Beginning->value,
+                DefaultPlacement::End->value,
+            ])->default(DefaultPlacement::End->value);
             $table->jsonb('previewTargets')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -613,7 +615,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::SECTIONS_ENTRYTYPES, function (Blueprint $table) {
+        Schema::create('sections_entrytypes', function (Blueprint $table) {
             $table->integer('sectionId');
             $table->integer('typeId');
             $table->unsignedSmallInteger('sortOrder');
@@ -624,7 +626,7 @@ class Install extends Migration
             $table->primary(['sectionId', 'typeId']);
         });
 
-        Schema::create(Table::SECTIONS_SITES, function (Blueprint $table) {
+        Schema::create('sections_sites', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sectionId');
             $table->integer('siteId');
@@ -656,7 +658,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::SITES, function (Blueprint $table) {
+        Schema::create('sites', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->boolean('primary');
@@ -673,7 +675,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::SITEGROUPS, function (Blueprint $table) {
+        Schema::create('sitegroups', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
@@ -1148,15 +1150,14 @@ class Install extends Migration
         $this->components->task('Populating the info table', function () {
             Info::create([
                 'id' => 1,
-                'version' => Craft::$app->getVersion(),
-                'schemaVersion' => Craft::$app->schemaVersion,
+                'version' => Cms::VERSION,
+                'schemaVersion' => Cms::SCHEMA_VERSION,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
                 'fieldVersion' => Str::random(12),
             ]);
         });
 
-        $generalConfig = app(GeneralConfig::class);
         $projectConfig = app(ProjectConfig::class);
 
         if ($this->applyProjectConfigYaml) {
@@ -1180,22 +1181,21 @@ class Install extends Migration
         // Craft, you are installed now.
         Info::setIsInstalled();
 
-        Craft::$app->getSites()->refreshSites();
+        Sites::refreshSites();
 
         if ($this->applyProjectConfigYaml) {
             // Update the primary site with the installer settings
-            $sitesService = Craft::$app->getSites();
-            $site = $sitesService->getPrimarySite();
+            $site = Sites::getPrimarySite();
             $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
-            $site->language = $this->site->language;
+            $site->setLanguage($this->site->getLanguage(false));
             $site->setName($this->site->getName(false));
-            $sitesService->saveSite($site);
+            Sites::saveSite($site);
         }
 
-        app()->setLocale($this->site->language);
+        app()->setLocale($this->site->getLanguage());
 
-        $this->components->task('Saving the first user', function () use ($generalConfig) {
+        $this->components->task('Saving the first user', function () {
             $user = new User([
                 'active' => true,
                 'admin' => true,
@@ -1206,11 +1206,11 @@ class Install extends Migration
             Craft::$app->getElements()->saveElement($user);
 
             Craft::$app->getUsers()->saveUserPreferences($user, [
-                'language' => $this->site->language,
+                'language' => $this->site->getLanguage(),
             ]);
 
             if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+                Craft::$app->getUser()->login($user, Cms::config()->userSessionDuration);
             }
         });
     }
@@ -1228,7 +1228,7 @@ class Install extends Migration
         }
 
         $expectedSchemaVersion = (string) app(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
-        $craftSchemaVersion = Craft::$app->schemaVersion;
+        $craftSchemaVersion = Cms::SCHEMA_VERSION;
 
         if (! version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
             $error = "Craft CMS is Composer-installed with schema version $craftSchemaVersion, but project.yaml expects $expectedSchemaVersion.";
@@ -1314,7 +1314,7 @@ class Install extends Migration
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
-                    'language' => $this->site->language,
+                    'language' => $this->site->getLanguage(false),
                     'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,
@@ -1325,7 +1325,7 @@ class Install extends Migration
                 'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
                 'live' => true,
-                'schemaVersion' => Craft::$app->schemaVersion,
+                'schemaVersion' => Cms::SCHEMA_VERSION,
                 'timeZone' => 'America/Los_Angeles',
             ],
             'users' => [

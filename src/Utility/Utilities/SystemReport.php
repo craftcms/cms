@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Composer\InstalledVersions;
 use Craft;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -109,7 +110,7 @@ final class SystemReport extends Utility
             'OS version' => PHP_OS.' '.php_uname('r'),
             'Database driver & version' => self::dbDriver(),
             'Image driver & version' => self::imageDriver(),
-            'Craft edition & version' => sprintf('Craft %s %s', Edition::get()->name, Craft::$app->getVersion()),
+            'Craft edition & version' => sprintf('Craft %s %s', Edition::get()->name, Cms::VERSION),
         ];
 
         if (! class_exists(InstalledVersions::class, false)) {

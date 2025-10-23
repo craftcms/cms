@@ -33,7 +33,6 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\records\WebAuthn as WebAuthnRecord;
@@ -42,7 +41,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -50,8 +49,10 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
@@ -434,7 +435,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSortOptions(): array
     {
-        if (app(GeneralConfig::class)->useEmailAsUsername) {
+        if (Cms::config()->useEmailAsUsername) {
             $attributes = [
                 'email' => t('Email'),
                 'fullName' => t('Full Name'),
@@ -496,7 +497,7 @@ class User extends Element implements IdentityInterface
             'firstName' => ['label' => t('First Name')],
             'lastName' => ['label' => t('Last Name')],
             'groups' => ['label' => t('Groups')],
-            'affiliatedSite' => Craft::$app->getIsMultiSite() ? ['label' => t('Affiliated Site')] : null,
+            'affiliatedSite' => Sites::isMultiSite() ? ['label' => t('Affiliated Site')] : null,
             'preferredLanguage' => ['label' => t('Preferred Language')],
             'preferredLocale' => ['label' => t('Preferred Locale')],
             'lastLoginDate' => ['label' => t('Last Login')],
@@ -857,7 +858,7 @@ class User extends Element implements IdentityInterface
         // Is this user in cooldown mode, and are they past their window?
         if (
             $this->locked &&
-            app(GeneralConfig::class)->cooldownDuration &&
+            Cms::config()->cooldownDuration &&
             !$this->getRemainingCooldownTime()
         ) {
             Craft::$app->getUsers()->unlockUser($this);
@@ -871,7 +872,7 @@ class User extends Element implements IdentityInterface
             $this->email = Str::idnToUtf8Email($this->email);
         }
 
-        if (empty($this->username) && app(GeneralConfig::class)->useEmailAsUsername) {
+        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -998,7 +999,7 @@ class User extends Element implements IdentityInterface
         if ($scenario === self::SCENARIO_LIVE) {
             $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
             if ($fullNameElement && $fullNameElement->required) {
-                if (app(GeneralConfig::class)->showFirstAndLastNameFields) {
+                if (Cms::config()->showFirstAndLastNameFields) {
                     (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
                 } else {
                     (new RequiredValidator())->validateAttribute($this, 'fullName');
@@ -1024,13 +1025,13 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => false];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
-        if (!app(GeneralConfig::class)->useEmailAsUsername) {
+        if (!Cms::config()->useEmailAsUsername) {
             $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
@@ -1045,7 +1046,7 @@ class User extends Element implements IdentityInterface
                 'when' => $treatAsActive,
             ];
 
-            if (!app(GeneralConfig::class)->useEmailAsUsername) {
+            if (!Cms::config()->useEmailAsUsername) {
                 $rules[] = [
                     ['username'],
                     UniqueValidator::class,
@@ -1358,7 +1359,7 @@ class User extends Element implements IdentityInterface
     {
         Craft::$app->getUsers()->handleInvalidLogin($this);
         // Was that one bad password/2fa code/passkey too many?
-        if ($this->locked && !app(GeneralConfig::class)->preventUserEnumeration) {
+        if ($this->locked && !Cms::config()->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->_getAuthError();
         } else {
@@ -1608,11 +1609,11 @@ class User extends Element implements IdentityInterface
      */
     public function getAffiliatedSite(): ?Site
     {
-        if ($this->affiliatedSiteId === null || !Craft::$app->getIsMultiSite()) {
+        if ($this->affiliatedSiteId === null || !Sites::isMultiSite()) {
             return null;
         }
 
-        return Craft::$app->getSites()->getSiteById($this->affiliatedSiteId, true);
+        return Sites::getSiteById($this->affiliatedSiteId, true);
     }
 
     /**
@@ -1866,7 +1867,7 @@ XML;
         // passed their cooldownDuration already, but there account status is still locked.
         // If that’s the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
             $cooldownEnd = clone $this->lockoutDate;
             $cooldownEnd->add($interval);
@@ -2439,7 +2440,7 @@ JS, [
             t('Cooldown Time Remaining') => function() use ($formatter) {
                 if (
                     !$this->locked ||
-                    !app(GeneralConfig::class)->cooldownDuration ||
+                    !Cms::config()->cooldownDuration ||
                     ($duration = $this->getRemainingCooldownTime()) === null
                 ) {
                     return false;
@@ -2497,7 +2498,7 @@ JS, [
             return false;
         }
 
-        if (app(GeneralConfig::class)->useEmailAsUsername) {
+        if (Cms::config()->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -2689,7 +2690,7 @@ JS, [
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (!app(GeneralConfig::class)->requireMatchingUserAgentForSession) {
+        if (!Cms::config()->requireMatchingUserAgentForSession) {
             return true;
         }
 
@@ -2728,7 +2729,7 @@ JS, [
             case self::STATUS_ACTIVE:
                 if ($this->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (app(GeneralConfig::class)->cooldownDuration) {
+                    if (Cms::config()->cooldownDuration) {
                         return self::AUTH_ACCOUNT_COOLDOWN;
                     }
 

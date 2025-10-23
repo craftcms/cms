@@ -13,7 +13,6 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -60,25 +59,7 @@ class Path extends Component
      */
     public function getConfigPath(): string
     {
-        if (isset($this->_configPath)) {
-            return $this->_configPath;
-        }
-
-        /**
-         * If the config path is set to config/laravel (in a non-laravel project structure)
-         * we need to strip that off so we can get the correct config path.
-         */
-        $configPath = config_path();
-
-        if (str_ends_with($configPath, '/laravel')) {
-            $configPath = Str::beforeLast($configPath, '/laravel');
-        }
-
-        if ($configPath === false) {
-            throw new Exception('There was a problem getting the config path.');
-        }
-
-        return $this->_configPath = FileHelper::normalizePath($configPath);
+        return $this->_configPath ??= FileHelper::normalizePath(config_path('craft'));
     }
 
     /**

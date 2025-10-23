@@ -25,7 +25,7 @@ class MoveEntryEvent extends Event
     public Entry $entry;
 
     /**
-     * @var Section The section we're moving the entry to
+     * @var Section|\CraftCms\Cms\Section\Data\Section The section we're moving the entry to
      */
-    public Section $section;
+    public Section|\CraftCms\Cms\Section\Data\Section $section;
 }

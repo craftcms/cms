@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -113,12 +113,12 @@ it('determines if the edition can be upgraded', function () {
 
     expect(Edition::canUpgrade())->toBeTrue();
 
-    app(GeneralConfig::class)->allowAdminChanges = false;
+    Cms::config()->allowAdminChanges = false;
 
     // No admin changes
     expect(Edition::canUpgrade())->toBeFalse();
 
-    app(GeneralConfig::class)->allowAdminChanges = true;
+    Cms::config()->allowAdminChanges = true;
 
     Edition::set(Edition::Pro);
 

@@ -13,7 +13,7 @@ use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
@@ -130,7 +130,7 @@ class SsoController extends Controller
                 'returnUrl' => $returnUrl,
             ];
 
-            if (app(GeneralConfig::class)->enableCsrfProtection) {
+            if (Cms::config()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 

@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 
 use function CraftCms\Cms\backTraceAsString;
 use function CraftCms\Cms\maxPowerCaptain;
@@ -46,11 +46,11 @@ test('normalizeValue', function (mixed $expected, mixed $value) {
     ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
 ]);
 
-test('maxPowereCaptain', function () {
+test('maxPowerCaptain', function () {
     $oldMemoryLimit = ini_get('memory_limit');
     $oldMaxExecution = ini_get('max_execution_time');
 
-    $generalConfig = app(GeneralConfig::class);
+    $generalConfig = Cms::config();
     $generalConfig->phpMaxMemoryLimit = '512M';
 
     if (@ini_set('memory_limit', '256M') === false) {

@@ -35,9 +35,7 @@ use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use PDO;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -410,8 +408,6 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event): void
     {
-        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-
         app(\CraftCms\Cms\Field\Fields::class)->handleChangedField($event);
     }
 

@@ -2,11 +2,11 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\models\Site;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use function CraftCms\Cms\t;
 
 /**
@@ -38,10 +38,12 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     protected function options(): array
     {
-        return array_map(fn(Site $site) => [
-            'label' => $site->getUiLabel(),
-            'value' => $site->uid,
-        ], Craft::$app->getSites()->getEditableSites());
+        return Sites::getEditableSites()
+            ->map(fn(Site $site) => [
+                'label' => $site->getUiLabel(),
+                'value' => $site->uid,
+            ])
+            ->all();
     }
 
     /**
@@ -49,8 +51,7 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $sites = Craft::$app->getSites();
-        $query->siteId($this->paramValue(fn($uid) => $sites->getSiteByUid($uid, true)->id ?? null));
+        $query->siteId($this->paramValue(fn($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
     /**

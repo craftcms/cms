@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
@@ -58,7 +58,7 @@ test('disabled utilities are not included', function () {
 
     expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);
 
-    app(GeneralConfig::class)->disabledUtilities[] = 'system-report';
+    Cms::config()->disabledUtilities[] = 'system-report';
 
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toContain(SystemReport::class);
 });

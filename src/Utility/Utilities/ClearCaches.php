@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\clearcaches\ClearCachesAsset;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
@@ -138,7 +138,7 @@ final class ClearCaches extends Utility
                     'path' => '`web/cpresources/`',
                 ]),
                 'action' => function () {
-                    $basePath = app(GeneralConfig::class)->resourceBasePath;
+                    $basePath = Cms::config()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
                         $request->getIsConsoleRequest() &&
@@ -212,7 +212,7 @@ final class ClearCaches extends Utility
             ],
         ];
 
-        if (app(GeneralConfig::class)->enableGql) {
+        if (Cms::config()->enableGql) {
             $options[] = [
                 'tag' => 'graphql',
                 'label' => t('GraphQL queries'),

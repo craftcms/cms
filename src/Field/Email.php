@@ -138,7 +138,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     {
         return [
             ['trim'],
-            ['email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => false],
+            ['email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()],
         ];
     }
 

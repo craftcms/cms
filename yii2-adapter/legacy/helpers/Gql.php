@@ -15,11 +15,13 @@ use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
-use craft\models\Section;
-use craft\models\Site;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\NonNull;
@@ -449,9 +451,10 @@ class Gql
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
         $allowedSiteUids = $allowedEntities['sites'] ?? [];
 
-        $sites = Craft::$app->getSites()->getAllSites(true);
-
-        return array_filter($sites, static fn(Site $site) => in_array($site->uid, $allowedSiteUids, true));
+        return Sites::getAllSites(true)
+            ->filter(fn(Site $site) => in_array($site->uid, $allowedSiteUids, true))
+            ->values()
+            ->all();
     }
 
     /**
@@ -597,10 +600,9 @@ class Gql
      */
     public static function getSchemaContainedSections(?GqlSchema $schema = null): array
     {
-        return array_filter(
-            Craft::$app->getEntries()->getAllSections(),
-            fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema),
-        );
+        return Sections::getAllSections()
+            ->filter(fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema))
+            ->all();
     }
 
     /**

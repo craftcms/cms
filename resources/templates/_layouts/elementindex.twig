@@ -5,19 +5,19 @@
 {% if showSiteMenu %}
     {% if selectableSites is not defined %}
         {% if siteIds is defined %}
-            {% set selectableSites = craft.app.sites.getEditableSites()|filter(s => s.id in siteIds) %}
+            {% set selectableSites = craft.sites.getEditableSites()|filter(s => s.id in siteIds) %}
         {% else %}
-            {% set selectableSites = craft.app.sites.getEditableSites() %}
+            {% set selectableSites = craft.sites.getEditableSites() %}
         {% endif %}
     {% endif %}
 
     {% if selectedSite is not defined %}
         {% if selectedSiteId is defined %}
-            {% set selectedSite = craft.app.sites.getSiteById(selectedSiteId) %}
+            {% set selectedSite = craft.sites.getSiteById(selectedSiteId) %}
         {% elseif requestedSite and requestedSite in selectableSites %}
             {% set selectedSite = requestedSite %}
         {% else %}
-            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
+            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.sites.getPrimarySite() %}
         {% endif %}
     {% endif %}
 
@@ -80,15 +80,15 @@
 
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
-        elementTypeName: '{{ elementDisplayName|e("js") }}',
-        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
         context: '{{ context }}',
-        storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
-        toolbarSelector: '#toolbar',
         defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
+        elementTypeName: '{{ elementDisplayName|e("js") }}',
+        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        toolbarSelector: '#toolbar',
     });
 {% endblock %}
 

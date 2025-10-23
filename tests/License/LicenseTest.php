@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -151,7 +152,7 @@ it('can get astray license issues for craft', function () {
         ],
     ]);
 
-    $version = \Craft::$app->getVersion();
+    $version = Cms::VERSION;
 
     expect($this->license->issues())->toBe([
         [

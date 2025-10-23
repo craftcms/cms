@@ -2,12 +2,13 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\models\Site;
-use craft\models\SiteGroup;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use function CraftCms\Cms\t;
 
@@ -40,9 +41,8 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
      */
     protected function options(): array
     {
-        $sitesService = Craft::$app->getSites();
-        return Collection::make($sitesService->getAllGroups())
-            ->filter(fn(SiteGroup $group) => !empty($sitesService->getEditableSitesByGroupId($group->id)))
+        return SiteGroups::getAllGroups()
+            ->filter(fn(SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id)->isNotEmpty())
             ->keyBy(fn(SiteGroup $group) => $group->uid)
             ->map(fn(SiteGroup $group) => $group->getName())
             ->all();
@@ -53,14 +53,14 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $sitesService = Craft::$app->getSites();
-        $siteIds = Collection::make((array)$this->paramValue())
-            ->map(fn(string $uid) => $sitesService->getGroupByUid($uid))
+        $siteIds = Collection::make((array) $this->paramValue())
+            ->map(fn(string $uid) => SiteGroups::getGroupByUid($uid))
             ->filter(fn(?SiteGroup $group) => $group !== null)
-            ->map(fn(SiteGroup $group) => $sitesService->getEditableSitesByGroupId($group->id))
+            ->map(fn(SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id))
             ->flatten(1)
             ->map(fn(Site $site) => $site->id)
             ->all();
+
         $query->siteId($siteIds);
     }
 

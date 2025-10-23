@@ -17,8 +17,9 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Sites;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -63,7 +64,7 @@ class CategoriesController extends Controller
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
-            'readOnly' => !app(GeneralConfig::class)->allowAdminChanges,
+            'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
     }
 
@@ -79,7 +80,7 @@ class CategoriesController extends Controller
     {
         $this->requireAdmin(false);
 
-        $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $readOnly = !Cms::config()->allowAdminChanges;
 
         if ($groupId === null && $readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
@@ -159,7 +160,7 @@ class CategoriesController extends Controller
         // Site-specific settings
         $allSiteSettings = [];
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $postedSettings = $this->request->getBodyParam('sites.' . $site->handle);
 
             $siteSettings = new CategoryGroup_SiteSettings();
@@ -281,7 +282,7 @@ class CategoriesController extends Controller
         $category->title = $this->request->getQueryParam('title');
         $category->slug = $this->request->getQueryParam('slug');
         if ($category->title && !$category->slug) {
-            $category->slug = ElementHelper::generateSlug($category->title, null, $site->language);
+            $category->slug = ElementHelper::generateSlug($category->title, null, $site->getLanguage());
         }
         if (!$category->slug) {
             $category->slug = ElementHelper::tempSlug();
@@ -447,7 +448,7 @@ class CategoriesController extends Controller
      */
     private function _enforceEditCategoryPermissions(Category $category): void
     {
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             // Make sure they have access to this site
             $this->requirePermission('editSite:' . $category->getSite()->uid);
         }
@@ -471,7 +472,7 @@ class CategoriesController extends Controller
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (is_array($enabledForSite)) {
             // Make sure they are allowed to edit all of the posted site IDs
-            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            $editableSiteIds = Sites::getEditableSiteIds()->all();
             if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
                 throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
             }

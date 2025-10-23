@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use Closure;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugin;
 
 /**
@@ -41,7 +41,7 @@ trait HasRoutes
     {
         $this->app['router']
             ->middleware(['craft', 'craft.cp'])
-            ->prefix(app(GeneralConfig::class)->cpTrigger)
+            ->prefix(Cms::config()->cpTrigger)
             ->group($routes);
     }
 
@@ -50,14 +50,14 @@ trait HasRoutes
         $this->app['router']
             ->middleware(['craft', 'craft.cp'])
             ->prefix(implode('/', [
-                app(GeneralConfig::class)->cpTrigger,
-                app(GeneralConfig::class)->actionTrigger,
+                Cms::config()->cpTrigger,
+                Cms::config()->actionTrigger,
             ]))
             ->group($routes);
 
         $this->app['router']
             ->middleware(['craft', 'craft.web'])
-            ->prefix(app(GeneralConfig::class)->actionTrigger)
+            ->prefix(Cms::config()->actionTrigger)
             ->group($routes);
     }
 }

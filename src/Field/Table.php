@@ -7,6 +7,7 @@ use craft\base\ElementInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -339,7 +340,8 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             Json::encode($this->defaults ?? []).', '.
             Json::encode($columnSettings).', '.
             Json::encode($dropdownSettingsHtml).', '.
-            Json::encode($dropdownSettingsCols).
+            Json::encode($dropdownSettingsCols).', '.
+            Json::encode($this->staticRows).', '.
             ');');
 
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
@@ -361,6 +363,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'rows' => $this->defaults,
             'initJs' => false,
             'static' => $readOnly,
+            'includeRowId' => true,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
@@ -369,6 +372,25 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'defaultsField' => $defaultsField,
             'readOnly' => $readOnly,
         ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (! parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        if ($this->staticRows && ! empty($this->defaults)) {
+            // make sure the default rows have IDs assigned
+            foreach ($this->defaults as &$row) {
+                $row['rowId'] ??= Str::uuid()->toString();
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -467,11 +489,61 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         $value = array_values($value);
 
         if ($this->staticRows) {
+            // get the order of the default rows
+            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $missingValueRowIds = null;
+
+            if (! empty($order)) {
+                // if there's no rowIds, add them
+                if (ArrayHelper::containsRecursive($value, 'rowId') === false) {
+                    foreach ($value as $key => &$row) {
+                        $row['rowId'] = $order[$key];
+                    }
+                }
+
+                // the rowIds present in the $value array
+                $usedValueRowIds = ArrayHelper::getColumn($value, 'rowId');
+
+                // if the field has a set order
+                $missingValueRowIds = array_values(array_diff($order, $usedValueRowIds));
+                $leftoverValueRowIds = array_diff($usedValueRowIds, $order);
+
+                // if the rowId is missing from the defaults - remove it from the $value array
+                if (! empty($leftoverValueRowIds)) {
+                    foreach ($leftoverValueRowIds as $key => $rowId) {
+                        unset($value[$key]);
+                    }
+                }
+            }
+
             $valueRows = count($value);
             $totalRows = count($defaults);
+
+            // if we have too few rows
             if ($valueRows < $totalRows) {
-                $value = array_pad($value, $totalRows, []);
-            } elseif ($valueRows > $totalRows) {
+                if ($missingValueRowIds === null) {
+                    $value = array_pad($value, $totalRows, []);
+                } else {
+                    // if we have the missing value rowIds - add them in places where settings rowId doesn't exist in the $value array
+                    while (count($value) < $totalRows) {
+                        $value[] = ['rowId' => reset($missingValueRowIds)];
+                        array_shift($missingValueRowIds);
+                    }
+                }
+            }
+
+            if (! empty($order)) {
+                // sort as per the field's settings
+                usort($value, function ($a, $b) use ($order) {
+                    $posA = array_search($a['rowId'], $order);
+                    $posB = array_search($b['rowId'], $order);
+
+                    return $posA - $posB;
+                });
+            }
+
+            // now that we've sorted the rows, if we have too many rows - splice
+            if ($valueRows > $totalRows) {
                 array_splice($value, $totalRows);
             }
         }
@@ -572,6 +644,14 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     $serializedRow[$colId] = parent::serializeValue($value, $element);
                 }
             }
+
+            // if the table has static rows, store the rowId too
+            if ($this->staticRows) {
+                if (isset($row['rowId'])) {
+                    $serializedRow['rowId'] = $row['rowId'];
+                }
+            }
+
             $serialized[] = $serializedRow;
         }
 
@@ -792,6 +872,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'allowReorder' => true,
             'addRowLabel' => t($this->addRowLabel, category: 'site'),
             'describedBy' => $this->describedBy,
+            'includeRowId' => $this->staticRows,
         ]);
     }
 }

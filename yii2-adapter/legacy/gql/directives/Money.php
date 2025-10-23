@@ -10,7 +10,7 @@ namespace craft\gql\directives;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\MoneyHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
@@ -108,6 +108,6 @@ class Money extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : FormatDateTime::DEFAULT_TIMEZONE;
+        return Cms::config()->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : FormatDateTime::DEFAULT_TIMEZONE;
     }
 }

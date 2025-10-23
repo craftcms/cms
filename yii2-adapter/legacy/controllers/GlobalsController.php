@@ -13,6 +13,7 @@ use craft\elements\GlobalSet;
 use craft\helpers\Cp;
 use craft\web\Controller;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -198,9 +199,9 @@ class GlobalsController extends Controller
         $this->requirePostRequest();
 
         $globalSetId = $this->request->getRequiredBodyParam('setId');
-        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
+        $siteId = $this->request->getBodyParam('siteId') ?: Sites::getPrimarySite()->id;
 
-        $site = Craft::$app->getSites()->getSiteById($siteId);
+        $site = Sites::getSiteById($siteId);
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
 
         if (!$globalSet) {
@@ -214,7 +215,7 @@ class GlobalsController extends Controller
         // Make sure the user is allowed to edit this global set and site
         $this->requirePermission('editGlobalSet:' . $globalSet->uid);
 
-        if (Craft::$app->getIsMultiSite()) {
+        if (Sites::isMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
         }
 

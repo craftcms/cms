@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Craft;
 use craft\helpers\HtmlPurifier;
+use CraftCms\Cms\Cms;
 use HTMLPurifier_Config;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
@@ -254,10 +255,16 @@ class Str extends \Illuminate\Support\Str
             return $email;
         }
 
+        if (Cms::config()->useIdnaNontransitionalToUnicode && defined('IDNA_NONTRANSITIONAL_TO_UNICODE')) {
+            $variant = IDNA_NONTRANSITIONAL_TO_UNICODE;
+        } else {
+            $variant = INTL_IDNA_VARIANT_UTS46;
+        }
+
         $parts = explode('@', $email, 2);
 
         foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
+            if (($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
                 return $email;
             }
         }

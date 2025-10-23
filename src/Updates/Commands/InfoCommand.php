@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Updates\Commands;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -43,7 +44,7 @@ final class InfoCommand extends Command
         $lines = [];
 
         if ($updatesData->cms->hasReleases()) {
-            $lines[] = $this->formatLine('craft', \Craft::$app->getVersion(), $updatesData->cms);
+            $lines[] = $this->formatLine('craft', Cms::VERSION, $updatesData->cms);
         }
 
         foreach ($updatesData->plugins as $pluginHandle => $pluginUpdate) {

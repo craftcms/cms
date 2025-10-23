@@ -9,7 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\elements\User as UserElement;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use function CraftCms\Cms\t;
 
 /**
@@ -37,7 +37,7 @@ class User
             case UserElement::STATUS_ACTIVE:
                 if ($user->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (app(GeneralConfig::class)->cooldownDuration) {
+                    if (Cms::config()->cooldownDuration) {
                         return UserElement::AUTH_ACCOUNT_COOLDOWN;
                     }
                     return UserElement::AUTH_ACCOUNT_LOCKED;
@@ -111,7 +111,7 @@ class User
      */
     public static function getLoginFailureInfo(?string $authError, ?UserElement $user): array
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         // if preventUserEnumeration is true and the account is locked
         // set the $authError to a value that will trigger the generic, default message
         if (
@@ -168,7 +168,7 @@ class User
                 $message = t('You cannot access the site while the system is offline with that account.');
                 break;
             default:
-                if (app(GeneralConfig::class)->useEmailAsUsername) {
+                if (Cms::config()->useEmailAsUsername) {
                     $message = t('Invalid email or password.');
                 } else {
                     $message = t('Invalid username or password.');

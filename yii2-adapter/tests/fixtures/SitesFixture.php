@@ -7,9 +7,9 @@
 
 namespace crafttests\fixtures;
 
-use Craft;
 use craft\records\Site;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Support\Facades\Sites;
 
 /**
  * Class SitesFixture
@@ -36,7 +36,7 @@ class SitesFixture extends ActiveFixture
     public function load(): void
     {
         parent::load();
-        Craft::$app->getSites()->refreshSites();
+        Sites::refreshSites();
     }
 
     /**
@@ -45,6 +45,6 @@ class SitesFixture extends ActiveFixture
     public function unload(): void
     {
         parent::unload();
-        Craft::$app->getSites()->refreshSites();
+        Sites::refreshSites();
     }
 }

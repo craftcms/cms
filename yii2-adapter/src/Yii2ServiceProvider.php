@@ -6,14 +6,18 @@ use craft\console\controllers\HelpController;
 use craft\events\EditionChangeEvent;
 use craft\services\Addresses;
 use craft\services\Dashboard;
+use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Gc;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
+use craft\services\Sites;
 use craft\services\SystemMessages;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -23,6 +27,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
@@ -33,6 +38,7 @@ use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
@@ -347,11 +353,14 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        Entries::registerEvents();
         Fields::registerEvents();
+        Gc::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         ProjectConfig::registerEvents();
+        Sites::registerEvents();
         SystemMessages::registerEvents();
 
         /**
@@ -397,7 +406,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!app(GeneralConfig::class)->allowAdminChanges) {
+            if (!Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
             }
 

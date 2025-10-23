@@ -68,10 +68,9 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -80,7 +79,10 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -447,7 +449,7 @@ class Gql extends Component
             );
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if (!$isIntrospectionQuery) {
             // Set complexity rule, if defined,
@@ -539,7 +541,7 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || !app(GeneralConfig::class)->lazyGqlTypes;
+                $prebuildSchema = $isIntrospectionQuery || !Cms::config()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
@@ -886,7 +888,7 @@ class Gql extends Component
         $schema = $this->_getPublicSchema();
 
         if (!$schema) {
-            if (!app(GeneralConfig::class)->allowAdminChanges) {
+            if (!Cms::config()->allowAdminChanges) {
                 return null;
             }
 
@@ -1349,7 +1351,7 @@ class Gql extends Component
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = app(GeneralConfig::class)->devMode;
+        $devMode = Cms::config()->devMode;
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1420,7 +1422,7 @@ class Gql extends Component
         ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if (!$generalConfig->enableGraphqlCaching) {
             return null;
@@ -1438,7 +1440,7 @@ class Gql extends Component
 
         try {
             $cacheKey = self::CACHE_TAG .
-                '::' . Craft::$app->getSites()->getCurrentSite()->id .
+                '::' . Sites::getCurrentSite()->id .
                 '::' . $schema->uid .
                 '::' . md5($query) .
                 '::' . serialize($rootValue) .
@@ -1568,7 +1570,7 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if (!app(GeneralConfig::class)->disableGraphqlTransformDirective) {
+        if (!Cms::config()->disableGraphqlTransformDirective) {
             $directiveClasses[] = Transform::class;
         }
 
@@ -1596,13 +1598,13 @@ class Gql extends Component
      */
     private function siteSchemaComponents(): array
     {
-        $sites = Craft::$app->getSites()->getAllSites(true);
+        $sites = Sites::getAllSites(true);
         $queryComponents = [];
 
         foreach ($sites as $site) {
             $queryComponents["sites.{$site->uid}:read"] = [
                 'label' => t('Query for elements in the “{site}” site', [
-                    'site' => $site->name,
+                    'site' => $site->getName(),
                 ]),
             ];
         }
@@ -1642,8 +1644,7 @@ class Gql extends Component
         $queryComponents = [];
         $mutationComponents = [];
 
-        $entriesService = Craft::$app->getEntries();
-        $singles = $entriesService->getSectionsByType(Section::TYPE_SINGLE);
+        $singles = Sections::getSectionsByType(SectionType::Single);
 
         foreach ($singles as $section) {
             $name = t($section->name, category: 'site');
@@ -1656,8 +1657,8 @@ class Gql extends Component
             ];
         }
 
-        foreach ($entriesService->getAllSections() as $section) {
-            if ($section->type === Section::TYPE_SINGLE) {
+        foreach (Sections::getAllSections() as $section) {
+            if ($section->type === SectionType::Single) {
                 continue;
             }
 

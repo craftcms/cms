@@ -14,6 +14,7 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -35,6 +35,7 @@ use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -588,7 +589,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 
         $view = Craft::$app->getView();
 
-        if (app(GeneralConfig::class)->allowAdminChanges) {
+        if (Cms::config()->allowAdminChanges) {
             // Edit field
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
@@ -641,7 +642,7 @@ JS, [
     {
         $locale = match (true) {
             // Only one site so use its language
-            ! Craft::$app->getIsMultiSite() => Craft::$app->getSites()->getPrimarySite()->getLocale(),
+            ! Sites::isMultiSite() => Sites::getPrimarySite()->getLocale(),
             // Not translatable, so use the user’s language
             ! $element || ! $this->getIsTranslatable($element) => I18N::getLocale(),
             // Use the site’s language

@@ -9,7 +9,7 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use FunctionalTester;
@@ -53,7 +53,7 @@ class UserActionCest
             ->one();
 
         $I->amLoggedInAs($this->currentUser);
-        $this->cpTrigger = app(GeneralConfig::class)->cpTrigger;
+        $this->cpTrigger = Cms::config()->cpTrigger;
         $user = new User([
             'active' => true,
             'username' => 'craftcmsfunctionaltest',
