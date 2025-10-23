@@ -386,11 +386,7 @@ export default Base.extend(
       }
       this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
-      this.$container.velocity('stop');
-      this.$container.css({
-        opacity: 1,
-        display: '',
-      });
+      this.$container.velocity('stop').addClass('visible').css('opacity', 1);
 
       // In case its default display is set to none
       if (this.$container.css('display') === 'none') {
@@ -442,7 +438,12 @@ export default Base.extend(
         return;
       }
 
-      this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
+      this.$container.velocity('fadeOut', {
+        duration: Garnish.FX_DURATION,
+        complete: () => {
+          this.$container.removeClass('visible').css('display', '');
+        },
+      });
 
       this.$trigger.attr('aria-expanded', 'false');
 

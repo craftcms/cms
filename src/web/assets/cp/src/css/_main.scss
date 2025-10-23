@@ -50,7 +50,8 @@ html {
 }
 
 html.noscroll,
-html.noscroll body {
+html.noscroll body,
+body:has(.menu.visible) {
   overflow: hidden;
 }
 
@@ -7580,8 +7581,11 @@ $min2ColWidth: 400px;
 }
 
 .menu {
-  display: none;
   position: absolute;
+
+  &:not(.visible) {
+    display: none;
+  }
 
   &.padded {
     padding-block: var(--s);
