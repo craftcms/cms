@@ -255,14 +255,15 @@ final class MergeCommand extends Command implements PromptsForMissingInput
             }
         );
 
-        $this->components->info('Running content migrations');
+        $this->components->twoColumnDetail('Running content migrations');
         $migrator->track('content')->run();
 
         $this->components->success(sprintf(<<<'EOD'
-Entry types merged. Commit `%s`
-and your project config changes, and run `craft up` on other environments
-for the changes to take effect.
-EOD,
+            Entry types merged. Commit <options=bold>`%s`</>
+            and your project config changes, and run <options=bold>`craft up`</> on other environments
+            for the changes to take effect.
+            EOD,
+
             Str::after($migrationPath, base_path('/'))
         ));
 
