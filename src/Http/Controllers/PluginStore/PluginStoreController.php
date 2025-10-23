@@ -75,7 +75,7 @@ final readonly class PluginStoreController
 
         // Logos
         $data['craftLogo'] = $this->craft->getAssetManager()->getPublishedUrl(
-            path: '@app/web/assets/pluginstore/dist/',
+            path: '@assetBundles/pluginstore/dist/',
             publish: true,
             filePath: 'images/craft.svg',
         );

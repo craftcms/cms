@@ -19,7 +19,7 @@ class UserPhotoAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/userphoto/dist';
 
     /**
      * @inheritdoc

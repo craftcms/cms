@@ -280,11 +280,10 @@ trait ApplicationTrait
         }
 
         // Override where Yii should find its asset deps
-        $assetsPath = Craft::getAlias('@app/web/assets');
-        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
-        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
+        Craft::setAlias('@bower/jquery/dist', '@assetBundles/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist','@assetBundles/inputmask/dist');
+        Craft::setAlias('@bower/punycode', '@assetBundles/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', '@assetBundles/yii2pjax/dist');
     }
 
     /**

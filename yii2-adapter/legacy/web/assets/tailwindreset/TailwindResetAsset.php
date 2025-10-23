@@ -17,7 +17,7 @@ class TailwindResetAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/tailwindreset/dist';
 
     /**
      * @inheritdoc

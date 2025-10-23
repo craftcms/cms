@@ -19,7 +19,7 @@ class UpdaterAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/updater/dist';
 
     /**
      * @inheritdoc

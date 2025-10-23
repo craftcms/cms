@@ -19,7 +19,7 @@ class DashboardAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/dashboard/dist';
 
     /**
      * @inheritdoc

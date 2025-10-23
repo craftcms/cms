@@ -19,7 +19,7 @@ class SystemMessagesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/systemmessages/dist';
 
     /**
      * @inheritdoc

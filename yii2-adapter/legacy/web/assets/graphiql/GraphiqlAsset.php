@@ -25,7 +25,7 @@ class GraphiqlAsset extends AssetBundle
     ];
 
     /** @inheritdoc */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/graphiql/dist';
 
     /** @inheritdoc */
     public $js = [

@@ -22,7 +22,7 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/d3/dist';
 
     /**
      * @var array The default language format files to use

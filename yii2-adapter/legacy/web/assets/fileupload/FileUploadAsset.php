@@ -20,7 +20,7 @@ class FileUploadAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/fileupload/dist';
 
         $this->depends = [
             JqueryUiAsset::class,

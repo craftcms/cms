@@ -20,7 +20,7 @@ class TimepickerAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/timepicker/dist';
 
         $this->depends = [
             JqueryAsset::class,

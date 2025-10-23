@@ -27,7 +27,6 @@ use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
-use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\tailwindreset\TailwindResetAsset;
 use craft\web\assets\theme\ThemeAsset;
@@ -62,7 +61,7 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/cp/dist';
 
     /**
      * @inheritdoc
@@ -78,7 +77,6 @@ class CpAsset extends AssetBundle
         JqueryUiAsset::class,
         JqueryPaymentAsset::class,
         DatepickerI18nAsset::class,
-        PicturefillAsset::class,
         SelectizeAsset::class,
         VelocityAsset::class,
         FileUploadAsset::class,
