@@ -70,8 +70,10 @@ final readonly class SectionsController
             ]);
     }
 
-    public function edit(Sections $sections, int $sectionId): CpScreenResponse
+    public function edit(Request $request, Sections $sections, ?int $sectionId = null): CpScreenResponse
     {
+        $sectionId ??= $request->get('sectionId');
+
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
         $section = $sections->getSectionById($sectionId);

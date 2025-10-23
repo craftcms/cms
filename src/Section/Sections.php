@@ -88,7 +88,7 @@ final class Sections
      * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::allSectionIds;
      * ```
      * ```twig
-     * {% set sectionIds = craft.app.entries.allSectionIds %}
+     * {% set sectionIds = craft.sections.getAllSectionIds %}
      * ```
      *
      * @return Collection<int> All the sections’ IDs.
@@ -107,7 +107,7 @@ final class Sections
      * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::editableSectionIds;
      * ```
      * ```twig
-     * {% set sectionIds = craft.app.entries.editableSectionIds %}
+     * {% set sectionIds = craft.sections.getEditableSectionIds %}
      * ```
      *
      * @return Collection<int> All the editable sections’ IDs.
@@ -204,7 +204,7 @@ final class Sections
      * $sections = \CraftCms\Cms\Support\Facades\Sections::allSections;
      * ```
      * ```twig
-     * {% set sections = craft.app.entries.allSections %}
+     * {% set sections = craft.sections.getAllSections %}
      * ```
      *
      * @return Collection<Section> All the sections.
@@ -223,7 +223,7 @@ final class Sections
      * $sections = \CraftCms\Cms\Support\Facades\Sections::editableSections;
      * ```
      * ```twig
-     * {% set sections = craft.app.entries.editableSections %}
+     * {% set sections = craft.sections.getEditableSections %}
      * ```
      *
      * @return Collection<Section> All the editable sections.
@@ -256,7 +256,7 @@ final class Sections
      * $singles = \CraftCms\Cms\Support\Facades\Sections::getSectionsByType(Section::TYPE_SINGLE);
      * ```
      * ```twig
-     * {% set singles = craft.app.entries.getSectionsByType('single') %}
+     * {% set singles = craft.sections.getSectionsByType('single') %}
      * ```
      *
      * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
@@ -276,7 +276,7 @@ final class Sections
      * $total = \CraftCms\Cms\Support\Facades\Sections::totalSections;
      * ```
      * ```twig
-     * {% set total = craft.app.entries.totalSections %}
+     * {% set total = craft.sections.getTotalSections %}
      * ```
      */
     public function getTotalSections(): int
@@ -293,7 +293,7 @@ final class Sections
      * $total = \CraftCms\Cms\Support\Facades\Sections::totalEditableSections;
      * ```
      * ```twig
-     * {% set total = craft.app.entries.totalEditableSections %}
+     * {% set total = craft.sections.getTotalEditableSections %}
      * ```
      */
     public function getTotalEditableSections(): int
@@ -310,7 +310,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionById(1);
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionById(1) %}
+     * {% set section = craft.sections.getSectionById(1) %}
      * ```
      */
     public function getSectionById(int $sectionId): ?Section
@@ -327,7 +327,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2');
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
+     * {% set section = craft.sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
      * ```
      */
     public function getSectionByUid(string $uid): ?Section
@@ -344,7 +344,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByHandle('news');
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionByHandle('news') %}
+     * {% set section = craft.sections.getSectionByHandle('news') %}
      * ```
      */
     public function getSectionByHandle(string $sectionHandle): ?Section

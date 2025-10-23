@@ -1105,6 +1105,9 @@ class Entries extends Component
         $data = Utils::getPublicProperties($entryTypeData);
         $data['titleTranslationMethod'] = $data['titleTranslationMethod']->value;
         $data['slugTranslationMethod'] = $data['slugTranslationMethod']->value;
+        $data['original'] = isset($data['original'])
+            ? self::entryTypeFromEntryTypeData($data['original'])
+            : null;
 
         $entryType = new EntryType($data);
         $entryType->setFieldLayout($entryTypeData->getFieldLayout());
