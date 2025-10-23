@@ -11,7 +11,6 @@ use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\GetAttrExpression;
-use Twig\Node\Expression\SupportDefinedTestTrait;
 use Twig\Node\Node;
 use Twig\Template;
 
@@ -24,8 +23,6 @@ use Twig\Template;
  */
 class GetAttrNode extends GetAttrExpression
 {
-    use SupportDefinedTestTrait;
-
     /**
      * @param array $nodes An array of named nodes
      * @param array $attributes An array of attributes (should not be nodes)
@@ -53,7 +50,7 @@ class GetAttrNode extends GetAttrExpression
         if (
             $this->getAttribute('optimizable')
             && (!$env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
-            && !$this->definedTest
+            && !$this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
             && Template::ARRAY_CALL === $this->getAttribute('type')
         ) {
             $var = '$' . $compiler->getVarName();
@@ -113,7 +110,7 @@ class GetAttrNode extends GetAttrExpression
 
         $compiler->raw(', ')
             ->repr($this->getAttribute('type'))
-            ->raw(', ')->repr($this->definedTest)
+            ->raw(', ')->repr($this->isDefinedTestEnabled()) // DIFF: $this->definedTest is private
             ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
             ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
             ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
