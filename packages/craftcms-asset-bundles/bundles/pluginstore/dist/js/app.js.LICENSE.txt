@@ -21,8 +21,9 @@
   */
 
 /*!
- * ApexCharts v5.3.5
+ * ApexCharts v4.5.0
  * (c) 2018-2025 ApexCharts
+ * Released under the MIT License.
  */
 
 /*!
