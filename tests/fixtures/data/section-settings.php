@@ -79,4 +79,37 @@ return [
         'enabledByDefault' => true,
         'maxAuthors' => 3,
     ],
+
+
+    // playwright
+    [
+        // Test Sorting
+        'id' => '1012',
+        'sectionId' => '1012',
+        'siteId' => '1',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+    ],
+    [
+        // Test Matrix
+        'id' => '1013',
+        'sectionId' => '1013',
+        'siteId' => '1',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+    ],
+    [
+        // Test Init UI Elements
+        'id' => '1014',
+        'sectionId' => '1014',
+        'siteId' => '1',
+        'hasUrls' => true,
+        'uriFormat' => 'test-init-ui-elements/{slug}',
+        'template' => null,
+        'enabledByDefault' => true,
+    ],
 ];

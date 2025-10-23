@@ -1,7 +1,9 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 test('Should show the cart', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
   await page.click('#cart-button');
 
   const title = page.locator('#pluginstore-modal h1');
