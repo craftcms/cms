@@ -13,7 +13,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use yii\web\Response;
 use function CraftCms\Cms\t;
@@ -87,7 +87,7 @@ class RebrandController extends Controller
 
         $imagesService = Craft::$app->getImages();
 
-        if (app(GeneralConfig::class)->sanitizeCpImageUploads) {
+        if (Cms::config()->sanitizeCpImageUploads) {
             Image::cleanImageByPath($fileDestination);
         }
 

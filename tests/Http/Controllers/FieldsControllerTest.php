@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
@@ -29,7 +29,7 @@ it('needs authentication and admin changes for the routes', function (string $me
     actingAs(User::first());
 
     if ($requireAdminChanges) {
-        app(GeneralConfig::class)->allowAdminChanges(false);
+        Cms::config()->allowAdminChanges(false);
 
         $this->$method(action($route))->assertForbidden();
     }
@@ -100,7 +100,7 @@ it('preserves values between rendering settings', function () {
 });
 
 it('can save a new field', function () {
-    expect(FieldModel::count())->toBe(0);
+    $currentCount = FieldModel::count();
 
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
@@ -108,8 +108,8 @@ it('can save a new field', function () {
         'handle' => 'plainText',
     ])->assertOk();
 
-    expect(FieldModel::count())->toBe(1);
-    tap(FieldModel::first(), function (FieldModel $field) {
+    expect(FieldModel::count())->toBe($currentCount + 1);
+    tap(FieldModel::latest('id')->first(), function (FieldModel $field) {
         expect($field->name)->toBe('My plaintext field');
         expect($field->handle)->toBe('plainText');
         expect($field->type)->toBe(PlainText::class);
@@ -123,10 +123,10 @@ it('can delete a field', function () {
         'handle' => 'plainText',
     ]));
 
-    expect(FieldModel::count())->toBe(1);
+    $currentCount = FieldModel::count();
 
     $this->postJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))
         ->assertOk();
 
-    expect(FieldModel::count())->toBe(0);
+    expect(FieldModel::count())->toBe($currentCount - 1);
 });

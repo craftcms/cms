@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 
 Route::middleware(['web', 'craft'])
     ->name('craft.actions.')
@@ -8,7 +8,7 @@ Route::middleware(['web', 'craft'])
 
 Route::middleware(['web', 'craft', 'craft.cp'])
     ->name('craft.cp.')
-    ->prefix(app(GeneralConfig::class)->cpTrigger)
+    ->prefix(Cms::config()->cpTrigger)
     ->group(__DIR__.'/cp.php');
 
 Route::middleware(['web', 'craft'])

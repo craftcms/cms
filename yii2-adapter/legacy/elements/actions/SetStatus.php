@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Sites;
 use function CraftCms\Cms\t;
 
 /**
@@ -84,7 +85,7 @@ JS, [static::class]);
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType;
-        $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
+        $isLocalized = $elementType::isLocalized() && Sites::isMultiSite();
         $elementsService = Craft::$app->getElements();
 
         $elements = $query->all();

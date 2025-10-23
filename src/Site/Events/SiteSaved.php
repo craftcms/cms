@@ -1,0 +1,17 @@
+<?php
+
+namespace CraftCms\Cms\Site\Events;
+
+use CraftCms\Cms\Site\Data\Site;
+
+/**
+ * @event SiteSaved The event that is triggered after a site is saved.
+ */
+final class SiteSaved
+{
+    public function __construct(
+        public Site $site,
+        public bool $isNew = false,
+        public ?int $oldPrimarySiteId = null,
+    ) {}
+}

@@ -1114,9 +1114,9 @@ final class Plugins
      */
     public function getPluginLicenseKey(string $handle): ?string
     {
-        $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        $licenseKey = Env::parse($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
 
-        return $this->normalizePluginLicenseKey(Env::parse($licenseKey));
+        return $this->normalizePluginLicenseKey($licenseKey);
     }
 
     /**
@@ -1141,7 +1141,7 @@ final class Plugins
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            Env::get($matches[1]) === '' &&
+            in_array(Env::get($matches[1]), ['', null], true) &&
             file_exists(app()->environmentFilePath())
         ) {
             Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());

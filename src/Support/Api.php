@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Support;
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -125,10 +126,13 @@ final class Api
 
     public function headers(): array
     {
+        $allowAdminChanges = Cms::config()->allowAdminChanges;
+        $pluginsService = app(Plugins::class);
+
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => $this->app->environment(),
-            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Edition::get()->handle()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Cms::VERSION, Edition::get()->handle()),
         ];
 
         // platform
@@ -154,8 +158,13 @@ final class Api
         $headers['X-Craft-License'] = match (true) {
             ! is_null($this->license->key()) => $this->license->key(),
             defined('CRAFT_LICENSE_KEY') => '__INVALID__',
-            default => '__REQUEST__',
+            $user && $allowAdminChanges => '__REQUEST__',
+            default => null,
         };
+
+        if (is_null($headers['X-Craft-License'])) {
+            unset($headers['X-Craft-License']);
+        }
 
         // plugin info
         $pluginLicenses = [];
@@ -167,7 +176,9 @@ final class Api
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
-                $pluginLicenses[] = "$pluginHandle:".($licenseKey ?? '__REQUEST__');
+                if ($licenseKey || $allowAdminChanges) {
+                    $pluginLicenses[] = "$pluginHandle:".($licenseKey ?? '__REQUEST__');
+                }
             }
         }
         if (! empty($pluginLicenses)) {

@@ -51,7 +51,6 @@ parameters:
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
-        - '#^Parameter \#2 \$callback of function usort expects#'
         - '#is never assigned craft\\base\\MemoizableArray#'
         -
             identifier: parameter.implicitlyNullable

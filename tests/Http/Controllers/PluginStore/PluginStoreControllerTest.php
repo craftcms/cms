@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Plugin\Plugins;
@@ -21,7 +21,7 @@ it('requires login', function () {
     auth()->logout();
 
     get(action([PluginStoreController::class, 'index']))
-        ->assertRedirect(app(GeneralConfig::class)->cpTrigger.'/login');
+        ->assertRedirect(Cms::config()->cpTrigger.'/login');
 });
 
 it('renders the plugin store', function () {

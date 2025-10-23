@@ -13,8 +13,9 @@ use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Component;
 use craft\helpers\Console;
-use craft\models\Section;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
@@ -69,7 +70,7 @@ class ElementsController extends Controller
         }
 
         // Don't allow deleting single entries
-        if ($element instanceof Entry && $element->getSection()->type === Section::TYPE_SINGLE) {
+        if ($element instanceof Entry && $element->getSection()->type === SectionType::Single) {
             $this->stderr("Deleting single section entries isn’t allowed.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -118,10 +119,10 @@ class ElementsController extends Controller
 
         // exclude single entries
         if ($type === Entry::class) {
-            $singleSections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
-            if (!empty($singleSections)) {
+            $singleSections = Sections::getSectionsByType(SectionType::Single);
+            if ($singleSections->isNotEmpty()) {
                 $singleEntryIds = Entry::find()
-                    ->sectionId(array_map(fn(Section $section) => $section->id, $singleSections))
+                    ->sectionId($singleSections->pluck('id')->all())
                     ->status(null)
                     ->site('*')
                     ->unique()

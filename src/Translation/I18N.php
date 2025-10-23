@@ -3,9 +3,10 @@
 namespace CraftCms\Cms\Translation;
 
 use Craft;
-use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -222,8 +223,8 @@ final class I18N
      */
     public function getSiteLocaleIds(): Collection
     {
-        return collect(Craft::$app->getSites()->getAllSites())
-            ->map(fn (Site $site) => $site->language)
+        return Sites::getAllSites()
+            ->map(fn (Site $site) => $site->getLanguage())
             ->unique()
             ->values();
     }
@@ -247,7 +248,7 @@ final class I18N
      */
     public function getEditableLocales(): Collection
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (! Sites::isMultiSite()) {
             return $this->getSiteLocales();
         }
 

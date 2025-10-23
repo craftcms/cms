@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -34,7 +34,7 @@ dataset('routes', [
 ]);
 
 it('aborts when allow updates is false', function () {
-    app(GeneralConfig::class)->allowUpdates(false);
+    Cms::config()->allowUpdates(false);
 
     postJson(action([InstallController::class, 'index']))->assertForbidden();
 });
@@ -51,7 +51,7 @@ it('requires authentication, adminChanges and admin for all routes', function (s
 
     User::first()->update(['admin' => true]);
     actingAs(User::first());
-    app(GeneralConfig::class)->allowAdminChanges(false);
+    Cms::config()->allowAdminChanges(false);
 
     postJson(action([$controller, $action]))->assertForbidden();
 })->with('routes');

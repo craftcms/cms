@@ -16,7 +16,7 @@ use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Date;
 use DateTimeZone;
 use Exception;
@@ -128,20 +128,20 @@ class ScalarTypesTest extends TestCase
             'getFieldValue' => fn() => clone $dateTime,
         ]);
 
-        $settingValue = app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone;
+        $settingValue = Cms::config()->setGraphqlDatesToSystemTimeZone;
         $currentTimezone = app()->getTimezone();
 
         // Make sure we don't use UTC
         $newTimezone = 'America/New_York';
 
         Config::set('app.timezone', $newTimezone);
-        app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone = true;
+        Cms::config()->setGraphqlDatesToSystemTimeZone = true;
         $value1 = $resolver($element, [], null, $resolveInfo);
 
-        app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone = false;
+        Cms::config()->setGraphqlDatesToSystemTimeZone = false;
         $value2 = $resolver($element, [], null, $resolveInfo);
 
-        app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone = $settingValue;
+        Cms::config()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
         self::assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
         Config::set('app.timezone', $currentTimezone);

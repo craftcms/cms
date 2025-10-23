@@ -16,9 +16,10 @@ use craft\elements\Address;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
-use craft\models\Site;
 use craft\models\UserGroup;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
@@ -725,11 +726,11 @@ class UserQuery extends ElementQuery
         if ($value === null) {
             $this->affiliatedSiteId = null;
         } elseif ($value === '*') {
-            $this->affiliatedSiteId = Craft::$app->getSites()->getAllSiteIds();
+            $this->affiliatedSiteId = Sites::getAllSiteIds();
         } elseif ($value instanceof Site) {
             $this->affiliatedSiteId = $value->id;
         } elseif (is_string($value)) {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            $site = Sites::getSiteByHandle($value);
             if (!$site) {
                 throw new InvalidArgumentException('Invalid site handle: ' . $value);
             }
@@ -739,7 +740,7 @@ class UserQuery extends ElementQuery
                 array_shift($value);
             }
             $this->affiliatedSiteId = [];
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Sites::getAllSites() as $site) {
                 if (in_array($site->handle, $value, true) === !$not) {
                     $this->affiliatedSiteId[] = $site->id;
                 }
@@ -790,7 +791,7 @@ class UserQuery extends ElementQuery
         if (is_array($value) && strtolower(reset($value)) === 'not') {
             array_shift($value);
             $this->affiliatedSiteId = [];
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Sites::getAllSites() as $site) {
                 if (!in_array($site->id, $value)) {
                     $this->affiliatedSiteId[] = $site->id;
                 }
@@ -1084,7 +1085,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 
-        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Craft::$app->getIsMultiSite()) {
+        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Sites::isMultiSite()) {
             $this->subQuery->andWhere(['users.affiliatedSiteId' => $this->affiliatedSiteId]);
         }
 

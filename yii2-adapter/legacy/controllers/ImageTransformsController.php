@@ -12,7 +12,7 @@ use craft\helpers\Image;
 use craft\models\ImageTransform;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Rules\ColorRule;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -49,7 +49,7 @@ class ImageTransformsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !Cms::config()->allowAdminChanges;
 
         return true;
     }

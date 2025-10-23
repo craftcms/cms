@@ -17,18 +17,20 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities;
@@ -228,7 +230,7 @@ class Cp extends Component
     public function nav(): array
     {
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         $navItems = [
             [
@@ -238,7 +240,7 @@ class Cp extends Component
             ],
         ];
 
-        if (Craft::$app->getEntries()->getTotalEditableSections()) {
+        if (Sections::getTotalEditableSections()) {
             $navItems[] = [
                 'label' => t('Entries'),
                 'url' => 'entries',
@@ -347,7 +349,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => t('Settings'),
-                'icon' => app(GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => Cms::config()->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -415,7 +417,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
-        $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
+        $readOnly = !Cms::config()->allowAdminChanges;
         $settings = [];
 
         $label = t('System');
@@ -429,7 +431,7 @@ class Cp extends Component
             'label' => t('Sites'),
         ];
 
-        if (!app(GeneralConfig::class)->headlessMode) {
+        if (!Cms::config()->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@craftcms/resources/icons/light/signs-post.svg',
                 'label' => t('Routes'),
@@ -440,7 +442,7 @@ class Cp extends Component
             'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
             'label' => t('Users'),
         ];
-        if (app(GeneralConfig::class)->allowAdminChanges) {
+        if (Cms::config()->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@craftcms/resources/icons/light/map-location.svg',
                 'label' => t('Addresses'),
@@ -984,7 +986,7 @@ class Cp extends Component
         $templates = [];
         $sites = [];
 
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $sites[$site->handle] = t($site->getName(), category: 'site');
         }
 

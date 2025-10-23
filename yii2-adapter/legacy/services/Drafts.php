@@ -14,9 +14,8 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -414,22 +413,18 @@ class Drafts extends Component
      */
     public function purgeUnsavedDrafts(): void
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
             return;
         }
-
-        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeUnsavedDraftsDuration);
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
 
         $drafts = DB::table(Table::ELEMENTS, 'elements')
             ->select('elements.draftId', 'elements.type')
             ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
-            ->where('elements.dateUpdated', '<', $pastTime)
+            ->where('elements.dateUpdated', '<', now()->subSeconds($generalConfig->purgeUnsavedDraftsDuration))
             ->get();
 
         $elementsService = Craft::$app->getElements();

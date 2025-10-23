@@ -9,7 +9,7 @@ use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
@@ -167,7 +167,7 @@ final class Html
     {
         $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && app(GeneralConfig::class)->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
             Craft::$app->getResponse()->setNoCacheHeaders();

@@ -13,7 +13,7 @@ use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
@@ -161,7 +161,7 @@ class Schema extends \yii\db\pgsql\Schema
 
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $format = $this->getBackupFormat();
-        $commandFromConfig = app(GeneralConfig::class)->backupCommand;
+        $commandFromConfig = Cms::config()->backupCommand;
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
@@ -206,7 +206,7 @@ class Schema extends \yii\db\pgsql\Schema
                 ->addArg('{file}');
         }
 
-        $commandFromConfig = app(GeneralConfig::class)->restoreCommand;
+        $commandFromConfig = Cms::config()->restoreCommand;
 
         if ($commandFromConfig instanceof Closure) {
             $command = $commandFromConfig($command);
@@ -401,7 +401,7 @@ ORDER BY i.relname, k';
      */
     public function getBackupFormat(): ?string
     {
-        return $this->backupFormat ?? app(GeneralConfig::class)->backupCommandFormat;
+        return $this->backupFormat ?? Cms::config()->backupCommandFormat;
     }
 
     /**

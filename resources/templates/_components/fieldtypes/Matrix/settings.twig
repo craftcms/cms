@@ -38,7 +38,7 @@
   {% endblock %}
 {% endembed %}
 
-{% if craft.app.getIsMultiSite() %}
+{% if craft.sites.isMultiSite() %}
   {{ forms.selectField({
     label: 'Propagation Method'|t('app'),
     instructions: 'Which sites should entries be saved to?'|t('app'),
@@ -98,7 +98,7 @@
 {% set siteRows = [] %}
 {% set siteErrors = [] %}
 
-{% for site in craft.app.sites.getAllSites() %}
+{% for site in craft.sites.getAllSites() %}
   {% set siteSettings = field.siteSettings[site.uid] ?? null %}
   {% if siteSettings %}
     {% for attribute, errors in siteSettings.errors ?? [] %}

@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\License\License;
@@ -128,7 +127,7 @@ enum Edition: int
             return false;
         }
 
-        if (! app(GeneralConfig::class)->allowAdminChanges) {
+        if (! Cms::config()->allowAdminChanges) {
             return false;
         }
 

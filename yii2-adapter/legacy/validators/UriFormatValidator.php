@@ -8,7 +8,7 @@
 namespace craft\validators;
 
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 
@@ -56,7 +56,7 @@ class UriFormatValidator extends Validator
         }
 
         if ($this->disallowTriggers) {
-            $generalConfig = app(GeneralConfig::class);
+            $generalConfig = Cms::config();
             $firstSeg = explode('/', $value, 2)[0];
 
             if ($firstSeg === $generalConfig->actionTrigger) {

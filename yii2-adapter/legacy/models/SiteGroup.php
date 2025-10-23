@@ -7,11 +7,12 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\Model;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use function CraftCms\Cms\t;
 
 /**
@@ -20,6 +21,7 @@ use function CraftCms\Cms\t;
  * @property string $name The site group’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Data\SiteGroup} instead.
  */
 class SiteGroup extends Model
 {
@@ -111,7 +113,7 @@ class SiteGroup extends Model
      */
     public function getSites(): array
     {
-        return Craft::$app->getSites()->getSitesByGroupId($this->id);
+        return Sites::getSitesByGroupId($this->id)->all();
     }
 
     /**

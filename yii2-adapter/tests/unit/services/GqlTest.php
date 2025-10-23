@@ -37,9 +37,10 @@ use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
@@ -64,7 +65,7 @@ class GqlTest extends TestCase
         $gql->setActiveSchema(new GqlSchema());
 
         // NO CACHING
-        app(GeneralConfig::class)->enableGraphqlCaching = false;
+        Cms::config()->enableGraphqlCaching = false;
     }
 
     protected function _after(): void
@@ -194,7 +195,7 @@ class GqlTest extends TestCase
             },
         ]);
 
-        app(GeneralConfig::class)->enableGraphqlCaching = true;
+        Cms::config()->enableGraphqlCaching = true;
 
         $schema = $gql->getPublicSchema();
 
@@ -307,15 +308,15 @@ class GqlTest extends TestCase
         ]);
 
         $entriesService = $this->make(Entries::class, [
-            'getAllSections' => [
-                $sectionA,
-                $sectionB,
-            ],
             'getAllEntryTypes' => [
                 $typeA,
                 $typeB,
             ],
         ]);
+
+        Sections::partialMock()
+            ->shouldReceive('getAllSections')
+            ->andReturn(collect([$sectionA, $sectionB]));
 
         $volumeService = $this->make(Volumes::class, [
             'getAllVolumes' => [

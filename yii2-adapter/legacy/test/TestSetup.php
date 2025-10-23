@@ -17,7 +17,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\models\Site;
 use craft\queue\Queue;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
@@ -57,9 +56,10 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config as ConfigFacade;
@@ -301,7 +301,7 @@ class TestSetup
         Craft::setAlias('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         // Set any custom aliases
         $customAliases = $generalConfig->aliases ?? $generalConfig->environmentVariables ?? null;
@@ -421,7 +421,7 @@ class TestSetup
             }
         }
 
-        $site = new Site($siteConfig);
+        $site = new Site(...$siteConfig);
 
         $migration = new Install(
             username: self::USERNAME,

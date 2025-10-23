@@ -9,7 +9,7 @@ namespace crafttests\unit\traits;
 
 use craft\base\NameTrait;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 
 /**
  * Class NameTraitTest.
@@ -35,7 +35,7 @@ class NameTraitTest extends TestCase
             $this->_class->$attr = $val;
         }
 
-        app(GeneralConfig::class)
+        Cms::config()
             ->extraNameSuffixes($suffixes)
             ->extraNameSalutations($salutations)
             ->extraLastNamePrefixes($lastNamePrefixes);
@@ -126,7 +126,7 @@ class NameTraitTest extends TestCase
 
     protected function _after(): void
     {
-        app(GeneralConfig::class)
+        Cms::config()
             ->extraNameSuffixes([])
             ->extraNameSalutations([])
             ->extraLastNamePrefixes([]);

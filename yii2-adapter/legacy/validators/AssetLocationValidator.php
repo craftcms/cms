@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\validators\Validator;
@@ -78,7 +78,7 @@ class AssetLocationValidator extends Validator
         parent::init();
 
         if (!isset($this->allowedExtensions)) {
-            $this->allowedExtensions = app(GeneralConfig::class)->allowedFileExtensions;
+            $this->allowedExtensions = Cms::config()->allowedFileExtensions;
         }
 
         if (!isset($this->disallowedExtension)) {

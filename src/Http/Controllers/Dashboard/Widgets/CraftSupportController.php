@@ -9,6 +9,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
@@ -98,7 +99,7 @@ final readonly class CraftSupportController
             $parts[] = [
                 'name' => 'attachments[0]',
                 'contents' => fopen($zipData['zipPath'], 'rb'),
-                'filename' => 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->getName()).'.zip',
+                'filename' => 'SupportAttachment-'.FileHelper::sanitizeFilename(Sites::getPrimarySite()->getName()).'.zip',
             ];
         } catch (Throwable $e) {
             Log::warning('Error creating support zip: '.$e->getMessage(), [__METHOD__]);

@@ -7,7 +7,7 @@
 
 namespace craft\test;
 
-use Craft;
+use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use yii\db\Connection;
 use yii\test\DbFixture;
 
@@ -44,9 +44,10 @@ trait DbFixtureTrait
      */
     protected function hardDelete(): void
     {
-        $gc = Craft::$app->getGc();
+        $gc = app(GarbageCollection::class);
         $deleteAllTrashed = $gc->deleteAllTrashed;
         $gc->deleteAllTrashed = true;
+        $gc->silent = true;
         $gc->run(true);
         $gc->deleteAllTrashed = $deleteAllTrashed;
     }

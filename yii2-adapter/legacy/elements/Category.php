@@ -29,6 +29,7 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -237,8 +238,8 @@ class Category extends Element
             $elementQuery = null;
         }
         $site = $elementQuery && $elementQuery->siteId
-            ? Craft::$app->getSites()->getSiteById($elementQuery->siteId)
-            : Craft::$app->getSites()->getCurrentSite();
+            ? Sites::getSiteById($elementQuery->siteId)
+            : Sites::getCurrentSite();
 
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -258,7 +259,7 @@ class Category extends Element
             if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
-                if (Craft::$app->getIsMultiSite()) {
+                if (Sites::isMultiSite()) {
                     $newChildUrl .= '?site=' . $site->handle;
                 }
 

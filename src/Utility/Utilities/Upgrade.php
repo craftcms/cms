@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\upgrade\UpgradeAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Utility\Utility;
 
@@ -21,7 +22,7 @@ final class Upgrade extends Utility
     public static function displayName(): string
     {
         return t('Craft {version} Upgrade', [
-            'version' => (int) Craft::$app->version + 1,
+            'version' => (int) Cms::VERSION + 1,
         ]);
     }
 
@@ -65,7 +66,7 @@ final class Upgrade extends Utility
             ];
         }
 
-        $version = (int) Craft::$app->version + 1;
+        $version = (int) Cms::VERSION + 1;
         $view->registerJsWithVars(fn ($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args)
 JS, [

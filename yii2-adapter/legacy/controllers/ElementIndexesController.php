@@ -18,7 +18,6 @@ use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -649,43 +648,6 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $source;
-    }
-
-    /**
-     * Returns the condition that should be applied to the element query.
-     *
-     * @since 4.0.0
-     */
-    protected function condition(): ?ElementConditionInterface
-    {
-        /** @var array|null $conditionConfig */
-        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->request->getBodyParam('condition');
-
-        if (!$conditionConfig) {
-            return null;
-        }
-
-        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
-
-        if ($condition instanceof ElementCondition) {
-            $referenceElementId = $this->request->getBodyParam('referenceElementId');
-            if ($referenceElementId) {
-                $ownerId = $this->request->getBodyParam('referenceElementOwnerId');
-                $siteId = $this->request->getBodyParam('referenceElementSiteId');
-                $criteria = [];
-                if ($ownerId) {
-                    $criteria['ownerId'] = $ownerId;
-                }
-                $condition->referenceElement = Craft::$app->getElements()->getElementById(
-                    (int) $referenceElementId,
-                    siteId: $siteId,
-                    criteria: $criteria,
-                );
-            }
-        }
-
-        return $condition;
     }
 
     /**

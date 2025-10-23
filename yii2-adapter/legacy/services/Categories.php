@@ -25,6 +25,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -294,7 +295,7 @@ class Categories extends Component
 
         // Make sure the group isn't missing any site settings
         $allSiteSettings = $group->getSiteSettings();
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+        foreach (Sites::getAllSiteIds() as $siteId) {
             if (!isset($allSiteSettings[$siteId])) {
                 throw new Exception('Tried to save a category group that is missing site settings');
             }

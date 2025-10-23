@@ -15,7 +15,7 @@ use craft\helpers\Template;
 use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
@@ -91,7 +91,7 @@ class TemplatesController extends Controller
         // Does that template exist?
         if (
             (
-                app(GeneralConfig::class)->headlessMode &&
+                Cms::config()->headlessMode &&
                 $this->request->getIsSiteRequest()
             ) ||
             !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
@@ -173,7 +173,7 @@ class TemplatesController extends Controller
         }
 
         // Cache the base path.
-        Cache::put('basePath', Craft::$app->getBasePath(), app(GeneralConfig::class)->cacheDuration);
+        Cache::put('basePath', Craft::$app->getBasePath(), Cms::config()->cacheDuration);
 
         return null;
     }
@@ -202,7 +202,7 @@ class TemplatesController extends Controller
         }
 
         if ($this->request->getIsSiteRequest()) {
-            $prefix = app(GeneralConfig::class)->errorTemplatePrefix;
+            $prefix = Cms::config()->errorTemplatePrefix;
 
             if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
                 $template = $prefix . $statusCode;

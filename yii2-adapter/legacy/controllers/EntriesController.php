@@ -21,6 +21,9 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Exception;
 use Illuminate\Support\Collection;
@@ -61,16 +64,15 @@ class EntriesController extends BaseEntriesController
             $sectionHandle = $this->request->getRequiredBodyParam('section');
         }
 
-        $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
+        $section = Sections::getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
 
-        $sitesService = Craft::$app->getSites();
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($siteId) {
-            $site = $sitesService->getSiteById($siteId);
+            $site = Sites::getSiteById($siteId);
             if (!$site) {
                 throw new BadRequestHttpException("Invalid site ID: $siteId");
             }
@@ -93,7 +95,7 @@ class EntriesController extends BaseEntriesController
             }
 
             // Go with the first one
-            $site = $sitesService->getSiteById($editableSiteIds[0]);
+            $site = Sites::getSiteById($editableSiteIds[0]);
         }
 
         $user = static::currentUser();
@@ -128,7 +130,7 @@ class EntriesController extends BaseEntriesController
             $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
-        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
             $entry->setEnabledForSite($enabled);
         } else {
@@ -138,7 +140,7 @@ class EntriesController extends BaseEntriesController
 
         // Structure parent
         if (
-            $section->type === Section::TYPE_STRUCTURE &&
+            $section->type === SectionType::Structure &&
             (int)$section->maxLevels !== 1
         ) {
             // Set the initially selected parent
@@ -154,7 +156,7 @@ class EntriesController extends BaseEntriesController
         $entry->title = $this->request->getParam('title');
         $entry->slug = $this->request->getParam('slug');
         if ($entry->title && !$entry->slug) {
-            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->language);
+            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->getLanguage());
         }
         if (!$entry->slug) {
             $entry->slug = ElementHelper::tempSlug();
@@ -195,7 +197,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Set its position in the structure if a before/after param was passed
-        if ($section->type === Section::TYPE_STRUCTURE) {
+        if ($section->type === SectionType::Structure) {
             if ($nextId = $this->request->getParam('before')) {
                 $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
                     'structureId' => $section->structureId,
@@ -391,10 +393,10 @@ class EntriesController extends BaseEntriesController
         $user = Craft::$app->getUser()->getIdentity();
 
         // filter all sections to those that have all the entry types we just got
-        $compatibleSections = Collection::make(Craft::$app->getEntries()->getEditableSections())
-            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
+        $compatibleSections = Sections::getEditableSections()
+            ->filter(function(\CraftCms\Cms\Section\Data\Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
                 // don't allow moving to a single section
-                if ($section->type === Section::TYPE_SINGLE) {
+                if ($section->type === SectionType::Single) {
                     return false;
                 }
 
@@ -414,11 +416,11 @@ class EntriesController extends BaseEntriesController
                 }
 
 
-                $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
+                $sectionEntryTypes = array_map(fn($et) => $et->id, $section->getEntryTypes());
 
                 return !empty(array_intersect($entryTypes, $sectionEntryTypes));
             })
-            ->sortBy(fn(Section $section) => $section->getUiLabel())
+            ->sortBy(fn(\CraftCms\Cms\Section\Data\Section $section) => $section->getUiLabel())
             ->all();
 
         if (empty($compatibleSections)) {
@@ -452,7 +454,7 @@ class EntriesController extends BaseEntriesController
         $this->requireCpRequest();
 
         $sectionId = $this->request->getRequiredParam('sectionId');
-        $section = Craft::$app->getEntries()->getSectionById($sectionId);
+        $section = Sections::getSectionById($sectionId);
         if (!$section) {
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }

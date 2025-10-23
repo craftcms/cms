@@ -18,7 +18,7 @@ use craft\events\SetAssetFilenameEvent;
 use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -103,7 +103,7 @@ class Assets
         $rootUrl = $volume->getRootUrl() ?? '';
         $url = $rootUrl . $path;
 
-        if (app(GeneralConfig::class)->revAssetUrls) {
+        if (Cms::config()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
         }
 
@@ -184,7 +184,7 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        if (!app(GeneralConfig::class)->revAssetUrls) {
+        if (!Cms::config()->revAssetUrls) {
             return '';
         }
 
@@ -216,7 +216,7 @@ class Assets
             $extension = '';
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $separator = $generalConfig->filenameWordSeparator;
 
         if (!is_string($separator)) {
@@ -388,7 +388,7 @@ class Assets
         }
 
         self::$_allowedFileKinds = [];
-        $allowedExtensions = array_flip(app(GeneralConfig::class)->allowedFileExtensions);
+        $allowedExtensions = array_flip(Cms::config()->allowedFileExtensions);
 
         foreach (static::getFileKinds() as $kind => $info) {
             foreach ($info['extensions'] as $extension) {
@@ -696,7 +696,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            self::$_fileKinds = Arr::merge(self::$_fileKinds, app(GeneralConfig::class)->extraFileKinds);
+            self::$_fileKinds = Arr::merge(self::$_fileKinds, Cms::config()->extraFileKinds);
 
             // Fire a 'registerFileKinds' event
             if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
@@ -767,7 +767,7 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = app(GeneralConfig::class)->maxCachedCloudImageSize;
+        $maxCachedSize = Cms::config()->maxCachedCloudImageSize;
 
         if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
@@ -800,7 +800,7 @@ class Assets
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = app(GeneralConfig::class)->maxUploadFileSize;
+        $configLimit = Cms::config()->maxUploadFileSize;
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);
@@ -981,7 +981,7 @@ class Assets
             return false;
         }
 
-        $handle = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
+        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
         return $fs->handle === $handle;
     }
 }

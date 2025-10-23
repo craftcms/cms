@@ -10,7 +10,7 @@
     {% if not readOnly %}
         {{ tag('a', {
             href: url('settings/sites/new', (group ? { groupId: group.id } : null)),
-            class:  ['btn', 'submit', 'add', 'icon', craft.app.sites.getRemainingSites() ? null : 'disabled'],
+            class:  ['btn', 'submit', 'add', 'icon', craft.sites.getRemainingSites() ? null : 'disabled'],
             text: "New site"|t('app'),
         }) }}
     {% endif %}
@@ -21,7 +21,7 @@
     <nav>
         <ul id="groups">
             <li><a href="{{ url('settings/sites') }}"{% if not group %} class="sel"{% endif %}>{{ "All Sites"|t('app') }}</a></li>
-            {% for g in craft.app.sites.getAllGroups() %}
+            {% for g in craft.siteGroups.getAllGroups() %}
                 <li>
                     {{ tag('a', {
                         href: url('settings/sites', {groupId: g.id}),

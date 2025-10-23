@@ -8,3 +8,4 @@ yii2-adapter/cpresources/*
 yii2-adapter/lib/*
 yii2-adapter/legacy/web/assets/**/dist/*
 yii2-adapter/legacy-tests/_craft/*
+tests-playwright/.authentication.json

@@ -64,7 +64,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -2230,7 +2230,7 @@ JS,[
             $transform = ImageTransforms::normalizeTransform($transform);
 
             if ($immediately === null) {
-                $immediately = app(GeneralConfig::class)->generateTransformsBeforePageLoad;
+                $immediately = Cms::config()->generateTransformsBeforePageLoad;
             }
 
             // Fire a 'beforeGenerateTransform' event
@@ -3255,7 +3255,7 @@ JS;
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     !Craft::$app->getRequest()->getIsCpRequest() ||
-                    app(GeneralConfig::class)->sanitizeCpImageUploads
+                    Cms::config()->sanitizeCpImageUploads
                 ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -3738,8 +3738,8 @@ JS;
     private function allowTransforms(): bool
     {
         return match ($this->getMimeType()) {
-            'image/gif' => app(GeneralConfig::class)->transformGifs,
-            'image/svg+xml' => app(GeneralConfig::class)->transformSvgs,
+            'image/gif' => Cms::config()->transformGifs,
+            'image/svg+xml' => Cms::config()->transformSvgs,
             default => true,
         };
     }

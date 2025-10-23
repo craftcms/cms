@@ -25,7 +25,7 @@ use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -46,7 +46,7 @@ class ArgumentHandlerTest extends TestCase
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();
-        app(GeneralConfig::class)->enableGraphqlCaching = false;
+        Cms::config()->enableGraphqlCaching = false;
 
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['integrationQuery'] = [

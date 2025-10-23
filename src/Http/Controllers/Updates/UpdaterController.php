@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -204,7 +205,7 @@ final class UpdaterController extends BaseUpdaterController
 
             if ($handle === 'craft') {
                 $oldPackageName = 'craftcms/cms';
-                $current = Craft::$app->getVersion();
+                $current = Cms::VERSION;
             } else {
                 $pluginInfo = $this->plugins->getPluginInfo($handle);
                 $oldPackageName = $pluginInfo['packageName'];
@@ -343,7 +344,7 @@ final class UpdaterController extends BaseUpdaterController
     private function canUpdate(string $handle, string $toVersion): bool
     {
         if ($handle === 'craft') {
-            $fromVersion = Craft::$app->getVersion();
+            $fromVersion = Cms::VERSION;
         } else {
             $pluginInfo = null;
             try {

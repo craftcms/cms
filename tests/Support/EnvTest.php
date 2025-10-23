@@ -3,6 +3,7 @@
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -103,8 +104,8 @@ test('parse', function () {
      */
     if (Env::parse('$CRAFT_SITE') === null) {
         DB::table('info')->first();
-        app('Craft')->getSites()->setCurrentSite(
-            app('Craft')->getSites()->getSiteByHandle('defaultSite')
+        Sites::setCurrentSite(
+            Sites::getSiteByHandle('defaultSite')
         );
     }
 

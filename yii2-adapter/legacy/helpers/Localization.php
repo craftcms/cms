@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
-use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
 /**
@@ -32,7 +31,6 @@ class Localization
      *
      * @param string $language
      * @return string
-     * @throws InvalidArgumentException if $language is invalid.
      */
     public static function normalizeLanguage(string $language): string
     {

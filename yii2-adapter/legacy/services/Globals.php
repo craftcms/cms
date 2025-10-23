@@ -20,6 +20,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -125,7 +126,7 @@ class Globals extends Component
     public function getAllSets(): array
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id)->all();
+        return $this->_allSets(Sites::getCurrentSite()->id)->all();
     }
 
     /**
@@ -145,7 +146,7 @@ class Globals extends Component
     public function getEditableSets(): array
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $currentSiteId = Sites::getCurrentSite()->id;
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
@@ -216,7 +217,7 @@ class Globals extends Component
     public function getSetById(int $globalSetId, ?int $siteId = null): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $currentSiteId = Sites::getCurrentSite()->id;
 
         if ($siteId === null) {
             $siteId = $currentSiteId;
@@ -253,7 +254,7 @@ class Globals extends Component
     public function getSetByHandle(string $globalSetHandle, ?int $siteId = null, bool $withTrashed = false): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $currentSiteId = Sites::getCurrentSite()->id;
 
         if ($siteId === null) {
             $siteId = $currentSiteId;

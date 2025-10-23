@@ -15,7 +15,7 @@ use craft\test\TestSetup;
 use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
@@ -47,7 +47,7 @@ class ControllerTest extends TestCase
      */
     public function testBeforeAction(): void
     {
-        app(GeneralConfig::class)->isSystemLive = true;
+        Cms::config()->isSystemLive = true;
 
         $this->tester->expectThrowable(ForbiddenHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception

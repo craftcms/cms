@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Support\Composer;
@@ -40,7 +40,7 @@ it('requires authentication, adminChanges and admin for all routes', function (s
 
     User::first()->update(['admin' => true]);
     actingAs(User::first());
-    app(GeneralConfig::class)->allowAdminChanges(false);
+    Cms::config()->allowAdminChanges(false);
 
     postJson(action([$controller, $action]))->assertForbidden();
 })->with('routes');

@@ -14,21 +14,14 @@ final class RequireAdmin
         protected GeneralConfig $generalConfig,
     ) {}
 
-    public function handle(Request $request, Closure $next, string $requireAdminChanges = 'true'): mixed
+    public function handle(Request $request, Closure $next): mixed
     {
-        /** Middleware parameters come in as string, so we have to cast it */
-        $requireAdminChanges = filter_var($requireAdminChanges, FILTER_VALIDATE_BOOL);
-
         if (! $user = $request->user()) {
             throw new AuthenticationException('Unauthenticated.');
         }
 
         /** @var User $user */
         abort_unless($user->isAdmin(), 403, 'User is not permitted to perform this action.');
-
-        if ($requireAdminChanges && ! $this->generalConfig->allowAdminChanges) {
-            abort(403, 'Administrative changes are disallowed in this environment.');
-        }
 
         return $next($request);
     }

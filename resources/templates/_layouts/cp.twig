@@ -101,6 +101,7 @@
 {% set mainAttributes = {
     id: 'main',
     role: 'main',
+    tabindex: '-1',
 }|merge(mainAttributes ?? []) %}
 
 {% set formActions = craft.cp.prepFormActions(formActions ?? null) %}

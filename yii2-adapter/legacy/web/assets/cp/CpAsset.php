@@ -14,8 +14,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Section;
-use craft\services\Sites;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\animationblocker\AnimationBlockerAsset;
@@ -36,11 +34,15 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -503,14 +505,13 @@ JS;
     {
         $upToDate = Craft::$app->getIsInstalled() && !app(Updates::class)->areMigrationsPending();
         $request = Craft::$app->getRequest();
-        $generalConfig = app(GeneralConfig::class);
-        $sitesService = Craft::$app->getSites();
+        $generalConfig = Cms::config();
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
-        $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
+        $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
         $data = [
             'Solo' => Edition::Solo->value,
@@ -606,7 +607,7 @@ JS;
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
-            'isMultiSite' => Craft::$app->getIsMultiSite(),
+            'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'notificationDuration' => (int)(
@@ -622,12 +623,12 @@ JS;
                 ?? 'end',
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
-            'primarySiteLanguage' => $primarySite->language ?? null,
+            'primarySiteLanguage' => $primarySite->getLanguage(),
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? $sitesService->getCurrentSite()->id) : null,
-            'sites' => $this->_sites($sitesService),
+            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? Sites::getCurrentSite()->id) : null,
+            'sites' => $this->_sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
@@ -730,8 +731,8 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
+        foreach (Sections::getEditableSections() as $section) {
+            if ($section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -748,7 +749,7 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(Section $section): array
+    private function _entryTypes(\CraftCms\Cms\Section\Data\Section $section): array
     {
         $types = [];
 
@@ -763,11 +764,11 @@ JS;
         return $types;
     }
 
-    private function _sites(Sites $sitesService): array
+    private function _sites(): array
     {
         $sites = [];
 
-        foreach ($sitesService->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             $sites[] = [
                 'handle' => $site->handle,
                 'id' => (int)$site->id,

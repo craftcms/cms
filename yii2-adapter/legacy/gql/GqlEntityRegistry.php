@@ -7,7 +7,7 @@
 
 namespace craft\gql;
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 
 /**
  * Class GqlEntityRegistry
@@ -43,7 +43,7 @@ class GqlEntityRegistry
 
         $rootTypes = ['Query', 'Mutation', 'Subscription'];
 
-        if (app(GeneralConfig::class)->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
+        if (Cms::config()->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
             return $prefix . $typeName;
         }
 
@@ -59,7 +59,7 @@ class GqlEntityRegistry
     public static function getPrefix(): ?string
     {
         if (!isset(self::$_prefix)) {
-            self::$_prefix = app(GeneralConfig::class)->gqlTypePrefix;
+            self::$_prefix = Cms::config()->gqlTypePrefix;
         }
 
         return self::$_prefix;

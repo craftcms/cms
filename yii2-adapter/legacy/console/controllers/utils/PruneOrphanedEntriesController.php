@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Console;
+use CraftCms\Cms\Support\Facades\Sites;
 use yii\console\ExitCode;
 
 /**
@@ -30,7 +31,7 @@ class PruneOrphanedEntriesController extends Controller
      */
     public function actionIndex(): int
     {
-        if (!Craft::$app->getIsMultiSite()) {
+        if (!Sites::isMultiSite()) {
             $this->stdout("This command should only be run for multi-site installs.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
@@ -38,7 +39,7 @@ class PruneOrphanedEntriesController extends Controller
         $elementsService = Craft::$app->getElements();
 
         // get all sites
-        $sites = Craft::$app->getSites()->getAllSites();
+        $sites = Sites::getAllSites();
 
         // for each site get all nested entries with owner that doesn't exist for this site
         foreach ($sites as $site) {

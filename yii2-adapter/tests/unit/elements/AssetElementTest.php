@@ -13,7 +13,7 @@ use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use UnitTester;
 
 /**
@@ -59,12 +59,12 @@ class AssetElementTest extends TestCase
             ]),
         ]);
 
-        $previousValue = app(GeneralConfig::class)->generateTransformsBeforePageLoad;
-        app(GeneralConfig::class)->generateTransformsBeforePageLoad = true;
+        $previousValue = Cms::config()->generateTransformsBeforePageLoad;
+        Cms::config()->generateTransformsBeforePageLoad = true;
         $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
         self::assertSame('w=200&h=200', $url);
 
-        app(GeneralConfig::class)->generateTransformsBeforePageLoad = $previousValue;
+        Cms::config()->generateTransformsBeforePageLoad = $previousValue;
     }
 }

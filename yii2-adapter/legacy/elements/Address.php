@@ -24,7 +24,7 @@ use craft\models\FieldLayout;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Addresses\Models\Address as AddressModel;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -307,7 +307,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         parent::init();
 
         if (!isset($this->countryCode)) {
-            $this->countryCode = app(GeneralConfig::class)->defaultCountryCode;
+            $this->countryCode = Cms::config()->defaultCountryCode;
         }
 
         $this->normalizeNames();
@@ -668,7 +668,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             LatLongField::class,
         ];
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $fieldLayout = $this->getFieldLayout();
 
         foreach ($requirableNativeFields as $class) {

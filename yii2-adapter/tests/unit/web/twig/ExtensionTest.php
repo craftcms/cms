@@ -18,7 +18,7 @@ use craft\elements\User;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
@@ -990,7 +990,7 @@ class ExtensionTest extends TestCase
      */
     public function test_csrf_input_function(): void
     {
-        app(GeneralConfig::class)->enableCsrfProtection = true;
+        Cms::config()->enableCsrfProtection = true;
         Session::start();
 
         $this->testRenderResult(

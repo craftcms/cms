@@ -17,7 +17,7 @@ use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -113,7 +113,7 @@ class UsersTest extends TestCase
     public function testUserActivationEmailAsUsernameWithAnUnverifedEmail(): void
     {
         // Set useEmailAsUsername to true and add an unverified email.
-        app(GeneralConfig::class)->useEmailAsUsername = true;
+        Cms::config()->useEmailAsUsername = true;
         $this->tester->saveElement($this->pendingUser);
 
         $this->users->activateUser($this->pendingUser);
@@ -123,7 +123,7 @@ class UsersTest extends TestCase
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith@gmail.com', $user->username);
 
-        app(GeneralConfig::class)->useEmailAsUsername = false;
+        Cms::config()->useEmailAsUsername = false;
     }
 
     /**
@@ -132,7 +132,7 @@ class UsersTest extends TestCase
     public function testUserActivationEmailAsUsernameWithNoUnverifedEmail(): void
     {
         // Run the same test as above but without an unverified email.
-        app(GeneralConfig::class)->useEmailAsUsername = true;
+        Cms::config()->useEmailAsUsername = true;
 
         // Remove the unverifiedEmail property from the user record - meaning no username will be set.
         $this->pendingUser->unverifiedEmail = null;
@@ -144,7 +144,7 @@ class UsersTest extends TestCase
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith', $user->username);
 
-        app(GeneralConfig::class)->useEmailAsUsername = false;
+        Cms::config()->useEmailAsUsername = false;
     }
 
     /**
@@ -287,7 +287,7 @@ class UsersTest extends TestCase
      */
     public function testHandleInvalidLoginUserIpStore(): void
     {
-        app(GeneralConfig::class)->storeUserIps = true;
+        Cms::config()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
             'getUserIP' => '127.0.0.1',
         ]);
@@ -303,8 +303,8 @@ class UsersTest extends TestCase
      */
     public function testHandleInvalidLoginWithoutLimit(): void
     {
-        app(GeneralConfig::class)->maxInvalidLogins = false;
-        app(GeneralConfig::class)->storeUserIps = true;
+        Cms::config()->maxInvalidLogins = false;
+        Cms::config()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
             'getUserIP' => '127.0.0.1',
         ]);
@@ -329,7 +329,7 @@ class UsersTest extends TestCase
         Craft::$app->getDb()->createCommand()
             ->update(Table::USERS, ['invalidLoginWindowStart' => null], ['id' => $this->activeUser->id])->execute();
 
-        app(GeneralConfig::class)->maxInvalidLogins = 1;
+        Cms::config()->maxInvalidLogins = 1;
         $this->users->handleInvalidLogin($this->activeUser);
 
         $user = $this->getUserQuery($this->activeUser->id);
@@ -356,8 +356,8 @@ class UsersTest extends TestCase
         ], ['id' => $this->activeUser->id]);
 
         // 3 max - that's important for a little bit later. Also a 2 day invalidLoginWindowDuration
-        app(GeneralConfig::class)->maxInvalidLogins = 3;
-        app(GeneralConfig::class)->invalidLoginWindowDuration = 172800;
+        Cms::config()->maxInvalidLogins = 3;
+        Cms::config()->invalidLoginWindowDuration = 172800;
 
         // 1 st invalid login.
         $this->users->handleInvalidLogin($this->activeUser);
@@ -413,7 +413,7 @@ class UsersTest extends TestCase
             'getUserIP' => '127.0.0.1',
         ]);
 
-        app(GeneralConfig::class)->storeUserIps = true;
+        Cms::config()->storeUserIps = true;
 
         $this->users->handleValidLogin($this->activeUser);
 
@@ -444,7 +444,7 @@ class UsersTest extends TestCase
     {
         // Ensure password validation is irrelevant
         $this->ensurePasswordValidationReturns(true);
-        app(GeneralConfig::class)->verificationCodeDuration = 172800;
+        Cms::config()->verificationCodeDuration = 172800;
 
         $this->updateUser([
             // The past.

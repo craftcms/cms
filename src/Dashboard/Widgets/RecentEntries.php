@@ -6,6 +6,9 @@ use Craft;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 
 use function CraftCms\Cms\t;
@@ -49,7 +52,7 @@ final class RecentEntries extends Widget
     {
         parent::__construct($config);
 
-        $this->siteId ??= Craft::$app->getSites()->getCurrentSite()->id;
+        $this->siteId ??= Sites::getCurrentSite()->id;
     }
 
     #[\Override]
@@ -79,14 +82,10 @@ final class RecentEntries extends Widget
     #[\Override]
     public function getTitle(): string
     {
-        if (is_numeric($this->section)) {
-            $section = Craft::$app->getEntries()->getSectionById((int) $this->section);
-
-            if ($section) {
-                $title = t('Recent {section} Entries', [
-                    'section' => t($section->name, category: 'site'),
-                ]);
-            }
+        if (is_numeric($this->section) && $section = Sections::getSectionById((int) $this->section)) {
+            $title = t('Recent {section} Entries', [
+                'section' => t($section->name, category: 'site'),
+            ]);
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
@@ -97,8 +96,8 @@ final class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->getTargetSiteId();
 
-        if ($targetSiteId !== null && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
-            $site = Craft::$app->getSites()->getSiteById($targetSiteId);
+        if ($targetSiteId !== null && $targetSiteId != Sites::getCurrentSite()->id) {
+            $site = Sites::getSiteById($targetSiteId);
 
             if ($site) {
                 $title = t('{title} ({site})', [
@@ -181,8 +180,8 @@ final class RecentEntries extends Widget
     {
         $sectionIds = [];
 
-        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE) {
+        foreach (Sections::getEditableSections() as $section) {
+            if ($section->type !== SectionType::Single) {
                 $sectionIds[] = $section->id;
             }
         }
@@ -195,7 +194,7 @@ final class RecentEntries extends Widget
      */
     private function getTargetSiteId(): ?int
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (! Sites::isMultiSite()) {
             return $this->siteId;
         }
 
@@ -203,10 +202,10 @@ final class RecentEntries extends Widget
         // their first editable site.
 
         // Figure out which sites the user is actually allowed to edit
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $editableSiteIds = Sites::getEditableSiteIds();
 
         // If they aren't allowed to edit *any* sites, return false
-        if (empty($editableSiteIds)) {
+        if ($editableSiteIds->isEmpty()) {
             return null;
         }
 
@@ -215,7 +214,7 @@ final class RecentEntries extends Widget
 
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
-        if (! in_array($targetSiteId, $editableSiteIds)) {
+        if (! $editableSiteIds->contains($targetSiteId)) {
             $targetSiteId = $editableSiteIds[0];
         }
 

@@ -19,9 +19,9 @@ use craft\helpers\Search;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -32,7 +32,6 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -141,50 +140,6 @@ class AppController extends Controller
 
         return $this->asJson([
             'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
-        ]);
-    }
-
-    /**
-     * Returns the latest Craftnet API headers.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @since 3.3.16
-     */
-    public function actionApiHeaders(): Response
-    {
-        $this->requireCpRequest();
-        return $this->asJson(app(Api::class)->headers());
-    }
-
-    /**
-     * Processes an API response’s headers.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @since 3.3.16
-     */
-    public function actionProcessApiResponseHeaders(): Response
-    {
-        $this->requireCpRequest();
-        $headers = $this->request->getRequiredBodyParam('headers');
-        app(Api::class)->processResponseHeaders($headers);
-
-        // return the updated headers
-        return $this->asJson(app(Api::class)->headers());
-    }
-
-    /**
-     * Returns the badge count for the Utilities nav item.
-     *
-     * @return Response
-     */
-    public function actionGetUtilitiesBadgeCount(): Response
-    {
-        $this->requireAcceptsJson();
-
-        return $this->asJson([
-            'badgeCount' => app(Utilities::class)->getUtilitiesBadgeCount(),
         ]);
     }
 
@@ -473,7 +428,7 @@ class AppController extends Controller
      */
     public function actionBrokenImage(): Response
     {
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");

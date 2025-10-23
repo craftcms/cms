@@ -7,13 +7,13 @@
 
 namespace craft\gql\resolvers\elements;
 
-use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use yii\base\UnknownMethodException;
 
 /**
@@ -36,9 +36,8 @@ class Entry extends ElementResolver
             $condition = [];
 
             if (isset($pairs['sections'])) {
-                $entriesService = Craft::$app->getEntries();
                 $sectionIds = array_filter(array_map(
-                    fn(string $uid) => $entriesService->getSectionByUid($uid)?->id,
+                    fn(string $uid) => Sections::getSectionByUid($uid)?->id,
                     $pairs['sections'],
                 ));
                 if (!empty($sectionIds)) {

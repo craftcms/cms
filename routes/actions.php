@@ -1,7 +1,8 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
@@ -16,6 +17,9 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -25,20 +29,20 @@ use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
+use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
-
-$generalConfig = app(GeneralConfig::class);
+use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix($generalConfig->actionTrigger)->group(function () {
+Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
 });
 
 Route::prefix(implode('/', [
-    $generalConfig->cpTrigger,
-    $generalConfig->actionTrigger,
+    Cms::config()->cpTrigger,
+    Cms::config()->actionTrigger,
 ]))->middleware(['craft.cp'])->group(function () {
     /**
      * Actions not needing auth
@@ -47,6 +51,10 @@ Route::prefix(implode('/', [
     Route::post('install/validate-account', [InstallController::class, 'validateAccount']);
     Route::post('install/validate-site', [InstallController::class, 'validateSite']);
     Route::post('install/install', [InstallController::class, 'install']);
+
+    Route::any('app/api-headers', [ApiController::class, 'headers']);
+    Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
+    Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
 
     // Updater
     Route::prefix('updater')->group(function () {
@@ -69,7 +77,7 @@ Route::prefix(implode('/', [
     Route::middleware(['auth'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
-        Route::middleware(RequireAdmin::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+        Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
@@ -84,7 +92,7 @@ Route::prefix(implode('/', [
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
 
         // Fields
-        Route::middleware([RequireAdmin::class])->group(function () {
+        Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
             Route::post('fields/save-field', [FieldsController::class, 'store']);
@@ -94,7 +102,7 @@ Route::prefix(implode('/', [
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
         });
-        Route::middleware([RequireAdmin::class.':false'])->group(function () {
+        Route::middleware([RequireAdmin::class])->group(function () {
             Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
@@ -114,14 +122,14 @@ Route::prefix(implode('/', [
         Route::post('dashboard/send-support-request', CraftSupportController::class);
 
         // Filesystems
-        Route::middleware([RequireAdmin::class])->group(function () {
+        Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
             Route::post('fs/save', [FilesystemsController::class, 'save']);
             Route::post('fs/remove', [FilesystemsController::class, 'delete']);
         });
 
         // Plugins
-        Route::middleware([RequireAdmin::class])->group(function () {
+        Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('plugins/install-plugin', [PluginsController::class, 'install']);
             Route::post('plugins/uninstall-plugin', [PluginsController::class, 'uninstall']);
             Route::post('plugins/switch-edition', [PluginsController::class, 'switchEdition']);
@@ -152,13 +160,34 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
+        // Sections
+        Route::get('sections/table-data', [SectionsController::class, 'tableData']);
+        Route::middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('sections/save-section', [SectionsController::class, 'store']);
+            Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
+        });
+
+        // Sites & Site Groups
+        Route::middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('sites/rename-group-field', [SiteGroupsController::class, 'showGroupRenameField']);
+            Route::post('sites/save-group', [SiteGroupsController::class, 'store']);
+            Route::post('sites/delete-group', [SiteGroupsController::class, 'destroy']);
+            Route::post('sites/save-site', [SitesController::class, 'store']);
+            Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
+            Route::post('sites/delete-site', [SitesController::class, 'destroy']);
+        });
+
         // SystemMessages
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
         Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
 
         // System settings
         Route::middleware([
-            RequireAdmin::class,
+            RequireAdminChanges::class,
         ])->group(function () {
             Route::post('system-settings/save-general-settings', [GeneralSettingsController::class, 'store']);
         });
@@ -169,14 +198,14 @@ Route::prefix(implode('/', [
 
         // Pluginstore
         Route::middleware([
-            RequireAdmin::class.':false',
+            RequireAdmin::class,
         ])->group(function () {
             Route::get('plugin-store/craft-data', [PluginStoreController::class, 'craftData']);
             Route::post('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
         });
 
         Route::prefix('pluginstore/install')->middleware([
-            RequireAdmin::class,
+            RequireAdminChanges::class,
         ])->group(function () {
             Route::post('/', [PluginStoreInstallController::class, 'index']);
             Route::post(PluginStoreInstallController::ACTION_CRAFT_INSTALL, [PluginStoreInstallController::class, 'craftInstall']);
@@ -190,7 +219,7 @@ Route::prefix(implode('/', [
         });
 
         Route::prefix('pluginstore/remove')->middleware([
-            RequireAdmin::class,
+            RequireAdminChanges::class,
         ])->group(function () {
             Route::post('/', [RemoveController::class, 'index']);
             Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);

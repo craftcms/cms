@@ -25,6 +25,7 @@
 - Deprecated `craft\enums\MenuItemType`. `CraftCms\Cms\Element\Enums\MenuItemType` should be used instead.
 - Deprecated `craft\enums\PropagationMethod`. `CraftCms\Cms\Element\Enums\PropagationMethod` should be used instead.
 - Deprecated `craft\enums\TimePeriod`. `CraftCms\Cms\Support\Enums\TimePeriod` should be used instead.
+- Deprecated `craft\services\Gc`. `CraftCms\Cms\GarbageCollection\GarbageCollection` should be used instead.
 - Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
@@ -258,6 +259,44 @@ Moved the following controllers:
 - Removed `craft\models\ProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ProjectConfigData`
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
+
+## Sections
+
+- Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
+- Deprecated `craft\models\Section`. `CraftCms\Cms\Section\Data\Section` should be used instead.
+- Deprecated `craft\records\Section`. `CraftCms\Cms\Section\Models\Section` should be used instead.
+- Deprecated `craft\models\Section_SiteSettings`. `CraftCms\Cms\Section\Data\SectionSiteSettings` should be used instead.
+- Deprecated `craft\records\Section_SiteSettings`. `CraftCms\Cms\Section\Models\SectionSiteSettings` should be used instead.
+- Deprecated `craft\events\SectionEvent`. One of these should be used instead:
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\DeletingSection`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\ApplyingSectionDelete`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SavingSection`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
+- Removed `craft\controllers\SectionsController` in favor of `CraftCms\Cms\Http\Controllers\SectionsController`
+- Removed `craft\console\controllers\SectionsController` in favor of:
+  - `CraftCms\Cms\Section\Commands\CreateCommand`
+  - `CraftCms\Cms\Section\Commands\DeleteCommand`
+- Added `CraftCms\Cms\Section\Enums\DefaultPlacement`
+- Added `CraftCms\Cms\Section\Enums\SectionType`
+
+## Sites
+
+- Deprecated `craft\services\Sites`. `CraftCms\Cms\Site\Sites` should be used instead.
+- Deprecated `craft\models\Site`. `CraftCms\Cms\Site\Data\Site` should be used instead.
+- Deprecated `craft\models\SiteGroup`. `CraftCms\Cms\Site\Data\SiteGroup` should be used instead.
+- Deprecated `craft\records\Site`. `CraftCms\Cms\Site\Models\Site` should be used instead.
+- Deprecated `craft\records\SiteGroup`. `CraftCms\Cms\Site\Models\SiteGroup` should be used instead.
+- Deprecated `craft\events\SiteEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\events\DeleteSiteEvent`. One of `CraftCms\Cms\Site\Events\DeletingSite` or `CraftCms\Cms\Site\Events\SiteDeleted` should be used instead.
+- Deprecated `craft\events\ReorderSitesEvent`. One of `CraftCms\Cms\Site\Events\ReorderingSites` or `CraftCms\Cms\Site\Events\SitesReordered` should be used instead.
+- Deprecated `craft\events\SiteGroupEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
+- Deprecated `craft\errors\SiteNotFoundException`. `CraftCms\Cms\Site\Exceptions\SiteNotFoundException` should be used instead.
+- Deprecated `craft\errors\SiteGroupNotFoundException`.
+
+- Removed `craft\controllers\SitesController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController` 
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController` 
 
 ## System Messages
 

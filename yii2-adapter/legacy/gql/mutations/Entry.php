@@ -18,9 +18,10 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
 use craft\models\EntryType as EntryTypeModel;
-use craft\models\Section;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -41,9 +42,9 @@ class Entry extends Mutation
         $createDeleteMutation = false;
         $createDraftMutations = false;
 
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+        foreach (Sections::getAllSections() as $section) {
             $scope = "sections.$section->uid";
-            $isSingle = $section->type === Section::TYPE_SINGLE;
+            $isSingle = $section->type === SectionType::Single;
             $canCreate = !$isSingle && Gql::canSchema($scope, 'create');
             $canSave = Gql::canSchema($scope, 'save');
 
@@ -172,14 +173,14 @@ class Entry extends Mutation
     /**
      * Create the per-entry-type save mutations.
      *
-     * @param Section $section
+     * @param \CraftCms\Cms\Section\Data\Section $section
      * @param EntryTypeModel $entryType
      * @param bool $createSaveDraftMutation
      * @return array
      * @throws InvalidConfigException
      */
     public static function createSaveMutations(
-        Section $section,
+        \CraftCms\Cms\Section\Data\Section $section,
         EntryTypeModel $entryType,
         bool $createSaveDraftMutation,
     ): array {
@@ -200,14 +201,14 @@ class Entry extends Mutation
         static::prepareResolver($resolver, $entryType->getCustomFields());
 
         switch ($section->type) {
-            case Section::TYPE_SINGLE:
+            case SectionType::Single:
                 $description = sprintf('Save the “%s” entry.', $section->name);
                 $draftDescription = sprintf('Save the “%s” draft.', $section->name);
 
                 unset($entryMutationArguments['authorId'], $entryMutationArguments['id'], $entryMutationArguments['uid']);
                 unset($draftMutationArguments['authorId'], $draftMutationArguments['id'], $draftMutationArguments['uid']);
                 break;
-            case Section::TYPE_STRUCTURE:
+            case SectionType::Structure:
                 $entryMutationArguments = array_merge($entryMutationArguments, StructureArguments::getArguments());
             // no break
             default:

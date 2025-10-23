@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Support\Facades\Config;
@@ -90,7 +90,7 @@ it('can validate account', function (array $data, array $errors) {
 ]);
 
 test('username is not required when useEmailAsUsername is enabled', function () {
-    app(GeneralConfig::class)->useEmailAsUsername();
+    Cms::config()->useEmailAsUsername();
 
     postJson(action([InstallController::class, 'validateAccount']), [])
         ->assertJsonValidationErrors([

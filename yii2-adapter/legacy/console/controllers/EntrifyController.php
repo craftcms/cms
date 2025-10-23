@@ -12,21 +12,28 @@ use craft\base\Event;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\SectionEvent;
 use craft\helpers\Db;
+use craft\models\CategoryGroup;
 use craft\models\EntryType;
-use craft\models\Section;
+use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use craft\services\Structures;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Tags;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
@@ -94,17 +101,40 @@ class EntrifyController extends Controller
     /**
      * Converts categories to entries.
      *
-     * @param string $categoryGroup The category group handle
+     * @param string|null $categoryGroup The category group handle
      * @return int
      */
-    public function actionCategories(string $categoryGroup): int
+    public function actionCategories(?string $categoryGroup = null): int
     {
-        $categoryGroupHandle = $categoryGroup;
+        $categoriesService = Craft::$app->getCategories();
 
-        $categoryGroup = Craft::$app->getCategories()->getGroupByHandle($categoryGroupHandle, true);
-        if (!$categoryGroup) {
-            $this->stderr("Invalid category group handle: $categoryGroupHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($categoryGroup) {
+            $categoryGroupHandle = $categoryGroup;
+            $categoryGroup = $categoriesService->getGroupByHandle($categoryGroupHandle, true);
+
+            if (!$categoryGroup) {
+                $this->stderr("Invalid category group handle: $categoryGroupHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A category group handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<CategoryGroup> $categoryGroups */
+            $categoryGroups = Collection::make($categoriesService->getAllGroups())
+                ->keyBy(fn(CategoryGroup $group) => $group->handle);
+
+            if (empty($categoryGroups)) {
+                $this->output('No category groups exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $categoryGroupHandle = $this->select(
+                'Choose a category group:',
+                $categoryGroups->map(fn(CategoryGroup $group) => $group->name)->all(),
+            );
+            $categoryGroup = $categoryGroups->get($categoryGroupHandle);
         }
 
         $projectConfigService = app(ProjectConfig::class);
@@ -136,7 +166,7 @@ class EntrifyController extends Controller
         }
 
         if (
-            $section->type === Section::TYPE_CHANNEL &&
+            $section->type === SectionType::Channel &&
             !$this->confirm("The categories’ structure data will be lost because “{$section->name}” is a Channel section. Are you sure you want to continue?\n")
         ) {
             $this->stdout("Aborted.\n");
@@ -198,7 +228,7 @@ class EntrifyController extends Controller
                         ->where('elementId', $category->id)
                         ->delete();
 
-                    if ($section->type === Section::TYPE_STRUCTURE) {
+                    if ($section->type === SectionType::Structure) {
                         $entry = Entry::find()
                             ->id($category->id)
                             ->drafts(null)
@@ -303,17 +333,40 @@ class EntrifyController extends Controller
     /**
      * Converts tags to entries.
      *
-     * @param string $tagGroup The tag group handle
+     * @param string|null $tagGroup The tag group handle
      * @return int
      */
-    public function actionTags(string $tagGroup): int
+    public function actionTags(?string $tagGroup = null): int
     {
-        $tagGroupHandle = $tagGroup;
+        $tagsService = Craft::$app->getTags();
 
-        $tagGroup = Craft::$app->getTags()->getTagGroupByHandle($tagGroupHandle, true);
-        if (!$tagGroup) {
-            $this->stderr("Invalid tag group handle: $tagGroupHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($tagGroup) {
+            $tagGroupHandle = $tagGroup;
+
+            $tagGroup = $tagsService->getTagGroupByHandle($tagGroupHandle, true);
+            if (!$tagGroup) {
+                $this->stderr("Invalid tag group handle: $tagGroupHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A tag group handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<TagGroup> $tagGroups */
+            $tagGroups = Collection::make($tagsService->getAllTagGroups())
+                ->keyBy(fn(TagGroup $group) => $group->handle);
+
+            if (empty($tagGroups)) {
+                $this->output('No tag groups exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $tagGroupHandle = $this->select(
+                'Choose a tag group:',
+                $tagGroups->map(fn(TagGroup $group) => $group->name)->all(),
+            );
+            $tagGroup = $tagGroups->get($tagGroupHandle);
         }
 
         $projectConfigService = app(ProjectConfig::class);
@@ -424,6 +477,7 @@ class EntrifyController extends Controller
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
                             $config['settings']['sources'] = ["section:$section->uid"];
+                            $config['settings']['viewMode'] = BaseRelationField::VIEW_MODE_LIST_INLINE;
                             unset(
                                 $config['settings']['source'],
                                 $config['settings']['allowMultipleSources'],
@@ -450,17 +504,40 @@ class EntrifyController extends Controller
     /**
      * Converts a global set to a Single section.
      *
-     * @param string $globalSet The global set handle
+     * @param string|null $globalSet The global set handle
      * @return int
      */
-    public function actionGlobalSet(string $globalSet): int
+    public function actionGlobalSet(?string $globalSet = null): int
     {
-        $globalSetHandle = $globalSet;
+        $globalsService = Craft::$app->getGlobals();
 
-        $globalSet = Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, withTrashed: true);
-        if (!$globalSet) {
-            $this->stderr("Invalid global set handle: $globalSetHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($globalSet) {
+            $globalSetHandle = $globalSet;
+
+            $globalSet = Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, withTrashed: true);
+            if (!$globalSet) {
+                $this->stderr("Invalid global set handle: $globalSetHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A global set handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<GlobalSet> $globalSets */
+            $globalSets = Collection::make($globalsService->getAllSets())
+                ->keyBy(fn(GlobalSet $globalSet) => $globalSet->handle);
+
+            if (empty($globalSets)) {
+                $this->output('No global sets exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $globalSetHandle = $this->select(
+                'Choose a global set:',
+                $globalSets->map(fn(GlobalSet $globalSet) => $globalSet->name)->all(),
+            );
+            $globalSet = $globalSets->get($globalSetHandle);
         }
 
         $projectConfigChanged = false;
@@ -563,15 +640,15 @@ class EntrifyController extends Controller
                 throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
             }
 
-            $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
+            $section = Sections::getSectionByHandle($this->section);
             if (!$section) {
                 throw new InvalidConfigException("Invalid section handle: $this->section");
             }
             if ($this->_forSingle) {
-                if ($section->type !== Section::TYPE_SINGLE) {
+                if ($section->type !== SectionType::Single) {
                     throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
                 }
-            } elseif ($section->type === Section::TYPE_SINGLE) {
+            } elseif ($section->type === SectionType::Single) {
                 throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
             }
             $this->_section = $section;
@@ -621,8 +698,7 @@ class EntrifyController extends Controller
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
                 $usersService = Craft::$app->getUsers();
-                $generalConfig = app(GeneralConfig::class);
-                $what = $generalConfig->useEmailAsUsername ? 'email' : 'username or email';
+                $what = Cms::config()->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
                     'validator' => fn(string $value) => $usersService->getUserByUsernameOrEmail($value) !== null,

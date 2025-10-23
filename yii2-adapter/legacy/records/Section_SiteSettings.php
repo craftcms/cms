@@ -25,6 +25,7 @@ use yii\db\ActiveQueryInterface;
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Section\Models\SectionSiteSettings} instead.
  */
 class Section_SiteSettings extends ActiveRecord
 {

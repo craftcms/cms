@@ -9,8 +9,9 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\MutexException;
-use craft\errors\SiteNotFoundException;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
@@ -159,11 +160,11 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = app(GeneralConfig::class)->defaultFileMode;
+            $options['fileMode'] = Cms::config()->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
-            $options['dirMode'] = app(GeneralConfig::class)->defaultDirMode;
+            $options['dirMode'] = Cms::config()->defaultDirMode;
         }
 
         parent::copyDirectory($src, $dst, $options);
@@ -175,7 +176,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         if ($mode === null) {
-            $mode = app(GeneralConfig::class)->defaultDirMode;
+            $mode = Cms::config()->defaultDirMode;
         }
 
         return parent::createDirectory($path, $mode, $recursive);
@@ -276,7 +277,7 @@ class FileHelper extends \yii\helpers\FileHelper
             try {
                 // Always use the primary site language, so file paths/names are normalized
                 // to ASCII consistently regardless of who is logged in.
-                $language = Craft::$app->getSites()->getPrimarySite()->language;
+                $language = Sites::getPrimarySite()->getLanguage();
             } catch (SiteNotFoundException $e) {
                 $language = app()->getLocale();
             }
@@ -366,6 +367,10 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
+        if (is_dir($file)) {
+            return 'directory';
+        }
+
         try {
             $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
         } catch (ErrorException $e) {
@@ -731,7 +736,7 @@ class FileHelper extends \yii\helpers\FileHelper
             return self::$_useFileLocks;
         }
 
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
         if (is_bool($generalConfig->useFileLocks)) {
             return self::$_useFileLocks = $generalConfig->useFileLocks;
         }

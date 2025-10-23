@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
@@ -50,8 +51,8 @@ final readonly class CheckForUpdates
         if ($request->isCpRequest() && (! $request->isActionRequest() || str_contains($request->path(), 'users/login'))) {
             if ($this->updates->wasCraftBreakpointSkipped()) {
                 throw new RuntimeException(t('You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
-                    'version' => Craft::$app->minVersionRequired,
-                    'targetVersion' => Craft::$app->getVersion(),
+                    'version' => Cms::MIN_VERSION_REQUIRED,
+                    'targetVersion' => Cms::VERSION,
                 ]));
             }
 

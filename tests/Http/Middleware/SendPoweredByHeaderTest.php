@@ -1,12 +1,12 @@
 <?php
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->generalConfig = app(GeneralConfig::class);
+    $this->generalConfig = Cms::config();
     $this->middleware = app(SendPoweredByHeader::class);
 });
 
