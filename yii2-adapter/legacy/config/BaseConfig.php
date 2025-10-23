@@ -38,7 +38,6 @@ class BaseConfig extends Model
     public static function create(array $config = []): static
     {
         // We can't use Craft::createObject() here because Craft may not be autoloadable yet
-        /** @phpstan-ignore new.static */
         return new static($config);
     }
 
@@ -103,7 +102,6 @@ class BaseConfig extends Model
      */
     public static function __set_state(array $stateData): static
     {
-        /** @phpstan-ignore new.static */
         $object = new static();
 
         foreach ($stateData as $prop => $state) {
