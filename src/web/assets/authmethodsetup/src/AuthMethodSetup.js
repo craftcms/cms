@@ -144,6 +144,16 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
         id: data.containerId,
       },
     });
+
+    // Add alt text to QR code image
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR Code'),
+      });
+    }
   },
 
   showSuccess() {
