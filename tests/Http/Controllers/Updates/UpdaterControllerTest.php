@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;

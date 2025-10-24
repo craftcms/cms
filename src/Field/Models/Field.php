@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Models;
 
 use CraftCms\Cms\Database\Table;
@@ -26,6 +28,7 @@ final class Field extends BaseModel
         ];
     }
 
+    #[\Override]
     protected static function booted(): void
     {
         self::retrieved(function (self $field) {

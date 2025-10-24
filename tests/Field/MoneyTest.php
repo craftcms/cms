@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;

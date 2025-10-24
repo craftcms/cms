@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -55,7 +57,7 @@ use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
+abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterface, Iconic
 {
     use ConfigurableComponent;
     use HasComponentEvents;
@@ -791,7 +793,7 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Html::textarea($this->handle, $value);
+        return Html::textarea($this->handle, $value)->render();
     }
 
     /**

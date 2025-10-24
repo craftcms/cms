@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
@@ -17,7 +19,7 @@ final class ColorRule implements ValidationRule
             $value = self::normalizeColor($value);
         }
 
-        $valid = ! is_array($value) && preg_match($this->pattern, $value);
+        $valid = ! is_array($value) && preg_match($this->pattern, (string) $value);
 
         if (! $valid) {
             $fail(t('{attribute} is invalid.', [

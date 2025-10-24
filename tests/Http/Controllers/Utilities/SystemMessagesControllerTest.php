@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;

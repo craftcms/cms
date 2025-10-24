@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Composer;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;

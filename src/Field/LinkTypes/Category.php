@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
@@ -16,6 +18,7 @@ final class Category extends BaseElementLinkType
         return CategoryElement::class;
     }
 
+    #[\Override]
     protected function availableSourceKeys(): array
     {
         $sources = [];

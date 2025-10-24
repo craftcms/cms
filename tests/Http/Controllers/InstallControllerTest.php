@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Shared\Models\Info;

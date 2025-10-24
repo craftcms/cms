@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\ElementInterface;
@@ -15,7 +17,7 @@ use Twig\Markup;
 /**
  * Link field data class.
  */
-final class LinkData extends Dto implements Serializable
+final class LinkData extends Dto implements \Stringable, Serializable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;

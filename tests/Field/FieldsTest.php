@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
@@ -55,6 +57,7 @@ it('can add extra field types through an event', function () {
 it('can get all field types that have content', function () {
     class CustomFieldWithoutContent extends Field
     {
+        #[\Override]
         public static function dbType(): null
         {
             return null;

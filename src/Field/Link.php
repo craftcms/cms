@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -55,6 +57,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Link');
@@ -63,6 +66,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'link';
@@ -71,6 +75,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', LinkData::class);
@@ -79,6 +84,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): array
     {
         return [
@@ -221,6 +227,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -449,6 +456,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
@@ -493,11 +501,11 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'target' => (! empty($value['target']) && in_array('target', $this->advancedFields)) ? $value['target'] : null,
                 'title' => (! empty($value['title']) && in_array('title', $this->advancedFields)) ? $value['title'] : null,
                 'class' => (! empty($value['class']) && in_array('class', $this->advancedFields))
-                    ? (implode(' ', array_map(fn (string $class) => Html::id($class), explode(' ', $value['class']))))
+                    ? (implode(' ', array_map(fn (string $class) => Html::id($class), explode(' ', (string) $value['class']))))
                     : null,
                 'id' => (! empty($value['id']) && in_array('id', $this->advancedFields)) ? Html::id($value['id']) : null,
                 'rel' => (! empty($value['rel']) && in_array('rel', $this->advancedFields))
-                    ? (implode(' ', array_map(fn (string $rel) => Html::id($rel), explode(' ', $value['rel']))))
+                    ? (implode(' ', array_map(fn (string $rel) => Html::id($rel), explode(' ', (string) $value['rel']))))
                     : null,
                 'ariaLabel' => (! empty($value['ariaLabel']) && in_array('ariaLabel', $this->advancedFields)) ? $value['ariaLabel'] : null,
                 'download' => (! empty($value['download']) && in_array('download', $this->advancedFields)) ? (bool) $value['download'] : null,
@@ -514,7 +522,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 return null;
             }
 
-            if (isset($config['urlSuffix']) && ! str_starts_with($config['urlSuffix'], '#')) {
+            if (isset($config['urlSuffix']) && ! str_starts_with((string) $config['urlSuffix'], '#')) {
                 $config['urlSuffix'] = Str::start($config['urlSuffix'], '?');
             }
 
@@ -544,6 +552,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -552,6 +561,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
@@ -771,6 +781,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -812,6 +823,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         if (parent::isValueEmpty($value, $element)) {
@@ -838,6 +850,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
@@ -847,6 +860,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -860,6 +874,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): Type|array
     {
         if (! $this->fullGraphqlData) {
@@ -872,6 +887,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         if (! $this->fullGraphqlData) {

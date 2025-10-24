@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -23,6 +25,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return 'JSON';
@@ -31,6 +34,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'brackets-curly';
@@ -39,6 +43,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'array|null';
@@ -47,6 +52,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_JSON;
@@ -55,6 +61,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?JsonData
     {
         if ($value === null || $value === '') {
@@ -71,6 +78,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?JsonData
     {
         if ($value === null || $value === '') {
@@ -92,6 +100,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, false);
@@ -100,6 +109,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, true);
@@ -156,6 +166,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -176,6 +187,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
@@ -189,6 +201,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         return Html::tag('code', '{foo:"bar"}');

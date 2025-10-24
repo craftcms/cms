@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Section\Data;
 
 use Closure;
@@ -129,8 +131,8 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                     $hasErrors = false;
 
                     foreach ($value as &$target) {
-                        $target['label'] = trim($target['label']);
-                        $target['urlFormat'] = trim($target['urlFormat']);
+                        $target['label'] = trim((string) $target['label']);
+                        $target['urlFormat'] = trim((string) $target['urlFormat']);
 
                         if ($target['label'] === '') {
                             $target['label'] = ['value' => $target['label'], 'hasErrors' => true];

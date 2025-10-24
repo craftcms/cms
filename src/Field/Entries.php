@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -54,6 +56,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Entries');
@@ -62,6 +65,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'newspaper';
@@ -78,6 +82,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an entry');
@@ -86,6 +91,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
@@ -108,6 +114,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
@@ -128,6 +135,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryEntries($schema);
@@ -136,6 +144,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -153,6 +162,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -184,6 +194,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
@@ -209,6 +220,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new Entry;
@@ -232,6 +244,7 @@ final class Entries extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         if ($this->sources === null) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\UrlHelper;
@@ -36,7 +38,7 @@ final readonly class SitesController
 
     public function index(Request $request)
     {
-        if (($groupId = $request->get('groupId')) && ! $group = $this->siteGroups->getGroupById($groupId)) {
+        if (($groupId = $request->integer('groupId')) && ! $group = $this->siteGroups->getGroupById($groupId)) {
             abort(404, 'Invalid site group ID: '.$groupId);
         }
 
@@ -76,7 +78,7 @@ final readonly class SitesController
 
         abort_if($allGroups->isEmpty(), 500, 'No site groups exist.');
         abort_if(
-            $request->has('groupId') && ! $this->siteGroups->getGroupById($request->get('groupId')),
+            $request->has('groupId') && ! $this->siteGroups->getGroupById($request->integer('groupId')),
             404,
             'Site group not found'
         );

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Models\User;

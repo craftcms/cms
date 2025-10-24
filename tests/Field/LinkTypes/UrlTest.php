@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Field\LinkTypes\Url;
 
 test('validateValue', function (string $value, bool $expected, array $config = []) {

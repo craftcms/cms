@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -27,6 +29,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Range');
@@ -35,6 +38,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'slider';
@@ -43,6 +47,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'int|null';
@@ -51,6 +56,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_INTEGER;
@@ -59,6 +65,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = self::valueSql($instances);
@@ -108,6 +115,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -145,6 +153,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -153,6 +162,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
         if ($value === null) {
@@ -192,6 +202,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Cp::rangeHtml([
@@ -209,6 +220,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -227,6 +239,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
@@ -245,6 +258,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -262,6 +276,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): Type
     {
         return NumberType::getType();
@@ -270,6 +285,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [

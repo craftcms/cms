@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Console\Commands\Setup;
 
 use CraftCms\Cms\Console\CraftCommand;

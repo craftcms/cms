@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
@@ -124,7 +126,7 @@ final class MigrateCommand extends Command implements Isolatable
             $which = match ($track) {
                 'craft' => 'Craft',
                 'content' => 'content',
-                default => $plugins[substr($track, 7)]->name,
+                default => $plugins[substr((string) $track, 7)]->name,
             };
 
             $this->box(
@@ -161,7 +163,7 @@ final class MigrateCommand extends Command implements Isolatable
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
             } elseif ($track !== 'content') {
-                $this->plugins->updatePluginVersionInfo($plugins[substr($track, 7)]);
+                $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
             }
         }
 

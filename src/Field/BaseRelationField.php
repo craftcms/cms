@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -107,6 +109,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class,
@@ -116,6 +119,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): array|string|null
     {
         return Schema::TYPE_JSON;
@@ -124,6 +128,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): array|false
     {
         /** @var self $field */
@@ -415,6 +420,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -540,6 +546,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         $rules = [
@@ -663,6 +670,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var ElementQueryInterface|ElementCollection $value */
@@ -676,6 +684,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If we're propagating a value, and we don't show the site menu,
@@ -822,6 +831,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($this->maintainHierarchy) {
@@ -850,6 +860,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
@@ -872,6 +883,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->localizeRelations;
@@ -880,6 +892,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -888,6 +901,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, false, true);
@@ -957,6 +971,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQuery|ElementCollection $value */
@@ -978,6 +993,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQueryInterface|ElementCollection $value */
@@ -998,6 +1014,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new (static::elementType());
@@ -1101,6 +1118,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [
@@ -1140,6 +1158,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the elements
@@ -1233,6 +1252,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
@@ -1413,6 +1433,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;

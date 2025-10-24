@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Component\Contracts;
 
 use CraftCms\Cms\Shared\Enums\Color;

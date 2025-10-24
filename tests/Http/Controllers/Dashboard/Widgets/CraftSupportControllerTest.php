@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
@@ -168,8 +170,8 @@ final class Formatter
 
         $value = $this->normalizeNumericStringValue($value);
 
-        if (str_contains($value, '.')) {
-            [$integerPart, $fractionalPart] = explode('.', $value, 2);
+        if (str_contains((string) $value, '.')) {
+            [$integerPart, $fractionalPart] = explode('.', (string) $value, 2);
         } else {
             $integerPart = $value;
             $fractionalPart = null;
@@ -216,19 +218,19 @@ final class Formatter
 
         // checking if integer part must be rounded
         if ($carry || ($decimals === 0 && $fractionalPart !== null && (int) substr($fractionalPart, 0, 1) >= 5)) {
-            $integerPartLength = strlen($integerPart);
+            $integerPartLength = strlen((string) $integerPart);
             $cursor = 0;
 
             while (++$cursor <= $integerPartLength) {
                 $carry = 0;
 
-                $oneUp = (int) substr($integerPart, -$cursor, 1) + 1;
+                $oneUp = (int) substr((string) $integerPart, -$cursor, 1) + 1;
                 if ($oneUp === 10) {
                     $oneUp = 0;
                     $carry = 1;
                 }
 
-                $integerPart = substr($integerPart, 0, -$cursor).$oneUp.substr($integerPart, $integerPartLength - $cursor + 1);
+                $integerPart = substr((string) $integerPart, 0, -$cursor).$oneUp.substr((string) $integerPart, $integerPartLength - $cursor + 1);
 
                 if ($carry === 0) {
                     break;
@@ -239,10 +241,10 @@ final class Formatter
             }
         }
 
-        if (strlen($integerPart) > 3) {
+        if (strlen((string) $integerPart) > 3) {
             $thousandSeparator = new Locale($this->locale)->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
-            $integerPart = strrev(implode(',', str_split(strrev($integerPart), 3)));
+            $integerPart = strrev(implode(',', str_split(strrev((string) $integerPart), 3)));
             if ($thousandSeparator !== ',') {
                 $integerPart = str_replace(',', $thousandSeparator, $integerPart);
             }
@@ -251,7 +253,7 @@ final class Formatter
         return $integerPart.$decimalOutput;
     }
 
-    public function asDuration(DateInterval|string|int|null $value, $implodeString = ', ', $negativeSign = '-'): string
+    public function asDuration(DateInterval|string|int|float|null $value, $implodeString = ', ', $negativeSign = '-'): string
     {
         if (is_null($value)) {
             return '';
@@ -347,11 +349,11 @@ final class Formatter
 
         $decimals ??= 0;
         $value = $this->normalizeNumericStringValue((string) $value);
-        $separatorPosition = strrpos($value, '.');
+        $separatorPosition = strrpos((string) $value, '.');
 
         if ($separatorPosition !== false) {
-            $integerPart = substr($value, 0, $separatorPosition);
-            $fractionalPart = str_pad(substr($value, $separatorPosition + 1), 2, '0');
+            $integerPart = substr((string) $value, 0, $separatorPosition);
+            $fractionalPart = str_pad(substr((string) $value, $separatorPosition + 1), 2, '0');
 
             $integerPart .= substr($fractionalPart, 0, 2);
             $fractionalPart = substr($fractionalPart, 2);
@@ -508,31 +510,31 @@ final class Formatter
         return (string) $this->normalizeNumericValue($value) !== $this->normalizeNumericStringValue((string) $value);
     }
 
-    private function normalizeNumericStringValue($value): array|string|null
+    private function normalizeNumericStringValue($value): ?string
     {
-        $powerPosition = strrpos($value, 'E');
+        $powerPosition = strrpos((string) $value, 'E');
         if ($powerPosition !== false) {
-            $valuePart = substr($value, 0, $powerPosition);
-            $powerPart = substr($value, $powerPosition + 1);
+            $valuePart = substr((string) $value, 0, $powerPosition);
+            $powerPart = substr((string) $value, $powerPosition + 1);
         } else {
             $powerPart = null;
             $valuePart = $value;
         }
 
-        $separatorPosition = strrpos($valuePart, '.');
+        $separatorPosition = strrpos((string) $valuePart, '.');
 
         if ($separatorPosition !== false) {
-            $integerPart = substr($valuePart, 0, $separatorPosition);
-            $fractionalPart = substr($valuePart, $separatorPosition + 1);
+            $integerPart = substr((string) $valuePart, 0, $separatorPosition);
+            $fractionalPart = substr((string) $valuePart, $separatorPosition + 1);
         } else {
             $integerPart = $valuePart;
             $fractionalPart = null;
         }
 
         // truncate insignificant zeros, keep minus
-        $integerPart = preg_replace('/^\+?(-?)0*(\d+)$/', '$1$2', $integerPart);
+        $integerPart = preg_replace('/^\+?(-?)0*(\d+)$/', '$1$2', (string) $integerPart);
         // for zeros only leave one zero, keep minus
-        $integerPart = preg_replace('/^\+?(-?)0*$/', '${1}0', $integerPart);
+        $integerPart = preg_replace('/^\+?(-?)0*$/', '${1}0', (string) $integerPart);
 
         if ($fractionalPart !== null) {
             // truncate insignificant zeros

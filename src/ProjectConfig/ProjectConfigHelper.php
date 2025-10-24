@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
@@ -588,13 +590,7 @@ final class ProjectConfigHelper
             return false;
         }
 
-        foreach ($item as $key => $value) {
-            if (! is_array($value) || ! is_string($key) || ! Str::isUuid($key)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($item, fn ($value, $key) => ! (! is_array($value) || ! is_string($key) || ! Str::isUuid($key)));
     }
 
     /**

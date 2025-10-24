@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return
     [
         'dateModified' => 1607544575,

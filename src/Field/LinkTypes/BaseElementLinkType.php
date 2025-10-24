@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
@@ -41,6 +43,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::refHandle();
     }
 
+    #[\Override]
     public static function displayName(): string
     {
         return static::elementType()::displayName();
@@ -107,6 +110,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         return (bool) preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
     }
 
+    #[\Override]
     public function renderValue(string $value): string
     {
         return $this->element($value)?->getUrl() ?? '';
@@ -218,6 +222,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(string $value): bool
     {
         // check if the element we're linking to still exists (e.g. it wasn't deleted)
@@ -250,6 +255,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(ElementInterface|int|string $value): string
     {
         if ($value instanceof ElementInterface) {

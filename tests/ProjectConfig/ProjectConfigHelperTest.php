@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;

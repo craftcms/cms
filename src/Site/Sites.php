@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Site;
 
 use craft\base\ElementInterface;
@@ -28,6 +30,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Updates\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -847,9 +850,13 @@ final class Sites
         }
 
         foreach ($results as $result) {
+            $result->dateCreated = Date::parse($result->dateCreated);
+            $result->dateUpdated = Date::parse($result->dateUpdated);
+
             $result = (array) $result;
-            $result['dateCreated'] = Date::parse($result['dateCreated']);
-            $result['dateUpdated'] = Date::parse($result['dateUpdated']);
+
+            // @TODO: Use Site::from() when Codeception tests are removed
+            Typecast::properties(Site::class, $result);
 
             $site = new Site(...$result);
             $this->allSitesById[$site->id] = $site;

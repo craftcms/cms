@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\widgets\CraftSupport;
 use craft\widgets\Feed;
 use craft\widgets\MissingWidget;

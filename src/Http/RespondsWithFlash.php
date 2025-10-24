@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http;
 
 use Craft;
@@ -52,7 +54,7 @@ trait RespondsWithFlash
         $modelName ??= 'model';
         $data += array_filter([
             'modelName' => $modelName,
-            'modelClass' => get_class($model),
+            'modelClass' => $model::class,
             $modelName => Arr::toArray($model),
             'errors' => method_exists($model, 'getErrors')
                 ? $model->getErrors()
@@ -72,7 +74,7 @@ trait RespondsWithFlash
         $modelName ??= 'model';
         $data += [
             'modelName' => $modelName,
-            'modelClass' => get_class($model),
+            'modelClass' => $model::class,
             $modelName => Arr::toArray($model),
         ];
 

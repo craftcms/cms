@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -116,7 +118,7 @@ final class PhpInfo extends Utility
 
         $phpInfoStr = preg_replace(array_keys($replacePairs), array_values($replacePairs), $phpInfoStr);
 
-        $sections = explode('<h2>', strip_tags($phpInfoStr, '<h2><th><td>'));
+        $sections = explode('<h2>', strip_tags((string) $phpInfoStr, '<h2><th><td>'));
         unset($sections[0]);
 
         $phpInfo = [];

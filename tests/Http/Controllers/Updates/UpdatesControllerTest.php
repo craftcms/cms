@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\UpdateRelease;

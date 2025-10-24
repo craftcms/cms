@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
@@ -102,7 +104,7 @@ test('rebuild ignores readonly', function () {
     $thrown = false;
     try {
         $projectConfig->set('oops', true);
-    } catch (ReadonlyException $e) {
+    } catch (ReadonlyException) {
         $thrown = true;
     }
     expect($thrown)->toBeTrue();

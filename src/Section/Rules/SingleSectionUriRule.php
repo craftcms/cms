@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Section\Rules;
 
 use Closure;
@@ -35,7 +37,7 @@ final class SingleSectionUriRule implements DataAwareRule, ValidationRule
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $this->data['siteId'])
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($this->data['uriFormat']))
+            ->where(new Lower('elements_sites.uri'), mb_strtolower((string) $this->data['uriFormat']))
             ->when(
                 $section->id,
                 fn (Builder $query) => $query->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')

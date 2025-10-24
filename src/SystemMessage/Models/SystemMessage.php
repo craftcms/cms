@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\SystemMessage\Models;
 
 use CraftCms\Cms\Database\Table;
@@ -12,6 +14,7 @@ final class SystemMessage extends BaseModel
 
     protected $table = Table::SYSTEMMESSAGES;
 
+    #[\Override]
     protected static function booted(): void
     {
         self::saving(function (self $model) {

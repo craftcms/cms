@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;

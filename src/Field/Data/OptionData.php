@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
@@ -7,7 +9,7 @@ use craft\base\Serializable;
 /**
  * Class OptionData
  */
-class OptionData implements Serializable
+class OptionData implements \Stringable, Serializable
 {
     public function __construct(
         public ?string $label,

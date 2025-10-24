@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Support\Json;

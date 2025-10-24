@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Deprecator\Models;
 
 use CraftCms\Cms\Database\Table;

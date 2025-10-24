@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
@@ -38,7 +40,7 @@ final readonly class GeneralSettingsController
         $systemSettings['retryDuration'] = $request->get('retryDuration') ?: null;
         $systemSettings['timeZone'] = $request->get('timeZone');
 
-        if (! str_starts_with($systemSettings['live'], '$')) {
+        if (! str_starts_with((string) $systemSettings['live'], '$')) {
             $systemSettings['live'] = (bool) $systemSettings['live'];
         }
 

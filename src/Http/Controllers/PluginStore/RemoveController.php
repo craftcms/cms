@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
@@ -30,7 +32,7 @@ final class RemoveController extends BaseUpdaterController
             'packageName' => ['required', 'string'],
         ]);
 
-        $data['packageName'] = strip_tags($data['packageName']);
+        $data['packageName'] = strip_tags((string) $data['packageName']);
 
         return $data;
     }

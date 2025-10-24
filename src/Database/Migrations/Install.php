@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection RepetitiveMethodCallsInspection */
 
 namespace CraftCms\Cms\Database\Migrations;

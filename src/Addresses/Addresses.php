@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Addresses;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
@@ -32,16 +34,16 @@ use Illuminate\Support\Facades\Event;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Addresses implements FieldLayoutProviderInterface
+final readonly class Addresses implements FieldLayoutProviderInterface
 {
     private FormatterInterface $formatter;
 
     public function __construct(
-        private readonly ProjectConfig $projectConfig,
-        private readonly CountryRepository $countryRepository,
-        private readonly SubdivisionRepository $subdivisionRepository,
-        private readonly AddressFormatRepository $addressFormatRepository,
-        private readonly Fields $fields,
+        private ProjectConfig $projectConfig,
+        private CountryRepository $countryRepository,
+        private SubdivisionRepository $subdivisionRepository,
+        private AddressFormatRepository $addressFormatRepository,
+        private Fields $fields,
         ?FormatterInterface $formatter = null,
     ) {
         $this->formatter = $formatter ?? new DefaultFormatter(

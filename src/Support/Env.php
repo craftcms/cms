@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
@@ -86,7 +88,7 @@ final class Env extends \Illuminate\Support\Env
             return null;
         }
 
-        if (str_starts_with($value, '@') && $alias = Aliases::get($value)) {
+        if (str_starts_with((string) $value, '@') && $alias = Aliases::get($value)) {
             $value = $alias;
         }
 

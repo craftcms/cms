@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Support;
 
 use Composer\Semver\Semver;
@@ -43,7 +45,7 @@ final class PHP
      */
     public static function configValueAsBool(string $var): bool
     {
-        $value = trim(ini_get($var));
+        $value = trim(ini_get($var) ?: '');
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
         return $value === '1' || strtolower($value) === 'on';
@@ -139,8 +141,8 @@ final class PHP
             }
 
             // '.' => working dir
-            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
-                $path = getcwd().substr($path, 1);
+            if ($path === '.' || str_starts_with((string) $path, './') || str_starts_with((string) $path, '.\\')) {
+                $path = getcwd().substr((string) $path, 1);
             }
 
             // Normalize
@@ -165,13 +167,7 @@ final class PHP
 
         $path = FileHelper::normalizePath($path);
 
-        foreach (self::$basePaths as $basePath) {
-            if (str_starts_with($path, $basePath)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(self::$basePaths, fn ($basePath) => str_starts_with($path, (string) $basePath));
     }
 
     /**

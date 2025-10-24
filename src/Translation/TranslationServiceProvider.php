@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Translation;
 
 use Illuminate\Support\ServiceProvider;
@@ -10,6 +12,7 @@ use Yiisoft\Translator\Translator;
 
 final class TranslationServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->app->singleton(Translator::class, function () {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Site\Concerns;
 
 use CraftCms\Aliases\Aliases;

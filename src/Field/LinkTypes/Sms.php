@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\LinkTypes;
 
 /**
@@ -12,6 +14,7 @@ final class Sms extends BaseTextLinkType
         return 'sms';
     }
 
+    #[\Override]
     public static function displayName(): string
     {
         return 'SMS';
@@ -22,6 +25,7 @@ final class Sms extends BaseTextLinkType
         return 'sms:';
     }
 
+    #[\Override]
     public function normalizeValue(string $value): string
     {
         preg_match('/^([^?&]*)(?:[?&]+(.*))?$/', $value, $matches);
@@ -33,11 +37,13 @@ final class Sms extends BaseTextLinkType
         return parent::normalizeValue($value);
     }
 
+    #[\Override]
     public function renderValue(string $value): string
     {
         return str_replace(' ', '-', $value);
     }
 
+    #[\Override]
     protected function inputAttributes(): array
     {
         return [
@@ -46,6 +52,7 @@ final class Sms extends BaseTextLinkType
         ];
     }
 
+    #[\Override]
     protected function pattern(): string
     {
         return "^sms:[\d\+\(\)\-,; ]+([\?&].*)?$";

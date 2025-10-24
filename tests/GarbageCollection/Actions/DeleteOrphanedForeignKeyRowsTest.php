@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
 
 beforeEach(function () {
