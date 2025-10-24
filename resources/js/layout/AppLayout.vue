@@ -32,6 +32,7 @@
         state.sidebar.visibility = 'visible';
       } else {
         state.sidebar.mode = 'floating';
+        state.sidebar.visibility = 'hidden';
       }
     },
     {immediate: true}
