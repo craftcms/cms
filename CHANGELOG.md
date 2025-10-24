@@ -7,6 +7,7 @@
 - Fixed a bug where new plugin license keys weren’t getting saved to `.env` if the environment variable didn’t exist yet. ([#17942](https://github.com/craftcms/cms/issues/17942))
 - Fixed a bug where pressing <kbd>Return</kbd> within an editable table within a slideout would submit the slideout.
 - Fixed an error that could occur when retrieving an array/hash value in Twig, if the fetched key wasn’t an integer or string.
+- Fixed a bug where it wasn’t possible to clear out a volume’s “Transform Filesystem” setting. ([#17953](https://github.com/craftcms/cms/issues/17953))
 
 ## 4.16.14 - 2025-10-06
 
