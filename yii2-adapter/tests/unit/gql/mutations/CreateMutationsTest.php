@@ -19,7 +19,6 @@ use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
 use craft\gql\types\elements\Tag as TagGqlType;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\models\Volume;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Exception;
 use UnitTester;
@@ -68,10 +68,10 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $entryType = $this->make(EntryType::class, [
-            'uid' => 'uid',
-            'handle' => 'article',
-        ]);
+        $entryType = new \CraftCms\Cms\EntryType\Data\EntryType(
+            handle: 'article',
+            uid: 'uid',
+        );
 
         $section = new Section(
             handle: 'news',
@@ -85,11 +85,8 @@ class CreateMutationsTest extends TestCase
         Sections::shouldReceive('getAllSections')
             ->andReturn(collect([$section]));
 
-        $this->tester->mockCraftMethods('entries', [
-            'getAllEntryTypes' => [
-                $entryType,
-            ],
-        ]);
+        EntryTypes::shouldReceive('getAllEntryTypes')
+            ->andReturn(collect([$entryType]));
     }
 
     protected function _after(): void
@@ -303,14 +300,12 @@ class CreateMutationsTest extends TestCase
      */
     public function testCreateEntrySaveMutation(): void
     {
-        $typeA = $this->make(EntryType::class, [
+        $typeA = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+            'name' => 'typeA',
             'handle' => 'typeA',
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
+            'getCustomFields' => [
+                new PlainText(['handle' => 'someTextField']),
+            ],
         ]);
         $sectionA = new Section(
             handle: 'sectionA',
@@ -318,14 +313,12 @@ class CreateMutationsTest extends TestCase
             entryTypes: [$typeA],
         );
 
-        $typeB = $this->make(EntryType::class, [
+        $typeB = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+            'name' => 'typeB',
             'handle' => 'typeB',
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
+            'getCustomFields' => [
+                new PlainText(['handle' => 'someTextField']),
+            ],
         ]);
         $sectionB = new Section(
             handle: 'sectionB',
@@ -333,14 +326,12 @@ class CreateMutationsTest extends TestCase
             entryTypes: [$typeB],
         );
 
-        $typeC = $this->make(EntryType::class, [
+        $typeC = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+            'name' => 'typeC',
             'handle' => 'typeC',
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
+            'getCustomFields' => [
+                new PlainText(['handle' => 'someTextField']),
+            ],
         ]);
         $sectionC = new Section(
             handle: 'sectionC',

@@ -44,7 +44,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
@@ -57,8 +56,10 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
@@ -68,6 +69,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -371,7 +373,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $entryTypeOptions = $entryTypeRule['values'] ?? null;
 
         if ($entryTypeOptions) {
-            $entryType = Craft::$app->getEntries()->getEntryTypeByUid(reset($entryTypeOptions));
+            $entryType = EntryTypes::getEntryTypeByUid(reset($entryTypeOptions));
             if ($entryType) {
                 $config['data']['entry-type'] = $entryType->handle;
             }
@@ -401,7 +403,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             )));
         } else {
             // get all entry types, including those which may only be used by Matrix fields
-            $entryTypes = Craft::$app->getEntries()->getAllEntryTypes();
+            $entryTypes = EntryTypes::getAllEntryTypes()->all();
         }
 
         return array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
@@ -578,12 +580,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             [
                 'label' => t('Entry Type'),
                 'orderBy' => function(int $dir, Connection $db) {
-                    $entryTypeIds = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
+                    $entryTypeIds = EntryTypes::getAllEntryTypes()
                         ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
                             : $b->name <=> $a->name)
-                        ->map(fn(EntryType $type) => $type->id)
+                        ->pluck('id')
                         ->all();
+
                     return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
                 },
                 'attribute' => 'type',
@@ -1453,7 +1456,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getIsTitleTranslatable(): bool
     {
-        return ($this->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+        return ($this->getType()->titleTranslationMethod !== TranslationMethod::None);
     }
 
     /**
@@ -1478,7 +1481,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getIsSlugTranslatable(): bool
     {
-        return ($this->getType()->slugTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+        return ($this->getType()->slugTranslationMethod !== TranslationMethod::None);
     }
 
     /**
@@ -1629,7 +1632,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 if (!$entryType) {
                     // Maybe the section/field no longer allows this type,
                     // so get it directly from the Entries service instead
-                    $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId, true);
+                    $entryType = EntryTypes::getEntryTypeById($this->_typeId, true);
                     if (!$entryType) {
                         throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
                     }
@@ -3174,7 +3177,7 @@ JS;
 
     private function handleChangedTypeId(): void
     {
-        $oldLayout = Craft::$app->getEntries()->getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
+        $oldLayout = EntryTypes::getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
         if (!$oldLayout) {
             return;
         }

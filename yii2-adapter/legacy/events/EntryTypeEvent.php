@@ -15,6 +15,7 @@ use craft\models\EntryType;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class EntryTypeEvent extends Event
 {

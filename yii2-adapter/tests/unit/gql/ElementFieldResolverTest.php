@@ -26,13 +26,13 @@ use craft\gql\types\elements\Tag as TagGqlType;
 use craft\gql\types\elements\User as UserGqlType;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\ImageTransform;
 use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -89,7 +89,7 @@ class ElementFieldResolverTest extends TestCase
                     // Assume fields 'plainTextField' and 'typeface'
                     in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property,
                 'getSection' => fn() => new Section(handle: $sectionHandle),
-                'getType' => fn() => $this->make(EntryType::class, ['handle' => $typeHandle]),
+                'getType' => fn() => new EntryType(handle: $typeHandle),
             ]
         );
 
@@ -218,7 +218,7 @@ class ElementFieldResolverTest extends TestCase
                 'ownerId' => 80,
                 'typeId' => 99,
                 'getTypeId' => 99,
-                'getType' => fn() => $this->make(EntryType::class, ['handle' => $typeHandle]),
+                'getType' => fn() => new EntryType(handle: $typeHandle),
             ]
         );
 

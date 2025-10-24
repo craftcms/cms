@@ -13,13 +13,14 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
-use craft\models\EntryType;
 use craft\models\UserGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\EntryType\Data\EntryType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -436,7 +437,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getEntries()->getEntryTypeByHandle($item);
+                $item = EntryTypes::getEntryTypeByHandle($item);
             }
             return $item instanceof EntryType ? $item->id : null;
         })) {
@@ -1235,10 +1236,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         if ($this->typeId || $this->sectionId) {
             $fieldLayouts = [];
-            $sectionsService = Craft::$app->getEntries();
             if ($this->typeId) {
                 foreach ($this->typeId as $entryTypeId) {
-                    $entryType = $sectionsService->getEntryTypeById($entryTypeId);
+                    $entryType = EntryTypes::getEntryTypeById($entryTypeId);
                     if ($entryType) {
                         $fieldLayouts[] = $entryType->getFieldLayout();
                     }

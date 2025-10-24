@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\MemoizableArray;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
@@ -19,23 +18,18 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
-use craft\helpers\AdminTable;
-use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\Queue;
 use craft\models\EntryType;
-use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\queue\jobs\ResaveElements;
-use craft\records\EntryType as EntryTypeRecord;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\EntryType\Events\ApplyingDeleteEntryType;
+use CraftCms\Cms\EntryType\Events\DeletingEntryType;
+use CraftCms\Cms\EntryType\Events\EntryTypeDeleted;
+use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
+use CraftCms\Cms\EntryType\Events\SavingEntryType;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -44,28 +38,21 @@ use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -148,28 +135,6 @@ class Entries extends Component
      * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
-
-    /**
-     * @var bool Whether entries should be resaved after a section or entry type has been updated.
-     *
-     * ::: tip
-     * Entries will be resaved regardless of what this is set to, when a section’s Propagation Method setting changes.
-     * :::
-     *
-     * ::: warning
-     * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
-     * :::
-     *
-     * @since 5.0.0
-     */
-    public bool $autoResaveEntries = true;
-
-    /**
-     * @var MemoizableArray<EntryType>|null
-     * @see _entryTypes()
-     */
-    private ?MemoizableArray $_entryTypes = null;
 
     /**
      * @var array<int,array<string,Entry|false>>
@@ -594,52 +559,6 @@ class Entries extends Component
         return Sections::getSectionTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
     }
 
-    /**
-     * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
-     *
-     * @param Builder $query
-     * @param int $page
-     * @param int $limit
-     * @param string|null $searchTerm
-     * @param string $orderBy
-     * @param int $sortDir
-     *
-     * @return array{0: Collection, 1: int}
-     * @since 5.5.0
-     */
-    private function prepTableData(
-        Builder $query,
-        int $page,
-        int $limit,
-        ?string $searchTerm,
-        string $orderBy = 'name',
-        int $sortDir = SORT_ASC,
-    ): array {
-        $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
-        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
-        $query = $query->orderBy($orderBy, $sortDir);
-
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $searchParams = $this->_getSearchParams($searchTerm);
-            if (!empty($searchParams)) {
-                $query->where(function(Builder $query) use ($searchParams) {
-                    foreach ($searchParams as $param) {
-                        $query->orWhere($param[0], $param[1], $param[2]);
-                    }
-                });
-            }
-        }
-
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        return [$query->get(), $total];
-    }
-
     // Entry Types
     // -------------------------------------------------------------------------
 
@@ -659,56 +578,9 @@ class Entries extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        return DB::table(Table::SECTIONS_ENTRYTYPES)
-            ->select([new Alias('typeId', 'id'), 'name', 'description', 'handle'])
-            ->where('sectionId', $sectionId)
-            ->orderBy('sortOrder')
-            ->get()
-            ->map(fn(object $entryType) => $this->getEntryType((array)$entryType))
-            ->filter()
-            ->values()
+        return EntryTypes::getEntryTypesBySectionId($sectionId)
+            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
             ->all();
-    }
-
-    /**
-     * Returns a memoizable array of all entry types.
-     *
-     * @return MemoizableArray<EntryType>
-     */
-    private function _entryTypes(): MemoizableArray
-    {
-        if (!isset($this->_entryTypes)) {
-            $this->_entryTypes = new MemoizableArray(
-                $this->_createEntryTypeQuery()->get()->all(),
-                fn(object $result) => new EntryType((array) $result),
-            );
-        }
-
-        return $this->_entryTypes;
-    }
-
-    private function _createEntryTypeQuery(): Builder
-    {
-        return DB::table(Table::ENTRYTYPES)
-            ->select([
-                'id',
-                'fieldLayoutId',
-                'name',
-                'description',
-                'icon',
-                'color',
-                'handle',
-                'hasTitleField',
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-                'titleFormat',
-                'slugTranslationMethod',
-                'slugTranslationKeyFormat',
-                'showStatusField',
-                'showSlugField',
-                'uid',
-            ])
-            ->whereNull('dateDeleted');
     }
 
     /**
@@ -725,7 +597,9 @@ class Entries extends Component
      */
     public function getAllEntryTypes(): array
     {
-        return $this->_entryTypes()->all();
+        return EntryTypes::getAllEntryTypes()
+            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
+            ->all();
     }
 
     /**
@@ -745,25 +619,13 @@ class Entries extends Component
      */
     public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
     {
-        $entryType = $this->_entryTypes()->firstWhere('id', $entryTypeId);
-        if (!$entryType && $withTrashed) {
-            $record = $this->_getEntryTypeRecord($entryTypeId, true);
-            if (!$record->getIsNewRecord()) {
-                return new EntryType($record->toArray([
-                    'id',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'description',
-                    'hasTitleField',
-                    'titleTranslationMethod',
-                    'titleTranslationKeyFormat',
-                    'titleFormat',
-                    'uid',
-                ]));
-            }
+        $entryType = EntryTypes::getEntryTypeById($entryTypeId, $withTrashed);
+
+        if (!$entryType) {
+            return null;
         }
-        return $entryType;
+
+        return self::entryTypeFromEntryTypeData($entryType);
     }
 
     /**
@@ -776,7 +638,13 @@ class Entries extends Component
      */
     public function getEntryTypeByUid(string $uid): ?EntryType
     {
-        return $this->_entryTypes()->firstWhere('uid', $uid);
+        $entryType = EntryTypes::getEntryTypeByUid($uid);
+
+        if (!$entryType) {
+            return null;
+        }
+
+        return self::entryTypeFromEntryTypeData($entryType);
     }
 
     /**
@@ -795,7 +663,13 @@ class Entries extends Component
      */
     public function getEntryTypeByHandle(string $entryTypeHandle): ?EntryType
     {
-        return $this->_entryTypes()->firstWhere('handle', $entryTypeHandle, true);
+        $entryType = EntryTypes::getEntryTypeByHandle($entryTypeHandle);
+
+        if (!$entryType) {
+            return null;
+        }
+
+        return self::entryTypeFromEntryTypeData($entryType);
     }
 
     /**
@@ -808,47 +682,13 @@ class Entries extends Component
      */
     public function getEntryType(mixed $entryType): ?EntryType
     {
-        if ($entryType instanceof EntryType) {
-            return $entryType;
-        }
-
-        if (is_numeric($entryType)) {
-            return $this->getEntryTypeById($entryType);
-        }
-
-        if (is_string($entryType)) {
-            try {
-                $config = Json::decode($entryType);
-            } catch (\InvalidArgumentException) {
-                return $this->getEntryTypeByUid($entryType);
-            }
-        } else {
-            $config = $entryType;
-        }
-
-        if (isset($config['id'])) {
-            $entryType = $this->getEntryTypeById($config['id']);
-        } elseif (isset($config['uid'])) {
-            $entryType = $this->getEntryTypeByUid($config['uid']);
-        } else {
-            throw new InvalidArgumentException('Invalid entry type.');
-        }
+        $entryType = EntryTypes::getEntryType($entryType);
 
         if (!$entryType) {
             return null;
         }
 
-        if (isset($config['name']) || isset($config['handle']) || isset($config['description']) || isset($config['group'])) {
-            $original = $entryType;
-            $entryType = clone $original;
-            $entryType->name = $config['name'] ?? $original->name;
-            $entryType->handle = $config['handle'] ?? $original->handle;
-            $entryType->description = $config['description'] ?? $original->description;
-            $entryType->group = $config['group'] ?? null;
-            $entryType->original = $original;
-        }
-
-        return $entryType;
+        return self::entryTypeFromEntryTypeData($entryType);
     }
 
     /**
@@ -864,36 +704,18 @@ class Entries extends Component
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
-        $isNewEntryType = !$entryType->id;
-
-        // Fire a 'beforeSaveEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-                'isNew' => $isNewEntryType,
-            ]));
-        }
-
-        $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
-
         if ($runValidation && !$entryType->validate()) {
-            Craft::info('Entry type not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewEntryType && !$entryType->uid) {
-            $entryType->uid = Str::uuid()->toString();
-        }
+        $data = $entryType->toArray();
+        $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
+        $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
+        $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
+        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
+        $entryTypeData->setFieldLayout($entryType->getFieldLayout());
 
-        $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;
-        $configData = $entryType->getConfig();
-        app(ProjectConfig::class)->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
-
-        if ($isNewEntryType) {
-            $entryType->id = DB::table(Table::ENTRYTYPES)->idByUid($entryType->uid);
-        }
-
-        return true;
+        return EntryTypes::saveEntryType($entryTypeData);
     }
 
     /**
@@ -905,130 +727,7 @@ class Entries extends Component
      */
     public function handleChangedEntryType(ConfigEvent $event): void
     {
-        $entryTypeUid = $event->tokenMatches[0];
-        $data = $event->newValue;
-
-        // Make sure fields are processed
-        ProjectConfigHelper::ensureAllSitesProcessed();
-        ProjectConfigHelper::ensureAllFieldsProcessed();
-
-        $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
-
-        DB::beginTransaction();
-
-        try {
-            $isNewEntryType = $entryTypeRecord->getIsNewRecord();
-
-            $entryTypeRecord->name = $data['name'];
-            $entryTypeRecord->handle = $data['handle'];
-            $entryTypeRecord->icon = $data['icon'] ?? null;
-            $entryTypeRecord->color = $data['color'] ?? null;
-            $entryTypeRecord->hasTitleField = $data['hasTitleField'];
-            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
-            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
-            $entryTypeRecord->titleFormat = $data['titleFormat'];
-            $entryTypeRecord->showSlugField = $data['showSlugField'] ?? true;
-            $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
-            $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
-            $entryTypeRecord->showStatusField = $data['showStatusField'] ?? true;
-            $entryTypeRecord->uid = $entryTypeUid;
-            $entryTypeRecord->description = $data['description'] ?? null;
-
-            if (!empty($data['fieldLayouts'])) {
-                // Save the field layout
-                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                $layout->id = $entryTypeRecord->fieldLayoutId;
-                $layout->type = Entry::class;
-                $layout->uid = key($data['fieldLayouts']);
-                app(Fields::class)->saveLayout($layout, false);
-                $entryTypeRecord->fieldLayoutId = $layout->id;
-            } elseif ($entryTypeRecord->fieldLayoutId) {
-                // Delete the field layout
-                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
-                $entryTypeRecord->fieldLayoutId = null;
-            }
-
-            $resaveEntries = (
-                $entryTypeRecord->handle !== $entryTypeRecord->getOldAttribute('handle') ||
-                $entryTypeRecord->hasTitleField != $entryTypeRecord->getOldAttribute('hasTitleField') ||
-                $entryTypeRecord->titleFormat !== $entryTypeRecord->getOldAttribute('titleFormat') ||
-                $entryTypeRecord->fieldLayoutId != $entryTypeRecord->getOldAttribute('fieldLayoutId')
-            );
-
-            // Save the entry type
-            $wasTrashed = (bool)$entryTypeRecord->dateDeleted;
-            if ($wasTrashed) {
-                $entryTypeRecord->restore();
-                $resaveEntries = true;
-            } else {
-                $entryTypeRecord->save(false);
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        $this->_entryTypes = null;
-
-        if ($wasTrashed) {
-            // Restore the entries at the end of the request in case the section isn't restored yet
-            // (see https://github.com/craftcms/cms/issues/15787)
-            Craft::$app->onAfterRequest(function() use ($entryTypeRecord) {
-                /** @var Entry[] $entries */
-                $entries = Entry::find()
-                    ->typeId($entryTypeRecord->id)
-                    ->drafts(null)
-                    ->draftOf(false)
-                    ->status(null)
-                    ->trashed()
-                    ->site('*')
-                    ->unique()
-                    ->andWhere(['entries.deletedWithEntryType' => true])
-                    ->all();
-                /** @var Entry[][] $entriesBySection */
-                $entriesBySection = Collection::make($entries)->groupBy('sectionId')->all();
-                foreach ($entriesBySection as $sectionEntries) {
-                    try {
-                        Craft::$app->getElements()->restoreElements($sectionEntries);
-                    } catch (InvalidConfigException) {
-                        // the section probably wasn't restored
-                    }
-                }
-            });
-        }
-
-        /** @var EntryType $entryType */
-        $entryType = $this->getEntryTypeById($entryTypeRecord->id);
-
-        if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
-            // Re-save the entries of this type
-            Queue::push(new ResaveElements([
-                'description' => I18N::prep('Resaving {type} entries', [
-                    'type' => $entryType->name,
-                ]),
-                'elementType' => Entry::class,
-                'criteria' => [
-                    'typeId' => $entryType->id,
-                    'siteId' => '*',
-                    'unique' => true,
-                    'status' => null,
-                ],
-            ]));
-        }
-
-        // Fire an 'afterSaveEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-                'isNew' => $isNewEntryType,
-            ]));
-        }
-
-        // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        EntryTypes::handleChangedEntryType($event);
     }
 
     /**
@@ -1048,13 +747,7 @@ class Entries extends Component
      */
     public function deleteEntryTypeById(int $entryTypeId): bool
     {
-        $entryType = $this->getEntryTypeById($entryTypeId);
-
-        if (!$entryType) {
-            return false;
-        }
-
-        return $this->deleteEntryType($entryType);
+        return EntryTypes::deleteEntryTypeById($entryTypeId);
     }
 
     /**
@@ -1074,16 +767,13 @@ class Entries extends Component
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        // Fire a 'beforeDeleteEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-            ]));
-        }
+        $data = $entryType->toArray();
+        $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
+        $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
+        $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
+        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
 
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid,
-            "Delete the “{$entryType->handle}” entry type");
-        return true;
+        return EntryTypes::deleteEntryType($entryTypeData);
     }
 
     /**
@@ -1095,82 +785,7 @@ class Entries extends Component
      */
     public function handleDeletedEntryType(ConfigEvent $event): void
     {
-        $uid = $event->tokenMatches[0];
-        $entryTypeRecord = $this->_getEntryTypeRecord($uid);
-
-        if (!$entryTypeRecord->id) {
-            return;
-        }
-
-        /** @var EntryType $entryType */
-        $entryType = $this->getEntryTypeById($entryTypeRecord->id);
-
-        // Fire a 'beforeApplyEntryTypeDelete' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
-                'entryType' => $entryType,
-            ]));
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Delete the entries
-            $now = now();
-
-            $condition = fn(Builder $query) => $query
-                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
-
-            DB::table(Table::ELEMENTS, 'elements')
-                ->whereIn(
-                    'elements.id',
-                    DB::table(Table::ENTRIES, 'entries')
-                        ->where('entries.typeId', $entryType->id)
-                        ->select('entries.id')
-                )
-                ->where($condition)
-                ->update([
-                    'dateDeleted' => $now,
-                ]);
-
-            DB::table(Table::ENTRIES, 'entries')
-                ->whereIn(
-                    'entries.id',
-                    DB::table(Table::ELEMENTS, 'elements')
-                        ->where($condition)
-                        ->select('elements.id')
-                )
-                ->where('entries.typeId', $entryType->id)
-                ->update([
-                    'deletedWithEntryType' => true,
-                ]);
-
-            // Delete the field layout
-            if ($entryTypeRecord->fieldLayoutId) {
-                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
-            }
-
-            // Delete the entry type.
-            DB::table(Table::ENTRYTYPES)->softDelete($entryTypeRecord->id);
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        $this->_entryTypes = null;
-
-        // Fire an 'afterDeleteEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-            ]));
-        }
-
-        // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        EntryTypes::handleDeletedEntryType($event);
     }
 
     /**
@@ -1180,7 +795,7 @@ class Entries extends Component
      */
     public function refreshEntryTypes(): void
     {
-        $this->_entryTypes = null;
+        EntryTypes::refreshEntryTypes();
     }
 
     /**
@@ -1203,116 +818,7 @@ class Entries extends Component
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy,
-            $sortDir);
-
-        /** @var Collection<EntryType> $entryTypes */
-        $entryTypes = $results->map(fn(object $result) => $this->_entryTypes()->firstWhere('id', $result->id))->filter()->values();
-
-        $tableData = [];
-        $usages = $this->allEntryTypeUsages();
-
-        foreach ($entryTypes as $entryType) {
-            $label = $entryType->getUiLabel();
-            $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']) .
-                Cp::chipHtml($entryType, [
-                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
-                        'class' => ['chip-label', 'cell-bold'],
-                    ]),
-                ]);
-            if ($entryType->description) {
-                $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
-                        'gfm-comment')),
-                    ['class' => 'info']);
-            }
-            $chipCellContent .= Html::endTag('div');
-
-            $tableData[] = [
-                'id' => $entryType->id,
-                'title' => $label,
-                'chip' => $chipCellContent,
-                'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
-            ];
-        }
-
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
-
-        return [$pagination, $tableData];
-    }
-
-    /**
-     * @return array<int,array<Section|ElementContainerFieldInterface>>
-     */
-    private function allEntryTypeUsages(): array
-    {
-        $usages = [];
-
-        // Sections
-        foreach (Sections::getAllSections() as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $usages[$entryType->id][] = $section;
-            }
-        }
-
-        // Fields
-        $fieldsService = app(Fields::class);
-        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
-            /** @var ElementContainerFieldInterface[] $fields */
-            $fields = $fieldsService->getFieldsByType($type);
-            foreach ($fields as $field) {
-                foreach ($field->getFieldLayoutProviders() as $provider) {
-                    if ($provider instanceof EntryType) {
-                        $usages[$provider->id][] = $field;
-                    }
-                }
-            }
-        }
-
-        return $usages;
-    }
-
-    /**
-     * Returns the sql expression to be used in the 'where' param for the query.
-     *
-     * @param string $term
-     *
-     * @return array
-     */
-    private function _getSearchParams(string $term): array
-    {
-        $searchParams = ['name', 'handle'];
-        $searchQueries = [];
-
-        if ($term !== '') {
-            foreach ($searchParams as $param) {
-                $searchQueries[] = [$param, 'like', '%' . $term . '%'];
-            }
-        }
-
-        return $searchQueries;
-    }
-
-    /**
-     * Gets an entry type's record by uid.
-     *
-     * @param int|string $id
-     * @param bool $withTrashed Whether to include trashed entry types in search
-     *
-     * @return EntryTypeRecord
-     */
-    private function _getEntryTypeRecord(int|string $id, bool $withTrashed = false): EntryTypeRecord
-    {
-        $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
-        if (is_int($id)) {
-            $query->andWhere(['id' => $id]);
-        } else {
-            $query->andWhere(['uid' => $id]);
-        }
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var EntryTypeRecord */
-        return $query->one() ?? new EntryTypeRecord();
+        return EntryTypes::getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
     }
 
     // Entries
@@ -1582,7 +1088,9 @@ class Entries extends Component
         $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
             return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
         }, $section->getSiteSettings()));
-        $yiiSection->setEntryTypes($section->getEntryTypes());
+        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData) {
+            return self::entryTypeFromEntryTypeData($entryTypeData);
+        }, $section->getEntryTypes()));
 
         return $yiiSection;
     }
@@ -1592,11 +1100,25 @@ class Entries extends Component
         return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
     }
 
+    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData): EntryType
+    {
+        $data = Utils::getPublicProperties($entryTypeData);
+        $data['titleTranslationMethod'] = $data['titleTranslationMethod']->value;
+        $data['slugTranslationMethod'] = $data['slugTranslationMethod']->value;
+        $data['original'] = isset($data['original'])
+            ? self::entryTypeFromEntryTypeData($data['original'])
+            : null;
+
+        $entryType = new EntryType($data);
+        $entryType->setFieldLayout($entryTypeData->getFieldLayout());
+
+        return $entryType;
+    }
+
     public static function registerEvents(): void
     {
         Event::listen(SavingSection::class, function(SavingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
-                // @todo Map from model to data etc
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
                     'section' => self::sectionFromSectionData($event->section),
                     'isNew' => $event->isNew,
@@ -1633,6 +1155,48 @@ class Entries extends Component
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
                     'section' => self::sectionFromSectionData($event->section),
+                ]));
+            }
+        });
+
+        Event::listen(SavingEntryType::class, function(SavingEntryType $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'isNew' => $event->isNew,
+                ]));
+            }
+        });
+
+        Event::listen(EntryTypeSaved::class, function(EntryTypeSaved $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'isNew' => $event->isNew,
+                ]));
+            }
+        });
+
+        Event::listen(DeletingEntryType::class, function(DeletingEntryType $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                ]));
+            }
+        });
+
+        Event::listen(ApplyingDeleteEntryType::class, function(ApplyingDeleteEntryType $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
+                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                ]));
+            }
+        });
+
+        Event::listen(EntryTypeDeleted::class, function(EntryTypeDeleted $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
                 ]));
             }
         });

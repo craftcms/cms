@@ -17,9 +17,10 @@ use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
-use craft\models\EntryType as EntryTypeModel;
+use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
@@ -77,7 +78,7 @@ class Entry extends Mutation
                 if ($canCreate || $canSave) {
                     // Create a mutation for each entry type
                     foreach ($field->getFieldLayoutProviders() as $provider) {
-                        if ($provider instanceof EntryTypeModel) {
+                        if ($provider instanceof EntryTypeData) {
                             foreach (static::createSaveMutationsForField($field, $provider, $canSave) as $mutation) {
                                 $mutationList[$mutation['name']] = $mutation;
                             }
@@ -174,14 +175,15 @@ class Entry extends Mutation
      * Create the per-entry-type save mutations.
      *
      * @param \CraftCms\Cms\Section\Data\Section $section
-     * @param EntryTypeModel $entryType
+     * @param EntryTypeData $entryType
      * @param bool $createSaveDraftMutation
+     *
      * @return array
      * @throws InvalidConfigException
      */
     public static function createSaveMutations(
-        \CraftCms\Cms\Section\Data\Section $section,
-        EntryTypeModel $entryType,
+        Section $section,
+        EntryTypeData $entryType,
         bool $createSaveDraftMutation,
     ): array {
         // Don't use override data
@@ -246,14 +248,15 @@ class Entry extends Mutation
      * Create the per-entry-type save mutations for a nested entry field.
      *
      * @param ElementContainerFieldInterface $field
-     * @param EntryTypeModel $entryType
+     * @param EntryTypeData $entryType
      * @param bool $createSaveDraftMutation
+     *
      * @return array
      * @throws InvalidConfigException
      */
     public static function createSaveMutationsForField(
         ElementContainerFieldInterface $field,
-        EntryTypeModel $entryType,
+        EntryTypeData $entryType,
         bool $createSaveDraftMutation,
     ): array {
         // Don't use override data

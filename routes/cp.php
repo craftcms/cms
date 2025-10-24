@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
@@ -38,6 +39,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware([
         RequireAdmin::class,
     ])->group(function () {
+        // Entry types
+        Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
+        Route::get('settings/entry-types/{entryTypeId}', [EntryTypesController::class, 'edit']);
+
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
         Route::get('settings/fields/new', [FieldsController::class, 'edit']);

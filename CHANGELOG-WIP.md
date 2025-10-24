@@ -127,6 +127,21 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
   - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
   - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
 
+## Entry Types
+
+- Deprecated the entry type related methods in `craft\services\Entries`. `CraftCms\Cms\EntryType\EntryTypes` should be used instead.
+- Deprecated `craft\models\EntryType`. `CraftCms\Cms\EntryType\Data\EntryType` should be used instead.
+- Deprecated `craft\records\EntryType`. `CraftCms\Cms\EntryType\Models\EntryType` should be used instead.
+- Deprecated `craft\events\EntryTypeEvent`. One of these should be used instead:
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\EntryType\Events\ApplyingEntryTypeDelete`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\EntryType\Events\EntryTypeDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\EntryType\Events\SavingEntryType`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\EntryType\Events\EntryTypeSaved`
+- Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
+- Removed `craft\console\controllers\EntryTypesController` in favor of:
+  - `CraftCms\Cms\EntryType\Commands\MergeCommand`
+
 ### Plugins
 
 #### Added

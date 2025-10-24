@@ -27,7 +27,9 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\EntryType\EntryTypes;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -210,6 +212,11 @@ class CraftVariable extends ServiceLocator
         return $query;
     }
 
+    public function entryTypes(): EntryTypes
+    {
+        return app(EntryTypes::class);
+    }
+
     /**
      * Returns the fields service.
      *
@@ -237,6 +244,11 @@ class CraftVariable extends ServiceLocator
     public function i18n(): I18N
     {
         return app(I18N::class);
+    }
+
+    public function sections(): Sections
+    {
+        return app(Sections::class);
     }
 
     public function sites(): Sites

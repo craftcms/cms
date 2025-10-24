@@ -27,6 +27,7 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
 use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
@@ -63,17 +64,18 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
     use ValidatableComponent;
 
     // Translation methods
+    // @TODO: Replace const with the enum everywhere
     // -------------------------------------------------------------------------
 
-    public const string TRANSLATION_METHOD_NONE = 'none';
+    public const string TRANSLATION_METHOD_NONE = TranslationMethod::None->value;
 
-    public const string TRANSLATION_METHOD_SITE = 'site';
+    public const string TRANSLATION_METHOD_SITE = TranslationMethod::Site->value;
 
-    public const string TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const string TRANSLATION_METHOD_SITE_GROUP = TranslationMethod::SiteGroup->value;
 
-    public const string TRANSLATION_METHOD_LANGUAGE = 'language';
+    public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
 
-    public const string TRANSLATION_METHOD_CUSTOM = 'custom';
+    public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
 
     // Component events
     // -------------------------------------------------------------------------

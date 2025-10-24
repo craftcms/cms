@@ -17,7 +17,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\types\elements\Entry;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\EntryType as EntryTypeModel;
+use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 
 /**
@@ -36,7 +36,7 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
         if ($context instanceof ElementContainerFieldInterface) {
             $entryTypes = [];
             foreach ($context->getFieldLayoutProviders() as $provider) {
-                if ($provider instanceof EntryTypeModel) {
+                if ($provider instanceof EntryTypeData) {
                     $entryTypes[] = $provider;
                 }
             }
@@ -60,7 +60,7 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var EntryTypeModel $context */
+        /** @var EntryTypeData $context */
         $typeName = EntryElement::gqlTypeName($context);
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new Entry([

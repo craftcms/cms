@@ -1,33 +1,17 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\base;
 
-use CraftCms\Cms\Shared\Enums\Color;
-
-/**
- * Indicative defines the common interface to be implemented by components that
- * have indicator icons within their chips.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.6.0
- */
-interface Indicative
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the component’s indicators.
-     *
-     * Each indicator should be a nested array with the following keys:
-     *
-     * - `label` – The indicator label.
-     * - `icon` – The indicator icon name. System icons can be found in `src/icons/solid/`.
-     * - `iconColor` – The color of the icon.
-     *
-     * @return array{label:string,icon:string,iconColor?:Color|string}[]
+     * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Indicative} instead.
      */
-    public function getIndicators(): array;
+    interface Indicative
+    {
+        public function getIndicators(): array;
+    }
 }
+
+class_alias(\CraftCms\Cms\Component\Contracts\Indicative::class, Indicative::class);

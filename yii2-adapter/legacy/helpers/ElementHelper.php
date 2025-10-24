@@ -17,6 +17,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use craft\services\ElementSources;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
@@ -745,17 +746,17 @@ class ElementHelper
     /**
      * Returns the description of a field’s translation support.
      *
-     * @param string $translationMethod
+     * @param string|TranslationMethod $translationMethod
      *
      * @return string|null
      * @since 3.5.0
      */
-    public static function translationDescription(string $translationMethod): ?string
+    public static function translationDescription(string|TranslationMethod $translationMethod): ?string
     {
         return match ($translationMethod) {
-            Field::TRANSLATION_METHOD_SITE => t('This field is translated for each site.'),
-            Field::TRANSLATION_METHOD_SITE_GROUP => t('This field is translated for each site group.'),
-            Field::TRANSLATION_METHOD_LANGUAGE => t('This field is translated for each language.'),
+            Field::TRANSLATION_METHOD_SITE, TranslationMethod::Site => t('This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP, TranslationMethod::SiteGroup => t('This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE, TranslationMethod::Language => t('This field is translated for each language.'),
             default => null,
         };
     }
@@ -765,7 +766,7 @@ class ElementHelper
      * and translation key format.
      *
      * @param ElementInterface $element
-     * @param string $translationMethod
+     * @param string|TranslationMethod $translationMethod
      * @param string|null $translationKeyFormat
      *
      * @return string
@@ -773,17 +774,21 @@ class ElementHelper
      */
     public static function translationKey(
         ElementInterface $element,
-        string $translationMethod,
+        string|TranslationMethod $translationMethod,
         ?string $translationKeyFormat = null,
     ): string {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_NONE:
+            case TranslationMethod::None:
                 return '1';
             case Field::TRANSLATION_METHOD_SITE:
+            case TranslationMethod::Site:
                 return (string)$element->siteId;
             case Field::TRANSLATION_METHOD_SITE_GROUP:
+            case TranslationMethod::SiteGroup:
                 return (string)$element->getSite()->groupId;
             case Field::TRANSLATION_METHOD_LANGUAGE:
+            case TranslationMethod::Language:
                 return $element->getSite()->getLanguage();
             default:
                 // Translate for each site if a translation key format wasn’t specified
