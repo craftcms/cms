@@ -39,6 +39,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Table');
@@ -47,6 +48,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'table';
@@ -55,6 +57,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'array|null';
@@ -63,6 +66,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_JSON;
@@ -173,6 +177,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -190,11 +195,11 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
             $error = null;
 
-            if (! preg_match('/^'.HandleRule::$handlePattern.'$/', $col['handle'])) {
+            if (! preg_match('/^'.HandleRule::$handlePattern.'$/', (string) $col['handle'])) {
                 $error = t('“{handle}” isn’t a valid handle.', [
                     'handle' => $col['handle'],
                 ]);
-            } elseif (preg_match('/^col\d+$/', $col['handle'])) {
+            } elseif (preg_match('/^col\d+$/', (string) $col['handle'])) {
                 $error = t('Column handles can’t be in the format “{format}”.', [
                     'format' => 'colX',
                 ]);
@@ -379,6 +384,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function beforeSave(bool $isNew): bool
     {
         if (! parent::beforeSave($isNew)) {
@@ -398,6 +404,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -406,6 +413,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
@@ -416,6 +424,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return ['validateTableData'];
@@ -447,6 +456,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
@@ -455,6 +465,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -580,6 +591,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -616,6 +628,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -663,6 +676,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -685,6 +699,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
@@ -693,6 +708,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): Type
     {
         $type = TableRowType::generateType($this);
@@ -703,6 +719,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type
     {
         $typeName = $this->handle.'_TableRowInput';
@@ -734,7 +751,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     return null;
                 }
 
-                $value = strtolower($value);
+                $value = strtolower((string) $value);
 
                 if ($value[0] !== '#') {
                     $value = '#'.$value;
@@ -753,7 +770,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                         $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
                     }
 
-                    return trim(preg_replace('/\R/u', "\n", $value));
+                    return trim(preg_replace('/\R/u', "\n", (string) $value));
                 }
                 // no break
             case 'date':

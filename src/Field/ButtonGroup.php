@@ -25,6 +25,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Button Group');
@@ -33,6 +34,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'hand-pointer';
@@ -46,6 +48,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return parent::getSettingsHtml().
@@ -60,6 +63,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -68,6 +72,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, false);
@@ -76,6 +81,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, true);

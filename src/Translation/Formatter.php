@@ -512,27 +512,27 @@ final class Formatter
 
     private function normalizeNumericStringValue($value): array|string|null
     {
-        $powerPosition = strrpos($value, 'E');
+        $powerPosition = strrpos((string) $value, 'E');
         if ($powerPosition !== false) {
-            $valuePart = substr($value, 0, $powerPosition);
-            $powerPart = substr($value, $powerPosition + 1);
+            $valuePart = substr((string) $value, 0, $powerPosition);
+            $powerPart = substr((string) $value, $powerPosition + 1);
         } else {
             $powerPart = null;
             $valuePart = $value;
         }
 
-        $separatorPosition = strrpos($valuePart, '.');
+        $separatorPosition = strrpos((string) $valuePart, '.');
 
         if ($separatorPosition !== false) {
-            $integerPart = substr($valuePart, 0, $separatorPosition);
-            $fractionalPart = substr($valuePart, $separatorPosition + 1);
+            $integerPart = substr((string) $valuePart, 0, $separatorPosition);
+            $fractionalPart = substr((string) $valuePart, $separatorPosition + 1);
         } else {
             $integerPart = $valuePart;
             $fractionalPart = null;
         }
 
         // truncate insignificant zeros, keep minus
-        $integerPart = preg_replace('/^\+?(-?)0*(\d+)$/', '$1$2', $integerPart);
+        $integerPart = preg_replace('/^\+?(-?)0*(\d+)$/', '$1$2', (string) $integerPart);
         // for zeros only leave one zero, keep minus
         $integerPart = preg_replace('/^\+?(-?)0*$/', '${1}0', $integerPart);
 

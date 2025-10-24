@@ -27,6 +27,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Email');
@@ -35,6 +36,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'at';
@@ -43,6 +45,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'string|null';
@@ -51,6 +54,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_STRING;
@@ -104,6 +108,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         return $value !== '' ? $value : null;
@@ -112,6 +117,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         return $value !== null ? Str::idnToUtf8Email($value) : null;
@@ -120,6 +126,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
@@ -136,6 +143,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -155,6 +163,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (! $value) {
@@ -168,6 +177,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

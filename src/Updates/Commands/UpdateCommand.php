@@ -139,10 +139,10 @@ final class UpdateCommand extends Command
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
-                if (! str_contains($handle, ':')) {
+                if (! str_contains((string) $handle, ':')) {
                     continue;
                 }
-                [$handle, $to] = explode(':', $handle, 2);
+                [$handle, $to] = explode(':', (string) $handle, 2);
 
                 if ($handle === 'craft') {
                     $handle = 'cms';
@@ -165,8 +165,8 @@ final class UpdateCommand extends Command
         }
 
         foreach ($handles as $handle) {
-            if (str_contains($handle, ':')) {
-                [$handle, $to] = explode(':', $handle, 2);
+            if (str_contains((string) $handle, ':')) {
+                [$handle, $to] = explode(':', (string) $handle, 2);
             } else {
                 $to = null;
             }

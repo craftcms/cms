@@ -96,7 +96,7 @@ final class Html
         $normalizedVariables = [];
 
         foreach ($variables as $key => $value) {
-            $key = '{'.trim($key, '{}').'}';
+            $key = '{'.trim((string) $key, '{}').'}';
             $normalizedVariables[$key] = self::encode($value);
         }
 
@@ -557,7 +557,7 @@ final class Html
                 default:
                     // See if it's a data attribute
                     foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                        if (is_array($value) && str_starts_with($name, $dataAttribute)) {
+                        if (is_array($value) && str_starts_with((string) $name, (string) $dataAttribute)) {
                             foreach ($value as $n => $v) {
                                 $normalized[$name.'-'.$n] = $v;
                             }
@@ -631,12 +631,12 @@ final class Html
             }, $value);
 
             // now split the styles string on semicolons
-            $styles = Arr::whereNotEmpty(preg_split('/\s*;\s*/', $value));
+            $styles = Arr::whereNotEmpty(preg_split('/\s*;\s*/', (string) $value));
 
             // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
-                [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
+                [$n, $v] = array_pad(preg_split('/\s*:\s*/', (string) $style, 2), 2, '');
                 $normalized[$n] = strtr($v, $markers);
             }
 
@@ -761,7 +761,7 @@ final class Html
             return $id;
         }
 
-        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        $id = trim((string) preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
 
         return $id ?: Str::random(10);
     }
@@ -1062,9 +1062,9 @@ final class Html
         $svg = $sanitizer->sanitize($svg);
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
-        $svg = preg_replace(self::TITLE_TAG_RE, '', $svg);
+        $svg = preg_replace(self::TITLE_TAG_RE, '', (string) $svg);
 
-        return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+        return preg_replace('/<desc>.*?<\/desc>\s*/is', '', (string) $svg);
     }
 
     /**

@@ -155,8 +155,8 @@ final class SystemMessages
             $language = Sites::getPrimarySite()->getLanguage();
         }
 
-        if (($pos = strpos($language, '-')) !== false) {
-            $languageId = substr($language, 0, $pos);
+        if (($pos = strpos((string) $language, '-')) !== false) {
+            $languageId = substr((string) $language, 0, $pos);
         } else {
             $languageId = $language;
         }

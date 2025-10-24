@@ -20,13 +20,8 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
  */
-final class ColorData implements Serializable
+final class ColorData implements \Stringable, Serializable
 {
-    /**
-     * @var string The color’s hex value
-     */
-    private string $_hex;
-
     /**
      * @see _hsl()
      */
@@ -35,13 +30,10 @@ final class ColorData implements Serializable
     /**
      * Constructor.
      *
-     * @param  string  $hex  hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param  string  $_hex  hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
      * @param  string|null  $label  The human-facing label for the color.
      */
-    public function __construct(string $hex, public ?string $label = null)
-    {
-        $this->_hex = $hex;
-    }
+    public function __construct(private readonly string $_hex, public ?string $label = null) {}
 
     public function __toString(): string
     {

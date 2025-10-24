@@ -36,6 +36,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Date');
@@ -44,6 +45,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'calendar';
@@ -52,6 +54,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
@@ -60,6 +63,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): array
     {
         return [
@@ -71,6 +75,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = self::valueSql($instances);
@@ -157,6 +162,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function attributeLabels(): array
     {
         return [
@@ -165,6 +171,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -237,6 +244,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getInputId(): string
     {
         return sprintf('%s-date', parent::getInputId());
@@ -245,6 +253,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
@@ -305,6 +314,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -319,6 +329,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
@@ -327,6 +338,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var DateTime|null $value */
@@ -363,6 +375,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -375,6 +388,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return $this->showTime;
@@ -383,6 +397,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof DateTime) {
@@ -418,6 +433,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (! $value) {
@@ -448,6 +464,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -470,6 +487,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): array
     {
         $type = DateTimeType::getType();

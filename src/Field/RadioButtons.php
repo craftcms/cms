@@ -34,6 +34,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Radio Buttons');
@@ -42,6 +43,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'circle-dot';
@@ -50,6 +52,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -58,6 +61,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
@@ -86,6 +90,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Radio Button Options');

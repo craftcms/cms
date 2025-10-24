@@ -47,7 +47,7 @@ final class FieldsMergeCommand extends Command
                 $pattern = preg_quote(substr($handle, 0, -1), '/');
 
                 return $fieldsService->getAllFields()
-                    ->filter(fn (FieldInterface $field) => preg_match("/^$pattern\d*$/", $field->handle))
+                    ->filter(fn (FieldInterface $field) => preg_match("/^$pattern\d*$/", (string) $field->handle))
                     ->map(fn (FieldInterface $field) => $field->handle)
                     ->all();
             })

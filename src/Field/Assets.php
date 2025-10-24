@@ -60,6 +60,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Assets');
@@ -68,6 +69,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'image';
@@ -84,6 +86,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected static function canShowSiteMenu(): bool
     {
         return false;
@@ -92,6 +95,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an asset');
@@ -100,6 +104,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
@@ -225,6 +230,7 @@ final class Assets extends BaseRelationField
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -237,6 +243,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
@@ -270,6 +277,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         try {
@@ -290,6 +298,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
@@ -328,7 +337,7 @@ final class Assets extends BaseRelationField
         // Now make sure that they all check out
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
-            if (! in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+            if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $element->addError($this->handle, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
@@ -350,7 +359,7 @@ final class Assets extends BaseRelationField
         foreach ($uploadedFiles as $file) {
             switch ($file['type']) {
                 case 'data':
-                    if (strlen($file['data']) > $maxSize) {
+                    if (strlen((string) $file['data']) > $maxSize) {
                         $filenames[] = $file['filename'];
                     }
                     break;
@@ -373,6 +382,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
@@ -411,6 +421,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         return parent::isValueEmpty($value, $element) && empty($this->_getUploadedFiles($element));
@@ -427,6 +438,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryAssets($schema);
@@ -435,6 +447,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -449,6 +462,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function previewHtml(ElementCollection $elements): string
     {
         return Cp::elementPreviewHtml(
@@ -460,6 +474,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $asset = new Asset;
@@ -484,6 +499,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Only handle file uploads for the initial site
@@ -566,6 +582,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // No special treatment for revisions
@@ -606,7 +623,7 @@ final class Assets extends BaseRelationField
 
                             return
                                 $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                                ! str_starts_with($asset->folderPath, $rootRestrictedFolder->path);
+                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder->path);
                         });
                     } else {
                         // Find the files with temp sources and just move those.
@@ -641,6 +658,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -665,6 +683,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
         $folder = $this->_uploadFolder($element, false, false);
@@ -736,6 +755,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
@@ -778,6 +798,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
@@ -804,6 +825,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function showSearchInput(?ElementInterface $element): bool
     {
         if (! $this->showSearchInput || $this->sources === '*') {
@@ -830,7 +852,7 @@ final class Assets extends BaseRelationField
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
             foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
-                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-\.]+);base64,(?<data>.+)/i', $dataString, $matches)) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-\.]+);base64,(?<data>.+)/i', (string) $dataString, $matches)) {
                     $mimeType = $matches['type'];
                     $data = base64_decode($matches['data']);
 
@@ -933,8 +955,8 @@ final class Assets extends BaseRelationField
             // Did any of the tokens return null?
             if (
                 $renderedSubpath === '' ||
-                trim($renderedSubpath, '/') != $renderedSubpath ||
-                str_contains($renderedSubpath, '//') ||
+                trim((string) $renderedSubpath, '/') != $renderedSubpath ||
+                str_contains((string) $renderedSubpath, '//') ||
                 str($renderedSubpath)->explode('/')->contains(fn (string $segment) => ElementHelper::isTempSlug($segment))
             ) {
                 throw new InvalidSubpathException($subpath);

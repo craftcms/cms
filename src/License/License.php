@@ -56,7 +56,7 @@ final readonly class License
             $licenseKey = file_get_contents($path);
         }
 
-        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $licenseKey));
+        $licenseKey = trim(preg_replace('/[\r\n]+/', '', (string) $licenseKey));
 
         if (strlen($licenseKey) !== 250) {
             return null;
@@ -193,7 +193,7 @@ final readonly class License
             name: $plugin->name,
             editions: $plugin::editions(),
             currentEdition: $pluginInfo['edition'],
-            currentEditionName: ucfirst($pluginInfo['edition']),
+            currentEditionName: ucfirst((string) $pluginInfo['edition']),
             licenseEdition: $licenseInfo['edition'],
             licenseEditionName: ucfirst($licenseInfo['edition'] ?? 'standard'),
             version: $pluginInfo['version'],

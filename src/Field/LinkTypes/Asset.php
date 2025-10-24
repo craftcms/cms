@@ -53,6 +53,7 @@ final class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return
@@ -83,6 +84,7 @@ final class Asset extends BaseElementLinkType
             ]);
     }
 
+    #[\Override]
     protected function availableSourceKeys(): array
     {
         $volumes = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
@@ -98,6 +100,7 @@ final class Asset extends BaseElementLinkType
             ->all();
     }
 
+    #[\Override]
     protected function selectionCriteria(): array
     {
         // Ignore the parent value since asset URLs don't get saved to the element
@@ -112,6 +115,7 @@ final class Asset extends BaseElementLinkType
         return $criteria;
     }
 
+    #[\Override]
     protected function elementSelectConfig(): array
     {
         $config = array_merge(parent::elementSelectConfig(), [

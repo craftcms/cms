@@ -39,6 +39,7 @@ final class Checkboxes extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Checkboxes');
@@ -47,6 +48,7 @@ final class Checkboxes extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'square-check';
@@ -55,6 +57,7 @@ final class Checkboxes extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function useFieldset(): bool
     {
         return true;
@@ -63,6 +66,7 @@ final class Checkboxes extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $this->customOptions && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
@@ -81,6 +85,7 @@ final class Checkboxes extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Checkbox Options');

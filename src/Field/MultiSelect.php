@@ -40,6 +40,7 @@ final class MultiSelect extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Multi-select');
@@ -48,6 +49,7 @@ final class MultiSelect extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'list-check';
@@ -56,6 +58,7 @@ final class MultiSelect extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
@@ -77,6 +80,7 @@ final class MultiSelect extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Cp::selectizeHtml([
@@ -94,6 +98,7 @@ final class MultiSelect extends BaseOptionsField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Multi-select Options');

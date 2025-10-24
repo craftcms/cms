@@ -56,7 +56,7 @@ use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
+abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterface, Iconic
 {
     use ConfigurableComponent;
     use HasComponentEvents;

@@ -104,7 +104,7 @@ test('rebuild ignores readonly', function () {
     $thrown = false;
     try {
         $projectConfig->set('oops', true);
-    } catch (ReadonlyException $e) {
+    } catch (ReadonlyException) {
         $thrown = true;
     }
     expect($thrown)->toBeTrue();

@@ -141,8 +141,8 @@ final class PHP
             }
 
             // '.' => working dir
-            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
-                $path = getcwd().substr($path, 1);
+            if ($path === '.' || str_starts_with((string) $path, './') || str_starts_with((string) $path, '.\\')) {
+                $path = getcwd().substr((string) $path, 1);
             }
 
             // Normalize
@@ -167,13 +167,7 @@ final class PHP
 
         $path = FileHelper::normalizePath($path);
 
-        foreach (self::$basePaths as $basePath) {
-            if (str_starts_with($path, $basePath)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(self::$basePaths, fn ($basePath) => str_starts_with($path, (string) $basePath));
     }
 
     /**

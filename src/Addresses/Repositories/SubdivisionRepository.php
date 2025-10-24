@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Json;
 class SubdivisionRepository extends BaseSubdivisionRepository
 {
     /** {@inheritdoc} */
+    #[\Override]
     public function getList(array $parents, $locale = null): array
     {
         // get the list of subdivisions from commerceguys/addressing

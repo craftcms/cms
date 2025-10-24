@@ -17,7 +17,7 @@ use Twig\Markup;
 /**
  * Link field data class.
  */
-final class LinkData extends Dto implements Serializable
+final class LinkData extends Dto implements \Stringable, Serializable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;

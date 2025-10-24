@@ -262,7 +262,7 @@ final class Deprecator
             }
 
             $logTraces[] = [
-                'objectClass' => ! empty($trace['object']) ? get_class($trace['object']) : null,
+                'objectClass' => ! empty($trace['object']) ? $trace['object']::class : null,
                 'file' => $file,
                 'line' => $line,
                 'class' => ! empty($trace['class']) ? $trace['class'] : null,

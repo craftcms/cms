@@ -25,6 +25,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Plain Text');
@@ -33,6 +34,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'string|null';
@@ -113,6 +115,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $settings;
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -149,6 +152,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
@@ -157,6 +161,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -169,7 +174,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
                 $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
             }
 
-            $value = trim(preg_replace('/\R/u', "\n", $value));
+            $value = trim(preg_replace('/\R/u', "\n", (string) $value));
         }
 
         return $value !== '' ? $value : null;
@@ -178,11 +183,13 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, false);
     }
 
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, true);
@@ -203,6 +210,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -217,6 +225,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value !== null) {
@@ -240,6 +249,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         $previewHtml = parent::getPreviewHtml($value, $element);
@@ -256,6 +266,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

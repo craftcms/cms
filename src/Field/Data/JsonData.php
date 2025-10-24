@@ -13,7 +13,7 @@ use Spatie\LaravelData\Dto;
 use Traversable;
 use yii\base\InvalidCallException;
 
-final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Serializable
+final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAggregate, Serializable
 {
     public function __construct(
         private mixed $value,

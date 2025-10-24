@@ -44,7 +44,7 @@ final class UriFormatRule implements ValidationRule
         }
 
         $generalConfig = Cms::config();
-        $firstSeg = explode('/', $value, 2)[0];
+        $firstSeg = explode('/', (string) $value, 2)[0];
 
         if ($firstSeg === $generalConfig->actionTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [

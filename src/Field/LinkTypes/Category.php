@@ -18,6 +18,7 @@ final class Category extends BaseElementLinkType
         return CategoryElement::class;
     }
 
+    #[\Override]
     protected function availableSourceKeys(): array
     {
         $sources = [];

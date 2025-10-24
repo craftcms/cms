@@ -9,7 +9,7 @@ use craft\base\Serializable;
 /**
  * Class OptionData
  */
-class OptionData implements Serializable
+class OptionData implements \Stringable, Serializable
 {
     public function __construct(
         public ?string $label,

@@ -328,9 +328,9 @@ final class ProjectConfig
 
     public function __construct(GeneralConfig $generalConfig)
     {
-        Event::listen(ItemAdded::class, [$this, 'handleChangeEvent']);
-        Event::listen(ItemUpdated::class, [$this, 'handleChangeEvent']);
-        Event::listen(ItemRemoved::class, [$this, 'handleChangeEvent']);
+        Event::listen(ItemAdded::class, $this->handleChangeEvent(...));
+        Event::listen(ItemUpdated::class, $this->handleChangeEvent(...));
+        Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
         $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
@@ -830,7 +830,7 @@ final class ProjectConfig
         foreach ($pendingChanges as $type => $changes) {
             $summary[$type] = [];
             foreach ($changes as $path) {
-                $pathParts = explode('.', $path);
+                $pathParts = explode('.', (string) $path);
                 if (count($pathParts) > 1) {
                     $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
                 }
@@ -1281,11 +1281,11 @@ final class ProjectConfig
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen(Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen((string) Craft::$app->getPath()->getProjectConfigPath(false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
-            $subPath = substr($filePath, $projectConfigPathLength + 1);
+            $subPath = substr((string) $filePath, $projectConfigPathLength + 1);
 
             if (Str::substrCount($subPath, DIRECTORY_SEPARATOR) > 0) {
                 $configPath = explode(DIRECTORY_SEPARATOR, $subPath);
@@ -1511,7 +1511,7 @@ final class ProjectConfig
 
             if (! empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*'.preg_quote($uid).'.*)$/mi';
+                    $uids[] = '/^(.*'.preg_quote((string) $uid).'.*)$/mi';
                     $replacements[] = '$1 # '.$name;
                 }
             }
@@ -1535,7 +1535,7 @@ final class ProjectConfig
                     FileHelper::clearDirectory($basePath, [
                         'except' => ['.*', '.*/'],
                     ]);
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                     // oh well
                 }
             }

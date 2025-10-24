@@ -53,18 +53,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     private const string VIEW_MODE_INLINE = 'inline';
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Content Block');
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function icon(): string
     {
         return 'block';
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -74,12 +77,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ContentBlockElement::class);
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -144,16 +149,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private function ensureNoRecursion(self $field): bool
     {
-        foreach ($field->getFieldLayout()->getCustomFields() as $customField) {
-            if (
-                $customField instanceof self &&
-                ($customField->id === $this->id || ! $this->ensureNoRecursion($customField))
-            ) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($field->getFieldLayout()->getCustomFields(), fn ($customField) => ! ($customField instanceof self && ($customField->id === $this->id || ! $this->ensureNoRecursion($customField))));
     }
 
     /** {@inheritdoc} */
@@ -355,12 +351,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -528,6 +526,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -541,6 +540,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -554,30 +554,35 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->contentBlockManager()->getIsTranslatable($element);
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function showStatus(): bool
     {
         return false;
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $element?->id) {
@@ -593,6 +598,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -656,6 +662,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -687,6 +694,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
@@ -726,6 +734,7 @@ JS, [
     //    }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -737,6 +746,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return ContentBlockInputType::getType($this);
@@ -746,6 +756,7 @@ JS, [
     // -------------------------------------------------------------------------
 
     /** {@inheritdoc} */
+    #[\Override]
     public function afterSave(bool $isNew): void
     {
         Fields::saveLayout($this->getFieldLayout(), false);
@@ -753,6 +764,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->contentBlockManager()->maintainNestedElements($element, $isNew);
@@ -760,6 +772,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -773,6 +786,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         $elementsService = Craft::$app->getElements();
@@ -792,6 +806,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element

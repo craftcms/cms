@@ -98,12 +98,12 @@ final class ApplyCommand extends Command
         if (! $this->option('quiet')) {
             $this->processingPaths = [];
 
-            Event::listen(AddingItem::class, [$this, 'onStartProcessingItem']);
-            Event::listen(ItemAdded::class, [$this, 'onFinishProcessingItem']);
-            Event::listen(RemovingItem::class, [$this, 'onStartProcessingItem']);
-            Event::listen(ItemRemoved::class, [$this, 'onFinishProcessingItem']);
-            Event::listen(UpdatingItem::class, [$this, 'onStartProcessingItem']);
-            Event::listen(ItemUpdated::class, [$this, 'onFinishProcessingItem']);
+            Event::listen(AddingItem::class, $this->onStartProcessingItem(...));
+            Event::listen(ItemAdded::class, $this->onFinishProcessingItem(...));
+            Event::listen(RemovingItem::class, $this->onStartProcessingItem(...));
+            Event::listen(ItemRemoved::class, $this->onFinishProcessingItem(...));
+            Event::listen(UpdatingItem::class, $this->onStartProcessingItem(...));
+            Event::listen(ItemUpdated::class, $this->onFinishProcessingItem(...));
         }
 
         $projectConfig->applyExternalChanges();

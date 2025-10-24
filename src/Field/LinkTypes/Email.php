@@ -19,6 +19,7 @@ final class Email extends BaseTextLinkType
         return 'email';
     }
 
+    #[\Override]
     public static function displayName(): string
     {
         return t('Email');
@@ -29,6 +30,7 @@ final class Email extends BaseTextLinkType
         return 'mailto:';
     }
 
+    #[\Override]
     public function normalizeValue(string $value): string
     {
         $value = str_replace(' ', '+', $value);
@@ -36,6 +38,7 @@ final class Email extends BaseTextLinkType
         return parent::normalizeValue($value);
     }
 
+    #[\Override]
     protected function inputAttributes(): array
     {
         return [
@@ -44,6 +47,7 @@ final class Email extends BaseTextLinkType
         ];
     }
 
+    #[\Override]
     protected function pattern(): string
     {
         $emailPattern = trim((new EmailValidator)->pattern, '/^$');

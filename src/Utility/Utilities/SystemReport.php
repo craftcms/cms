@@ -66,7 +66,7 @@ final class SystemReport extends Utility
                 }
 
                 if ($module instanceof Module) {
-                    return get_class($module);
+                    return $module::class;
                 }
 
                 if (is_string($module)) {

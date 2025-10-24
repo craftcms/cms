@@ -31,50 +31,29 @@ use function CraftCms\Cms\t;
 
 final class Site extends Dto implements Chippable, Stringable
 {
-    private string $name;
-
-    private ?string $baseUrl;
-
-    private string $language;
-
     public function __construct(
-        string $name,
-
+        private string $name,
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
         public string $handle,
-
-        string $language,
-
+        private string $language,
         #[MapInputName('siteId')]
         public ?int $id = null,
-
         #[MapInputName('group')]
         public ?int $groupId = null,
-
-        #[Url]
-        ?string $baseUrl = null,
-
+        #[Url] private ?string $baseUrl = null,
         public ?bool $primary = false {
             get => (bool) $this->primary;
         },
-
         public bool $hasUrls = true,
-
         public int $sortOrder = 1,
-
         public ?string $uid = null,
-
         #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateCreated = null,
-
         #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateUpdated = null,
-
-        private bool|string $enabled = true,
-    ) {
-        $this->name = $name;
-        $this->language = $language;
-        $this->baseUrl = $baseUrl;
+        private bool|string $enabled = true
+    )
+    {
     }
 
     public static function get(int|string $id): ?static

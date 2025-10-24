@@ -93,7 +93,7 @@ class Arr extends \Illuminate\Support\Arr
 
         if (is_object($object)) {
             if (! empty($properties)) {
-                $className = get_class($object);
+                $className = $object::class;
                 if (! empty($properties[$className])) {
                     $result = [];
                     foreach ($properties[$className] as $key => $name) {
@@ -177,7 +177,7 @@ class Arr extends \Illuminate\Support\Arr
     {
         // Normalize the key into dot notation
         if (is_string($key) && preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
-            $key = rtrim(preg_replace('/[\[\]]+/', '.', $key), '.');
+            $key = rtrim((string) preg_replace('/[\[\]]+/', '.', $key), '.');
         }
 
         return parent::get($array, $key, $default);

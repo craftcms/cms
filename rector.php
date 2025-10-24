@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -13,9 +13,8 @@ return RectorConfig::configure()
     ->withSkip([
         __DIR__.'/resources/icons/index.php',
         __DIR__.'/resources/icons/aliases.php',
-
-        // somehow craft\web AssetManager refer with Yii parent AssetManager class
-        // autoload may need to be bootstrapped to early load some child classes
-        RemoveExtraParametersRector::class,
     ])
-    ->withPhpSets(php74: true);
+    ->withRules([
+        DeclareStrictTypesRector::class,
+    ])
+    ->withPhpSets(php84: true);

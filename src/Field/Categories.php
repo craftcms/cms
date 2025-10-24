@@ -30,6 +30,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Categories');
@@ -38,6 +39,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'sitemap';
@@ -54,6 +56,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected static function canShowSiteMenu(): bool
     {
         return false;
@@ -62,6 +65,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a category');
@@ -70,6 +74,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
@@ -99,6 +104,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (is_array($value) && $this->maintainHierarchy) {
@@ -127,6 +133,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         // Make sure the field is set to a valid category group
@@ -144,6 +151,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryCategories($schema);
@@ -152,6 +160,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -166,6 +175,7 @@ final class Categories extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();

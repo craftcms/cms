@@ -18,7 +18,7 @@ use ZipArchive;
 
 use function CraftCms\Cms\t;
 
-final class ProjectConfigController
+final readonly class ProjectConfigController
 {
     use RespondsWithFlash;
 

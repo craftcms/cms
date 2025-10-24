@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
 
-final class IconData implements Serializable
+final class IconData implements \Stringable, Serializable
 {
     /**
      * Constructor

@@ -39,6 +39,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Number');
@@ -47,6 +48,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'input-numeric';
@@ -55,6 +57,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'int|float|null';
@@ -63,6 +66,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         if (Craft::$app->getDb()->getIsMysql()) {
@@ -75,6 +79,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = self::valueSql($instances);
@@ -149,6 +154,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         $conditionalInteger = Rule::when(fn ($input) => ! $input->decimals, 'integer', 'numeric');
@@ -198,6 +204,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
@@ -231,6 +238,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
         if ($value === null) {
@@ -247,6 +255,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
@@ -254,7 +263,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
 
         try {
             $formatNumber = ! $this->step && ! $formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formatNumber = false;
         }
 
@@ -309,6 +318,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -334,6 +344,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function dbTypeForValueSql(): string
     {
         if (! $this->decimals) {
@@ -350,6 +361,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
@@ -376,6 +388,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -400,6 +413,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): Type
     {
         return NumberType::getType();
@@ -408,6 +422,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [

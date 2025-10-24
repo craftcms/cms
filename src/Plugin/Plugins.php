@@ -213,8 +213,8 @@ final class Plugins
             if (
                 $hasVersionChanged &&
                 $plugin->minVersionRequired &&
-                ! str_starts_with($row['version'], 'dev-') &&
-                ! str_ends_with($row['version'], '-dev') &&
+                ! str_starts_with((string) $row['version'], 'dev-') &&
+                ! str_ends_with((string) $row['version'], '-dev') &&
                 version_compare($row['version'], $plugin->minVersionRequired, '<')
             ) {
                 throw new HttpException(200, t(
@@ -1142,7 +1142,7 @@ final class Plugins
         $oldLicenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
-            preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
+            preg_match('/^\$(\w+)$/', (string) $oldLicenseKey, $matches) &&
             in_array(Env::get($matches[1]), ['', null], true) &&
             file_exists(app()->environmentFilePath())
         ) {
@@ -1188,7 +1188,7 @@ final class Plugins
         $licenseKey = mb_strtoupper($licenseKey);
         $licenseKey = preg_replace('/[^A-Z0-9]/', '', $licenseKey);
 
-        if (strlen($licenseKey) !== 24) {
+        if (strlen((string) $licenseKey) !== 24) {
             // Invalid key
             throw new InvalidLicenseKeyException($licenseKey);
         }

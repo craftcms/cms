@@ -92,6 +92,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Matrix');
@@ -100,6 +101,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'binary';
@@ -108,6 +110,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -119,6 +122,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
@@ -127,6 +131,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -135,6 +140,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): array
     {
         /** @var self $field */
@@ -351,6 +357,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $settings;
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -385,7 +392,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             }
 
             if (isset($siteSettings['template'])) {
-                if (! (new StringValidator(['max' => 500]))->validate($siteSettings['template'], $error)) {
+                if (! new StringValidator(['max' => 500])->validate($siteSettings['template'], $error)) {
                     $error = str_replace(t('the input value'), t('Template'), $error);
                     $siteSettings['errors']['template'][] = $error;
 
@@ -411,7 +418,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 ],
             );
 
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
+            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, $this->afterSaveEntries(...));
         }
 
         return $this->_entryManager;
@@ -688,6 +695,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
@@ -696,6 +704,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -769,6 +778,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -794,6 +804,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -819,6 +830,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
@@ -835,6 +847,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->entryManager()->getIsTranslatable($element);
@@ -843,6 +856,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function actionMenuItems(): array
     {
         $items = [];
@@ -979,6 +993,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
         return $this->entryManager()->getTranslationDescription($element);
@@ -989,6 +1004,7 @@ JS, [
      *
      * @throws InvalidConfigException
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return match ($this->viewMode) {
@@ -1203,6 +1219,7 @@ JS,
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -1217,6 +1234,7 @@ JS,
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -1307,6 +1325,7 @@ JS,
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->entryManager()->getSearchKeywords($element);
@@ -1315,6 +1334,7 @@ JS,
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
@@ -1400,6 +1420,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         if (! $outgoingField instanceof self) {
@@ -1424,6 +1445,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         DB::table(Table::ENTRIES)
@@ -1439,6 +1461,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         $typeArray = EntryTypeGenerator::generateTypes($this);
@@ -1463,6 +1486,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return MatrixInputType::getType($this);
@@ -1492,6 +1516,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterSave(bool $isNew): void
     {
         // If the propagation method or an entry URI format just changed, resave all the entries
@@ -1546,6 +1571,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->entryManager()->maintainNestedElements($element, $isNew);
@@ -1582,6 +1608,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -1597,6 +1624,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         $elementsService = Craft::$app->getElements();
@@ -1618,6 +1646,7 @@ JS;
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element
@@ -1642,7 +1671,7 @@ JS;
 
         // Were the entries posted by UUID or ID?
         $uids = (
-            (isset($value['entries']) && str_starts_with(array_key_first($value['entries']), 'uid:')) ||
+            (isset($value['entries']) && str_starts_with((string) array_key_first($value['entries']), 'uid:')) ||
             (isset($value['sortOrder']) && Str::isUuid(reset($value['sortOrder'])))
         );
 

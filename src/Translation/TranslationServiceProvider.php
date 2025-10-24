@@ -12,6 +12,7 @@ use Yiisoft\Translator\Translator;
 
 final class TranslationServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->app->singleton(Translator::class, function () {

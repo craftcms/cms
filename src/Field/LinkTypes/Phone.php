@@ -18,6 +18,7 @@ final class Phone extends BaseTextLinkType
         return 'tel';
     }
 
+    #[\Override]
     public static function displayName(): string
     {
         return t('Phone');
@@ -28,11 +29,13 @@ final class Phone extends BaseTextLinkType
         return 'tel:';
     }
 
+    #[\Override]
     public function renderValue(string $value): string
     {
         return str_replace(' ', '-', $value);
     }
 
+    #[\Override]
     protected function inputAttributes(): array
     {
         return [
@@ -41,6 +44,7 @@ final class Phone extends BaseTextLinkType
         ];
     }
 
+    #[\Override]
     protected function pattern(): string
     {
         return "^tel:[\d\+\(\)\-,; ]+$";

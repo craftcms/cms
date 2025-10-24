@@ -352,7 +352,7 @@ final class Api
         $normalizedHeaders = [];
 
         foreach ($headers as $name => $value) {
-            $normalizedHeaders[strtolower($name)] = (array) $value;
+            $normalizedHeaders[strtolower((string) $name)] = (array) $value;
         }
 
         return $normalizedHeaders;

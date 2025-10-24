@@ -14,6 +14,7 @@ final class SystemMessage extends BaseModel
 
     protected $table = Table::SYSTEMMESSAGES;
 
+    #[\Override]
     protected static function booted(): void
     {
         self::saving(function (self $model) {

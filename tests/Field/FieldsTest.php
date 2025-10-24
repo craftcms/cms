@@ -57,6 +57,7 @@ it('can add extra field types through an event', function () {
 it('can get all field types that have content', function () {
     class CustomFieldWithoutContent extends Field
     {
+        #[\Override]
         public static function dbType(): null
         {
             return null;

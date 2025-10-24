@@ -205,7 +205,7 @@ class Str extends \Illuminate\Support\Str
         return Str::replaceMb4($str, static function ($char) {
             $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
 
-            return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
+            return isset($unpacked[1]) ? '&#x'.ltrim((string) $unpacked[1], '0').';' : '';
         });
     }
 
@@ -495,7 +495,7 @@ class Str extends \Illuminate\Support\Str
         $handle = preg_replace('/^[^a-z]+/', '', $handle);
 
         // Replace any remaining non-alphanumeric or underscore characters with spaces
-        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
+        $handle = preg_replace('/[^a-z0-9_]/', ' ', (string) $handle);
 
         return static::camel($handle);
     }
@@ -549,7 +549,7 @@ class Str extends \Illuminate\Support\Str
 
         if ($lower) {
             // Make it lowercase
-            $str = mb_strtolower($str);
+            $str = mb_strtolower((string) $str);
         }
 
         if ($removePunctuation) {
@@ -557,7 +557,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         // Remove inner-word punctuation.
-        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $str);
+        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', (string) $str);
 
         // Split on the words and return
         return static::splitOnWords($str);

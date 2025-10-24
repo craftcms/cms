@@ -91,7 +91,7 @@ final class FieldsController
         $allFieldTypes = $this->fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
+            if ($class === $field::class || $class::isSelectable()) {
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
@@ -157,7 +157,7 @@ final class FieldsController
         // ---------------------------------------------------------------------
 
         if ($fieldId !== null) {
-            $title = trim($field->name) ?: t('Edit Field');
+            $title = trim((string) $field->name) ?: t('Edit Field');
         } else {
             $title = t('Create a new field');
         }
@@ -334,7 +334,7 @@ JS, [
 
         if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->get('settings', '');
-            parse_str($settingsStr, $postedOldSettings);
+            parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->get('oldNamespace');
             $settings = Arr::get($postedOldSettings, $oldNamespace, []);
 
@@ -595,7 +595,7 @@ JS, [
         $settingsStr = $request->get('settings');
 
         if ($settingsStr !== null) {
-            parse_str($settingsStr, $postedSettings);
+            parse_str((string) $settingsStr, $postedSettings);
             $settingsNamespace = $request->get('settingsNamespace');
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);

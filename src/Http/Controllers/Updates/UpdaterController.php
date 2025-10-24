@@ -203,7 +203,7 @@ final class UpdaterController extends BaseUpdaterController
 
         // Convert update handles to Composer package names, and capture current versions
         foreach ($data['install'] as $handle => $version) {
-            $packageName = strip_tags($packageNames[$handle]);
+            $packageName = strip_tags((string) $packageNames[$handle]);
 
             if ($handle === 'craft') {
                 $oldPackageName = 'craftcms/cms';
@@ -329,8 +329,8 @@ final class UpdaterController extends BaseUpdaterController
         $install = [];
 
         foreach ($installParam as $handle => $version) {
-            $handle = strip_tags($handle);
-            $version = strip_tags($version);
+            $handle = strip_tags((string) $handle);
+            $version = strip_tags((string) $version);
 
             if ($this->canUpdate($handle, $version)) {
                 $install[$handle] = $version;

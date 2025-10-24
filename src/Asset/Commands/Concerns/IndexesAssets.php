@@ -255,7 +255,7 @@ trait IndexesAssets
         foreach ($missingFiles as $assetId => $filePath) {
             unset($remainingMissingFiles[$assetId]);
 
-            $filename = basename($filePath);
+            $filename = basename((string) $filePath);
 
             if (! isset($missingRecordsByFilename[$filename])) {
                 continue;

@@ -43,7 +43,7 @@ final class HandleRule implements ValidationRule
     #[\Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! preg_match(sprintf('/^%s$/', self::$handlePattern), $value)) {
+        if (! preg_match(sprintf('/^%s$/', self::$handlePattern), (string) $value)) {
             $fail(t('“{handle}” isn’t a valid handle.'));
 
             return;
@@ -52,7 +52,7 @@ final class HandleRule implements ValidationRule
         $reservedWords = array_merge($this->reservedWords, self::$baseReservedWords);
         $reservedWords = array_map('strtolower', $reservedWords);
 
-        if (in_array(strtolower($value), $reservedWords, true)) {
+        if (in_array(strtolower((string) $value), $reservedWords, true)) {
             $fail(t('“{handle}” is a reserved word.'));
         }
     }

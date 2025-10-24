@@ -17,7 +17,7 @@ final class Kernel extends \Illuminate\Foundation\Console\Kernel
     protected function getArtisan(): ConsoleApplication
     {
         if (is_null($this->artisan)) {
-            $this->artisan = (new Application($this->app, $this->events, ''))
+            $this->artisan = new Application($this->app, $this->events, '')
                 ->resolveCommands($this->commands)
                 ->setContainerCommandLoader();
 

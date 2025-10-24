@@ -25,6 +25,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Country');
@@ -33,6 +34,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'flag';
@@ -41,6 +43,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return 'string|null';
@@ -49,6 +52,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_STRING;
@@ -57,13 +61,14 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CountryModel) {
             return $value;
         }
 
-        if (! $value || strtolower($value) === '__blank__') {
+        if (! $value || strtolower((string) $value) === '__blank__') {
             return null;
         }
 
@@ -77,6 +82,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $options = app(Addresses::class)->getCountryList(app()->getLocale());
@@ -93,6 +99,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         /** @var CountryModel|null $value */
@@ -110,6 +117,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var CountryModel|null $value */
@@ -119,6 +127,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

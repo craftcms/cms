@@ -32,7 +32,7 @@ final class RemoveController extends BaseUpdaterController
             'packageName' => ['required', 'string'],
         ]);
 
-        $data['packageName'] = strip_tags($data['packageName']);
+        $data['packageName'] = strip_tags((string) $data['packageName']);
 
         return $data;
     }

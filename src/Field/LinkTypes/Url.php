@@ -20,16 +20,19 @@ final class Url extends BaseTextLinkType
         return 'url';
     }
 
+    #[\Override]
     public static function displayName(): string
     {
         return t('URL');
     }
 
+    #[\Override]
     public function supports(string $value): bool
     {
         return parent::supports($value) || str_starts_with($value, '/') || str_starts_with($value, '#');
     }
 
+    #[\Override]
     public function normalizeValue(string $value): string
     {
         $value = str_replace(' ', '+', $value);
@@ -83,6 +86,7 @@ final class Url extends BaseTextLinkType
             ]);
     }
 
+    #[\Override]
     protected function inputAttributes(): array
     {
         return [
@@ -91,6 +95,7 @@ final class Url extends BaseTextLinkType
         ];
     }
 
+    #[\Override]
     public function validateValue(string $value, ?string &$error = null): bool
     {
         try {
@@ -98,11 +103,12 @@ final class Url extends BaseTextLinkType
             $value = Uri::new($value);
 
             return parent::validateValue($value, $error);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
     }
 
+    #[\Override]
     protected function pattern(): string
     {
         $pattern = 'https?:\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)*)(?::\d{1,5})?(?:$|[?\/#])';

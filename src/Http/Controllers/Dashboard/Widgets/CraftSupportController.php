@@ -252,7 +252,7 @@ final readonly class CraftSupportController
             // for debugging.
             try {
                 $backupPath = Craft::$app->getDb()->backup();
-                $zip->addFile($backupPath, basename($backupPath));
+                $zip->addFile($backupPath, basename((string) $backupPath));
             } catch (Throwable $e) {
                 Log::warning('Error adding database backup to support request: '.$e->getMessage(), [__METHOD__]);
                 $message .= "\n\n---\n\nError adding database backup: ".$e->getMessage();

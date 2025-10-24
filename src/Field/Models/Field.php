@@ -28,6 +28,7 @@ final class Field extends BaseModel
         ];
     }
 
+    #[\Override]
     protected static function booted(): void
     {
         self::retrieved(function (self $field) {
