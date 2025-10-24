@@ -17,6 +17,7 @@
 - Fixed a bug where focus rings within selected table rows had insufficient contrast. ([#17952](https://github.com/craftcms/cms/pull/17952))
 - Fixed a bug where all nested checkboxes could show focus rings within element index containers. ([#17952](https://github.com/craftcms/cms/pull/17952))
 - Fixed a bug where “New entry” buttons within Matrix fields didn’t have accessible labels that matched the visible labels. ([#17962](https://github.com/craftcms/cms/pull/17962))
+- Fixed a bug where the QR code shown when setting up an authenticator app didn’t have alt text. ([#17963](https://github.com/craftcms/cms/pull/17963))
 
 ## 5.8.18 - 2025-10-06
 
