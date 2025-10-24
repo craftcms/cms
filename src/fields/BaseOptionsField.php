@@ -23,6 +23,7 @@ use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -112,7 +113,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $valueSql = static::valueSql($instances);
 
             foreach ($param->values as $value) {
-                $condition[] = $qb->jsonContains($valueSql, $value);
+                if (
+                    is_string($value) &&
+                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
+                ) {
+                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+                } else {
+                    $condition[] = $qb->jsonContains($valueSql, $value);
+                }
             }
 
             return $negate ? ['not', $condition] : $condition;
