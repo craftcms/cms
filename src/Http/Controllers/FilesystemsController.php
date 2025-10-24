@@ -148,7 +148,7 @@ final class FilesystemsController
         ]);
 
         $fsService = Craft::$app->getFs();
-        $fs = $fsService->getFilesystemByHandle($request->string('id'));
+        $fs = $fsService->getFilesystemByHandle($request->get('id'));
 
         if ($fs) {
             $fsService->removeFilesystem($fs);

@@ -45,7 +45,7 @@ final class PHP
      */
     public static function configValueAsBool(string $var): bool
     {
-        $value = trim(ini_get($var));
+        $value = trim(ini_get($var) ?: '');
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
         return $value === '1' || strtolower($value) === 'on';

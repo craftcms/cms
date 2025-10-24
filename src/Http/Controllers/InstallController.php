@@ -196,12 +196,12 @@ final readonly class InstallController
             DB::reconnect('db2');
         }
 
-        $email = $request->string('account-email');
-        $username = $request->string('account-username', $email);
-        $siteUrl = $request->string('site-baseUrl');
+        $email = $request->get('account-email');
+        $username = $request->get('account-username', $email);
+        $siteUrl = $request->get('site-baseUrl');
 
         // Don't save @web even if they chose it
-        if ((string) $siteUrl === '@web') {
+        if ($siteUrl === '@web') {
             $siteUrl = Craft::getAlias($siteUrl);
         }
 
@@ -217,16 +217,16 @@ final readonly class InstallController
         }
 
         $site = new Site(
-            name: $request->string('site-name'),
+            name: $request->get('site-name'),
             handle: 'default',
-            language: $request->string('site-language'),
+            language: $request->get('site-language'),
             baseUrl: $siteUrl,
             hasUrls: true,
         );
 
         $migration = new Install(
             username: $username,
-            password: $request->string('account-password'),
+            password: $request->get('account-password'),
             email: $email,
             site: $site,
         );

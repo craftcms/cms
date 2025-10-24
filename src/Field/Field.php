@@ -791,7 +791,7 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Html::textarea($this->handle, $value);
+        return Html::textarea($this->handle, $value)->render();
     }
 
     /**

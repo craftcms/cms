@@ -849,11 +849,10 @@ final class Sites
         }
 
         foreach ($results as $result) {
-            $result = (array) $result;
-            $result['dateCreated'] = Date::parse($result['dateCreated']);
-            $result['dateUpdated'] = Date::parse($result['dateUpdated']);
+            $result->dateCreated = Date::parse($result->dateCreated);
+            $result->dateUpdated = Date::parse($result->dateUpdated);
 
-            $site = new Site(...$result);
+            $site = Site::from($result);
             $this->allSitesById[$site->id] = $site;
 
             if ($site->getEnabled()) {

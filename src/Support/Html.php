@@ -174,7 +174,7 @@ final class Html
         if (! $async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
 
-            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options)->render();
         }
 
         Craft::$app->getView()->registerHtml(
@@ -211,7 +211,7 @@ final class Html
      */
     public static function actionInput(string $route, array $options = []): string
     {
-        return self::hiddenInput('action', $route, $options);
+        return self::hiddenInput('action', $route, $options)->render();
     }
 
     /**
@@ -229,7 +229,7 @@ final class Html
      */
     public static function redirectInput(string $url, array $options = []): string
     {
-        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options);
+        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options)->render();
     }
 
     /**
@@ -247,7 +247,7 @@ final class Html
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options);
+        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
     }
 
     /**
@@ -265,7 +265,7 @@ final class Html
      */
     public static function successMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options);
+        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
     }
 
     public static function tag($name, $content = '', $options = []): string
@@ -1143,7 +1143,8 @@ final class Html
                 'class' => array_merge(self::explodeClass($options['class'] ?? []), [
                     'visually-hidden',
                 ]),
-            ]));
+            ]))
+            ->render();
     }
 
     /**

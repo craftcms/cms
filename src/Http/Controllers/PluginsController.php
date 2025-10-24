@@ -55,7 +55,7 @@ final readonly class PluginsController
         ]);
 
         $success = $this->plugins->installPlugin(
-            handle: $request->string('pluginHandle'),
+            handle: $request->get('pluginHandle'),
             edition: $request->get('edition'),
         );
 
@@ -71,7 +71,7 @@ final readonly class PluginsController
             'edition' => ['required', 'string'],
         ]);
 
-        $this->plugins->switchEdition($request->string('pluginHandle'), $request->get('edition'));
+        $this->plugins->switchEdition($request->get('pluginHandle'), $request->get('edition'));
 
         return $this->asSuccess(t('Plugin edition changed.'));
     }
@@ -82,7 +82,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ]);
 
-        $success = $this->plugins->uninstallPlugin($request->string('pluginHandle'));
+        $success = $this->plugins->uninstallPlugin($request->get('pluginHandle'));
 
         return $success ?
             $this->asSuccess(t('Plugin uninstalled.')) :
@@ -108,7 +108,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ]);
 
-        $success = $this->plugins->disablePlugin($request->string('pluginHandle'));
+        $success = $this->plugins->disablePlugin($request->get('pluginHandle'));
 
         return $success ?
             $this->asSuccess(t('Plugin disabled.')) :
@@ -146,7 +146,7 @@ final readonly class PluginsController
             'settings' => ['nullable', 'array'],
         ]);
 
-        $plugin = $this->plugins->getPlugin($request->string('pluginHandle'));
+        $plugin = $this->plugins->getPlugin($request->get('pluginHandle'));
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
@@ -154,6 +154,6 @@ final readonly class PluginsController
 
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($request->string('pluginHandle'), $plugin);
+            : $this->editSettings($request->get('pluginHandle'), $plugin);
     }
 }

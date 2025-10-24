@@ -32,10 +32,10 @@ use function CraftCms\Cms\t;
 final class Site extends Dto implements Chippable, Stringable
 {
     public function __construct(
-        private string $name,
+        public private(set) string $name,
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
         public string $handle,
-        private string $language,
+        public private(set) string $language,
         #[MapInputName('siteId')]
         public ?int $id = null,
         #[MapInputName('group')]
@@ -52,8 +52,7 @@ final class Site extends Dto implements Chippable, Stringable
         #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateUpdated = null,
         private bool|string $enabled = true
-    )
-    {
+    ) {
     }
 
     public static function get(int|string $id): ?static

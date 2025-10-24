@@ -100,7 +100,7 @@ final class Url extends BaseTextLinkType
     {
         try {
             // Leveraging Uri package to convert domains to punycode
-            $value = Uri::new($value);
+            $value = Uri::new($value)->toString();
 
             return parent::validateValue($value, $error);
         } catch (Exception) {

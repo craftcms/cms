@@ -23,14 +23,14 @@ final class Config
      *
      * @throws \Exception if the duration can't be determined
      */
-    public static function durationInSeconds(int|string|null|DateInterval $value): int
+    public static function durationInSeconds(int|string|null|bool|DateInterval $value): int
     {
         if (! $value) {
             return 0;
         }
 
-        if (is_int($value)) {
-            return $value;
+        if (is_int($value) || is_bool($value)) {
+            return (int) $value;
         }
 
         return (int) new CarbonInterval($value)->totalSeconds;

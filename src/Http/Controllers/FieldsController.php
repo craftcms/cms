@@ -75,7 +75,7 @@ final class FieldsController
         // ---------------------------------------------------------------------
 
         if ($fieldId !== null) {
-            $field = $this->fieldsService->getFieldById($fieldId);
+            $field = $this->fieldsService->getFieldById((int) $fieldId);
 
             abort_if(is_null($field), 404, 'Field not found');
         }
@@ -433,7 +433,7 @@ JS, [
 
         $fieldId = $request->get('fieldId') ?? $request->get('id');
         /** @var FieldInterface|Field|null $field */
-        $field = $this->fieldsService->getFieldById($fieldId);
+        $field = $this->fieldsService->getFieldById((int) $fieldId);
 
         abort_if(is_null($field), 400, 'Invalid field ID: '.$fieldId);
 
@@ -582,8 +582,8 @@ JS, [
             'settingsNamespace' => ['nullable', 'string'],
         ]);
 
-        $uid = $request->string('uid');
-        $elementType = $request->string('elementType');
+        $uid = $request->get('uid');
+        $elementType = $request->get('elementType');
         $layoutConfig = $request->array('layoutConfig');
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');

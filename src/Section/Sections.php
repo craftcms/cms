@@ -364,7 +364,7 @@ final class Sections
         return $this->_createSectionSiteSettingsQuery()
             ->where('sections_sites.sectionId', $sectionId)
             ->get()
-            ->map(fn (object $result) => new SectionSiteSettings(...(array) $result))
+            ->map(fn (object $result) => SectionSiteSettings::from($result))
             ->all();
     }
 

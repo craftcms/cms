@@ -238,6 +238,10 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             }
         }
 
+        if (is_float($value)) {
+            $value = (int) $value;
+        }
+
         return new MoneyLibrary($value, new Currency($this->currency));
     }
 

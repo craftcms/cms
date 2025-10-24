@@ -253,7 +253,7 @@ final class Formatter
         return $integerPart.$decimalOutput;
     }
 
-    public function asDuration(DateInterval|string|int|null $value, $implodeString = ', ', $negativeSign = '-'): string
+    public function asDuration(DateInterval|string|int|float|null $value, $implodeString = ', ', $negativeSign = '-'): string
     {
         if (is_null($value)) {
             return '';
@@ -510,7 +510,7 @@ final class Formatter
         return (string) $this->normalizeNumericValue($value) !== $this->normalizeNumericStringValue((string) $value);
     }
 
-    private function normalizeNumericStringValue($value): array|string|null
+    private function normalizeNumericStringValue($value): ?string
     {
         $powerPosition = strrpos((string) $value, 'E');
         if ($powerPosition !== false) {

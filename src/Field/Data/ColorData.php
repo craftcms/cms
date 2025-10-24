@@ -151,7 +151,7 @@ final class ColorData implements \Stringable, Serializable
         $l = ($maxRgb + $minRgb) / 2;
         $d = $maxRgb - $minRgb;
 
-        if ($d == 0) {
+        if ($d === 0) {
             $h = $s = 0; // achromatic
         } else {
             $s = $d / (1 - abs(2 * $l - 1));
@@ -174,7 +174,7 @@ final class ColorData implements \Stringable, Serializable
             }
         }
 
-        return $this->_hsl = [round($h), round($s * 100), round($l * 100)];
+        return $this->_hsl = [(int) round($h), (int) round($s * 100), (int) round($l * 100)];
     }
 
     /**
