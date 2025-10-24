@@ -13,7 +13,7 @@
 {% set showDescription = showDescription ?? false %}
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set showActionMenus = showActionMenus ?? true %}
-{% set hyperlinks = hyperlinks ?? true %}
+{% set hyperlinks = hyperlinks ?? false %}
 {% set withSearchInput = withSearchInput ?? (options|length > 5) %}
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}

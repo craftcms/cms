@@ -94,7 +94,14 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +113,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 

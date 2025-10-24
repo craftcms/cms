@@ -757,6 +757,7 @@ JS, [
                 'html' => Cp::elementChipHtml($element, [
                     'showDraftName' => !$current,
                     'class' => 'chromeless',
+                    'hyperlink' => true,
                 ]),
                 'current' => $current,
             ],
@@ -1641,6 +1642,15 @@ JS, [
             'isProvisionalDraft' => false,
             'draftId' => null,
         ];
+
+        if ($asUnpublishedDraft &&
+            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
+            $element->slug === $element->getCanonical()->slug
+        ) {
+            $newAttributes += [
+                'slug' => null,
+            ];
+        }
 
         if ($element instanceof NestedElementInterface) {
             $newAttributes += [

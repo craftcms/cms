@@ -4,7 +4,7 @@
 {% set withSearchInput = withSearchInput ?? false %}
 {% set disabled = disabled ?? false %}
 
-{% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
+{% set hasSelected = items|map(i => (i.items ?? [i]))|flatten(1)|contains('selected') %}
 
 {% macro itemType(item) %}
   {%- if item.type ?? false %}

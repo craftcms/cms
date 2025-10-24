@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements\addresses;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\TitleField;
+use craft\helpers\ArrayHelper;
 
 /**
  * Class LabelField.
@@ -23,6 +24,32 @@ class LabelField extends TitleField
      * @inheritdoc
      */
     public bool $translatable = false;
+
+    /**
+     * @inheritdoc
+     */
+    public bool $requirable = true;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        $this->required = ArrayHelper::remove($config, 'required', $this->required);
+        unset($config['requirable']);
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['requirable']);
+        $fields['required'] = 'required';
+        return $fields;
+    }
 
     /**
      * @inheritdoc

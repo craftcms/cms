@@ -405,8 +405,8 @@ class NestedElementManager extends Component
                         ->all();
                 }
 
-                // See if there are any provisional drafts we should swap these out with
-                ElementHelper::swapInProvisionalDrafts($elements);
+                // See if there are any provisional changes we should show
+                ElementHelper::loadProvisionalChanges($elements);
 
                 if ($this->hasErrors($owner)) {
                     foreach ($elements as $element) {
@@ -426,7 +426,6 @@ class NestedElementManager extends Component
                             'showActionMenu' => true,
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
-                            'hyperlink' => false,
                         ]),
                         $elements,
                     ), [
@@ -541,17 +540,17 @@ class NestedElementManager extends Component
                 }
 
                 return Cp::elementIndexHtml($this->elementType, [
+                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
                     'context' => 'embedded-index',
-                    'id' => $id,
-                    'showSiteMenu' => false,
-                    'sources' => false,
-                    'fieldLayouts' => $config['fieldLayouts'],
                     'defaultSort' => $config['defaultSort'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'defaultViewMode' => $config['defaultViewMode'],
-                    'registerJs' => false,
-                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'fieldLayouts' => $config['fieldLayouts'],
+                    'id' => $id,
                     'prevalidate' => $config['prevalidate'] ?? false,
+                    'registerJs' => false,
+                    'showSiteMenu' => false,
+                    'sources' => false,
                 ]);
             },
         );

@@ -33,11 +33,10 @@ class NamespaceTokenParser extends AbstractTokenParser
     public function parse(Token $token): NamespaceNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [
-            'namespace' => $parser->getExpressionParser()->parseExpression(),
+            'namespace' => $this->parser->parseExpression(),
         ];
         $attributes = [];
         if ($stream->test('withClasses')) {
@@ -45,10 +44,10 @@ class NamespaceTokenParser extends AbstractTokenParser
             $stream->next();
         }
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['body'] = $parser->subparse([$this, 'decideNamespaceEnd'], true);
+        $nodes['body'] = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new NamespaceNode($nodes, $attributes, $lineno, $this->getTag());
+        return new NamespaceNode($nodes, $attributes, $lineno);
     }
 
 

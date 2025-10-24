@@ -1,7 +1,7 @@
 {% from '_includes/forms.twig' import button %}
 
 {% set entryType = entry.getType() %}
-{% set singleType = singleType ?? entryTypes|length == 1 %}
+{% set singleType = singleType ?? (entryTypes|length == 1) %}
 {% set entryTypeName = entryType.name|t('site') %}
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}

@@ -3016,17 +3016,26 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            '/
+                \{                                      # Tags always begin with a {
+                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+                \}                                      # Tags always close with a }
+            /x',
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
-                $matches = array_pad($matches, 6, null);
-                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
-                if ($fallback === null) {
-                    $fallback = $fullMatch;
-                }
+                $fullMatch = $matches[0];
+                $elementType = $matches['elementType'];
+                $ref = $matches['ref'];
+                $siteId = $matches['site'] ?? null;
+                $attribute = $matches['attr'] ?? null;
+                $fallback = $matches['fallback'] ?? $fullMatch;
 
                 // Swap out the ref handle for the element type
                 $elementType = $this->getElementTypeByRefHandle($elementType);
@@ -3064,7 +3073,11 @@ class Elements extends Component
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
-            }, $str, -1, $count);
+            },
+            $str,
+            -1,
+            $count
+        );
 
         if ($count === 0) {
             // No ref tags
