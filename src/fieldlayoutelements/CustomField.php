@@ -225,6 +225,26 @@ class CustomField extends BaseField
     }
 
     /**
+     * @inheritdoc
+     */
+    public function keywords(): array
+    {
+        $fieldTypeKeyword = [];
+
+        try {
+            $field = $this->getField();
+            // include field type display name in the field layout designer's keywords
+            $fieldTypeKeyword = [$field->displayName()];
+        } catch (\Throwable $e) {
+            // fail silently
+        }
+
+        return array_filter(
+            array_merge(parent::keywords(), $fieldTypeKeyword)
+        );
+    }
+
+    /**
      * Returns the custom field this layout field is based on.
      *
      * @return FieldInterface
