@@ -52,7 +52,7 @@ final readonly class Update implements Arrayable
             fn (array $release) => UpdateRelease::fromArray($release),
             $data['releases'] ?? [],
         );
-        $data['abandoned'] = (bool) $data['abandoned'];
+        $data['abandoned'] = (bool) ($data['abandoned'] ?? false);
 
         return new self(...$data);
     }

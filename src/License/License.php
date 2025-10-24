@@ -56,7 +56,7 @@ final readonly class License
             $licenseKey = file_get_contents($path);
         }
 
-        $licenseKey = trim(preg_replace('/[\r\n]+/', '', (string) $licenseKey));
+        $licenseKey = trim((string) preg_replace('/[\r\n]+/', '', (string) $licenseKey));
 
         if (strlen($licenseKey) !== 250) {
             return null;

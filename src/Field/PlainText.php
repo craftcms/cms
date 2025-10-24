@@ -174,7 +174,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
                 $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
             }
 
-            $value = trim(preg_replace('/\R/u', "\n", (string) $value));
+            $value = trim((string) preg_replace('/\R/u', "\n", (string) $value));
         }
 
         return $value !== '' ? $value : null;
