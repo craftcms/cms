@@ -10,9 +10,13 @@
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
 {% else %}
-    {% set selectizeOptions = selectizeOptions|merge({
-        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
-    }) %}
+    {% if selectizeOptions.extraPlugins is defined and selectizeOptions.extraPlugins == false %}
+        {# don't include extra plugins if the settings explicitly tell us not to #}
+    {% else %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+        }) %}
+    {% endif %}
 {% endif %}
 
 {# Normalize the options #}
