@@ -4,13 +4,14 @@
   "main": "webpack.config.js",
   "type": "module",
   "scripts": {
-    "check-prettier": "prettier --check .",
-    "fix-prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "prepare": "husky",
     "lint:styles": "stylelint \"src/**/*.scss\"",
-    "prebuild:bundles": "npm run fix-prettier",
+    "prebuild:bundles": "npm run prettier:fix",
     "build:bundles": "npm run build -w @craftcms/asset-bundles",
     "build": "vite build",
+    "types:check": "vue-tsc --noEmit",
     "dev": "vite"
   },
   "workspaces": [

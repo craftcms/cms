@@ -28,6 +28,9 @@ it('requires a widget id', function () {
 });
 
 it('validates data after widget id', function (array $data, array $errors) {
+    Http::fake([
+        'https://api.craftcms.com/v1/support' => Http::response([]),
+    ]);
     $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(CraftSupport::class));
 
     $response = postJson(action(CraftSupportController::class), array_merge(['widgetId' => $widget->id], $data));
@@ -38,9 +41,10 @@ it('validates data after widget id', function (array $data, array $errors) {
         return;
     }
 
-    foreach ($errors as $error) {
-        $response->assertSee("errors: {\"$error\"", escape: false);
-    }
+    $response->assertStatus(422);
+    $errorKeys = array_keys($response->json('errors'));
+
+    expect($errorKeys)->toMatchArray($errors);
 })->with([
     [
         'data' => [

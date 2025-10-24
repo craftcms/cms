@@ -40,7 +40,13 @@
 
   const openDrawer = (id: string) => {
     const drawer = document.querySelector(`#${id}`);
-    drawer.open = true;
+    /**
+     * I need to add `CraftDrawer` to the exports of the `@craftcms/ui` package
+     * so we can use that as the type here. In the mean time, we'll just ignore
+     * the type error
+     */
+    // @ts-ignore
+    drawer?.open = true;
   };
 
   function createWidget(type: string) {
@@ -84,7 +90,7 @@
       </craft-dropdown>
     </template>
 
-    <div class="tw:px-4">
+    <div class="tw:px-4 tw:@container">
       <div class="widget-grid">
         <template v-for="widget in props.widgets" :key="widget.id">
           <craft-card :label="widget.title">
@@ -123,12 +129,7 @@
 <style scoped lang="scss">
   .widget-grid {
     display: grid;
-  }
-
-  @media screen and (min-width: 1024px) {
-    .widget-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--c-spacing-md);
-    }
+    gap: var(--c-spacing-md);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 </style>

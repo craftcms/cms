@@ -3,6 +3,7 @@
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\User\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -15,8 +16,8 @@ it('requires login', function () {
 it('can be rendered', function () {
     actingAs(User::first());
 
-    get(action(DashboardController::class))
-        ->assertOk()
-        ->assertSee('Dashboard')
-        ->assertSee('Widget');
+    $response = get(action(DashboardController::class));
+    $response->assertOk();
+
+    $response->assertInertia(fn (Assert $page) => $page->component('Dashboard'));
 });

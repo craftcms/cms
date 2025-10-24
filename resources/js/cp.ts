@@ -5,7 +5,8 @@ import {createInertiaApp} from '@inertiajs/vue3';
 import '@craftcms/cp/cp.css';
 import '@craftcms/cp';
 
-import Updates from '@/widgets/UpdatesWidget.vue';
+import SupportWidget from '@/widgets/SupportWidget.vue';
+import UpdatesWidget from '@/widgets/UpdatesWidget.vue';
 
 // @ts-ignore @TODO
 window.Craft = window.Craft || {};
@@ -14,13 +15,14 @@ window.Craft = window.Craft || {};
 createInertiaApp({
   resolve: (name) =>
     resolvePageComponent(
-      `./pages/${name}.vue`,
-      import.meta.glob<DefineComponent>('./pages/**/*.vue')
+      `./Pages/${name}.vue`,
+      import.meta.glob<DefineComponent>('./Pages/**/*.vue')
     ),
   setup({el, App, props, plugin}) {
     const app = createApp({render: () => h(App, props)});
 
-    app.component('updates-widget', Updates);
+    app.component('updates-widget', UpdatesWidget);
+    app.component('support-widget', SupportWidget);
 
     app.use(plugin);
     app.mount(el);

@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -25,7 +26,6 @@ use Throwable;
 use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
-use function CraftCms\Cms\t;
 
 final readonly class CraftSupportController
 {
@@ -35,10 +35,8 @@ final readonly class CraftSupportController
         private Api $api,
     ) {}
 
-    public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
+    public function __invoke(Request $request, #[Give('Craft')] Application $craft): JsonResponse
     {
-        $view = $craft->getView();
-
         $request->validate([
             'widgetId' => ['required', 'integer'],
             'namespace' => ['nullable', 'string'],
@@ -46,7 +44,6 @@ final readonly class CraftSupportController
 
         maxPowerCaptain();
 
-        $widgetId = $request->get('widgetId');
         $namespace = $request->has('namespace') ? $request->get('namespace').'.' : '';
         $data = $namespace ? $request->get($namespace) : $request->all();
 
@@ -60,11 +57,10 @@ final readonly class CraftSupportController
         ]);
 
         if ($validator->fails()) {
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
-                'widgetId' => $widgetId,
+            return new JsonResponse([
                 'success' => false,
                 'errors' => $validator->errors()->toArray(),
-            ]);
+            ], 422);
         }
 
         $parts = [
@@ -120,8 +116,7 @@ final readonly class CraftSupportController
                 RequestOptions::MULTIPART => $parts,
             ]);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
-                'widgetId' => $widgetId,
+            return new JsonResponse([
                 'success' => true,
                 'errors' => [],
             ]);
@@ -129,15 +124,14 @@ final readonly class CraftSupportController
             Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
             report($requestException);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
-                'widgetId' => $widgetId,
+            return new JsonResponse([
                 'success' => false,
                 'errors' => [
-                    'Support' => [
-                        t('A server error occurred.'),
+                    'form' => [
+                        'Unable to send support request. Please email it to support@craftcms.com instead.',
                     ],
                 ],
-            ]);
+            ], $requestException->getCode() ?: 500);
         } finally {
             // Delete the zip file
             if (isset($zipData)) {
