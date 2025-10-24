@@ -4,7 +4,7 @@
   import {computed, inject, ref} from 'vue';
   import axios from 'axios';
 
-  const {app, currentUser, actionUrl} = useCraftData();
+  const {currentUser, actionUrl} = useCraftData();
   const state = ref<string>('idle');
   const errors = ref<Record<string, Array<string>> | null>(null);
   const response = ref<any>(null);
