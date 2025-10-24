@@ -42,11 +42,13 @@
     const drawer = document.querySelector(`#${id}`);
     /**
      * I need to add `CraftDrawer` to the exports of the `@craftcms/ui` package
-     * so we can use that as the type here. In the mean time, we'll just ignore
+     * so we can use that as the type here. In the meantime, we'll just ignore
      * the type error
      */
-    // @ts-ignore
-    drawer?.open = true;
+    if (drawer) {
+      // @ts-ignore
+      drawer.open = true;
+    }
   };
 
   function createWidget(type: string) {
@@ -109,13 +111,13 @@
 
             <template v-if="widget.settingsHtml">
               <hr class="tw:my-4 tw:border-0 tw:border-b tw:border-b-subtle" />
-              <form action="">
+              <form>
                 <input type="hidden" name="action" value="" />
-                <div v-html="widget.settingsHtml"></div>
+                <DynamicHtmlRenderer :html="widget.settingsHtml"></DynamicHtmlRenderer>
 
                 <div class="tw:flex tw:gap-2 tw:mt-4">
-                  <craft-button-submit>Save</craft-button-submit>
-                  <craft-button-reset>Cancel</craft-button-reset>
+                  <craft-button variant="primary" type="submit">Save</craft-button>
+                  <craft-button type="reset">Cancel</craft-button>
                 </div>
               </form>
             </template>

@@ -79,8 +79,6 @@
 <template>
   <form
     :action="getActionUrl('dashboard/send-support-request')"
-    target="cs-feedback-iframe"
-    rel="noopener noreferrer"
     enctype="multipart/form-data"
     @submit.prevent="handleSubmit"
   >
@@ -174,8 +172,6 @@
       </craft-button>
     </div>
   </form>
-
-  <iframe id="cs-feedback-iframe" class="tw:hidden"></iframe>
 </template>
 
 <style scoped lang="scss"></style>

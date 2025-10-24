@@ -38,7 +38,6 @@ final readonly class CraftSupportController
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): JsonResponse
     {
         $request->validate([
-            'widgetId' => ['required', 'integer'],
             'namespace' => ['nullable', 'string'],
         ]);
 
