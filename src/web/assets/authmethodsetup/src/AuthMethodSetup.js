@@ -127,17 +127,17 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
     this.methodName = data.methodName;
 
     const contents = `
-      <div class="so-body">${data.html}</div>
-      <div class="so-footer">
-        <div class="flex-grow"></div>
-        <div class="flex flex-nowrap">
-          <button type="button" class="btn auth-method-close-btn">${Craft.t(
-            'app',
-            'Cancel'
-          )}</button>
-        </div>
-      </div>
-    `;
+<div class="so-body">${data.html}</div>
+<div class="so-footer">
+  <div class="flex-grow"></div>
+  <div class="flex flex-nowrap">
+    <button type="button" class="btn auth-method-close-btn">${Craft.t(
+      'app',
+      'Cancel'
+    )}</button>
+  </div>
+</div>
+`;
 
     this.base(contents, {
       containerAttributes: {
@@ -151,7 +151,7 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
     if ($qrCodeImg.length) {
       $qrCodeImg.attr({
         role: 'img',
-        'aria-label': Craft.t('app', 'QR code'),
+        'aria-label': Craft.t('app', 'QR Code'),
       });
     }
   },
