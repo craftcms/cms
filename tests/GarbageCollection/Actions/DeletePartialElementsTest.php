@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\elements\Entry;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;

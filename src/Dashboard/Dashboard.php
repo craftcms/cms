@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;

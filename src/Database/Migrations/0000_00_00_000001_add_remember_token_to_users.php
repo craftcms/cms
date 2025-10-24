@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;

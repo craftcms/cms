@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Config;
 
 test('durationInSeconds', function (int $expected, mixed $value) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressFormat\AddressFormatRepository;
 use CommerceGuys\Addressing\AddressFormat\AdministrativeAreaType;

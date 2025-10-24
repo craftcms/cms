@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use CommerceGuys\Addressing\Country\Country as CountryModel;

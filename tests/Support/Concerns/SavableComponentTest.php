@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 

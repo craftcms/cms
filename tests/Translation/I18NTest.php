@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Facades\I18N;
 
 test('normalize language', function (string $exptected, string $language) {

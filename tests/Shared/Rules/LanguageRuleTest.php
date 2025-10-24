@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Support\Facades\I18N;
 

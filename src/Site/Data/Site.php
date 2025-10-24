@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Site\Data;
 
 use CraftCms\Cms\Component\Contracts\Chippable;

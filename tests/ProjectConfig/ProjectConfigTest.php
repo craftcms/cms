@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Announcement\Models;
 
 use CraftCms\Cms\Plugin\Models\Plugin;

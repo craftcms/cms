@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Updates;
 
 use CraftCms\Cms\Updates\Commands\ComposerInstallCommand;

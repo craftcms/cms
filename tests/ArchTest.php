@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\web\twig\Extension;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;

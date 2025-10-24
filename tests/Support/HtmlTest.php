@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Html;
 
 test('EncodeParams', function (string $expected, string $html, array $variables) {

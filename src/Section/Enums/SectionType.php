@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Section\Enums;
 
 use function CraftCms\Cms\t;

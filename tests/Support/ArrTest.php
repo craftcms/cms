@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Arr;
 
 test('toArray', function (array $expected, mixed $object) {

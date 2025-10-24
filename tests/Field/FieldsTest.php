@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Diff;
 
 test('compare', function (bool $expected, mixed $a, mixed $b, bool $strict) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Support\Facades\Announcements;
 use CraftCms\Cms\User\Models\User;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Shared\Enums\Color;
 
 test('try from status', function (string $status, ?Color $expected) {

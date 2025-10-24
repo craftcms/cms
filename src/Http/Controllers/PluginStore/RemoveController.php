@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
