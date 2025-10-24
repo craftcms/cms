@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Updates\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -852,7 +853,12 @@ final class Sites
             $result->dateCreated = Date::parse($result->dateCreated);
             $result->dateUpdated = Date::parse($result->dateUpdated);
 
-            $site = Site::from($result);
+            $result = (array) $result;
+
+            // @TODO: Use Site::from() when Codeception tests are removed
+            Typecast::properties(Site::class, $result);
+
+            $site = new Site(...$result);
             $this->allSitesById[$site->id] = $site;
 
             if ($site->getEnabled()) {
