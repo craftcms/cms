@@ -31,6 +31,7 @@ final class ClearCachesCommand extends Command
     public function handle(): int
     {
         if ($this->signature === 'craft:clear-caches {keys?*}') {
+            /** @phpstan-ignore-next-line */
             if (! empty($keys = $this->argument('keys'))) {
                 foreach ($keys as $key) {
                     $this->call("craft:clear-caches:$key");
