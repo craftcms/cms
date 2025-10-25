@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\ElementInterface;

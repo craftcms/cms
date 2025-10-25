@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\base\FieldLayoutElement;
@@ -227,7 +229,7 @@ final class EntryTypesController
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
         if ($originalEntryType && $this->entryTypes->getEntryTypeByHandle($entryType->handle)) {
-            if (preg_match('/^(.*?)(\d+)$/', $entryType->handle, $match)) {
+            if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];
             } else {
@@ -317,7 +319,7 @@ final class EntryTypesController
 
         $entryType = $this->entryTypeForSelectInput($request);
         $settingsStr = $request->get('settings', '');
-        parse_str($settingsStr, $postedSettings);
+        parse_str((string) $settingsStr, $postedSettings);
 
         $settingsNamespace = $request->get('settingsNamespace');
         $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\EntryType;
 use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
