@@ -225,11 +225,7 @@ export default Base.extend(
         this.setPositionRelativeToAnchor();
       }
 
-      this.$container.velocity('stop');
-      this.$container.css({
-        opacity: 1,
-        display: 'block',
-      });
+      this.$container.velocity('stop').addClass('visible').css('opacity', 1);
 
       Garnish.uiLayerManager
         .addLayer(this.$container)
@@ -254,13 +250,12 @@ export default Base.extend(
       this.$options.removeClass('hover');
       this.$options.filter('.sel').parent('li').attr('aria-selected', 'true');
 
-      this.$container.velocity(
-        'fadeOut',
-        {duration: Garnish.FX_DURATION},
-        () => {
-          this.$container.detach();
-        }
-      );
+      this.$container.velocity('stop').velocity('fadeOut', {
+        duration: Garnish.FX_DURATION,
+        complete: () => {
+          this.$container.removeClass('visible').css('display', '').detach();
+        },
+      });
 
       Garnish.uiLayerManager.removeLayer(this.$container);
       this.removeListener(Garnish.$scrollContainer, 'scroll');

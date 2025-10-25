@@ -11,6 +11,7 @@ use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -109,7 +110,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $valueSql = static::valueSql($instances);
 
             foreach ($param->values as $value) {
-                $condition[] = $qb->jsonContains($valueSql, $value);
+                if (
+                    is_string($value) &&
+                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
+                ) {
+                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+                } else {
+                    $condition[] = $qb->jsonContains($valueSql, $value);
+                }
             }
 
             return $negate ? ['not', $condition] : $condition;

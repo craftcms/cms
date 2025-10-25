@@ -124,6 +124,8 @@ final class ProjectConfig
 
     public const string PATH_ELEMENT_SOURCES = 'elementSources';
 
+    public const string PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
+
     public const string PATH_ENTRY_TYPES = 'entryTypes';
 
     public const string PATH_FIELDS = 'fields';

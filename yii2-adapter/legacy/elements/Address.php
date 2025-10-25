@@ -585,6 +585,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
+     * Returns whether the element’s `title` attribute should be validated
+     * @return bool
+     */
+    protected function shouldValidateTitle(): bool
+    {
+        $titleField = $this->getFieldLayout()?->getField('title');
+        return $titleField->required && $titleField->showInForm($this);
+    }
+
+    /**
      * @inheritdoc
      */
     public function beforeValidate(): bool
@@ -701,6 +711,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return $this->title ?? '';
     }
 
     /**

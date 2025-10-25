@@ -2532,7 +2532,13 @@ JS;
 
         $context['title'] ??= $elementType::pluralDisplayName();
         $context['context'] = 'index';
-        $context['sources'] = Craft::$app->getElementSources()->getSources($elementType, withDisabled: true);
+
+        $elementSourcesService = Craft::$app->getElementSources();
+        $context['sources'] = $elementSourcesService->getSources(
+            $elementType,
+            withDisabled: true,
+            page: $context['page'] ?? null,
+        );
 
         $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
@@ -2542,6 +2548,13 @@ JS;
         $context['elementDisplayName'] = $elementType::displayName();
         $context['elementPluralDisplayName'] = $elementType::pluralDisplayName();
         $context['canHaveDrafts'] ??= $elementType::hasDrafts();
+
+        if (isset($context['page'])) {
+            if (isset($context['sources'][0]['page'])) {
+                $context['title'] = Craft::t('site', $context['sources'][0]['page']);
+            }
+            $context['selectedSubnavItem'] = $elementSourcesService->pageNameId($context['page']);
+        }
 
         return null;
     }

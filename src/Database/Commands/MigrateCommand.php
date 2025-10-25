@@ -14,8 +14,6 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Throwable;
@@ -168,7 +166,6 @@ final class MigrateCommand extends Command implements Isolatable
         }
 
         $this->call(UpCommand::class);
-        $this->clearCompiledTemplates();
     }
 
     private function gatherMigrationsByTrack(array &$migrationsByTrack, array &$plugins): void
@@ -215,15 +212,5 @@ final class MigrateCommand extends Command implements Isolatable
         $this->components->task('Creating migration table', fn () => $this->callSilent('migrate:install') === 0);
 
         $this->newLine();
-    }
-
-    private function clearCompiledTemplates(): void
-    {
-        try {
-            File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (Throwable $e) {
-            Log::error('Could not delete compiled templates: '.$e->getMessage());
-            report($e);
-        }
     }
 }

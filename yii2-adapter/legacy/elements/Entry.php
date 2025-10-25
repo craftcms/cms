@@ -74,6 +74,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -243,6 +244,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(EntryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function multiPageSources(): bool
+    {
+        return true;
     }
 
     /**
@@ -944,6 +953,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     private ?EntryType $_type = null;
 
     /**
+     * @see page()
+     */
+    private string|false $page;
+
+    /**
      * @inheritdoc
      * @since 3.5.0
      */
@@ -1285,10 +1299,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
+        $page = $this->page();
+
         $crumbs = [
             [
-                'label' => t('Entries'),
-                'url' => 'entries',
+                'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
+                'url' => sprintf('content/%s', $page ? Str::kebab($page) : 'entries'),
             ],
         ];
 
@@ -2142,7 +2158,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
+        $page = $this->page();
+        $path = sprintf(
+            'content/%s/%s/%s',
+            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $section->handle,
+            $this->getCanonicalId(),
+        );
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
@@ -3223,5 +3245,21 @@ JS;
         }
 
         return $templates;
+    }
+
+    private function page(): ?string
+    {
+        if (!isset($this->page)) {
+            $section = $this->getSection();
+            if ($section) {
+                $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
+                $source = ElementHelper::findSource(Entry::class, $sourceKey);
+                $this->page = $source['page'] ?? false;
+            } else {
+                $this->page = false;
+            }
+        }
+
+        return $this->page ?: null;
     }
 }

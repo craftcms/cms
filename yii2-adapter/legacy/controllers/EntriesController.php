@@ -48,6 +48,16 @@ use function CraftCms\Cms\t;
 class EntriesController extends BaseEntriesController
 {
     /**
+     * @since 5.9.0
+     */
+    public function actionIndex(): Response
+    {
+        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
+        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        return $this->redirect("content/$slug");
+    }
+
+    /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
      * @param string|null $section The section’s handle

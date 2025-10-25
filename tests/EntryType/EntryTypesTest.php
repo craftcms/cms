@@ -54,7 +54,7 @@ it('can get an entry type by uid', function () {
     $this->entryTypes->refreshEntryTypes();
 
     expect($this->entryTypes->getEntryTypeByUid($entryType->uid))->toBeInstanceOf(EntryTypeData::class);
-    expect($this->entryTypes->getEntryTypeByUid(999))->toBeNull();
+    expect($this->entryTypes->getEntryTypeByUid('non-existing'))->toBeNull();
 });
 
 it('can get an entry type by handle', function () {
@@ -62,7 +62,7 @@ it('can get an entry type by handle', function () {
     $this->entryTypes->refreshEntryTypes();
 
     expect($this->entryTypes->getEntryTypeByHandle($entryType->handle))->toBeInstanceOf(EntryTypeData::class);
-    expect($this->entryTypes->getEntryTypeByHandle(999))->toBeNull();
+    expect($this->entryTypes->getEntryTypeByHandle('non-existing'))->toBeNull();
 });
 
 it('can get an entry type mixed', function () {

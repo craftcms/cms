@@ -64,6 +64,10 @@ final class UpCommand extends Command implements Isolatable
                 return $res;
             }
 
+            $this->call('craft:clear-caches', [
+                'keys' => ['compiled-templates'],
+            ]);
+
             $this->components->task('Updating license info', function () use ($updates) {
                 $updates->getUpdates(refresh: true);
             });

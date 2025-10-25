@@ -40,13 +40,17 @@ class GetAttrNode extends GetAttrExpression
      */
     public function compile(Compiler $compiler): void
     {
+        // The following code is based on GetAttrExpression::compile().
+        // Differences noted below with `DIFF` comments.
+
         $env = $compiler->getEnvironment();
+        $arrayAccessSandbox = false;
 
         // optimize array calls
         if (
             $this->getAttribute('optimizable')
             && (!$env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
-            && !$this->isDefinedTestEnabled()
+            && !$this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
             && Template::ARRAY_CALL === $this->getAttribute('type')
         ) {
             $var = '$' . $compiler->getVarName();
@@ -54,20 +58,38 @@ class GetAttrNode extends GetAttrExpression
                 ->raw('((' . $var . ' = ')
                 ->subcompile($this->getNode('node'))
                 ->raw(') && is_array(')
-                ->raw($var)
+                ->raw($var);
+
+            if (!$env->hasExtension(SandboxExtension::class)) {
+                $compiler
+                    ->raw(') || ')
+                    ->raw($var)
+                    ->raw(' instanceof ArrayAccess ? (')
+                    ->raw($var)
+                    ->raw('[(string)') // DIFF: `(string)` added
+                    ->subcompile($this->getNode('attribute'))
+                    ->raw('] ?? null) : null)')
+                ;
+
+                return;
+            }
+
+            $arrayAccessSandbox = true;
+
+            $compiler
                 ->raw(') || ')
                 ->raw($var)
-                ->raw(' instanceof ArrayAccess ? (')
+                ->raw(' instanceof ArrayAccess && in_array(')
+                ->raw($var . '::class')
+                ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
-                ->raw('[')
+                ->raw('[(string)') // DIFF: `(string)` added
                 ->subcompile($this->getNode('attribute'))
-                ->raw('] ?? null) : null)')
+                ->raw('] ?? null) : ')
             ;
-
-            return;
         }
 
-        // This is the only line that should be different from GetAttrExpression::compile()
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
         $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
 
         if ($this->getAttribute('ignore_strict_check')) {
@@ -88,11 +110,15 @@ class GetAttrNode extends GetAttrExpression
 
         $compiler->raw(', ')
             ->repr($this->getAttribute('type'))
-            ->raw(', ')->repr($this->isDefinedTestEnabled())
+            ->raw(', ')->repr($this->isDefinedTestEnabled()) // DIFF: $this->definedTest is private
             ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
             ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
             ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
             ->raw(')')
         ;
+
+        if ($arrayAccessSandbox) {
+            $compiler->raw(')');
+        }
     }
 }

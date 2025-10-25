@@ -30,7 +30,15 @@ final class ClearCachesCommand extends Command
 
     public function handle(): int
     {
-        if ($this->signature === 'craft:clear-caches') {
+        if ($this->signature === 'craft:clear-caches {keys?*}') {
+            if (! empty($keys = $this->argument('keys'))) {
+                foreach ($keys as $key) {
+                    $this->call("craft:clear-caches:$key");
+                }
+
+                return self::SUCCESS;
+            }
+
             return $this->list();
         }
 
@@ -104,8 +112,8 @@ final class ClearCachesCommand extends Command
     {
         $signatures = [
             [
-                'signature' => 'craft:clear-caches',
-                'description' => 'Lists available caches to clear.',
+                'signature' => 'craft:clear-caches {keys?*}',
+                'description' => 'Lists available caches to clear or clear specific caches.',
             ],
             [
                 'signature' => 'craft:clear-caches:all',
