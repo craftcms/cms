@@ -22,6 +22,7 @@ use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -210,12 +211,12 @@ class EntriesController extends BaseEntriesController
         // Set its position in the structure if a before/after param was passed
         if ($section->type === SectionType::Structure) {
             if ($nextId = $this->request->getParam('before')) {
-                $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
+                $nextEntry = Entries::getEntryById($nextId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
             } elseif ($prevId = $this->request->getParam('after')) {
-                $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
+                $prevEntry = Entries::getEntryById($prevId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $prevEntry);
@@ -488,7 +489,7 @@ class EntriesController extends BaseEntriesController
         $errors = [];
         foreach ($entries as $entry) {
             try {
-                Craft::$app->getEntries()->moveEntryToSection($entry, $section);
+                Entries::moveEntryToSection($entry, $section);
             } catch (Exception|InvalidElementException|UnsupportedSiteException $e) {
                 Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
                 $errors[] = $e->getMessage();
@@ -544,7 +545,7 @@ class EntriesController extends BaseEntriesController
                 }
             }
 
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
+            $entry = Entries::getEntryById($entryId, $siteId);
 
             if ($entry) {
                 return $entry;

@@ -69,6 +69,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -2503,7 +2504,7 @@ JS, [
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields[] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
-                    $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
+                    $parent = Entries::getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
                         'draftOf' => false,
                     ]);
@@ -2799,7 +2800,7 @@ JS;
                 // Has the entry been assigned to a new parent?
                 if (!$this->duplicateOf && $this->hasNewParent()) {
                     if ($parentId = $this->getParentId()) {
-                        $parentEntry = Craft::$app->getEntries()->getEntryById($parentId, '*', [
+                        $parentEntry = Entries::getEntryById($parentId, '*', [
                             'preferSites' => [$this->siteId],
                             'drafts' => null,
                             'draftOf' => false,
