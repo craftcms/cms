@@ -25,6 +25,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -53,7 +54,7 @@ class EntriesController extends BaseEntriesController
     public function actionIndex(): Response
     {
         $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
-        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        $slug = $firstPage ? Str::slug($firstPage) : 'entries';
         return $this->redirect("content/$slug");
     }
 

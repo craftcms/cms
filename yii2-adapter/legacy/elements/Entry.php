@@ -1304,7 +1304,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => sprintf('content/%s', $page ? Str::kebab($page) : 'entries'),
+                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
             ],
         ];
 
@@ -2161,7 +2161,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $page = $this->page();
         $path = sprintf(
             'content/%s/%s/%s',
-            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $page ? Str::slug($page) : 'entries',
             $section->handle,
             $this->getCanonicalId(),
         );
@@ -3252,7 +3252,7 @@ JS;
         if (!isset($this->page)) {
             $section = $this->getSection();
             if ($section) {
-                $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
+                $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
                 $source = ElementHelper::findSource(Entry::class, $sourceKey);
                 $this->page = $source['page'] ?? false;
             } else {

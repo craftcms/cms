@@ -250,7 +250,7 @@ class Cp extends Component
                 foreach ($entryPages as $page) {
                     $navItems[] = [
                         'label' => $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                        'url' => sprintf('content/%s', Str::kebab($page)),
+                        'url' => sprintf('content/%s', Str::slug($page)),
                         'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
                     ];
                 }

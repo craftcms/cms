@@ -169,7 +169,7 @@ class ElementSources extends Component
 
             if (!empty($missingSources)) {
                 // If there are any headings, add a blank heading
-                if (ArrayHelper::contains($sources, fn(array $source) => $source['type'] === self::TYPE_HEADING)) {
+                if (Arr::first($sources, fn(array $source) => $source['type'] === self::TYPE_HEADING)) {
                     $sources[] = [
                         'type' => self::TYPE_HEADING,
                         'heading' => '',
