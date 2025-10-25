@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\EntryType\Data;
+namespace CraftCms\Cms\Entry\Data;
 
 use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;

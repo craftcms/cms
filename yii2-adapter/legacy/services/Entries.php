@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
@@ -18,22 +17,19 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
-use craft\helpers\Db as DbHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
+use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
-use CraftCms\Cms\EntryType\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\EntryType\Events\DeletingEntryType;
-use CraftCms\Cms\EntryType\Events\EntryTypeDeleted;
-use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
-use CraftCms\Cms\EntryType\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\SavingEntryType;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
-use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
@@ -43,17 +39,12 @@ use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Entries as EntriesFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -138,11 +129,6 @@ class Entries extends Component
      * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
-
-    /**
-     * @var array<int,array<string,Entry|false>>
-     */
-    private array $_singleEntries = [];
 
     // Sections
     // -------------------------------------------------------------------------
@@ -572,7 +558,7 @@ class Entries extends Component
     public function getEntryTypesBySectionId(int $sectionId): array
     {
         return EntryTypes::getEntryTypesBySectionId($sectionId)
-            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
+            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
             ->all();
     }
 
@@ -591,7 +577,7 @@ class Entries extends Component
     public function getAllEntryTypes(): array
     {
         return EntryTypes::getAllEntryTypes()
-            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
+            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
             ->all();
     }
 
@@ -705,7 +691,7 @@ class Entries extends Component
         $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
         $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
         $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
+        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
         $entryTypeData->setFieldLayout($entryType->getFieldLayout());
 
         return EntryTypes::saveEntryType($entryTypeData);
@@ -764,7 +750,7 @@ class Entries extends Component
         $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
         $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
         $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
+        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
 
         return EntryTypes::deleteEntryType($entryTypeData);
     }
@@ -877,7 +863,7 @@ class Entries extends Component
         $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
             return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
         }, $section->getSiteSettings()));
-        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData) {
+        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData) {
             return self::entryTypeFromEntryTypeData($entryTypeData);
         }, $section->getEntryTypes()));
 
@@ -899,7 +885,7 @@ class Entries extends Component
         return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
     }
 
-    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData): EntryType
+    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData): EntryType
     {
         $data = Utils::getPublicProperties($entryTypeData);
         $data['titleTranslationMethod'] = $data['titleTranslationMethod']->value;

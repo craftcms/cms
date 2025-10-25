@@ -17,7 +17,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\types\elements\Entry;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
+use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 
 /**

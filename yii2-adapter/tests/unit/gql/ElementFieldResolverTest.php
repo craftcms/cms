@@ -32,7 +32,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;

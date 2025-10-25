@@ -39,7 +39,7 @@ use function CraftCms\Cms\t;
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\EntryType\Data\EntryType} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Data\EntryType} instead.
  */
 class EntryType extends Model implements
     FieldLayoutProviderInterface,

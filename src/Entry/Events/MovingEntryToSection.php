@@ -12,6 +12,5 @@ final class MovingEntryToSection
     public function __construct(
         public Entry $entry,
         public Section $section,
-    ) {
-    }
+    ) {}
 }

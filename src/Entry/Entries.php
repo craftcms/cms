@@ -9,11 +9,11 @@ use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Db as DbHelper;
-use craft\models\Section;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -42,16 +42,14 @@ final class Entries
      * $entry = \Craft::$app->entries->getEntryById($entryId);
      * ```
      *
-     * @param int $entryId The entry’s ID.
-     * @param int|string|int[]|null $siteId The site(s) to fetch the entry in.
-     * Defaults to the current site.
-     * @param array $criteria
-     *
+     * @param  int  $entryId  The entry’s ID.
+     * @param  int|string|int[]|null  $siteId  The site(s) to fetch the entry in.
+     *                                         Defaults to the current site.
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
     public function getEntryById(int $entryId, array|int|string|null $siteId = null, array $criteria = []): ?Entry
     {
-        if (!$entryId) {
+        if (! $entryId) {
             return null;
         }
 
@@ -69,8 +67,7 @@ final class Entries
     /**
      * Returns an array of Single section entries which match a given list of section handles.
      *
-     * @param string[] $handles
-     *
+     * @param  string[]  $handles
      * @return array<string,Entry>
      */
     public function getSingleEntriesByHandle(array $handles): array
@@ -79,7 +76,7 @@ final class Entries
         $siteId = Sites::getCurrentSite()->id;
         $missingEntries = [];
 
-        if (!isset($this->singleEntries[$siteId])) {
+        if (! isset($this->singleEntries[$siteId])) {
             $this->singleEntries[$siteId] = [];
         }
 
@@ -110,14 +107,14 @@ final class Entries
             }
         }
 
-        if (!empty($fetchSectionIds)) {
+        if (! empty($fetchSectionIds)) {
             $fetchedEntries = Entry::find()
                 ->sectionId($fetchSectionIds)
                 ->siteId($siteId)
                 ->all();
 
             /** @var array<string,Entry> $fetchedEntries */
-            $fetchedEntries = Arr::keyBy($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
+            $fetchedEntries = Arr::keyBy($fetchedEntries, fn (Entry $entry) => $entry->getSection()->handle);
 
             foreach ($fetchSectionHandles as $handle) {
                 if (isset($fetchedEntries[$handle])) {
@@ -135,16 +132,13 @@ final class Entries
     /**
      * Move entry to a different section.
      *
-     * @param Entry $entry
-     * @param Section $section
      *
-     * @return bool
      * @throws Exception
      * @throws InvalidElementException
      * @throws Throwable
      * @throws UnsupportedSiteException
      */
-    public function moveEntryToSection(Entry $entry, \CraftCms\Cms\Section\Data\Section $section): bool
+    public function moveEntryToSection(Entry $entry, Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
         if (Event::hasListeners(MovingEntryToSection::class)) {
@@ -152,7 +146,7 @@ final class Entries
         }
 
         // Make sure the element exists
-        if (!$entry->id) {
+        if (! $entry->id) {
             throw new Exception('Attempting to move an unsaved element.');
         }
 
@@ -187,14 +181,14 @@ final class Entries
 
         if ($entry->hasErrors()) {
             throw new InvalidElementException($entry,
-                'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
+                'Element '.$entry->id.' could not be moved because it doesn\'t validate.');
         }
 
         // prevents revision from being created
         $entry->resaving = true;
 
         $elementsService = \Craft::$app->getElements();
-        $elementsService->ensureBulkOp(function() use (
+        $elementsService->ensureBulkOp(function () use (
             $entry,
             $section,
             $oldSection,
@@ -203,9 +197,9 @@ final class Entries
             DB::beginTransaction();
             try {
                 // Start with $entry’s site
-                if (!$elementsService->saveElement($entry, false, false)) {
+                if (! $elementsService->saveElement($entry, false, false)) {
                     throw new InvalidElementException($entry,
-                        'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
+                        'Element '.$entry->id.' could not be moved for site '.$entry->siteId);
                 }
 
                 $draftsQuery = Entry::find()
@@ -262,7 +256,7 @@ final class Entries
 
                 // now assign drafts & revisions to the new section too
                 $ids = array_merge($draftsQuery->ids(), $revisionsQuery->ids());
-                if (!empty($ids)) {
+                if (! empty($ids)) {
                     DB::table(Table::ENTRIES)
                         ->whereIn('id', $ids)
                         ->update([

@@ -68,7 +68,7 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $entryType = new \CraftCms\Cms\EntryType\Data\EntryType(
+        $entryType = new \CraftCms\Cms\Entry\Data\EntryType(
             handle: 'article',
             uid: 'uid',
         );
@@ -300,7 +300,7 @@ class CreateMutationsTest extends TestCase
      */
     public function testCreateEntrySaveMutation(): void
     {
-        $typeA = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+        $typeA = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
             'name' => 'typeA',
             'handle' => 'typeA',
             'getCustomFields' => [
@@ -313,7 +313,7 @@ class CreateMutationsTest extends TestCase
             entryTypes: [$typeA],
         );
 
-        $typeB = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+        $typeB = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
             'name' => 'typeB',
             'handle' => 'typeB',
             'getCustomFields' => [
@@ -326,7 +326,7 @@ class CreateMutationsTest extends TestCase
             entryTypes: [$typeB],
         );
 
-        $typeC = $this->make(\CraftCms\Cms\EntryType\Data\EntryType::class, [
+        $typeC = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
             'name' => 'typeC',
             'handle' => 'typeC',
             'getCustomFields' => [

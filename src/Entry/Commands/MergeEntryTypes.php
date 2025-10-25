@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\EntryType\Commands;
+namespace CraftCms\Cms\Entry\Commands;
 
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
@@ -10,8 +10,8 @@ use craft\models\FieldLayoutTab;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\EntryType\Data\EntryType;
-use CraftCms\Cms\EntryType\EntryTypes;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\File;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class MergeCommand extends Command implements PromptsForMissingInput
+final class MergeEntryTypes extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 

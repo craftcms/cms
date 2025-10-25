@@ -15,7 +15,7 @@ use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\services\Elements;
 use craft\test\TestCase;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 

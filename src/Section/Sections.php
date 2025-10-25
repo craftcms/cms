@@ -17,7 +17,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;

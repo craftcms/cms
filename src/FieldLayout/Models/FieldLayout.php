@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Models;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\EntryType\Models\EntryType;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

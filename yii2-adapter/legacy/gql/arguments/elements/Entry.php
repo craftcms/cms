@@ -12,7 +12,7 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use GraphQL\Type\Definition\Type;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\EntryType;
+namespace CraftCms\Cms\Entry;
 
 use craft\base\MemoizableArray;
 use craft\elements\Entry;
@@ -13,13 +13,13 @@ use craft\helpers\Queue;
 use craft\models\FieldLayout;
 use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\EntryType\Data\EntryType;
-use CraftCms\Cms\EntryType\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\EntryType\Events\DeletingEntryType;
-use CraftCms\Cms\EntryType\Events\EntryTypeDeleted;
-use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
-use CraftCms\Cms\EntryType\Events\SavingEntryType;
-use CraftCms\Cms\EntryType\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
+use CraftCms\Cms\Entry\Events\DeletingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeSaved;
+use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
