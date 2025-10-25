@@ -205,7 +205,7 @@ trait ApplicationTrait
      */
     public string $schemaVersion {
         get => Cms::SCHEMA_VERSION;
-    set(string $value) => public $this->schemaVersion = public $value;
+        set(string $value) => $this->schemaVersion = $value;
     }
 
     /**
@@ -213,7 +213,7 @@ trait ApplicationTrait
      */
     public string $minVersionRequired {
         get => Cms::MIN_VERSION_REQUIRED;
-    set(string $value) => public $this->minVersionRequired = public $value;
+        set(string $value) => $this->minVersionRequired = $value;
     }
 
     /**
@@ -221,7 +221,7 @@ trait ApplicationTrait
      */
     public ?string $env {
         get => app()->environment();
-    set(null | string $value) => public $this->env = public $value;
+        set(null | string $value) => $this->env = $value;
     }
 
     /**
