@@ -136,10 +136,26 @@ final class AppServiceProvider extends ServiceProvider
             fn (): string => $this['config']->get('app.timezone') ?? date_default_timezone_get(),
         );
 
+        // Register Collection::one() as an alias of first()
+        Collection::macro('one', fn () => $this->first(...func_get_args()));
+
         Collection::macro(
             'sentence',
             fn (?string $glue = null): string => $this->join($glue ?? ', ', sprintf(',%s', t(' and '))),
         );
+
+        // Register Collection::set() as an alias of put() - with support for bulk-setting values
+        Collection::macro('set', function (mixed $values) {
+            if (! is_array($values)) {
+                return $this->put(...func_get_args());
+            }
+
+            foreach ($values as $key => $value) {
+                $this->put($key, $value);
+            }
+
+            return $this;
+        });
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
             Cms::config()->cpTrigger, // /admin

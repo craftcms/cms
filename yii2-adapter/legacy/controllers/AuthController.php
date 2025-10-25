@@ -304,7 +304,7 @@ class AuthController extends Controller
             throw new InvalidConfigException('No recovery codes exist for this user.');
         }
 
-        $systemName = t(Craft::$app->getSystemName(), category: 'site');
+        $systemName = t(Cms::systemName(), category: 'site');
         $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
         $primarySite = Sites::getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();

@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Sites;
 
 final readonly class Cms
 {
@@ -19,5 +23,22 @@ final readonly class Cms
     public static function config(): GeneralConfig
     {
         return app(GeneralConfig::class);
+    }
+
+    public static function systemName(): string
+    {
+        $name = Env::parse(ProjectConfig::get('system.name'));
+
+        if ($name !== null) {
+            return $name;
+        }
+
+        try {
+            $name = Sites::getPrimarySite()->getName();
+        } catch (SiteNotFoundException) {
+            $name = null;
+        }
+
+        return $name ?: config('app.name', 'Craft');
     }
 }

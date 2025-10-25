@@ -98,7 +98,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
@@ -204,17 +203,26 @@ trait ApplicationTrait
     /**
      * @var string Craft’s schema version number.
      */
-    public string $schemaVersion;
+    public string $schemaVersion {
+        get => Cms::SCHEMA_VERSION;
+    set(string $value) => public $this->schemaVersion = public $value;
+    }
 
     /**
      * @var string The minimum Craft build number required to update to this build.
      */
-    public string $minVersionRequired;
+    public string $minVersionRequired {
+        get => Cms::MIN_VERSION_REQUIRED;
+    set(string $value) => public $this->minVersionRequired = public $value;
+    }
 
     /**
      * @var string|null The environment ID Craft is currently running in.
      */
-    public ?string $env = null;
+    public ?string $env {
+        get => app()->environment();
+    set(null | string $value) => public $this->env = public $value;
+    }
 
     /**
      * @var Edition The installed Craft CMS edition.
@@ -735,21 +743,11 @@ trait ApplicationTrait
      *
      * @return string
      * @since 3.1.4
+     * @deprecated 6.0.0 use {@see Cms::systemName()} instead.
      */
     public function getSystemName(): string
     {
-        $name = Env::parse(app(ProjectConfig::class)->get('system.name'));
-        if ($name !== null) {
-            return $name;
-        }
-
-        try {
-            $name = \CraftCms\Cms\Support\Facades\Sites::getPrimarySite()->getName();
-        } catch (SiteNotFoundException) {
-            $name = null;
-        }
-
-        return $name ?: config('app.name', 'Craft');
+        return Cms::systemName();
     }
 
     /**
@@ -1319,25 +1317,6 @@ trait ApplicationTrait
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_MEDIUMTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_LONGTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_ENUM] = ColumnSchemaBuilder::CATEGORY_STRING;
-
-        // Register Collection::set() as an alias of put() - with support for bulk-setting values
-        Collection::macro('set', function(mixed $values) {
-            assert($this instanceof Collection);
-            if (is_array($values)) {
-                foreach ($values as $key => $value) {
-                    $this->put($key, $value);
-                }
-            } else {
-                $this->put(...func_get_args());
-            }
-            return $this;
-        });
-
-        // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
-        Collection::macro('one', function() {
-            assert($this instanceof Collection);
-            return $this->first(...func_get_args());
-        });
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization

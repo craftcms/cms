@@ -1816,7 +1816,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
             $siteName = t($currentSite->getName(), category: 'site');
             $siteUrl = $currentSite->getBaseUrl();
-            $systemName = Craft::$app->getSystemName();
+            $systemName = Cms::systemName();
         } else {
             $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
         }

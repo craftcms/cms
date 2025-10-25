@@ -17,6 +17,7 @@ use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Cms;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
 use yii\base\Exception;
@@ -285,7 +286,7 @@ JS, [
     private function generateQrCode(string $secret): string
     {
         $qrCodeUrl = (new Google2FA())->getQRCodeUrl(
-            Craft::$app->getSystemName(),
+            Cms::systemName(),
             $this->user->email,
             $secret,
         );
