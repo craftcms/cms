@@ -55,6 +55,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0. Use {@see \CraftCms\Cms\Entry\EntryTypes}, {@see \CraftCms\Cms\Section\Sections} or {@see \CraftCms\Cms\Entry\Entries} instead.
  */
 class Entries extends Component
 {
