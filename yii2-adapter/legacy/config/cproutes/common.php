@@ -12,11 +12,9 @@ return [
     'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . Str::uuidPattern() . '>' => 'elements/redirect',
-    'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
 
-    'content/<page:{slug}>/<section:{handle}>/new' => 'entries/create',
     'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
 

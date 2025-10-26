@@ -10,9 +10,9 @@ use Illuminate\Http\RedirectResponse;
 
 use function CraftCms\Cms\cp_redirect;
 
-final class EntriesController
+final readonly class EntriesIndexController
 {
-    public function index(): RedirectResponse
+    public function __invoke(): RedirectResponse
     {
         $firstPage = \Craft::$app->getElementSources()->getFirstPage(Entry::class);
         $slug = $firstPage ? Str::slug($firstPage) : 'entries';

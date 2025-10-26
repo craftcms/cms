@@ -15,19 +15,14 @@ use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use craft\models\Section;
-use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Exception;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -48,187 +43,6 @@ use function CraftCms\Cms\t;
  */
 class EntriesController extends BaseEntriesController
 {
-    /**
-     * Creates a new unpublished draft and redirects to its edit page.
-     *
-     * @param string|null $section The section’s handle
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     */
-    public function actionCreate(?string $section = null): ?Response
-    {
-        if ($section) {
-            $sectionHandle = $section;
-        } else {
-            $sectionHandle = $this->request->getRequiredBodyParam('section');
-        }
-
-        $section = Sections::getSectionByHandle($sectionHandle);
-        if (!$section) {
-            throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
-        }
-
-        $siteId = $this->request->getBodyParam('siteId');
-
-        if ($siteId) {
-            $site = Sites::getSiteById($siteId);
-            if (!$site) {
-                throw new BadRequestHttpException("Invalid site ID: $siteId");
-            }
-        } else {
-            $site = Cp::requestedSite();
-            if (!$site) {
-                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
-            }
-        }
-
-        $editableSiteIds = $this->editableSiteIds($section);
-
-        if (!in_array($site->id, $editableSiteIds)) {
-            // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
-            if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
-                return $this->renderTemplate('_special/sitepicker.twig', [
-                    'siteIds' => $editableSiteIds,
-                    'baseUrl' => "entries/$section->handle/new",
-                ]);
-            }
-
-            // Go with the first one
-            $site = Sites::getSiteById($editableSiteIds[0]);
-        }
-
-        $user = static::currentUser();
-
-        // Create & populate the draft
-        $entry = Craft::createObject(Entry::class);
-        $entry->siteId = $site->id;
-        $entry->sectionId = $section->id;
-        $entry->setAuthorIds(
-            $this->request->getQueryParam('authorIds') ??
-            $this->request->getQueryParam('authorId') ??
-            $user->id
-        );
-
-        // Type
-        if (($typeHandle = $this->request->getParam('type')) !== null) {
-            $type = Collection::make($entry->getAvailableEntryTypes())->firstWhere('handle', $typeHandle);
-            if ($type === null) {
-                throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
-            }
-            $entry->typeId = $type->id;
-        } else {
-            $entry->typeId = $this->request->getParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
-        }
-
-        // Status
-        if (($status = $this->request->getParam('status')) !== null) {
-            $enabled = $status === 'enabled';
-        } else {
-            // Set the default status based on the section's settings
-            /** @var Section_SiteSettings $siteSettings */
-            $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $entry->siteId);
-            $enabled = $siteSettings->enabledByDefault;
-        }
-        if (Sites::isMultiSite() && count($entry->getSupportedSites()) > 1) {
-            $entry->enabled = true;
-            $entry->setEnabledForSite($enabled);
-        } else {
-            $entry->enabled = $enabled;
-            $entry->setEnabledForSite(true);
-        }
-
-        // Structure parent
-        if (
-            $section->type === SectionType::Structure &&
-            (int)$section->maxLevels !== 1
-        ) {
-            // Set the initially selected parent
-            $entry->setParentId($this->request->getParam('parentId'));
-        }
-
-        // Make sure the user is allowed to create this entry
-        if (!Craft::$app->getElements()->canSave($entry, $user)) {
-            throw new ForbiddenHttpException('User not authorized to create this entry.');
-        }
-
-        // Title & slug
-        $entry->title = $this->request->getParam('title');
-        $entry->slug = $this->request->getParam('slug');
-        if ($entry->title && !$entry->slug) {
-            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->getLanguage());
-        }
-        if (!$entry->slug) {
-            $entry->slug = ElementHelper::tempSlug();
-        }
-
-        // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
-        DateTimeHelper::pause();
-
-        // Post & expiry dates
-        if (($postDate = $this->request->getParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
-        }
-
-        if (($expiryDate = $this->request->getParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
-        }
-
-        // Custom fields
-        foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
-            if (($value = $this->request->getParam($field->handle)) !== null) {
-                $entry->setFieldValue($field->handle, $value);
-            }
-        }
-
-        // Save it
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
-
-        // Resume time
-        DateTimeHelper::resume();
-
-        if (!$success) {
-            return $this->asModelFailure($entry, mb_ucfirst(t('Couldn’t create {type}.', [
-                'type' => Entry::lowerDisplayName(),
-            ])), 'entry');
-        }
-
-        // Set its position in the structure if a before/after param was passed
-        if ($section->type === SectionType::Structure) {
-            if ($nextId = $this->request->getParam('before')) {
-                $nextEntry = Entries::getEntryById($nextId, $site->id, [
-                    'structureId' => $section->structureId,
-                ]);
-                Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
-            } elseif ($prevId = $this->request->getParam('after')) {
-                $prevEntry = Entries::getEntryById($prevId, $site->id, [
-                    'structureId' => $section->structureId,
-                ]);
-                Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $prevEntry);
-            }
-        }
-
-        $editUrl = $entry->getCpEditUrl();
-
-        $response = $this->asModelSuccess($entry, t('{type} created.', [
-            'type' => Entry::displayName(),
-        ]), 'entry', array_filter([
-            'cpEditUrl' => $this->request->getIsCpRequest() ? $editUrl : null,
-        ]));
-
-        if (!$this->request->getAcceptsJson()) {
-            $response->redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
-        }
-
-        return $response;
-    }
-
     /**
      * Saves an entry.
      *

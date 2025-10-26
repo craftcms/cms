@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
@@ -91,6 +92,9 @@ Route::prefix(implode('/', [
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
+
+        // Entries
+        Route::post('entries/create', CreateEntryController::class);
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
