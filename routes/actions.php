@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
@@ -9,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
@@ -36,10 +39,14 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 
 /**
- * Actions that are accessible anonymously can be registered here.
+ * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
+
+    Route::middleware(['auth'])->group(function () {
+        Route::post('entries/save-entry', StoreEntryController::class);
+    });
 });
 
 Route::prefix(implode('/', [
@@ -95,6 +102,7 @@ Route::prefix(implode('/', [
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);
+        Route::post('entries/save-entry', StoreEntryController::class);
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);

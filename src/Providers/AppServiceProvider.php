@@ -185,6 +185,20 @@ final class AppServiceProvider extends ServiceProvider
             return [];
         });
 
+        Request::macro('getSigned', function (string $key, mixed $default = null): mixed {
+            $value = $this->get($key);
+
+            if (is_null($value)) {
+                return $default;
+            }
+
+            $value = \Craft::$app->getSecurity()->validateData($value);
+
+            abort_if($value === false, 400, 'Request contained an invalid body param');
+
+            return $value;
+        });
+
         Factory::macro('create', fn (array $options = []) => $this->throw()
             ->withUserAgent('Craft/'.Cms::VERSION.' '.Utils::defaultUserAgent())
             ->when(

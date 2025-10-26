@@ -8,30 +8,22 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
-use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\models\Section;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Exception;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
 
 /**
@@ -43,145 +35,6 @@ use function CraftCms\Cms\t;
  */
 class EntriesController extends BaseEntriesController
 {
-    /**
-     * Saves an entry.
-     *
-     * @param bool $duplicate Whether the entry should be duplicated
-     * @return Response|null
-     * @throws ServerErrorHttpException if reasons
-     * @throws ForbiddenHttpException
-     */
-    public function actionSaveEntry(bool $duplicate = false): ?Response
-    {
-        $this->requirePostRequest();
-
-        $entry = $this->_getEntryModel();
-        $entryVariable = $this->request->getValidatedBodyParam('entryVariable') ?? 'entry';
-        // Permission enforcement
-        $this->enforceSitePermission($entry->getSite());
-        $this->enforceEditEntryPermissions($entry, $duplicate);
-
-        // Keep track of whether the entry was disabled as a result of duplication
-        $forceDisabled = false;
-
-        // If we're duplicating the entry, swap $entry with the duplicate
-        if ($duplicate) {
-            try {
-                $wasEnabled = $entry->enabled;
-                $entry->draftId = null;
-                $entry->isProvisionalDraft = false;
-                $entry = Craft::$app->getElements()->duplicateElement($entry);
-                if ($wasEnabled && !$entry->enabled) {
-                    $forceDisabled = true;
-                }
-            } catch (InvalidElementException $e) {
-                /** @var Entry $clone */
-                $clone = $e->element;
-
-                if ($this->request->getAcceptsJson()) {
-                    return $this->asModelFailure($clone);
-                }
-
-                // Send the original entry back to the template, with any validation errors on the clone
-                $entry->addErrors($clone->getErrors());
-
-                return $this->asModelFailure(
-                    $entry,
-                    t('Couldn’t duplicate {type}.', [
-                        'type' => Entry::lowerDisplayName(),
-                    ]),
-                    'entry'
-                );
-            } catch (Throwable $e) {
-                throw new ServerErrorHttpException(t('An error occurred when duplicating the entry.'), 0, $e);
-            }
-        }
-
-        // Populate the entry with post data
-        $this->_populateEntryModel($entry);
-
-        if ($forceDisabled) {
-            $entry->enabled = false;
-        }
-
-        // Save the entry (finally!)
-        if ($entry->enabled && $entry->getEnabledForSite()) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
-        }
-
-        $isNotNew = (bool)$entry->id;
-        if ($isNotNew) {
-            $lockKey = "entry:$entry->id";
-            $mutex = Cache::lock($lockKey, 15);
-            if (!$mutex->get()) {
-                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
-            }
-        }
-
-        try {
-            $success = Craft::$app->getElements()->saveElement($entry);
-        } catch (UnsupportedSiteException $e) {
-            $entry->addError('siteId', $e->getMessage());
-            $success = false;
-        } finally {
-            if ($isNotNew) {
-                $mutex->release();
-            }
-        }
-
-        if (!$success) {
-            return $this->asModelFailure(
-                $entry,
-                t('Couldn’t save entry.'),
-                $entryVariable
-            );
-        }
-
-        // See if the user happens to have a provisional entry. If so delete it.
-        /** @var Entry|null $provisional */
-        $provisional = Entry::find()
-            ->provisionalDrafts()
-            ->draftOf($entry->id)
-            ->draftCreator(static::currentUser())
-            ->siteId($entry->siteId)
-            ->status(null)
-            ->one();
-
-        if ($provisional) {
-            Craft::$app->getElements()->deleteElement($provisional, true);
-        }
-
-        $data = [];
-
-        if ($this->request->getAcceptsJson()) {
-            $data['id'] = $entry->id;
-            $data['title'] = $entry->title;
-            $data['slug'] = $entry->slug;
-
-            if ($this->request->getIsCpRequest()) {
-                $data['cpEditUrl'] = $entry->getCpEditUrl();
-            }
-
-            if (($author = $entry->getAuthor()) !== null) {
-                $data['authorUsername'] = $author->username;
-            }
-
-            $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
-            $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
-            $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
-
-            if ($this->request->getIsCpRequest()) {
-                $data['elementHtml'] = Cp::elementChipHtml($entry);
-            }
-        }
-
-        return $this->asModelSuccess(
-            $entry,
-            t('{type} saved.', ['type' => Entry::displayName()]),
-            data: $data,
-        );
-    }
-
     /**
      * Get sections that we can move selected entries to and return the list html for the modal.
      *
