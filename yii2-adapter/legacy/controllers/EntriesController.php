@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -49,16 +48,6 @@ use function CraftCms\Cms\t;
  */
 class EntriesController extends BaseEntriesController
 {
-    /**
-     * @since 5.9.0
-     */
-    public function actionIndex(): Response
-    {
-        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
-        $slug = $firstPage ? Str::slug($firstPage) : 'entries';
-        return $this->redirect("content/$slug");
-    }
-
     /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
