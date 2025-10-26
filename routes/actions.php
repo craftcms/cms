@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
@@ -103,6 +104,8 @@ Route::prefix(implode('/', [
         // Entries
         Route::post('entries/create', CreateEntryController::class);
         Route::post('entries/save-entry', StoreEntryController::class);
+        Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
+        Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);

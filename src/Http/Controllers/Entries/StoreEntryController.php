@@ -253,7 +253,8 @@ final readonly class StoreEntryController
         if ($authorIds !== null) {
             $entry->setAuthorIds($authorIds);
         } elseif (! $entry->id) {
-            $entry->setAuthor($this->request->user()->id);
+            $craftUser = \Craft::$app->getUsers()->getUserById($this->request->user()->id);
+            $entry->setAuthor($craftUser);
         }
 
         // Parent

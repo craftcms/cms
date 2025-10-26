@@ -113,9 +113,10 @@ final class CreateCommand extends Command
                         fn (EntryType $entryType) => $entryType->name,
                     )->all(),
                 ),
-                name: 'entryTypeHandle')
+                name: 'chosenEntryTypeHandle'
+            )
             ->addIf(
-                condition: fn ($responses) => ! isset($responses['entryTypeHandle']),
+                condition: fn ($responses) => ! isset($responses['chosenEntryTypeHandle']),
                 step: function ($responses) use (&$saveEntryType) {
                     $saveEntryType = true;
 
@@ -129,7 +130,7 @@ final class CreateCommand extends Command
                 name: 'entryTypeName'
             )
             ->addIf(
-                condition: fn ($responses) => ! isset($responses['entryTypeHandle']),
+                condition: fn ($responses) => ! isset($responses['chosenEntryTypeHandle']),
                 step: fn ($responses) => text(
                     label: 'Entry type handle',
                     default: Str::toHandle($responses['entryTypeName']),
@@ -189,7 +190,7 @@ final class CreateCommand extends Command
                 }
             );
         } else {
-            $entryType = $entryTypesService->getEntryTypeByHandle($responses['entryTypeHandle']);
+            $entryType = $entryTypesService->getEntryTypeByHandle($responses['chosenEntryTypeHandle']);
         }
 
         $section->setEntryTypes([$entryType]);
