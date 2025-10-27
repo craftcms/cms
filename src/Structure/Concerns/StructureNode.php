@@ -11,14 +11,6 @@ use RuntimeException;
 
 trait StructureNode
 {
-    public string|false $treeAttribute = 'root';
-
-    public string $leftAttribute = 'lft';
-
-    public string $rightAttribute = 'rgt';
-
-    public string $depthAttribute = 'level';
-
     public protected(set) ?Operation $nestedSetOperation = null;
 
     private ?self $node = null;
@@ -30,23 +22,23 @@ trait StructureNode
 
             match ($model->nestedSetOperation) {
                 Operation::MakeRoot => $model->beforeSavingRootNode(),
-                Operation::PrependTo => $model->beforeSavingNode($model->node->getAttribute($model->leftAttribute) + 1, 1),
-                Operation::AppendTo => $model->beforeSavingNode($model->node->getAttribute($model->rightAttribute), 1),
-                Operation::InsertBefore => $model->beforeSavingNode($model->node->getAttribute($model->leftAttribute), 0),
-                Operation::InsertAfter => $model->beforeSavingNode($model->node->getAttribute($model->rightAttribute) + 1, 0),
+                Operation::PrependTo => $model->beforeSavingNode($model->node->lft + 1, 1),
+                Operation::AppendTo => $model->beforeSavingNode($model->node->rgt, 1),
+                Operation::InsertBefore => $model->beforeSavingNode($model->node->lft, 0),
+                Operation::InsertAfter => $model->beforeSavingNode($model->node->rgt + 1, 0),
                 default => throw new RuntimeException('::create is not supported for inserting new nodes.'),
             };
         });
 
         static::created(function (self $model) {
             if ($model->nestedSetOperation === Operation::MakeRoot) {
-                $model->setAttribute($model->treeAttribute, $model->getKey());
+                $model->setAttribute('root', $model->getKey());
                 $primaryKey = $model->getKeyName();
 
                 self::query()
-                    ->where($primaryKey, $model->getAttribute($model->treeAttribute))
+                    ->where($primaryKey, $model->root)
                     ->update([
-                        $model->treeAttribute => $model->getAttribute($model->treeAttribute),
+                        'root' => $model->root,
                     ]);
 
                 $model->refresh();
@@ -62,10 +54,6 @@ trait StructureNode
         static::saving(function (self $model) {
             switch ($model->nestedSetOperation) {
                 case Operation::MakeRoot:
-                    if ($model->treeAttribute === false) {
-                        throw new RuntimeException('Can not move a node as the root when "treeAttribute" is false.');
-                    }
-
                     if ($model->isRoot()) {
                         throw new RuntimeException('Can not move the root node as the root.');
                     }
@@ -98,16 +86,16 @@ trait StructureNode
                     $model->moveNodeAsRoot();
                     break;
                 case Operation::PrependTo:
-                    $model->moveNode($model->node->getAttribute($model->leftAttribute) + 1, 1);
+                    $model->moveNode($model->node->lft + 1, 1);
                     break;
                 case Operation::AppendTo:
-                    $model->moveNode($model->node->getAttribute($model->rightAttribute), 1);
+                    $model->moveNode($model->node->rgt, 1);
                     break;
                 case Operation::InsertBefore:
-                    $model->moveNode($model->node->getAttribute($model->leftAttribute), 0);
+                    $model->moveNode($model->node->lft, 0);
                     break;
                 case Operation::InsertAfter:
-                    $model->moveNode($model->node->getAttribute($model->rightAttribute) + 1, 0);
+                    $model->moveNode($model->node->rgt + 1, 0);
                     break;
                 default:
                     return;
@@ -127,19 +115,19 @@ trait StructureNode
         });
 
         static::deleted(function (self $model) {
-            $leftValue = $model->getAttribute($model->leftAttribute);
-            $rightValue = $model->getAttribute($model->rightAttribute);
+            $leftValue = $model->lft;
+            $rightValue = $model->rgt;
 
             if ($model->isLeaf() || $model->nestedSetOperation === Operation::DeleteWithChildren) {
                 $model->shiftLeftRightAttribute($rightValue + 1, $leftValue - $rightValue - 1);
             } else {
                 $model->treeQuery()
-                    ->where($model->leftAttribute, '>=', $model->getAttribute($model->leftAttribute))
-                    ->where($model->rightAttribute, '<=', $model->getAttribute($model->rightAttribute))
+                    ->where('lft', '>=', $model->lft)
+                    ->where('rgt', '<=', $model->rgt)
                     ->update([
-                        $model->leftAttribute => DB::raw($model->leftAttribute.sprintf('%+d', -1)),
-                        $model->rightAttribute => DB::raw($model->rightAttribute.sprintf('%+d', -1)),
-                        $model->depthAttribute => DB::raw($model->depthAttribute.sprintf('%+d', -1)),
+                        'lft' => DB::raw('lft'.sprintf('%+d', -1)),
+                        'rgt' => DB::raw('rgt'.sprintf('%+d', -1)),
+                        'level' => DB::raw('level'.sprintf('%+d', -1)),
                     ]);
 
                 $model->shiftLeftRightAttribute($rightValue + 1, -2);
@@ -153,13 +141,13 @@ trait StructureNode
 
     protected function beforeSavingRootNode(): void
     {
-        if ($this->treeAttribute === false && $this->roots()->exists()) {
+        if ($this->roots()->exists()) {
             throw new RuntimeException('Can not create more than one root when "treeAttribute" is false.');
         }
 
-        $this->setAttribute($this->leftAttribute, 1);
-        $this->setAttribute($this->rightAttribute, 2);
-        $this->setAttribute($this->depthAttribute, 0);
+        $this->lft = 1;
+        $this->rgt = 2;
+        $this->level = 0;
     }
 
     protected function beforeSavingNode(int $value, int $depth): void
@@ -174,33 +162,29 @@ trait StructureNode
 
         $this->node->refresh();
 
-        $this->setAttribute($this->leftAttribute, $value);
-        $this->setAttribute($this->rightAttribute, $value + 1);
-        $this->setAttribute($this->depthAttribute, $this->node->getAttribute($this->depthAttribute) + $depth);
-
-        if ($this->treeAttribute !== false) {
-            $this->setAttribute($this->treeAttribute, $this->node->getAttribute($this->treeAttribute));
-        }
+        $this->lft = $value;
+        $this->rgt = $value + 1;
+        $this->level = $this->node->level + $depth;
+        $this->root = $this->node->root;
 
         $this->shiftLeftRightAttribute($value, 2);
     }
 
     protected function moveNodeAsRoot(): void
     {
-        $leftValue = $this->getAttribute($this->leftAttribute);
-        $rightValue = $this->getAttribute($this->rightAttribute);
-        $depthValue = $this->getAttribute($this->depthAttribute);
+        $leftValue = $this->lft;
+        $rightValue = $this->rgt;
+        $depthValue = $this->level;
 
         $this->treeQuery()
-            ->where($this->leftAttribute, '>=', $leftValue)
-            ->where($this->rightAttribute, '<=', $rightValue)
-            ->update(array_merge([
-                $this->leftAttribute => DB::raw($this->leftAttribute.sprintf('%+d', 1 - $leftValue)),
-                $this->rightAttribute => DB::raw($this->rightAttribute.sprintf('%+d', 1 - $leftValue)),
-                $this->depthAttribute => DB::raw($this->depthAttribute.sprintf('%+d', -$depthValue)),
-            ], $this->treeAttribute !== false ? [
-                $this->treeAttribute => $this->getKey(),
-            ] : []));
+            ->where('lft', '>=', $leftValue)
+            ->where('rgt', '<=', $rightValue)
+            ->update([
+                'lft' => DB::raw('lft'.sprintf('%+d', 1 - $leftValue)),
+                'rgt' => DB::raw('rgt'.sprintf('%+d', 1 - $leftValue)),
+                'level' => DB::raw('level'.sprintf('%+d', -$depthValue)),
+                'root' => $this->getKey(),
+            ]);
 
         $this->shiftLeftRightAttribute($rightValue + 1, $leftValue - $rightValue - 1);
 
@@ -211,12 +195,12 @@ trait StructureNode
     {
         $this->node->refresh();
 
-        $leftValue = $this->getAttribute($this->leftAttribute);
-        $rightValue = $this->getAttribute($this->rightAttribute);
-        $depthValue = $this->getAttribute($this->depthAttribute);
-        $depth = $this->node->getAttribute($this->depthAttribute) - $depthValue + $depth;
+        $leftValue = $this->lft;
+        $rightValue = $this->rgt;
+        $depthValue = $this->level;
+        $depth = $this->node->level - $depthValue + $depth;
 
-        if ($this->treeAttribute === false || $this->getAttribute($this->treeAttribute) === $this->node->getAttribute($this->treeAttribute)) {
+        if ($this->root === $this->node->root) {
             $delta = $rightValue - $leftValue + 1;
             $this->shiftLeftRightAttribute($value, $delta);
 
@@ -226,13 +210,13 @@ trait StructureNode
             }
 
             $this->treeQuery()
-                ->where($this->leftAttribute, '>=', $leftValue)
-                ->where($this->rightAttribute, '<=', $rightValue)
+                ->where('lft', '>=', $leftValue)
+                ->where('rgt', '<=', $rightValue)
                 ->update([
-                    $this->depthAttribute => DB::raw($this->depthAttribute.sprintf('%+d', $depth)),
+                    'level' => DB::raw('level'.sprintf('%+d', $depth)),
                 ]);
 
-            foreach ([$this->leftAttribute, $this->rightAttribute] as $attribute) {
+            foreach (['lft', 'rgt'] as $attribute) {
                 $this->treeQuery()
                     ->where($attribute, '>=', $leftValue)
                     ->where($attribute, '<=', $rightValue)
@@ -246,12 +230,12 @@ trait StructureNode
             return;
         }
 
-        $nodeRootValue = $this->node->getAttribute($this->treeAttribute);
+        $nodeRootValue = $this->node->root;
 
-        foreach ([$this->leftAttribute, $this->rightAttribute] as $attribute) {
+        foreach (['lft', 'rgt'] as $attribute) {
             self::query()
                 ->where($attribute, '>=', $value)
-                ->where($this->treeAttribute, '=', $nodeRootValue)
+                ->where('root', '=', $nodeRootValue)
                 ->update([
                     $attribute => DB::raw($attribute.sprintf('%+d', $rightValue - $leftValue + 1)),
                 ]);
@@ -260,14 +244,14 @@ trait StructureNode
         $delta = $value - $leftValue;
 
         self::query()
-            ->where($this->leftAttribute, '>=', $leftValue)
-            ->where($this->rightAttribute, '<=', $rightValue)
-            ->where($this->treeAttribute, '=', $this->getAttribute($this->treeAttribute))
+            ->where('lft', '>=', $leftValue)
+            ->where('rgt', '<=', $rightValue)
+            ->where('root', '=', $this->root)
             ->update([
-                $this->leftAttribute => DB::raw($this->leftAttribute.sprintf('%+d', $delta)),
-                $this->rightAttribute => DB::raw($this->rightAttribute.sprintf('%+d', $delta)),
-                $this->depthAttribute => DB::raw($this->depthAttribute.sprintf('%+d', $depth)),
-                $this->treeAttribute => $nodeRootValue,
+                'lft' => DB::raw('lft'.sprintf('%+d', $delta)),
+                'rgt' => DB::raw('rgt'.sprintf('%+d', $delta)),
+                'level' => DB::raw('level'.sprintf('%+d', $depth)),
+                'root' => $nodeRootValue,
             ]);
 
         $this->shiftLeftRightAttribute($rightValue + 1, $leftValue - $rightValue - 1);
@@ -275,7 +259,7 @@ trait StructureNode
 
     protected function shiftLeftRightAttribute(int $value, int $delta): void
     {
-        foreach ([$this->leftAttribute, $this->rightAttribute] as $attribute) {
+        foreach (['lft', 'rgt'] as $attribute) {
             $this->treeQuery()
                 ->where($attribute, '>=', $value)
                 ->update([
@@ -328,68 +312,66 @@ trait StructureNode
         $this->nestedSetOperation = Operation::DeleteWithChildren;
 
         return $this->treeQuery()
-            ->where($this->leftAttribute, '>=', $this->getAttribute($this->leftAttribute))
-            ->where($this->rightAttribute, '<=', $this->getAttribute($this->rightAttribute))
+            ->where('lft', '>=', $this->lft)
+            ->where('rgt', '<=', $this->rgt)
             ->delete();
     }
 
     public function parents(?int $depth = null): Builder
     {
         return $this->treeQuery()
-            ->where($this->leftAttribute, '<', $this->getAttribute($this->leftAttribute))
-            ->where($this->rightAttribute, '>', $this->getAttribute($this->rightAttribute))
+            ->where('lft', '<', $this->lft)
+            ->where('rgt', '>', $this->rgt)
             ->unless(
                 is_null($depth),
-                fn (Builder $query) => $query->where($this->depthAttribute, '>=',
-                    $this->getAttribute($this->depthAttribute) - $depth),
+                fn (Builder $query) => $query->where('level', '>=', $this->level - $depth),
             )
-            ->orderBy($this->leftAttribute);
+            ->orderBy('lft');
     }
 
     public function children(?int $depth = null): Builder
     {
         return $this->treeQuery()
-            ->where($this->leftAttribute, '>', $this->getAttribute($this->leftAttribute))
-            ->where($this->rightAttribute, '<', $this->getAttribute($this->rightAttribute))
+            ->where('lft', '>', $this->lft)
+            ->where('rgt', '<', $this->rgt)
             ->unless(
                 is_null($depth),
-                fn (Builder $query) => $query->where($this->depthAttribute, '<=',
-                    $this->getAttribute($this->depthAttribute) + $depth),
+                fn (Builder $query) => $query->where('level', '<=', $this->level + $depth),
             )
-            ->orderBy($this->leftAttribute);
+            ->orderBy('lft');
     }
 
     public function leaves(): Builder
     {
         return $this->treeQuery()
-            ->where($this->leftAttribute, '>', $this->getAttribute($this->leftAttribute))
-            ->where($this->rightAttribute, '<', $this->getAttribute($this->rightAttribute))
-            ->where($this->rightAttribute, '=', DB::raw($this->leftAttribute.' + 1'))
-            ->orderBy($this->leftAttribute);
+            ->where('lft', '>', $this->lft)
+            ->where('rgt', '<', $this->rgt)
+            ->where('rgt', '=', DB::raw('lft'.' + 1'))
+            ->orderBy('lft');
     }
 
     public function prev(): Builder
     {
-        return $this->treeQuery()->where($this->rightAttribute, '=', $this->getAttribute($this->leftAttribute) - 1);
+        return $this->treeQuery()->where('rgt', '=', $this->lft - 1);
     }
 
     public function next(): Builder
     {
-        return $this->treeQuery()->where($this->leftAttribute, '=', $this->getAttribute($this->rightAttribute) + 1);
+        return $this->treeQuery()->where('lft', '=', $this->rgt + 1);
     }
 
     public function isRoot(): bool
     {
-        return (int) $this->getAttribute($this->leftAttribute) === 1;
+        return $this->lft === 1;
     }
 
     public function isChildOf(self $node): bool
     {
-        $result = $this->getAttribute($this->leftAttribute) > $node->getAttribute($this->leftAttribute)
-            && $this->getAttribute($this->rightAttribute) < $node->getAttribute($this->rightAttribute);
+        $result = $this->lft > $node->getAttribute('lft')
+            && $this->rgt < $node->getAttribute('rgt');
 
-        if ($result && $this->treeAttribute !== false) {
-            $result = $this->getAttribute($this->treeAttribute) === $node->getAttribute($this->treeAttribute);
+        if ($result) {
+            $result = $this->root === $node->getAttribute('root');
         }
 
         return $result;
@@ -397,32 +379,28 @@ trait StructureNode
 
     public function isLeaf(): bool
     {
-        return $this->getAttribute($this->rightAttribute) - $this->getAttribute($this->leftAttribute) === 1;
+        return $this->rgt - $this->lft === 1;
     }
 
     public function scopeRoots(Builder $query): Builder
     {
         return $query
-            ->where($this->leftAttribute, '=', 1)
+            ->where('lft', '=', 1)
             ->orderBy($this->getKeyName());
     }
 
     public function scopeLeaves(Builder $query): Builder
     {
         return $query
-            ->where($this->rightAttribute, DB::raw($this->leftAttribute.' + 1'))
-            ->when($this->treeAttribute !== false, fn (Builder $query) => $query->orderBy($this->treeAttribute))
-            ->orderBy($this->leftAttribute);
+            ->where('rgt', DB::raw('lft'.' + 1'))
+            ->orderBy('root')
+            ->orderBy('lft');
     }
 
     protected function treeQuery(?Builder $query = null): Builder
     {
         $query ??= self::query();
 
-        if ($this->treeAttribute === false) {
-            return $query;
-        }
-
-        return $query->where($this->treeAttribute, '=', $this->getAttribute($this->treeAttribute));
+        return $query->where('root', '=', $this->root);
     }
 }
