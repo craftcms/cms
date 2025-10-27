@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class StructuresController
+final readonly class StructuresController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
