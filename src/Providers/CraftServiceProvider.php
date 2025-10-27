@@ -15,6 +15,7 @@ use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
 use CraftCms\Cms\Section\SectionServiceProvider;
+use CraftCms\Cms\Structure\StructureServiceProvider;
 use CraftCms\Cms\Translation\TranslationServiceProvider;
 use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
@@ -42,5 +43,6 @@ final class CraftServiceProvider extends AggregateServiceProvider
         FieldsServiceProvider::class,
         SectionServiceProvider::class,
         EntryServiceProvider::class,
+        StructureServiceProvider::class,
     ];
 }
