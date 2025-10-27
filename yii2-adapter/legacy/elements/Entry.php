@@ -78,6 +78,7 @@ use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
@@ -2891,8 +2892,8 @@ JS;
             $model->fieldId = $this->fieldId;
             $model->primaryOwnerId = $this->getPrimaryOwnerId();
             $model->typeId = $this->getTypeId();
-            $model->postDate = $this->postDate;
-            $model->expiryDate = $this->expiryDate;
+            $model->postDate = Date::parse($this->postDate);
+            $model->expiryDate = Date::parse($this->expiryDate);
 
             // todo: update after the next breakpoint
             if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
