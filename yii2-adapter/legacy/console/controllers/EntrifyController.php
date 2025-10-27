@@ -18,12 +18,12 @@ use craft\elements\User;
 use craft\events\SectionEvent;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use craft\services\Structures;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;
@@ -149,6 +149,10 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
+
+            // Add it to a “Categories” page
+            $this->_addSectionToPage('Categories', 'sitemap');
+
             $projectConfigChanged = true;
             $sectionCreated = true;
         }
@@ -380,6 +384,10 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromTagGroup' => $tagGroup->handle,
             ]);
+
+            // Add it to a “Tags” page
+            $this->_addSectionToPage('Tags', 'tags');
+
             $projectConfigChanged = true;
         }
 
@@ -819,5 +827,27 @@ Run this command on other environments immediately after deploying these changes
 $command
 ```
 MD);
+    }
+
+    private function _addSectionToPage(string $name, string $icon): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $sourceConfigPath = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class);
+        $sourceConfigs = Collection::make($projectConfig->get($sourceConfigPath))
+            ->map(fn(array $config) => $config + ['page' => 'Entries'])
+            ->all();
+        $sourceConfigs[] = [
+            'key' => sprintf('section:%s', $this->_section()->uid),
+            'page' => $name,
+            'type' => 'native',
+        ];
+        $projectConfig->set($sourceConfigPath, $sourceConfigs);
+
+        $pageSettings = Craft::$app->getElementSources()->getPageSettings(Entry::class);
+        $pageSettings[$name] = [
+            'icon' => $icon,
+        ];
+        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, Entry::class), $pageSettings);
     }
 }

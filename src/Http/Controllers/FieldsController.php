@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
@@ -73,7 +75,7 @@ final class FieldsController
         // ---------------------------------------------------------------------
 
         if ($fieldId !== null) {
-            $field = $this->fieldsService->getFieldById($fieldId);
+            $field = $this->fieldsService->getFieldById((int) $fieldId);
 
             abort_if(is_null($field), 404, 'Field not found');
         }
@@ -89,7 +91,7 @@ final class FieldsController
         $allFieldTypes = $this->fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
+            if ($class === $field::class || $class::isSelectable()) {
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
@@ -155,7 +157,7 @@ final class FieldsController
         // ---------------------------------------------------------------------
 
         if ($fieldId !== null) {
-            $title = trim($field->name) ?: t('Edit Field');
+            $title = trim((string) $field->name) ?: t('Edit Field');
         } else {
             $title = t('Create a new field');
         }
@@ -332,7 +334,7 @@ JS, [
 
         if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->get('settings', '');
-            parse_str($settingsStr, $postedOldSettings);
+            parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->get('oldNamespace');
             $settings = Arr::get($postedOldSettings, $oldNamespace, []);
 
@@ -431,7 +433,7 @@ JS, [
 
         $fieldId = $request->get('fieldId') ?? $request->get('id');
         /** @var FieldInterface|Field|null $field */
-        $field = $this->fieldsService->getFieldById($fieldId);
+        $field = $this->fieldsService->getFieldById((int) $fieldId);
 
         abort_if(is_null($field), 400, 'Invalid field ID: '.$fieldId);
 
@@ -580,8 +582,8 @@ JS, [
             'settingsNamespace' => ['nullable', 'string'],
         ]);
 
-        $uid = $request->string('uid');
-        $elementType = $request->string('elementType');
+        $uid = $request->get('uid');
+        $elementType = $request->get('elementType');
         $layoutConfig = $request->array('layoutConfig');
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
@@ -593,7 +595,7 @@ JS, [
         $settingsStr = $request->get('settings');
 
         if ($settingsStr !== null) {
-            parse_str($settingsStr, $postedSettings);
+            parse_str((string) $settingsStr, $postedSettings);
             $settingsNamespace = $request->get('settingsNamespace');
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);

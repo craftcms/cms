@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Section;
 
 use craft\base\Element;
@@ -9,13 +11,13 @@ use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
-use craft\models\EntryType;
 use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -33,6 +35,7 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -87,7 +90,7 @@ final class Sections
      * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::allSectionIds;
      * ```
      * ```twig
-     * {% set sectionIds = craft.app.entries.allSectionIds %}
+     * {% set sectionIds = craft.sections.getAllSectionIds %}
      * ```
      *
      * @return Collection<int> All the sections’ IDs.
@@ -106,7 +109,7 @@ final class Sections
      * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::editableSectionIds;
      * ```
      * ```twig
-     * {% set sectionIds = craft.app.entries.editableSectionIds %}
+     * {% set sectionIds = craft.sections.getEditableSectionIds %}
      * ```
      *
      * @return Collection<int> All the editable sections’ IDs.
@@ -203,7 +206,7 @@ final class Sections
      * $sections = \CraftCms\Cms\Support\Facades\Sections::allSections;
      * ```
      * ```twig
-     * {% set sections = craft.app.entries.allSections %}
+     * {% set sections = craft.sections.getAllSections %}
      * ```
      *
      * @return Collection<Section> All the sections.
@@ -222,7 +225,7 @@ final class Sections
      * $sections = \CraftCms\Cms\Support\Facades\Sections::editableSections;
      * ```
      * ```twig
-     * {% set sections = craft.app.entries.editableSections %}
+     * {% set sections = craft.sections.getEditableSections %}
      * ```
      *
      * @return Collection<Section> All the editable sections.
@@ -255,7 +258,7 @@ final class Sections
      * $singles = \CraftCms\Cms\Support\Facades\Sections::getSectionsByType(Section::TYPE_SINGLE);
      * ```
      * ```twig
-     * {% set singles = craft.app.entries.getSectionsByType('single') %}
+     * {% set singles = craft.sections.getSectionsByType('single') %}
      * ```
      *
      * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
@@ -275,7 +278,7 @@ final class Sections
      * $total = \CraftCms\Cms\Support\Facades\Sections::totalSections;
      * ```
      * ```twig
-     * {% set total = craft.app.entries.totalSections %}
+     * {% set total = craft.sections.getTotalSections %}
      * ```
      */
     public function getTotalSections(): int
@@ -292,7 +295,7 @@ final class Sections
      * $total = \CraftCms\Cms\Support\Facades\Sections::totalEditableSections;
      * ```
      * ```twig
-     * {% set total = craft.app.entries.totalEditableSections %}
+     * {% set total = craft.sections.getTotalEditableSections %}
      * ```
      */
     public function getTotalEditableSections(): int
@@ -309,7 +312,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionById(1);
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionById(1) %}
+     * {% set section = craft.sections.getSectionById(1) %}
      * ```
      */
     public function getSectionById(int $sectionId): ?Section
@@ -326,7 +329,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2');
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
+     * {% set section = craft.sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
      * ```
      */
     public function getSectionByUid(string $uid): ?Section
@@ -343,7 +346,7 @@ final class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByHandle('news');
      * ```
      * ```twig
-     * {% set section = craft.app.entries.getSectionByHandle('news') %}
+     * {% set section = craft.sections.getSectionByHandle('news') %}
      * ```
      */
     public function getSectionByHandle(string $sectionHandle): ?Section
@@ -362,7 +365,7 @@ final class Sections
         return $this->_createSectionSiteSettingsQuery()
             ->where('sections_sites.sectionId', $sectionId)
             ->get()
-            ->map(fn (object $result) => new SectionSiteSettings(...(array) $result))
+            ->map(fn (object $result) => SectionSiteSettings::from($result))
             ->all();
     }
 
@@ -568,7 +571,7 @@ final class Sections
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
                 ->insert(Collection::make($data['entryTypes'] ?? [])
-                    ->map(fn ($entryType) => \Craft::$app->getEntries()->getEntryType($entryType))
+                    ->map(fn ($entryType) => EntryTypes::getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [
                         'sectionId' => $sectionModel->id,
@@ -815,11 +818,10 @@ final class Sections
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
-
-        $entryTypeIds = array_values(array_map(
-            fn (EntryType $entryType) => $entryType->id,
-            \Craft::$app->getEntries()->getEntryTypesBySectionId($section->id),
-        ));
+        $entryTypeIds = EntryTypes::getEntryTypesBySectionId($section->id)
+            ->pluck('id')
+            ->values()
+            ->all();
 
         // There should always be at least one entry type by the time this is called
         if (empty($entryTypeIds)) {

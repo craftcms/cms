@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
@@ -35,11 +40,28 @@ Route::middleware('auth')->group(function () {
     });
 
     /**
+     * Entries & Content
+     */
+    Route::get('entries', EntriesIndexController::class);
+    Route::view('entries/{sectionHandle}', 'craftcms::entries.index');
+    Route::get('entries/{section}/new', CreateEntryController::class);
+
+    Route::get('content', EntriesIndexController::class);
+    Route::view('content/{page}', 'craftcms::entries.index');
+    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index');
+    Route::get('content/{section}/new', CreateEntryController::class);
+
+    /**
      * Routes that require admin, but do not require admin changes
      */
     Route::middleware([
         RequireAdmin::class,
     ])->group(function () {
+        // Entry types
+        Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
+        Route::get('settings/entry-types/{entryTypeId}', [EntryTypesController::class, 'edit']);
+
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
         Route::get('settings/fields/new', [FieldsController::class, 'edit']);

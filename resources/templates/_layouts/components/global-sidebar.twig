@@ -23,9 +23,9 @@
     {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
             <span class="nav-icon" aria-hidden="true">
-                {%- if item.icon is defined -%}
+                {%- if item.icon ?? false -%}
                     {{ iconSvg(item.icon) }}
-                {%- elseif item.fontIcon is defined -%}
+                {%- elseif item.fontIcon ?? false -%}
                     <span data-icon="{{ item.fontIcon }}"></span>
                 {%- else -%}
                     <span class="nav-indicator"></span>
@@ -103,12 +103,12 @@
                                     id="{{ item.id }}-subnav"
                                     data-state="{{ item.sel ?  'expanded' : 'collapsed' }}"
                                 >
-                                    {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId and item.url in craft.app.request.fullPath -%}
+                                    {% for subItemId, subItem in item.subnav %}
+                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
 
                                         <li>
                                             <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
-                                                {{ _self.action(item|merge({
+                                                {{ _self.action(subItem|merge({
                                                     linkAttributes:  {
                                                         class: ['sidebar-action--sub'],
                                                         aria: {

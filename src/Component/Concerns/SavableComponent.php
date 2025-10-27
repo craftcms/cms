@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Component\Concerns;
 
 use CraftCms\Cms\Component\Events\ComponentEvent;
@@ -48,7 +50,7 @@ trait SavableComponent
 
     public function getIsNew(): bool
     {
-        return ! $this->id || str_starts_with($this->id, 'new');
+        return ! $this->id || (is_string($this->id) && str_starts_with($this->id, 'new'));
     }
 
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void

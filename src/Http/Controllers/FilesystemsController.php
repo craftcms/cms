@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
@@ -83,7 +85,7 @@ final class FilesystemsController
         $fsOptions = Arr::sort($fsOptions, 'label');
 
         if ($handle && $fsService->getFilesystemByHandle($handle)) {
-            $title = trim($filesystem->name ?: t('Edit Filesystem'));
+            $title = trim((string) $filesystem->name ?: t('Edit Filesystem'));
         } else {
             $title = t('Create a new filesystem');
         }
@@ -146,7 +148,7 @@ final class FilesystemsController
         ]);
 
         $fsService = Craft::$app->getFs();
-        $fs = $fsService->getFilesystemByHandle($request->string('id'));
+        $fs = $fsService->getFilesystemByHandle($request->get('id'));
 
         if ($fs) {
             $fsService->removeFilesystem($fs);

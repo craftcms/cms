@@ -57,9 +57,11 @@ jobs:
           php -f vendor/bin/facade.php -- \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
+            CraftCms\\Cms\\Support\\Facades\\EntryTypes \
             CraftCms\\Cms\\Support\\Facades\\Fields \
             CraftCms\\Cms\\Support\\Facades\\I18N \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
+            CraftCms\\Cms\\Support\\Facades\\Sections \
             CraftCms\\Cms\\Support\\Facades\\Updates
 
       - name: Commit facade docblocks

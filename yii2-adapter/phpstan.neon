@@ -54,6 +54,8 @@ parameters:
         - '#is never assigned craft\\base\\MemoizableArray#'
         -
             identifier: parameter.implicitlyNullable
+        -
+            identifier: propertyGetHook.noRead
     treatPhpDocTypesAsCertain: false
     databaseMigrationsPath:
         - vendor/craftcms/cms/src/Database/Migrations

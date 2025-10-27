@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -35,6 +37,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Icon');
@@ -43,6 +46,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'icons';
@@ -51,6 +55,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', IconData::class);
@@ -59,6 +64,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return Schema::TYPE_STRING;
@@ -172,6 +178,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof IconData) {
@@ -188,6 +195,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var IconData|null $value */
@@ -203,6 +211,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
@@ -215,6 +224,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
@@ -224,6 +234,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         /** @var IconData|null $value */
@@ -242,6 +253,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): Type|array
     {
         if (! $this->fullGraphqlData) {

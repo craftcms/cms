@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Site\Events;
 
 use CraftCms\Cms\Site\Data\SiteGroup;

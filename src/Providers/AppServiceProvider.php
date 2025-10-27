@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Providers;
 
 use Craft;
@@ -138,10 +140,26 @@ final class AppServiceProvider extends ServiceProvider
             fn (): string => $this['config']->get('app.timezone') ?? date_default_timezone_get(),
         );
 
+        // Register Collection::one() as an alias of first()
+        Collection::macro('one', fn () => $this->first(...func_get_args()));
+
         Collection::macro(
             'sentence',
             fn (?string $glue = null): string => $this->join($glue ?? ', ', sprintf(',%s', t(' and '))),
         );
+
+        // Register Collection::set() as an alias of put() - with support for bulk-setting values
+        Collection::macro('set', function (mixed $values) {
+            if (! is_array($values)) {
+                return $this->put(...func_get_args());
+            }
+
+            foreach ($values as $key => $value) {
+                $this->put($key, $value);
+            }
+
+            return $this;
+        });
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
             Cms::config()->cpTrigger, // /admin
@@ -169,6 +187,20 @@ final class AppServiceProvider extends ServiceProvider
             }
 
             return [];
+        });
+
+        Request::macro('getSigned', function (string $key, mixed $default = null): mixed {
+            $value = $this->get($key);
+
+            if (is_null($value)) {
+                return $default;
+            }
+
+            $value = \Craft::$app->getSecurity()->validateData($value);
+
+            abort_if($value === false, 400, 'Request contained an invalid body param');
+
+            return $value;
         });
 
         Factory::macro('create', fn (array $options = []) => $this->throw()

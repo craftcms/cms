@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Site;
 
 use craft\base\ElementInterface;
@@ -12,6 +14,7 @@ use craft\queue\jobs\PropagateElements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
@@ -28,6 +31,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Updates\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -266,6 +270,21 @@ final class Sites
         $user = Auth::user();
 
         return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
+    }
+
+    /**
+     * Returns all of the site IDs that are editable by the current user in a certain section.
+     *
+     * @return Collection<int> All the editable sites’ IDs
+     */
+    public function getEditableSiteIdsForSection(Section $section): Collection
+    {
+        if (! $this->isMultiSite()) {
+            return collect([$this->getPrimarySite()->id]);
+        }
+
+        return collect(array_keys($section->getSiteSettings()))
+            ->intersect($this->getEditableSiteIds());
     }
 
     /**
@@ -847,9 +866,13 @@ final class Sites
         }
 
         foreach ($results as $result) {
+            $result->dateCreated = Date::parse($result->dateCreated);
+            $result->dateUpdated = Date::parse($result->dateUpdated);
+
             $result = (array) $result;
-            $result['dateCreated'] = Date::parse($result['dateCreated']);
-            $result['dateUpdated'] = Date::parse($result['dateUpdated']);
+
+            // @TODO: Use Site::from() when Codeception tests are removed
+            Typecast::properties(Site::class, $result);
 
             $site = new Site(...$result);
             $this->allSitesById[$site->id] = $site;

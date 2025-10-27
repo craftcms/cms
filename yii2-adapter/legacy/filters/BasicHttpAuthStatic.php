@@ -8,6 +8,7 @@
 namespace craft\filters;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use yii\base\InvalidConfigException;
 use yii\filters\auth\HttpBasicAuth;
@@ -39,7 +40,7 @@ class BasicHttpAuthStatic extends HttpBasicAuth
         parent::__construct($config + [
             'username' => Env::get('CRAFT_HTTP_BASIC_AUTH_USERNAME'),
             'password' => Env::get('CRAFT_HTTP_BASIC_AUTH_PASSWORD'),
-            'realm' => Craft::$app->getSystemName(),
+            'realm' => Cms::systemName(),
         ]);
     }
 

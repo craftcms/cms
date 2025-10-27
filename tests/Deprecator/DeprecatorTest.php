@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use Illuminate\Support\Facades\File;

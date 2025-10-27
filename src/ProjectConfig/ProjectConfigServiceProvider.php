@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
@@ -13,10 +15,15 @@ use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 final class ProjectConfigServiceProvider extends ServiceProvider
@@ -24,8 +31,12 @@ final class ProjectConfigServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        $this->app->terminating(function (ProjectConfig $projectConfig) {
-            $projectConfig->flush();
+        Event::listen(RequestHandled::class, function () {
+            ProjectConfigFacade::flush();
+        });
+
+        Event::listen(CommandFinished::class, function () {
+            ProjectConfigFacade::flush();
         });
     }
 
@@ -97,9 +108,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))
             ->onRemove(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleDeletedSection($event))
             // Entry types
-            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', $this->proxy('entries', 'handleChangedEntryType'))
-            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', $this->proxy('entries', 'handleChangedEntryType'))
-            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', $this->proxy('entries', 'handleDeletedEntryType'))
+            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleChangedEntryType($event))
+            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleChangedEntryType($event))
+            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleDeletedEntryType($event))
             // GraphQL schemas
             ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', $this->proxy('gql', 'handleChangedSchema'))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', $this->proxy('gql', 'handleChangedSchema'))

@@ -1042,6 +1042,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         (ev.data.type !== 'multiline' || ctrl)
       ) {
         ev.preventDefault();
+        ev.stopPropagation();
         if (ev.shiftKey) {
           this.table.focusOnPrevRow(
             this.$tr,

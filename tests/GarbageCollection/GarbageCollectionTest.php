@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;

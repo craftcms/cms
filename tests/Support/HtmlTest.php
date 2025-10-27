@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Support\Html;
 
 test('EncodeParams', function (string $expected, string $html, array $variables) {
@@ -405,12 +407,12 @@ test('DecodeDoubles', function (string $expected, string $html): void {
 
 test('UnwrapNoscript', function (): void {
     // Without <noscript>>
-    $cssFile = Html::cssFile('foo.css');
-    $this->assertSame([$cssFile->render(), false], Html::unwrapNoscript($cssFile));
+    $cssFile = Html::cssFile('foo.css')->render();
+    $this->assertSame([$cssFile, false], Html::unwrapNoscript($cssFile));
 
     // With <noscript>
     $noscriptCssFile = Html::tag('noscript', Html::cssFile('foo.css'));
-    $this->assertSame([$cssFile->render(), true], Html::unwrapNoscript($noscriptCssFile));
+    $this->assertSame([$cssFile, true], Html::unwrapNoscript($noscriptCssFile));
 
     // Content with newlines
     $content = "foo\nbar\nbaz";

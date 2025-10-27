@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
@@ -61,6 +63,10 @@ final class UpCommand extends Command implements Isolatable
             if ($res !== self::SUCCESS) {
                 return $res;
             }
+
+            $this->call('craft:clear-caches', [
+                'keys' => ['compiled-templates'],
+            ]);
 
             $this->components->task('Updating license info', function () use ($updates) {
                 $updates->getUpdates(refresh: true);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Plugin\Testing;
 
 use CraftCms\Cms\Plugin\Plugins;

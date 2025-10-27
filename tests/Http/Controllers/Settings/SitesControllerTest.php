@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Site\Data\Site as SiteData;

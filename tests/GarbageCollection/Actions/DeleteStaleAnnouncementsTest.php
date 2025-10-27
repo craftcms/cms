@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAnnouncements;
 use CraftCms\Cms\User\Models\User;

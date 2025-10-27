@@ -98,7 +98,7 @@
     "check-cs": "ecs check --ansi && pint cms --test",
     "fix-cs": "npx concurrently -c 'rector' 'ecs check --ansi --fix' --names=rector,ecs",
     "codecept-build": "codecept build",
-    "phpstan": "phpstan --memory-limit=1G",
+    "phpstan": "phpstan --memory-limit=2G",
     "rector": "rector",
     "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
   },

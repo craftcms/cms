@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
-use craft\helpers\App;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
@@ -24,6 +23,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -222,7 +222,10 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);
+
+        \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();

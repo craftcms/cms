@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,7 @@ final class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
                     $tableName = $table['name'];
 
                     foreach (Schema::getForeignKeys($tableName) as $foreignKey) {
-                        if (strtoupper($foreignKey['on_delete']) !== 'CASCADE') {
+                        if (strtoupper((string) $foreignKey['on_delete']) !== 'CASCADE') {
                             continue;
                         }
 

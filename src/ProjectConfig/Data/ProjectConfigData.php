@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\ProjectConfig\Data;
 
 use CraftCms\Cms\ProjectConfig\Events\AddingItem;
@@ -124,7 +126,7 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
         return null;
     }
 
-    private function updateContainedProjectConfigNames(string $lastPathSegment, mixed $oldValue, mixed $newValue): void
+    private function updateContainedProjectConfigNames(string|int $lastPathSegment, mixed $oldValue, mixed $newValue): void
     {
         // Normalize both values to arrays
         $newValue = is_array($newValue) ? $newValue : [];

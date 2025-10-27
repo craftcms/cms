@@ -1,20 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Section\Data;
 
 use Closure;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -128,8 +131,8 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                     $hasErrors = false;
 
                     foreach ($value as &$target) {
-                        $target['label'] = trim($target['label']);
-                        $target['urlFormat'] = trim($target['urlFormat']);
+                        $target['label'] = trim((string) $target['label']);
+                        $target['urlFormat'] = trim((string) $target['urlFormat']);
 
                         if ($target['label'] === '') {
                             $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
@@ -214,7 +217,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
             return [];
         }
 
-        return $this->entryTypes = \Craft::$app->getEntries()->getEntryTypesBySectionId($this->id);
+        return $this->entryTypes = EntryTypes::getEntryTypesBySectionId($this->id)->all();
     }
 
     /**
@@ -226,10 +229,8 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $entriesService = \Craft::$app->getEntries();
-
         $this->entryTypes = array_values(array_filter(array_map(
-            fn ($entryType) => $entriesService->getEntryType($entryType),
+            fn ($entryType) => EntryTypes::getEntryType($entryType),
             $entryTypes,
         )));
     }

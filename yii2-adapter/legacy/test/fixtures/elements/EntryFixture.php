@@ -7,9 +7,9 @@
 
 namespace craft\test\fixtures\elements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 
 /**
@@ -43,7 +43,7 @@ abstract class EntryFixture extends BaseElementFixture
             $this->sectionIds[$section->handle] = $section->id;
             $this->typeIds[$section->handle] = [];
 
-            foreach (Craft::$app->getEntries()->getEntryTypesBySectionId($section->id) as $type) {
+            foreach (EntryTypes::getEntryTypesBySectionId($section->id) as $type) {
                 $this->typeIds[$section->handle][$type->handle] = $type->id;
             }
         }

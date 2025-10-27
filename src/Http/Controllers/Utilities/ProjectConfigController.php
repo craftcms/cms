@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -16,7 +18,7 @@ use ZipArchive;
 
 use function CraftCms\Cms\t;
 
-final class ProjectConfigController
+final readonly class ProjectConfigController
 {
     use RespondsWithFlash;
 

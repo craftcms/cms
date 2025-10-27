@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
@@ -49,6 +51,7 @@ final class Entry extends BaseElementLinkType
         parent::__construct($config);
     }
 
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return
@@ -69,6 +72,7 @@ final class Entry extends BaseElementLinkType
             ]);
     }
 
+    #[\Override]
     protected function availableSourceKeys(): array
     {
         // find the sections that don't have a URL format in any site
@@ -106,6 +110,7 @@ final class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
+    #[\Override]
     protected function selectionCriteria(): array
     {
         $criteria = parent::selectionCriteria();
@@ -120,6 +125,7 @@ final class Entry extends BaseElementLinkType
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function elementSelectConfig(): array
     {
         $config = parent::elementSelectConfig();

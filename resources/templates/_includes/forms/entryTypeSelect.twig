@@ -1,7 +1,7 @@
 {% set allowOverrides = allowOverrides ?? false %}
 
 {% embed '_includes/forms/componentSelect.twig' with {
-  options: options ?? craft.app.entries.getAllEntryTypes(),
+  options: options ?? craft.entryTypes.getAllEntryTypes(),
   showHandles: true,
   showIndicators: showIndicators ?? allowOverrides,
   showDescription: showDescription ?? allowOverrides,

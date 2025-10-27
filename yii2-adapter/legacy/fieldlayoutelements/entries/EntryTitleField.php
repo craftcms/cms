@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
@@ -63,7 +64,7 @@ class EntryTitleField extends TitleField
             throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
 
-        return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
+        return $element->getType()->titleTranslationMethod !== TranslationMethod::None;
     }
 
     /**

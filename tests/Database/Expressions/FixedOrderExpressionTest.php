@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

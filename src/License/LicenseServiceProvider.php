@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\License;
 
 use craft\helpers\App;
@@ -27,8 +29,8 @@ class LicenseServiceProvider extends ServiceProvider
         $licenseKeyPath = Env::get('CRAFT_LICENSE_KEY_PATH');
 
         if ($licenseKeyPath) {
-            $licensePath = dirname($licenseKeyPath);
-            $licenseKeyName = basename($licenseKeyPath);
+            $licensePath = dirname((string) $licenseKeyPath);
+            $licenseKeyName = basename((string) $licenseKeyPath);
         } else {
             $licensePath = $this->app->configPath('craft');
             $licenseKeyName = 'license.key';

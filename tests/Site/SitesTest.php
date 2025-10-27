@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;

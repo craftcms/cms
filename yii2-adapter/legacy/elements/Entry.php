@@ -41,10 +41,9 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
@@ -57,9 +56,11 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Section\Data\Section;
@@ -68,20 +69,26 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Entries;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -246,6 +253,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public static function multiPageSources(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineSources(string $context): array
     {
         if ($context === ElementSources::CONTEXT_INDEX) {
@@ -371,7 +386,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $entryTypeOptions = $entryTypeRule['values'] ?? null;
 
         if ($entryTypeOptions) {
-            $entryType = Craft::$app->getEntries()->getEntryTypeByUid(reset($entryTypeOptions));
+            $entryType = EntryTypes::getEntryTypeByUid(reset($entryTypeOptions));
             if ($entryType) {
                 $config['data']['entry-type'] = $entryType->handle;
             }
@@ -401,7 +416,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             )));
         } else {
             // get all entry types, including those which may only be used by Matrix fields
-            $entryTypes = Craft::$app->getEntries()->getAllEntryTypes();
+            $entryTypes = EntryTypes::getAllEntryTypes()->all();
         }
 
         return array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
@@ -578,12 +593,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             [
                 'label' => t('Entry Type'),
                 'orderBy' => function(int $dir, Connection $db) {
-                    $entryTypeIds = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
+                    $entryTypeIds = EntryTypes::getAllEntryTypes()
                         ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
                             : $b->name <=> $a->name)
-                        ->map(fn(EntryType $type) => $type->id)
+                        ->pluck('id')
                         ->all();
+
                     return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
                 },
                 'attribute' => 'type',
@@ -756,7 +772,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             case 'authors':
                 $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
 
-                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+                $map = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                     ->select([
                         'source' => 'entryId',
                         'target' => 'authorId',
@@ -939,6 +955,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @see getType()
      */
     private ?EntryType $_type = null;
+
+    /**
+     * @see page()
+     */
+    private string|false $page;
 
     /**
      * @inheritdoc
@@ -1282,10 +1303,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
+        $page = $this->page();
+
         $crumbs = [
             [
-                'label' => t('Entries'),
-                'url' => 'entries',
+                'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
+                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
             ],
         ];
 
@@ -1453,7 +1476,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getIsTitleTranslatable(): bool
     {
-        return ($this->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+        return ($this->getType()->titleTranslationMethod !== TranslationMethod::None);
     }
 
     /**
@@ -1478,7 +1501,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getIsSlugTranslatable(): bool
     {
-        return ($this->getType()->slugTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+        return ($this->getType()->slugTranslationMethod !== TranslationMethod::None);
     }
 
     /**
@@ -1629,7 +1652,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 if (!$entryType) {
                     // Maybe the section/field no longer allows this type,
                     // so get it directly from the Entries service instead
-                    $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId, true);
+                    $entryType = EntryTypes::getEntryTypeById($this->_typeId, true);
                     if (!$entryType) {
                         throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
                     }
@@ -2139,7 +2162,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
+        $page = $this->page();
+        $path = sprintf(
+            'content/%s/%s/%s',
+            $page ? Str::slug($page) : 'entries',
+            $section->handle,
+            $this->getCanonicalId(),
+        );
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
@@ -2478,7 +2507,7 @@ JS, [
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields[] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
-                    $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
+                    $parent = Entries::getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
                         'draftOf' => false,
                     ]);
@@ -2774,7 +2803,7 @@ JS;
                 // Has the entry been assigned to a new parent?
                 if (!$this->duplicateOf && $this->hasNewParent()) {
                     if ($parentId = $this->getParentId()) {
-                        $parentEntry = Craft::$app->getEntries()->getEntryById($parentId, '*', [
+                        $parentEntry = Entries::getEntryById($parentId, '*', [
                             'preferSites' => [$this->siteId],
                             'drafts' => null,
                             'draftOf' => false,
@@ -2862,6 +2891,7 @@ JS;
                 if (!$record) {
                     throw new InvalidConfigException("Invalid entry ID: $this->id");
                 }
+                $model = EntryModel::findOrFail($this->id);
             } else {
                 $record = new EntryRecord();
                 $record->id = (int)$this->id;
@@ -2871,8 +2901,8 @@ JS;
             $record->fieldId = $this->fieldId;
             $record->primaryOwnerId = $this->getPrimaryOwnerId();
             $record->typeId = $this->getTypeId();
-            $record->postDate = Db::prepareDateForDb($this->postDate);
-            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
+            $record->postDate = DbHelper::prepareDateForDb($this->postDate);
+            $record->expiryDate = DbHelper::prepareDateForDb($this->expiryDate);
 
             // todo: update after the next breakpoint
             if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
@@ -2933,7 +2963,7 @@ JS;
     {
         if (!isset($this->_oldAuthorIds)) {
             // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            $this->_oldAuthorIds = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->where('entryId', $this->duplicateOf->id ?? $this->id)
                 ->orderBy('sortOrder')
                 ->pluck('authorId')
@@ -2941,7 +2971,7 @@ JS;
                 ->all();
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
             ->where('entryId', $this->id)
             ->delete();
 
@@ -2955,7 +2985,7 @@ JS;
                 ];
             }
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->insert($data);
         }
     }
@@ -3039,7 +3069,7 @@ JS;
             }
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update($data);
 
@@ -3054,7 +3084,7 @@ JS;
         $this->deletedWithEntryType = false;
         $this->deletedWithSection = false;
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update([
                 'deletedWithEntryType' => null,
@@ -3174,7 +3204,7 @@ JS;
 
     private function handleChangedTypeId(): void
     {
-        $oldLayout = Craft::$app->getEntries()->getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
+        $oldLayout = EntryTypes::getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
         if (!$oldLayout) {
             return;
         }
@@ -3220,5 +3250,21 @@ JS;
         }
 
         return $templates;
+    }
+
+    private function page(): ?string
+    {
+        if (!isset($this->page)) {
+            $section = $this->getSection();
+            if ($section) {
+                $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
+                $source = ElementHelper::findSource(Entry::class, $sourceKey);
+                $this->page = $source['page'] ?? false;
+            } else {
+                $this->page = false;
+            }
+        }
+
+        return $this->page ?: null;
     }
 }

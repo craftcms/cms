@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -37,6 +39,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Dropdown');
@@ -45,6 +48,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'ballot-check';
@@ -53,6 +57,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStatus(ElementInterface $element): ?array
     {
         // If the value is invalid and has a default value (which is going to be pulled in via inputHtml()),
@@ -73,6 +78,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($value, $element, false);
@@ -81,6 +87,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -130,6 +137,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         ]);
     }
 
+    #[\Override]
     protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array
     {
         $encValue = parent::encodeValue($value);
@@ -140,6 +148,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Dropdown Options');
@@ -148,6 +157,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {
         // special case for blank options, when $value is null

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection RepetitiveMethodCallsInspection */
 
 namespace CraftCms\Cms\Database\Migrations;
@@ -393,7 +395,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::ENTRIES, function (Blueprint $table) {
+        Schema::create('entries', function (Blueprint $table) {
             $table->integer('id');
             $table->integer('sectionId')->nullable();
             $table->integer('parentId')->nullable();
@@ -421,7 +423,7 @@ class Install extends Migration
             $table->primary(['entryId', 'authorId']);
         });
 
-        Schema::create(Table::ENTRYTYPES, function (Blueprint $table) {
+        Schema::create('entrytypes', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -443,7 +445,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::FIELDLAYOUTS, function (Blueprint $table) {
+        Schema::create('fieldlayouts', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('type');
             $table->jsonb('config')->nullable();

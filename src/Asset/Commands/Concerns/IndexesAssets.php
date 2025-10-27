@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
 use craft\console\Application;
@@ -253,7 +255,7 @@ trait IndexesAssets
         foreach ($missingFiles as $assetId => $filePath) {
             unset($remainingMissingFiles[$assetId]);
 
-            $filename = basename($filePath);
+            $filename = basename((string) $filePath);
 
             if (! isset($missingRecordsByFilename[$filename])) {
                 continue;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -30,6 +32,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Tags');
@@ -38,6 +41,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'tag';
@@ -54,6 +58,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a tag');
@@ -62,6 +67,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
@@ -85,6 +91,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         $html = parent::getSettingsHtml();
@@ -101,6 +108,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
@@ -141,6 +149,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function supportedViewModes(): array
     {
         return [
@@ -151,6 +160,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryTags($schema);
@@ -159,6 +169,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -173,6 +184,7 @@ final class Tags extends BaseRelationField
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -210,7 +222,7 @@ final class Tags extends BaseRelationField
     private function _getTagGroupUid(): ?string
     {
         if (! isset($this->_tagGroupUid)) {
-            if (preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
+            if (preg_match('/^taggroup:([0-9a-f\-]+)$/', (string) $this->source, $matches)) {
                 $this->_tagGroupUid = $matches[1];
             } else {
                 $this->_tagGroupUid = false;

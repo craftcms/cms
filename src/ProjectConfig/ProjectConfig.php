@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
@@ -11,7 +13,6 @@ use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\TagGroup;
 use craft\models\Volume;
@@ -19,6 +20,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
@@ -38,6 +40,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -120,6 +123,8 @@ final class ProjectConfig
     public const string PATH_DATE_MODIFIED = 'dateModified';
 
     public const string PATH_ELEMENT_SOURCES = 'elementSources';
+
+    public const string PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
 
     public const string PATH_ENTRY_TYPES = 'entryTypes';
 
@@ -326,9 +331,9 @@ final class ProjectConfig
 
     public function __construct(GeneralConfig $generalConfig)
     {
-        Event::listen(ItemAdded::class, [$this, 'handleChangeEvent']);
-        Event::listen(ItemUpdated::class, [$this, 'handleChangeEvent']);
-        Event::listen(ItemRemoved::class, [$this, 'handleChangeEvent']);
+        Event::listen(ItemAdded::class, $this->handleChangeEvent(...));
+        Event::listen(ItemUpdated::class, $this->handleChangeEvent(...));
+        Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
         $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
@@ -828,7 +833,7 @@ final class ProjectConfig
         foreach ($pendingChanges as $type => $changes) {
             $summary[$type] = [];
             foreach ($changes as $path) {
-                $pathParts = explode('.', $path);
+                $pathParts = explode('.', (string) $path);
                 if (count($pathParts) > 1) {
                     $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
                 }
@@ -1279,11 +1284,11 @@ final class ProjectConfig
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen(Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen((string) Craft::$app->getPath()->getProjectConfigPath(false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
-            $subPath = substr($filePath, $projectConfigPathLength + 1);
+            $subPath = substr((string) $filePath, $projectConfigPathLength + 1);
 
             if (Str::substrCount($subPath, DIRECTORY_SEPARATOR) > 0) {
                 $configPath = explode(DIRECTORY_SEPARATOR, $subPath);
@@ -1509,7 +1514,7 @@ final class ProjectConfig
 
             if (! empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*'.preg_quote($uid).'.*)$/mi';
+                    $uids[] = '/^(.*'.preg_quote((string) $uid).'.*)$/mi';
                     $replacements[] = '$1 # '.$name;
                 }
             }
@@ -1533,7 +1538,7 @@ final class ProjectConfig
                     FileHelper::clearDirectory($basePath, [
                         'except' => ['.*', '.*/'],
                     ]);
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                     // oh well
                 }
             }
@@ -1797,7 +1802,7 @@ final class ProjectConfig
      */
     private function _getEntryTypeData(): array
     {
-        return collect(Craft::$app->getEntries()->getAllEntryTypes())
+        return EntryTypes::getAllEntryTypes()
             ->mapWithKeys(fn (EntryType $entryType) => [$entryType->uid => $entryType->getConfig()])
             ->all();
     }

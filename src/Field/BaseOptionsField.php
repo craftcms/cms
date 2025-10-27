@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -9,6 +11,7 @@ use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -67,6 +70,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s', static::$multi ? MultiOptionsFieldData::class : SingleOptionFieldData::class);
@@ -75,6 +79,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): string
     {
         return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
@@ -83,6 +88,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         if (static::$multi) {
@@ -104,7 +110,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $valueSql = static::valueSql($instances);
 
             foreach ($param->values as $value) {
-                $condition[] = $qb->jsonContains($valueSql, $value);
+                if (
+                    is_string($value) &&
+                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
+                ) {
+                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+                } else {
+                    $condition[] = $qb->jsonContains($valueSql, $value);
+                }
             }
 
             return $negate ? ['not', $condition] : $condition;
@@ -174,6 +187,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $attributes;
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -338,6 +352,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
@@ -427,6 +442,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MultiOptionsFieldData) {
@@ -456,6 +472,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         $keywords = [];
@@ -488,6 +505,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -509,6 +527,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         if ($value instanceof MultiOptionsFieldData) {
@@ -521,6 +540,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (static::$multi) {
@@ -577,6 +597,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $options = array_values(array_filter($this->options, fn ($option) => ! empty($option['value'])));
@@ -607,6 +628,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -620,6 +642,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         $values = [];

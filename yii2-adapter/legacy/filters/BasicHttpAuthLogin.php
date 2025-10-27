@@ -9,6 +9,7 @@ namespace craft\filters;
 
 use Craft;
 use craft\elements\User;
+use CraftCms\Cms\Cms;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 
@@ -35,7 +36,7 @@ class BasicHttpAuthLogin extends HttpBasicAuth
     {
         parent::__construct($config + [
             'auth' => [$this, 'auth'],
-            'realm' => Craft::$app->getSystemName(),
+            'realm' => Cms::systemName(),
         ]);
     }
 

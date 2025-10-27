@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Providers;
 
 use CraftCms\Cms\Asset\AssetServiceProvider;
@@ -7,6 +9,7 @@ use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
+use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
@@ -40,5 +43,6 @@ final class CraftServiceProvider extends AggregateServiceProvider
         FieldsServiceProvider::class,
         SectionServiceProvider::class,
         InertiaServiceProvider::class,
+        EntryServiceProvider::class,
     ];
 }

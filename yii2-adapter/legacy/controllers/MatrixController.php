@@ -16,6 +16,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -55,10 +56,9 @@ class MatrixController extends Controller
     {
         $entryTypeIds = $this->request->getRequiredBodyParam('entryTypeIds');
         $entryTypes = [];
-        $entriesService = Craft::$app->getEntries();
 
         foreach ($entryTypeIds as $entryTypeId) {
-            $entryType = $entriesService->getEntryTypeById($entryTypeId);
+            $entryType = EntryTypes::getEntryTypeById($entryTypeId);
             if (!$entryType) {
                 throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
             }
@@ -96,7 +96,7 @@ class MatrixController extends Controller
             throw new BadRequestHttpException("Invalid Matrix field ID: $fieldId");
         }
 
-        $entryType = Craft::$app->getEntries()->getEntryTypeById($entryTypeId);
+        $entryType = EntryTypes::getEntryTypeById($entryTypeId);
         if (!$entryType) {
             throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
         }

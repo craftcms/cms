@@ -23,6 +23,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
@@ -893,7 +894,7 @@ class ExtensionTest extends TestCase
 
     public function test_field_value_sql_function(): void
     {
-        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
+        $entryType = EntryTypes::getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
         $valueSql = $field->getValueSql();
         $this->testRenderResult(

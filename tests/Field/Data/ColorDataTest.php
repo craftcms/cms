@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Field\Data\ColorData;
 
 test('rgb', function (int $r, int $g, int $b, string $hex) {

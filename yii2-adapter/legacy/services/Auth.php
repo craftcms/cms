@@ -641,7 +641,7 @@ class Auth extends Component
     private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
         return PublicKeyCredentialRpEntity::createFromArray([
-            'name' => Craft::$app->getSystemName(),
+            'name' => Cms::systemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ]);
     }

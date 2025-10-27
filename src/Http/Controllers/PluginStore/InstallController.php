@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use Craft;
@@ -110,10 +112,10 @@ final class InstallController extends BaseUpdaterController
             'licenseKey' => ['nullable', 'string'],
         ]);
 
-        $packageName = strip_tags($this->request->get('packageName'));
-        $handle = strip_tags($this->request->get('handle'));
-        $edition = strip_tags($this->request->get('edition'));
-        $version = strip_tags($this->request->get('version'));
+        $packageName = strip_tags((string) $this->request->get('packageName'));
+        $handle = strip_tags((string) $this->request->get('handle'));
+        $edition = strip_tags((string) $this->request->get('edition'));
+        $version = strip_tags((string) $this->request->get('version'));
         $licenseKey = $this->request->get('licenseKey');
 
         if (

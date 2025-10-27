@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
@@ -10,6 +12,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -136,13 +139,15 @@ test('values are validated', function (string $attribute, string $value = '') {
 it('can delete a section', function () {
     $newSection = Section::factory()->create();
 
+    ProjectConfig::rebuild();
+
     expect(Section::count())->toBe(2);
 
     postJson(action([SectionsController::class, 'destroy']), [
         'id' => $newSection->id,
     ])->assertOk();
 
-    expect(Site::count())->toBe(1);
+    expect(Section::count())->toBe(1);
 });
 
 it('can get table data', function () {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Updates\Data;
 
 use CraftCms\Cms\Updates\Enums\UpdateStatus;
@@ -50,6 +52,7 @@ final readonly class Update implements Arrayable
             fn (array $release) => UpdateRelease::fromArray($release),
             $data['releases'] ?? [],
         );
+        $data['abandoned'] = (bool) ($data['abandoned'] ?? false);
 
         return new self(...$data);
     }

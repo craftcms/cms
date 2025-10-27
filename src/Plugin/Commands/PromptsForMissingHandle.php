@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Plugin\Commands;
 
 use Closure;
@@ -35,7 +37,7 @@ trait PromptsForMissingHandle
                 ->values()
                 ->all(),
             validate: fn ($value) => empty($value) ? 'The handle is required.' : null,
-            transform: fn ($value) => str_contains($value, ':') ? explode(':', $value)[0] : $value,
+            transform: fn ($value) => str_contains((string) $value, ':') ? explode(':', (string) $value)[0] : $value,
         );
     }
 }

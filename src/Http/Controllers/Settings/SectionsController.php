@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\base\Element;
@@ -70,8 +72,10 @@ final readonly class SectionsController
             ]);
     }
 
-    public function edit(Sections $sections, int $sectionId): CpScreenResponse
+    public function edit(Request $request, Sections $sections, ?int $sectionId = null): CpScreenResponse
     {
+        $sectionId ??= $request->get('sectionId');
+
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
         $section = $sections->getSectionById($sectionId);
@@ -94,7 +98,10 @@ final readonly class SectionsController
                 'readOnly' => $this->readOnly,
             ])
             ->when(
-                ! $this->readOnly,
+                $this->readOnly,
+                function (CpScreenResponse $response) {
+                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                },
                 function (CpScreenResponse $response) {
                     $response
                         ->action('sections/save-section')
@@ -104,9 +111,6 @@ final readonly class SectionsController
                             'shortcut' => true,
                             'retainScroll' => true,
                         ]);
-                },
-                function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
                 },
             );
     }

@@ -229,7 +229,7 @@ class Connection extends DatabaseConnection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $systemName = FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
+        $systemName = FileHelper::sanitizeFilename(Cms::systemName(), [
             'asciiOnly' => true,
         ]);
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));

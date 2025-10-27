@@ -7,9 +7,9 @@
 
 namespace crafttests\fixtures;
 
-use Craft;
 use craft\records\EntryType;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 
 /**
  * Class EntryTypeFixture
@@ -35,7 +35,7 @@ class EntryTypeFixture extends ActiveFixture
      */
     public function afterLoad()
     {
-        Craft::$app->getEntries()->refreshEntryTypes();
+        EntryTypes::refreshEntryTypes();
     }
 
     /**
@@ -43,6 +43,6 @@ class EntryTypeFixture extends ActiveFixture
      */
     public function afterUnload()
     {
-        Craft::$app->getEntries()->refreshEntryTypes();
+        EntryTypes::refreshEntryTypes();
     }
 }

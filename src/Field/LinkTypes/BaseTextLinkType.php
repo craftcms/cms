@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
@@ -26,15 +28,11 @@ abstract class BaseTextLinkType extends BaseLinkType
     public function supports(string $value): bool
     {
         $value = mb_strtolower($value);
-        foreach ((array) $this->urlPrefix() as $prefix) {
-            if (str_starts_with($value, $prefix)) {
-                return true;
-            }
-        }
 
-        return false;
+        return array_any((array) $this->urlPrefix(), fn ($prefix) => str_starts_with($value, (string) $prefix));
     }
 
+    #[\Override]
     public function normalizeValue(string $value): string
     {
         if (str_contains($value, ':') || $this->supports($value)) {

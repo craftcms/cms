@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
@@ -18,13 +20,8 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
  */
-final class ColorData implements Serializable
+final class ColorData implements \Stringable, Serializable
 {
-    /**
-     * @var string The color’s hex value
-     */
-    private string $_hex;
-
     /**
      * @see _hsl()
      */
@@ -33,13 +30,10 @@ final class ColorData implements Serializable
     /**
      * Constructor.
      *
-     * @param  string  $hex  hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param  string  $_hex  hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
      * @param  string|null  $label  The human-facing label for the color.
      */
-    public function __construct(string $hex, public ?string $label = null)
-    {
-        $this->_hex = $hex;
-    }
+    public function __construct(private readonly string $_hex, public ?string $label = null) {}
 
     public function __toString(): string
     {
@@ -157,7 +151,7 @@ final class ColorData implements Serializable
         $l = ($maxRgb + $minRgb) / 2;
         $d = $maxRgb - $minRgb;
 
-        if ($d == 0) {
+        if ($d === 0) {
             $h = $s = 0; // achromatic
         } else {
             $s = $d / (1 - abs(2 * $l - 1));
@@ -180,7 +174,7 @@ final class ColorData implements Serializable
             }
         }
 
-        return $this->_hsl = [round($h), round($s * 100), round($l * 100)];
+        return $this->_hsl = [(int) round($h), (int) round($s * 100), (int) round($l * 100)];
     }
 
     /**

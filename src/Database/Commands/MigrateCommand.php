@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
@@ -12,8 +14,6 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Throwable;
@@ -124,7 +124,7 @@ final class MigrateCommand extends Command implements Isolatable
             $which = match ($track) {
                 'craft' => 'Craft',
                 'content' => 'content',
-                default => $plugins[substr($track, 7)]->name,
+                default => $plugins[substr((string) $track, 7)]->name,
             };
 
             $this->box(
@@ -161,12 +161,11 @@ final class MigrateCommand extends Command implements Isolatable
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
             } elseif ($track !== 'content') {
-                $this->plugins->updatePluginVersionInfo($plugins[substr($track, 7)]);
+                $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
             }
         }
 
         $this->call(UpCommand::class);
-        $this->clearCompiledTemplates();
     }
 
     private function gatherMigrationsByTrack(array &$migrationsByTrack, array &$plugins): void
@@ -213,15 +212,5 @@ final class MigrateCommand extends Command implements Isolatable
         $this->components->task('Creating migration table', fn () => $this->callSilent('migrate:install') === 0);
 
         $this->newLine();
-    }
-
-    private function clearCompiledTemplates(): void
-    {
-        try {
-            File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (Throwable $e) {
-            Log::error('Could not delete compiled templates: '.$e->getMessage());
-            report($e);
-        }
     }
 }

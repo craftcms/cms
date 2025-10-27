@@ -12,10 +12,12 @@ return [
     'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . Str::uuidPattern() . '>' => 'elements/redirect',
-    'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
-    'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'graphiql' => 'graphql/graphiql',
@@ -65,8 +67,6 @@ return [
             ],
         ],
     ],
-    'settings/entry-types/new' => 'entry-types/edit',
-    'settings/entry-types/<entryTypeId:\d+>' => 'entry-types/edit',
     'settings/tags' => 'tags/index',
     'settings/tags/new' => 'tags/edit-tag-group',
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',

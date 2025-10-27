@@ -264,11 +264,20 @@ interface ElementInterface extends
     public static function createCondition(): ElementConditionInterface;
 
     /**
+     * Returns whether the element type’s sources can be split into multiple pages.
+     *
+     * @return bool
+     * @since 5.9.0
+     */
+    public static function multiPageSources(): bool;
+
+    /**
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
      * Each item in the array should be set to an array that has the following keys:
+     * - **`page`** – The source’s page label. (Optional)
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field;
 
 use Craft;
@@ -63,6 +65,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return t('Addresses');
@@ -71,6 +74,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'map-location';
@@ -79,6 +83,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -90,6 +95,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AddressQuery::class, ElementCollection::class, Address::class);
@@ -98,6 +104,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -106,6 +113,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function queryCondition(array $instances, mixed $value, array &$params): array
     {
         /** @var self $field */
@@ -179,6 +187,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         $rules = parent::getRules();
@@ -372,6 +381,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValueInternal($value, $element, false);
@@ -380,6 +390,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValueInternal($value, $element, true);
@@ -571,6 +582,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var AddressQuery|ElementCollection $value */
@@ -605,6 +617,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
@@ -621,6 +634,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->addressManager()->getIsTranslatable($element);
@@ -629,6 +643,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
         return $this->addressManager()->getTranslationDescription($element);
@@ -639,6 +654,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
      *
      * @throws InvalidConfigException
      */
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($element);
@@ -647,6 +663,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($element, true);
@@ -686,6 +703,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -700,6 +718,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var AddressQuery|ElementCollection $value */
@@ -778,6 +797,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->addressManager()->getSearchKeywords($element);
@@ -827,6 +847,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         DB::table(\CraftCms\Cms\Database\Table::ADDRESSES)
@@ -839,6 +860,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlType(): array
     {
         return [
@@ -853,6 +875,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getContentGqlMutationArgumentType(): Type
     {
         return Type::listOf(AddressesInput::getType());
@@ -861,6 +884,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->addressManager()->maintainNestedElements($element, $isNew);
@@ -870,6 +894,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -885,6 +910,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any addresses for this element

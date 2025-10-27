@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Models;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class EntryType extends BaseModel
@@ -22,5 +26,11 @@ final class EntryType extends BaseModel
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
         ];
+    }
+
+    public function sections(): BelongsToMany
+    {
+        return $this->belongsToMany(Section::class, Table::SECTIONS_ENTRYTYPES, 'typeId', 'sectionId')
+            ->withPivot('sortOrder', 'name', 'handle', 'description');
     }
 }

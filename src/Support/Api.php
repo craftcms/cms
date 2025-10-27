@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Support;
 
 use Craft;
@@ -350,7 +352,7 @@ final class Api
         $normalizedHeaders = [];
 
         foreach ($headers as $name => $value) {
-            $normalizedHeaders[strtolower($name)] = (array) $value;
+            $normalizedHeaders[strtolower((string) $name)] = (array) $value;
         }
 
         return $normalizedHeaders;

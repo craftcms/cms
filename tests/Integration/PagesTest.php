@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
@@ -30,7 +32,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     }
 })->with([
     ['url' => '/dashboard', 'title' => 'Dashboard'],
-    ['url' => '/entries', 'title' => 'Entries'],
+    ['url' => '/content/entries', 'title' => 'Entries'],
     ['url' => '/users', 'title' => 'Users'],
 
     // Settings pages

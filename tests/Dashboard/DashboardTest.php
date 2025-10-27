@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;

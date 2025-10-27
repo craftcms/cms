@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
@@ -64,7 +66,7 @@ final class SystemReport extends Utility
                 }
 
                 if ($module instanceof Module) {
-                    return get_class($module);
+                    return $module::class;
                 }
 
                 if (is_string($module)) {
