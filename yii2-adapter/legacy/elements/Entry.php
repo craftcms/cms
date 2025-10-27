@@ -41,9 +41,11 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\ArrayValidator;
@@ -79,12 +81,14 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -768,7 +772,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             case 'authors':
                 $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
 
-                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+                $map = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                     ->select([
                         'source' => 'entryId',
                         'target' => 'authorId',
@@ -2882,23 +2886,28 @@ JS;
 
             // Get the entry record
             if (!$isNew) {
+                $record = EntryRecord::findOne($this->id);
+
+                if (!$record) {
+                    throw new InvalidConfigException("Invalid entry ID: $this->id");
+                }
                 $model = EntryModel::findOrFail($this->id);
             } else {
-                $model = new EntryModel();
-                $model->id = (int)$this->id;
+                $record = new EntryRecord();
+                $record->id = (int)$this->id;
             }
 
-            $model->sectionId = $this->sectionId;
-            $model->fieldId = $this->fieldId;
-            $model->primaryOwnerId = $this->getPrimaryOwnerId();
-            $model->typeId = $this->getTypeId();
-            $model->postDate = Date::parse($this->postDate);
-            $model->expiryDate = Date::parse($this->expiryDate);
+            $record->sectionId = $this->sectionId;
+            $record->fieldId = $this->fieldId;
+            $record->primaryOwnerId = $this->getPrimaryOwnerId();
+            $record->typeId = $this->getTypeId();
+            $record->postDate = DbHelper::prepareDateForDb($this->postDate);
+            $record->expiryDate = DbHelper::prepareDateForDb($this->expiryDate);
 
             // todo: update after the next breakpoint
             if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
                 $status = $this->_status();
-                $model->status = $status;
+                $record->status = $status;
                 // only update $this->status if it's already set, indicating that staticStatuses is enabled
                 if (isset($this->status)) {
                     $this->status = $status;
@@ -2906,8 +2915,8 @@ JS;
             }
 
             // Capture the dirty attributes from the record
-            $dirtyAttributes = array_keys($model->getDirty());
-            $model->save();
+            $dirtyAttributes = array_keys($record->getDirtyAttributes());
+            $record->save(false);
 
             // save authors
             if (isset($this->sectionId) && isset($this->_authorIds)) {
@@ -2954,7 +2963,7 @@ JS;
     {
         if (!isset($this->_oldAuthorIds)) {
             // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            $this->_oldAuthorIds = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->where('entryId', $this->duplicateOf->id ?? $this->id)
                 ->orderBy('sortOrder')
                 ->pluck('authorId')
@@ -2962,7 +2971,7 @@ JS;
                 ->all();
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
             ->where('entryId', $this->id)
             ->delete();
 
@@ -2976,7 +2985,7 @@ JS;
                 ];
             }
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->insert($data);
         }
     }
@@ -3060,7 +3069,7 @@ JS;
             }
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update($data);
 
@@ -3075,7 +3084,7 @@ JS;
         $this->deletedWithEntryType = false;
         $this->deletedWithSection = false;
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update([
                 'deletedWithEntryType' => null,
