@@ -107,7 +107,7 @@ final readonly class CreateEntryController
             'cpEditUrl' => $this->request->isCpRequest() ? $editUrl : null,
         ]));
 
-        if (! $this->request->acceptsJson()) {
+        if (! $this->request->wantsJson()) {
             $response->headers->set('Location', UrlHelper::urlWithParams($editUrl, [
                 'fresh' => 1,
             ]));
@@ -135,7 +135,7 @@ final readonly class CreateEntryController
 
     private function getSite(Section $section): Site|Response
     {
-        $siteId = $this->request->get('siteId');
+        $siteId = $this->request->integer('siteId');
 
         if ($siteId) {
             $site = $this->sites->getSiteById($siteId);
