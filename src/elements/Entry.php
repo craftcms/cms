@@ -44,6 +44,7 @@ use craft\elements\db\EntryQuery;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
+use craft\events\DefineEntryMetaFields;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -116,6 +117,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @since 4.4.0
      */
     public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
+
+    /**
+     * @event DefineEntryMetaFields The event that is triggered when defining the meta fields.
+     * @see metaFieldsHtml()
+     * @since 5.8.18
+     */
+    public const EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
     /**
      * @inheritdoc
@@ -2566,6 +2574,18 @@ JS, [
         }
 
         $fields[] = parent::metaFieldsHtml($static);
+
+         // Fire a 'defineEntryMetaFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
+            $event = new DefineEntryMetaFields([
+                'entry' => $this,
+                'static' => $static,
+                'fields' => $fields
+            ]);
+            $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
+            
+            return implode("\n", $event->fields);
+        }
 
         return implode("\n", $fields);
     }
