@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\File;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class MergeEntryTypes extends Command implements PromptsForMissingInput
+final class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
