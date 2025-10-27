@@ -101,7 +101,7 @@ final readonly class SitesController
                 handle: '',
                 language: $this->sites->getPrimarySite()->getLanguage(false),
             ),
-            'groupId' => $request->get('groupId', $allGroups->first()->id),
+            'groupId' => $request->input('groupId', $allGroups->first()->id),
             'groupOptions' => $allGroups->map(fn ($group) => [
                 'label' => $group->name,
                 'value' => $group->id,
@@ -148,7 +148,7 @@ final readonly class SitesController
             'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
         ]);
 
-        $siteData->id = $request->get('siteId');
+        $siteData->id = $request->input('siteId');
 
         if (! $this->sites->saveSite($siteData)) {
             return $this->asModelFailure($siteData, t('Couldn’t save the site.'));
@@ -159,7 +159,7 @@ final readonly class SitesController
 
     public function reorder(Request $request): JsonResponse
     {
-        $ids = $request->get('ids', []);
+        $ids = $request->input('ids', []);
 
         if (is_string($ids)) {
             $ids = Json::decode($ids);

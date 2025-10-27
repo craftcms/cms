@@ -15,7 +15,7 @@ final readonly class ExtractNamespace
             return $next($request);
         }
 
-        $request->merge($request->get($namespace));
+        $request->merge($request->input($namespace));
 
         return $next($request);
     }

@@ -65,7 +65,7 @@ final class FieldsController
 
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
     {
-        $fieldId ??= $request->get('fieldId');
+        $fieldId ??= $request->input('fieldId');
 
         if (! $fieldId && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
@@ -81,7 +81,7 @@ final class FieldsController
         }
 
         if ($field === null) {
-            $field = $this->fieldsService->createField($request->get('type', PlainText::class));
+            $field = $this->fieldsService->createField($request->input('type', PlainText::class));
         }
 
         // Supported translation methods
@@ -109,7 +109,7 @@ final class FieldsController
         $fieldTypeNames = [];
         $foundCurrent = false;
         $missingFieldPlaceholder = null;
-        $multiInstanceTypesOnly = (bool) $request->get('multiInstanceTypesOnly');
+        $multiInstanceTypesOnly = (bool) $request->input('multiInstanceTypesOnly');
 
         foreach ($allFieldTypes as $class) {
             $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : $field::class);
@@ -328,14 +328,14 @@ JS, [
             'oldNamespace' => ['nullable', 'string'],
         ]);
 
-        $type = $request->get('type');
-        $oldType = $request->get('oldType');
+        $type = $request->input('type');
+        $oldType = $request->input('oldType');
         $field = $this->fieldsService->createField($type);
 
         if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
-            $settingsStr = $request->get('settings', '');
+            $settingsStr = $request->input('settings', '');
             parse_str((string) $settingsStr, $postedOldSettings);
-            $oldNamespace = $request->get('oldNamespace');
+            $oldNamespace = $request->input('oldNamespace');
             $settings = Arr::get($postedOldSettings, $oldNamespace, []);
 
             // Remove any settings that aren't defined by the same class between both types
@@ -357,7 +357,7 @@ JS, [
         $view = Craft::$app->getView();
         $html = $view->renderTemplate('settings/fields/_type-settings.twig', [
             'field' => $field,
-            'namespace' => $request->get('namespace'),
+            'namespace' => $request->input('namespace'),
         ]);
 
         return new JsonResponse([
@@ -380,8 +380,8 @@ JS, [
             'translationKeyFormat' => ['nullable', 'string'],
         ]);
 
-        $type = $request->get('type');
-        $fieldId = $request->get('fieldId');
+        $type = $request->input('type');
+        $fieldId = $request->input('fieldId');
 
         if ($fieldId) {
             $oldField = clone $this->fieldsService->getFieldById($fieldId);
@@ -395,14 +395,14 @@ JS, [
             'type' => $type,
             'id' => $fieldId,
             'uid' => $fieldUid,
-            'name' => $request->get('name'),
-            'handle' => $request->get('handle'),
+            'name' => $request->input('name'),
+            'handle' => $request->input('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,
-            'instructions' => $request->get('instructions'),
-            'searchable' => (bool) $request->get('searchable', true),
-            'translationMethod' => $request->get('translationMethod', Field::TRANSLATION_METHOD_NONE),
-            'translationKeyFormat' => $request->get('translationKeyFormat'),
-            'settings' => $request->get('types', [])[Html::id($type)] ?? [],
+            'instructions' => $request->input('instructions'),
+            'searchable' => (bool) $request->input('searchable', true),
+            'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationKeyFormat' => $request->input('translationKeyFormat'),
+            'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
@@ -411,7 +411,7 @@ JS, [
             return $this->edit($request, $field, $field->id);
         }
 
-        if ($request->get('addAnother')) {
+        if ($request->input('addAnother')) {
             $redirect = UrlHelper::cpUrl('settings/fields/new', [
                 'type' => $field::class,
             ]);
@@ -431,7 +431,7 @@ JS, [
             'id' => ['nullable', 'int', 'required_without:fieldId'],
         ]);
 
-        $fieldId = $request->get('fieldId') ?? $request->get('id');
+        $fieldId = $request->input('fieldId') ?? $request->input('id');
         /** @var FieldInterface|Field|null $field */
         $field = $this->fieldsService->getFieldById((int) $fieldId);
 
@@ -520,10 +520,10 @@ JS, [
             'thumbAlignment' => ['nullable', 'string'],
         ]);
 
-        $fieldLayoutConfig = $request->get('fieldLayoutConfig');
-        $cardElements = $request->get('cardElements');
-        $showThumb = $request->get('showThumb', false);
-        $thumbAlignment = $request->get('thumbAlignment', false);
+        $fieldLayoutConfig = $request->input('fieldLayoutConfig');
+        $cardElements = $request->input('cardElements');
+        $showThumb = $request->input('showThumb', false);
+        $thumbAlignment = $request->input('thumbAlignment', false);
 
         if (! isset($fieldLayoutConfig['id'])) {
             $fieldLayout = Craft::createObject([
@@ -550,15 +550,15 @@ JS, [
 
     public function tableData(Request $request): Response
     {
-        $page = (int) $request->get('page', 1);
-        $limit = (int) $request->get('per_page', 100);
-        $searchTerm = $request->get('search');
-        $orderBy = match ($request->get('sort.0.field')) {
+        $page = (int) $request->input('page', 1);
+        $limit = (int) $request->input('per_page', 100);
+        $searchTerm = $request->input('search');
+        $orderBy = match ($request->input('sort.0.field')) {
             '__slot:handle' => 'handle',
             'type' => 'type',
             default => 'name',
         };
-        $sortDir = match ($request->get('sort.0.direction')) {
+        $sortDir = match ($request->input('sort.0.direction')) {
             'desc' => SORT_DESC,
             default => SORT_ASC,
         };
@@ -582,21 +582,21 @@ JS, [
             'settingsNamespace' => ['nullable', 'string'],
         ]);
 
-        $uid = $request->get('uid');
-        $elementType = $request->get('elementType');
+        $uid = $request->input('uid');
+        $elementType = $request->input('elementType');
         $layoutConfig = $request->array('layoutConfig');
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
 
         $layoutConfig['type'] = $elementType;
 
-        $componentConfig = $request->get('config', []);
+        $componentConfig = $request->input('config', []);
         $componentConfig['elementType'] = $elementType;
-        $settingsStr = $request->get('settings');
+        $settingsStr = $request->input('settings');
 
         if ($settingsStr !== null) {
             parse_str((string) $settingsStr, $postedSettings);
-            $settingsNamespace = $request->get('settingsNamespace');
+            $settingsNamespace = $request->input('settingsNamespace');
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }

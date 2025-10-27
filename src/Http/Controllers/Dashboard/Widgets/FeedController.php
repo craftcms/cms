@@ -18,7 +18,7 @@ final readonly class FeedController
             'data' => ['required'],
         ]);
 
-        $cache->put("feed:{$request->get('url')}", $request->get('data'), $generalConfig->cacheDuration);
+        $cache->put("feed:{$request->input('url')}", $request->input('data'), $generalConfig->cacheDuration);
 
         return new JsonResponse;
     }

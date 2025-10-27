@@ -87,7 +87,7 @@ final class EntryTypesController
 
     public function edit(Request $request, ?int $entryTypeId = null): CpScreenResponse
     {
-        $entryTypeId ??= $request->get('entryTypeId');
+        $entryTypeId ??= $request->input('entryTypeId');
 
         $entryType = $this->entryTypes->getEntryTypeById($entryTypeId);
 
@@ -183,14 +183,14 @@ final class EntryTypesController
 
     public function tableData(Request $request): JsonResponse
     {
-        $page = (int) $request->get('page', 1);
-        $limit = (int) $request->get('per_page', 100);
-        $searchTerm = $request->get('search');
-        $orderBy = match ($request->get('sort.0.field')) {
+        $page = (int) $request->input('page', 1);
+        $limit = (int) $request->input('per_page', 100);
+        $searchTerm = $request->input('search');
+        $orderBy = match ($request->input('sort.0.field')) {
             '__slot:handle' => 'handle',
             default => 'name',
         };
-        $sortDir = match ($request->get('sort.0.direction')) {
+        $sortDir = match ($request->input('sort.0.direction')) {
             'desc' => SORT_DESC,
             default => SORT_ASC,
         };
@@ -210,7 +210,7 @@ final class EntryTypesController
 
     public function store(Request $request, EntryType $entryType): Response
     {
-        $entryTypeId = $request->get('entryTypeId');
+        $entryTypeId = $request->input('entryTypeId');
 
         if ($entryTypeId) {
             abort_if(is_null($found = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
@@ -221,7 +221,7 @@ final class EntryTypesController
 
         $saveAsNew = false;
         $originalEntryType = null;
-        if ($entryTypeId && $saveAsNew = (bool) $request->get('saveAsNew')) {
+        if ($entryTypeId && $saveAsNew = (bool) $request->input('saveAsNew')) {
             $originalEntryType = $entryType;
             $entryType = clone $entryType;
             $entryType->id = $entryType->uid = null;
@@ -262,7 +262,7 @@ final class EntryTypesController
 
     public function destroy(Request $request): Response
     {
-        $id = $request->get('entryTypeId') ?? $request->get('id');
+        $id = $request->input('entryTypeId') ?? $request->input('id');
 
         if (! $id) {
             throw ValidationException::withMessages([
@@ -288,9 +288,9 @@ final class EntryTypesController
     public function renderOverrideSettings(Request $request): JsonResponse
     {
         $entryType = $this->entryTypeForSelectInput($request);
-        $entryType->name = $request->get('name', $entryType->name);
-        $entryType->handle = $request->get('handle', $entryType->handle);
-        $entryType->description = $request->get('description', $entryType->description);
+        $entryType->name = $request->input('name', $entryType->name);
+        $entryType->handle = $request->input('handle', $entryType->handle);
+        $entryType->description = $request->input('description', $entryType->description);
 
         $namespace = Str::random(10);
         $view = \Craft::$app->getView();
@@ -318,10 +318,10 @@ final class EntryTypesController
         ]);
 
         $entryType = $this->entryTypeForSelectInput($request);
-        $settingsStr = $request->get('settings', '');
+        $settingsStr = $request->input('settings', '');
         parse_str((string) $settingsStr, $postedSettings);
 
-        $settingsNamespace = $request->get('settingsNamespace');
+        $settingsNamespace = $request->input('settingsNamespace');
         $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));
 
         if (! empty($settings)) {
@@ -357,7 +357,7 @@ final class EntryTypesController
     {
         $request->validate(['id' => ['required', 'integer']]);
 
-        $id = $request->get('id');
+        $id = $request->input('id');
         $original = $this->entryTypes->getEntryTypeById($id);
 
         abort_if(is_null($original), 400, "Invalid entry type ID: $id");

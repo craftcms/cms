@@ -45,7 +45,7 @@ final readonly class WidgetsController
         $settings = $data['settings'] ?? [];
 
         if (! $settings && $request->has('settingsNamespace')) {
-            $settings = $request->get($request->get('settingsNamespace'));
+            $settings = $request->input($request->input('settingsNamespace'));
         }
 
         $widget = $this->dashboard->createWidget([
@@ -66,10 +66,10 @@ final readonly class WidgetsController
             ],
         ]);
 
-        $widget = $this->dashboard->getWidgetById($request->get('widgetId'));
+        $widget = $this->dashboard->getWidgetById($request->input('widgetId'));
 
         // Create a new widget model with the new settings
-        $settings = $request->get("widget{$widget->id}-settings");
+        $settings = $request->input("widget{$widget->id}-settings");
 
         Validator::validate($settings, $widget::getRules());
 
@@ -94,14 +94,14 @@ final readonly class WidgetsController
             'colspan' => ['required', 'integer', 'min:1', 'max:3'],
         ]);
 
-        $this->dashboard->changeWidgetColspan($request->get('id'), $request->get('colspan'));
+        $this->dashboard->changeWidgetColspan($request->input('id'), $request->input('colspan'));
 
         return new JsonResponse;
     }
 
     public function reorder(Request $request): JsonResponse
     {
-        $ids = Json::decode($request->get('ids'));
+        $ids = Json::decode($request->input('ids'));
 
         Validator::validate(['ids' => $ids], [
             'ids' => ['required', 'array'],
@@ -127,7 +127,7 @@ final readonly class WidgetsController
             ],
         ]);
 
-        $this->dashboard->deleteWidgetById($request->get('id'));
+        $this->dashboard->deleteWidgetById($request->input('id'));
 
         return new JsonResponse;
     }
