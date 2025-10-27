@@ -50,8 +50,8 @@ final readonly class CreateEntryController
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
         $entry->setAuthorIds(
-            $this->request->get('authorIds') ??
-            $this->request->get('authorId') ??
+            $this->request->input('authorIds') ??
+            $this->request->input('authorId') ??
             $user->id
         );
         $this->setTypeId($entry);
@@ -63,7 +63,7 @@ final readonly class CreateEntryController
             (int) $section->maxLevels !== 1
         ) {
             // Set the initially selected parent
-            $entry->setParentId($this->request->get('parentId'));
+            $entry->setParentId($this->request->input('parentId'));
         }
 
         // Make sure the user is allowed to create this entry
@@ -79,7 +79,7 @@ final readonly class CreateEntryController
 
         // Custom fields
         foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
-            if (($value = $this->request->get($field->handle)) !== null) {
+            if (($value = $this->request->input($field->handle)) !== null) {
                 $entry->setFieldValue($field->handle, $value);
             }
         }
@@ -167,8 +167,8 @@ final readonly class CreateEntryController
 
     private function setTypeId(Entry $entry): void
     {
-        if (! $typeHandle = $this->request->get('type')) {
-            $entry->typeId = $this->request->get('typeId', $entry->getAvailableEntryTypes()[0]->id);
+        if (! $typeHandle = $this->request->input('type')) {
+            $entry->typeId = $this->request->input('typeId', $entry->getAvailableEntryTypes()[0]->id);
 
             return;
         }
@@ -182,7 +182,7 @@ final readonly class CreateEntryController
 
     private function setStatus(Entry $entry, Section $section): void
     {
-        if (($status = $this->request->get('status')) !== null) {
+        if (($status = $this->request->input('status')) !== null) {
             $enabled = $status === 'enabled';
         } else {
             // Set the default status based on the section's settings
@@ -203,8 +203,8 @@ final readonly class CreateEntryController
     private function setTitleAndSlug(Entry $entry, Site $site): void
     {
         // Title & slug
-        $entry->title = $this->request->get('title');
-        $entry->slug = $this->request->get('slug');
+        $entry->title = $this->request->input('title');
+        $entry->slug = $this->request->input('slug');
 
         if ($entry->title && ! $entry->slug) {
             $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->getLanguage());
@@ -218,13 +218,13 @@ final readonly class CreateEntryController
     private function setDates(Entry $entry): void
     {
         // Post & expiry dates
-        if (($postDate = $this->request->get('postDate')) !== null) {
+        if (($postDate = $this->request->input('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
         } else {
             $entry->postDate = DateTimeHelper::now();
         }
 
-        if (($expiryDate = $this->request->get('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->input('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
         }
     }
@@ -235,7 +235,7 @@ final readonly class CreateEntryController
             return;
         }
 
-        if ($nextId = $this->request->get('before')) {
+        if ($nextId = $this->request->input('before')) {
             $nextEntry = $this->entries->getEntryById($nextId, $site->id, [
                 'structureId' => $section->structureId,
             ]);
@@ -245,7 +245,7 @@ final readonly class CreateEntryController
             return;
         }
 
-        if ($prevId = $this->request->get('after')) {
+        if ($prevId = $this->request->input('after')) {
             $prevEntry = $this->entries->getEntryById($prevId, $site->id, [
                 'structureId' => $section->structureId,
             ]);

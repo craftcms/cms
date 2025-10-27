@@ -59,8 +59,8 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($data = $this->request->get('data'))) {
-            $data = Craft::$app->getSecurity()->validateData($this->request->get('data', ''));
+        if (! is_null($data = $this->request->input('data'))) {
+            $data = Craft::$app->getSecurity()->validateData($this->request->input('data', ''));
 
             if ($data === false) {
                 throw ValidationException::withMessages([
