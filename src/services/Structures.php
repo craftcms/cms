@@ -55,13 +55,13 @@ class Structures extends Component
      *
      * @since 5.9.0
      */
-    public const EVENT_BEFORE_UPDATE_ELEMENT = 'beforeMoveElement';
+    public const EVENT_BEFORE_UPDATE_ELEMENT = 'beforeUpdateElement';
 
     /**
      * @event MoveElementEvent The event that is triggered after an element’s position is updated.
      * @since 5.9.0
      */
-    public const EVENT_AFTER_UPDATE_ELEMENT = 'afterMoveElement';
+    public const EVENT_AFTER_UPDATE_ELEMENT = 'afterUpdateElement';
 
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
