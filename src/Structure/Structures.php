@@ -6,9 +6,7 @@ namespace CraftCms\Cms\Structure;
 
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\errors\StructureNotFoundException;
 use craft\models\Structure;
-use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Structure\Enums\Action;
@@ -17,6 +15,7 @@ use CraftCms\Cms\Structure\Events\ElementInserted;
 use CraftCms\Cms\Structure\Events\ElementMoved;
 use CraftCms\Cms\Structure\Events\InsertingElement;
 use CraftCms\Cms\Structure\Events\MovingElement;
+use CraftCms\Cms\Structure\Models\Structure as StructureModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
@@ -158,37 +157,23 @@ final class Structures
      * Saves a structure
      *
      * @return bool Whether the structure was saved successfully
-     *
-     * @throws StructureNotFoundException if $structure->id is invalid
      */
     public function saveStructure(Structure $structure): bool
     {
         if ($structure->id) {
-            /** @var StructureRecord|null $structureRecord */
-            $structureRecord = StructureRecord::findWithTrashed()
-                ->andWhere(['id' => $structure->id])
-                ->one();
-
-            if (! $structureRecord) {
-                throw new StructureNotFoundException("No structure exists with the ID '$structure->id'");
-            }
+            $structureModel = StructureModel::query()
+                ->withTrashed()
+                ->findOrFail($structure->id);
         } else {
-            $structureRecord = new StructureRecord;
+            $structureModel = new StructureModel;
         }
 
-        $structureRecord->maxLevels = $structure->maxLevels;
-        $structureRecord->uid = $structure->uid;
+        $structureModel->maxLevels = $structure->maxLevels;
+        $structureModel->uid = $structure->uid;
+        $structureModel->dateDeleted = null;
 
-        if ($structureRecord->dateDeleted) {
-            $success = $structureRecord->restore();
-        } else {
-            $success = $structureRecord->save();
-        }
-
-        if ($success) {
-            $structure->id = $structureRecord->id;
-        } else {
-            $structure->addErrors($structureRecord->getErrors());
+        if ($success = $structureModel->save()) {
+            $structure->id = $structureModel->id;
         }
 
         return $success;
