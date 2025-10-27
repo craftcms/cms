@@ -8,11 +8,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
+use CraftCms\Cms\Structure\Concerns\StructureNode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class StructureElement extends BaseModel
 {
     use HasUid;
+    use StructureNode;
 
     protected $table = Table::STRUCTUREELEMENTS;
 

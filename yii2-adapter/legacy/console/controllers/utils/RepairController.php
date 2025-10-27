@@ -17,11 +17,10 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
-use craft\models\Section;
-use craft\records\StructureElement;
 use craft\services\Structures;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -164,9 +163,9 @@ class RepairController extends Controller
         try {
             // First delete all of the existing structure data
             if (!$this->dryRun) {
-                StructureElement::deleteAll([
-                    'structureId' => $structureId,
-                ]);
+                StructureElementModel::query()
+                    ->where('structureId', $structureId)
+                    ->delete();
             }
 
             foreach ($elements as $element) {

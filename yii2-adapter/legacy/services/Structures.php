@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
-use craft\records\StructureElement;
+use CraftCms\Cms\Structure\Data\Structure as StructureData;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Events\ElementInserted;
@@ -87,11 +87,6 @@ class Structures extends Component
      */
     public int $mutexTimeout = 3;
 
-    /**
-     * @var StructureElement[]
-     */
-    private array $_rootElementRecordsByStructureId = [];
-
     // Structure CRUD
     // -------------------------------------------------------------------------
 
@@ -105,7 +100,17 @@ class Structures extends Component
      */
     public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
-        return StructuresFacade::getStructureById($structureId, $withTrashed);
+        $structure = StructuresFacade::getStructureById($structureId, $withTrashed);
+
+        if (!$structure) {
+            return null;
+        }
+
+        return new Structure([
+            'id' => $structure->id,
+            'maxLevels' => $structure->maxLevels,
+            'uid' => $structure->uid,
+        ]);
     }
 
     /**
@@ -118,7 +123,17 @@ class Structures extends Component
      */
     public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
-        return StructuresFacade::getStructureByUid($structureUid, $withTrashed);
+        $structure = StructuresFacade::getStructureByUid($structureUid, $withTrashed);
+
+        if (!$structure) {
+            return null;
+        }
+
+        return new Structure([
+            'id' => $structure->id,
+            'maxLevels' => $structure->maxLevels,
+            'uid' => $structure->uid,
+        ]);
     }
 
     /**
@@ -158,7 +173,7 @@ class Structures extends Component
      */
     public function saveStructure(Structure $structure): bool
     {
-        return StructuresFacade::saveStructure($structure);
+        return StructuresFacade::saveStructure(StructureData::from($structure->toArray()));
     }
 
     /**
