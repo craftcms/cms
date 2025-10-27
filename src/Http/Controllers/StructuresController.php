@@ -73,8 +73,8 @@ final readonly class StructuresController
 
     public function moveElement(): Response
     {
-        $parentElementId = $this->request->get('parentId');
-        $prevElementId = $this->request->get('prevId');
+        $parentElementId = $this->request->input('parentId');
+        $prevElementId = $this->request->input('prevId');
 
         if ($prevElementId) {
             $prevElement = \Craft::$app->getElements()->getElementById($prevElementId, null, $this->element->siteId);

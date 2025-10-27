@@ -112,11 +112,11 @@ final class InstallController extends BaseUpdaterController
             'licenseKey' => ['nullable', 'string'],
         ]);
 
-        $packageName = strip_tags((string) $this->request->get('packageName'));
-        $handle = strip_tags((string) $this->request->get('handle'));
-        $edition = strip_tags((string) $this->request->get('edition'));
-        $version = strip_tags((string) $this->request->get('version'));
-        $licenseKey = $this->request->get('licenseKey');
+        $packageName = strip_tags((string) $this->request->input('packageName'));
+        $handle = strip_tags((string) $this->request->input('handle'));
+        $edition = strip_tags((string) $this->request->input('edition'));
+        $version = strip_tags((string) $this->request->input('version'));
+        $licenseKey = $this->request->input('licenseKey');
 
         if (
             ($returnUrl = $this->findReturnUrl()) !== null &&

@@ -195,7 +195,7 @@ final class UpdaterController extends BaseUpdaterController
         ])['packageNames'];
 
         $data = array_merge($data, [
-            'install' => $this->parseInstallParam($this->request->get('install')),
+            'install' => $this->parseInstallParam($this->request->input('install')),
             'current' => [],
             'requirements' => [],
             'reverted' => false,
