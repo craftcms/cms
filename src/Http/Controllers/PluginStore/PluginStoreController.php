@@ -87,7 +87,7 @@ final readonly class PluginStoreController
 
     public function savePluginLicenseKeys(Request $request, Plugins $pluginsService): Response
     {
-        $pluginLicenseKeys = $request->get('pluginLicenseKeys', []);
+        $pluginLicenseKeys = $request->input('pluginLicenseKeys', []);
         $plugins = $pluginsService->getAllPlugins();
 
         foreach ($pluginLicenseKeys as $pluginLicenseKey) {

@@ -48,9 +48,9 @@ final readonly class CraftSupportController
 
         maxPowerCaptain();
 
-        $widgetId = $request->get('widgetId');
-        $namespace = $request->has('namespace') ? $request->get('namespace').'.' : '';
-        $data = $namespace ? $request->get($namespace) : $request->all();
+        $widgetId = $request->input('widgetId');
+        $namespace = $request->has('namespace') ? $request->input('namespace').'.' : '';
+        $data = $namespace ? $request->input($namespace) : $request->all();
 
         $validator = Validator::make($data, [
             'fromEmail' => ['required', 'email', 'min:5', 'max:255'],

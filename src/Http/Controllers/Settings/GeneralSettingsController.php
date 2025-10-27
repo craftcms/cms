@@ -35,10 +35,10 @@ final readonly class GeneralSettingsController
     public function store(Request $request): Response
     {
         $systemSettings = $this->projectConfig->get('system');
-        $systemSettings['name'] = $request->get('name');
-        $systemSettings['live'] = $request->get('live');
-        $systemSettings['retryDuration'] = $request->get('retryDuration') ?: null;
-        $systemSettings['timeZone'] = $request->get('timeZone');
+        $systemSettings['name'] = $request->input('name');
+        $systemSettings['live'] = $request->input('live');
+        $systemSettings['retryDuration'] = $request->input('retryDuration') ?: null;
+        $systemSettings['timeZone'] = $request->input('timeZone');
 
         if (! str_starts_with((string) $systemSettings['live'], '$')) {
             $systemSettings['live'] = (bool) $systemSettings['live'];

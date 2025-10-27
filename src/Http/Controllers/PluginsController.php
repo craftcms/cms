@@ -55,8 +55,8 @@ final readonly class PluginsController
         ]);
 
         $success = $this->plugins->installPlugin(
-            handle: $request->get('pluginHandle'),
-            edition: $request->get('edition'),
+            handle: $request->input('pluginHandle'),
+            edition: $request->input('edition'),
         );
 
         return $success
@@ -71,7 +71,7 @@ final readonly class PluginsController
             'edition' => ['required', 'string'],
         ]);
 
-        $this->plugins->switchEdition($request->get('pluginHandle'), $request->get('edition'));
+        $this->plugins->switchEdition($request->input('pluginHandle'), $request->input('edition'));
 
         return $this->asSuccess(t('Plugin edition changed.'));
     }
@@ -82,7 +82,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ]);
 
-        $success = $this->plugins->uninstallPlugin($request->get('pluginHandle'));
+        $success = $this->plugins->uninstallPlugin($request->input('pluginHandle'));
 
         return $success ?
             $this->asSuccess(t('Plugin uninstalled.')) :
@@ -108,7 +108,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ]);
 
-        $success = $this->plugins->disablePlugin($request->get('pluginHandle'));
+        $success = $this->plugins->disablePlugin($request->input('pluginHandle'));
 
         return $success ?
             $this->asSuccess(t('Plugin disabled.')) :
@@ -146,14 +146,14 @@ final readonly class PluginsController
             'settings' => ['nullable', 'array'],
         ]);
 
-        $plugin = $this->plugins->getPlugin($request->get('pluginHandle'));
+        $plugin = $this->plugins->getPlugin($request->input('pluginHandle'));
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
-        $success = $this->plugins->savePluginSettings($plugin, $request->get('settings', []));
+        $success = $this->plugins->savePluginSettings($plugin, $request->input('settings', []));
 
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($request->get('pluginHandle'), $plugin);
+            : $this->editSettings($request->input('pluginHandle'), $plugin);
     }
 }

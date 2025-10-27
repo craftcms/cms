@@ -123,15 +123,15 @@ final class FilesystemsController
     public function save(Request $request): Response
     {
         $fsService = Craft::$app->getFs();
-        $type = $request->get('type');
+        $type = $request->input('type');
 
         /** @var FsInterface|Fs $fs */
         $fs = $fsService->createFilesystem([
             'type' => $type,
-            'name' => $request->get('name'),
-            'handle' => $request->get('handle'),
-            'oldHandle' => $request->get('oldHandle'),
-            'settings' => $request->get('types')[Html::id($type)] ?? [],
+            'name' => $request->input('name'),
+            'handle' => $request->input('handle'),
+            'oldHandle' => $request->input('oldHandle'),
+            'settings' => $request->input('types')[Html::id($type)] ?? [],
         ]);
 
         if (! $fsService->saveFilesystem($fs)) {
@@ -148,7 +148,7 @@ final class FilesystemsController
         ]);
 
         $fsService = Craft::$app->getFs();
-        $fs = $fsService->getFilesystemByHandle($request->get('id'));
+        $fs = $fsService->getFilesystemByHandle($request->input('id'));
 
         if ($fs) {
             $fsService->removeFilesystem($fs);

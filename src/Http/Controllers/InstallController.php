@@ -149,7 +149,7 @@ final readonly class InstallController
                 'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
             ]);
 
-            $baseUrl = Env::parse($request->get('baseUrl'));
+            $baseUrl = Env::parse($request->input('baseUrl'));
 
             Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
         } catch (ValidationException $e) {
@@ -196,9 +196,9 @@ final readonly class InstallController
             DB::reconnect('db2');
         }
 
-        $email = $request->get('account-email');
-        $username = $request->get('account-username', $email);
-        $siteUrl = $request->get('site-baseUrl');
+        $email = $request->input('account-email');
+        $username = $request->input('account-username', $email);
+        $siteUrl = $request->input('site-baseUrl');
 
         // Don't save @web even if they chose it
         if ($siteUrl === '@web') {
@@ -217,16 +217,16 @@ final readonly class InstallController
         }
 
         $site = new Site(
-            name: $request->get('site-name'),
+            name: $request->input('site-name'),
             handle: 'default',
-            language: $request->get('site-language'),
+            language: $request->input('site-language'),
             baseUrl: $siteUrl,
             hasUrls: true,
         );
 
         $migration = new Install(
             username: $username,
-            password: $request->get('account-password'),
+            password: $request->input('account-password'),
             email: $email,
             site: $site,
         );
