@@ -63,6 +63,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -1974,7 +1975,7 @@ class Elements extends Component
                 ) {
                     $canonical = $element->getCanonical(true);
                     if ($canonical->structureId && $canonical->root) {
-                        $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
+                        $mode = isset($newAttributes['id']) ? Mode::Auto : Mode::Insert;
                         Structures::moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
                     }
                 }

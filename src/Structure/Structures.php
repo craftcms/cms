@@ -407,6 +407,7 @@ final class Structures
             $mode = Mode::Insert;
         }
 
+        /** @var Mode::Insert|Mode::Update $mode */
         [$beforeEvent, $afterEvent] = match ($mode) {
             Mode::Insert => [InsertingElement::class, ElementInserted::class],
             Mode::Update => [MovingElement::class, ElementMoved::class],

@@ -696,7 +696,7 @@ class Install extends Migration
             $table->primary(['provider', 'identityId', 'userId']);
         });
 
-        Schema::create(Table::STRUCTUREELEMENTS, function (Blueprint $table) {
+        Schema::create('structureelements', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('elementId')->nullable();
@@ -709,7 +709,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::STRUCTURES, function (Blueprint $table) {
+        Schema::create('structures', function (Blueprint $table) {
             $table->integer('id', true);
             $table->unsignedSmallInteger('maxLevels')->nullable();
             $table->dateTime('dateCreated');
