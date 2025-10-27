@@ -18,6 +18,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -240,7 +241,7 @@ final readonly class CreateEntryController
                 'structureId' => $section->structureId,
             ]);
 
-            \Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
+            Structures::moveBefore($section->structureId, $entry, $nextEntry);
 
             return;
         }
@@ -250,7 +251,7 @@ final readonly class CreateEntryController
                 'structureId' => $section->structureId,
             ]);
 
-            \Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $prevEntry);
+            Structures::moveAfter($section->structureId, $entry, $prevEntry);
         }
     }
 }

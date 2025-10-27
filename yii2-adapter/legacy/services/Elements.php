@@ -67,6 +67,7 @@ use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -1974,7 +1975,7 @@ class Elements extends Component
                     $canonical = $element->getCanonical(true);
                     if ($canonical->structureId && $canonical->root) {
                         $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-                        Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
+                        Structures::moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
                     }
                 }
 

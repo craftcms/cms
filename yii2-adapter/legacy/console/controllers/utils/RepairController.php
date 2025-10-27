@@ -17,11 +17,12 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
-use craft\services\Structures;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
@@ -100,8 +101,7 @@ class RepairController extends Controller
      */
     protected function repairStructure(int $structureId, ElementQuery $query): int
     {
-        $structuresService = Craft::$app->getStructures();
-        $structure = $structuresService->getStructureById($structureId);
+        $structure = Structures::getStructureById($structureId);
 
         if (!$structure) {
             $this->stderr("Invalid structure ID: $structureId" . PHP_EOL, Console::FG_RED);
@@ -197,7 +197,7 @@ class RepairController extends Controller
                 } else {
                     if ($newLevel == 1) {
                         if (!$this->dryRun) {
-                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                            Structures::appendToRoot($structureId, $element, Mode::Insert);
                         }
                     } else {
                         // Make sure that the element has at least one site in common with the parent
@@ -214,10 +214,10 @@ class RepairController extends Controller
                         if (!array_intersect($elementSites, $parentSites)) {
                             $issue = 'no supported sites in common with parent';
                             if (!$this->dryRun) {
-                                $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                                Structures::appendToRoot($structureId, $element, Mode::Insert);
                             }
                         } elseif (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, $parentElement, Structures::MODE_INSERT);
+                            Structures::append($structureId, $element, $parentElement, Mode::Insert);
                         }
                     }
 

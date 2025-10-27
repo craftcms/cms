@@ -20,6 +20,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -301,12 +302,12 @@ class CategoriesController extends Controller
             $nextCategory = Craft::$app->getCategories()->getCategoryById($nextId, $site->id, [
                 'structureId' => $group->structureId,
             ]);
-            Craft::$app->getStructures()->moveBefore($group->structureId, $category, $nextCategory);
+            Structures::moveBefore($group->structureId, $category, $nextCategory);
         } elseif ($prevId = $this->request->getParam('after')) {
             $prevCategory = Craft::$app->getCategories()->getCategoryById($prevId, $site->id, [
                 'structureId' => $group->structureId,
             ]);
-            Craft::$app->getStructures()->moveAfter($group->structureId, $category, $prevCategory);
+            Structures::moveAfter($group->structureId, $category, $prevCategory);
         }
 
         $editUrl = $category->getCpEditUrl();
@@ -515,12 +516,11 @@ class CategoriesController extends Controller
                 ->all();
 
             // Fill in the gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($categories);
+            Structures::fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($branchLimit = $this->request->getParam('branchLimit')) {
-                $structuresService->applyBranchLimitToElements($categories, $branchLimit);
+                Structures::applyBranchLimitToElements($categories, $branchLimit);
             }
         }
 

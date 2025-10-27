@@ -9,8 +9,9 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\models\Structure;
 use craft\web\Controller;
+use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Support\Facades\Structures;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -60,7 +61,7 @@ class StructuresController extends Controller
         // Make sure they have permission to edit this structure
         $this->requireAuthorization('editStructure:' . $structureId);
 
-        if (($this->_structure = Craft::$app->getStructures()->getStructureById($structureId)) === null) {
+        if (($this->_structure = Structures::getStructureById($structureId)) === null) {
             throw new NotFoundHttpException('Structure not found');
         }
 
@@ -93,7 +94,7 @@ class StructuresController extends Controller
      */
     public function actionGetElementLevelDelta(): Response
     {
-        $delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id, $this->_element);
+        $delta = Structures::getElementLevelDelta($this->_structure->id, $this->_element);
 
         return $this->asJson(compact('delta'));
     }
@@ -105,19 +106,17 @@ class StructuresController extends Controller
      */
     public function actionMoveElement(): ?Response
     {
-        $structuresService = Craft::$app->getStructures();
-
         $parentElementId = $this->request->getBodyParam('parentId');
         $prevElementId = $this->request->getBodyParam('prevId');
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
-            $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement);
+            $success = Structures::moveAfter($this->_structure->id, $this->_element, $prevElement);
         } elseif ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
-            $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement);
+            $success = Structures::prepend($this->_structure->id, $this->_element, $parentElement);
         } else {
-            $success = $structuresService->prependToRoot($this->_structure->id, $this->_element);
+            $success = Structures::prependToRoot($this->_structure->id, $this->_element);
         }
 
         if ($success) {

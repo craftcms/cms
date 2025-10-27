@@ -18,6 +18,7 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -318,7 +319,7 @@ class Drafts extends Component
 
                 // Move the new canonical element after the draft?
                 if ($draft->structureId && $draft->root) {
-                    Craft::$app->getStructures()->moveAfter($draft->structureId, $newCanonical, $draft);
+                    Structures::moveAfter($draft->structureId, $newCanonical, $draft);
                 }
 
                 // Now delete the draft

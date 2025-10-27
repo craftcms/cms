@@ -28,8 +28,9 @@ use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
-use craft\services\Structures;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -889,7 +890,6 @@ class Category extends Element
     private function _placeInStructure(bool $isNew, CategoryGroup $group): void
     {
         $parentId = $this->getParentId();
-        $structuresService = Craft::$app->getStructures();
 
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
@@ -901,24 +901,24 @@ class Category extends Element
                 ->scalar();
 
             if ($parentId == $canonicalParentId) {
-                $structuresService->remove($this->structureId, $this);
+                Structures::remove($this->structureId, $this);
                 return;
             }
         }
 
-        $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+        $mode = $isNew ? Mode::Insert : Mode::Auto;
 
         if (!$parentId) {
             if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
-                $structuresService->prependToRoot($this->structureId, $this, $mode);
+                Structures::prependToRoot($this->structureId, $this, $mode);
             } else {
-                $structuresService->appendToRoot($this->structureId, $this, $mode);
+                Structures::appendToRoot($this->structureId, $this, $mode);
             }
         } else {
             if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
-                $structuresService->prepend($this->structureId, $this, $this->getParent(), $mode);
+                Structures::prepend($this->structureId, $this, $this->getParent(), $mode);
             } else {
-                $structuresService->append($this->structureId, $this, $this->getParent(), $mode);
+                Structures::append($this->structureId, $this, $this->getParent(), $mode);
             }
         }
     }
@@ -973,9 +973,9 @@ class Category extends Element
             ->one();
 
         if (!$parent) {
-            Craft::$app->getStructures()->appendToRoot($structureId, $this);
+            Structures::appendToRoot($structureId, $this);
         } else {
-            Craft::$app->getStructures()->append($structureId, $this, $parent);
+            Structures::append($structureId, $this, $parent);
         }
 
         parent::afterRestore();
