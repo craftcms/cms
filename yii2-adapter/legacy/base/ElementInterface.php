@@ -1914,9 +1914,6 @@ interface ElementInterface extends
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1924,9 +1921,6 @@ interface ElementInterface extends
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 
