@@ -32,7 +32,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     }
 })->with([
     ['url' => '/dashboard', 'title' => 'Dashboard'],
-    ['url' => '/entries', 'title' => 'Entries'],
+    ['url' => '/content/entries', 'title' => 'Entries'],
     ['url' => '/users', 'title' => 'Users'],
 
     // Settings pages
