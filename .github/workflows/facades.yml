@@ -62,6 +62,7 @@ jobs:
             CraftCms\\Cms\\Support\\Facades\\I18N \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
             CraftCms\\Cms\\Support\\Facades\\Sections \
+            CraftCms\\Cms\\Support\\Facades\\Structures \
             CraftCms\\Cms\\Support\\Facades\\Updates
 
       - name: Commit facade docblocks
