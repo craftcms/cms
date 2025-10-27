@@ -8,7 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Structure\Enums\Action;
 use RuntimeException;
 
-abstract class MoveElementEvent
+abstract class UpdateElementEvent
 {
     private ?ElementInterface $targetElement = null;
 

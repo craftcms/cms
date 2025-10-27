@@ -12,7 +12,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * You may set [[$isValid]] to `false` to prevent the
  * element from getting inserted.
  */
-final class InsertingElement extends MoveElementEvent
+final class InsertingElement extends UpdateElementEvent
 {
     use ValidatableEvent;
 }
