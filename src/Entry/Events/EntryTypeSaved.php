@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\EntryType\Events;
+namespace CraftCms\Cms\Entry\Events;
 
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 
-final class SavingEntryType
+final class EntryTypeSaved
 {
     public function __construct(
         public EntryType $entryType,

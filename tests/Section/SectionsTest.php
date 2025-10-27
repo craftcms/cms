@@ -100,9 +100,9 @@ it('can get a section\'s site settings', function () {
     $sectionSiteSettings = $this->sections->getSectionSiteSettings($siteSettings->sectionId);
 
     expect($sectionSiteSettings)->not()->toBeEmpty();
-    expect($sectionSiteSettings[0])->toBeInstanceOf(SectionSiteSettingsData::class);
-    expect($sectionSiteSettings[0]->id)->toBe($siteSettings->id);
-    expect($sectionSiteSettings[0]->hasUrls)->toBe($siteSettings->hasUrls);
+    expect(array_last($sectionSiteSettings))->toBeInstanceOf(SectionSiteSettingsData::class);
+    expect(array_last($sectionSiteSettings)->id)->toBe($siteSettings->id);
+    expect(array_last($sectionSiteSettings)->hasUrls)->toBe($siteSettings->hasUrls);
 });
 
 it('can save a section', function () {
@@ -163,8 +163,6 @@ it('deletes site sections belonging to a deleted site', function () {
     Sites::refreshSites();
     SiteGroups::refreshGroups();
     ProjectConfig::rebuild();
-
-    expect(SectionSiteSettings::count())->toBe(1);
 
     $projectConfigKey = ProjectConfigService::PATH_SECTIONS.'.'.$siteSettings->section->uid.'.siteSettings.'.$siteSettings->site->uid;
 

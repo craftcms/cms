@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
@@ -18,20 +17,19 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
-use craft\helpers\Db as DbHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\EntryType\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\EntryType\Events\DeletingEntryType;
-use CraftCms\Cms\EntryType\Events\EntryTypeDeleted;
-use CraftCms\Cms\EntryType\Events\EntryTypeSaved;
-use CraftCms\Cms\EntryType\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
+use CraftCms\Cms\Entry\Events\DeletingEntryType;
+use CraftCms\Cms\Entry\Events\EntryMovedToSection;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeSaved;
+use CraftCms\Cms\Entry\Events\MovingEntryToSection;
+use CraftCms\Cms\Entry\Events\SavingEntryType;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
-use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
@@ -41,16 +39,12 @@ use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
-use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Entries as EntriesFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -61,6 +55,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0. Use {@see \CraftCms\Cms\Entry\EntryTypes}, {@see \CraftCms\Cms\Section\Sections} or {@see \CraftCms\Cms\Entry\Entries} instead.
  */
 class Entries extends Component
 {
@@ -135,11 +130,6 @@ class Entries extends Component
      * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
-
-    /**
-     * @var array<int,array<string,Entry|false>>
-     */
-    private array $_singleEntries = [];
 
     // Sections
     // -------------------------------------------------------------------------
@@ -435,12 +425,7 @@ class Entries extends Component
             $section->validate();
         }
 
-        $data = $section->toArray();
-        if (is_array($data['propagationMethod'])) {
-            $data['propagationMethod'] = $data['propagationMethod']['value'];
-        }
-
-        $section = \CraftCms\Cms\Section\Data\Section::from($data);
+        $section = $this->sectionDataFromSection($section);
 
         return Sections::saveSection($section);
     }
@@ -494,12 +479,7 @@ class Entries extends Component
      */
     public function deleteSection(Section $section): bool
     {
-        $data = $section->toArray();
-        if (is_array($data['propagationMethod'])) {
-            $data['propagationMethod'] = $data['propagationMethod']['value'];
-        }
-
-        $section = \CraftCms\Cms\Section\Data\Section::from($data);
+        $section = $this->sectionDataFromSection($section);
 
         return Sections::deleteSection($section);
     }
@@ -579,7 +559,7 @@ class Entries extends Component
     public function getEntryTypesBySectionId(int $sectionId): array
     {
         return EntryTypes::getEntryTypesBySectionId($sectionId)
-            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
+            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
             ->all();
     }
 
@@ -598,7 +578,7 @@ class Entries extends Component
     public function getAllEntryTypes(): array
     {
         return EntryTypes::getAllEntryTypes()
-            ->map(fn(\CraftCms\Cms\EntryType\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
+            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
             ->all();
     }
 
@@ -712,7 +692,7 @@ class Entries extends Component
         $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
         $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
         $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
+        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
         $entryTypeData->setFieldLayout($entryType->getFieldLayout());
 
         return EntryTypes::saveEntryType($entryTypeData);
@@ -771,7 +751,7 @@ class Entries extends Component
         $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
         $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
         $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\EntryType\Data\EntryType(...$data);
+        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
 
         return EntryTypes::deleteEntryType($entryTypeData);
     }
@@ -838,21 +818,9 @@ class Entries extends Component
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById(int $entryId, array|int|string $siteId = null, array $criteria = []): ?Entry
+    public function getEntryById(int $entryId, array|int|string|null $siteId = null, array $criteria = []): ?Entry
     {
-        if (!$entryId) {
-            return null;
-        }
-
-        // Get the structure ID
-        if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(Table::ENTRIES, 'entries')
-                ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
-                ->where('entries.id', $entryId)
-                ->value('sections.structureId');
-        }
-
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return EntriesFacade::getEntryById($entryId, $siteId, $criteria);
     }
 
     /**
@@ -865,56 +833,7 @@ class Entries extends Component
      */
     public function getSingleEntriesByHandle(array $handles): array
     {
-        $entries = [];
-        $siteId = Sites::getCurrentSite()->id;
-        $missingEntries = [];
-
-        if (!isset($this->_singleEntries[$siteId])) {
-            $this->_singleEntries[$siteId] = [];
-        }
-
-        foreach ($handles as $handle) {
-            if (isset($this->_singleEntries[$siteId][$handle])) {
-                if ($this->_singleEntries[$siteId][$handle] !== false) {
-                    $entries[$handle] = $this->_singleEntries[$siteId][$handle];
-                }
-            } else {
-                $missingEntries[] = $handle;
-            }
-        }
-
-        if (!empty($missingEntries)) {
-            /** @var array<string,Section> $singleSections */
-            $singleSections = Sections::getSectionsByType(SectionType::Single)->keyBy('handle');
-            $fetchSectionIds = [];
-            $fetchSectionHandles = [];
-            foreach ($missingEntries as $handle) {
-                if (isset($singleSections[$handle])) {
-                    $fetchSectionIds[] = $singleSections[$handle]->id;
-                    $fetchSectionHandles[] = $handle;
-                } else {
-                    $this->_singleEntries[$siteId][$handle] = false;
-                }
-            }
-            if (!empty($fetchSectionIds)) {
-                $fetchedEntries = Entry::find()
-                    ->sectionId($fetchSectionIds)
-                    ->siteId($siteId)
-                    ->all();
-                /** @var array<string,Entry> $fetchedEntries */
-                $fetchedEntries = Arr::keyBy($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
-                foreach ($fetchSectionHandles as $handle) {
-                    if (isset($fetchedEntries[$handle])) {
-                        $this->_singleEntries[$siteId][$handle] = $fetchedEntries[$handle];
-                        $entries[$handle] = $fetchedEntries[$handle];
-                    } else {
-                        $this->_singleEntries[$siteId][$handle] = false;
-                    }
-                }
-            }
-        }
-
-        return $entries;
+        return EntriesFacade::getSingleEntriesByHandle($handles);
     }
 
     /**
@@ -932,154 +851,11 @@ class Entries extends Component
      */
     public function moveEntryToSection(Entry $entry, Section|\CraftCms\Cms\Section\Data\Section $section): bool
     {
-        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
-            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
-                'entry' => $entry,
-                'section' => self::sectionFromSectionData($section),
-            ]));
+        if ($section instanceof Section) {
+            $section = self::sectionDataFromSection($section);
         }
 
-        // Make sure the element exists
-        if (!$entry->id) {
-            throw new Exception('Attempting to move an unsaved element.');
-        }
-
-        // and that it's not a nested entry
-        if ($entry->getPrimaryOwnerId() !== null) {
-            throw new Exception('Attempting to move a nested element.');
-        }
-
-        // Ensure all fields have been normalized
-        $entry->getFieldValues();
-
-        $oldSection = $entry->getSection();
-
-        // move to new section
-        $entry->sectionId = $section->id;
-
-        // Validate
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $entry->validate();
-
-        // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
-            $entry->enabled = false;
-            $entry->validate();
-        }
-
-        // When moving to a section that allows for less authors than the entry has, allow the move.
-        // The error will be shown the next time that entry is saved.
-        if ($entry->hasErrors('authorIds')) {
-            $entry->clearErrors('authorIds');
-        }
-
-        if ($entry->hasErrors()) {
-            throw new InvalidElementException($entry,
-                'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
-        }
-
-        // prevents revision from being created
-        $entry->resaving = true;
-
-        $elementsService = Craft::$app->getElements();
-        $elementsService->ensureBulkOp(function() use (
-            $entry,
-            $section,
-            $oldSection,
-            $elementsService,
-        ) {
-            DB::beginTransaction();
-            try {
-                // Start with $entry’s site
-                if (!$elementsService->saveElement($entry, false, false)) {
-                    throw new InvalidElementException($entry,
-                        'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
-                }
-
-                $draftsQuery = Entry::find()
-                    ->draftOf($entry)
-                    ->provisionalDrafts(null)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
-
-                $revisionsQuery = Entry::find()
-                    ->revisionOf($entry)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
-
-                if (
-                    $entry->getIsCanonical() &&
-                    in_array(SectionType::Structure, [$oldSection->type, $section->type])
-                ) {
-                    $structuresService = Craft::$app->getStructures();
-
-                    // if we're moving it from a Structure section, remove it from the structure
-                    if ($oldSection->type === SectionType::Structure) {
-                        $structuresService->remove($oldSection->structureId, $entry);
-
-                        // remove drafts and revisions from the structure, too
-                        foreach (DbHelper::each($draftsQuery) as $draft) {
-                            /** @var Entry $draft */
-                            if ($draft->lft) {
-                                $structuresService->remove($oldSection->structureId, $draft);
-                            }
-                        }
-
-                        foreach (DbHelper::each($revisionsQuery) as $revision) {
-                            /** @var Entry $revision */
-                            if ($revision->lft) {
-                                $structuresService->remove($oldSection->structureId, $revision);
-                            }
-                        }
-                    }
-
-                    // if we're moving it to a Structure section, place it at the root
-                    if ($section->type === SectionType::Structure) {
-                        if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                            $structuresService->prependToRoot($section->structureId, $entry, Structures::MODE_INSERT);
-                        } else {
-                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
-                        }
-                    }
-                }
-
-                $entry->newSiteIds = [];
-                $entry->afterPropagate(false);
-
-                // now assign drafts & revisions to the new section too
-                $ids = array_merge($draftsQuery->ids(), $revisionsQuery->ids());
-                if (!empty($ids)) {
-                    DB::table(Table::ENTRIES)
-                        ->whereIn('id', $ids)
-                        ->update([
-                            'sectionId' => $section->id,
-                            'dateUpdated' => now(),
-                        ]);
-                }
-
-                DB::commit();
-
-                // Invalidate caches for the old section
-                $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
-                TagDependency::invalidate($tag);
-                \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
-            } catch (Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
-        });
-
-        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
-            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
-                'entry' => $entry,
-                'section' => self::sectionFromSectionData($section),
-            ]));
-        }
-
-        return true;
+        return EntriesFacade::moveEntryToSection($entry, $section);
     }
 
     private static function sectionFromSectionData(\CraftCms\Cms\Section\Data\Section $section): Section
@@ -1088,11 +864,21 @@ class Entries extends Component
         $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
             return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
         }, $section->getSiteSettings()));
-        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData) {
+        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData) {
             return self::entryTypeFromEntryTypeData($entryTypeData);
         }, $section->getEntryTypes()));
 
         return $yiiSection;
+    }
+
+    private static function sectionDataFromSection(Section $section): \CraftCms\Cms\Section\Data\Section
+    {
+        $data = $section->toArray();
+        if (is_array($data['propagationMethod'])) {
+            $data['propagationMethod'] = $data['propagationMethod']['value'];
+        }
+
+        return \CraftCms\Cms\Section\Data\Section::from($data);
     }
 
     private static function sectionSiteSettingsFromSiteSettingsData(\CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings): Section_SiteSettings
@@ -1100,7 +886,7 @@ class Entries extends Component
         return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
     }
 
-    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\EntryType\Data\EntryType $entryTypeData): EntryType
+    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData): EntryType
     {
         $data = Utils::getPublicProperties($entryTypeData);
         $data['titleTranslationMethod'] = $data['titleTranslationMethod']->value;
@@ -1197,6 +983,24 @@ class Entries extends Component
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
                     'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                ]));
+            }
+        });
+
+        Event::listen(MovingEntryToSection::class, function(MovingEntryToSection $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
+                    'entry' => $event->entry,
+                    'section' => self::sectionFromSectionData($event->section),
+                ]));
+            }
+        });
+
+        Event::listen(EntryMovedToSection::class, function(EntryMovedToSection $event) {
+            if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
+                Craft::$app->getEntries()->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
+                    'entry' => $event->entry,
+                    'section' => self::sectionFromSectionData($event->section),
                 ]));
             }
         });

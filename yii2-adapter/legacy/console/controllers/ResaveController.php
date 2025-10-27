@@ -31,7 +31,7 @@ use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use CraftCms\Cms\Addresses\Addresses;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;

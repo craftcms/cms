@@ -20,7 +20,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;

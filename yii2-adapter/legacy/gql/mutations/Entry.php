@@ -17,7 +17,7 @@ use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
-use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
+use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;

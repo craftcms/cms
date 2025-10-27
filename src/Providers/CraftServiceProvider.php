@@ -9,7 +9,7 @@ use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
-use CraftCms\Cms\EntryType\EntryTypeServiceProvider;
+use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
@@ -41,6 +41,6 @@ final class CraftServiceProvider extends AggregateServiceProvider
         UserServiceProvider::class,
         FieldsServiceProvider::class,
         SectionServiceProvider::class,
-        EntryTypeServiceProvider::class,
+        EntryServiceProvider::class,
     ];
 }

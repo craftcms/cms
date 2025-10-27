@@ -13,6 +13,7 @@ use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\Entries;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
@@ -422,7 +423,7 @@ class Template
         $handles = array_diff($handles, array_keys($globals));
 
         if (!empty($handles)) {
-            self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            self::$_fallbacks += Entries::getSingleEntriesByHandle($handles);
         }
     }
 }

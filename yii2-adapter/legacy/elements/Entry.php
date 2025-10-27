@@ -41,7 +41,7 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -56,11 +56,11 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Section\Data\Section;
@@ -69,6 +69,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -79,12 +80,15 @@ use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -768,7 +772,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             case 'authors':
                 $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
 
-                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+                $map = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                     ->select([
                         'source' => 'entryId',
                         'target' => 'authorId',
@@ -2503,7 +2507,7 @@ JS, [
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields[] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
-                    $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
+                    $parent = Entries::getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
                         'draftOf' => false,
                     ]);
@@ -2799,7 +2803,7 @@ JS;
                 // Has the entry been assigned to a new parent?
                 if (!$this->duplicateOf && $this->hasNewParent()) {
                     if ($parentId = $this->getParentId()) {
-                        $parentEntry = Craft::$app->getEntries()->getEntryById($parentId, '*', [
+                        $parentEntry = Entries::getEntryById($parentId, '*', [
                             'preferSites' => [$this->siteId],
                             'drafts' => null,
                             'draftOf' => false,
@@ -2887,6 +2891,7 @@ JS;
                 if (!$record) {
                     throw new InvalidConfigException("Invalid entry ID: $this->id");
                 }
+                $model = EntryModel::findOrFail($this->id);
             } else {
                 $record = new EntryRecord();
                 $record->id = (int)$this->id;
@@ -2896,8 +2901,8 @@ JS;
             $record->fieldId = $this->fieldId;
             $record->primaryOwnerId = $this->getPrimaryOwnerId();
             $record->typeId = $this->getTypeId();
-            $record->postDate = Db::prepareDateForDb($this->postDate);
-            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
+            $record->postDate = DbHelper::prepareDateForDb($this->postDate);
+            $record->expiryDate = DbHelper::prepareDateForDb($this->expiryDate);
 
             // todo: update after the next breakpoint
             if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
@@ -2958,7 +2963,7 @@ JS;
     {
         if (!isset($this->_oldAuthorIds)) {
             // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            $this->_oldAuthorIds = DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->where('entryId', $this->duplicateOf->id ?? $this->id)
                 ->orderBy('sortOrder')
                 ->pluck('authorId')
@@ -2966,7 +2971,7 @@ JS;
                 ->all();
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
             ->where('entryId', $this->id)
             ->delete();
 
@@ -2980,7 +2985,7 @@ JS;
                 ];
             }
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
+            DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->insert($data);
         }
     }
@@ -3064,7 +3069,7 @@ JS;
             }
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update($data);
 
@@ -3079,7 +3084,7 @@ JS;
         $this->deletedWithEntryType = false;
         $this->deletedWithSection = false;
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update([
                 'deletedWithEntryType' => null,

@@ -27,7 +27,7 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\EntryType\EntryTypes;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;

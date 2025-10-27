@@ -23,7 +23,7 @@ use craft\services\Entries as EntriesService;
 use craft\services\Structures;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\EntryType\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;

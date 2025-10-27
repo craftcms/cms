@@ -14,6 +14,7 @@ use craft\queue\jobs\PropagateElements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
@@ -269,6 +270,21 @@ final class Sites
         $user = Auth::user();
 
         return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
+    }
+
+    /**
+     * Returns all of the site IDs that are editable by the current user in a certain section.
+     *
+     * @return Collection<int> All the editable sites’ IDs
+     */
+    public function getEditableSiteIdsForSection(Section $section): Collection
+    {
+        if (! $this->isMultiSite()) {
+            return collect([$this->getPrimarySite()->id]);
+        }
+
+        return collect(array_keys($section->getSiteSettings()))
+            ->intersect($this->getEditableSiteIds());
     }
 
     /**

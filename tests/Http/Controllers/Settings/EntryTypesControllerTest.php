@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\EntryType;
-use CraftCms\Cms\EntryType\Data\EntryType as EntryTypeData;
-use CraftCms\Cms\EntryType\EntryTypes;
+use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;

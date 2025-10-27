@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
@@ -32,6 +36,18 @@ Route::middleware('auth')->group(function () {
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
     });
+
+    /**
+     * Entries & Content
+     */
+    Route::get('entries', EntriesIndexController::class);
+    Route::view('entries/{sectionHandle}', 'craftcms::entries.index');
+    Route::get('entries/{section}/new', CreateEntryController::class);
+
+    Route::get('content', EntriesIndexController::class);
+    Route::view('content/{page}', 'craftcms::entries.index');
+    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index');
+    Route::get('content/{section}/new', CreateEntryController::class);
 
     /**
      * Routes that require admin, but do not require admin changes

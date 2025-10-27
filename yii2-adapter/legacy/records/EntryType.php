@@ -35,7 +35,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\EntryType\Models\EntryType} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Models\EntryType} instead.
  */
 class EntryType extends ActiveRecord
 {

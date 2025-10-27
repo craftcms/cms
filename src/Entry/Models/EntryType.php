@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\EntryType\Models;
+namespace CraftCms\Cms\Entry\Models;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
