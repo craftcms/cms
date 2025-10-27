@@ -42,10 +42,6 @@
 
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
-- Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
-- Added `Craft.BaseElementIndex::asyncSelectSource()`.
-- Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
-- Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - Added `craft\base\ElementIndex::multiPageSources()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
@@ -65,6 +61,10 @@
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
+- Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
+- Added `Craft.BaseElementIndex::asyncSelectSource()`.
+- Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
+- Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - `craft\base\ElementInterface::cardAttributes()` now has a `$fieldLayout` argument. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
