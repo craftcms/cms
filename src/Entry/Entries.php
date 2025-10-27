@@ -20,12 +20,12 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Exception;
 
 #[Singleton]
 final class Entries
@@ -127,6 +127,11 @@ final class Entries
         }
 
         return $entries;
+    }
+
+    public function refreshSingleEntries(): void
+    {
+        $this->singleEntries = [];
     }
 
     /**

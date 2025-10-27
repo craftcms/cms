@@ -395,7 +395,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::ENTRIES, function (Blueprint $table) {
+        Schema::create('entries', function (Blueprint $table) {
             $table->integer('id');
             $table->integer('sectionId')->nullable();
             $table->integer('parentId')->nullable();

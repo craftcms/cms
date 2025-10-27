@@ -41,11 +41,9 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\ArrayValidator;
@@ -57,6 +55,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -2882,27 +2881,23 @@ JS;
 
             // Get the entry record
             if (!$isNew) {
-                $record = EntryRecord::findOne($this->id);
-
-                if (!$record) {
-                    throw new InvalidConfigException("Invalid entry ID: $this->id");
-                }
+                $model = EntryModel::findOrFail($this->id);
             } else {
-                $record = new EntryRecord();
-                $record->id = (int)$this->id;
+                $model = new EntryModel();
+                $model->id = (int)$this->id;
             }
 
-            $record->sectionId = $this->sectionId;
-            $record->fieldId = $this->fieldId;
-            $record->primaryOwnerId = $this->getPrimaryOwnerId();
-            $record->typeId = $this->getTypeId();
-            $record->postDate = Db::prepareDateForDb($this->postDate);
-            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
+            $model->sectionId = $this->sectionId;
+            $model->fieldId = $this->fieldId;
+            $model->primaryOwnerId = $this->getPrimaryOwnerId();
+            $model->typeId = $this->getTypeId();
+            $model->postDate = $this->postDate;
+            $model->expiryDate = $this->expiryDate;
 
             // todo: update after the next breakpoint
             if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
                 $status = $this->_status();
-                $record->status = $status;
+                $model->status = $status;
                 // only update $this->status if it's already set, indicating that staticStatuses is enabled
                 if (isset($this->status)) {
                     $this->status = $status;
@@ -2910,8 +2905,8 @@ JS;
             }
 
             // Capture the dirty attributes from the record
-            $dirtyAttributes = array_keys($record->getDirtyAttributes());
-            $record->save(false);
+            $dirtyAttributes = array_keys($model->getDirty());
+            $model->save();
 
             // save authors
             if (isset($this->sectionId) && isset($this->_authorIds)) {
