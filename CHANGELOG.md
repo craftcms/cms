@@ -23,6 +23,7 @@
 - Fixed a bug where the QR code shown when setting up an authenticator app didn’t have alt text. ([#17963](https://github.com/craftcms/cms/pull/17963))
 - Fixed a bug where it wasn’t possible to clear out assets’ alternative text translations. ([#17969](https://github.com/craftcms/cms/issues/17969))
 - Fixed a bug where batched Find and Replace jobs were skipping several matches. ([#17974](https://github.com/craftcms/cms/issues/17974))
+- Fixed styling issues. ([#17991](https://github.com/craftcms/cms/issues/17991))
 
 ## 5.8.18 - 2025-10-06
 
