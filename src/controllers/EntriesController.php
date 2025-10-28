@@ -593,12 +593,6 @@ class EntriesController extends BaseEntriesController
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
         // Authors
         $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
         if ($authorIds !== null) {
@@ -611,6 +605,13 @@ class EntriesController extends BaseEntriesController
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        // Set the custom field values now that everything that could affect field conditions has been set
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Is fresh?
         if ($this->request->getBodyParam('isFresh')) {
