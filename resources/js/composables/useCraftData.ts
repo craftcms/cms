@@ -17,12 +17,24 @@ export interface CraftData {
   [key: string]: any;
 }
 
-export default function useCraftData() {
+export function useHelpers() {
+  const craftData = useCraftData();
+
+  return {
+    // @TODO move to NPM package
+    getActionUrl(action: string) {
+      const url = new URL(craftData.actionUrl);
+      const cleanPath = action.startsWith('/') ? action.slice(1) : action;
+      url.pathname = `${url.pathname}/${cleanPath}`;
+      return url.toString();
+    },
+  };
+}
+
+export default function useCraftData(): CraftData {
   const page = usePage<{
     craft: CraftData;
   }>();
-
-  // return page.props.craft;
 
   // This is what Statamic does, I'm not sure if it's smart or overly complicated
   return new Proxy({} as CraftData, {

@@ -66,7 +66,7 @@ final readonly class WidgetsController
             ],
         ]);
 
-        $widget = $this->dashboard->getWidgetById($request->get('widgetId'));
+        $widget = $this->dashboard->getWidgetById($request->integer('widgetId'));
 
         // Create a new widget model with the new settings
         $settings = $request->get("widget{$widget->id}-settings");

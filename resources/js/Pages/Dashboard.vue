@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import AppLayout from '@/layout/AppLayout.vue';
   import {usePage} from '@inertiajs/vue3';
-  import VarDump from '@/components/VarDump.vue';
   import {computed, ref} from 'vue';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
+  import BaseWidget from '@/widgets/BaseWidget.vue';
+  import {t} from '@craftcms/cp';
 
   interface Widget {
     id: number;
@@ -29,6 +29,12 @@
     selectable: boolean;
   }
 
+  type CompleteWidget = Widget & {
+    view?: 'settings' | 'default';
+    new?: boolean;
+    settingsNamespace?: string;
+  };
+
   const {props} = usePage<{
     widgets: Widget[];
     widgetTypes: {
@@ -36,20 +42,7 @@
     };
   }>();
 
-  const widgets = ref(props.widgets);
-
-  const openDrawer = (id: string) => {
-    const drawer = document.querySelector(`#${id}`);
-    /**
-     * I need to add `CraftDrawer` to the exports of the `@craftcms/ui` package
-     * so we can use that as the type here. In the meantime, we'll just ignore
-     * the type error
-     */
-    if (drawer) {
-      // @ts-ignore
-      drawer.open = true;
-    }
-  };
+  const widgets = ref<CompleteWidget[]>([...props.widgets]);
 
   function createWidget(type: string) {
     const info = props.widgetTypes[type];
@@ -57,18 +50,41 @@
       throw new Error(`Unknown widget type: ${type}`);
     }
 
+    const id = Math.floor(Math.random() * 1000000000);
+    const settingsNamespace = `newwidget${id}-settings`;
+
     widgets.value.push({
-      id: Math.floor(Math.random() * 1000000000),
-      type: type,
+      id,
+      type,
       colspan: 1,
-      title: null,
+      title: t('app', `New "${info.name}" Widget`),
       subtitle: null,
       name: info.name,
       bodyHtml: '',
-      settingsHtml: info.settingsHtml,
+      settingsNamespace,
+      settingsHtml: info.settingsHtml.replace(
+        /__NAMESPACE__/g,
+        settingsNamespace
+      ),
       settingsJs: info.settingsJs,
-      settings: {},
+      settings: info.settings || {},
+      view: 'settings',
+      new: true,
     });
+  }
+
+  function updateWidget(updates: Widget) {
+    widgets.value = widgets.value.map((widget: Widget) => {
+      if (widget.id === updates.id) {
+        return updates;
+      }
+
+      return widget;
+    });
+  }
+
+  function deleteWidget(id: number) {
+    widgets.value = widgets.value.filter((widget: Widget) => widget.id !== id);
   }
 </script>
 
@@ -94,35 +110,13 @@
 
     <div class="tw:px-4 tw:@container">
       <div class="widget-grid">
-        <template v-for="widget in props.widgets" :key="widget.id">
-          <craft-card :label="widget.title">
-            <div slot="actions" v-if="widget.settingsHtml">
-              <craft-button
-                icon
-                size="small"
-                appearance="plain"
-                @click="openDrawer(`drawer-${widget.id}`)"
-              >
-                <craft-icon name="gear"></craft-icon>
-              </craft-button>
-            </div>
-
-            <DynamicHtmlRenderer :html="widget.bodyHtml"></DynamicHtmlRenderer>
-
-            <template v-if="widget.settingsHtml">
-              <hr class="tw:my-4 tw:border-0 tw:border-b tw:border-b-subtle" />
-              <form>
-                <input type="hidden" name="action" value="" />
-                <DynamicHtmlRenderer :html="widget.settingsHtml"></DynamicHtmlRenderer>
-
-                <div class="tw:flex tw:gap-2 tw:mt-4">
-                  <craft-button variant="primary" type="submit">Save</craft-button>
-                  <craft-button type="reset">Cancel</craft-button>
-                </div>
-              </form>
-            </template>
-          </craft-card>
-        </template>
+        <BaseWidget
+          v-for="widget in widgets"
+          :key="widget.id"
+          v-bind="widget"
+          @update="updateWidget"
+          @delete="deleteWidget"
+        />
       </div>
     </div>
   </AppLayout>
