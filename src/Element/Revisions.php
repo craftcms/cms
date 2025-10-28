@@ -96,7 +96,7 @@ final readonly class Revisions
 
             if ($creatorId === null) {
                 // Default to the logged-in user ID if there is one
-                $creatorId = Auth::user()->id;
+                $creatorId = Auth::user()?->id;
             }
 
             if (Event::hasListeners(CreatingRevision::class)) {
