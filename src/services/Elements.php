@@ -4328,7 +4328,10 @@ class Elements extends Component
         // Copy the title value?
         if (
             $element::hasTitles() &&
-            $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey()
+            (
+                $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->title))
+            )
         ) {
             $siteElement->title = $element->title;
         }
@@ -4336,7 +4339,10 @@ class Elements extends Component
         // Copy the slug value?
         if (
             $element->slug !== null &&
-            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+            (
+                $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->slug))
+            )
         ) {
             $siteElement->slug = $element->slug;
         }
@@ -4358,6 +4364,15 @@ class Elements extends Component
                 // carry on
             }
         }
+
+        // Save it
+        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
+        }
+
 
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
@@ -4385,16 +4400,23 @@ class Elements extends Component
                             $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                         }
                     }
+
+                    // if propagateRequired is true and site element doesn't already validate
+                    if ($element->propagateRequired && !$siteElement->validate()) {
+                        // iterate through the custom fields again
+                        foreach ($fieldLayout->getCustomFields() as $field) {
+                            // the layout element is required and invalid
+                            if (
+                                $field->layoutElement->required &&
+                                !empty($siteElement->getErrors($field->handle))
+                            ) {
+                                // copy the initial element’s value over
+                                $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                            }
+                        }
+                    }
                 }
             }
-        }
-
-        // Save it
-        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        // validate element against "live" scenario across all sites, if element is enabled for the site
-        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
-            $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
         $siteElement->propagating = true;

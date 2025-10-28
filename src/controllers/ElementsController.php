@@ -2135,6 +2135,11 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
+        // if we're about to apply an unpublished draft, set propagateRequired to true
+        if ($isUnpublishedDraft) {
+            $element->propagateRequired = true;
+        }
+
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
