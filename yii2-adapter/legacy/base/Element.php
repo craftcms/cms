@@ -5103,7 +5103,7 @@ JS, [
                 ->where('siteId', $this->siteId)
                 ->when(
                     value: $this->dateLastMerged,
-                    callback: fn(Builder $query) => $query->where('dateUpdate', '>=', $this->dateLastMerged),
+                    callback: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
                     default: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
                 )
                 ->pluck('attribute')
@@ -5390,7 +5390,7 @@ JS, [
                 ->where('siteId', $this->siteId)
                 ->when(
                     value: $this->dateLastMerged,
-                    callback: fn(Builder $query) => $query->where('dateUpdate', '>=', $this->dateLastMerged),
+                    callback: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
                     default: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
                 )
                 ->pluck('layoutElementUid')
