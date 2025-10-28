@@ -87,6 +87,7 @@ final class Feed extends Widget
         // Fake it for now and fetch it later
         $data = [
             'direction' => 'ltr',
+            'url' => $this->url,
             'items' => [],
         ];
 

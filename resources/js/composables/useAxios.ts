@@ -28,6 +28,7 @@ interface UseAxiosOptions<T = any>
   debounce?: number;
   onSuccess?: (data: T, response: AxiosResponse) => void;
   onError?: (error: any) => void;
+  initialData?: T | null;
 }
 
 // Return type interface
@@ -53,14 +54,6 @@ export function useAxios<T = any>(
   url: MaybeRef<string>,
   options: UseAxiosOptions<T> = {}
 ): UseAxiosReturn<T> {
-  // Reactive state
-  const data = ref(null) as Ref<UnwrapRef<T> | null>;
-  const state = ref<AxiosFetchState>('idle');
-  const error = ref(null);
-
-  const isLoading = computed(() => state.value === 'loading');
-  const isSuccess = computed(() => state.value === 'success');
-  const isError = computed(() => state.value === 'error');
 
   // Options with defaults
   const {
@@ -72,8 +65,18 @@ export function useAxios<T = any>(
     transform = (data: any) => data as T,
     onSuccess,
     onError,
+    initialData = null,
     ...axiosOptions
   } = options;
+
+  // Reactive state
+  const data = ref(initialData) as Ref<UnwrapRef<T> | null>;
+  const state = ref<AxiosFetchState>('idle');
+  const error = ref(null);
+
+  const isLoading = computed(() => state.value === 'loading');
+  const isSuccess = computed(() => state.value === 'success');
+  const isError = computed(() => state.value === 'error');
 
   const computedUrl = computed<string>(() => unref(url));
   const computedEnabled = computed<boolean>(() => unref(enabled));

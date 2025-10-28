@@ -72,10 +72,9 @@ final class RecentEntries extends Widget
     #[\Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
-            [
-                'widget' => $this,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig', [
+            'widget' => $this,
+        ]);
     }
 
     /**

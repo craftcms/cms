@@ -7,6 +7,7 @@ import '@craftcms/cp';
 
 import SupportWidget from '@/widgets/SupportWidget.vue';
 import UpdatesWidget from '@/widgets/UpdatesWidget.vue';
+import FeedWidget from '@/widgets/FeedWidget.vue';
 
 // @ts-ignore @TODO
 window.Craft = window.Craft || {};
@@ -23,6 +24,7 @@ createInertiaApp({
 
     app.component('updates-widget', UpdatesWidget);
     app.component('support-widget', SupportWidget);
+    app.component('feed-widget', FeedWidget);
 
     app.use(plugin);
     app.mount(el);
