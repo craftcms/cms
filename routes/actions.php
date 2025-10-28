@@ -23,6 +23,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
@@ -187,6 +188,13 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+        });
+
+        // Routes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('routes/save-route', [RoutesController::class, 'store']);
+            Route::post('routes/delete-route', [RoutesController::class, 'destroy']);
+            Route::post('routes/update-route-order', [RoutesController::class, 'reorder']);
         });
 
         // Sections

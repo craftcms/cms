@@ -337,13 +337,7 @@ class UrlManager extends \yii\web\UrlManager
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;
         } else {
-            $routesService = Craft::$app->getRoutes();
-
-            $rules = array_merge(
-                $routesService->getConfigFileRoutes(),
-                $routesService->getProjectConfigRoutes()
-            );
-
+            $rules = Craft::$app->getRoutes()->getConfigFileRoutes();
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 

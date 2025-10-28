@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
+use CraftCms\Cms\Route\RouteServiceProvider;
 use CraftCms\Cms\Section\SectionServiceProvider;
 use CraftCms\Cms\Structure\StructureServiceProvider;
 use CraftCms\Cms\Translation\TranslationServiceProvider;
@@ -33,6 +34,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
         ProjectConfigServiceProvider::class,
         DeprecatorServiceProvider::class,
         LicenseServiceProvider::class,
+        RouteServiceProvider::class,
         AppServiceProvider::class,
         IconServiceProvider::class,
         ConsoleServiceProvider::class,

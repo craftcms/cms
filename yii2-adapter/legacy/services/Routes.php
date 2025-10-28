@@ -8,14 +8,15 @@
 namespace craft\services;
 
 use Craft;
-use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Route\Events\DeletingRoute;
+use CraftCms\Cms\Route\Events\RouteDeleted;
+use CraftCms\Cms\Route\Events\RouteSaved;
+use CraftCms\Cms\Route\Events\SavingRoute;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
 /**
@@ -25,6 +26,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Route\Routes} instead.
  */
 class Routes extends Component
 {
@@ -47,11 +49,6 @@ class Routes extends Component
      * @event RouteEvent The event that is triggered after a route is deleted.
      */
     public const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
-
-    /**
-     * @var array|null all the routes in project config for current site
-     */
-    private ?array $_projectConfigRoutes = null;
 
     /**
      * Returns the routes defined in `config/routes.php`
@@ -100,39 +97,54 @@ class Routes extends Component
      */
     public function getProjectConfigRoutes(): array
     {
-        if (isset($this->_projectConfigRoutes)) {
-            return $this->_projectConfigRoutes;
-        }
-
-        $this->_projectConfigRoutes = [];
-
-        if (Cms::config()->headlessMode) {
-            return $this->_projectConfigRoutes;
-        }
-
-        $routes = Collection::make(app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [])
-            ->sortBy('sortOrder', SORT_NUMERIC)
+        return app(\CraftCms\Cms\Route\Routes::class)
+            ->getProjectConfigRoutes()
+            ->map(function(Route $route) {
+                return [
+                    'template' => $route->template,
+                    'pattern' => $this->uriPattern($route->uriParts),
+                ];
+            })
             ->all();
-        $currentSiteUid = Sites::getCurrentSite()->uid;
-        $this->_projectConfigRoutes = [];
+    }
 
-        foreach ($routes as $route) {
-            if (!array_key_exists('siteUid', $route)) {
+    private function uriPattern(array $uriParts): string
+    {
+        $uriPattern = '';
+        $subpatternNameCounts = [];
+
+        foreach (Arr::whereNotEmpty($uriParts) as $part) {
+            if (is_string($part)) {
+                $uriPattern .= $part;
                 continue;
             }
-            $key = sprintf('pattern:%s', $route['uriPattern']);
-            if (
-                !isset($this->_projectConfigRoutes[$key]) &&
-                (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
-            ) {
-                $this->_projectConfigRoutes[$key] = [
-                    'pattern' => $route['uriPattern'],
-                    'template' => $route['template'],
-                ];
+
+            if (!is_array($part)) {
+                continue;
             }
+
+            // Is the name a valid handle?
+            if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
+                $subpatternName = $part[0];
+            } else {
+                $subpatternName = 'any';
+            }
+
+            // Make sure it's unique
+            if (isset($subpatternNameCounts[$subpatternName])) {
+                $subpatternNameCounts[$subpatternName]++;
+
+                // Append the count to the end of the name
+                $subpatternName .= $subpatternNameCounts[$subpatternName];
+            } else {
+                $subpatternNameCounts[$subpatternName] = 1;
+            }
+
+            // Add the var as a named subpattern
+            $uriPattern .= "<$subpatternName:$part[1]>";
         }
 
-        return array_values($this->_projectConfigRoutes);
+        return $uriPattern;
     }
 
     /**
@@ -147,75 +159,12 @@ class Routes extends Component
      */
     public function saveRoute(array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null): string
     {
-        // Fire a 'beforeSaveRoute' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ROUTE)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
-                'uriParts' => $uriParts,
-                'template' => $template,
-                'siteUid' => $siteUid,
-            ]));
-        }
-
-        $projectConfig = app(ProjectConfig::class);
-
-        if ($routeUid !== null) {
-            $sortOrder = $projectConfig->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
-        } else {
-            $routeUid = Str::uuid()->toString();
-            $sortOrder = $this->_getMaxSortOrder();
-        }
-
-        // Compile the URI parts into a regex pattern
-        $uriPattern = '';
-        $uriParts = Arr::whereNotEmpty($uriParts);
-        $subpatternNameCounts = [];
-
-        foreach ($uriParts as $part) {
-            if (is_string($part)) {
-                $uriPattern .= $part;
-            } elseif (is_array($part)) {
-                // Is the name a valid handle?
-                if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
-                    $subpatternName = $part[0];
-                } else {
-                    $subpatternName = 'any';
-                }
-
-                // Make sure it's unique
-                if (isset($subpatternNameCounts[$subpatternName])) {
-                    $subpatternNameCounts[$subpatternName]++;
-
-                    // Append the count to the end of the name
-                    $subpatternName .= $subpatternNameCounts[$subpatternName];
-                } else {
-                    $subpatternNameCounts[$subpatternName] = 1;
-                }
-
-                // Add the var as a named subpattern
-                $uriPattern .= "<$subpatternName:$part[1]>";
-            }
-        }
-
-        $configData = [
-            'template' => $template,
-            'uriParts' => $uriParts,
-            'uriPattern' => $uriPattern,
-            'sortOrder' => (int)$sortOrder,
-            'siteUid' => $siteUid,
-        ];
-
-        $projectConfig->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid, $configData, 'Save route');
-
-        // Fire an 'afterSaveRoute' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ROUTE)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ROUTE, new RouteEvent([
-                'uriParts' => $uriParts,
-                'template' => $template,
-                'siteUid' => $siteUid,
-            ]));
-        }
-
-        return $routeUid;
+        return app(\CraftCms\Cms\Route\Routes::class)->saveRoute(new Route(
+            uid: $routeUid,
+            uriParts: $uriParts,
+            template: $template,
+            siteUid: $siteUid,
+        ));
     }
 
     /**
@@ -227,48 +176,7 @@ class Routes extends Component
      */
     public function deleteRouteByUid(string $routeUid): bool
     {
-        $route = app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid);
-
-        if ($route) {
-            // Fire a 'beforeDeleteRoute' event
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ROUTE)) {
-                $this->trigger(self::EVENT_BEFORE_DELETE_ROUTE, new RouteEvent([
-                    'uriParts' => $route['uriParts'],
-                    'template' => $route['template'],
-                    'siteUid' => $route['siteUid'],
-                ]));
-            }
-
-            app(ProjectConfig::class)->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, "Delete route");
-
-            // Fire an 'afterDeleteRoute' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
-                $this->trigger(self::EVENT_AFTER_DELETE_ROUTE, new RouteEvent([
-                    'uriParts' => $route['uriParts'],
-                    'template' => $route['template'],
-                    'siteUid' => $route['siteUid'],
-                ]));
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Handle a deleted site when it affects existing routes
-     *
-     * @param DeleteSiteEvent $event
-     */
-    public function handleDeletedSite(DeleteSiteEvent $event): void
-    {
-        $projectConfig = app(ProjectConfig::class);
-        $routes = $projectConfig->get(ProjectConfig::PATH_ROUTES) ?? [];
-
-        foreach ($routes as $routeUid => $route) {
-            if ($route['siteUid'] === $event->site->uid) {
-                $projectConfig->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, 'Remove routes that belong to a site being deleted');
-            }
-        }
+        return app(\CraftCms\Cms\Route\Routes::class)->deleteRouteByUid($routeUid);
     }
 
     /**
@@ -278,25 +186,26 @@ class Routes extends Component
      */
     public function updateRouteOrder(array $routeUids): void
     {
-        foreach ($routeUids as $order => $routeUid) {
-            app(ProjectConfig::class)->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
-        }
+        app(\CraftCms\Cms\Route\Routes::class)->updateRouteOrder($routeUids);
     }
 
-    /**
-     * Return the current max sort order for routes.
-     *
-     * @return int
-     */
-    private function _getMaxSortOrder(): int
+    public static function registerEvents(): void
     {
-        $routes = app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [];
-        $max = 0;
-
-        foreach ($routes as $route) {
-            $max = max($max, $route['sortOrder']);
+        foreach ([
+            self::EVENT_BEFORE_SAVE_ROUTE => SavingRoute::class,
+            self::EVENT_AFTER_SAVE_ROUTE => RouteSaved::class,
+            self::EVENT_BEFORE_DELETE_ROUTE => DeletingRoute::class,
+            self::EVENT_AFTER_DELETE_ROUTE => RouteDeleted::class,
+        ] as $old => $new) {
+            Event::listen($new, function(\CraftCms\Cms\Route\Events\RouteEvent $event) use ($old) {
+                if (Craft::$app->getRoutes()->hasEventHandlers($old)) {
+                    Craft::$app->getRoutes()->trigger($old, new RouteEvent([
+                        'uriParts' => $event->route->uriParts,
+                        'template' => $event->route->template,
+                        'siteUid' => $event->route->siteUid,
+                    ]));
+                }
+            });
         }
-
-        return (int)$max + 1;
     }
 }

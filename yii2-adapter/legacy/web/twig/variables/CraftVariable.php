@@ -29,6 +29,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
@@ -41,7 +42,6 @@ use yii\di\ServiceLocator;
  * Craft defines the `craft` global template variable.
  *
  * @property Cp $cp
- * @property Routes $routes
  * @property Io $io
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -75,7 +75,6 @@ class CraftVariable extends ServiceLocator
         $components = [
             'cp' => Cp::class,
             'io' => Io::class,
-            'routes' => Routes::class,
         ];
 
         if (Edition::get() !== Edition::Solo) {
@@ -249,6 +248,11 @@ class CraftVariable extends ServiceLocator
     public function sections(): Sections
     {
         return app(Sections::class);
+    }
+
+    public function routes(): Routes
+    {
+        return app(Routes::class);
     }
 
     public function sites(): Sites

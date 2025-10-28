@@ -1,9 +1,7 @@
 {% from '_includes/forms.twig' import button %}
-{% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t('app') %}
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
 {% block actionButton %}
     {% if not readOnly %}
@@ -14,8 +12,6 @@
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
-
-{% do view.registerAssetBundle("craft\\web\\assets\\routes\\RoutesAsset") %}
 
 {% do view.registerTranslations('app', [
     "Add a token",
@@ -32,9 +28,6 @@
     "Route Saved.",
     "The URI can’t begin with the {setting} config setting.",
 ]) %}
-
-
-{% set routes = craft.routes.getProjectConfigRoutes() %}
 
 {% set actionMenuItems = [
     {
