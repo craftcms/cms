@@ -58,6 +58,7 @@ use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -1895,7 +1896,7 @@ class Elements extends Component
             /** @var ElementInterface&DraftBehavior $element */
             /** @var DraftBehavior $draftBehavior */
             $draftBehavior = $mainClone->getBehavior('draft');
-            $draftsService = Craft::$app->getDrafts();
+            $draftsService = app(Drafts::class);
             // Are we duplicating a draft of a published element?
             if ($element->getIsDerivative()) {
                 $draftBehavior->draftName = $draftsService->generateDraftName($element->getCanonicalId());
@@ -1920,7 +1921,7 @@ class Elements extends Component
             // check if draftBehavior is attached - if not, attach it
             $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft',
                 new DraftBehavior());
-            $draftsService = Craft::$app->getDrafts();
+            $draftsService = app(Drafts::class);
             $draftBehavior->draftName = t('First draft');
             $draftBehavior->draftNotes = null;
             $mainClone->setCanonicalId(null);

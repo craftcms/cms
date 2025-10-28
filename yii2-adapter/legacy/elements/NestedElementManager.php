@@ -22,6 +22,7 @@ use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -818,7 +819,7 @@ JS, [
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
                         if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
-                            Craft::$app->getDrafts()->removeDraftData($element);
+                            app(Drafts::class)->removeDraftData($element);
                             DB::table(Table::ELEMENTS_OWNERS)
                                 ->where([
                                     'elementId' => $canonical->id,
@@ -830,7 +831,7 @@ JS, [
                         $element->getIsUnpublishedDraft() &&
                         $element->getPrimaryOwnerId() === $owner->id
                     ) {
-                        Craft::$app->getDrafts()->removeDraftData($element);
+                        app(Drafts::class)->removeDraftData($element);
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder

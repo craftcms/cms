@@ -17,6 +17,7 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -97,7 +98,7 @@ class Entry extends ElementMutationResolver
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+            app(Drafts::class)->saveElementAsDraft($entry);
         } else {
             $entry = $this->saveElement($entry);
         }
@@ -179,7 +180,7 @@ class Entry extends ElementMutationResolver
         $creatorId = $arguments['creatorId'] ?? null;
 
         /** @var EntryElement|DraftBehavior $draft */
-        $draft = Craft::$app->getDrafts()->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
+        $draft = app(Drafts::class)->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
     }
@@ -215,7 +216,7 @@ class Entry extends ElementMutationResolver
         }
 
         /** @var EntryElement $draft */
-        $draft = Craft::$app->getDrafts()->applyDraft($draft);
+        $draft = app(Drafts::class)->applyDraft($draft);
 
         return $draft->id;
     }

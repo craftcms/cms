@@ -231,7 +231,7 @@ class ElementsController extends Controller
 
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
+        if (!app(Drafts::class)->saveElementAsDraft($element, $user->id, null, null, false)) {
             return $this->_asFailure($element, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
@@ -1588,7 +1588,7 @@ JS, [
             }
 
             if ($element->getIsDraft()) {
-                Craft::$app->getDrafts()->removeDraftData($element);
+                app(Drafts::class)->removeDraftData($element);
             }
 
             DbFacade::commit();
@@ -1934,7 +1934,7 @@ JS, [
         // Keep track of all newly-created draft IDs
         $draftElementIds = [];
         $draftElementUids = [];
-        $draftsService = Craft::$app->getDrafts();
+        $draftsService = app(Drafts::class);
         $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds,  &$draftElementUids) {
             $draftElementIds[$event->canonical->id] = $event->draft->id;
             $draftElementUids[$event->canonical->uid] = $event->draft->uid;
@@ -2077,7 +2077,7 @@ JS, [
         }
 
         /** @var Element|DraftBehavior $element */
-        $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, provisional: true);
+        $draft = app(Drafts::class)->createDraft($element, $user->id, provisional: true);
 
         return $this->asSuccess(data: [
             'elementId' => $draft->id,
@@ -2153,7 +2153,7 @@ JS, [
         }
 
         try {
-            $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
+            $canonical = app(Drafts::class)->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {
@@ -2918,7 +2918,7 @@ JS, [
 
             $newElement->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if (!Craft::$app->getDrafts()->saveElementAsDraft($newElement, $user->id, null, null, false)) {
+            if (!app(\CraftCms\Cms\Element\Drafts::class)->saveElementAsDraft($newElement, $user->id, null, null, false)) {
                 throw new ServerErrorHttpException(sprintf('Unable to create a new element: %s', implode(', ', $element->getErrorSummary(true))));
             }
 

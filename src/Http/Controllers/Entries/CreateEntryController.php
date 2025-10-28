@@ -10,6 +10,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -87,7 +88,7 @@ final readonly class CreateEntryController
 
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $success = \Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
+        $success = app(Drafts::class)->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time
         DateTimeHelper::resume();

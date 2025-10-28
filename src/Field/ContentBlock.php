@@ -26,6 +26,7 @@ use craft\gql\types\input\ContentBlock as ContentBlockInputType;
 use craft\helpers\Gql;
 use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -852,7 +853,7 @@ JS, [
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = Craft::$app->getDrafts()->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

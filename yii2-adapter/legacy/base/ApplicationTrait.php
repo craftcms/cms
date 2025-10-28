@@ -926,6 +926,7 @@ trait ApplicationTrait
      *
      * @return Drafts The drafts service
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Drafts} instead.
      */
     public function getDrafts(): Drafts
     {
