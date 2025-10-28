@@ -11,7 +11,6 @@ use CraftCms\Cms\Route\Events\DeletingRoute;
 use CraftCms\Cms\Route\Events\RouteDeleted;
 use CraftCms\Cms\Route\Events\RouteSaved;
 use CraftCms\Cms\Route\Events\SavingRoute;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
@@ -55,10 +54,6 @@ final class Routes
     {
         if (isset($this->projectConfigRoutes)) {
             return collect($this->projectConfigRoutes);
-        }
-
-        if (! Info::isInstalled()) {
-            return collect();
         }
 
         if (Cms::config()->headlessMode) {
@@ -122,6 +117,8 @@ final class Routes
             Event::dispatch(new RouteSaved($route));
         }
 
+        $this->projectConfigRoutes = null;
+
         return $route->uid;
     }
 
@@ -135,10 +132,10 @@ final class Routes
 
         if (Event::hasListeners(DeletingRoute::class)) {
             Event::dispatch(new DeletingRoute(new Route(
-                uid: $routeUid,
                 uriParts: $route['uriParts'],
                 template: $route['template'],
                 siteUid: $route['siteUid'],
+                uid: $routeUid,
             )));
         }
 
@@ -149,12 +146,14 @@ final class Routes
 
         if (Event::hasListeners(RouteDeleted::class)) {
             Event::dispatch(new RouteDeleted(new Route(
-                uid: $routeUid,
                 uriParts: $route['uriParts'],
                 template: $route['template'],
                 siteUid: $route['siteUid'],
+                uid: $routeUid,
             )));
         }
+
+        $this->projectConfigRoutes = null;
 
         return true;
     }
@@ -174,6 +173,8 @@ final class Routes
                 );
             }
         }
+
+        $this->projectConfigRoutes = null;
     }
 
     /**
@@ -190,6 +191,8 @@ final class Routes
                 'Reorder routes',
             );
         }
+
+        $this->projectConfigRoutes = null;
     }
 
     /**

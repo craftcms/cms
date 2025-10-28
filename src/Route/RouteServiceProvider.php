@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -43,7 +44,13 @@ final class RouteServiceProvider extends ServiceProvider
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
-        $routes->getProjectConfigRoutes()->each(fn (Route $route) => $route->register($router));
+        $this->app->booted(function () use ($routes, $router): void {
+            if (! Info::isInstalled()) {
+                return;
+            }
+
+            $routes->getProjectConfigRoutes()->each(fn (Route $route) => $route->register($router));
+        });
 
         Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {
             if (ProjectConfig::isApplyingExternalChanges()) {

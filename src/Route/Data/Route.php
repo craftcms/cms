@@ -12,11 +12,6 @@ final class Route extends Dto
 {
     public function __construct(
         /**
-         * @var string $uid The route UID.
-         */
-        public ?string $uid,
-
-        /**
          * @var array $uriParts The URI as defined by the user. This is an array where each element is either a
          *            string or an array containing the name of a subpattern and the subpattern
          */
@@ -34,6 +29,11 @@ final class Route extends Dto
          * @var string|null The site UID the route should be limited to, if any
          */
         public ?string $siteUid,
+
+        /**
+         * @var string $uid The route UID.
+         */
+        public ?string $uid = null,
 
         public ?int $sortOrder = null,
     ) {
