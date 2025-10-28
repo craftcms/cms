@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Structures;
 use Throwable;
 use function CraftCms\Cms\t;
 
@@ -116,7 +117,6 @@ JS, [static::class]);
     private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
-        $structuresService = Craft::$app->getStructures();
 
         foreach ($elements as $element) {
             // Make sure this element wasn't already duplicated, which could
@@ -147,10 +147,10 @@ JS, [static::class]);
 
             if ($newParent) {
                 // Append it to the duplicate of $element’s parent
-                $structuresService->append($element->structureId, $duplicate, $newParent);
+                Structures::append($element->structureId, $duplicate, $newParent);
             } elseif ($element->structureId) {
                 // Place it right next to the original element
-                $structuresService->moveAfter($element->structureId, $duplicate, $element);
+                Structures::moveAfter($element->structureId, $duplicate, $element);
             }
 
             if ($this->deep) {

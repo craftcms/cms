@@ -26,6 +26,7 @@ use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -209,6 +210,10 @@ Route::prefix(implode('/', [
             Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
             Route::post('sites/delete-site', [SitesController::class, 'destroy']);
         });
+
+        // Structures
+        Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
+        Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
 
         // SystemMessages
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);

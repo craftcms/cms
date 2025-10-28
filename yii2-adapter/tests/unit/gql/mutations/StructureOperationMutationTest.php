@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\gql\mutations;
 
-use Codeception\Stub\Expected;
 use craft\elements\Category;
 use craft\gql\resolvers\mutations\Category as CategoryResolver;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Facades\Structures;
 use UnitTester;
 
 class StructureOperationMutationTest extends TestCase
@@ -41,20 +41,23 @@ class StructureOperationMutationTest extends TestCase
     {
         $element = $this->make(Category::class, $elementProperties);
 
+        $structuresMock = Structures::partialMock();
+
         $methods = [
-            'prepend' => Expected::never(),
-            'append' => Expected::never(),
-            'prependToRoot' => Expected::never(),
-            'appendToRoot' => Expected::never(),
-            'moveBefore' => Expected::never(),
-            'moveAfter' => Expected::never(),
+            'prepend',
+            'append',
+            'prependToRoot',
+            'appendToRoot',
+            'moveBefore',
+            'moveAfter',
         ];
 
+        $structuresMock->shouldNotReceive(...$methods);
+
         if ($requiredMethod) {
-            $methods[$requiredMethod] = Expected::once(true);
+            $structuresMock->shouldReceive($requiredMethod)->once()->andReturn(true);
         }
 
-        $this->tester->mockCraftMethods('structures', $methods);
         $this->tester->mockCraftMethods('elements', [
             'getElementById' => fn($elementId) => $elementId > 0 ? new Category() : null,
         ]);
@@ -66,6 +69,9 @@ class StructureOperationMutationTest extends TestCase
         $resolver = new CategoryResolver();
 
         $this->invokeMethod($resolver, 'performStructureOperations', [$element, $arguments]);
+
+        Structures::clearResolvedInstances();
+        app()->forgetInstance(\CraftCms\Cms\Structure\Structures::class);
     }
 
     public static function structureOperationDataProvider(): array

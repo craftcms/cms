@@ -41,6 +41,7 @@ use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -952,12 +953,11 @@ JS, [
 
         if ($this->maintainHierarchy) {
             $initialValue = array_map(fn (ElementInterface $element) => $element->id, $value);
-            $structuresService = Craft::$app->getStructures();
             // Fill in any gaps
-            $structuresService->fillGapsInElements($value);
+            Structures::fillGapsInElements($value);
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $structuresService->applyBranchLimitToElements($value, $this->branchLimit);
+                Structures::applyBranchLimitToElements($value, $this->branchLimit);
             }
 
             if (count($initialValue) === count($value)) {
@@ -1221,7 +1221,6 @@ JS, [
         }
 
         if ($this->maintainHierarchy) {
-            $structuresService = Craft::$app->getStructures();
             $class = static::elementType();
 
             /** @var ElementInterface[] $structureElements */
@@ -1236,11 +1235,11 @@ JS, [
                 ->all();
 
             // Fill in any gaps
-            $structuresService->fillGapsInElements($structureElements);
+            Structures::fillGapsInElements($structureElements);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                Structures::applyBranchLimitToElements($structureElements, $this->branchLimit);
             }
 
             $targetIds = array_map(fn (ElementInterface $element) => $element->id, $structureElements);

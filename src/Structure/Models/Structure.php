@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Structure extends BaseModel
@@ -23,5 +24,10 @@ final class Structure extends BaseModel
         return [
             'maxLevels' => 'int',
         ];
+    }
+
+    public function structureElements(): HasMany
+    {
+        return $this->hasMany(StructureElement::class, 'structureId');
     }
 }

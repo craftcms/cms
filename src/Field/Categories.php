@@ -18,6 +18,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Type\Definition\Type;
 
 use function CraftCms\Cms\t;
@@ -116,12 +117,11 @@ final class Categories extends BaseRelationField
                 ->all();
 
             // Fill in any gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($categories);
+            Structures::fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
+                Structures::applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
             $value = array_map(fn (Category $category) => $category->id, $categories);

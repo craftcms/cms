@@ -16,7 +16,6 @@ use craft\events\DeleteSiteEvent;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
-use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
@@ -25,7 +24,9 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -343,11 +344,10 @@ class Categories extends Component
             $groupRecord->defaultPlacement = $data['defaultPlacement'] ?? CategoryGroup::DEFAULT_PLACEMENT_END;
 
             // Structure
-            $structuresService = Craft::$app->getStructures();
-            $structure = $structuresService->getStructureByUid($structureUid,
-                true) ?? new Structure(['uid' => $structureUid]);
+            $structure = Structures::getStructureByUid($structureUid,
+                true) ?? new Structure(uid: $structureUid);
             $structure->maxLevels = $structureData['maxLevels'];
-            $structuresService->saveStructure($structure);
+            Structures::saveStructure($structure);
 
             $groupRecord->structureId = $structure->id;
 
@@ -631,7 +631,7 @@ class Categories extends Component
                 ->update(['dateDeleted' => $now]);
 
             // Delete the structure
-            Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
+            Structures::deleteStructureById($categoryGroupRecord->structureId);
 
             // Delete the field layout
             if ($categoryGroupRecord->fieldLayoutId) {
@@ -734,7 +734,7 @@ class Categories extends Component
      */
     public function fillGapsInCategories(array &$categories): void
     {
-        Craft::$app->getStructures()->fillGapsInElements($categories);
+        Structures::fillGapsInElements($categories);
     }
 
     /**
@@ -747,7 +747,7 @@ class Categories extends Component
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit): void
     {
-        Craft::$app->getStructures()->applyBranchLimitToElements($categories, $branchLimit);
+        Structures::applyBranchLimitToElements($categories, $branchLimit);
     }
 
     /**

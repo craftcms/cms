@@ -95,6 +95,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
@@ -1303,7 +1304,7 @@ abstract class Element extends Component implements ElementInterface
 
                 if (isset($source['structureId'])) {
                     $elementQuery->orderBy(['lft' => SORT_ASC]);
-                    $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
+                    $variables['structure'] = Structures::getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
                     if (in_array($context, [

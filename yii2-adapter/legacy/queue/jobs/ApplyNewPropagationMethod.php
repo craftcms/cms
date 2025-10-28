@@ -15,10 +15,11 @@ use craft\db\QueryBatcher;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseBatchedElementJob;
-use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -82,7 +83,6 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
         }
 
         $elementsService = Craft::$app->getElements();
-        $structuresService = Craft::$app->getStructures();
         $allSiteIds = Sites::getAllSiteIds()->all();
 
         // See what sites the element should exist in going forward
@@ -154,7 +154,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
             ) {
                 // If this is a root level element, insert the duplicate after the source
                 if ($item->level == 1) {
-                    $structuresService->moveAfter($item->structureId, $newElement, $item, Structures::MODE_INSERT);
+                    Structures::moveAfter($item->structureId, $newElement, $item, Mode::Insert);
                 } else {
                     // Append the clone to the source's parent
                     $parentId = $item::find()
@@ -174,10 +174,10 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                             $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];
                         }
 
-                        $structuresService->append($item->structureId, $newElement, $parentId, Structures::MODE_INSERT);
+                        Structures::append($item->structureId, $newElement, $parentId, Mode::Insert);
                     } else {
                         // Just append it to the root
-                        $structuresService->appendToRoot($item->structureId, $newElement, Structures::MODE_INSERT);
+                        Structures::appendToRoot($item->structureId, $newElement, Mode::Insert);
                     }
                 }
             }

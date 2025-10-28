@@ -1210,6 +1210,7 @@ trait ApplicationTrait
      * Returns the structures service.
      *
      * @return Structures The structures service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Structure\Structures} instead.
      */
     public function getStructures(): Structures
     {

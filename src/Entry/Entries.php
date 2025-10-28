@@ -9,16 +9,17 @@ use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Db as DbHelper;
-use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -224,24 +225,22 @@ final class Entries
                     $entry->getIsCanonical() &&
                     in_array(SectionType::Structure, [$oldSection->type, $section->type])
                 ) {
-                    $structuresService = \Craft::$app->getStructures();
-
                     // if we're moving it from a Structure section, remove it from the structure
                     if ($oldSection->type === SectionType::Structure) {
-                        $structuresService->remove($oldSection->structureId, $entry);
+                        Structures::remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
                         foreach (DbHelper::each($draftsQuery) as $draft) {
                             /** @var Entry $draft */
                             if ($draft->lft) {
-                                $structuresService->remove($oldSection->structureId, $draft);
+                                Structures::remove($oldSection->structureId, $draft);
                             }
                         }
 
                         foreach (DbHelper::each($revisionsQuery) as $revision) {
                             /** @var Entry $revision */
                             if ($revision->lft) {
-                                $structuresService->remove($oldSection->structureId, $revision);
+                                Structures::remove($oldSection->structureId, $revision);
                             }
                         }
                     }
@@ -249,9 +248,9 @@ final class Entries
                     // if we're moving it to a Structure section, place it at the root
                     if ($section->type === SectionType::Structure) {
                         if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                            $structuresService->prependToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                            Structures::prependToRoot($section->structureId, $entry, Mode::Insert);
                         } else {
-                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                            Structures::appendToRoot($section->structureId, $entry, Mode::Insert);
                         }
                     }
                 }

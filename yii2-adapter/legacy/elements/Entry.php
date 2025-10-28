@@ -47,7 +47,6 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
-use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
@@ -68,12 +67,14 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -2993,7 +2994,6 @@ JS;
     private function _placeInStructure(bool $isNew, Section $section): void
     {
         $parentId = $this->getParentId();
-        $structuresService = Craft::$app->getStructures();
 
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
@@ -3007,24 +3007,24 @@ JS;
                 ->scalar();
 
             if ($parentId == $canonicalParentId) {
-                $structuresService->remove($this->structureId, $this);
+                Structures::remove($this->structureId, $this);
                 return;
             }
         }
 
-        $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+        $mode = $isNew ? Mode::Insert : Mode::Auto;
 
         if (!$parentId) {
             if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                $structuresService->prependToRoot($this->structureId, $this, $mode);
+                Structures::prependToRoot($this->structureId, $this, $mode);
             } else {
-                $structuresService->appendToRoot($this->structureId, $this, $mode);
+                Structures::appendToRoot($this->structureId, $this, $mode);
             }
         } else {
             if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                $structuresService->prepend($this->structureId, $this, $this->getParent(), $mode);
+                Structures::prepend($this->structureId, $this, $this->getParent(), $mode);
             } else {
-                $structuresService->append($this->structureId, $this, $this->getParent(), $mode);
+                Structures::append($this->structureId, $this, $this->getParent(), $mode);
             }
         }
     }
@@ -3103,9 +3103,9 @@ JS;
                 ->one();
 
             if (!$parent) {
-                Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+                Structures::appendToRoot($section->structureId, $this);
             } else {
-                Craft::$app->getStructures()->append($section->structureId, $this, $parent);
+                Structures::append($section->structureId, $this, $parent);
             }
         }
 
@@ -3132,11 +3132,10 @@ JS;
                     ->site('*')
                     ->unique()
                     ->all();
-                $structuresService = Craft::$app->getStructures();
                 $lastElement = $this;
 
                 foreach ($drafts as $draft) {
-                    $structuresService->moveAfter($section->structureId, $draft, $lastElement);
+                    Structures::moveAfter($section->structureId, $draft, $lastElement);
                     $lastElement = $draft;
                 }
             }
