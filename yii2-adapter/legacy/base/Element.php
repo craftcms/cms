@@ -10,8 +10,6 @@ namespace craft\base;
 use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
@@ -80,6 +78,8 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Concerns\Draftable;
+use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -172,6 +172,8 @@ use function CraftCms\Cms\t;
  */
 abstract class Element extends Component implements ElementInterface
 {
+    use Draftable;
+    use Revisionable;
     use ElementTrait;
     use ArrayableTrait {
         toArray as traitToArray;
@@ -2326,18 +2328,6 @@ abstract class Element extends Component implements ElementInterface
 
         return false;
     }
-
-    /**
-     * @var int|null Revision creator ID to be saved
-     * @see setRevisionCreatorId()
-     */
-    protected ?int $revisionCreatorId = null;
-
-    /**
-     * @var string|null Revision notes to be saved
-     * @see setRevisionNotes()
-     */
-    protected ?string $revisionNotes = null;
 
     /**
      * @var array<string,int>|null
@@ -5668,18 +5658,12 @@ JS, [
                 $this->_currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                if ($behavior = $this->getBehavior('draft')) {
-                    /** @var DraftBehavior $behavior */
-                    /** @var User[] $elements */
-                    $behavior->setCreator($elements[0] ?? null);
-                }
+                /** @var User[] $elements */
+                $this->setDraftCreator($elements[0] ?? null);
                 break;
             case 'revisionCreator':
-                if ($behavior = $this->getBehavior('revision')) {
-                    /** @var RevisionBehavior $behavior */
-                    /** @var User[] $elements */
-                    $behavior->setCreator($elements[0] ?? null);
-                }
+                /** @var User[] $elements */
+                $this->setRevisionCreator($elements[0] ?? null);
                 break;
             default:
                 // Fire a 'setEagerLoadedElements' event
@@ -6014,12 +5998,7 @@ JS, [
                 if (!$revision) {
                     return '';
                 }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                return Html::encode($behavior->revisionNotes);
+                return Html::encode($revision->revisionNotes);
 
             case 'revisionCreator':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6027,12 +6006,7 @@ JS, [
                 if (!$revision) {
                     return '';
                 }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                $creator = $behavior->getCreator();
+                $creator = $revision->getRevisionCreator();
                 return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
@@ -6044,7 +6018,7 @@ JS, [
                 $drafts = $element->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
-                    /** @var ElementInterface|DraftBehavior $draft */
+                    /** @var ElementInterface $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 
@@ -6304,10 +6278,6 @@ JS, [
     protected function notesFieldHtml(): string
     {
         // todo: this should accept a $static arg
-        /**
-         * @var static|DraftBehavior $this
-         * @phpstan-ignore varTag.nativeType
-         */
         return Cp::textareaFieldHtml([
             'label' => t('Notes about your changes'),
             'labelClass' => 'h6',
@@ -6392,12 +6362,7 @@ JS, [
                 if (!isset($revision)) {
                     return false;
                 }
-                /** @var RevisionBehavior $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if ($behavior->revisionNotes === null || $behavior->revisionNotes === '') {
-                    return false;
-                }
-                return Html::encode($behavior->revisionNotes);
+                return Html::encode($revision->revisionNotes);
             },
         ]);
     }
@@ -6641,6 +6606,8 @@ JS, [
                 'isNew' => $isNew,
             ]));
         }
+
+        $this->handleDraftSave();
     }
 
     /**
@@ -6679,6 +6646,9 @@ JS, [
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
         }
+
+        $this->handleRevisionDelete();
+        $this->handleDraftDelete();
     }
 
     /**

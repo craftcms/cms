@@ -11,7 +11,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\Element;
-use craft\behaviors\DraftBehavior;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
@@ -179,7 +178,7 @@ class Entry extends ElementMutationResolver
         $provisional = $arguments['provisional'] ?? false;
         $creatorId = $arguments['creatorId'] ?? null;
 
-        /** @var EntryElement|DraftBehavior $draft */
+        /** @var EntryElement $draft */
         $draft = app(Drafts::class)->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
@@ -192,7 +191,7 @@ class Entry extends ElementMutationResolver
      */
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
-        /** @var EntryElement|DraftBehavior|null $draft */
+        /** @var EntryElement|null $draft */
         $draft = Craft::$app->getElements()
             ->createElementQuery(EntryElement::class)
             ->status(null)

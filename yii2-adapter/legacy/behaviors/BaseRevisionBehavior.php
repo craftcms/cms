@@ -20,18 +20,23 @@ use yii\base\Behavior;
  * @property-read int $sourceId
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Concerns\Draftable} or {@see \CraftCms\Cms\Element\Concerns\Revisionable} instead.
  */
 abstract class BaseRevisionBehavior extends Behavior
 {
     /**
      * @var int|null The creator’s ID
      */
-    public ?int $creatorId = null;
-
-    /**
-     * @var User|null|false The creator
-     */
-    private User|false|null $_creator = null;
+    public ?int $creatorId {
+        get => match($this::class) {
+            DraftBehavior::class => $this->owner->draftCreatorId,
+            default => $this->owner->revisionCreatorId,
+        };
+        set(?int $value) => match($this::class) {
+            DraftBehavior::class => $this->owner->draftCreatorId = $value,
+            default => $this->owner->revisionCreatorId = $value,
+        };
+    }
 
     /**
      * Returns the draft’s creator.
@@ -40,20 +45,10 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public function getCreator(): ?User
     {
-        if (!isset($this->_creator)) {
-            if (!$this->creatorId) {
-                return null;
-            }
-
-            /** @var User|null $creator */
-            $creator = User::find()
-                ->id($this->creatorId)
-                ->status(null)
-                ->one();
-            $this->_creator = $creator ?? false;
-        }
-
-        return $this->_creator ?: null;
+        return match($this::class) {
+            DraftBehavior::class => $this->owner->getDraftCreator(),
+            default => $this->owner->getRevisionCreator(),
+        };
     }
 
     /**
@@ -64,7 +59,10 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public function setCreator(?User $creator = null): void
     {
-        $this->_creator = $creator ?? false;
+        match($this::class) {
+            DraftBehavior::class => $this->owner->setDraftCreator($creator),
+            default => $this->owner->setRevisionCreator($creator),
+        };
     }
 
     /**

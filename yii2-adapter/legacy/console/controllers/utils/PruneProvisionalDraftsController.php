@@ -88,7 +88,7 @@ class PruneProvisionalDraftsController extends Controller
             $extraDrafts = $elementType::find()
                 ->provisionalDrafts()
                 ->draftOf($element->id)
-                ->draftCreator($element->creatorId)
+                ->draftCreator($element->draftCreatorId)
                 ->site('*')
                 ->unique()
                 ->status(null)

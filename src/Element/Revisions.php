@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
-use craft\behaviors\RevisionBehavior;
 use craft\errors\InvalidElementException;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
@@ -131,12 +130,9 @@ final readonly class Revisions
 
                 // Duplicate the element
                 $newAttributes['canonicalId'] = $canonical->id;
-                $newAttributes['behaviors']['revision'] = [
-                    'class' => RevisionBehavior::class,
-                    'creatorId' => $creatorId,
-                    'revisionNum' => $num,
-                    'revisionNotes' => $notes,
-                ];
+                $newAttributes['revisionCreatorId'] = $creatorId;
+                $newAttributes['revisionNum'] = $num;
+                $newAttributes['revisionNotes'] = $notes;
 
                 if (! isset($newAttributes['dateCreated'])) {
                     $newAttributes['dateCreated'] = $canonical->dateUpdated;
@@ -187,7 +183,7 @@ final readonly class Revisions
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var ElementInterface&RevisionBehavior $revision */
+        /** @var ElementInterface $revision */
         $canonical = $revision->getCanonical();
 
         if (Event::hasListeners(RevertingToRevision::class)) {

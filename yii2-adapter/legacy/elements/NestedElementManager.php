@@ -12,7 +12,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
@@ -585,8 +584,8 @@ class NestedElementManager extends Component
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface&DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            /** @var ElementInterface $owner */
+            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }

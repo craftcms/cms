@@ -9,7 +9,6 @@ namespace craft\gql\types\elements;
 
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
-use craft\behaviors\RevisionBehavior;
 use craft\gql\ArgumentManager;
 use craft\gql\base\ObjectType;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -63,9 +62,7 @@ class Element extends ObjectType
         }
 
         if ($fieldName === 'revisionNotes') {
-            /** @var RevisionBehavior|null $behavior */
-            $behavior = $source->getBehavior('revision') ?? $source->getCurrentRevision()?->getBehavior('revision');
-            return $behavior?->revisionNotes;
+            return $source->revisionNotes;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

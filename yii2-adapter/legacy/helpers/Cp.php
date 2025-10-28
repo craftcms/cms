@@ -17,7 +17,6 @@ use craft\base\Indicative;
 use craft\base\NestedElementInterface;
 use craft\base\Statusable;
 use craft\base\Thumbable;
-use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\errors\FieldNotFoundException;
 use craft\events\DefineElementHtmlEvent;
@@ -1156,7 +1155,7 @@ JS, [
 
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) {
-            /** @var DraftBehavior&ElementInterface $element */
+            /** @var ElementInterface $element */
             $content .= Html::tag('span', $element->draftName ?: t('Draft'), [
                 'class' => 'context-label',
             ]);

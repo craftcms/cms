@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\behaviors\DraftBehavior;
 use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
@@ -116,14 +115,11 @@ final readonly class Drafts
             $newAttributes['isProvisionalDraft'] = $provisional;
             $newAttributes['canonicalId'] = $canonical->id;
             $newAttributes['draftId'] = $draftId;
-            $newAttributes['behaviors']['draft'] = [
-                'class' => DraftBehavior::class,
-                'creatorId' => $creatorId,
-                'draftName' => $name,
-                'draftNotes' => $notes,
-                'trackChanges' => $canonical::trackChanges(),
-                'markAsSaved' => $markAsSaved,
-            ];
+            $newAttributes['draftCreatorId'] = $creatorId;
+            $newAttributes['draftName'] = $name;
+            $newAttributes['draftNotes'] = $notes;
+            $newAttributes['trackDraftChanges'] = $canonical::trackChanges();
+            $newAttributes['markDraftAsSaved'] = $markAsSaved;
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
@@ -190,12 +186,10 @@ final readonly class Drafts
         $draftId = $this->insertDraftRow($name, $notes, $creatorId);
 
         $element->draftId = $draftId;
-        $element->attachBehavior('draft', new DraftBehavior([
-            'creatorId' => $creatorId,
-            'draftName' => $name,
-            'draftNotes' => $notes,
-            'markAsSaved' => $markAsSaved,
-        ]));
+        $element->draftCreatorId = $creatorId;
+        $element->draftName = $name;
+        $element->draftNotes = $notes;
+        $element->markDraftAsSaved = $markAsSaved;
 
         // Try to save and return the result
         return Craft::$app->getElements()->saveElement($element);
@@ -216,14 +210,11 @@ final readonly class Drafts
      */
     public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
-        /** @var ElementInterface&DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
-        $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
         $originalDraft = $draft;
 
         // If the canonical element ended up being from a different site than the draft, get the draft in that site
-        if ($canonical->siteId != $draft->siteId) {
+        if ($canonical->siteId !== $draft->siteId) {
             $draft = $draft::find()
                 ->drafts()
                 ->provisionalDrafts(null)
@@ -232,6 +223,7 @@ final readonly class Drafts
                 ->structureId($canonical->structureId)
                 ->status(null)
                 ->one();
+
             if ($draft === null) {
                 throw new Exception("Could not load the draft for site ID $canonical->siteId");
             }
@@ -240,9 +232,9 @@ final readonly class Drafts
         if (Event::hasListeners(ApplyingDraft::class)) {
             Event::dispatch(new ApplyingDraft(
                 canonical: $canonical,
-                creatorId: $behavior->creatorId,
-                draftName: $behavior->draftName,
-                draftNotes: $behavior->draftNotes,
+                creatorId: $draft->draftCreatorId,
+                draftName: $draft->draftName,
+                draftNotes: $draft->draftNotes,
                 draft: $draft,
             ));
         }
@@ -292,9 +284,9 @@ final readonly class Drafts
         if (Event::hasListeners(DraftApplied::class)) {
             Event::dispatch(new DraftApplied(
                 canonical: $newCanonical,
-                creatorId: $behavior->creatorId,
-                draftName: $behavior->draftName,
-                draftNotes: $behavior->draftNotes,
+                creatorId: $draft->draftCreatorId,
+                draftName: $draft->draftName,
+                draftNotes: $draft->draftNotes,
                 draft: $draft,
             ));
         }
@@ -315,12 +307,9 @@ final readonly class Drafts
      */
     public function removeDraftData(ElementInterface $draft): void
     {
-        /** @var DraftBehavior $behavior */
-        $behavior = $draft->getBehavior('draft');
         $draftId = $draft->draftId;
 
         $draft->draftId = null;
-        $draft->detachBehavior('draft');
         $draft->firstSave = true;
 
         // We still need to validate so the SlugValidator gets run
@@ -344,7 +333,6 @@ final readonly class Drafts
         } catch (Throwable $e) {
             // Put everything back
             $draft->draftId = $draftId;
-            $draft->attachBehavior('draft', $behavior);
             $draft->firstSave = false;
             throw $e;
         }

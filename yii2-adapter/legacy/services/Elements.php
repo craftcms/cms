@@ -15,7 +15,6 @@ use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\DraftBehavior;
 use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\Address;
@@ -1893,44 +1892,38 @@ class Elements extends Component
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
-            /** @var ElementInterface&DraftBehavior $element */
-            /** @var DraftBehavior $draftBehavior */
-            $draftBehavior = $mainClone->getBehavior('draft');
+            /** @var ElementInterface $element */
             $draftsService = app(Drafts::class);
             // Are we duplicating a draft of a published element?
             if ($element->getIsDerivative()) {
-                $draftBehavior->draftName = $draftsService->generateDraftName($element->getCanonicalId());
+                $mainClone->draftName = $draftsService->generateDraftName($element->getCanonicalId());
             } else {
-                $draftBehavior->draftName = t('First draft');
+                $mainClone->draftName = t('First draft');
             }
-            $draftBehavior->draftNotes = null;
+            $mainClone->draftNotes = null;
             $mainClone->setCanonicalId($element->getCanonicalId());
             $mainClone->draftId = $draftsService->insertDraftRow(
-                $draftBehavior->draftName,
+                $mainClone->draftName,
                 null,
                 Craft::$app->getUser()->getId(),
                 $element->getCanonicalId(),
-                $draftBehavior->trackChanges,
+                $mainClone->trackDraftChanges,
             );
         }
 
         // If we are supposed to save it as new unpublished draft
         if ($asUnpublishedDraft) {
-            /** @var ElementInterface&DraftBehavior $element */
-            /** @var DraftBehavior $draftBehavior */
-            // check if draftBehavior is attached - if not, attach it
-            $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft',
-                new DraftBehavior());
+            /** @var ElementInterface $element */
             $draftsService = app(Drafts::class);
-            $draftBehavior->draftName = t('First draft');
-            $draftBehavior->draftNotes = null;
+            $mainClone->draftName = t('First draft');
+            $mainClone->draftNotes = null;
             $mainClone->setCanonicalId(null);
             $mainClone->draftId = $draftsService->insertDraftRow(
-                $draftBehavior->draftName,
+                $mainClone->draftName,
                 null,
                 Craft::$app->getUser()->getId(),
                 null,
-                $draftBehavior->trackChanges,
+                $mainClone->trackDraftChanges,
             );
         }
 
@@ -3775,7 +3768,7 @@ class Elements extends Component
         bool $crossSiteValidate = false,
         bool $saveContent = false,
     ): bool {
-        /** @var ElementInterface&DraftBehavior $element */
+        /** @var ElementInterface $element */
         $isNewElement = !$element->id;
 
         // Are we tracking changes?

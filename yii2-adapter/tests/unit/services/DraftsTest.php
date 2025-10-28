@@ -10,8 +10,6 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -137,10 +135,7 @@ class DraftsTest extends TestCase
         self::assertNotNull($revision);
         self::assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
         self::assertSame('With versioning EDITED', $revision->title);
-
-        /** @var RevisionBehavior $behavior */
-        $behavior = $revision->getBehavior('revision');
-        self::assertSame('I am a change note.', $behavior->revisionNotes);
+        self::assertSame('I am a change note.', $revision->revisionNotes);
     }
 
     /**
@@ -154,7 +149,7 @@ class DraftsTest extends TestCase
         $data = $this->_setupEntryRevert('With versioning', ['title' => 'Changed title']);
         /** @var Entry $entry */
         $entry = $data['entry'];
-        /** @var Entry|RevisionBehavior $v1 */
+        /** @var Entry $v1 */
         $v1 = $data['v1'];
 
         $this->revisions->revertToRevision($v1, 1);
@@ -224,13 +219,10 @@ class DraftsTest extends TestCase
         $draft = $this->drafts->createDraft($entry, 1, 'Test Draft');
         self::assertInstanceOf(Entry::class, $draft);
         self::assertNotNull($draft->draftId);
-        /** @var ?DraftBehavior $behavior */
-        $behavior = $draft->getBehavior('draft');
-        self::assertNotNull($behavior);
         self::assertEquals($entry->id, $draft->getCanonicalId());
-        self::assertEquals(1, $behavior->creatorId);
-        self::assertSame('Test Draft', $behavior->draftName);
-        self::assertNull($behavior->draftNotes);
+        self::assertEquals(1, $draft->draftCreatorId);
+        self::assertSame('Test Draft', $draft->draftName);
+        self::assertNull($draft->draftNotes);
         return $draft;
     }
 

@@ -12,8 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\User;
@@ -277,8 +275,7 @@ class ElementsController extends Controller
         if ($element === null) {
             $this->_elementId = $elementId ?? $this->_elementId;
             /**
-             * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-             * @phpstan-ignore varTag.nativeType
+             * @var Element|Response|null $element
              */
             $element = $this->_element(checkForProvisionalDraft: true, strictSite: $strictSite);
 
@@ -523,8 +520,7 @@ class ElementsController extends Controller
 
         $this->_elementId = $elementId;
         /**
-         * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element(checkForProvisionalDraft: true);
 
@@ -667,8 +663,7 @@ JS, [
 
         $this->_elementId = $elementId;
         /**
-         * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -730,14 +725,14 @@ JS, [
         $docTitle = $element->getUiLabel();
 
         if ($element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
-            /** @var ElementInterface&DraftBehavior $element */
+            /** @var ElementInterface $element */
             if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . t('Edited');
             } else {
                 $docTitle .= " ($element->draftName)";
             }
         } elseif ($element->getIsRevision()) {
-            /** @var ElementInterface&RevisionBehavior $element */
+            /** @var ElementInterface $element */
             $docTitle .= ' (' . $element->getRevisionLabel() . ')';
         }
 
@@ -852,9 +847,9 @@ JS, [
             'revisionId' => null,
         ]);
 
-        /** @var (ElementInterface&RevisionBehavior)|null $revision */
+        /** @var ElementInterface|null $revision */
         $revision = $element->getCurrentRevision();
-        $creator = $revision?->getCreator();
+        $creator = $revision?->getRevisionCreator();
         $timestamp = $formatter->asTimestamp($revision->dateCreated ?? $element->dateUpdated, Locale::LENGTH_SHORT, true);
 
         $items = [
@@ -886,8 +881,8 @@ JS, [
                 'heading' => t('Drafts'),
                 'listAttributes' => ['class' => ['revision-group-drafts']],
                 'items' => array_map(function($draft) use ($element, $formatter, $cpEditUrl, $baseParams) {
-                    /** @var ElementInterface&DraftBehavior $draft */
-                    $creator = $draft->getCreator();
+                    /** @var ElementInterface $draft */
+                    $creator = $draft->getDraftCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
                     return [
@@ -914,8 +909,8 @@ JS, [
                 'heading' => t('Recent Revisions'),
                 'listAttributes' => ['class' => ['revision-group-revisions']],
                 'items' => array_map(function($revision) use ($element, $formatter, $cpEditUrl, $baseParams) {
-                    /** @var ElementInterface&RevisionBehavior $revision */
-                    $creator = $revision->getCreator();
+                    /** @var ElementInterface $revision */
+                    $creator = $revision->getRevisionCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
 
                     return [
@@ -1615,7 +1610,7 @@ JS, [
     {
         $this->requirePostRequest();
 
-        /** @var (ElementInterface&DraftBehavior)|null $element */
+        /** @var (ElementInterface)|null $element */
         $element = $this->_element();
 
         if (!$element || $element->getIsRevision()) {
@@ -1845,8 +1840,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -1887,8 +1881,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -1945,7 +1938,7 @@ JS, [
         try {
             // Are we creating the draft here?
             if (!$element->getIsDraft()) {
-                /** @var Element|DraftBehavior $element */
+                /** @var Element $element */
                 $draft = $draftsService->createDraft($element, $user->id, null, null, [], $this->_provisional);
                 $draft->setCanonical($element);
                 $element = $this->element = $draft;
@@ -1985,7 +1978,7 @@ JS, [
 
         $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
-        $creator = $element->getCreator();
+        $creator = $element->getDraftCreator();
 
         $data = [
             'canonicalId' => $element->getCanonicalId(),
@@ -2037,8 +2030,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|null $element
          */
         $element = $this->_element(checkForProvisionalDraft: true);
 
@@ -2076,7 +2068,7 @@ JS, [
             ]);
         }
 
-        /** @var Element|DraftBehavior $element */
+        /** @var Element $element */
         $draft = app(Drafts::class)->createDraft($element, $user->id, provisional: true);
 
         return $this->asSuccess(data: [
@@ -2099,8 +2091,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -2282,8 +2273,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|RevisionBehavior|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|null $element
          */
         $element = $this->_element();
 
@@ -2335,8 +2325,7 @@ JS, [
 
         /**
          * see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         if ($element instanceof Response) {
             return $element;
@@ -2828,7 +2817,7 @@ JS, [
         }
 
         if ($element->getIsDraft()) {
-            /** @var ElementInterface&DraftBehavior $element */
+            /** @var ElementInterface $element */
             if (isset($this->_draftName)) {
                 $element->draftName = $this->_draftName;
             }

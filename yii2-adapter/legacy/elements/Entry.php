@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
@@ -1937,12 +1936,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("viewPeerEntryDrafts:$section->uid")
             );
         }
@@ -1977,12 +1972,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
             );
         }
@@ -2069,12 +2060,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("deletePeerEntryDrafts:$section->uid")
             );
         }
@@ -2106,12 +2093,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section->propagationMethod === PropagationMethod::Custom) {
             if ($this->getIsDraft()) {
-                /**
-                 * @var static|DraftBehavior $this
-                 * @phpstan-ignore varTag.nativeType
-                 */
                 return (
-                    $this->creatorId === $user->id ||
+                    $this->draftCreatorId === $user->id ||
                     $user->can("deletePeerEntryDrafts:$section->uid")
                 );
             }
@@ -2416,12 +2399,8 @@ JS, [
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
             );
         }
