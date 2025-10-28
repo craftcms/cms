@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.15 - 2025-10-28
 
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
 - Updated Axios to 1.12.2. ([#17988](https://github.com/craftcms/cms/pull/17988))
