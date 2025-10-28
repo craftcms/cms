@@ -23,6 +23,7 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -1190,7 +1191,7 @@ JS, [
             ->status(null)
             ->all();
 
-        $revisionsService = Craft::$app->getRevisions();
+        $revisionsService = app(Revisions::class);
         $elementRevisionIds = [];
         $ownershipData = [];
         $map = [];

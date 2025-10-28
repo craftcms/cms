@@ -39,6 +39,7 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -2298,7 +2299,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
-        $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        $canonical = app(Revisions::class)->revertToRevision($element, $user->id);
         Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(t('{type} reverted to past revision.', [

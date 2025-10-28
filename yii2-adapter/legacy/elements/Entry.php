@@ -55,6 +55,7 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -2786,7 +2787,7 @@ JS;
 
                 // May be null if the entry is currently stored as an unpublished draft
                 if ($current) {
-                    Craft::$app->getRevisions()->createRevision(
+                    app(Revisions::class)->createRevision(
                         $current,
                         $current->getAuthorId(),
                         sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
@@ -3038,7 +3039,7 @@ JS;
 
         // Save a new revision?
         if ($this->_shouldSaveRevision()) {
-            Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
+            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
     }
 
