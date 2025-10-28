@@ -46,8 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'craftcms::entries.index');
-    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index');
+    Route::view('content/{page}', 'craftcms::entries.index')->where('page', '[^\/]+');
+    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index')->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
 
     /**

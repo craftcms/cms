@@ -41,9 +41,7 @@ final class RouteServiceProvider extends ServiceProvider
 
     public function boot(Router $router, Routes $routes): void
     {
-        foreach ($routes->tokens as $key => $pattern) {
-            $router->pattern($key, $pattern);
-        }
+        $router->patterns($routes->tokens);
 
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');

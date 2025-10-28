@@ -29,6 +29,7 @@ final class Routes
             'number' => '\d+',
             'page' => '\d+',
             'uid' => Str::uuidPattern(),
+            'handle' => '[^\/]+',
             'slug' => '[^\/]+',
             'tag' => '[^\/]+',
             '*' => '[^\/]+',
