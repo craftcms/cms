@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.19 - 2025-10-28
 
 - Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
 - Fields’ type names are now included as keywords when searching within field layout designers. ([#17979](https://github.com/craftcms/cms/pull/17979))
