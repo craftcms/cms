@@ -17,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use craft\services\Tokens;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
@@ -509,7 +510,7 @@ class Request extends \yii\web\Request
      *
      * @return string|null The token, or `null` if there isn’t one.
      * @throws BadRequestHttpException if an invalid token is supplied
-     * @see \craft\services\Tokens::createToken()
+     * @see Tokens::createToken()
      * @see Controller::requireToken()
      */
     public function getToken(): ?string
@@ -581,7 +582,7 @@ class Request extends \yii\web\Request
     {
         try {
             return $this->_validateSiteToken() !== null;
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException) {
             return false;
         }
     }
