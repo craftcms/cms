@@ -41,6 +41,10 @@ final class RouteServiceProvider extends ServiceProvider
 
     public function boot(Router $router, Routes $routes): void
     {
+        foreach ($routes->tokens as $key => $pattern) {
+            $router->pattern($key, $pattern);
+        }
+
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
@@ -49,7 +53,9 @@ final class RouteServiceProvider extends ServiceProvider
                 return;
             }
 
-            $routes->getProjectConfigRoutes()->each(fn (Route $route) => $route->register($router));
+            $routes->getProjectConfigRoutes()->each(
+                fn (Route $route) => $router->view($route->getUri(), $route->template),
+            );
         });
 
         Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {

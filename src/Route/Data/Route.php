@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route\Data;
 
 use CraftCms\Cms\Support\Html;
-use Illuminate\Routing\Router;
 use Spatie\LaravelData\Dto;
 
 final class Route extends Dto
@@ -57,19 +56,6 @@ final class Route extends Dto
 
             return "{{$part[0]}}";
         })->implode('');
-    }
-
-    public function register(Router $router): void
-    {
-        $route = $router->view($this->getUri(), $this->template);
-
-        foreach ($this->uriParts as $part) {
-            if (is_string($part)) {
-                continue;
-            }
-
-            $route->where($part[0], $part[1]);
-        }
     }
 
     public function uriDisplayHtml(): string
