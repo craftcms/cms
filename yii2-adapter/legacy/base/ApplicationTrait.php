@@ -1166,6 +1166,7 @@ trait ApplicationTrait
      * Returns the routes service.
      *
      * @return Routes The routes service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Route\Routes} instead.
      */
     public function getRoutes(): Routes
     {
@@ -1452,7 +1453,6 @@ trait ApplicationTrait
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
             if (!app(ProjectConfig::class)->isApplyingExternalChanges) {
-                $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
             }
         });

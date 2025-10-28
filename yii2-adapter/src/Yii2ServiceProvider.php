@@ -11,6 +11,7 @@ use craft\services\Fields;
 use craft\services\Gc;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
+use craft\services\Routes;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -357,6 +358,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         ProjectConfig::registerEvents();
+        Routes::registerEvents();
         Sites::registerEvents();
         Structures::registerEvents();
         SystemMessages::registerEvents();

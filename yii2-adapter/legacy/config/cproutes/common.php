@@ -51,22 +51,6 @@ return [
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
     'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
-    'settings/routes' => [
-        'template' => 'settings/routes',
-        'variables' => [
-            'tokens' => [
-                'year' => '\d{4}',
-                'month' => '(?:0?[1-9]|1[012])',
-                'day' => '(?:0?[1-9]|[12][0-9]|3[01])',
-                'number' => '\d+',
-                'page' => '\d+',
-                'uid' => Str::uuidPattern(),
-                'slug' => '[^\/]+',
-                'tag' => '[^\/]+',
-                '*' => '[^\/]+',
-            ],
-        ],
-    ],
     'settings/tags' => 'tags/index',
     'settings/tags/new' => 'tags/edit-tag-group',
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',

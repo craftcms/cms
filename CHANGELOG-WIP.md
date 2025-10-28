@@ -276,6 +276,11 @@ Moved the following controllers:
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
 
+## Routes
+
+- Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
+- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
+
 ## Sections
 
 - Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
