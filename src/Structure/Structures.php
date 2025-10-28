@@ -202,7 +202,7 @@ final class Structures
         /** @var StructureElementModel|null $deepestDescendant */
         $deepestDescendant = $structureElementModel
             ->children()
-            ->orderByDesc('level')
+            ->reorderDesc('level')
             ->first();
 
         if ($deepestDescendant) {

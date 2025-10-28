@@ -66,6 +66,8 @@ class Install extends Migration
         DB::afterCommit(function () {
             $this->insertDefaultData();
         });
+
+        $this->newLine();
     }
 
     /**

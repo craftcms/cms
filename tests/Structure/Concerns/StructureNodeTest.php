@@ -7,6 +7,8 @@ use CraftCms\Cms\Structure\Models\StructureElement;
 
 beforeEach(function () {
     $this->structure = Structure::factory()->create();
+    // Delete the factory created one
+    $this->structure->structureElements()->delete();
 });
 
 it('cannot create a model directly', function () {

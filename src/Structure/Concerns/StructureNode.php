@@ -141,8 +141,8 @@ trait StructureNode
 
     protected function beforeSavingRootNode(): void
     {
-        if ($this->roots()->exists()) {
-            throw new RuntimeException('Can not create more than one root when "treeAttribute" is false.');
+        if ($this->treeQuery()->roots()->exists()) {
+            throw new RuntimeException("A root already exists for structure {$this->root}.");
         }
 
         $this->lft = 1;
