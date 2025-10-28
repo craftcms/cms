@@ -35,7 +35,7 @@ trait StructureNode
                 $model->setAttribute('root', $model->getKey());
                 $primaryKey = $model->getKeyName();
 
-                self::query()
+                static::query()
                     ->where($primaryKey, $model->root)
                     ->update([
                         'root' => $model->root,
@@ -233,7 +233,7 @@ trait StructureNode
         $nodeRootValue = $this->node->root;
 
         foreach (['lft', 'rgt'] as $attribute) {
-            self::query()
+            static::query()
                 ->where($attribute, '>=', $value)
                 ->where('root', '=', $nodeRootValue)
                 ->update([
@@ -243,7 +243,7 @@ trait StructureNode
 
         $delta = $value - $leftValue;
 
-        self::query()
+        static::query()
             ->where('lft', '>=', $leftValue)
             ->where('rgt', '<=', $rightValue)
             ->where('root', '=', $this->root)
@@ -397,9 +397,10 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     protected function treeQuery(?Builder $query = null): Builder
     {
-        $query ??= self::query();
+        $query ??= static::query();
 
         return $query->where('root', '=', $this->root);
     }
