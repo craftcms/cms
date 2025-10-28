@@ -1,12 +1,14 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.15 - 2025-10-28
 
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Updated Axios to 1.12.2. ([#17988](https://github.com/craftcms/cms/pull/17988))
 - Fixed a bug where plugin license keys were getting generated for environments that didn’t allow admin changes, which could result in an error that prevented the Plugin Store from loading. ([#17942](https://github.com/craftcms/cms/issues/17942))
 - Fixed a bug where new plugin license keys weren’t getting saved to `.env` if the environment variable didn’t exist yet. ([#17942](https://github.com/craftcms/cms/issues/17942))
 - Fixed a bug where pressing <kbd>Return</kbd> within an editable table within a slideout would submit the slideout.
 - Fixed an error that could occur when retrieving an array/hash value in Twig, if the fetched key wasn’t an integer or string.
+- Fixed a bug where it wasn’t possible to clear out a volume’s “Transform Filesystem” setting. ([#17953](https://github.com/craftcms/cms/issues/17953))
 
 ## 4.16.14 - 2025-10-06
 
