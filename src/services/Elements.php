@@ -4369,7 +4369,11 @@ class Elements extends Component
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
 
         // validate element against "live" scenario across all sites, if element is enabled for the site
-        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
+        if (
+            ($crossSiteValidate || $element->propagateRequired) &&
+            $siteElement->enabled &&
+            $siteElement->getEnabledForSite()
+        ) {
             $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
