@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
@@ -24,7 +23,6 @@ use CraftCms\Cms\Structure\Events\UpdatingElement;
 use CraftCms\Cms\Support\Facades\Structures as StructuresFacade;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Structures service.
@@ -233,7 +231,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function prepend(
         int $structureId,
@@ -253,7 +250,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function append(
         int $structureId,
@@ -272,7 +268,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function prependToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
@@ -287,7 +282,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function appendToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
@@ -303,7 +297,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function moveBefore(
         int $structureId,
@@ -323,7 +316,6 @@ class Structures extends Component
      * @param string $mode Whether this is an "insert", "update", or "auto".
      *
      * @return bool
-     * @throws Exception
      */
     public function moveAfter(
         int $structureId,
@@ -341,7 +333,6 @@ class Structures extends Component
      * @param ElementInterface $element
      *
      * @return bool
-     * @throws Exception
      * @since 3.7.19
      */
     public function remove(int $structureId, ElementInterface $element): bool
