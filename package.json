@@ -27,7 +27,6 @@
     "@tailwindcss/vite": "^4.1.14",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.1",
-    "@vueuse/core": "^13.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "lit": "^3.3.1",
@@ -37,7 +36,6 @@
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.0",
     "stylelint-use-logical-spec": "^5.0.1",
-    "tailwindcss": "^4.1.14",
     "typescript": "^5.9.3",
     "vite": "^7.1.9",
     "vite-tsconfig-paths": "^5.1.4",
@@ -49,8 +47,10 @@
   "dependencies": {
     "@craftcms/cp": "file:../npm-packages/packages/cp",
     "@inertiajs/vue3": "^2.2.7",
+    "@vueuse/core": "^13.9.0",
     "axios": "^1.12.2",
     "laravel-vite-plugin": "^2.0.1",
+    "tailwindcss": "^4.1.14",
     "vue": "^3.5.22"
   }
 }
