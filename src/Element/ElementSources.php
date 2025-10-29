@@ -57,6 +57,10 @@ final class ElementSources
      */
     private array $fieldLayouts;
 
+    public function __construct(
+        private readonly ProjectConfig $projectConfig,
+    ) {}
+
     /**
      * Filters out any unnecessary headings from a given source list.
      *
@@ -381,7 +385,7 @@ final class ElementSources
         $availableAttributes = $this->getAvailableTableAttributes($elementType)->merge($sourceAttributes);
 
         $attributeKeys = $customAttributes
-            ?? $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
+            ?? $this->sourceConfig($elementType, $sourceKey)['tableAttributes']
             ?? $elementType::defaultTableAttributes($sourceKey);
 
         $attributes = [
@@ -417,7 +421,7 @@ final class ElementSources
         }
 
         // Don't bother the element type for custom sources
-        $source = $this->_sourceConfig($elementType, $sourceKey);
+        $source = $this->sourceConfig($elementType, $sourceKey);
 
         if (empty($source['condition'])) {
             return Fields::getLayoutsByType($elementType);
@@ -648,7 +652,7 @@ final class ElementSources
      */
     private function sourceConfigs(string $elementType): ?array
     {
-        return app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES.".$elementType");
+        return $this->projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES.".$elementType");
     }
 
     /**
@@ -656,7 +660,7 @@ final class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType
      */
-    private function _sourceConfig(string $elementType, string $sourceKey): ?array
+    private function sourceConfig(string $elementType, string $sourceKey): ?array
     {
         $sourceConfigs = $this->sourceConfigs($elementType);
         if (empty($sourceConfigs)) {
@@ -676,7 +680,7 @@ final class ElementSources
      */
     public function getPageSettings(string $elementType): array
     {
-        return app(ProjectConfig::class)->get(
+        return $this->projectConfig->get(
             sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
         ) ?? [];
     }
