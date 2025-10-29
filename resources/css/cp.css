@@ -13,10 +13,6 @@ CP Styles
 @source '../**/*.js';
 @source '../**/*.twig';
 
-@theme {
-  --color-subtle: var(--c-border-subtle);
-}
-
 :root {
   --cp-sidebar-width: calc(240rem / 16);
 }
