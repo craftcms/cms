@@ -23,12 +23,12 @@ class LabelField extends TitleField
     /**
      * @inheritdoc
      */
-    public bool $translatable = false;
+    public bool $requirable = true;
 
     /**
      * @inheritdoc
      */
-    public bool $requirable = true;
+    public bool $translatable = false;
 
     /**
      * @inheritdoc
