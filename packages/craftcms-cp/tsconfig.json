@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["vite/client"]
+  },
+  "include": ["src", "tsup.config.ts"]
+}

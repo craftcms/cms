@@ -1,0 +1,40 @@
+html,
+body {
+  background-color: var(--c-bg-body);
+}
+
+body {
+  width: 100%;
+  overflow-x: hidden;
+  font-family: var(--c-font-body, sans-serif);
+  font-size: var(--c-text-base);
+  line-height: var(--c-leading-normal);
+  color: var(--c-fg-text);
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+a {
+  cursor: pointer;
+  color: var(--c-fg-link);
+}
+
+/*
+  Make lists unstyled by default.
+*/
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
