@@ -10,6 +10,7 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Error\Error;
 
 /**
@@ -33,20 +34,18 @@ trait StructureMutationTrait
             return;
         }
 
-        $structureService = Craft::$app->getStructures();
-
         if (!empty($arguments['prependTo'])) {
-            $structureService->prepend($structureId, $element, $this->getRelatedElement($arguments['prependTo']));
+            Structures::prepend($structureId, $element, $this->getRelatedElement($arguments['prependTo']));
         } elseif (!empty($arguments['appendTo'])) {
-            $structureService->append($structureId, $element, $this->getRelatedElement($arguments['appendTo']));
+            Structures::append($structureId, $element, $this->getRelatedElement($arguments['appendTo']));
         } elseif (!empty($arguments['prependToRoot'])) {
-            $structureService->prependToRoot($structureId, $element);
+            Structures::prependToRoot($structureId, $element);
         } elseif (!empty($arguments['appendToRoot'])) {
-            $structureService->appendToRoot($structureId, $element);
+            Structures::appendToRoot($structureId, $element);
         } elseif (!empty($arguments['insertBefore'])) {
-            $structureService->moveBefore($structureId, $element, $this->getRelatedElement($arguments['insertBefore']));
+            Structures::moveBefore($structureId, $element, $this->getRelatedElement($arguments['insertBefore']));
         } elseif (!empty($arguments['insertAfter'])) {
-            $structureService->moveAfter($structureId, $element, $this->getRelatedElement($arguments['insertAfter']));
+            Structures::moveAfter($structureId, $element, $this->getRelatedElement($arguments['insertAfter']));
         }
     }
 

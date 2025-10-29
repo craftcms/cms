@@ -11,10 +11,8 @@ use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
-use craft\models\Structure;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
-use craft\services\Structures;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -34,10 +32,13 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -516,12 +517,10 @@ final class Sections
             $propagationMethodChanged = $sectionModel->propagationMethod != $oldPropagationMethod;
 
             if ($data['type'] === SectionType::Structure->value) {
-                $structuresService = \Craft::$app->getStructures();
-
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
-                $structure = $structuresService->getStructureByUid($structureUid, true)
-                    ?? new Structure(['uid' => $structureUid]);
+                $structure = Structures::getStructureByUid($structureUid, true)
+                    ?? new Structure(uid: $structureUid);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 
@@ -533,15 +532,15 @@ final class Sections
                     ($event->oldValue['structure']['uid'] ?? null) !== $structureUid &&
                     $sectionModel->structureId
                 ) {
-                    $structuresService->deleteStructureById($sectionModel->structureId);
+                    Structures::deleteStructureById($sectionModel->structureId);
                 }
 
-                $structuresService->saveStructure($structure);
+                Structures::saveStructure($structure);
                 $sectionModel->structureId = $structure->id;
             } else {
                 if ($sectionModel->structureId) {
                     // Delete the old one
-                    \Craft::$app->getStructures()->deleteStructureById($sectionModel->structureId);
+                    Structures::deleteStructureById($sectionModel->structureId);
                 }
 
                 $sectionModel->structureId = null;
@@ -779,11 +778,9 @@ final class Sections
             ->orderBy(['id' => SORT_ASC])
             ->withStructure(false);
 
-        $structuresService = \Craft::$app->getStructures();
-
         foreach (DbHelper::each($query) as $entry) {
             /** @var Entry $entry */
-            $structuresService->appendToRoot($sectionModel->structureId, $entry, Structures::MODE_INSERT);
+            Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
         }
     }
 
@@ -1028,7 +1025,7 @@ final class Sections
 
             // Delete the structure
             if ($sectionModel->structureId) {
-                \Craft::$app->getStructures()->deleteStructureById($sectionModel->structureId);
+                Structures::deleteStructureById($sectionModel->structureId);
             }
 
             // Delete the section

@@ -37,13 +37,13 @@ final readonly class AddressesController
         ]);
 
         $address = new Address([
-            'countryCode' => $request->get('countryCode'),
-            'administrativeArea' => $request->get('administrativeArea'),
-            'locality' => $request->get('locality'),
+            'countryCode' => $request->input('countryCode'),
+            'administrativeArea' => $request->input('administrativeArea'),
+            'locality' => $request->input('locality'),
         ]);
 
         $html = $this->craft->getView()->namespaceInputs(
-            fn () => Cp::addressFieldsHtml($address), $request->get('namespace')
+            fn () => Cp::addressFieldsHtml($address), $request->input('namespace')
         );
 
         return new JsonResponse([

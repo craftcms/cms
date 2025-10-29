@@ -56,7 +56,6 @@ use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
-use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -64,9 +63,12 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -1973,8 +1975,8 @@ class Elements extends Component
                 ) {
                     $canonical = $element->getCanonical(true);
                     if ($canonical->structureId && $canonical->root) {
-                        $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-                        Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
+                        $mode = isset($newAttributes['id']) ? Mode::Auto : Mode::Insert;
+                        Structures::moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
                     }
                 }
 
@@ -2501,13 +2503,13 @@ class Elements extends Component
             DB::beginTransaction();
             try {
                 // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
-                while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
+                while (($record = StructureElementModel::where('elementId', $element->id)->first()) !== null) {
                     // If this element still has any children, move them up before the one getting deleted.
-                    while (($child = $record->children(1)->one()) !== null) {
-                        /** @var StructureElementRecord $child */
+                    while (($child = $record->children(1)->first()) !== null) {
+                        /** @var StructureElementModel $child */
                         $child->insertBefore($record);
                         // Re-fetch the record since its lft and rgt attributes just changed
-                        $record = StructureElementRecord::findOne($record->id);
+                        $record->refresh();
                     }
                     // Delete this element’s node
                     $record->deleteWithChildren();

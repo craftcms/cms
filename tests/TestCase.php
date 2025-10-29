@@ -55,8 +55,9 @@ class TestCase extends Orchestra
     #[\Override]
     protected function tearDown(): void
     {
+        app(ProjectConfig::class)->reset();
+
         if (Craft::$app) {
-            app(ProjectConfig::class)->flush();
             Craft::$app->getDb()->close();
             Craft::$app->getDb2()->close();
             DB::disconnect();

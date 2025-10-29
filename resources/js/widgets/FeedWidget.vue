@@ -34,6 +34,11 @@
           data: data,
         });
       },
+      onError(error) {
+        // @TODO Handle errors
+        // Craft.cp.displayError(Craft.t('app', 'Could not load the feed'));
+        console.error(error);
+      }
     }
   );
 </script>

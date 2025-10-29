@@ -46,7 +46,7 @@ final readonly class UpdatesController
 
     public function cache(Request $request): JsonResponse
     {
-        $updateData = $request->get('updates');
+        $updateData = $request->input('updates');
 
         $updates = $this->updates->cacheUpdates(UpdatesData::fromArray($updateData));
 

@@ -4,21 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
-use CraftCms\Cms\Http\Middleware\CheckForUpdates;
-use CraftCms\Cms\Http\Middleware\CheckRequirements;
-use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
-use CraftCms\Cms\Http\Middleware\ExtractNamespace;
-use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
-use CraftCms\Cms\Http\Middleware\HandleActionRequest;
-use CraftCms\Cms\Http\Middleware\RequireCpRequest;
-use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
-use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
@@ -26,14 +16,12 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -66,17 +54,6 @@ final class AppServiceProvider extends ServiceProvider
             Config::set('auth.providers.users.model', User::class);
         }
 
-        /**
-         * HandleActionRequest is special and needs to run
-         * before any other middleware as it rewrites
-         * which path needs to get used.
-         */
-        $kernel = $this->app->get(HttpKernel::class);
-        $kernel->setGlobalMiddleware(array_merge([
-            ExtractNamespace::class,
-            HandleActionRequest::class,
-        ], $kernel->getGlobalMiddleware()));
-
         Authenticate::redirectUsing(function () {
             if (\request()->isCpRequest()) {
                 return Cms::config()->cpTrigger.'/login';
@@ -106,7 +83,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->setTimezone();
         $this->setNamespace();
         $this->bootAliases();
-        $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
         $this->loadViewsFrom("{$this->root}/resources/views", 'c');
@@ -219,28 +195,6 @@ final class AppServiceProvider extends ServiceProvider
                     'proxy' => Cms::config()->httpProxy,
                 ]),
             ));
-    }
-
-    protected function bootMiddleware(): void
-    {
-        $router = $this->app->make(Router::class);
-
-        collect([
-            UpdateLocale::class,
-            CheckSchemaVersion::class,
-            CheckForUpdates::class,
-            SendPoweredByHeader::class,
-            FlushProjectConfig::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
-
-        collect([
-            RequireCpRequest::class,
-            CheckRequirements::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
-
-        collect([
-            'web',
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 
     private function setTimezone(): void

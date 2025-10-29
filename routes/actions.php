@@ -23,9 +23,11 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -188,6 +190,13 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
+        // Routes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('routes/save-route', [RoutesController::class, 'store']);
+            Route::post('routes/delete-route', [RoutesController::class, 'destroy']);
+            Route::post('routes/update-route-order', [RoutesController::class, 'reorder']);
+        });
+
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
         Route::get('sections/edit/{sectionId?}', [SectionsController::class, 'edit']);
@@ -209,6 +218,10 @@ Route::prefix(implode('/', [
             Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
             Route::post('sites/delete-site', [SitesController::class, 'destroy']);
         });
+
+        // Structures
+        Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
+        Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
 
         // SystemMessages
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);

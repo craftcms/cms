@@ -20,7 +20,6 @@ use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
-use craft\services\Structures;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -31,8 +30,10 @@ use CraftCms\Cms\Field\Tags;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -189,7 +190,6 @@ class EntrifyController extends Controller
                 ->andWhere(['categories.deletedWithGroup' => true]);
         }
 
-        $structuresService = Craft::$app->getStructures();
         $entriesByLevel = [];
 
         foreach (Db::batch($categoryQuery) as $categories) {
@@ -201,7 +201,6 @@ class EntrifyController extends Controller
                     $section,
                     $entryType,
                     $author,
-                    $structuresService,
                     &$entriesByLevel,
                     $categoryGroup,
                     $category,
@@ -249,9 +248,9 @@ class EntrifyController extends Controller
                             $parentLevel--;
                         }
                         if ($parentEntry) {
-                            $structuresService->append($section->structureId, $entry, $parentEntry, Structures::MODE_INSERT);
+                            Structures::append($section->structureId, $entry, $parentEntry, Mode::Insert);
                         } else {
-                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                            Structures::appendToRoot($section->structureId, $entry, Mode::Insert);
                         }
                         $entriesByLevel[$entry->level] = $entry;
                     }

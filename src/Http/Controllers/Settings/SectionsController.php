@@ -74,7 +74,7 @@ final readonly class SectionsController
 
     public function edit(Request $request, Sections $sections, ?int $sectionId = null): CpScreenResponse
     {
-        $sectionId ??= $request->get('sectionId');
+        $sectionId ??= $request->input('sectionId');
 
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
@@ -121,7 +121,7 @@ final readonly class SectionsController
         Sections $sections,
         Section $section,
     ): Response {
-        $sectionId = $request->get('sectionId');
+        $sectionId = $request->input('sectionId');
 
         if ($sectionId) {
             abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
@@ -134,7 +134,7 @@ final readonly class SectionsController
         $allSiteSettings = [];
 
         foreach ($sites->getAllSites() as $site) {
-            $postedSettings = $request->get('sites')[$site->handle] ?? null;
+            $postedSettings = $request->input('sites')[$site->handle] ?? null;
 
             if (is_null($postedSettings)) {
                 continue;
@@ -182,18 +182,18 @@ final readonly class SectionsController
             'id' => ['required', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $sections->deleteSectionById($request->get('id'));
+        $sections->deleteSectionById($request->input('id'));
 
         return $this->asSuccess();
     }
 
     public function tableData(Request $request, Sections $sections): Response
     {
-        $page = (int) $request->get('page', 1);
-        $limit = (int) $request->get('per_page', 100);
-        $searchTerm = $request->get('search');
+        $page = (int) $request->input('page', 1);
+        $limit = (int) $request->input('per_page', 100);
+        $searchTerm = $request->input('search');
 
-        $sort = $request->get('sort');
+        $sort = $request->input('sort');
 
         $orderBy = match (Arr::get($sort, '0.field')) {
             '__slot:handle' => 'handle',

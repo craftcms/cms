@@ -33,7 +33,7 @@ final readonly class SiteGroupsController
             'instructions' => t('What this group will be called in the control panel.'),
             'id' => 'name',
             'name' => 'name',
-            'value' => $request->get('name', ''),
+            'value' => $request->input('name', ''),
             'suggestEnvVars' => true,
             'required' => true,
         ]), 'name'.Str::random(10));

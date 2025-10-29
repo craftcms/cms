@@ -276,6 +276,11 @@ Moved the following controllers:
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
 
+## Routes
+
+- Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
+- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
+
 ## Sections
 
 - Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
@@ -313,6 +318,17 @@ Moved the following controllers:
 - Removed `craft\controllers\SitesController` in favor of:
   - `CraftCms\Cms\Http\Controllers\Settings\SitesController` 
   - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController` 
+
+## Structures
+
+- Deprecated `craft\services\Structures`. `CraftCms\Cms\Structure\Structures` should be used instead.
+- Deprecated `craft\models\Structure`. `CraftCms\Cms\Structure\Data\Structure` should be used instead.
+- Deprecated `craft\records\Structure`. `CraftCms\Cms\Structure\Models\Structure` should be used instead.
+- Deprecated `craft\records\StructureElement`. `CraftCms\Cms\Structure\Models\StructureElement` should be used instead.
+- Replaced `craft\controllers\StructuresController`. `CraftCms\Cms\Http\Controllers\StructuresController`.
+- Replaced structure related commands in `craft\console\controllers\RepairController` with:
+  - `\CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand`
+  - `\CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand`
 
 ## System Messages
 

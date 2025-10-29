@@ -40,7 +40,7 @@ final readonly class DbBackupController
 
         unlink($backupPath);
 
-        if (! $request->get('downloadBackup')) {
+        if (! $request->input('downloadBackup')) {
             return new JsonResponse;
         }
 

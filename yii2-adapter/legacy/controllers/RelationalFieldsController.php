@@ -7,10 +7,10 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Facades\Structures;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -50,12 +50,11 @@ class RelationalFieldsController extends Controller
                 ->all();
 
             // Fill in the gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($elements);
+            Structures::fillGapsInElements($elements);
 
             // Enforce the branch limit
             if ($branchLimit = $this->request->getParam('branchLimit')) {
-                $structuresService->applyBranchLimitToElements($elements, $branchLimit);
+                Structures::applyBranchLimitToElements($elements, $branchLimit);
             }
         }
 

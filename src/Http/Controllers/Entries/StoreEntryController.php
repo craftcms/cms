@@ -40,7 +40,7 @@ final readonly class StoreEntryController
         $entryVariable = $this->request->getSigned('entryVariable') ?? 'entry';
 
         $this->enforeSitePermission($entry->getSite());
-        $this->enforceEditEntryPermissions($entry, $duplicate = $this->request->get('duplicate', false));
+        $this->enforceEditEntryPermissions($entry, $duplicate = $this->request->input('duplicate', false));
 
         // Keep track of whether the entry was disabled as a result of duplication
         $forceDisabled = false;
@@ -139,11 +139,11 @@ final readonly class StoreEntryController
 
     private function getEntry(): Entry
     {
-        $entryId = $this->request->get('canonicalId')
-            ?? $this->request->get('sourceId')
-            ?? $this->request->get('entryId');
+        $entryId = $this->request->input('canonicalId')
+            ?? $this->request->input('sourceId')
+            ?? $this->request->input('entryId');
 
-        $siteId = $this->request->get('siteId');
+        $siteId = $this->request->input('siteId');
 
         if (! $entryId) {
             $this->request->validate([
@@ -151,13 +151,13 @@ final readonly class StoreEntryController
             ]);
 
             return new Entry(array_filter([
-                'sectionId' => $this->request->get('sectionId'),
+                'sectionId' => $this->request->input('sectionId'),
                 'siteId' => $siteId,
             ]));
         }
 
         // Is this a provisional draft?
-        if ($this->request->get('provisional')) {
+        if ($this->request->input('provisional')) {
             /** @var Entry|null $entry */
             $entry = Entry::find()
                 ->provisionalDrafts()
@@ -215,14 +215,14 @@ final readonly class StoreEntryController
     private function populateEntry(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->get('typeId', $entry->typeId);
-        $entry->slug = $this->request->get('slug', $entry->slug);
+        $entry->typeId = $this->request->input('typeId', $entry->typeId);
+        $entry->slug = $this->request->input('slug', $entry->slug);
 
-        if (($postDate = $this->request->get('postDate')) !== null) {
+        if (($postDate = $this->request->input('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
 
-        if (($expiryDate = $this->request->get('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->input('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
 
@@ -231,11 +231,11 @@ final readonly class StoreEntryController
             // Set the global status to true if it's enabled for *any* sites, or if already enabled.
             $entry->enabled = in_array(true, $enabledForSite) || $entry->enabled;
         } else {
-            $entry->enabled = (bool) $this->request->get('enabled', $entry->enabled);
+            $entry->enabled = (bool) $this->request->input('enabled', $entry->enabled);
         }
 
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->get('title', $entry->title);
+        $entry->title = $this->request->input('title', $entry->title);
 
         if (! $entry->typeId) {
             // Default to the section's first entry type
@@ -245,11 +245,11 @@ final readonly class StoreEntryController
         // Prevent the last entry type's field layout from being used
         $entry->fieldLayoutId = null;
 
-        $fieldsLocation = $this->request->get('fieldsLocation', 'fields');
+        $fieldsLocation = $this->request->input('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Authors
-        $authorIds = $this->request->get('authors') ?? $this->request->get('author');
+        $authorIds = $this->request->input('authors') ?? $this->request->input('author');
         if ($authorIds !== null) {
             $entry->setAuthorIds($authorIds);
         } elseif (! $entry->id) {
@@ -258,17 +258,17 @@ final readonly class StoreEntryController
         }
 
         // Parent
-        if (($parentId = $this->request->get('parentId')) !== null) {
+        if (($parentId = $this->request->input('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
 
         // Is fresh?
-        if ($this->request->get('isFresh')) {
+        if ($this->request->input('isFresh')) {
             $entry->setIsFresh();
         }
 
         // Revision notes
-        $entry->setRevisionNotes($this->request->get('notes'));
+        $entry->setRevisionNotes($this->request->input('notes'));
     }
 
     /**
@@ -278,7 +278,7 @@ final readonly class StoreEntryController
      */
     protected function enabledForSiteValue(): array|bool|null
     {
-        $enabledForSite = $this->request->get('enabledForSite');
+        $enabledForSite = $this->request->input('enabledForSite');
 
         if (! is_array($enabledForSite)) {
             return $enabledForSite;
