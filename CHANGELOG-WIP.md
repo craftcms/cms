@@ -31,6 +31,7 @@
 - The `clear-cache` command now accepts a space-delimited list of cache IDs that should be cleared.
 - Compiled templates are now deleted by the `up` command rather than from `migrate` commands.
 - Added the `useIdnaNontransitionalToUnicode` config setting. ([#17946](https://github.com/craftcms/cms/pull/17946))
+- The `maxCachedCloudImageSize` config setting is now set to `0` by default. ([#17997](https://github.com/craftcms/cms/pull/17997))
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -62,6 +63,7 @@
 - Added `craft\services\Structure::EVENT_AFTER_UPDATE_ELEMENT`.
 - Added `craft\services\Structure::EVENT_BEFORE_UPDATE_ELEMENT`.
 - Added `craft\web\GqlResponseFormatter`.
+- Added `craft\web\Request::getHasInvalidToken()`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
@@ -96,4 +98,5 @@
 - Improved element query performance. ([#17850](https://github.com/craftcms/cms/pull/17850))
 - Fixed a bug where elements with unsaved changes could show outdated attribute/field values within element index tables, chips, and cards throughout the control panel. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
+- Fixed a bug where requests with invalid tokens would throw an exception before the application was fully initialized, which could lead to other errors. ([#18000](https://github.com/craftcms/cms/issues/18000))
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))

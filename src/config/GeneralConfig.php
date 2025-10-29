@@ -380,14 +380,14 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
-     * @var bool Whether users should automatically be logged in after activating their account or resetting their password.
+     * @var bool Whether users should automatically be logged in after activating their account.
      *
      * ::: code
      * ```php Static Config
      * ->autoLoginAfterAccountActivation(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
+     * CRAFT_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
      * ```
      * :::
      *
@@ -401,6 +401,9 @@ class GeneralConfig extends BaseConfig
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * ::: code
+     *  ```php Static Config
+     *  ->autosaveDrafts(false)
+     *  ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
@@ -1753,7 +1756,7 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
+     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
      *
      * ::: code
      * ```php Static Config
@@ -1766,7 +1769,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Image Handling
      */
-    public int $maxCachedCloudImageSize = 2000;
+    public int $maxCachedCloudImageSize = 0;
 
     /**
      * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
@@ -3756,7 +3759,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether users should automatically be logged in after activating their account or resetting their password.
+     * Whether users should automatically be logged in after activating their account.
      *
      * ```php
      * ->autoLoginAfterAccountActivation(true)
