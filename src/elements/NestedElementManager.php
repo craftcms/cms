@@ -680,7 +680,7 @@ JS, [
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
-        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds)) {
+        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds) || $owner->propagateRequired) {
             $this->saveNestedElements($owner);
         } elseif ($owner->mergingCanonicalChanges) {
             $this->mergeCanonicalChanges($owner);
@@ -796,6 +796,11 @@ JS, [
                 // and then pasted back in somewhere else.)
                 if (isset($element->dateDeleted)) {
                     $elementsService->restoreElement($element);
+                }
+
+                // if the owner is propagating required fields and attributes, so should the nested elements
+                if ($owner->propagateRequired) {
+                    $element->propagateRequired = true;
                 }
 
                 $sortOrder++;
