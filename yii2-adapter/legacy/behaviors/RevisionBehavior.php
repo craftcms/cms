@@ -18,35 +18,24 @@ use function CraftCms\Cms\t;
  * @property-read string $revisionLabel The revision label
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Concerns\Revisionable} instead.
  */
 class RevisionBehavior extends BaseRevisionBehavior
 {
     /**
      * @var int The revision number
      */
-    public int $revisionNum;
+    public int $revisionNum {
+        get => $this->owner->revisionNum;
+        set(int $value) => $this->owner->revisionNum = $value;
+    }
 
     /**
      * @var string|null The revision notes
      */
-    public ?string $revisionNotes = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function events(): array
-    {
-        return [
-            Element::EVENT_AFTER_DELETE => [$this, 'handleDelete'],
-        ];
-    }
-
-    /**
-     * Deletes the row in the `drafts` table after the draft element is deleted.
-     */
-    public function handleDelete(): void
-    {
-        DB::table(Table::REVISIONS)->delete($this->owner->revisionId);
+    public ?string $revisionNotes {
+        get => $this->owner->revisionNotes;
+        set(?string $value) => $this->owner->revisionNotes = $value;
     }
 
     /**
@@ -56,8 +45,6 @@ class RevisionBehavior extends BaseRevisionBehavior
      */
     public function getRevisionLabel(): string
     {
-        return t('Revision {num}', [
-            'num' => $this->revisionNum,
-        ]);
+        return $this->owner->getRevisionLabel();
     }
 }

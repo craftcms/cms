@@ -15,6 +15,7 @@ use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -165,7 +166,7 @@ class MatrixController extends Controller
             }
 
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-            if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
+            if (!app(Drafts::class)->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
                 return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [
                     'type' => Entry::lowerDisplayName(),
                 ])));

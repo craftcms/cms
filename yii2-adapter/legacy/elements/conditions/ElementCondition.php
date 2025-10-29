@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseCondition;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
@@ -11,6 +10,7 @@ use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\conditions\GeneratedFieldConditionRule;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -105,7 +105,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         // If we have a source key, we can fetch just the field layouts that are available to it
         if ($this->sourceKey) {
-            return Craft::$app->getElementSources()->getFieldLayoutsForSource($this->elementType, $this->sourceKey);
+            return app(ElementSources::class)->getFieldLayoutsForSource($this->elementType, $this->sourceKey)->all();
         }
 
         return app(Fields::class)->getLayoutsByType($this->elementType)->all();

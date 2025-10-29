@@ -44,6 +44,7 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -1105,7 +1106,7 @@ class UsersController extends Controller
         }
 
         $user->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($user, Craft::$app->getUser()->getId(), null, null, false)) {
+        if (!app(Drafts::class)->saveElementAsDraft($user, Craft::$app->getUser()->getId(), null, null, false)) {
             $response = $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
             ])), 'user');

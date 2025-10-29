@@ -7,7 +7,6 @@
 
 namespace craft\gql\types\elements;
 
-use craft\behaviors\DraftBehavior;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -37,7 +36,7 @@ class ContentBlock extends Element
      */
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
-        /** @var EntryElement|DraftBehavior $source */
+        /** @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         return match ($fieldName) {

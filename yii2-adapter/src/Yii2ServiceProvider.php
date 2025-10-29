@@ -6,11 +6,13 @@ use craft\console\controllers\HelpController;
 use craft\events\EditionChangeEvent;
 use craft\services\Addresses;
 use craft\services\Dashboard;
+use craft\services\Drafts;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Gc;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
+use craft\services\Revisions;
 use craft\services\Routes;
 use craft\services\Sites;
 use craft\services\Structures;
@@ -351,6 +353,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
         Gc::registerEvents();
@@ -358,6 +361,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         ProjectConfig::registerEvents();
+        Revisions::registerEvents();
         Routes::registerEvents();
         Sites::registerEvents();
         Structures::registerEvents();

@@ -26,6 +26,7 @@ use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -2533,12 +2534,12 @@ JS;
         $context['title'] ??= $elementType::pluralDisplayName();
         $context['context'] = 'index';
 
-        $elementSourcesService = Craft::$app->getElementSources();
+        $elementSourcesService = app(ElementSources::class);
         $context['sources'] = $elementSourcesService->getSources(
             $elementType,
             withDisabled: true,
             page: $context['page'] ?? null,
-        );
+        )->all();
 
         $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
@@ -2606,7 +2607,7 @@ JS;
                 ])
                 ->values()
                 ->all();
-            $context['tableColumns'] ??= Craft::$app->getElementSources()->getAvailableTableAttributes($elementType);
+            $context['tableColumns'] ??= app(ElementSources::class)->getAvailableTableAttributes($elementType)->all();
         }
 
         $context['viewModes'] ??= $elementType::indexViewModes();

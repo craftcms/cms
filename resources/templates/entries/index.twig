@@ -1,7 +1,7 @@
 {% extends "_layouts/elementindex" %}
 
-{% if page is defined and not craft.app.elementSources.pageExists("craft\\elements\\Entry", page) %}
-  {% set firstPage = craft.app.elementSources.getFirstPage("craft\\elements\\Entry") %}
+{% if page is defined and not craft.elementSources.pageExists("craft\\elements\\Entry", page) %}
+  {% set firstPage = craft.elementSources.getFirstPage("craft\\elements\\Entry") %}
   {% if firstPage or (not firstPage and page != 'entries') %}
     {% redirect 'content/' ~ (firstPage ? firstPage|kebab : 'entries') %}
   {% endif %}

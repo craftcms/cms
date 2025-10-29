@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
@@ -46,7 +45,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\Entry as EntryRecord;
-use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
@@ -54,7 +52,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -1315,7 +1315,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
+        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
@@ -1936,12 +1936,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("viewPeerEntryDrafts:$section->uid")
             );
         }
@@ -1976,12 +1972,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
             );
         }
@@ -2068,12 +2060,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("deletePeerEntryDrafts:$section->uid")
             );
         }
@@ -2105,12 +2093,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section->propagationMethod === PropagationMethod::Custom) {
             if ($this->getIsDraft()) {
-                /**
-                 * @var static|DraftBehavior $this
-                 * @phpstan-ignore varTag.nativeType
-                 */
                 return (
-                    $this->creatorId === $user->id ||
+                    $this->draftCreatorId === $user->id ||
                     $user->can("deletePeerEntryDrafts:$section->uid")
                 );
             }
@@ -2415,12 +2399,8 @@ JS, [
         }
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore-next-line
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
             );
         }
@@ -2786,7 +2766,7 @@ JS;
 
                 // May be null if the entry is currently stored as an unpublished draft
                 if ($current) {
-                    Craft::$app->getRevisions()->createRevision(
+                    app(Revisions::class)->createRevision(
                         $current,
                         $current->getAuthorId(),
                         sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
@@ -3038,7 +3018,7 @@ JS;
 
         // Save a new revision?
         if ($this->_shouldSaveRevision()) {
-            Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
+            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
     }
 

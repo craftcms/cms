@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Commands;
 
 use craft\base\ElementInterface;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -170,10 +168,10 @@ abstract class RepairCommand extends Command
                     } elseif ($element->getIsUnpublishedDraft()) {
                         $revLabel = 'unpublished draft';
                     } elseif ($element->getIsDraft()) {
-                        /** @var DraftBehavior|ElementInterface $element */
+                        /** @var ElementInterface $element */
                         $revLabel = 'draft'.($element->draftName ? ": $element->draftName" : '');
                     } else {
-                        /** @var RevisionBehavior|ElementInterface $element */
+                        /** @var ElementInterface $element */
                         $revLabel = 'revision'.($element->revisionNum ? " $element->revisionNum" : '');
                     }
 

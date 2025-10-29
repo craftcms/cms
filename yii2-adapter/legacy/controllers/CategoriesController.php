@@ -18,6 +18,7 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -291,7 +292,7 @@ class CategoriesController extends Controller
 
         // Save it
         $category->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
+        if (!app(Drafts::class)->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
             return $this->asModelFailure($category, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
             ])), 'category');
