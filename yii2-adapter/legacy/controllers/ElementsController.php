@@ -19,7 +19,6 @@ use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
@@ -37,6 +36,7 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -48,6 +48,7 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -1928,7 +1929,8 @@ JS, [
         $draftElementIds = [];
         $draftElementUids = [];
         $draftsService = app(Drafts::class);
-        $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds,  &$draftElementUids) {
+
+        Event::listen(DraftCreated::class, function(DraftCreated $event) use (&$draftElementIds, &$draftElementUids) {
             $draftElementIds[$event->canonical->id] = $event->draft->id;
             $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
