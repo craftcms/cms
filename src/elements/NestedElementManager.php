@@ -855,7 +855,7 @@ JS, [
             // Should we duplicate the elements to other sites?
             if (
                 $this->propagationMethod !== PropagationMethod::All &&
-                ($owner->propagateAll || !empty($owner->newSiteIds))
+                ($owner->propagateAll || !empty($owner->newSiteIds) || ($owner->propagateRequired && $this->field->layoutElement->required))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
                 $ownerSiteIds = array_map(
@@ -866,7 +866,7 @@ JS, [
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll) {
+                if (!$owner->propagateAll && !$owner->propagateRequired) {
                     $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
                 } else {
@@ -920,7 +920,16 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            if (!$owner->propagateRequired) {
+                                $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            } elseif ($this->field->layoutElement->required) {
+                                // if we're propagating required and the field is required, and it doesn't validate because of this field,
+                                // duplicate like above
+                                $localizedOwner->setScenario(Element::SCENARIO_LIVE);
+                                if (!$localizedOwner->validate() && !empty($localizedOwner->getErrors($this->field->handle))) {
+                                    $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                                }
+                            }
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
