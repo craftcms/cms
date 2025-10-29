@@ -80,6 +80,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -1331,7 +1332,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
+            $variables['attributes'] = app(ElementSources::class)->getTableAttributes(
                 static::class,
                 $sourceKey,
                 $viewState['tableColumns'] ?? null,
@@ -1540,7 +1541,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementSources()->getAvailableTableAttributes(static::class);
+        $tableAttributes = app(ElementSources::class)->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -2303,7 +2304,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // See if it's a source-specific sort option
-        foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+        foreach (app(ElementSources::class)->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
                 if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
                     $params = [];

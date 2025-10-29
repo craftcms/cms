@@ -45,7 +45,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\Entry as EntryRecord;
-use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
@@ -53,6 +52,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -1315,7 +1315,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
+        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {

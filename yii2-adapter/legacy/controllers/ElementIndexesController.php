@@ -26,12 +26,11 @@ use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
-use craft\services\ElementSources;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidValueException;
@@ -158,9 +157,9 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionSourceAttributeInfo(): Response
     {
-        $elementSources = Craft::$app->getElementSources();
+        $elementSources = app(ElementSources::class);
 
-        $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+        $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
             ->map(fn(array $option) => [
                 'label' => $option['label'],
                 'attr' => $option['attribute'] ?? $option['orderBy'],
@@ -169,7 +168,7 @@ class ElementIndexesController extends BaseElementsController
             ->values()
             ->all();
 
-        $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+        $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
             ->map(fn(array $attribute, string $key) => [
                 ...$attribute,
                 'attr' => $key,
@@ -177,7 +176,7 @@ class ElementIndexesController extends BaseElementsController
             ->values()
             ->all();
 
-        $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
+        $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
             ->map(fn(array $attribute) => $attribute[0])
             ->filter(fn(string $attribute) => $attribute !== 'title')
             ->values()
@@ -323,13 +322,15 @@ class ElementIndexesController extends BaseElementsController
 
         // Send updated badge counts
         $formatter = I18N::getFormatter();
-        foreach (Craft::$app->getElementSources()->getSources($this->elementType, $this->context) as $source) {
-            if (isset($source['key'])) {
-                if (isset($source['badgeCount'])) {
-                    $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-                } else {
-                    $responseData['badgeCounts'][$source['key']] = null;
-                }
+        foreach (app(ElementSources::class)->getSources($this->elementType, $this->context) as $source) {
+            if (!isset($source['key'])) {
+                continue;
+            }
+
+            if (isset($source['badgeCount'])) {
+                $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
+            } else {
+                $responseData['badgeCounts'][$source['key']] = null;
             }
         }
 
@@ -343,12 +344,12 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        $sources = Craft::$app->getElementSources()->getSources($this->elementType, $this->context);
+        $sources = app(ElementSources::class)->getSources($this->elementType, $this->context);
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources.twig', [
                 'elementType' => $this->elementType,
-                'sources' => $sources,
+                'sources' => $sources->all(),
             ]),
         ]);
     }
@@ -1010,7 +1011,7 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
-        $attributes = Craft::$app->getElementSources()->getTableAttributes(
+        $attributes = app(ElementSources::class)->getTableAttributes(
             $this->elementType,
             $this->sourceKey,
             $this->viewState['tableColumns'] ?? null,

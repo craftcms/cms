@@ -27,10 +27,10 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -716,7 +716,7 @@ final class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (Craft::$app->getElementSources()->getSources(Asset::class) as $source) {
+            foreach (app(ElementSources::class)->getSources(Asset::class) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }

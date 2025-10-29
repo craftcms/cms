@@ -41,6 +41,7 @@ use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -189,10 +190,10 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
-        $elementSources = Craft::$app->getElementSources();
+        $elementSources = app(ElementSources::class);
         $tableColumns = array_merge(
-            $elementSources->getAvailableTableAttributes(Entry::class),
-            $elementSources->getTableAttributesForFieldLayouts($fieldLayouts),
+            $elementSources->getAvailableTableAttributes(Entry::class)->all(),
+            $elementSources->getTableAttributesForFieldLayouts($fieldLayouts)->all(),
         );
 
         $options = [];

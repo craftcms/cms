@@ -27,6 +27,7 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Route\Routes;
@@ -196,6 +197,11 @@ class CraftVariable extends ServiceLocator
         $query = Category::find();
         Craft::configure($query, $criteria);
         return $query;
+    }
+
+    public function elementSources(): ElementSources
+    {
+        return app(ElementSources::class);
     }
 
     /**

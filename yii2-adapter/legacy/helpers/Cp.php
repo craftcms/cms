@@ -26,7 +26,6 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -1447,12 +1447,12 @@ JS, [
             ->all();
         $sortOptionsKey = 'baseSortOptions';
 
-        $tableColumns = Craft::$app->getElementSources()->getAvailableTableAttributes($elementType);
+        $tableColumns = app(ElementSources::class)->getAvailableTableAttributes($elementType)->all();
 
         if ($config['sources'] !== false) {
             if (is_array($config['sources'])) {
                 $indexedSourceKeys = array_flip($config['sources']);
-                $allSources = Craft::$app->getElementSources()->getSources($elementType, $config['context']);
+                $allSources = app(ElementSources::class)->getSources($elementType, $config['context']);
                 $sources = [];
 
                 foreach ($allSources as $source) {
@@ -1492,7 +1492,7 @@ JS, [
                     }
                 }
             } else {
-                $sources = Craft::$app->getElementSources()->getSources($elementType, $config['context']);
+                $sources = app(ElementSources::class)->getSources($elementType, $config['context']);
             }
 
             // Show the sidebar if there are at least two (non-heading) sources
@@ -1524,21 +1524,21 @@ JS, [
 
             // if field layouts were supplied, merge in additional table columns and sort columns
             if (!empty($config['fieldLayouts'])) {
-                $elementSourcesService = Craft::$app->getElementSources();
+                $elementSourcesService = app(ElementSources::class);
                 $sortOptions = array_merge(
                     $sortOptions,
                     array_map(fn(array $option) => [
                         'label' => $option['label'],
                         'attr' => $option['attribute'],
                         'defaultDir' => $option['defaultDir'],
-                    ], $elementSourcesService->getSortOptionsForFieldLayouts($config['fieldLayouts'])),
+                    ], $elementSourcesService->getSortOptionsForFieldLayouts($config['fieldLayouts'])->all()),
                 );
                 // Don't let sources.twig merge sortOptions with anything else!
                 $sortOptionsKey = 'sortOptions';
 
                 $tableColumns = array_merge(
                     $tableColumns,
-                    $elementSourcesService->getTableAttributesForFieldLayouts($config['fieldLayouts']),
+                    $elementSourcesService->getTableAttributesForFieldLayouts($config['fieldLayouts'])->all(),
                 );
             }
         }

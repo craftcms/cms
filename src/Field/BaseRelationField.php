@@ -29,8 +29,8 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
-use craft\services\ElementSources;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -454,7 +454,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $inputSources = [$inputSources];
         }
 
-        $elementSources = Collection::make(Craft::$app->elementSources->getSources(static::elementType()))
+        $elementSources = app(ElementSources::class)
+            ->getSources(static::elementType())
             ->whereIn('key', $inputSources);
 
         if (count($elementSources) > 1) {
@@ -1133,7 +1134,7 @@ JS, [
      */
     protected function gqlFieldArguments(): array
     {
-        $elementSourcesService = Craft::$app->getElementSources();
+        $elementSourcesService = app(ElementSources::class);
         $gqlService = Craft::$app->getGql();
         $fieldLayouts = [];
         $arguments = [];
@@ -1746,10 +1747,11 @@ JS, [
      */
     protected function availableSources(): array
     {
-        return Arr::where(
-            Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
-            fn ($s) => $s['type'] !== ElementSources::TYPE_HEADING,
-        );
+        return app(ElementSources::class)
+            ->getSources(static::elementType(), 'modal')
+            ->where('type', '!=', ElementSources::TYPE_HEADING)
+            ->values()
+            ->all();
     }
 
     /**

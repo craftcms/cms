@@ -948,6 +948,7 @@ trait ApplicationTrait
      * Returns the element indexes service.
      *
      * @return ElementSources The element indexes service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementSources} instead.
      */
     public function getElementSources(): ElementSources
     {

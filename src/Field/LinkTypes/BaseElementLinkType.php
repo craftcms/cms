@@ -8,7 +8,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
-use craft\services\ElementSources;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -169,14 +169,13 @@ JS, [
     {
         $availableSourceKeys = array_flip($this->availableSourceKeys());
 
-        return Collection::make(Craft::$app->getElementSources()->getSources(
+        return app(ElementSources::class)->getSources(
             static::elementType(),
             ElementSources::CONTEXT_FIELD,
+        )->filter(fn (array $source) => (
+            ($source['type'] === ElementSources::TYPE_NATIVE && isset($availableSourceKeys[$source['key']])) ||
+            $source['type'] === ElementSources::TYPE_CUSTOM
         ))
-            ->filter(fn (array $source) => (
-                ($source['type'] === ElementSources::TYPE_NATIVE && isset($availableSourceKeys[$source['key']])) ||
-                $source['type'] === ElementSources::TYPE_CUSTOM
-            ))
             ->all();
     }
 

@@ -15,8 +15,8 @@ use craft\base\NestedElementInterface;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
-use craft\services\ElementSources;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -695,7 +695,7 @@ class ElementHelper
         string $context = ElementSources::CONTEXT_INDEX,
     ): ?array {
         $path = explode('/', $sourceKey);
-        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
+        $sources = app(ElementSources::class)->getSources($elementType, $context);
         $rootSource = null;
 
         while ($path) {
