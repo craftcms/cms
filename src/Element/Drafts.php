@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -35,14 +36,14 @@ final readonly class Drafts
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
      *
-     * @return ElementInterface[]
+     * @return Collection<ElementInterface>
      */
-    public function getEditableDrafts(ElementInterface $element, ?string $permission = null): array
+    public function getEditableDrafts(ElementInterface $element, ?string $permission = null): Collection
     {
         $user = Auth::user();
 
         if (! $user) {
-            return [];
+            return collect();
         }
 
         $query = $element::find()
@@ -52,10 +53,10 @@ final readonly class Drafts
             ->orderBy(['dateUpdated' => SORT_DESC]);
 
         if (! $permission || ! $user->can($permission)) {
-            $query->draftCreator($user);
+            $query->draftCreator($user->id);
         }
 
-        return $query->all();
+        return collect($query->all());
     }
 
     /**

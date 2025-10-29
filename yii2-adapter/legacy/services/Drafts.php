@@ -66,7 +66,7 @@ class Drafts extends Component
      */
     public function getEditableDrafts(ElementInterface $element, ?string $permission = null): array
     {
-        return app(\CraftCms\Cms\Element\Drafts::class)->getEditableDrafts($element, $permission);
+        return app(\CraftCms\Cms\Element\Drafts::class)->getEditableDrafts($element, $permission)->all();
     }
 
     /**
