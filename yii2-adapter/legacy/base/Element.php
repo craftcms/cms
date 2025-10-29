@@ -164,15 +164,15 @@ use function CraftCms\Cms\t;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
- * @property-write int|null $revisionCreatorId revision creator ID to be saved
- * @property-write string|null $revisionNotes revision notes to be saved
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 abstract class Element extends Component implements ElementInterface
 {
-    use Draftable;
+    use Draftable {
+        canCreateDrafts as traitCanCreateDrafts;
+    }
     use Revisionable;
     use ElementTrait;
     use ArrayableTrait {
@@ -864,14 +864,6 @@ abstract class Element extends Component implements ElementInterface
     public static function refHandle(): ?string
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasDrafts(): bool
-    {
-        return false;
     }
 
     /**
@@ -2507,12 +2499,6 @@ abstract class Element extends Component implements ElementInterface
     private array $_eagerLoadedElementCounts = [];
 
     /**
-     * @var ElementInterface|false|null
-     * @see getCurrentRevision()
-     */
-    private ElementInterface|false|null $_currentRevision = null;
-
-    /**
      * @var bool|bool[]
      * @see getEnabledForSite()
      * @see setEnabledForSite()
@@ -3182,22 +3168,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsDraft(): bool
-    {
-        return !empty($this->draftId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsRevision(): bool
-    {
-        return !empty($this->revisionId);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsCanonical(): bool
     {
         return !isset($this->_canonicalId);
@@ -3765,15 +3735,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function canDuplicateAsDraft(User $user): bool
-    {
-        // if anything, this will be more lenient than canDuplicate()
-        return Craft::$app->getElements()->canDuplicate($this, $user);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function canCopy(User $user): bool
     {
         return false;
@@ -3835,15 +3796,7 @@ abstract class Element extends Component implements ElementInterface
             return $event->authorized;
         }
 
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasRevisions(): bool
-    {
-        return false;
+        return $this->traitCanCreateDrafts(\CraftCms\Cms\User\Models\User::findOrFail($user->id));
     }
 
     /**
@@ -3886,37 +3839,6 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getPostEditUrl(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpRevisionsUrl(): ?string
-    {
-        $cpEditUrl = $this->cpRevisionsUrl();
-
-        if (!$cpEditUrl) {
-            return null;
-        }
-
-        $params = [];
-
-        if (Sites::isMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($cpEditUrl, $params);
-    }
-
-    /**
-     * Returns the element’s revisions index URL in the control panel.
-     *
-     * @return string|null
-     * @since 4.4.0
-     */
-    protected function cpRevisionsUrl(): ?string
     {
         return null;
     }
@@ -5655,7 +5577,7 @@ JS, [
                 $this->_parent = $elements[0] ?? false;
                 break;
             case 'currentRevision':
-                $this->_currentRevision = $elements[0] ?? false;
+                $this->currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
                 /** @var User[] $elements */
@@ -5747,45 +5669,6 @@ JS, [
     public function setIsFresh(bool $isFresh = true): void
     {
         $this->_isFresh = $isFresh;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setRevisionCreatorId(?int $creatorId): void
-    {
-        $this->revisionCreatorId = $creatorId;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setRevisionNotes(?string $notes): void
-    {
-        $this->revisionNotes = $notes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCurrentRevision(): ?ElementInterface
-    {
-        if (!$this->id) {
-            return null;
-        }
-
-        if (!isset($this->_currentRevision)) {
-            $canonical = $this->getCanonical(true);
-            $this->_currentRevision = static::find()
-                ->siteId($canonical->siteId)
-                ->revisionOf($canonical->id)
-                ->dateCreated($canonical->dateUpdated)
-                ->status(null)
-                ->orderBy(['num' => SORT_DESC])
-                ->one() ?: false;
-        }
-
-        return $this->_currentRevision ?: null;
     }
 
     /**
