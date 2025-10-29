@@ -17,6 +17,9 @@ export interface CraftData {
   [key: string]: any;
 }
 
+/**
+ * @TODO move to NPM package
+ */
 export function useHelpers() {
   const craftData = useCraftData();
 

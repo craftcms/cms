@@ -1,24 +1,14 @@
 <script setup lang="ts">
-  import useCraftData from '@/composables/useCraftData';
+  import useCraftData, {useHelpers} from '@/composables/useCraftData';
   import {t} from '@craftcms/cp';
   import {computed, inject, ref} from 'vue';
   import axios from 'axios';
 
-  const {currentUser, actionUrl} = useCraftData();
+  const {getActionUrl} = useHelpers();
+  const {currentUser} = useCraftData();
   const state = ref<string>('idle');
   const errors = ref<Record<string, Array<string>> | null>(null);
   const response = ref<any>(null);
-
-  /**
-   * @TODO Move to the npm package
-   * @param path
-   */
-  function getActionUrl(path: string = '') {
-    const url = new URL(actionUrl);
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    url.pathname = `${url.pathname}/${cleanPath}`;
-    return url.toString();
-  }
 
   /**
    * @TODO This should probably be a composable
@@ -34,12 +24,11 @@
     const formData = new FormData(target);
 
     try {
-      const createSupportResponse = await axios.post(target.action, formData, {
+      response.value = await axios.post(target.action, formData, {
         headers: {
           Accept: 'application/json',
         },
       });
-      response.value = createSupportResponse;
       state.value = 'success';
     } catch (error) {
       state.value = 'error';
