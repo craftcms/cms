@@ -1,55 +1,53 @@
 {% import "_includes/forms" as forms %}
 
-<div class="tw:grid tw:gap-3">
-  <craft-input
-    label="{{ "URL"|t('app') }}"
-    id="url"
-    name="url"
-    value="{{ widget.url }}"
-    required="true"
-  >
-    {% if widget.getErrors('url') %}
-      <div slot="after">
-        {% include '_inclues/forms/errorList.twig' with {
-          'id': '',
-          'errors': widget.getErrors('url')
-        } only %}
-      </div>
-    {% endif %}
-  </craft-input>
+<craft-input
+  label="{{ "URL"|t('app') }}"
+  id="url"
+  name="url"
+  value="{{ widget.url }}"
+  required="true"
+>
+  {% if widget.getErrors('url') %}
+    <div slot="after">
+      {% include '_inclues/forms/errorList.twig' with {
+        'id': '',
+        'errors': widget.getErrors('url')
+      } only %}
+    </div>
+  {% endif %}
+</craft-input>
 
-  <craft-input
-    label="{{ "Title"|t('app') }}"
-    id="title"
-    name="title"
-    value="{{ widget.title }}"
-    required="true"
-  >
-    {% if widget.getErrors('title') %}
-      <div slot="after">
-        {% include '_inclues/forms/errorList.twig' with {
-          'id': '',
-          'errors': widget.getErrors('title')
-        } only %}
-      </div>
-    {% endif %}
-  </craft-input>
+<craft-input
+  label="{{ "Title"|t('app') }}"
+  id="title"
+  name="title"
+  value="{{ widget.title }}"
+  required="true"
+>
+  {% if widget.getErrors('title') %}
+    <div slot="after">
+      {% include '_inclues/forms/errorList.twig' with {
+        'id': '',
+        'errors': widget.getErrors('title')
+      } only %}
+    </div>
+  {% endif %}
+</craft-input>
 
-  <craft-input
-    label="{{ "Limit"|t('app') }}"
-    id="limit"
-    name="limit"
-    value="{{ widget.limit }}"
-    size="2"
-    required="true"
-  >
-    {% if widget.getErrors('limit') %}
-      <div slot="after">
-        {% include '_inclues/forms/errorList.twig' with {
-          'id': '',
-          'errors': widget.getErrors('limit')
-        } only %}
-      </div>
-    {% endif %}
-  </craft-input>
-</div>
+<craft-input
+  label="{{ "Limit"|t('app') }}"
+  id="limit"
+  name="limit"
+  value="{{ widget.limit }}"
+  size="2"
+  required="true"
+>
+  {% if widget.getErrors('limit') %}
+    <div slot="after">
+      {% include '_inclues/forms/errorList.twig' with {
+        'id': '',
+        'errors': widget.getErrors('limit')
+      } only %}
+    </div>
+  {% endif %}
+</craft-input>

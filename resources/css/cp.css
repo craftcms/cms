@@ -1,7 +1,7 @@
 /**
 CP Styles
  */
-@layer theme, base, components, utilities;
+@layer theme, base, cp, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme) prefix(tw);
 @import 'tailwindcss/utilities.css' layer(utilities) prefix(tw);
 

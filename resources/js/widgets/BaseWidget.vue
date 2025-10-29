@@ -4,25 +4,19 @@
   import {useHelpers} from '@/composables/useCraftData';
   import axios from 'axios';
   import {t} from '@craftcms/cp';
+  import type {CompleteWidget} from '@/types';
 
   const emit = defineEmits<{
     (e: 'update', widget: any): void;
     (e: 'delete', widgetId: number): void;
   }>();
 
-  const props = withDefaults(
-    defineProps<{
-      title: string | null;
-      id: number;
-      type: string;
-      bodyHtml: string;
-      settingsHtml?: string;
-      settingsNamespace?: string;
-      view?: 'default' | 'settings';
-      new?: boolean;
-    }>(),
-    {view: 'default', new: false, settingsNamespace: ''}
-  );
+  const props = withDefaults(defineProps<CompleteWidget>(), {
+    view: 'default',
+    mode: 'view',
+    new: false,
+    settingsNamespace: '',
+  });
 
   const {getActionUrl} = useHelpers();
   const state = ref<'idle' | 'loading' | 'deleting' | 'error'>('idle');
@@ -110,14 +104,18 @@
     ></DynamicHtmlRenderer>
 
     <template v-if="settingsHtml && view === 'settings'">
-      <form
-        @submit.prevent="handleSubmit"
-        :action="getActionUrl(action)"
-      >
+      <form @submit.prevent="handleSubmit" :action="getActionUrl(action)">
         <input type="hidden" name="widgetId" :value="id" />
         <input type="hidden" name="type" :value="type" />
-        <input type="hidden" name="settingsNamespace" :value="settingsNamespace">
-        <DynamicHtmlRenderer :html="settingsHtml"></DynamicHtmlRenderer>
+        <input
+          type="hidden"
+          name="settingsNamespace"
+          :value="settingsNamespace"
+        />
+
+        <div class="tw:grid tw:gap-3">
+          <DynamicHtmlRenderer :html="settingsHtml"></DynamicHtmlRenderer>
+        </div>
 
         <div
           class="tw:flex tw:gap-2 tw:mt-6 tw:pt-3 tw:border-t tw:border-neutral-200"

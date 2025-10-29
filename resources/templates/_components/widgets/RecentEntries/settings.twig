@@ -1,40 +1,38 @@
-<div class="tw:grid tw:gap-3">
-  {% if craft.sites.isMultiSite() %}
-    {% set editableSites = craft.sites.getEditableSites() %}
+{% if craft.sites.isMultiSite() %}
+  {% set editableSites = craft.sites.getEditableSites() %}
 
-    {% if editableSites|length > 1 %}
-      <craft-select id="site-id" label="{{ 'Site'|t('app') }}">
-        {% for site in editableSites %}
-          <craft-option .choiceValue="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</craft-option>
-        {% endfor %}
-      </craft-select>
-    {% endif %}
+  {% if editableSites|length > 1 %}
+    <craft-select id="site-id" label="{{ 'Site'|t('app') }}">
+      {% for site in editableSites %}
+        <craft-option .choiceValue="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</craft-option>
+      {% endfor %}
+    </craft-select>
   {% endif %}
+{% endif %}
 
-  <craft-select
-    label="{{ "Section"|t('app') }}"
-    help-text="{{ "Which section do you want to pull recent entries from?"|t('app') }}"
-    name="section"
-    id="section"
-  >
-    <craft-option value="*">{{ "All"|t('app') }}</craft-option>
-    {% for section in craft.app.entries.getAllSections() %}
-      {% if section.type != 'single' %}
-        <craft-option .choiceValue="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</craft-option>
-      {% endif %}
-    {% endfor %}
-  </craft-select>
-
-  <craft-input label="{{ "Limit"|t('app') }}" id="limit" name="limit" value="{{ widget.limit }}" size="2">
-    {% if widget.getErrors('limit') %}
-      <ul slot="after">
-        {% for error in widget.getErrors('limit') %}
-          <li>
-            <span class="visually-hidden">{{ 'Error:'|t('app') }}</span>
-            {{ error|md(inlineOnly=true, encode=true)|raw }}
-          </li>
-        {% endfor %}
-      </ul>
+<craft-select
+  label="{{ "Section"|t('app') }}"
+  help-text="{{ "Which section do you want to pull recent entries from?"|t('app') }}"
+  name="section"
+  id="section"
+>
+  <craft-option value="*">{{ "All"|t('app') }}</craft-option>
+  {% for section in craft.app.entries.getAllSections() %}
+    {% if section.type != 'single' %}
+      <craft-option .choiceValue="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</craft-option>
     {% endif %}
-  </craft-input>
-</div>
+  {% endfor %}
+</craft-select>
+
+<craft-input label="{{ "Limit"|t('app') }}" id="limit" name="limit" value="{{ widget.limit }}" size="2">
+  {% if widget.getErrors('limit') %}
+    <ul slot="after">
+      {% for error in widget.getErrors('limit') %}
+        <li>
+          <span class="visually-hidden">{{ 'Error:'|t('app') }}</span>
+          {{ error|md(inlineOnly=true, encode=true)|raw }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</craft-input>
