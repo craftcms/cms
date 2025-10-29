@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\elements\User as UserElement;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\ElementAuthorizationCheck;
+use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -129,8 +129,8 @@ trait Draftable
      */
     public function canCreateDrafts(User $user): bool
     {
-        if (Event::hasListeners(ElementAuthorizationCheck::class)) {
-            Event::dispatch($event = new ElementAuthorizationCheck($this, $user));
+        if (Event::hasListeners(AuthorizeCreateDrafts::class)) {
+            Event::dispatch($event = new AuthorizeCreateDrafts($this, $user));
 
             return $event->authorized;
         }

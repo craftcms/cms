@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Events;
 use craft\base\ElementInterface;
 use CraftCms\Cms\User\Models\User;
 
-final class ElementAuthorizationCheck
+final class AuthorizeCreateDrafts
 {
     public function __construct(
         public ElementInterface $element,

@@ -36,7 +36,7 @@ final readonly class CreateEntryController
         private Entries $entries,
     ) {}
 
-    public function __invoke()
+    public function __invoke(Drafts $drafts): Response
     {
         $section = $this->getSection();
         $site = $this->getSite($section);
@@ -88,7 +88,7 @@ final readonly class CreateEntryController
 
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $success = app(Drafts::class)->saveElementAsDraft($entry, $user->id, markAsSaved: false);
+        $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time
         DateTimeHelper::resume();
