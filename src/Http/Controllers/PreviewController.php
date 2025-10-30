@@ -44,7 +44,7 @@ final readonly class PreviewController
         };
 
         $token = $tokens->createPreviewToken([
-            action(self::preview(...), absolute: false), [
+            route('craft.actions.preview', absolute: false), [
                 'elementType' => $data['elementType'],
                 'canonicalId' => (int) $canonicalId,
                 'siteId' => (int) $data['siteId'],

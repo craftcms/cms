@@ -68,7 +68,7 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
     });
 
     Route::middleware([RequireToken::class])->group(function () {
-        Route::any('preview/preview', [PreviewController::class, 'preview']);
+        Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
     });
 });
 
