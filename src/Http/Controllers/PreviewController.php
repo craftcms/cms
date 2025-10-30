@@ -81,30 +81,24 @@ final readonly class PreviewController
             ->siteId($request->integer('siteId'))
             ->status(null);
 
-        if ($draftId = $request->integer('draftId')) {
-            $element = $query
-                ->draftId($draftId)
-                ->one();
-        } elseif ($revisionId = $request->integer('revisionId')) {
-            $element = $query
-                ->revisionId($revisionId)
-                ->one();
-        } else {
-            if ($userId = $request->integer('userId')) {
-                // First check if there's a provisional draft
-                $user = \Craft::$app->getUsers()->getUserById($userId);
-                ElementHelper::setProvisionalDraftUser($user);
+        $elementFn = match (true) {
+            (bool) $draftId = $request->integer('draftId') => fn () => $query->draftId($draftId)->one(),
+            (bool) $revisionId = $request->integer('revisionId') => fn () => $query->revisionId($revisionId)->one(),
+            (bool) $userId = $request->integer('userId') => function () use ($userId, $query, $request) {
+                ElementHelper::setProvisionalDraftUser($userId);
+
                 $element = (clone $query)
                     ->draftOf($request->integer('canonicalId'))
                     ->provisionalDrafts()
                     ->draftCreator($userId)
                     ->one();
-            }
 
-            $element ??= $query->id($request->integer('canonicalId'))->one();
-        }
+                return $element ?? $query->id($request->integer('canonicalId'))->one();
+            },
+            default => fn () => null,
+        };
 
-        if ($element) {
+        if ($element = $elementFn()) {
             if (! $element->lft && $element->getIsDerivative()) {
                 // See if we can add structure data to it
                 $canonical = $element->getCanonical(true);
