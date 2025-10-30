@@ -36,8 +36,8 @@ final class RouteServiceProvider extends ServiceProvider
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
-            HandleActionRequest::class,
             HandleTokenRequest::class,
+            HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
     }
 

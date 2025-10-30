@@ -13,6 +13,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\t;
@@ -124,6 +125,7 @@ final readonly class PreviewController
         $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
         $originalUri = $originalUri->withoutQuery([
             'token',
+            'x-craft-preview',
             'x-craft-live-preview',
         ]);
 
@@ -132,11 +134,10 @@ final readonly class PreviewController
             query: $originalUri->query()->all()
         );
         $newRequest->headers->remove(HandleTokenRequest::TOKEN_HEADER);
-
         $response = $kernel->handle($newRequest);
 
         return match (true) {
-            $response instanceof \Illuminate\Http\Response => $response->setNoCacheHeaders(),
+            $response instanceof Response => $response->setNoCacheHeaders(),
             default => $response,
         };
     }
