@@ -44,7 +44,7 @@ final readonly class PreviewController
         };
 
         $token = $tokens->createPreviewToken([
-            'preview/preview', [
+            action(self::preview(...), absolute: false), [
                 'elementType' => $data['elementType'],
                 'canonicalId' => (int) $canonicalId,
                 'siteId' => (int) $data['siteId'],
@@ -123,11 +123,6 @@ final readonly class PreviewController
 
         /** @var \Illuminate\Support\Uri $originalUri */
         $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
-        $originalUri = $originalUri->withoutQuery([
-            'token',
-            'x-craft-preview',
-            'x-craft-live-preview',
-        ]);
 
         $newRequest = $request->duplicateWithUri(
             newUri: $originalUri->value(),

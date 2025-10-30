@@ -50,11 +50,13 @@ final readonly class HandleTokenRequest
             return $next($request);
         }
 
-        Context::addHidden(self::ORIGINAL_URI_KEY, $request->uri());
+        Context::addHidden(self::ORIGINAL_URI_KEY, $request->uri()->withoutQuery([
+            'token',
+            'x-craft-preview',
+            'x-craft-live-preview',
+        ]));
 
-        $route = $request->actionSegmentsToRoute(explode('/', (string) $tokenRoute[0]));
-
-        $newRequest = $request->duplicateWithUri($route, $tokenRoute[1] ?? []);
+        $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
 
         return $next($newRequest);
     }
