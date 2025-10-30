@@ -14,8 +14,8 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Search;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Search;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
