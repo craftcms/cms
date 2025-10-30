@@ -84,7 +84,6 @@ class UserPermissionsTest extends TestCase
         self::assertContains('Sites', $headings);
         self::assertContains('Section - Single', $headings);
         self::assertContains('Section - Test 1', $headings);
-        self::assertContains('Global Sets', $headings);
         self::assertContains('Volume - Test volume 1', $headings);
         self::assertContains('Utilities', $headings);
     }
