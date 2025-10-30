@@ -45,8 +45,11 @@ export default class CraftTooltip extends WaTooltip {
   }
 }
 
-if (!customElements.get('craft-tooltip')) {
-  customElements.define('craft-tooltip', CraftTooltip);
+/**
+ * @TODO rename this once I figure out what to do with the existing `craft-tooltip`
+ */
+if (!customElements.get('c-tooltip')) {
+  customElements.define('c-tooltip', CraftTooltip);
 }
 
 declare global {
