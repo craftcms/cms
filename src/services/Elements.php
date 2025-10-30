@@ -4416,6 +4416,8 @@ class Elements extends Component
                             ) {
                                 // copy the initial element’s value over
                                 $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                                // give plugins a chance to do special processing if required
+                                $field->handlePropagateRequired($element, $siteElement);
                             }
                         }
                     }

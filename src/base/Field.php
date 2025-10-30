@@ -1368,4 +1368,18 @@ JS, [
 
         return true;
     }
+
+    /**
+     * Gives fields a chance to handle special cases when propagating required fields.
+     *
+     * @param ElementInterface $element
+     * @param ElementInterface $siteElement
+     * @return void
+     * @since 5.9.0
+     */
+    public function handlePropagateRequired(ElementInterface $element, ElementInterface $siteElement): void
+    {
+        // by default, no extra processing is needed when propagating required fields,
+        // but plugins can use this method when they need to;
+    }
 }
