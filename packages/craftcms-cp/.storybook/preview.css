@@ -17,3 +17,9 @@
 .gap-4 {
   gap: 1rem;
 }
+
+.icon {
+  display: inline-flex;
+  width: auto;
+  height: 1em;
+}

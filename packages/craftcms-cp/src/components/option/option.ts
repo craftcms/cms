@@ -1,7 +1,11 @@
-import CraftOption from './option.component.js';
+import styles from './option.styles.js';
+import {LionOption} from '@lion/ui/listbox.js';
 
-export * from './option.component.js';
-export default CraftOption;
+export default class CraftOption extends LionOption {
+  static override get styles() {
+    return [...LionOption.styles, styles];
+  }
+}
 
 if (!customElements.get('craft-option')) {
   customElements.define('craft-option', CraftOption);

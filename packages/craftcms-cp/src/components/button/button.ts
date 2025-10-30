@@ -1,7 +1,57 @@
-import CraftButton from './button.component.js';
+import {LionButtonSubmit} from '@lion/ui/button.js';
+import {html, nothing} from 'lit';
+import {property} from 'lit/decorators.js';
+import styles from './button.styles.js';
+import '../spinner/spinner.js';
 
-export * from './button.component.js';
-export default CraftButton;
+/**
+ * @summary Interactive element that triggers an action or event.
+ * @since 1.0
+ *
+ * @dependency craft-spinner
+ *
+ * @slot - The button's label.
+ * @slot prefix - Content to display before the label (typically an icon).
+ * @slot suffix - Content to display after the label (typically an icon).
+ *
+ * @csspart content - The button's content wrapper.
+ * @csspart prefix - The button's prefix slot.
+ * @csspart label - The button's label slot.
+ * @csspart suffix - The button's suffix slot.
+ * @csspart spinner - Spinner that shows when the button is in a loading state.
+ */
+export default class CraftButton extends LionButtonSubmit {
+  static override get styles() {
+    return [...super.styles, styles];
+  }
+
+  /** Visual appearance of the button */
+  @property({reflect: true}) appearance: 'accent' | 'plain' = 'accent';
+
+  /** Theme variant of the button. Defaults to "default" */
+  @property({reflect: true}) variant: 'primary' | 'default' | 'danger' =
+    'default';
+
+  /** Size of the button. Defaults to "medium" */
+  @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
+    'medium';
+
+  /** Show a spinner instead of the label */
+  @property({reflect: true, type: Boolean}) loading: boolean = false;
+
+  override render() {
+    return html`
+      <div class="button-content" part="content">
+        <slot name="prefix" class="prefix" part="prefix"></slot>
+        <slot class="label" part="label"></slot>
+        <slot name="suffix" class="suffix" part="suffix"></slot>
+      </div>
+      ${this.loading
+        ? html`<craft-spinner part="spinner"></craft-spinner>`
+        : nothing}
+    `;
+  }
+}
 
 if (!customElements.get('craft-button')) {
   customElements.define('craft-button', CraftButton);
