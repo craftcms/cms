@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Console\CraftCommand;
-use DateTime;
+use CraftCms\Cms\User\Actions\GetImpersonationUrlAction;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laravel\Prompts\Concerns\Colors;
@@ -26,27 +25,19 @@ final class ImpersonateCommand extends Command implements PromptsForMissingInput
 
     protected $aliases = ['users/impersonate'];
 
-    public function handle(): int
+    public function handle(GetImpersonationUrlAction $getImpersonationUrlAction): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
         }
 
-        $token = Craft::$app->getTokens()->createToken([
-            'users/impersonate-with-token', [
-                'userId' => $user->id,
-                'prevUserId' => $user->id,
-            ],
-        ], 1, new DateTime('+1 hour'));
+        $url = $getImpersonationUrlAction(User::findOrFail($user->id));
 
-        if (! $token) {
+        if ($url === false) {
             $this->components->error('Unable to create the impersonation token.');
 
             return self::FAILURE;
         }
-
-        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
-        $url = UrlHelper::urlWithToken($url, $token);
 
         info("Impersonation URL for “{$user->username}”: ".$this->cyan($url).' (Expires in one hour)');
 

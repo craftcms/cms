@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -36,6 +37,7 @@ final class RouteServiceProvider extends ServiceProvider
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleActionRequest::class,
+            HandleTokenRequest::class,
         ], $kernel->getGlobalMiddleware()));
     }
 

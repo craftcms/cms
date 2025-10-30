@@ -121,7 +121,7 @@ final readonly class SectionsController
         Sections $sections,
         Section $section,
     ): Response {
-        $sectionId = $request->input('sectionId');
+        $sectionId = $request->integer('sectionId');
 
         if ($sectionId) {
             abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");

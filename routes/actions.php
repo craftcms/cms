@@ -21,6 +21,7 @@ use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
+use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
@@ -40,6 +41,21 @@ use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireToken;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+
+/**
+ * Actions that should not have CSRF token verification. These are automatically
+ * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
+ */
+VerifyCsrfToken::except(collect([
+    'preview/preview',
+])->flatMap(fn (string $route) => [
+    $route,
+    Cms::config()->actionTrigger.Str::start($route, '/'),
+    Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
+])->all());
 
 /**
  * Actions that are accessible without CP can be registered here.
@@ -49,6 +65,10 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware(['auth'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
+    });
+
+    Route::middleware([RequireToken::class])->group(function () {
+        Route::any('preview/preview', [PreviewController::class, 'preview']);
     });
 });
 
@@ -141,6 +161,9 @@ Route::prefix(implode('/', [
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
+
+        // Preview
+        Route::any('preview/create-token', [PreviewController::class, 'createToken']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

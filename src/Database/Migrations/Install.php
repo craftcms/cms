@@ -739,7 +739,7 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::TOKENS, function (Blueprint $table) {
+        Schema::create('tokens', function (Blueprint $table) {
             $table->integer('id', true);
             $table->char('token', 32);
             $table->text('route')->nullable();

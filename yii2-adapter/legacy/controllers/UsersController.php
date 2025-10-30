@@ -56,7 +56,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
+use CraftCms\Cms\User\Actions\GetImpersonationUrlAction;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -450,20 +450,11 @@ class UsersController extends Controller
         // Make sure they're allowed to impersonate this user
         $this->_enforceImpersonatePermission($user);
 
-        // Create a single-use token that expires in an hour
-        $token = Craft::$app->getTokens()->createToken([
-            'users/impersonate-with-token', [
-                'userId' => $userId,
-                'prevUserId' => Craft::$app->getUser()->getId(),
-            ],
-        ], 1, new DateTime('+1 hour'));
+        $url = app(GetImpersonationUrlAction::class)(\CraftCms\Cms\User\Models\User::findOrFail($user));
 
-        if (!$token) {
+        if ($url === false) {
             throw new ServerErrorHttpException('Unable to create the invalidation token.');
         }
-
-        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
-        $url = UrlHelper::urlWithToken($url, $token);
 
         return $this->asJson(compact('url'));
     }

@@ -22,6 +22,7 @@ use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -159,6 +160,24 @@ final class AppServiceProvider extends ServiceProvider
             return [];
         });
 
+        Request::macro('actionSegmentsToRoute', function (?array $actionSegments = null): string {
+            $actionSegments ??= $this->actionSegments();
+
+            return implode('/', array_filter([
+                '',
+                $this->isCpRequest() ? Cms::config()->cpTrigger : null,
+                Cms::config()->actionTrigger,
+                ...$actionSegments,
+            ], fn ($value) => ! is_null($value)));
+        });
+
+        Request::macro('duplicateWithUri', fn (string $newUri, ?array $query = null, array $server = []): Request => $this->duplicate(
+            query: $query ?? $this->query->all(),
+            server: array_merge($this->server->all(), $server, [
+                'REQUEST_URI' => $newUri,
+            ]),
+        ));
+
         Request::macro('getSigned', function (string $key, mixed $default = null): mixed {
             $value = $this->get($key);
 
@@ -171,6 +190,14 @@ final class AppServiceProvider extends ServiceProvider
             abort_if($value === false, 400, 'Request contained an invalid body param');
 
             return $value;
+        });
+
+        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
+            $this->header('Expires', '0', $replace);
+            $this->header('Pragma', 'no-cache', $replace);
+            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
+
+            return $this;
         });
 
         Factory::macro('create', fn (array $options = []) => $this->throw()
