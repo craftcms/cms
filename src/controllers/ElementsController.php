@@ -2159,6 +2159,7 @@ JS, [
         }
 
         try {
+            $element->propagateRequired = false;
             $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);

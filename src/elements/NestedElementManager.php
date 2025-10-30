@@ -854,8 +854,11 @@ JS, [
 
             // Should we duplicate the elements to other sites?
             if (
-                $this->propagationMethod !== PropagationMethod::All &&
-                ($owner->propagateAll || !empty($owner->newSiteIds) || ($owner->propagateRequired && $this->field->layoutElement->required))
+                (
+                    $this->propagationMethod !== PropagationMethod::All &&
+                    ($owner->propagateAll || !empty($owner->newSiteIds))
+                ) ||
+                ($owner->propagateRequired && $this->field->layoutElement->required)
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
                 $ownerSiteIds = array_map(
@@ -920,9 +923,9 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if (!$owner->propagateRequired) {
+                            if ($owner->propagateAll) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
-                            } elseif ($this->field->layoutElement->required) {
+                            } elseif ($owner->propagateRequired && $this->field->layoutElement->required) {
                                 // if we're propagating required and the field is required, and it doesn't validate because of this field,
                                 // duplicate like above
                                 $localizedOwner->setScenario(Element::SCENARIO_LIVE);
