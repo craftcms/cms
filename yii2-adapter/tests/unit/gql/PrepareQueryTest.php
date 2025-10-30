@@ -12,7 +12,6 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\models\GqlSchema;
-use craft\records\Element;
 use craft\records\EntryType;
 use craft\records\UserGroup;
 use craft\records\Volume;
@@ -38,7 +37,6 @@ class PrepareQueryTest extends TestCase
     private Volume $_volume;
     private Section $_section;
     private EntryType $_entryType;
-    private Element $_element;
     private UserGroup $_userGroup;
 
 
@@ -75,7 +73,6 @@ class PrepareQueryTest extends TestCase
         $this->_volume->delete();
         Sections::deleteSection($this->_section);
         $this->_entryType->delete();
-        $this->_element->delete();
         $this->_userGroup->delete();
 
         Craft::$app->set('entries', new Entries());
