@@ -10,26 +10,19 @@ namespace crafttests\unit\gql;
 use Codeception\Stub;
 use Craft;
 use craft\elements\Asset as AssetElement;
-use craft\elements\Category as CategoryElement;
 use craft\elements\Entry as EntryElement;
-use craft\elements\GlobalSet as GlobalSetElement;
-use craft\elements\Tag as TagElement;
 use craft\errors\GqlException;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\generators\TableRowType;
-use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\Section;
-use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
 use CraftCms\Cms\Field\PlainText;
@@ -61,9 +54,6 @@ class InterfaceAndGeneratorTest extends TestCase
                         'volumes.volume-uid-2:read',
                         'sections.section-uid-1:read',
                         'sections.section-uid-2:read',
-                        'categorygroups.categoyGroup-uid-1:read',
-                        'taggroups.tagGroup-uid-1:read',
-                        'globalsets.globalset-uid-1:read',
                     ],
                 ]),
             ]
@@ -88,30 +78,6 @@ class InterfaceAndGeneratorTest extends TestCase
                 'getAllSections' => fn() => array_filter(array_map(fn(array $context) => $context['section'], $contexts)),
                 'getAllEntryTypes' => fn() => array_filter(array_map(fn(array $context) => $context['entryType'], $contexts)),
             ],
-        );
-
-        $this->tester->mockMethods(
-            Craft::$app,
-            'globals',
-            [
-                'getAllSets' => fn() => static::mockGlobalSets(),
-            ]
-        );
-
-        $this->tester->mockMethods(
-            Craft::$app,
-            'categories',
-            [
-                'getAllGroups' => fn() => static::mockCategoryGroups(),
-            ]
-        );
-
-        $this->tester->mockMethods(
-            Craft::$app,
-            'tags',
-            [
-                'getAllTagGroups' => fn() => static::mockTagGroups(),
-            ]
         );
     }
 
@@ -206,8 +172,6 @@ class InterfaceAndGeneratorTest extends TestCase
                 [EntryTypeGenerator::class, 'generateType'],
                 false,
             ],
-            [CategoryInterface::class, fn() => static::mockCategoryGroups(), [CategoryElement::class, 'gqlTypeName']],
-            [TagInterface::class, fn() => static::mockTagGroups(), [TagElement::class, 'gqlTypeName']],
         ];
     }
 
@@ -323,72 +287,6 @@ class InterfaceAndGeneratorTest extends TestCase
                 'section' => null,
                 'entryType' => $typeC,
             ],
-        ];
-    }
-
-    /**
-     * Mock the global sets for tests.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public static function mockGlobalSets(): array
-    {
-        return [
-            Stub::make(GlobalSetElement::class, [
-                'uid' => 'globalset-uid-1',
-                'handle' => 'mockGlobal',
-                '__call' => fn($name) => match ($name) {
-                    'getCustomFields' => [
-                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
-                    ],
-                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
-                },
-            ]),
-        ];
-    }
-
-    /**
-     * Mock a category group for tests.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public static function mockCategoryGroups(): array
-    {
-        return [
-            Stub::make(CategoryGroup::class, [
-                'uid' => 'categoyGroup-uid-1',
-                'handle' => 'mockCategoryGroup',
-                '__call' => fn($name) => match ($name) {
-                    'getCustomFields' => [
-                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
-                    ],
-                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
-                },
-            ]),
-        ];
-    }
-
-    /**
-     * Mock a tag group for tests.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public static function mockTagGroups(): array
-    {
-        return [
-            Stub::make(TagGroup::class, [
-                'uid' => 'tagGroup-uid-1',
-                'handle' => 'mockTagGroup',
-                '__call' => fn($name) => match ($name) {
-                    'getCustomFields' => [
-                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
-                    ],
-                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
-                },
-            ]),
         ];
     }
 }

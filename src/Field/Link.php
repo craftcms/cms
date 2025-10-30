@@ -26,7 +26,6 @@ use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
-use CraftCms\Cms\Field\LinkTypes\Category;
 use CraftCms\Cms\Field\LinkTypes\Email as EmailType;
 use CraftCms\Cms\Field\LinkTypes\Entry;
 use CraftCms\Cms\Field\LinkTypes\Phone;
@@ -112,7 +111,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             /** @var class-string<BaseLinkType>[] $types */
             $types = [
                 Asset::class,
-                Category::class,
                 EmailType::class,
                 Entry::class,
                 Phone::class,

@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\gql\mutations;
 
-use craft\elements\Category;
-use craft\gql\resolvers\mutations\Category as CategoryResolver;
+use craft\elements\Entry;
+use craft\gql\resolvers\mutations\Entry as EntryResolver;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Facades\Structures;
 use UnitTester;
@@ -39,7 +39,7 @@ class StructureOperationMutationTest extends TestCase
      */
     public function testStructureOperations(array $elementProperties, array $arguments, ?string $requiredMethod = null, ?string $exception = null): void
     {
-        $element = $this->make(Category::class, $elementProperties);
+        $element = $this->make(Entry::class, $elementProperties);
 
         $structuresMock = Structures::partialMock();
 
@@ -59,14 +59,14 @@ class StructureOperationMutationTest extends TestCase
         }
 
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => fn($elementId) => $elementId > 0 ? new Category() : null,
+            'getElementById' => fn($elementId) => $elementId > 0 ? new Entry() : null,
         ]);
 
         if ($exception) {
             $this->expectExceptionMessage($exception);
         }
 
-        $resolver = new CategoryResolver();
+        $resolver = new EntryResolver();
 
         $this->invokeMethod($resolver, 'performStructureOperations', [$element, $arguments]);
 

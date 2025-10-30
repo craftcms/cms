@@ -291,8 +291,6 @@ JS;
             'Move up',
             'Move',
             'Name',
-            'New category in the {group} category group',
-            'New category, choose a category group',
             'New child',
             'New custom source',
             'New entry in the {section} section',
@@ -305,7 +303,6 @@ JS;
             'New position saved.',
             'New position saved.',
             'New subfolder',
-            'New {group} category',
             'New {section} entry',
             'New {type}',
             'Next Page',
@@ -610,7 +607,6 @@ JS;
                 ?? $generalConfig->accessibilityDefaults['disableAutofocus']
                 ?? false
             ),
-            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Edition::get()->value,
             'elementTypeNames' => $elementTypeNames,
             'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
@@ -679,22 +675,6 @@ JS;
             'secure' => $config['secure'] ?? false,
             'sameSite' => $config['sameSite'] ?? 'strict',
         ];
-    }
-
-    private function _editableCategoryGroups(): array
-    {
-        $groups = [];
-
-        foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
-            $groups[] = [
-                'handle' => $group->handle,
-                'id' => (int)$group->id,
-                'name' => t($group->name, category: 'site'),
-                'uid' => $group->uid,
-            ];
-        }
-
-        return $groups;
     }
 
     /**

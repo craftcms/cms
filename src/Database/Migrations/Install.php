@@ -12,7 +12,6 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
-use craft\models\CategoryGroup;
 use craft\web\Response;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
@@ -219,41 +218,6 @@ class Install extends Migration
             $table->string('eventName');
             $table->dateTime('timestamp');
             $table->primary(['key', 'senderClass', 'eventName']);
-        });
-
-        Schema::create(Table::CATEGORIES, function (Blueprint $table) {
-            $table->integer('id');
-            $table->integer('groupId');
-            $table->integer('parentId')->nullable();
-            $table->boolean('deletedWithGroup')->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->primary('id');
-        });
-
-        Schema::create(Table::CATEGORYGROUPS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('structureId');
-            $table->integer('fieldLayoutId')->nullable();
-            $table->string('name');
-            $table->string('handle');
-            $table->enum('defaultPlacement', [CategoryGroup::DEFAULT_PLACEMENT_BEGINNING, CategoryGroup::DEFAULT_PLACEMENT_END])->default('end');
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->dateTime('dateDeleted')->nullable()->default(null);
-            $table->char('uid', 36)->default('0');
-        });
-
-        Schema::create(Table::CATEGORYGROUPS_SITES, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('groupId');
-            $table->integer('siteId');
-            $table->boolean('hasUrls')->default(true);
-            $table->text('uriFormat')->nullable();
-            $table->string('template', 500)->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
         });
 
         Schema::create(Table::CHANGEDATTRIBUTES, function (Blueprint $table) {
@@ -472,17 +436,6 @@ class Install extends Migration
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);
-            $table->char('uid', 36)->default('0');
-        });
-
-        Schema::create(Table::GLOBALSETS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->string('name');
-            $table->string('handle');
-            $table->integer('fieldLayoutId')->nullable();
-            $table->unsignedSmallInteger('sortOrder')->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
 
@@ -720,25 +673,6 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::TAGGROUPS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->string('name');
-            $table->string('handle');
-            $table->integer('fieldLayoutId')->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->dateTime('dateDeleted')->nullable()->default(null);
-            $table->char('uid', 36)->default('0');
-        });
-
-        Schema::create(Table::TAGS, function (Blueprint $table) {
-            $table->integer('id');
-            $table->integer('groupId');
-            $table->boolean('deletedWithGroup')->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-        });
-
         Schema::create(Table::TOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->char('token', 32);
@@ -902,14 +836,6 @@ class Install extends Migration
         Schema::createIndex(Table::ASSETS, ['folderId']);
         Schema::createIndex(Table::ASSETS, ['volumeId']);
         Schema::createIndex(Table::BULKOPEVENTS, ['timestamp']);
-        Schema::createIndex(Table::CATEGORIES, ['groupId']);
-        Schema::createIndex(Table::CATEGORYGROUPS, ['name']);
-        Schema::createIndex(Table::CATEGORYGROUPS, ['handle']);
-        Schema::createIndex(Table::CATEGORYGROUPS, ['structureId']);
-        Schema::createIndex(Table::CATEGORYGROUPS, ['fieldLayoutId']);
-        Schema::createIndex(Table::CATEGORYGROUPS, ['dateDeleted']);
-        Schema::createIndex(Table::CATEGORYGROUPS_SITES, ['groupId', 'siteId'], unique: true);
-        Schema::createIndex(Table::CATEGORYGROUPS_SITES, ['siteId']);
         Schema::createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
@@ -951,10 +877,6 @@ class Install extends Migration
         Schema::createIndex(Table::FIELDS, ['handle', 'context']);
         Schema::createIndex(Table::FIELDS, ['context']);
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
-        Schema::createIndex(Table::GLOBALSETS, ['name']);
-        Schema::createIndex(Table::GLOBALSETS, ['handle']);
-        Schema::createIndex(Table::GLOBALSETS, ['fieldLayoutId']);
-        Schema::createIndex(Table::GLOBALSETS, ['sortOrder']);
         Schema::createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
         Schema::createIndex(Table::GQLTOKENS, ['name'], unique: true);
         Schema::createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
@@ -992,10 +914,6 @@ class Install extends Migration
         Schema::createIndex(Table::STRUCTUREELEMENTS, ['level']);
         Schema::createIndex(Table::STRUCTUREELEMENTS, ['elementId']);
         Schema::createIndex(Table::STRUCTURES, ['dateDeleted']);
-        Schema::createIndex(Table::TAGGROUPS, ['name']);
-        Schema::createIndex(Table::TAGGROUPS, ['handle']);
-        Schema::createIndex(Table::TAGGROUPS, ['dateDeleted']);
-        Schema::createIndex(Table::TAGS, ['groupId']);
         Schema::createIndex(Table::TOKENS, ['token'], unique: true);
         Schema::createIndex(Table::TOKENS, ['expiryDate']);
         Schema::createIndex(Table::USERGROUPS, ['handle']);
@@ -1069,13 +987,6 @@ class Install extends Migration
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::AUTHENTICATOR, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
-        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::CATEGORYGROUPS)->cascadeOnDelete());
-        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
-        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('parentId')->references('id')->on(Table::CATEGORIES)->nullOnDelete());
-        Schema::table(Table::CATEGORYGROUPS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
-        Schema::table(Table::CATEGORYGROUPS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->cascadeOnDelete());
-        Schema::table(Table::CATEGORYGROUPS_SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::CATEGORYGROUPS)->cascadeOnDelete());
-        Schema::table(Table::CATEGORYGROUPS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete()->cascadeOnUpdate());
@@ -1109,8 +1020,6 @@ class Install extends Migration
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ENTRYTYPES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
-        Schema::table(Table::GLOBALSETS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
-        Schema::table(Table::GLOBALSETS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::GQLTOKENS, fn (Blueprint $table) => $table->foreign('schemaId')->references('id')->on(Table::GQLSCHEMAS)->nullOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
@@ -1129,9 +1038,6 @@ class Install extends Migration
         Schema::table(Table::SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::SITEGROUPS)->cascadeOnDelete());
         Schema::table(Table::SSO_IDENTITIES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::STRUCTUREELEMENTS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->cascadeOnDelete());
-        Schema::table(Table::TAGGROUPS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
-        Schema::table(Table::TAGS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::TAGGROUPS)->cascadeOnDelete());
-        Schema::table(Table::TAGS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::USERGROUPS_USERS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::USERGROUPS)->cascadeOnDelete());
         Schema::table(Table::USERGROUPS_USERS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::USERPERMISSIONS_USERGROUPS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::USERGROUPS)->cascadeOnDelete());

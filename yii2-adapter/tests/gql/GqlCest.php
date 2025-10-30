@@ -10,7 +10,6 @@ namespace crafttests\gql;
 use Craft;
 use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
-use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use FunctionalTester;
 use yii\base\Exception;
@@ -28,9 +27,6 @@ class GqlCest
             ],
             'gqlSchemas' => [
                 'class' => GqlSchemasFixture::class,
-            ],
-            'globalSets' => [
-                'class' => GlobalSetFixture::class,
             ],
         ];
     }

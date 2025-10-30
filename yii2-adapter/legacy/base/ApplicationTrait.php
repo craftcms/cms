@@ -13,9 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\Entry;
-use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\events\DefineFieldLayoutFieldsEvent;
@@ -52,7 +50,6 @@ use craft\services\Addresses;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
-use craft\services\Categories;
 use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
@@ -64,7 +61,6 @@ use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Fs;
 use craft\services\Gc;
-use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
@@ -79,7 +75,6 @@ use craft\services\Sites;
 use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
-use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\UserGroups;
@@ -129,7 +124,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
  * @property-read Auth $auth The user authentication service
- * @property-read Categories $categories The categories service
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
@@ -144,7 +138,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Formatter $formatter The formatter component
  * @property-read Fs $fs The filesystems service
  * @property-read Gc $gc The garbage collection service
- * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Images $images The images service
@@ -166,7 +159,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Sso $sso The SSO service
  * @property-read Structures $structures The structures service
  * @property-read SystemMessages $systemMessages The system email messages service
- * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read UrlManager $urlManager The URL manager for this application
@@ -855,16 +847,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the categories service.
-     *
-     * @return Categories The categories service
-     */
-    public function getCategories(): Categories
-    {
-        return $this->get('categories');
-    }
-
-    /**
      * Returns the conditions service.
      *
      * @return Conditions The conditions service
@@ -1034,16 +1016,6 @@ trait ApplicationTrait
     public function getGc(): Gc
     {
         return $this->get('gc');
-    }
-
-    /**
-     * Returns the globals service.
-     *
-     * @return Globals The globals service
-     */
-    public function getGlobals(): Globals
-    {
-        return $this->get('globals');
     }
 
     /**
@@ -1222,16 +1194,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the tags service.
-     *
-     * @return Tags The tags service
-     */
-    public function getTags(): Tags
-    {
-        return $this->get('tags');
-    }
-
-    /**
      * Returns the template cache service.
      *
      * @return TemplateCaches The template caches service
@@ -1357,9 +1319,6 @@ trait ApplicationTrait
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
 
-        // Register all the listeners for config items
-        $this->_registerConfigListeners();
-
         $this->_isInitialized = true;
 
         // Fire an 'init' event
@@ -1413,10 +1372,6 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
-                case Category::class:
-                case Tag::class:
-                    $event->fields[] = TitleField::class;
-                    break;
                 case Address::class:
                     $event->fields[] = LabelField::class;
                     $event->fields[] = OrganizationField::class;
@@ -1444,19 +1399,6 @@ trait ApplicationTrait
                         $event->fields[] = AffiliatedSiteField::class;
                     }
                     break;
-            }
-        });
-    }
-
-    /**
-     * Register event listeners for config changes.
-     */
-    private function _registerConfigListeners(): void
-    {
-        // Prune deleted sites from site settings
-        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
-            if (!app(ProjectConfig::class)->isApplyingExternalChanges) {
-                $this->getCategories()->pruneDeletedSite($event);
             }
         });
     }

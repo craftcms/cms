@@ -79,14 +79,6 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleChangedSite($event))
             ->onUpdate(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleChangedSite($event))
             ->onRemove(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleDeletedSite($event))
-            // Tags
-            ->onAdd(ProjectConfig::PATH_TAG_GROUPS.'.{uid}', $this->proxy('tags', 'handleChangedTagGroup'))
-            ->onUpdate(ProjectConfig::PATH_TAG_GROUPS.'.{uid}', $this->proxy('tags', 'handleChangedTagGroup'))
-            ->onRemove(ProjectConfig::PATH_TAG_GROUPS.'.{uid}', $this->proxy('tags', 'handleDeletedTagGroup'))
-            // Categories
-            ->onAdd(ProjectConfig::PATH_CATEGORY_GROUPS.'.{uid}', $this->proxy('categories', 'handleChangedCategoryGroup'))
-            ->onUpdate(ProjectConfig::PATH_CATEGORY_GROUPS.'.{uid}', $this->proxy('categories', 'handleChangedCategoryGroup'))
-            ->onRemove(ProjectConfig::PATH_CATEGORY_GROUPS.'.{uid}', $this->proxy('categories', 'handleDeletedCategoryGroup'))
             // User group permissions
             ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
             ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
@@ -99,10 +91,6 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
             ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
             ->onRemove(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
-            // Global sets
-            ->onAdd(ProjectConfig::PATH_GLOBAL_SETS.'.{uid}', $this->proxy('globals', 'handleChangedGlobalSet'))
-            ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS.'.{uid}', $this->proxy('globals', 'handleChangedGlobalSet'))
-            ->onRemove(ProjectConfig::PATH_GLOBAL_SETS.'.{uid}', $this->proxy('globals', 'handleDeletedGlobalSet'))
             // Sections
             ->onAdd(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))
             ->onUpdate(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))

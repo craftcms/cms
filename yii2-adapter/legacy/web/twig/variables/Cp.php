@@ -264,22 +264,6 @@ class Cp extends Component
             }
         }
 
-        if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
-            $navItems[] = [
-                'label' => t('Globals'),
-                'url' => 'globals',
-                'icon' => 'globe',
-            ];
-        }
-
-        if (Craft::$app->getCategories()->getEditableGroupIds()) {
-            $navItems[] = [
-                'label' => t('Categories'),
-                'url' => 'categories',
-                'icon' => 'sitemap',
-            ];
-        }
-
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
             $navItems[] = [
                 'label' => t('Assets'),

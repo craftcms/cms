@@ -36,24 +36,15 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Address as AddressInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Asset as AssetMutation;
-use craft\gql\mutations\Category as CategoryMutation;
 use craft\gql\mutations\Entry as EntryMutation;
-use craft\gql\mutations\GlobalSet as GlobalSetMutation;
 use craft\gql\mutations\Ping as PingMutation;
-use craft\gql\mutations\Tag as TagMutation;
 use craft\gql\queries\Address as AddressQuery;
 use craft\gql\queries\Asset as AssetQuery;
-use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
-use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Ping as PingQuery;
-use craft\gql\queries\Tag as TagQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\TypeManager;
@@ -725,21 +716,9 @@ class Gql extends Component
         $label = t('Assets');
         [$queries[$label], $mutations[$label]] = $this->assetSchemaComponents();
 
-        // Global Sets
-        $label = t('Global Sets');
-        [$queries[$label], $mutations[$label]] = $this->globalSetSchemaComponents();
-
         // Users
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
-
-        // Categories
-        $label = t('Categories');
-        [$queries[$label], $mutations[$label]] = $this->categorySchemaComponents();
-
-        // Tags
-        $label = t('Tags');
-        [$queries[$label], $mutations[$label]] = $this->tagSchemaComponents();
 
         // Fire a 'registerGqlSchemaComponents' event
         if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
@@ -1474,9 +1453,6 @@ class Gql extends Component
             EntryInterface::class,
             AssetInterface::class,
             UserInterface::class,
-            GlobalSetInterface::class,
-            CategoryInterface::class,
-            TagInterface::class,
         ];
 
         // Fire a 'registerGqlTypes' event
@@ -1506,9 +1482,6 @@ class Gql extends Component
             EntryQuery::getQueries(),
             AssetQuery::getQueries(),
             UserQuery::getQueries(),
-            GlobalSetQuery::getQueries(),
-            CategoryQuery::getQueries(),
-            TagQuery::getQueries(),
         ];
 
         // Flatten them
@@ -1533,9 +1506,6 @@ class Gql extends Component
             // Mutations
             PingMutation::getMutations(),
             EntryMutation::getMutations(),
-            TagMutation::getMutations(),
-            CategoryMutation::getMutations(),
-            GlobalSetMutation::getMutations(),
             AssetMutation::getMutations(),
         ];
 
@@ -1780,34 +1750,6 @@ class Gql extends Component
     }
 
     /**
-     * Return global set permissions.
-     *
-     * @return array
-     */
-    private function globalSetSchemaComponents(): array
-    {
-        $queryComponents = [];
-        $mutationComponents = [];
-
-        $globalSets = Craft::$app->getGlobals()->getAllSets();
-
-        if (!empty($globalSets)) {
-            foreach ($globalSets as $globalSet) {
-                $name = t($globalSet->name, category: 'site');
-                $prefix = "globalsets.$globalSet->uid";
-                $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for the “{name}” global set', ['name' => $name]),
-                ];
-                $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit the “{globalSet}” global set.', ['globalSet' => $name]),
-                ];
-            }
-        }
-
-        return [$queryComponents, $mutationComponents];
-    }
-
-    /**
      * Return user permissions.
      *
      * @return array
@@ -1837,84 +1779,6 @@ class Gql extends Component
         }
 
         return [$queryComponents, []];
-    }
-
-    /**
-     * Return category group permissions.
-     *
-     * @return array
-     */
-    private function categorySchemaComponents(): array
-    {
-        $queryComponents = [];
-        $mutationComponents = [];
-
-        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
-
-        if (!empty($categoryGroups)) {
-            foreach ($categoryGroups as $categoryGroup) {
-                $name = t($categoryGroup->name, category: 'site');
-                $prefix = "categorygroups.$categoryGroup->uid";
-                $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for categories in the “{name}” category group',
-                        ['name' => $name]),
-                ];
-                $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit categories in the “{categoryGroup}” category group',
-                        ['categoryGroup' => $name]),
-                    'nested' => [
-                        "$prefix:save" => [
-                            'label' => t('Save categories in the “{categoryGroup}” category group',
-                                ['categoryGroup' => $name]),
-                        ],
-                        "$prefix:delete" => [
-                            'label' => t('Delete categories from the “{categoryGroup}” category group',
-                                ['categoryGroup' => $name]),
-                        ],
-                    ],
-                ];
-            }
-        }
-
-        return [$queryComponents, $mutationComponents];
-    }
-
-    /**
-     * Return tag group permissions.
-     *
-     * @return array
-     */
-    private function tagSchemaComponents(): array
-    {
-        $queryComponents = [];
-        $mutationComponents = [];
-
-        $tagGroups = Craft::$app->getTags()->getAllTagGroups();
-
-        if (!empty($tagGroups)) {
-            foreach ($tagGroups as $tagGroup) {
-                $name = t($tagGroup->name, category: 'site');
-                $prefix = "taggroups.$tagGroup->uid";
-                $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for tags in the “{name}” tag group', ['name' => $name]),
-                ];
-                $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
-                    'nested' => [
-                        "$prefix:save" => [
-                            'label' => t('Save tags in the “{tagGroup}” tag group',
-                                ['tagGroup' => $name]),
-                        ],
-                        "$prefix:delete" => [
-                            'label' => t('Delete tags from the “{tagGroup}” tag group',
-                                ['tagGroup' => $name]),
-                        ],
-                    ],
-                ];
-            }
-        }
-
-        return [$queryComponents, $mutationComponents];
     }
 
     private function _createTokenQuery(): Builder

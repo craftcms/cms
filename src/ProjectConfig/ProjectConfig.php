@@ -7,14 +7,11 @@ namespace CraftCms\Cms\ProjectConfig;
 use Craft;
 use craft\base\FsInterface;
 use craft\elements\Address;
-use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\models\CategoryGroup;
 use craft\models\ImageTransform;
-use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\services\ElementSources;
 use CraftCms\Cms\Cms;
@@ -118,8 +115,6 @@ final class ProjectConfig
 
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
 
-    public const string PATH_CATEGORY_GROUPS = 'categoryGroups';
-
     public const string PATH_DATE_MODIFIED = 'dateModified';
 
     public const string PATH_ELEMENT_SOURCES = 'elementSources';
@@ -129,8 +124,6 @@ final class ProjectConfig
     public const string PATH_ENTRY_TYPES = 'entryTypes';
 
     public const string PATH_FIELDS = 'fields';
-
-    public const string PATH_GLOBAL_SETS = 'globalSets';
 
     public const string PATH_FS = 'fs';
 
@@ -159,8 +152,6 @@ final class ProjectConfig
     public const string PATH_SITE_GROUPS = 'siteGroups';
 
     public const string PATH_SYSTEM = 'system';
-
-    public const string PATH_TAG_GROUPS = 'tagGroups';
 
     public const string PATH_USERS = 'users';
 
@@ -1128,13 +1119,11 @@ final class ProjectConfig
         unset($config[self::PATH_META]);
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
-        $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
         $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
         $config[self::PATH_FS] = $this->_getFsData();
-        $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
         $config[self::PATH_GRAPHQL] = $this->_getGqlData();
         $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
         $config[self::PATH_PLUGINS] = $this->_getPluginData($config[self::PATH_PLUGINS] ?? []);
@@ -1142,7 +1131,6 @@ final class ProjectConfig
         $config[self::PATH_SITES] = $this->_getSiteData();
         $config[self::PATH_SITE_GROUPS] = $this->_getSiteGroupData();
         $config[self::PATH_SYSTEM] = $this->_systemConfig($config[self::PATH_SYSTEM] ?? []);
-        $config[self::PATH_TAG_GROUPS] = $this->_getTagGroupData();
         $config[self::PATH_USERS] = $this->_getUserData($config[self::PATH_USERS] ?? []);
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
@@ -1880,36 +1868,6 @@ final class ProjectConfig
         }
 
         return $data;
-    }
-
-    /**
-     * Return category group data config array.
-     */
-    private function _getCategoryGroupData(): array
-    {
-        return collect(Craft::$app->getCategories()->getAllGroups())
-            ->mapWithKeys(fn (CategoryGroup $group) => [$group->uid => $group->getConfig()])
-            ->all();
-    }
-
-    /**
-     * Return tag group data config array.
-     */
-    private function _getTagGroupData(): array
-    {
-        return collect(Craft::$app->getTags()->getAllTagGroups())
-            ->mapWithKeys(fn (TagGroup $group) => [$group->uid => $group->getConfig()])
-            ->all();
-    }
-
-    /**
-     * Return global set data config array.
-     */
-    private function _getGlobalSetData(): array
-    {
-        return collect(Craft::$app->getGlobals()->getAllSets())
-            ->mapWithKeys(fn (GlobalSet $globalSet) => [$globalSet->uid => $globalSet->getConfig()])
-            ->all();
     }
 
     /**

@@ -24,7 +24,6 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
-use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -51,15 +50,6 @@ use function CraftCms\Cms\t;
 class ExtensionTest extends TestCase
 {
     protected View $view;
-
-    public function _fixtures(): array
-    {
-        return [
-            'globals' => [
-                'class' => GlobalSetFixture::class,
-            ],
-        ];
-    }
 
     /**
      * @throws LoaderError

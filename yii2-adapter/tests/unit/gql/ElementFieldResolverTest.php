@@ -10,22 +10,16 @@ namespace crafttests\unit\gql;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
-use craft\elements\Category as CategoryElement;
 use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
-use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
 use craft\fs\Local;
 use craft\gql\base\ObjectType;
 use craft\gql\types\elements\Asset as AssetGqlType;
-use craft\gql\types\elements\Category as CategoryGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
-use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
-use craft\gql\types\elements\Tag as TagGqlType;
 use craft\gql\types\elements\User as UserGqlType;
 use craft\imagetransforms\ImageTransformer;
-use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
 use craft\models\ImageTransform;
 use craft\models\UserGroup;
@@ -112,79 +106,6 @@ class ElementFieldResolverTest extends TestCase
                 '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
                     in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property,
-            ]
-        );
-
-        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
-    }
-
-    /**
-     * Test resolving fields on global sets.
-     *
-     * @dataProvider globalSetFieldTestDataProvider
-     * @param string $gqlTypeClass The Gql type class
-     * @phpstan-param class-string $gqlTypeClass
-     * @param string $propertyName The property being tested
-     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
-     */
-    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
-    {
-        $mockElement = $this->make(
-            GlobalSetElement::class, [
-                '__get' => fn($property) =>
-                    // Assume a content field named 'plainTextField'
-                    $property == 'plainTextField' ? 'ok' : $this->$property,
-                'handle' => 'aHandle',
-            ]
-        );
-
-        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
-    }
-
-    /**
-     * Test resolving fields on categories
-     *
-     * @dataProvider categoryFieldTestDataProvider
-     * @param string $gqlTypeClass The Gql type class
-     * @phpstan-param class-string $gqlTypeClass
-     * @param string $propertyName The property being tested
-     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
-     */
-    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
-    {
-        $groupHandle = Str::uuid()->toString();
-
-        $mockElement = $this->make(
-            CategoryElement::class, [
-                '__get' => fn($property) =>
-                    // Assume a content field named 'plainTextField'
-                    $property == 'plainTextField' ? 'ok' : $this->$property,
-                'getGroup' => fn() => $this->make(CategoryGroup::class, ['handle' => $groupHandle]),
-            ]
-        );
-
-        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
-    }
-
-    /**
-     * Test resolving fields on tags
-     *
-     * @dataProvider tagFieldTestDataProvider
-     * @param string $gqlTypeClass The Gql type class
-     * @phpstan-param class-string $gqlTypeClass
-     * @param string $propertyName The property being tested
-     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
-     */
-    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
-    {
-        $groupHandle = Str::uuid()->toString();
-
-        $mockElement = $this->make(
-            CategoryElement::class, [
-                '__get' => fn($property) =>
-                    // Assume a content field named 'plainTextField'
-                    $property == 'plainTextField' ? 'ok' : $this->$property,
-                'getGroup' => fn() => $this->make(CategoryGroup::class, ['handle' => $groupHandle]),
             ]
         );
 
@@ -348,37 +269,6 @@ class ElementFieldResolverTest extends TestCase
             [AssetGqlType::class, 'missingProperty', false],
             [AssetGqlType::class, 'imageDescription', true],
             [AssetGqlType::class, 'volumeAndMass', true],
-        ];
-    }
-
-    public static function globalSetFieldTestDataProvider(): array
-    {
-        return [
-            [GlobalSetGqlType::class, 'missingProperty', false],
-            [GlobalSetGqlType::class, 'plainTextField', true],
-            [GlobalSetGqlType::class, 'handle', true],
-        ];
-    }
-
-    public static function categoryFieldTestDataProvider(): array
-    {
-        return [
-            [CategoryGqlType::class, 'missingProperty', false],
-            [CategoryGqlType::class, 'plainTextField', true],
-            [
-                CategoryGqlType::class, 'groupHandle', fn($source) => $source->getGroup()->handle,
-            ],
-        ];
-    }
-
-    public static function tagFieldTestDataProvider(): array
-    {
-        return [
-            [TagGqlType::class, 'missingProperty', false],
-            [TagGqlType::class, 'plainTextField', true],
-            [
-                TagGqlType::class, 'groupHandle', fn($source) => $source->getGroup()->handle,
-            ],
         ];
     }
 

@@ -17,7 +17,6 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
-use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\settings\GeneralConfigSettingFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
@@ -98,15 +97,10 @@ class ElementsTest extends TestCase
             'assets' => [
                 'class' => AssetFixture::class,
             ],
-            // Category?
             // ContentBlock?
             'entries' => [
                 'class' => EntryFixture::class,
             ],
-            'globalSet' => [
-                'class' => GlobalSetFixture::class,
-            ],
-            // Tag?
             'users' => [
                 'class' => UserFixture::class,
             ],

@@ -7,20 +7,11 @@
 
 namespace crafttests\unit\gql\mutations;
 
-use craft\elements\GlobalSet;
 use craft\gql\mutations\Asset as AssetMutations;
-use craft\gql\mutations\Category as CategoryMutations;
 use craft\gql\mutations\Entry as EntryMutations;
-use craft\gql\mutations\GlobalSet as GlobalSetMutations;
-use craft\gql\mutations\Tag as TagMutations;
 use craft\gql\types\elements\Asset as AssetGqlType;
-use craft\gql\types\elements\Category as CategoryGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
-use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
-use craft\gql\types\elements\Tag as TagGqlType;
-use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
-use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
 use CraftCms\Cms\Field\Number;
@@ -47,24 +38,6 @@ class CreateMutationsTest extends TestCase
         $this->tester->mockCraftMethods('volumes', [
             'getAllVolumes' => [
                 new Volume(['uid' => 'uid', 'handle' => 'localVolume']),
-            ],
-        ]);
-
-        $this->tester->mockCraftMethods('categories', [
-            'getAllGroups' => [
-                new CategoryGroup(['uid' => 'uid', 'handle' => 'someGroup']),
-            ],
-        ]);
-
-        $this->tester->mockCraftMethods('tags', [
-            'getAllTagGroups' => [
-                new TagGroup(['uid' => 'uid', 'handle' => 'someGroup']),
-            ],
-        ]);
-
-        $this->tester->mockCraftMethods('globals', [
-            'getAllSets' => [
-                new GlobalSet(['uid' => 'uid', 'handle' => 'gSet']),
             ],
         ]);
 
@@ -137,140 +110,6 @@ class CreateMutationsTest extends TestCase
         self::assertArrayHasKey('id', $mutation['args']);
         self::assertArrayHasKey('_file', $mutation['args']);
     }
-
-    /**
-     * For a list of scopes, test whether the right Category mutations are created.
-     *
-     * @param array $scopes
-     * @param array $mutationNames
-     * @dataProvider categoryMutationDataProvider
-     * @throws InvalidConfigException
-     */
-    public function testCreateCategoryMutations(array $scopes, array $mutationNames): void
-    {
-        $this->_mockScope($scopes);
-
-        // Create mutations
-        $mutations = CategoryMutations::getMutations();
-        $actualMutationNames = array_keys($mutations);
-
-        // Verify
-        sort($mutationNames);
-        sort($actualMutationNames);
-
-        self::assertEquals($mutationNames, $actualMutationNames);
-    }
-
-    /**
-     * Check if a created save mutation for a given category group has expected arguments and returns a certain type
-     */
-    public function testCreateCategorySaveMutation(): void
-    {
-        $categoryGroup = $this->make(CategoryGroup::class, [
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
-        ]);
-
-        $mutation = CategoryMutations::createSaveMutation($categoryGroup);
-
-        self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
-        self::assertArrayHasKey('someTextField', $mutation['args']);
-        self::assertArrayHasKey('prependToRoot', $mutation['args']);
-        self::assertArrayHasKey('title', $mutation['args']);
-    }
-
-    /**
-     * For a list of scopes, test whether the right Tag mutations are created.
-     *
-     * @param array $scopes
-     * @param array $mutationNames
-     * @dataProvider tagMutationDataProvider
-     * @throws InvalidConfigException
-     */
-    public function testCreateTagMutations(array $scopes, array $mutationNames): void
-    {
-        $this->_mockScope($scopes);
-
-        // Create mutations
-        $mutations = TagMutations::getMutations();
-        $actualMutationNames = array_keys($mutations);
-
-        // Verify
-        sort($mutationNames);
-        sort($actualMutationNames);
-
-        self::assertEquals($mutationNames, $actualMutationNames);
-    }
-
-    /**
-     * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
-     */
-    public function testCreateTagSaveMutation(): void
-    {
-        $tagGroup = $this->make(TagGroup::class, [
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
-        ]);
-
-        $mutation = TagMutations::createSaveMutation($tagGroup);
-
-        self::assertInstanceOf(TagGqlType::class, $mutation['type']);
-        self::assertArrayHasKey('someTextField', $mutation['args']);
-        self::assertArrayHasKey('uid', $mutation['args']);
-    }
-
-    /**
-     * For a list of scopes, test whether the right global set mutations are created.
-     *
-     * @param array $scopes
-     * @param array $mutationNames
-     * @dataProvider globalSetMutationDataProvider
-     * @throws InvalidConfigException
-     */
-    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames): void
-    {
-        $this->_mockScope($scopes);
-
-        // Create mutations
-        $mutations = GlobalSetMutations::getMutations();
-        $actualMutationNames = array_keys($mutations);
-
-        // Verify
-        sort($mutationNames);
-        sort($actualMutationNames);
-
-        self::assertEquals($mutationNames, $actualMutationNames);
-    }
-
-    /**
-     * Check if a created save mutation for a given global set has expected arguments and returns a certain type
-     */
-    public function testCreateGlobalSetSaveMutation(): void
-    {
-        $globalSet = $this->make(GlobalSet::class, [
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new PlainText(['handle' => 'someTextField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
-        ]);
-
-        $mutation = GlobalSetMutations::createSaveMutation($globalSet);
-
-        self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
-        self::assertArrayHasKey('someTextField', $mutation['args']);
-        self::assertArrayNotHasKey('uid', $mutation['args']);
-    }
-
 
     /**
      * For a list of scopes, test whether getting the right entry and draft mutations are created.
@@ -384,50 +223,6 @@ class CreateMutationsTest extends TestCase
         ];
     }
 
-    public static function categoryMutationDataProvider(): array
-    {
-        return [
-            [
-                ['categorygroups.uid:edit', 'categorygroups.uid:delete'],
-                ['deleteCategory'],
-            ],
-            [
-                ['categorygroups.uid:edit', 'categorygroups.uid:save', 'categorygroups.uid:delete'],
-                ['deleteCategory', 'save_someGroup_Category'],
-            ],
-            [
-                ['categorygroups.uid:edit', 'categorygroups.uid:save'],
-                ['save_someGroup_Category'],
-            ],
-            [
-                ['categorygroups.nope:edit', 'categorygroups.nope:save'],
-                [],
-            ],
-        ];
-    }
-
-    public static function tagMutationDataProvider(): array
-    {
-        return [
-            [
-                ['taggroups.uid:edit', 'taggroups.uid:delete'],
-                ['deleteTag'],
-            ],
-            [
-                ['taggroups.uid:edit', 'taggroups.uid:save', 'taggroups.uid:delete'],
-                ['deleteTag', 'save_someGroup_Tag'],
-            ],
-            [
-                ['taggroups.uid:edit', 'taggroups.uid:save'],
-                ['save_someGroup_Tag'],
-            ],
-            [
-                ['taggroups.nope:edit', 'taggroups.nope:save'],
-                [],
-            ],
-        ];
-    }
-
     public static function entryMutationDataProvider(): array
     {
         return [
@@ -450,20 +245,6 @@ class CreateMutationsTest extends TestCase
             [
                 ['sections.nope:edit', 'sections.nope:save'],
                 [],
-            ],
-        ];
-    }
-
-    public static function globalSetMutationDataProvider(): array
-    {
-        return [
-            [
-                ['globalsets.uid:edit'],
-                ['save_gSet_GlobalSet'],
-            ],
-            [
-                ['globalsets.uid:edit', 'globalsets.uid2:edit'],
-                ['save_gSet_GlobalSet'],
             ],
         ];
     }

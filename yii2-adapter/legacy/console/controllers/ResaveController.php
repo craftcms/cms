@@ -13,20 +13,16 @@ use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
-use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
-use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
@@ -498,37 +494,6 @@ class ResaveController extends Controller
     }
 
     /**
-     * Re-saves categories.
-     *
-     * @return int
-     */
-    public function actionCategories(): int
-    {
-        $criteria = [];
-        if (isset($this->group)) {
-            $criteria['group'] = explode(',', $this->group);
-        }
-
-        if (!empty($this->withFields)) {
-            $handles = Collection::make(Craft::$app->getCategories()->getAllGroups())
-                ->filter(fn(CategoryGroup $group) => $this->hasTheFields($group->getFieldLayout()))
-                ->map(fn(CategoryGroup $group) => $group->handle)
-                ->all();
-            if (isset($criteria['group'])) {
-                $criteria['group'] = array_intersect($criteria['group'], $handles);
-            } else {
-                $criteria['group'] = $handles;
-            }
-            if (empty($criteria['group'])) {
-                $this->output($this->markdownToAnsi('No category groups satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(Category::class, $criteria);
-    }
-
-    /**
      * Re-saves entries.
      *
      * @return int
@@ -568,37 +533,6 @@ class ResaveController extends Controller
         }
 
         return $this->resaveElements(Entry::class, $criteria);
-    }
-
-    /**
-     * Re-saves tags.
-     *
-     * @return int
-     */
-    public function actionTags(): int
-    {
-        $criteria = [];
-        if (isset($this->group)) {
-            $criteria['group'] = explode(',', $this->group);
-        }
-
-        if (!empty($this->withFields)) {
-            $handles = Collection::make(Craft::$app->getTags()->getAllTagGroups())
-                ->filter(fn(TagGroup $group) => $this->hasTheFields($group->getFieldLayout()))
-                ->map(fn(TagGroup $group) => $group->handle)
-                ->all();
-            if (isset($criteria['group'])) {
-                $criteria['group'] = array_intersect($criteria['group'], $handles);
-            } else {
-                $criteria['group'] = $handles;
-            }
-            if (empty($criteria['group'])) {
-                $this->output($this->markdownToAnsi('No tag groups satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(Tag::class, $criteria);
     }
 
     /**

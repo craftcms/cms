@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\ContentBlock;
 use craft\elements\Entry;
-use craft\elements\GlobalSet;
-use craft\elements\Tag;
 use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
@@ -76,11 +73,8 @@ test('it deletes partial elements', function (string $elementType, string $table
 })->with([
     [Address::class, Table::ADDRESSES],
     [Asset::class, Table::ASSETS],
-    [Category::class, Table::CATEGORIES],
     [ContentBlock::class, Table::CONTENTBLOCKS],
     [Entry::class, Table::ENTRIES],
-    [GlobalSet::class, Table::GLOBALSETS],
-    [Tag::class, Table::TAGS],
     [User::class, Table::USERS],
 ]);
 
@@ -98,10 +92,7 @@ test('it deletes orphaned field layouts', function (string $elementType, string 
     app(GarbageCollection::class)->run(force: true);
 })->with([
     [Asset::class, Table::VOLUMES],
-    [Category::class, Table::CATEGORYGROUPS],
     [Entry::class, Table::ENTRYTYPES],
-    [GlobalSet::class, Table::GLOBALSETS],
-    [Tag::class, Table::TAGGROUPS],
 ]);
 
 test('it deletes orphaned nested elements', function (string $elementType, string $table) {
@@ -136,11 +127,9 @@ it('calls hard delete', function (string|array $tables) {
     app(GarbageCollection::class)->run(force: true);
 })->with([
     [[
-        Table::CATEGORYGROUPS,
         Table::ENTRYTYPES,
         Table::FIELDS,
         Table::SECTIONS,
-        Table::TAGGROUPS,
     ]],
     [[
         Table::FIELDLAYOUTS,

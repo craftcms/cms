@@ -536,7 +536,7 @@ class Gql
     {
         return static function($childComplexity, $args) use ($baseComplexity) {
             $complexityScore = $childComplexity + $baseComplexity;
-            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
+            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers'];
 
             foreach ($relatedArguments as $argumentName) {
                 if (!empty($args[$argumentName])) {

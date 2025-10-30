@@ -9,9 +9,7 @@ namespace craft\gql\base;
 
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
-use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\EntryRelation;
-use craft\gql\types\input\criteria\TagRelation;
 use craft\gql\types\input\criteria\UserRelation;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
@@ -124,18 +122,6 @@ abstract class ElementArguments extends Arguments
                 // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
                 'type' => Type::listOf(UserRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.',
-            ],
-            'relatedToCategories' => [
-                'name' => 'relatedToCategories',
-                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                'type' => Type::listOf(CategoryRelation::getType()),
-                'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
-            ],
-            'relatedToTags' => [
-                'name' => 'relatedToTags',
-                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                'type' => Type::listOf(TagRelation::getType()),
-                'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
             ],
             'relatedToAll' => [
                 'name' => 'relatedToAll',

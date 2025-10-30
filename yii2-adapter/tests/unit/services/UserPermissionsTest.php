@@ -18,7 +18,6 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
@@ -60,9 +59,6 @@ class UserPermissionsTest extends TestCase
             ],
             'sections' => [
                 'class' => SectionsFixture::class,
-            ],
-            'globals' => [
-                'class' => GlobalSetFixture::class,
             ],
             'volumes' => [
                 'class' => VolumesFixture::class,
