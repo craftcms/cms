@@ -14,7 +14,6 @@ use craft\gql\resolvers\elements\User as UserResolver;
 use craft\models\GqlSchema;
 use craft\records\Element;
 use craft\records\EntryType;
-use craft\records\Structure;
 use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
@@ -37,7 +36,6 @@ class PrepareQueryTest extends TestCase
     protected UnitTester $tester;
 
     private Volume $_volume;
-    private Structure $_structure;
     private Section $_section;
     private EntryType $_entryType;
     private Element $_element;
@@ -75,7 +73,6 @@ class PrepareQueryTest extends TestCase
     protected function _after(): void
     {
         $this->_volume->delete();
-        $this->_structure->delete();
         Sections::deleteSection($this->_section);
         $this->_entryType->delete();
         $this->_element->delete();
