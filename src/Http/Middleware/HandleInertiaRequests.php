@@ -67,7 +67,7 @@ class HandleInertiaRequests extends Middleware
 
         $systemIcon = Cp::iconSvg('c-outline');
 
-        if (Edition::get() >= Edition::Pro && $rebrand = app(Rebrand::class)) {
+        if (Edition::get()->value >= Edition::Pro->value && $rebrand = app(Rebrand::class)) {
             $systemIcon = $rebrand->isIconUploaded() ? $rebrand->getIcon()->getUrl() : $systemIcon;
         }
 
@@ -86,7 +86,7 @@ class HandleInertiaRequests extends Middleware
                     'url' => $currentSite->getBaseUrl(),
                 ],
                 'currentUser' => [
-                    'email' => $currentUser?->email ?? null,
+                    'email' => $currentUser->email ?? null,
                 ],
                 'cpUrl' => UrlHelper::cpUrl(),
                 'actionUrl' => UrlHelper::actionUrl(),
