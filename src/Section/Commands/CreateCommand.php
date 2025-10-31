@@ -99,7 +99,6 @@ final class CreateCommand extends Command
             ->confirm(
                 label: 'Enable entry versioning for the section?',
                 default: ! $this->option('noVersioning'),
-                required: true,
                 name: 'enableVersioning',
             )
             ->addIf(empty($entryTypes) && $allEntryTypes->isNotEmpty(), fn () => confirm(
