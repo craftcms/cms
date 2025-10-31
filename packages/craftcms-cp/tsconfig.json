@@ -6,5 +6,5 @@
     "rootDir": ".",
     "types": ["vite/client"]
   },
-  "include": ["src", "tsup.config.ts"]
+  "include": ["src"]
 }

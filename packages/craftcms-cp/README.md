@@ -32,19 +32,14 @@ This imports all components and makes them available as custom elements with the
 @import '@craftcms/cp';
 ```
 
-This will import all the styles for all components. You'll have to be using some kind of bundler for this to work. 
+This will import all the styles for all components. You'll have to be using some kind of bundler for this to work.
 
 ### Using Individual Components
 
 ```html
-<craft-button variant="primary" size="medium">
-  Save
-</craft-button>
+<craft-button variant="primary" size="medium"> Save </craft-button>
 
-<craft-input
-  label="Email Address"
-  type="email"
-  placeholder="you@example.com">
+<craft-input label="Email Address" type="email" placeholder="you@example.com">
 </craft-input>
 
 <craft-card>
@@ -58,7 +53,7 @@ This will import all the styles for all components. You'll have to be using some
 You can import utility functions directly:
 
 ```js
-import { t, formatNumber, actionClient, apiClient } from '@craftcms/cp';
+import {t, formatNumber, actionClient, apiClient} from '@craftcms/cp';
 
 // Translation
 const message = t('app', 'Welcome');
@@ -73,8 +68,8 @@ const response = await apiClient.get('/api/entries');
 Individual utilities can also be imported:
 
 ```js
-import { t } from '@craftcms/cp/utilities/translate';
-import { formatNumber } from '@craftcms/cp/utilities/format';
+import {t} from '@craftcms/cp/utilities/translate';
+import {formatNumber} from '@craftcms/cp/utilities/format';
 ```
 
 ## Utilities
@@ -82,7 +77,7 @@ import { formatNumber } from '@craftcms/cp/utilities/format';
 ### API Clients
 
 ```js
-import { actionClient, apiClient } from '@craftcms/cp';
+import {actionClient, apiClient} from '@craftcms/cp';
 
 // Controller actions
 await actionClient.post('users/save-user', data);
@@ -94,16 +89,16 @@ await apiClient.get('/api/entries');
 ### Translation
 
 ```js
-import { t, formatMessage } from '@craftcms/cp';
+import {t, formatMessage} from '@craftcms/cp';
 
 t('category', 'message');
-formatMessage('Hello {name}', { name: 'World' });
+formatMessage('Hello {name}', {name: 'World'});
 ```
 
 ### Formatting
 
 ```js
-import { formatNumber } from '@craftcms/cp';
+import {formatNumber} from '@craftcms/cp';
 
 formatNumber(1234.56); // Locale-aware number formatting
 ```
@@ -111,7 +106,7 @@ formatNumber(1234.56); // Locale-aware number formatting
 ### Cookie Utilities
 
 ```js
-import { getCookie, setCookie, deleteCookie } from '@craftcms/cp';
+import {getCookie, setCookie, deleteCookie} from '@craftcms/cp';
 
 setCookie('name', 'value', 7); // expires in 7 days
 const value = getCookie('name');
