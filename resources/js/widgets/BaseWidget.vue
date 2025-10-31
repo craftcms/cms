@@ -18,7 +18,7 @@
     settingsNamespace: '',
   });
 
-  const {getCpUrl, getActionUrl} = useHelpers();
+  const {getCpUrl} = useHelpers();
   const state = ref<'idle' | 'loading' | 'deleting' | 'error'>('idle');
 
   function setView(view: 'default' | 'settings') {
@@ -55,6 +55,7 @@
       emit('update', {
         ...data.info,
         view: 'default',
+        new: false,
       });
     } catch (error) {
       state.value = 'error';
@@ -64,38 +65,16 @@
   }
 
   async function deleteWidget() {
-    if (['deleting', 'loading'].includes(state.value)) {
+    emit('delete', props.id);
+  }
+
+  function handleCancel() {
+    if (props.new) {
+      deleteWidget();
       return;
     }
 
-    if (
-      !confirm(
-        t('app', 'Are you sure you want to delete “{name}”?', {
-          name: props.name,
-        })
-      )
-    ) {
-      return;
-    }
-
-    state.value = 'deleting';
-    try {
-      await axios.post(getCpUrl(`widgets/${props.id}/delete`), {
-        id: props.id,
-      });
-      emit('delete', props.id);
-      state.value = 'idle';
-      // @TODO display success message
-      // Craft.cp.displaySuccess(t('app', '“{name}” deleted.', {name: widget.getLabel()}));
-      // @TODO allow undo in the toast message
-    } catch (error) {
-      state.value = 'error';
-      // @TODO handle errors
-      console.error(error);
-      // Craft.cp.displayError(t('app', 'Couldn’t delete “{name}”.', {
-      //   name: props.name,
-      // }))
-    }
+    setView('default');
   }
 
   const action = computed(() =>
@@ -147,7 +126,7 @@
             type="submit"
             >{{ t('app', 'Save') }}</craft-button
           >
-          <craft-button type="reset" @click="setView('default')">{{
+          <craft-button type="reset" @click="handleCancel">{{
             t('app', 'Cancel')
           }}</craft-button>
           <div class="tw:ml-auto"></div>

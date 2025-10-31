@@ -40,7 +40,7 @@
       id,
       type,
       colspan: 1,
-      title: t('app', `New "${info.name}" Widget`),
+      title: t('app', `New “{name}” Widget`, {name: info.name}),
       subtitle: null,
       name: info.name,
       bodyHtml: '',
@@ -57,9 +57,12 @@
   }
 
   function updateWidget(updates: Widget) {
-    widgets.value = widgets.value.map((widget: Widget) => {
-      if (widget.id === updates.id) {
-        return updates;
+    widgets.value = widgets.value.map((widget: CompleteWidget) => {
+      if (widget.new || widget.id === updates.id) {
+        return {
+          ...widget,
+          ...updates,
+        };
       }
 
       return widget;
@@ -67,7 +70,9 @@
   }
 
   async function deleteWidget(id: number) {
-    const widget = widgets.value.find((widget: Widget) => widget.id === id);
+    const widget = widgets.value.find(
+      (widget: CompleteWidget) => widget.id === id
+    );
     if (!widget) {
       return;
     }
@@ -83,12 +88,18 @@
     }
 
     // Optimistically remove the widget from the UI
-    widgets.value = widgets.value.filter((widget: Widget) => widget.id !== id);
+    widgets.value = widgets.value.filter(
+      (widget: CompleteWidget) => widget.id !== id
+    );
+
+    // If this was a new widget, the database doesn't know about it
+    // and we don't need to make the API call
+    if (widget.new) {
+      return;
+    }
 
     try {
-      await axios.post(getCpUrl(`widgets/${props.id}/delete`), {
-        id: props.id,
-      });
+      await axios.delete(getCpUrl(`widgets/${id}`));
       // @TODO display success message
       // Craft.cp.displaySuccess(t('app', '“{name}” deleted.', {name: widget.getLabel()}));
       // @TODO allow undo in the toast message

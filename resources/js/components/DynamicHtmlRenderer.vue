@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {defineComponent, computed} from 'vue';
+  import {computed, defineComponent} from 'vue';
 
   const props = defineProps<{
     html: string;
@@ -10,5 +10,5 @@
   );
 </script>
 <template>
-  <component :is="dynamicComponent" />
+  <component :is="dynamicComponent" v-if="html" />
 </template>
