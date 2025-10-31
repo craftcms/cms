@@ -25,7 +25,8 @@
     "check:exports": "attw --pack .",
     "check:types": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build:storybook": "storybook build"
+    "build:storybook": "storybook build",
+    "build:manifest": "custom-elements-manifest analyze --outdir dist"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -36,7 +37,8 @@
     },
     "./cp.css": "./dist/cp.css",
     "./utilities/*": "./dist/utilities/*",
-    "./components/*": "./dist/components/*"
+    "./components/*": "./dist/components/*",
+    "./custom-elements.json": "./dist/custom-elements.json"
   },
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "license": "MIT",
@@ -51,6 +53,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "@awesome.me/webawesome": "^3.0.0-beta.4",
     "@chromatic-com/storybook": "^4.0.1",
+    "@custom-elements-manifest/analyzer": "^0.10.10",
     "@lion/ui": "^0.14.2",
     "@shoelace-style/shoelace": "^2.20.1",
     "@storybook/addon-a11y": "^9.1.5",
@@ -63,6 +66,7 @@
     "@types/node": "^24.0.10",
     "@vitest/browser": "^3.2.4",
     "@vitest/coverage-v8": "^3.2.4",
+    "@wc-toolkit/storybook-helpers": "^9.0.1",
     "globby": "^14.1.0",
     "happy-dom": "^18.0.1",
     "playwright": "^1.53.2",
@@ -76,5 +80,6 @@
   "dependencies": {
     "@github/relative-time-element": "^4.5.0",
     "axios": "^1.12.2"
-  }
+  },
+  "customElements": "dist/custom-elements.json"
 }

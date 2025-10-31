@@ -1,48 +1,18 @@
-import {property, state, customElement} from 'lit/decorators.js';
-import {html, css, LitElement} from 'lit';
-import styles from './avatar.styles.js';
+import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
+import {html, LitElement} from 'lit';
+import styles from './avatar.styles.js';
 
 /**
  * @summary Container to represent a user or object
  *
- * @cssproperty --color-start - Start color of the gradient
- * @cssproperty --color-end - End color of the gradient
- * @cssproperty --color-text - Color of the text
- * @cssproperty --size - Overall size of the avatar. Defaults to 30px.
+ * @cssproperty [--color-start=red] - Start color of the gradient
+ * @cssproperty [--color-end=blue] - End color of the gradient
+ * @cssproperty [--color-text=currentColor] - Color of the text
+ * @cssproperty [--size=calc(30rem / 16)] - Overall size of the avatar. Defaults to 30px.
  */
 export default class CraftAvatar extends LitElement {
-  static override styles: CSSResultGroup = [
-    styles,
-    css`
-      :host {
-        --color-start: red;
-        --color-end: blue;
-        --color-text: inherit;
-
-        --size: 30px;
-        display: contents;
-      }
-
-      .avatar {
-        display: inline-flex;
-        width: var(--size);
-        aspect-ratio: 1;
-        background-color: white;
-        border-radius: var(--c-radius-full);
-      }
-
-      .avatar__text {
-        line-height: 1;
-        font-weight: 500;
-        font-family: var(--c-font-body, sans-serif);
-        text-anchor: middle;
-        fill: black;
-        user-select: none;
-        pointer-events: none;
-      }
-    `,
-  ];
+  static override styles: CSSResultGroup = [styles];
 
   /** Accessible label for the avatar. */
   @property() label: string | null = null;
@@ -59,7 +29,7 @@ export default class CraftAvatar extends LitElement {
       .slice(2, 8)}`;
   }
 
-  text() {
+  private text() {
     if (!this.label) {
       return '?';
     }
