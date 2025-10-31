@@ -10,7 +10,12 @@ use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 Route::prefix(implode('/', [
     Cms::config()->cpTrigger,
     Cms::config()->actionTrigger,
-]))->middleware(['craft.cp'])->group(function() {
+]))->middleware([
+    'web',
+    'craft',
+    'craft.cp',
+    \CraftCms\Yii2Adapter\Http\LegacyMiddleware::class,
+])->group(function() {
     Route::middleware(['auth'])->group(function() {
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

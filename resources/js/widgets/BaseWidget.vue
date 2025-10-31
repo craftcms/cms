@@ -101,13 +101,6 @@
   const action = computed(() =>
     props.new ? getCpUrl('widgets') : getCpUrl(`widgets/${props.id}`)
   );
-
-  // To test legacy routes
-  // const action = computed(() => {
-  //   return props.new
-  //     ? getActionUrl('dashboard/create-widget')
-  //     : getActionUrl('dashboard/save-widget-settings');
-  // });
 </script>
 
 <template>
