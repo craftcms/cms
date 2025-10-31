@@ -71,12 +71,12 @@ final class Site extends Dto implements Chippable, Stringable
                 'required',
                 'string',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null) : null,
+                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
             'name' => array_filter([
                 'required',
                 'string',
-                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null) : null,
+                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
         ];
     }
