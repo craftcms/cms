@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -549,12 +548,8 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore varTag.nativeType
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("viewPeerCategoryDrafts:$group->uid")
             );
         }
@@ -574,12 +569,8 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore varTag.nativeType
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("savePeerCategoryDrafts:$group->uid")
             );
         }
@@ -612,12 +603,8 @@ class Category extends Element
         }
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /**
-             * @var static|DraftBehavior $this
-             * @phpstan-ignore varTag.nativeType
-             */
             return (
-                $this->creatorId === $user->id ||
+                $this->draftCreatorId === $user->id ||
                 $user->can("deletePeerCategoryDrafts:$group->uid")
             );
         }

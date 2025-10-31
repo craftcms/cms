@@ -22,6 +22,7 @@ use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Categories;
@@ -843,7 +844,7 @@ MD);
         ];
         $projectConfig->set($sourceConfigPath, $sourceConfigs);
 
-        $pageSettings = Craft::$app->getElementSources()->getPageSettings(Entry::class);
+        $pageSettings = app(ElementSources::class)->getPageSettings(Entry::class);
         $pageSettings[$name] = [
             'icon' => $icon,
         ];

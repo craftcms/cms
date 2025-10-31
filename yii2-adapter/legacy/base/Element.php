@@ -10,8 +10,6 @@ namespace craft\base;
 use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
@@ -80,6 +78,9 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Concerns\Draftable;
+use CraftCms\Cms\Element\Concerns\Revisionable;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -164,14 +165,16 @@ use function CraftCms\Cms\t;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
- * @property-write int|null $revisionCreatorId revision creator ID to be saved
- * @property-write string|null $revisionNotes revision notes to be saved
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 abstract class Element extends Component implements ElementInterface
 {
+    use Draftable {
+        canCreateDrafts as traitCanCreateDrafts;
+    }
+    use Revisionable;
     use ElementTrait;
     use ArrayableTrait {
         toArray as traitToArray;
@@ -867,14 +870,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function hasDrafts(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function trackChanges(): bool
     {
         return false;
@@ -1337,7 +1332,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
+            $variables['attributes'] = app(ElementSources::class)->getTableAttributes(
                 static::class,
                 $sourceKey,
                 $viewState['tableColumns'] ?? null,
@@ -1546,7 +1541,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementSources()->getAvailableTableAttributes(static::class);
+        $tableAttributes = app(ElementSources::class)->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -2309,7 +2304,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // See if it's a source-specific sort option
-        foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+        foreach (app(ElementSources::class)->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
                 if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
                     $params = [];
@@ -2326,18 +2321,6 @@ abstract class Element extends Component implements ElementInterface
 
         return false;
     }
-
-    /**
-     * @var int|null Revision creator ID to be saved
-     * @see setRevisionCreatorId()
-     */
-    protected ?int $revisionCreatorId = null;
-
-    /**
-     * @var string|null Revision notes to be saved
-     * @see setRevisionNotes()
-     */
-    protected ?string $revisionNotes = null;
 
     /**
      * @var array<string,int>|null
@@ -2515,12 +2498,6 @@ abstract class Element extends Component implements ElementInterface
      * @see setEagerLoadedElementCount
      */
     private array $_eagerLoadedElementCounts = [];
-
-    /**
-     * @var ElementInterface|false|null
-     * @see getCurrentRevision()
-     */
-    private ElementInterface|false|null $_currentRevision = null;
 
     /**
      * @var bool|bool[]
@@ -3192,22 +3169,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsDraft(): bool
-    {
-        return !empty($this->draftId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsRevision(): bool
-    {
-        return !empty($this->revisionId);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsCanonical(): bool
     {
         return !isset($this->_canonicalId);
@@ -3775,15 +3736,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function canDuplicateAsDraft(User $user): bool
-    {
-        // if anything, this will be more lenient than canDuplicate()
-        return Craft::$app->getElements()->canDuplicate($this, $user);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function canCopy(User $user): bool
     {
         return false;
@@ -3845,15 +3797,7 @@ abstract class Element extends Component implements ElementInterface
             return $event->authorized;
         }
 
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasRevisions(): bool
-    {
-        return false;
+        return $this->traitCanCreateDrafts(\CraftCms\Cms\User\Models\User::findOrFail($user->id));
     }
 
     /**
@@ -3896,37 +3840,6 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getPostEditUrl(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpRevisionsUrl(): ?string
-    {
-        $cpEditUrl = $this->cpRevisionsUrl();
-
-        if (!$cpEditUrl) {
-            return null;
-        }
-
-        $params = [];
-
-        if (Sites::isMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($cpEditUrl, $params);
-    }
-
-    /**
-     * Returns the element’s revisions index URL in the control panel.
-     *
-     * @return string|null
-     * @since 4.4.0
-     */
-    protected function cpRevisionsUrl(): ?string
     {
         return null;
     }
@@ -5665,21 +5578,15 @@ JS, [
                 $this->_parent = $elements[0] ?? false;
                 break;
             case 'currentRevision':
-                $this->_currentRevision = $elements[0] ?? false;
+                $this->currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                if ($behavior = $this->getBehavior('draft')) {
-                    /** @var DraftBehavior $behavior */
-                    /** @var User[] $elements */
-                    $behavior->setCreator($elements[0] ?? null);
-                }
+                /** @var User[] $elements */
+                $this->setDraftCreator($elements[0] ?? null);
                 break;
             case 'revisionCreator':
-                if ($behavior = $this->getBehavior('revision')) {
-                    /** @var RevisionBehavior $behavior */
-                    /** @var User[] $elements */
-                    $behavior->setCreator($elements[0] ?? null);
-                }
+                /** @var User[] $elements */
+                $this->setRevisionCreator($elements[0] ?? null);
                 break;
             default:
                 // Fire a 'setEagerLoadedElements' event
@@ -5763,45 +5670,6 @@ JS, [
     public function setIsFresh(bool $isFresh = true): void
     {
         $this->_isFresh = $isFresh;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setRevisionCreatorId(?int $creatorId): void
-    {
-        $this->revisionCreatorId = $creatorId;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setRevisionNotes(?string $notes): void
-    {
-        $this->revisionNotes = $notes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCurrentRevision(): ?ElementInterface
-    {
-        if (!$this->id) {
-            return null;
-        }
-
-        if (!isset($this->_currentRevision)) {
-            $canonical = $this->getCanonical(true);
-            $this->_currentRevision = static::find()
-                ->siteId($canonical->siteId)
-                ->revisionOf($canonical->id)
-                ->dateCreated($canonical->dateUpdated)
-                ->status(null)
-                ->orderBy(['num' => SORT_DESC])
-                ->one() ?: false;
-        }
-
-        return $this->_currentRevision ?: null;
     }
 
     /**
@@ -6014,12 +5882,7 @@ JS, [
                 if (!$revision) {
                     return '';
                 }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                return Html::encode($behavior->revisionNotes);
+                return Html::encode($revision->revisionNotes);
 
             case 'revisionCreator':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6027,12 +5890,7 @@ JS, [
                 if (!$revision) {
                     return '';
                 }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                $creator = $behavior->getCreator();
+                $creator = $revision->getRevisionCreator();
                 return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
@@ -6044,7 +5902,7 @@ JS, [
                 $drafts = $element->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
-                    /** @var ElementInterface|DraftBehavior $draft */
+                    /** @var ElementInterface $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 
@@ -6304,10 +6162,6 @@ JS, [
     protected function notesFieldHtml(): string
     {
         // todo: this should accept a $static arg
-        /**
-         * @var static|DraftBehavior $this
-         * @phpstan-ignore varTag.nativeType
-         */
         return Cp::textareaFieldHtml([
             'label' => t('Notes about your changes'),
             'labelClass' => 'h6',
@@ -6392,12 +6246,7 @@ JS, [
                 if (!isset($revision)) {
                     return false;
                 }
-                /** @var RevisionBehavior $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if ($behavior->revisionNotes === null || $behavior->revisionNotes === '') {
-                    return false;
-                }
-                return Html::encode($behavior->revisionNotes);
+                return Html::encode($revision->revisionNotes);
             },
         ]);
     }
@@ -6641,6 +6490,8 @@ JS, [
                 'isNew' => $isNew,
             ]));
         }
+
+        $this->handleDraftSave();
     }
 
     /**
@@ -6679,6 +6530,9 @@ JS, [
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
         }
+
+        $this->handleRevisionDelete();
+        $this->handleDraftDelete();
     }
 
     /**

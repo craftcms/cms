@@ -23,6 +23,7 @@ use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Data\Site;
@@ -242,10 +243,10 @@ class Cp extends Component
         ];
 
         if (Sections::getTotalEditableSections()) {
-            $elementSourcesService = Craft::$app->getElementSources();
+            $elementSourcesService = app(ElementSources::class);
             $entryPages = $elementSourcesService->getPages(Entry::class);
 
-            if (!empty($entryPages)) {
+            if ($entryPages->isNotEmpty()) {
                 $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
                 foreach ($entryPages as $page) {
                     $navItems[] = [

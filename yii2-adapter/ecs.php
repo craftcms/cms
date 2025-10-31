@@ -14,6 +14,9 @@ return static function(ECSConfig $ecsConfig): void {
         __DIR__ . '/tests/unit/helpers/typecast',
         __DIR__ . '/legacy/services/Gc.php',
         __DIR__ . '/legacy/base/ApplicationTrait.php',
+        __DIR__ . '/legacy/behaviors/BaseRevisionBehavior.php',
+        __DIR__ . '/legacy/behaviors/DraftBehavior.php',
+        __DIR__ . '/legacy/behaviors/RevisionBehavior.php',
     ]);
 
     $ecsConfig->parallel();

@@ -20,65 +20,41 @@ use Illuminate\Support\Facades\DB;
  * @property-read bool $mergingChanges Whether recent changes to the canonical element are being merged into this element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Concerns\Draftable} instead.
  */
 class DraftBehavior extends BaseRevisionBehavior
 {
     /**
      * @var string|null The draft name
      */
-    public ?string $draftName = null;
+    public ?string $draftName {
+        get => $this->owner->draftName;
+        set(?string $value) => $this->owner->draftName = $value;
+    }
 
     /**
      * @var string|null The draft notes
      */
-    public ?string $draftNotes = null;
+    public ?string $draftNotes {
+        get => $this->owner->draftNotes;
+        set(?string $value) => $this->owner->draftNotes = $value;
+    }
 
     /**
      * @var bool Whether to track changes in this draft
      */
-    public bool $trackChanges = true;
+    public bool $trackChanges {
+        get => $this->owner->trackDraftChanges;
+        set(bool $value) => $this->owner->trackDraftChanges = $value;
+    }
 
     /**
      * @var bool Whether the draft should be marked as saved (if unpublished).
      * @since 3.6.6
      */
-    public bool $markAsSaved = true;
-
-    /**
-     * @inheritdoc
-     */
-    public function events(): array
-    {
-        return [
-            Element::EVENT_AFTER_PROPAGATE => [$this, 'handleSave'],
-            Element::EVENT_AFTER_DELETE => [$this, 'handleDelete'],
-        ];
-    }
-
-    /**
-     * Updates the row in the `drafts` table after the draft element is saved.
-     */
-    public function handleSave(): void
-    {
-        DB::table(Table::DRAFTS)
-            ->where('id', $this->owner->draftId)
-            ->update([
-                'provisional' => $this->owner->isProvisionalDraft,
-                'name' => $this->draftName,
-                'notes' => $this->draftNotes,
-                'dateLastMerged' => $this->owner->dateLastMerged,
-                'saved' => $this->markAsSaved,
-            ]);
-    }
-
-    /**
-     * Deletes the row in the `drafts` table after the draft element is deleted.
-     */
-    public function handleDelete(): void
-    {
-        if ($this->owner->hardDelete) {
-            DB::table(Table::DRAFTS)->delete($this->owner->draftId);
-        }
+    public bool $markAsSaved {
+        get => $this->owner->markDraftAsSaved;
+        set(bool $value) => $this->owner->markDraftAsSaved = $value;
     }
 
     /**
@@ -89,7 +65,7 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function getDraftName(): string
     {
-        return $this->draftName;
+        return $this->owner->getDraftName();
     }
 
     /**

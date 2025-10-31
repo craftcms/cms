@@ -15,6 +15,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Support\Collection;
 
 class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
@@ -39,6 +40,8 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     protected $casts = [
         'admin' => 'boolean',
     ];
+
+    private ?Collection $userGroups = null;
 
     public function isAdmin(): bool
     {
@@ -67,5 +70,21 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         }
 
         return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $abilities);
+    }
+
+    /**
+     * @return Collection<\craft\models\UserGroup>
+     */
+    public function getGroups(): Collection
+    {
+        if (isset($this->userGroups)) {
+            return $this->userGroups;
+        }
+
+        if (Edition::get() < Edition::Pro || ! isset($this->id)) {
+            return collect();
+        }
+
+        return $this->userGroups = collect(Craft::$app->getUserGroups()->getGroupsByUserId($this->id));
     }
 }

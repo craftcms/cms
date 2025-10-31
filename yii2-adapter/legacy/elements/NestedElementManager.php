@@ -12,7 +12,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
@@ -22,7 +21,9 @@ use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -583,8 +584,8 @@ class NestedElementManager extends Component
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface&DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            /** @var ElementInterface $owner */
+            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }
@@ -817,7 +818,7 @@ JS, [
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
                         if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
-                            Craft::$app->getDrafts()->removeDraftData($element);
+                            app(Drafts::class)->removeDraftData($element);
                             DB::table(Table::ELEMENTS_OWNERS)
                                 ->where([
                                     'elementId' => $canonical->id,
@@ -829,7 +830,7 @@ JS, [
                         $element->getIsUnpublishedDraft() &&
                         $element->getPrimaryOwnerId() === $owner->id
                     ) {
-                        Craft::$app->getDrafts()->removeDraftData($element);
+                        app(Drafts::class)->removeDraftData($element);
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
@@ -1190,7 +1191,7 @@ JS, [
             ->status(null)
             ->all();
 
-        $revisionsService = Craft::$app->getRevisions();
+        $revisionsService = app(Revisions::class);
         $elementRevisionIds = [];
         $ownershipData = [];
         $map = [];

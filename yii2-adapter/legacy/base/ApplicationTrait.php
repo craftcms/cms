@@ -926,6 +926,7 @@ trait ApplicationTrait
      *
      * @return Drafts The drafts service
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Drafts} instead.
      */
     public function getDrafts(): Drafts
     {
@@ -947,6 +948,7 @@ trait ApplicationTrait
      * Returns the element indexes service.
      *
      * @return ElementSources The element indexes service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementSources} instead.
      */
     public function getElementSources(): ElementSources
     {
@@ -1156,6 +1158,7 @@ trait ApplicationTrait
      *
      * @return Revisions The revisions service
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Revisions} instead.
      */
     public function getRevisions(): Revisions
     {

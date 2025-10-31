@@ -12,8 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
@@ -2382,17 +2380,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['trashed'] = $row['dateDeleted'] !== null;
         }
 
-        $behaviors = [];
-
         if ($this->drafts !== false) {
             $row['isProvisionalDraft'] = (bool)($row['isProvisionalDraft'] ?? false);
 
             if (!empty($row['draftId'])) {
-                $behaviors['draft'] = new DraftBehavior([
-                    'creatorId' => Arr::pull($row, 'draftCreatorId'),
-                    'draftName' => Arr::pull($row, 'draftName'),
-                    'draftNotes' => Arr::pull($row, 'draftNotes'),
-                ]);
+                $row['draftCreatorId'] = Arr::pull($row, 'draftCreatorId');
+                $row['draftName'] = Arr::pull($row, 'draftName');
+                $row['draftNotes'] = Arr::pull($row, 'draftNotes');
             } else {
                 unset(
                     $row['draftCreatorId'],
@@ -2404,11 +2398,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->revisions !== false) {
             if (!empty($row['revisionId'])) {
-                $behaviors['revision'] = new RevisionBehavior([
-                    'creatorId' => Arr::pull($row, 'revisionCreatorId'),
-                    'revisionNum' => Arr::pull($row, 'revisionNum'),
-                    'revisionNotes' => Arr::pull($row, 'revisionNotes'),
-                ]);
+                $row['revisionCreatorId'] = Arr::pull($row, 'revisionCreatorId');
+                $row['revisionNum'] = Arr::pull($row, 'revisionNum');
+                $row['revisionNotes'] = Arr::pull($row, 'revisionNotes');
             } else {
                 unset(
                     $row['revisionCreatorId'],
@@ -2433,7 +2425,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $element ??= new $class($row);
-        $element->attachBehaviors($behaviors);
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {

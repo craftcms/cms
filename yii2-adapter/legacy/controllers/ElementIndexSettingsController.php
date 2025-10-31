@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
-use craft\services\ElementSources;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -69,8 +69,8 @@ class ElementIndexSettingsController extends BaseElementsController
             ->all();
 
         // Get the source info
-        $sourcesService = Craft::$app->getElementSources();
-        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+        $sourcesService = app(ElementSources::class);
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true)->all();
         $multiPage = $elementType::multiPageSources();
 
         foreach ($sources as &$source) {
@@ -98,7 +98,7 @@ class ElementIndexSettingsController extends BaseElementsController
                         : null,
                 ]),
                 $baseSortOptions,
-                Collection::make($sourcesService->getSourceSortOptions($elementType, $source['key']))
+                $sourcesService->getSourceSortOptions($elementType, $source['key'])
                     ->map(fn($option) => [
                         'label' => $option['label'],
                         'attr' => $option['attribute'] ?? $option['orderBy'],
@@ -138,7 +138,7 @@ class ElementIndexSettingsController extends BaseElementsController
             }
 
             // Selected table attributes
-            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key']);
+            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key'])->all();
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
 
@@ -180,7 +180,7 @@ class ElementIndexSettingsController extends BaseElementsController
         ]), $elementType::indexViewModes());
 
         // Get the default sort options for custom sources
-        $defaultSortOptions = Collection::make($sourcesService->getSourceSortOptions($elementType, 'custom:x'))
+        $defaultSortOptions = $sourcesService->getSourceSortOptions($elementType, 'custom:x')
             ->map(fn(array $option) => [
                 'label' => $option['label'],
                 'attr' => $option['attribute'] ?? $option['orderBy'],

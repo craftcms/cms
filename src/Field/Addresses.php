@@ -29,6 +29,7 @@ use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Gql;
 use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -38,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -474,7 +476,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
                 if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $address = Craft::$app->getDrafts()->createDraft($address, Craft::$app->getUser()->getId(), null, null, [
+                    $address = app(Drafts::class)->createDraft($address, Auth::user()->id, null, null, [
                         'canonicalId' => $address->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

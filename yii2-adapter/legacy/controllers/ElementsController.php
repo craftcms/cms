@@ -12,8 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\User;
@@ -21,7 +19,6 @@ use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
@@ -39,6 +36,8 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -49,6 +48,7 @@ use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -230,7 +230,7 @@ class ElementsController extends Controller
 
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
+        if (!app(Drafts::class)->saveElementAsDraft($element, $user->id, null, null, false)) {
             return $this->_asFailure($element, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
@@ -276,8 +276,7 @@ class ElementsController extends Controller
         if ($element === null) {
             $this->_elementId = $elementId ?? $this->_elementId;
             /**
-             * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-             * @phpstan-ignore varTag.nativeType
+             * @var Element|Response|null $element
              */
             $element = $this->_element(checkForProvisionalDraft: true, strictSite: $strictSite);
 
@@ -522,8 +521,7 @@ class ElementsController extends Controller
 
         $this->_elementId = $elementId;
         /**
-         * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element(checkForProvisionalDraft: true);
 
@@ -666,8 +664,7 @@ JS, [
 
         $this->_elementId = $elementId;
         /**
-         * @var Element|DraftBehavior|RevisionBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -729,14 +726,14 @@ JS, [
         $docTitle = $element->getUiLabel();
 
         if ($element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
-            /** @var ElementInterface&DraftBehavior $element */
+            /** @var ElementInterface $element */
             if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . t('Edited');
             } else {
                 $docTitle .= " ($element->draftName)";
             }
         } elseif ($element->getIsRevision()) {
-            /** @var ElementInterface&RevisionBehavior $element */
+            /** @var ElementInterface $element */
             $docTitle .= ' (' . $element->getRevisionLabel() . ')';
         }
 
@@ -851,9 +848,9 @@ JS, [
             'revisionId' => null,
         ]);
 
-        /** @var (ElementInterface&RevisionBehavior)|null $revision */
+        /** @var ElementInterface|null $revision */
         $revision = $element->getCurrentRevision();
-        $creator = $revision?->getCreator();
+        $creator = $revision?->getRevisionCreator();
         $timestamp = $formatter->asTimestamp($revision->dateCreated ?? $element->dateUpdated, Locale::LENGTH_SHORT, true);
 
         $items = [
@@ -885,8 +882,8 @@ JS, [
                 'heading' => t('Drafts'),
                 'listAttributes' => ['class' => ['revision-group-drafts']],
                 'items' => array_map(function($draft) use ($element, $formatter, $cpEditUrl, $baseParams) {
-                    /** @var ElementInterface&DraftBehavior $draft */
-                    $creator = $draft->getCreator();
+                    /** @var ElementInterface $draft */
+                    $creator = $draft->getDraftCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
                     return [
@@ -913,8 +910,8 @@ JS, [
                 'heading' => t('Recent Revisions'),
                 'listAttributes' => ['class' => ['revision-group-revisions']],
                 'items' => array_map(function($revision) use ($element, $formatter, $cpEditUrl, $baseParams) {
-                    /** @var ElementInterface&RevisionBehavior $revision */
-                    $creator = $revision->getCreator();
+                    /** @var ElementInterface $revision */
+                    $creator = $revision->getRevisionCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
 
                     return [
@@ -1587,7 +1584,7 @@ JS, [
             }
 
             if ($element->getIsDraft()) {
-                Craft::$app->getDrafts()->removeDraftData($element);
+                app(Drafts::class)->removeDraftData($element);
             }
 
             DbFacade::commit();
@@ -1614,7 +1611,7 @@ JS, [
     {
         $this->requirePostRequest();
 
-        /** @var (ElementInterface&DraftBehavior)|null $element */
+        /** @var (ElementInterface)|null $element */
         $element = $this->_element();
 
         if (!$element || $element->getIsRevision()) {
@@ -1844,8 +1841,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -1886,8 +1882,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -1933,8 +1928,9 @@ JS, [
         // Keep track of all newly-created draft IDs
         $draftElementIds = [];
         $draftElementUids = [];
-        $draftsService = Craft::$app->getDrafts();
-        $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds,  &$draftElementUids) {
+        $draftsService = app(Drafts::class);
+
+        Event::listen(DraftCreated::class, function(DraftCreated $event) use (&$draftElementIds, &$draftElementUids) {
             $draftElementIds[$event->canonical->id] = $event->draft->id;
             $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
@@ -1944,7 +1940,7 @@ JS, [
         try {
             // Are we creating the draft here?
             if (!$element->getIsDraft()) {
-                /** @var Element|DraftBehavior $element */
+                /** @var Element $element */
                 $draft = $draftsService->createDraft($element, $user->id, null, null, [], $this->_provisional);
                 $draft->setCanonical($element);
                 $element = $this->element = $draft;
@@ -1984,7 +1980,7 @@ JS, [
 
         $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
-        $creator = $element->getCreator();
+        $creator = $element->getDraftCreator();
 
         $data = [
             'canonicalId' => $element->getCanonicalId(),
@@ -2036,8 +2032,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|DraftBehavior|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|null $element
          */
         $element = $this->_element(checkForProvisionalDraft: true);
 
@@ -2075,8 +2070,8 @@ JS, [
             ]);
         }
 
-        /** @var Element|DraftBehavior $element */
-        $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, provisional: true);
+        /** @var Element $element */
+        $draft = app(Drafts::class)->createDraft($element, $user->id, provisional: true);
 
         return $this->asSuccess(data: [
             'elementId' => $draft->id,
@@ -2098,8 +2093,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         /**
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         $element = $this->_element();
 
@@ -2152,7 +2146,7 @@ JS, [
         }
 
         try {
-            $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
+            $canonical = app(Drafts::class)->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {
@@ -2281,8 +2275,7 @@ JS, [
         $this->requirePostRequest();
 
         /**
-         * @var Element|RevisionBehavior|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|null $element
          */
         $element = $this->_element();
 
@@ -2298,7 +2291,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
-        $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        $canonical = app(Revisions::class)->revertToRevision($element, $user->id);
         Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(t('{type} reverted to past revision.', [
@@ -2334,8 +2327,7 @@ JS, [
 
         /**
          * see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
-         * @var Element|DraftBehavior|Response|null $element
-         * @phpstan-ignore varTag.nativeType
+         * @var Element|Response|null $element
          */
         if ($element instanceof Response) {
             return $element;
@@ -2827,7 +2819,7 @@ JS, [
         }
 
         if ($element->getIsDraft()) {
-            /** @var ElementInterface&DraftBehavior $element */
+            /** @var ElementInterface $element */
             if (isset($this->_draftName)) {
                 $element->draftName = $this->_draftName;
             }
@@ -2917,7 +2909,7 @@ JS, [
 
             $newElement->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if (!Craft::$app->getDrafts()->saveElementAsDraft($newElement, $user->id, null, null, false)) {
+            if (!app(\CraftCms\Cms\Element\Drafts::class)->saveElementAsDraft($newElement, $user->id, null, null, false)) {
                 throw new ServerErrorHttpException(sprintf('Unable to create a new element: %s', implode(', ', $element->getErrorSummary(true))));
             }
 

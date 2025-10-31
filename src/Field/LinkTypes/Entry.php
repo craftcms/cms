@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Cp;
-use craft\services\ElementSources;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -94,7 +93,8 @@ final class Entry extends BaseElementLinkType
         }
 
         // Get all the native source keys, excluding URL-less sections
-        $sources = Collection::make(Craft::$app->getElementSources()->getSources(self::elementType(), ElementSources::CONTEXT_FIELD))
+        $sources = app(ElementSources::class)
+            ->getSources(self::elementType(), ElementSources::CONTEXT_FIELD)
             ->filter(fn ($s) => (
                 $s['type'] === ElementSources::TYPE_NATIVE &&
                 ! isset($excludeKeys[$s['key']])
@@ -132,7 +132,8 @@ final class Entry extends BaseElementLinkType
 
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = Collection::make(Craft::$app->getElementSources()->getSources(EntryElement::class))
+            $permittedSources = app(ElementSources::class)
+                ->getSources(EntryElement::class)
                 ->filter(fn ($source) => $source['type'] !== ElementSources::TYPE_HEADING)
                 ->pluck('key')
                 ->flip()

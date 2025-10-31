@@ -15,6 +15,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\DefineSourceTableAttributes} instead.
  */
 class DefineSourceTableAttributesEvent extends Event
 {

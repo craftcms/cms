@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\ElementQueryInterface;
@@ -18,8 +17,8 @@ use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
-use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
@@ -254,8 +253,9 @@ final class Entries extends BaseRelationField
         // Enforce the showUnpermittedSections setting
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = Collection::make(Craft::$app->getElementSources()->getSources(Entry::class))
-                ->filter(fn ($source) => $source['type'] !== ElementSources::TYPE_HEADING)
+            $permittedSources = app(ElementSources::class)
+                ->getSources(Entry::class)
+                ->where('type', '!==', ElementSources::TYPE_HEADING)
                 ->pluck('key')
                 ->flip()
                 ->all();

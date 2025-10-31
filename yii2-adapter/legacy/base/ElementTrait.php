@@ -41,28 +41,10 @@ trait ElementTrait
     public ?string $tempId = null;
 
     /**
-     * @var int|null The ID of the draft’s row in the `drafts` table
-     * @since 3.2.0
-     */
-    public ?int $draftId = null;
-
-    /**
      * @var int|null The ID of the revision’s row in the `revisions` table
      * @since 3.2.0
      */
     public ?int $revisionId = null;
-
-    /**
-     * @var bool Whether this is a provisional draft.
-     * @since 3.7.0
-     */
-    public bool $isProvisionalDraft = false;
-
-    /**
-     * @var bool Whether provisional changes have been loaded onto this element.
-     * @since 5.9.0
-     */
-    public bool $hasProvisionalChanges = false;
 
     /**
      * @var string|null The element’s UID
