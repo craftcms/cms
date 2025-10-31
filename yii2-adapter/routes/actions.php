@@ -1,21 +1,32 @@
 <?php
 
-/**
- * Register a fallback route that boots up the Yii-based Craft
- */
-
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 
+/**
+ * Actions that are accessible without CP can be registered here.
+ */
+Route::prefix(Cms::config()->actionTrigger)->group(function() {
+    // Nothing for now
+});
+
+/**
+ * CP Actions, if actions need to be accessible both in /{cpTrigger} and
+ * the frontend site, you need to register them above as well.
+ */
 Route::prefix(implode('/', [
     Cms::config()->cpTrigger,
     Cms::config()->actionTrigger,
-]))->middleware([
-    'web',
-    'craft',
-    'craft.cp',
-    \CraftCms\Yii2Adapter\Http\LegacyMiddleware::class,
-])->group(function() {
+]))->middleware(['craft.cp'])->group(function() {
+    /**
+     * Actions not needing auth
+     */
+
+    // Nothing for now
+
+    /**
+     * Actions needing auth
+     */
     Route::middleware(['auth'])->group(function() {
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
