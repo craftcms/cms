@@ -18,7 +18,7 @@
     settingsNamespace: '',
   });
 
-  const {getActionUrl} = useHelpers();
+  const {getCpUrl, getActionUrl} = useHelpers();
   const state = ref<'idle' | 'loading' | 'deleting' | 'error'>('idle');
 
   function setView(view: 'default' | 'settings') {
@@ -36,6 +36,10 @@
     }
   }
 
+  /**
+   * Previously creating & updating widgets was done on the queue
+   * @param event
+   */
   async function handleSubmit(event: Event) {
     if (state.value === 'loading') {
       return;
@@ -64,22 +68,46 @@
       return;
     }
 
+    if (
+      !confirm(
+        t('app', 'Are you sure you want to delete “{name}”?', {
+          name: props.name,
+        })
+      )
+    ) {
+      return;
+    }
+
     state.value = 'deleting';
     try {
-      await axios.post(`${getActionUrl('dashboard/delete-user-widget')}`, {
+      await axios.post(getCpUrl(`widgets/${props.id}/delete`), {
         id: props.id,
       });
       emit('delete', props.id);
+      state.value = 'idle';
+      // @TODO display success message
+      // Craft.cp.displaySuccess(t('app', '“{name}” deleted.', {name: widget.getLabel()}));
+      // @TODO allow undo in the toast message
     } catch (error) {
       state.value = 'error';
       // @TODO handle errors
       console.error(error);
+      // Craft.cp.displayError(t('app', 'Couldn’t delete “{name}”.', {
+      //   name: props.name,
+      // }))
     }
   }
 
   const action = computed(() =>
-    props.new ? 'dashboard/create-widget' : 'dashboard/save-widget-settings'
+    props.new ? getCpUrl('widgets') : getCpUrl(`widgets/${props.id}`)
   );
+
+  // To test legacy routes
+  // const action = computed(() => {
+  //   return props.new
+  //     ? getActionUrl('dashboard/create-widget')
+  //     : getActionUrl('dashboard/save-widget-settings');
+  // });
 </script>
 
 <template>
@@ -104,7 +132,7 @@
     ></DynamicHtmlRenderer>
 
     <template v-if="settingsHtml && view === 'settings'">
-      <form @submit.prevent="handleSubmit" :action="getActionUrl(action)">
+      <form @submit.prevent="handleSubmit" :action="action">
         <input type="hidden" name="widgetId" :value="id" />
         <input type="hidden" name="type" :value="type" />
         <input

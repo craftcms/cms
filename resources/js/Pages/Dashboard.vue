@@ -5,6 +5,8 @@
   import BaseWidget from '@/widgets/BaseWidget.vue';
   import {t} from '@craftcms/cp';
   import type {CompleteWidget, Widget, WidgetType} from '@/types';
+  import axios from 'axios';
+  import {useHelpers} from '@/composables/useCraftData';
 
   const {props} = usePage<{
     widgets: Widget[];
@@ -13,6 +15,7 @@
     };
   }>();
 
+  const {getCpUrl} = useHelpers();
   const widgets = ref<CompleteWidget[]>([...props.widgets]);
   const mode = ref<'view' | 'edit'>('view');
   const selectableTypes = computed(() =>
@@ -63,15 +66,57 @@
     });
   }
 
-  function deleteWidget(id: number) {
+  async function deleteWidget(id: number) {
+    const widget = widgets.value.find((widget: Widget) => widget.id === id);
+    if (!widget) {
+      return;
+    }
+
+    if (
+      !confirm(
+        t('app', 'Are you sure you want to delete “{name}”?', {
+          name: widget?.name,
+        })
+      )
+    ) {
+      return;
+    }
+
+    // Optimistically remove the widget from the UI
     widgets.value = widgets.value.filter((widget: Widget) => widget.id !== id);
+
+    try {
+      await axios.post(getCpUrl(`widgets/${props.id}/delete`), {
+        id: props.id,
+      });
+      // @TODO display success message
+      // Craft.cp.displaySuccess(t('app', '“{name}” deleted.', {name: widget.getLabel()}));
+      // @TODO allow undo in the toast message
+    } catch (error) {
+      // @TODO Handle errors
+      // Craft.cp.displayError(t('app', 'Couldn’t delete “{name}”.', {name: widget.name});
+    }
   }
 
-  function updateColspan(widget: Widget, event: Event) {
+  async function updateColspan(widget: Widget, event: Event) {
+    const newColspan = parseInt((event.target as HTMLInputElement).value, 10);
+
+    // Optimistically update the UI
     updateWidget({
       ...widget,
-      colspan: parseInt((event.target as HTMLInputElement).value, 10),
+      colspan: newColspan,
     });
+
+    try {
+      await axios.post(getCpUrl(`widgets/${widget.id}/update-colspan`), {
+        colspan: newColspan,
+      });
+      // Craft.cp.displaySuccess(t('app', 'Widget saved.'));
+    } catch (error) {
+      // @TODO Handle errors
+      console.error(error);
+      // Craft.cp.displayError(t('app', 'Couldn’t save widget.'));
+    }
   }
 
   function toggleMode() {
@@ -82,14 +127,30 @@
     }
   }
 
-  function moveTo(fromIndex: number, toIndex: number) {
+  async function moveTo(fromIndex: number, toIndex: number) {
     if (toIndex < 0 || toIndex >= widgets.value.length) {
       return;
     }
 
-    if (fromIndex !== toIndex && toIndex >= 0 && toIndex < widgets.value.length) {
-      const widget = widgets.value.splice(fromIndex, 1)[0]
-      widgets.value.splice(toIndex, 0, widget!)
+    if (
+      fromIndex !== toIndex &&
+      toIndex >= 0 &&
+      toIndex < widgets.value.length
+    ) {
+      const widget = widgets.value.splice(fromIndex, 1)[0];
+      widgets.value.splice(toIndex, 0, widget!);
+    }
+
+    try {
+      await axios.post(getCpUrl('widgets/reorder'), {
+        ids: widgets.value.map((widget) => widget.id),
+      });
+      // @TODO success toast
+      // Craft.cp.displaySuccess(t('app', 'New order saved.'));
+    } catch (error) {
+      // @TODO handle errors
+      // Craft.cp.displayError(t('app', 'Couldn’t save new order.'));
+      console.error(error);
     }
   }
 </script>
@@ -161,9 +222,16 @@
               <craft-icon name="x" style="font-size: 0.8em"></craft-icon>
             </craft-button>
           </div>
-          <div v-for="(widget, idx) in widgets" :key="widget.id" class="widget-config">
+          <div
+            v-for="(widget, idx) in widgets"
+            :key="widget.id"
+            class="widget-config"
+          >
             <craft-button icon type="button" size="small">
-              <craft-icon name="arrows-up-down-left-right" style="font-size: 0.8em"></craft-icon>
+              <craft-icon
+                name="arrows-up-down-left-right"
+                style="font-size: 0.8em"
+              ></craft-icon>
             </craft-button>
             <div class="tw:grid tw:items-center tw:justify-center">
               <span
@@ -185,13 +253,23 @@
             />
 
             <craft-button-group>
-              <button type="button" size="small" @click="moveTo(idx, idx - 1)" :disabled="idx === 0">
+              <button
+                type="button"
+                size="small"
+                @click="moveTo(idx, idx - 1)"
+                :disabled="idx === 0"
+              >
                 <craft-icon
                   name="chevron-up"
                   style="font-size: 0.8em"
                 ></craft-icon>
               </button>
-              <button type="button" size="small" @click="moveTo(idx, idx + 1)" :disabled="idx === widgets.length - 1">
+              <button
+                type="button"
+                size="small"
+                @click="moveTo(idx, idx + 1)"
+                :disabled="idx === widgets.length - 1"
+              >
                 <craft-icon
                   name="chevron-down"
                   style="font-size: 0.8em"

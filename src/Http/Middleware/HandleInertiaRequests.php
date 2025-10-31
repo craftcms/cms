@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Http\Middleware;
 
 use Craft;
@@ -29,6 +31,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @see https://inertiajs.com/asset-versioning
      */
+    #[\Override]
     public function version(Request $request): ?string
     {
         return parent::version($request);
@@ -41,6 +44,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
+    #[\Override]
     public function share(Request $request): array
     {
         $sitesService = Craft::$app->getSites();
@@ -84,6 +88,7 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'email' => $currentUser?->email ?? null,
                 ],
+                'cpUrl' => UrlHelper::cpUrl(),
                 'actionUrl' => UrlHelper::actionUrl(),
                 'nav' => Navigation::getItems(),
             ],

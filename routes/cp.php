@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
@@ -32,6 +33,15 @@ Route::get('install', [InstallController::class, 'index']);
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', DashboardController::class)
         ->middleware([HandleInertiaRequests::class]);
+
+    /**
+     * Widgets
+     */
+    Route::post('widgets', [WidgetsController::class, 'store']);
+    Route::post('widgets/reorder', [WidgetsController::class, 'reorder']);
+    Route::post('widgets/{widgetId}', [WidgetsController::class, 'update']);
+    Route::delete('widgets/{widgetId}', [WidgetsController::class, 'delete']);
+    Route::post('widgets/{widgetId}/update-colspan', [WidgetsController::class, 'updateColspan']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}', [UtilitiesController::class, 'show']);

@@ -31,6 +31,13 @@ export function useHelpers() {
       url.pathname = `${url.pathname}/${cleanPath}`;
       return url.toString();
     },
+    // @TODO move to NPM package
+    getCpUrl(action: string) {
+      const url = new URL(craftData.cpUrl);
+      const cleanPath = action.startsWith('/') ? action.slice(1) : action;
+      url.pathname = `${url.pathname}/${cleanPath}`;
+      return url.toString();
+    }
   };
 }
 
