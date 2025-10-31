@@ -1,4 +1,7 @@
-import type {Preview, WebComponentsRenderer,} from '@storybook/web-components-vite';
+import type {
+  Preview,
+  WebComponentsRenderer,
+} from '@storybook/web-components-vite';
 import '../src/styles/cp.css';
 import './preview.css';
 import {icons} from '@lion/ui/icon.js';
