@@ -1,5 +1,5 @@
-import {LitElement, type PropertyDeclaration} from 'lit';
-import {queryAll, query, customElement, property} from 'lit/decorators.js';
+import {LitElement} from 'lit';
+import {customElement, property, query, queryAll} from 'lit/decorators.js';
 
 @customElement('cp-global-sidebar')
 class CpGlobalSidebar extends LitElement {
