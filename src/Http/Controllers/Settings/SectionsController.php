@@ -127,13 +127,13 @@ final readonly class SectionsController
     ): Response {
         $sectionId = $request->input('sectionId');
 
-        abort_if(is_null($sectionId), 404, "Invalid section ID: $sectionId");
+        if ($sectionId) {
+            $sectionId = (int) $sectionId;
+            abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
 
-        $sectionId = (int) $sectionId;
+            $section->id = $sectionId;
+        }
 
-        abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
-
-        $section->id = $sectionId;
         $section->setEntryTypes($request->array('entryTypes'));
 
         // Site-specific settings
