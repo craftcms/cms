@@ -84,6 +84,14 @@ final readonly class WidgetsController
 
     public function updateColspan(Request $request): JsonResponse
     {
+        /**
+         * For backwards compatibility, if the request came in to `/widgets/{widgetId}/update-colspan`,
+         * we need to merge the `widgetId` into the request data.
+         */
+        if ($request->route()->parameter('widgetId') !== null) {
+            $request->merge(['id' => (int) $request->route()->parameter('widgetId')]);
+        }
+
         $request->validate([
             'id' => [
                 'required',
@@ -118,6 +126,13 @@ final readonly class WidgetsController
 
     public function delete(Request $request): JsonResponse
     {
+        /**
+         * For backwards compatibility, if the request came in to `DELETE /widgets/{widgetId}`,
+         * we need to merge the `widgetId` into the request data.
+         */
+        if ($request->route()->parameter('widgetId') !== null) {
+            $request->merge(['id' => (int) $request->route()->parameter('widgetId')]);
+        }
         $request->validate([
             'id' => [
                 'required',
