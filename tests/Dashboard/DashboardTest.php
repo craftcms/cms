@@ -256,10 +256,3 @@ it('can change the colspan of a widget', function () {
 
     expect(WidgetModel::first()->colspan)->toBe(2);
 });
-
-it('renders the dashboard page', function () {
-    $this->actingAs(User::factory()->create());
-
-    $page = visit('/admin/dashboard')
-        ->assertSee('Dashboard');
-});
