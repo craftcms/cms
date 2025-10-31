@@ -76,6 +76,10 @@ final readonly class SectionsController
     {
         $sectionId ??= $request->input('sectionId');
 
+        abort_if(is_null($sectionId), 404, "Invalid section ID: $sectionId");
+
+        $sectionId = (int)$sectionId;
+
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
         $section = $sections->getSectionById($sectionId);
@@ -123,9 +127,11 @@ final readonly class SectionsController
     ): Response {
         $sectionId = $request->input('sectionId');
 
-        if ($sectionId) {
-            abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
-        }
+        abort_if(is_null($sectionId), 404, "Invalid section ID: $sectionId");
+
+        $sectionId = (int)$sectionId;
+
+        abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
 
         $section->id = $sectionId;
         $section->setEntryTypes($request->array('entryTypes'));
