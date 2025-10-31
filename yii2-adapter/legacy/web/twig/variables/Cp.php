@@ -471,18 +471,6 @@ class Cp extends Component
             'iconMask' => '@craftcms/resources/icons/light/pen-to-square.svg',
             'label' => t('Fields'),
         ];
-        $settings[$label]['globals'] = [
-            'iconMask' => '@craftcms/resources/icons/light/globe.svg',
-            'label' => t('Globals'),
-        ];
-        $settings[$label]['categories'] = [
-            'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
-            'label' => t('Categories'),
-        ];
-        $settings[$label]['tags'] = [
-            'iconMask' => '@craftcms/resources/icons/light/tags.svg',
-            'label' => t('Tags'),
-        ];
 
         $label = t('Media');
 

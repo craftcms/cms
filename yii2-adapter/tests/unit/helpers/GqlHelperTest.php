@@ -91,11 +91,8 @@ class GqlHelperTest extends TestCase
         $this->_setSchemaWithPermissions($permissionSet);
 
         self::assertTrue(GqlHelper::canQueryEntries());
-        self::assertTrue(GqlHelper::canQueryGlobalSets());
         self::assertTrue(GqlHelper::canQueryUsers());
         self::assertFalse(GqlHelper::canQueryAssets());
-        self::assertFalse(GqlHelper::canQueryCategories());
-        self::assertFalse(GqlHelper::canQueryTags());
     }
 
     /**

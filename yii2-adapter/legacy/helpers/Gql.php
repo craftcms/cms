@@ -143,45 +143,6 @@ class Gql
     }
 
     /**
-     * Return true if active schema can mutate tags.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateTags(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-        return isset($allowedEntities['taggroups']);
-    }
-
-    /**
-     * Return true if active schema can mutate global sets.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateGlobalSets(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-        return isset($allowedEntities['globalsets']);
-    }
-
-    /**
-     * Return true if active schema can mutate categories.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateCategories(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-        return isset($allowedEntities['categorygroups']);
-    }
-
-    /**
      * Return true if active schema can mutate assets.
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
@@ -219,42 +180,6 @@ class Gql
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
         return isset($allowedEntities['volumes']);
-    }
-
-    /**
-     * Return true if active schema can query categories.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     */
-    public static function canQueryCategories(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['categorygroups']);
-    }
-
-    /**
-     * Return true if active schema can query tags.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     */
-    public static function canQueryTags(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['taggroups']);
-    }
-
-    /**
-     * Return true if active schema can query global sets.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     */
-    public static function canQueryGlobalSets(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['globalsets']);
     }
 
     /**

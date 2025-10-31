@@ -171,7 +171,7 @@ class ResaveController extends Controller
     public bool $touch = false;
 
     /**
-     * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
+     * @var string|null The group handle(s) to save users from. Can be set to multiple comma-separated groups.
      */
     public ?string $group = null;
 
@@ -288,9 +288,7 @@ class ResaveController extends Controller
                 $options[] = 'volume';
                 $options[] = 'withFields';
                 break;
-            case 'tags':
             case 'users':
-            case 'categories':
                 $options[] = 'group';
                 $options[] = 'withFields';
                 break;
