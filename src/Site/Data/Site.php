@@ -31,7 +31,20 @@ use function CraftCms\Cms\t;
 
 final class Site extends Dto implements Chippable, Stringable
 {
+    /**
+     * @var string|null Base URL
+     *
+     * @see getBaseUrl()
+     * @see setBaseUrl()
+     */
     private ?string $baseUrl;
+
+    /**
+     * @var bool|string Enabled
+     *
+     * @see getEnabled()
+     * @see setEnabled()
+     */
     private bool|string $enabled;
 
     public function __construct(
