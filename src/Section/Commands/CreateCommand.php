@@ -139,7 +139,7 @@ final class CreateCommand extends Command
                         'string',
                         'max:255',
                         new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                        Rule::unique(Table::ENTRYTYPES, 'handle'),
+                        Rule::unique(Table::ENTRYTYPES, 'handle')->withoutTrashed('dateDeleted'),
                     ]],
                 ),
                 name: 'entryTypeHandle'

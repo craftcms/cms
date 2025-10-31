@@ -235,7 +235,7 @@ JS, [
         ];
 
         if ($validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null);
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null)->withoutTrashed('dateDeleted');
         }
 
         return $rules;

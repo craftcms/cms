@@ -93,7 +93,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                 'string',
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($context->payload['sectionId'] ?? null),
+                Rule::unique(Table::SECTIONS)->ignore($context->payload['sectionId'] ?? null)->withoutTrashed('dateDeleted'),
             ],
             'entryTypes' => ['required'],
             'type' => ['required', Rule::enum(SectionType::class)],
