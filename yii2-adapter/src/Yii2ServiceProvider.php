@@ -58,6 +58,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerLegacyApp();
 
+        $this->loadRoutesFrom(__DIR__ . '/../routes/actions.php');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $this->setLaravelDefaults();
