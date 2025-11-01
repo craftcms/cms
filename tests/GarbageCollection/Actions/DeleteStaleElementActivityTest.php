@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
+use Illuminate\Support\Facades\DB;
 
 it('deletes stale activity', function () {
     DB::table(Table::ELEMENTACTIVITY)->insert([

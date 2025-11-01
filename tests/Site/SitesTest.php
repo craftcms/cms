@@ -16,6 +16,7 @@ use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 

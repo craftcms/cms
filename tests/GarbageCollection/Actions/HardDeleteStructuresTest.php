@@ -7,6 +7,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteStructures;
 use CraftCms\Cms\Structure\Models\Structure;
+use Illuminate\Support\Facades\DB;
 
 it('hard deletes soft deleted structures', function () {
     $element = Element::factory()->create();

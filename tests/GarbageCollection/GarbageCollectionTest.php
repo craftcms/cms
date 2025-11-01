@@ -17,7 +17,9 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Lottery;
 
 arch('All actions extend GarbageCollectionAction')

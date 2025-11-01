@@ -5,6 +5,7 @@ declare(strict_types=1);
 use craft\elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
+use Illuminate\Support\Facades\DB;
 
 it('deletes orphaned data', function () {
     $fieldLayoutId = DB::table(Table::FIELDLAYOUTS)->insertGetId([
