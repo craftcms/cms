@@ -9,6 +9,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 trait RespondsWithFlash
@@ -16,7 +17,7 @@ trait RespondsWithFlash
     public function asFailure(?string $message = null, array $data = []): Response
     {
         if (request()->expectsJson()) {
-            return response()->json($data + array_filter([
+            return new JsonResponse($data + array_filter([
                 'message' => $message,
             ]), 400);
         }
@@ -29,7 +30,7 @@ trait RespondsWithFlash
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
     {
         if (request()->expectsJson()) {
-            return response()->json($data + array_filter([
+            return new JsonResponse($data + array_filter([
                 'message' => $message,
             ]), 200);
         }
