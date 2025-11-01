@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -6068,8 +6069,11 @@ class GeneralConfig extends BaseConfig
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
         $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        if (app()->has('config')) {
-            app()->get('config')->set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
+        if (app()->has(ConfigRepository::class)) {
+            app()->get(ConfigRepository::class)->set(
+                'auth.guards.web.remember',
+                floor($this->rememberedUserSessionDuration / 60),
+            );
         }
 
         return $this;

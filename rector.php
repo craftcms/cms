@@ -20,6 +20,7 @@ return RectorConfig::configure()
     ->withComposerBased(laravel: true)
     ->withSets([
         LaravelSetList::LARAVEL_COLLECTION,
+        LaravelSetList::LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME,
     ])
     ->withRules([
         DeclareStrictTypesRector::class,
