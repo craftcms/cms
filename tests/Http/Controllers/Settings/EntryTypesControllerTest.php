@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\EntryType;
-use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -89,7 +88,9 @@ it('can save an entry type', function () {
         ->assertRedirectBack();
 
     expect(EntryType::count())->toBe(2);
-    tap($this->entryTypes->getEntryTypeByHandle('a_new_entry_type'), function (EntryTypeData $entryType) {
+    /** @var EntryType $entryType */
+    $entryType = $this->entryTypes->getEntryTypeByHandle('a_new_entry_type');
+    tap($entryType, function (EntryType $entryType) {
         expect($entryType->name)->toBe('A new entry type');
         expect($entryType->handle)->toBe('a_new_entry_type');
     });

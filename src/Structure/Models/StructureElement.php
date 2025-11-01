@@ -18,11 +18,17 @@ final class StructureElement extends BaseModel
 
     protected $table = Table::STRUCTUREELEMENTS;
 
+    /**
+     * @return BelongsTo<Structure, $this>
+     */
     public function structure(): BelongsTo
     {
         return $this->belongsTo(Structure::class, 'structureId');
     }
 
+    /**
+     * @return BelongsTo<Element, $this>
+     */
     public function element(): BelongsTo
     {
         return $this->belongsTo(Element::class, 'elementId');

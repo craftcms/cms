@@ -18,12 +18,11 @@ beforeEach(function () {
 it('can get headers', function () {
     expect($this->api->headers())->not()->toBeEmpty();
 
-    tap($this->api->headers(), function (array $headers) {
-        expect($headers['Accept'])->toBe('application/json');
-        expect($headers['X-Craft-Env'])->toBe(config('app.env'));
-        expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', Cms::VERSION, Edition::get()->handle()));
-        expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
-    });
+    $headers = $this->api->headers();
+    expect($headers['Accept'])->toBe('application/json');
+    expect($headers['X-Craft-Env'])->toBe(config('app.env'));
+    expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', Cms::VERSION, Edition::get()->handle()));
+    expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
 });
 
 it('can process response headers', function () {

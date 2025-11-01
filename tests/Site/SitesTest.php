@@ -205,7 +205,7 @@ it('can save a new site', function () {
     ));
 
     expect(Site::count())->toBe(2);
-    tap(Site::where('handle', 'new-site')->firstOrFail(), function (Site $site) {
+    tap(Site::query()->where('handle', 'new-site')->firstOrFail(), function (Site $site) {
         expect($site->name)->toBe('New site');
         expect($site->handle)->toBe('new-site');
         expect($site->language)->toBe('nl');
