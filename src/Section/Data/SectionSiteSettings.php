@@ -40,13 +40,9 @@ final class SectionSiteSettings extends Dto
             return $this->section;
         }
 
-        if (! $this->sectionId) {
-            throw new RuntimeException('Section site settings model is missing its section ID');
-        }
+        throw_unless($this->sectionId, new RuntimeException('Section site settings model is missing its section ID'));
 
-        if (($this->section = Sections::getSectionById($this->sectionId)) === null) {
-            throw new RuntimeException('Invalid section ID: '.$this->sectionId);
-        }
+        throw_if(($this->section = Sections::getSectionById($this->sectionId)) === null, new RuntimeException('Invalid section ID: '.$this->sectionId));
 
         return $this->section;
     }
@@ -66,13 +62,9 @@ final class SectionSiteSettings extends Dto
      */
     public function getSite(): Site
     {
-        if (! $this->siteId) {
-            throw new RuntimeException('Section site settings model is missing its site ID');
-        }
+        throw_unless($this->siteId, new RuntimeException('Section site settings model is missing its site ID'));
 
-        if (($site = Sites::getSiteById($this->siteId)) === null) {
-            throw new RuntimeException('Invalid site ID: '.$this->siteId);
-        }
+        throw_if(($site = Sites::getSiteById($this->siteId)) === null, new RuntimeException('Invalid site ID: '.$this->siteId));
 
         return $site;
     }

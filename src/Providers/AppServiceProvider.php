@@ -149,9 +149,7 @@ final class AppServiceProvider extends ServiceProvider
             }
 
             if ($actionParam = $this->get('action')) {
-                if (! is_string($actionParam)) {
-                    abort(400, 'Invalid action param');
-                }
+                abort_unless(is_string($actionParam), 400, 'Invalid action param');
 
                 return array_values(array_filter(explode('/', $actionParam)));
             }

@@ -644,9 +644,7 @@ final class Formatter
             return (float) $value;
         }
 
-        if (! is_numeric($value)) {
-            throw new InvalidArgumentException("'$value' is not a numeric value.");
-        }
+        throw_unless(is_numeric($value), new InvalidArgumentException("'$value' is not a numeric value."));
 
         return $value;
     }

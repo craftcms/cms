@@ -81,17 +81,13 @@ final class AsciiFilenamesCommand extends Command
                 "Renaming {$asset->getFilename()} to $asset->newFilename",
                 function () use (&$failCount, &$successCount, $asset) {
                     try {
-                        if (! Craft::$app->getElements()->saveElement($asset)) {
-                            throw new InvalidElementException($asset, implode(', ', $asset->getFirstErrors()));
-                        }
+                        throw_unless(Craft::$app->getElements()->saveElement($asset), new InvalidElementException($asset, implode(', ', $asset->getFirstErrors())));
 
                         $successCount++;
                     } catch (Throwable $e) {
                         $this->error('error: '.$e->getMessage());
 
-                        if (! $e instanceof InvalidElementException) {
-                            report($e);
-                        }
+                        report_unless($e instanceof InvalidElementException, $e);
 
                         $failCount++;
                     }

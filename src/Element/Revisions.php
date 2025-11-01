@@ -52,9 +52,7 @@ final readonly class Revisions
         bool $force = false,
     ): int {
         // Make sure the source isn't a draft or revision
-        if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
-            throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
-        }
+        throw_if($canonical->getIsDraft() || $canonical->getIsRevision(), new InvalidArgumentException('Cannot create a revision from another revision or draft.'));
 
         $lockKey = 'revision:'.$canonical->id;
         $mutex = Cache::lock($lockKey);

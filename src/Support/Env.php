@@ -24,9 +24,7 @@ final class Env extends \Illuminate\Support\Env
     {
         $filesystem = new Filesystem;
 
-        if ($filesystem->missing($pathToFile)) {
-            throw new RuntimeException("The file [{$pathToFile}] does not exist.");
-        }
+        throw_if($filesystem->missing($pathToFile), new RuntimeException("The file [{$pathToFile}] does not exist."));
 
         $envContent = $filesystem->get($pathToFile);
 

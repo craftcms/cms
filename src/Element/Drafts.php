@@ -83,9 +83,7 @@ final readonly class Drafts
         bool $provisional = false,
     ): ElementInterface {
         // Make sure the canonical element isn't a draft or revision
-        if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
-            throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
-        }
+        throw_if($canonical->getIsDraft() || $canonical->getIsRevision(), new InvalidArgumentException('Cannot create a draft from another draft or revision.'));
 
         $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
@@ -225,9 +223,7 @@ final readonly class Drafts
                 ->status(null)
                 ->one();
 
-            if ($draft === null) {
-                throw new Exception("Could not load the draft for site ID $canonical->siteId");
-            }
+            throw_if($draft === null, new Exception("Could not load the draft for site ID $canonical->siteId"));
         }
 
         if (Event::hasListeners(ApplyingDraft::class)) {
@@ -326,9 +322,7 @@ final readonly class Drafts
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
-                throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
-            }
+            throw_if($draft->hasErrors() || ! Craft::$app->getElements()->saveElement($draft, false, false), new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate."));
 
             DB::table(Table::DRAFTS)->delete($draftId);
         } catch (Throwable $e) {

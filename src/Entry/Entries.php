@@ -152,14 +152,10 @@ final class Entries
         }
 
         // Make sure the element exists
-        if (! $entry->id) {
-            throw new Exception('Attempting to move an unsaved element.');
-        }
+        throw_unless($entry->id, new Exception('Attempting to move an unsaved element.'));
 
         // and that it's not a nested entry
-        if ($entry->getPrimaryOwnerId() !== null) {
-            throw new Exception('Attempting to move a nested element.');
-        }
+        throw_if($entry->getPrimaryOwnerId() !== null, new Exception('Attempting to move a nested element.'));
 
         // Ensure all fields have been normalized
         $entry->getFieldValues();
@@ -185,10 +181,8 @@ final class Entries
             $entry->clearErrors('authorIds');
         }
 
-        if ($entry->hasErrors()) {
-            throw new InvalidElementException($entry,
-                'Element '.$entry->id.' could not be moved because it doesn\'t validate.');
-        }
+        throw_if($entry->hasErrors(), new InvalidElementException($entry,
+            'Element '.$entry->id.' could not be moved because it doesn\'t validate.'));
 
         // prevents revision from being created
         $entry->resaving = true;
@@ -203,10 +197,8 @@ final class Entries
             DB::beginTransaction();
             try {
                 // Start with $entry’s site
-                if (! $elementsService->saveElement($entry, false, false)) {
-                    throw new InvalidElementException($entry,
-                        'Element '.$entry->id.' could not be moved for site '.$entry->siteId);
-                }
+                throw_unless($elementsService->saveElement($entry, false, false), new InvalidElementException($entry,
+                    'Element '.$entry->id.' could not be moved for site '.$entry->siteId));
 
                 $draftsQuery = Entry::find()
                     ->draftOf($entry)

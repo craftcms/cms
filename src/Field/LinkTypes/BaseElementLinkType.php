@@ -258,9 +258,7 @@ JS, [
     public function normalizeValue(ElementInterface|int|string $value): string
     {
         if ($value instanceof ElementInterface) {
-            if (! is_a($value, static::elementType())) {
-                throw new InvalidArgumentException(sprintf('$value must be an %s instance, ID, or reference tag.', static::elementType()::lowerDisplayName()));
-            }
+            throw_unless(is_a($value, static::elementType()), new InvalidArgumentException(sprintf('$value must be an %s instance, ID, or reference tag.', static::elementType()::lowerDisplayName())));
             $value = sprintf('{%s:%s@%s:url}',
                 static::elementType()::refHandle(),
                 $value->id,

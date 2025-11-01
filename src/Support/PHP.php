@@ -129,9 +129,7 @@ final class PHP
             try {
                 $path = preg_replace_callback('/\$\{(.*?)\}/', function ($match) {
                     $env = Env::get($match[1]);
-                    if ($env === false) {
-                        throw new InvalidArgumentException;
-                    }
+                    throw_if($env === false, new InvalidArgumentException);
 
                     return $env;
                 }, $path);

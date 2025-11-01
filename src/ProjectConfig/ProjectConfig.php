@@ -1975,9 +1975,7 @@ final class ProjectConfig
 
         $mutex = Cache::lock(self::MUTEX_NAME, 30);
 
-        if (! $mutex->get()) {
-            throw new BusyResourceException('A lock could not be acquired to modify the project config.');
-        }
+        throw_unless($mutex->get(), new BusyResourceException('A lock could not be acquired to modify the project config.'));
 
         if (Info::isInstalled()) {
             try {

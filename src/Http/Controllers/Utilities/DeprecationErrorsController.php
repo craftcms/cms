@@ -21,9 +21,7 @@ final readonly class DeprecationErrorsController
         private Deprecator $deprecator,
         #[Give('Craft')] private Application $craft
     ) {
-        if (! $utilitiesService->checkAuthorization(DeprecationErrors::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
+        abort_unless($utilitiesService->checkAuthorization(DeprecationErrors::class), 403, 'User is not authorized to perform this action.');
     }
 
     public function getDeprecationErrorTracesModal(Request $request): JsonResponse

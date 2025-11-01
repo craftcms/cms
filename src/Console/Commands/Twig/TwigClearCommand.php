@@ -33,9 +33,7 @@ final class TwigClearCommand extends Command
     {
         $cache = $craft->getView()->getTwig()->getCache();
 
-        if (! is_dir($cache)) {
-            throw new RuntimeException('Twig cache path not found.');
-        }
+        throw_unless(is_dir($cache), new RuntimeException('Twig cache path not found.'));
 
         File::cleanDirectory($cache);
 

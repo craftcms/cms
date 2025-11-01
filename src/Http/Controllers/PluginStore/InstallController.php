@@ -37,9 +37,7 @@ final class InstallController extends BaseUpdaterController
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
-        if (! $this->generalConfig->allowUpdates) {
-            abort(403, 'Installation of plugins from the Plugin Store is disabled.');
-        }
+        abort_unless($this->generalConfig->allowUpdates, 403, 'Installation of plugins from the Plugin Store is disabled.');
     }
 
     public function craftInstall(): Response

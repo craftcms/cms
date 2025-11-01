@@ -54,9 +54,7 @@ enum Color: string implements Castable
     public function cssVar(int $shade): string
     {
         // make sure it's a valid shade
-        if (! in_array($shade, [50, ...range(100, 900, 100)])) {
-            throw new InvalidArgumentException("Invalid color shade: $shade");
-        }
+        throw_unless(in_array($shade, [50, ...range(100, 900, 100)]), new InvalidArgumentException("Invalid color shade: $shade"));
 
         return match ($this) {
             self::White, self::Gray, self::Black => sprintf('var(--%s)', $this->value),

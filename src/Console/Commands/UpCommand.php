@@ -72,9 +72,7 @@ final class UpCommand extends Command implements Isolatable
                 $updates->getUpdates(refresh: true);
             });
         } catch (Throwable $e) {
-            if (! $e instanceof OperationAbortedException) {
-                throw $e;
-            }
+            throw_unless($e instanceof OperationAbortedException, $e);
 
             $this->error($e->getMessage());
 

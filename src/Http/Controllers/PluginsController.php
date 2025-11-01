@@ -117,14 +117,10 @@ final readonly class PluginsController
 
     public function editSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
-        if ($plugin === null && ($plugin = $this->plugins->getPlugin($handle)) === null) {
-            abort(404, 'Plugin not found.');
-        }
+        abort_if($plugin === null && ($plugin = $this->plugins->getPlugin($handle)) === null, 404, 'Plugin not found.');
 
         if (! $this->generalConfig->allowAdminChanges) {
-            if (! $plugin->hasReadOnlyCpSettings) {
-                abort(403, 'Administrative changes are disallowed in this environment.');
-            }
+            abort_unless($plugin->hasReadOnlyCpSettings, 403, 'Administrative changes are disallowed in this environment.');
 
             return $plugin->getReadOnlySettingsResponse();
         }

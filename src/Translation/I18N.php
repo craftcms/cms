@@ -183,9 +183,7 @@ final class I18N
         $lcLanguages = array_map('strtolower', $allLanguages);
         $allLanguages = array_combine($lcLanguages, $allLanguages);
 
-        if (! isset($allLanguages[$language])) {
-            throw new InvalidArgumentException('Invalid language: '.$language);
-        }
+        throw_unless(isset($allLanguages[$language]), new InvalidArgumentException('Invalid language: '.$language));
 
         return $allLanguages[$language];
     }

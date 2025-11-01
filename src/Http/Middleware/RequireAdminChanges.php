@@ -18,9 +18,7 @@ final class RequireAdminChanges
     {
         abort_unless($request->user()->isAdmin(), 403, 'User is not permitted to perform this action.');
 
-        if (! $this->generalConfig->allowAdminChanges) {
-            abort(403, 'Administrative changes are disallowed in this environment.');
-        }
+        abort_unless($this->generalConfig->allowAdminChanges, 403, 'Administrative changes are disallowed in this environment.');
 
         return $next($request);
     }

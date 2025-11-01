@@ -51,12 +51,10 @@ final readonly class CheckForUpdates
     private function processUpdate(Request $request, Closure $next): mixed
     {
         if ($request->isCpRequest() && (! $request->isActionRequest() || str_contains($request->path(), 'users/login'))) {
-            if ($this->updates->wasCraftBreakpointSkipped()) {
-                throw new RuntimeException(t('You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
-                    'version' => Cms::MIN_VERSION_REQUIRED,
-                    'targetVersion' => Cms::VERSION,
-                ]));
-            }
+            throw_if($this->updates->wasCraftBreakpointSkipped(), new RuntimeException(t('You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
+                'version' => Cms::MIN_VERSION_REQUIRED,
+                'targetVersion' => Cms::VERSION,
+            ])));
 
             File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
 

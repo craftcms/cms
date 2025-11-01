@@ -19,9 +19,7 @@ final readonly class ClearCachesController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        if (! $utilitiesService->checkAuthorization(ClearCaches::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
+        abort_unless($utilitiesService->checkAuthorization(ClearCaches::class), 403, 'User is not authorized to perform this action.');
     }
 
     public function clearCaches(Request $request, Application $app): JsonResponse

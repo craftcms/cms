@@ -43,9 +43,7 @@ class Json
             return null;
         }
 
-        if (! Str::isJson($json)) {
-            throw new InvalidArgumentException('Invalid JSON data.');
-        }
+        throw_unless(Str::isJson($json), new InvalidArgumentException('Invalid JSON data.'));
 
         return json_decode((string) $json, $asArray);
     }
@@ -88,13 +86,9 @@ class Json
     {
         $file = Aliases::get($file);
 
-        if (! File::exists($file)) {
-            throw new InvalidArgumentException("`$file` doesn’t exist.");
-        }
+        throw_unless(File::exists($file), new InvalidArgumentException("`$file` doesn’t exist."));
 
-        if (is_dir($file)) {
-            throw new InvalidArgumentException("`$file` is a directory.");
-        }
+        throw_if(is_dir($file), new InvalidArgumentException("`$file` is a directory."));
 
         try {
             return static::decode(File::get($file), $asArray);

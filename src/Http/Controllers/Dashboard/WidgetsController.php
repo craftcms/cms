@@ -36,11 +36,9 @@ final readonly class WidgetsController
         /** @var class-string<WidgetInterface> $type */
         $type = $data['type'];
 
-        if (! in_array($type, $this->dashboard->getAllWidgetTypes()->all())) {
-            throw ValidationException::withMessages([
-                'type' => 'Invalid widget type.',
-            ]);
-        }
+        throw_unless(in_array($type, $this->dashboard->getAllWidgetTypes()->all()), ValidationException::withMessages([
+            'type' => 'Invalid widget type.',
+        ]));
 
         $settings = $data['settings'] ?? [];
 

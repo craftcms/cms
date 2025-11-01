@@ -62,9 +62,7 @@ final class CreateCommand extends Command
             ->map(function (string $entryTypeHandle) use ($entryTypesService) {
                 $entryType = $entryTypesService->getEntryTypeByHandle($entryTypeHandle);
 
-                if (! $entryType) {
-                    throw new \RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
-                }
+                throw_unless($entryType, new \RuntimeException("Invalid entry type handle: {$entryTypeHandle}"));
 
                 return $entryType->handle;
             })

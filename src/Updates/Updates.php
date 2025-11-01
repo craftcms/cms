@@ -209,9 +209,7 @@ final class Updates
             DB::commit();
         } catch (PdoException $e) {
             // The transaction could be implicitly committed by Mysql
-            if ($e->getMessage() !== 'There is no active transaction') {
-                throw $e;
-            }
+            throw_if($e->getMessage() !== 'There is no active transaction', $e);
         }
 
         // Delete all compiled templates

@@ -14,9 +14,7 @@ final readonly class FindAndReplaceController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        if (! $utilitiesService->checkAuthorization(Utilities\FindAndReplace::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
+        abort_unless($utilitiesService->checkAuthorization(Utilities\FindAndReplace::class), 403, 'User is not authorized to perform this action.');
     }
 
     public function __invoke(Request $request)

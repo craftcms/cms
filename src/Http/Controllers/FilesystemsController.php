@@ -48,9 +48,7 @@ final class FilesystemsController
 
     public function edit(?string $handle = null): CpScreenResponse
     {
-        if ($handle === null && $this->readOnly) {
-            abort(403, 'Administrative changes are disallowed in this environment.');
-        }
+        abort_if($handle === null && $this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
 
         $fsService = Craft::$app->getFs();
         $filesystem = null;

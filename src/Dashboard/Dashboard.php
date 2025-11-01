@@ -355,9 +355,7 @@ final readonly class Dashboard
         /** @var User $user */
         $user = Auth::user();
 
-        if (! $user) {
-            throw new Exception('No logged-in user');
-        }
+        throw_unless($user, new Exception('No logged-in user'));
 
         if (! $user->hasDashboard) {
             return false;

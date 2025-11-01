@@ -68,9 +68,7 @@ final readonly class StoreEntryController
         if ($isNotNew) {
             $lockKey = "entry:$entry->id";
             $mutex = Cache::lock($lockKey, 15);
-            if (! $mutex->get()) {
-                throw new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}.");
-            }
+            throw_unless($mutex->get(), new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}."));
         }
 
         try {
@@ -287,9 +285,7 @@ final readonly class StoreEntryController
         // Make sure they are allowed to edit all of the posted site IDs
         $editableSiteIds = $this->sites->getEditableSiteIds()->all();
 
-        if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
-            abort(403, 'User not permitted to edit the statuses for all the submitted site IDs');
-        }
+        abort_if(array_diff(array_keys($enabledForSite), $editableSiteIds), 403, 'User not permitted to edit the statuses for all the submitted site IDs');
 
         return $enabledForSite;
     }

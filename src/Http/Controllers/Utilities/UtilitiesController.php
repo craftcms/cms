@@ -35,9 +35,7 @@ final readonly class UtilitiesController
     {
         $utilities = $this->utilitiesService->getAuthorizedUtilityTypes();
 
-        if ($utilities->isEmpty()) {
-            abort(403, 'User not permitted to view Utilities');
-        }
+        abort_if($utilities->isEmpty(), 403, 'User not permitted to view Utilities');
 
         // Don’t go to the Updates or Upgrade utilities by default if there are any others
         $firstUtility = $utilities->first(fn (string $utility) => ! in_array($utility, [Updates::class, Upgrade::class])) ?? $utilities->first();
@@ -54,9 +52,7 @@ final readonly class UtilitiesController
             return $this->index();
         }
 
-        if ($this->utilitiesService->checkAuthorization($class) === false) {
-            abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
-        }
+        abort_if($this->utilitiesService->checkAuthorization($class) === false, 403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
 
         $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);
 

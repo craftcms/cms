@@ -24,9 +24,7 @@ final readonly class ProjectConfigController
 
     public function __construct(Utilities $utilities)
     {
-        if (! $utilities->checkAuthorization(Utilities\ProjectConfig::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
+        abort_unless($utilities->checkAuthorization(Utilities\ProjectConfig::class), 403, 'User is not authorized to perform this action.');
     }
 
     public function diff(Request $request): string
@@ -61,9 +59,7 @@ final readonly class ProjectConfigController
         $filename = Str::uuid()->toString().'.zip';
         $zipPath = Storage::disk('craft-tmp')->path($filename);
 
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new RuntimeException('Cannot create zip at '.$zipPath);
-        }
+        throw_if($zip->open($zipPath, ZipArchive::CREATE) !== true, new RuntimeException('Cannot create zip at '.$zipPath));
 
         foreach ($splitConfig as $path => $pathConfig) {
             $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($pathConfig), 20, 2);

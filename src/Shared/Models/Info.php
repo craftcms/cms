@@ -108,9 +108,7 @@ final class Info extends BaseModel
         try {
             $info = self::find(1);
         } catch (PDOException $e) {
-            if ($throwException) {
-                throw $e;
-            }
+            throw_if($throwException, $e);
 
             $info = new self;
 

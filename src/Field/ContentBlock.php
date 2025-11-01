@@ -253,9 +253,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     public function setFieldLayoutUid(string $uid): void
     {
         $layout = Fields::getLayoutByUid($uid);
-        if (! $layout) {
-            throw new InvalidArgumentException("Invalid field layout UUID: $uid");
-        }
+        throw_unless($layout, new InvalidArgumentException("Invalid field layout UUID: $uid"));
         $layout->provider = $this;
         $this->_fieldLayout = $layout;
     }

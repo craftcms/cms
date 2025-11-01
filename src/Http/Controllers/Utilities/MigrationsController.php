@@ -18,9 +18,7 @@ final readonly class MigrationsController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        if (! $utilitiesService->checkAuthorization(Migrations::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
+        abort_unless($utilitiesService->checkAuthorization(Migrations::class), 403, 'User is not authorized to perform this action.');
     }
 
     public function __invoke(Request $request, Migrator $migrator)

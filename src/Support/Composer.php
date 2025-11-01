@@ -35,18 +35,14 @@ final class Composer
     public function getJsonPath(): string
     {
         if (defined('CRAFT_COMPOSER_PATH')) {
-            if (! File::exists(CRAFT_COMPOSER_PATH)) {
-                throw new FileNotFoundException(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH));
-            }
+            throw_unless(File::exists(CRAFT_COMPOSER_PATH), new FileNotFoundException(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH)));
 
             return CRAFT_COMPOSER_PATH;
         }
 
         $jsonPath = Aliases::get('@root/composer.json');
 
-        if (! File::exists($jsonPath)) {
-            throw new FileNotFoundException("No Composer config found at $jsonPath.");
-        }
+        throw_unless(File::exists($jsonPath), new FileNotFoundException("No Composer config found at $jsonPath."));
 
         return $jsonPath;
     }

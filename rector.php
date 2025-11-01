@@ -22,6 +22,7 @@ return RectorConfig::configure()
         LaravelSetList::LARAVEL_COLLECTION,
         LaravelSetList::LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME,
         LaravelSetList::LARAVEL_FACADE_ALIASES_TO_FULL_NAMES,
+        LaravelSetList::LARAVEL_IF_HELPERS,
     ])
     ->withRules([
         DeclareStrictTypesRector::class,

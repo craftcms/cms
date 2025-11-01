@@ -39,12 +39,8 @@ trait EnforcesPermissions
 
     protected function requirePermission(string $permission): void
     {
-        if (! $user = Auth::user()) {
-            abort(403, 'User is not authenticated.');
-        }
+        abort_unless($user = Auth::user(), 403, 'User is not authenticated.');
 
-        if (! $user->can($permission)) {
-            abort(403, 'User is not permitted to perform this action.');
-        }
+        abort_unless($user->can($permission), 403, 'User is not permitted to perform this action.');
     }
 }

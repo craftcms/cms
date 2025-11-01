@@ -926,9 +926,7 @@ final class Assets extends BaseRelationField
     {
         // Make sure the volume and root folder actually exist
         $volume = $this->_volumeBySourceKey($sourceKey);
-        if (! $volume) {
-            throw new InvalidFsException("Invalid source key: $sourceKey");
-        }
+        throw_unless($volume, new InvalidFsException("Invalid source key: $sourceKey"));
 
         $assetsService = Craft::$app->getAssets();
         $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
@@ -953,14 +951,10 @@ final class Assets extends BaseRelationField
             }
 
             // Did any of the tokens return null?
-            if (
-                $renderedSubpath === '' ||
-                trim((string) $renderedSubpath, '/') != $renderedSubpath ||
-                str_contains((string) $renderedSubpath, '//') ||
-                str($renderedSubpath)->explode('/')->contains(fn (string $segment) => ElementHelper::isTempSlug($segment))
-            ) {
-                throw new InvalidSubpathException($subpath);
-            }
+            throw_if($renderedSubpath === '' ||
+            trim((string) $renderedSubpath, '/') != $renderedSubpath ||
+            str_contains((string) $renderedSubpath, '//') ||
+            str($renderedSubpath)->explode('/')->contains(fn (string $segment) => ElementHelper::isTempSlug($segment)), new InvalidSubpathException($subpath));
 
             // Sanitize the subpath
             $subpath = str($renderedSubpath)
@@ -979,9 +973,7 @@ final class Assets extends BaseRelationField
 
         // Ensure that the folder exists
         if (! $folder) {
-            if (! $createDynamicFolders) {
-                throw new InvalidSubpathException($subpath);
-            }
+            throw_unless($createDynamicFolders, new InvalidSubpathException($subpath));
 
             $folder = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
         }
@@ -1046,9 +1038,7 @@ final class Assets extends BaseRelationField
         $assetsService = Craft::$app->getAssets();
 
         try {
-            if (! $uploadVolume) {
-                throw new InvalidFsException;
-            }
+            throw_unless($uploadVolume, new InvalidFsException);
 
             return $this->_findFolder($uploadVolume, $subpath, $element, $createDynamicFolders);
         } catch (InvalidFsException $e) {

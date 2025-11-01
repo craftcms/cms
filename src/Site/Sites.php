@@ -154,9 +154,7 @@ final class Sites
     {
         $site = $this->allSites($withDisabled)->firstWhere('uid', $uid);
 
-        if ($site === null) {
-            throw new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!');
-        }
+        throw_if($site === null, new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!'));
 
         return $site;
     }
@@ -213,9 +211,7 @@ final class Sites
         // Did something go wrong?
         if (! $this->currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && ! $this->updates->isCraftUpdatePending()) {
-                throw new InvalidArgumentException('Invalid site: '.$site);
-            }
+            throw_if(Info::isInstalled() && ! $this->updates->isCraftUpdatePending(), new InvalidArgumentException('Invalid site: '.$site));
 
             return;
         }
@@ -245,9 +241,7 @@ final class Sites
      */
     public function getPrimarySite(): Site
     {
-        if (! isset($this->primarySite)) {
-            throw new SiteNotFoundException('No primary site exists');
-        }
+        throw_unless(isset($this->primarySite), new SiteNotFoundException('No primary site exists'));
 
         return $this->primarySite;
     }
@@ -393,9 +387,7 @@ final class Sites
     {
         $isNewSite = ! $site->id;
 
-        if ($isNewSite && ! $this->getRemainingSites()) {
-            throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
-        }
+        throw_if($isNewSite && ! $this->getRemainingSites(), new Exception("Maximum number of sites cannot exceed $this->maxSites."));
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
@@ -627,9 +619,7 @@ final class Sites
     public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
         // Make sure this isn't the primary site
-        if ($site->id === $this->primarySite->id) {
-            throw new Exception('You cannot delete the primary site.');
-        }
+        throw_if($site->id === $this->primarySite->id, new Exception('You cannot delete the primary site.'));
 
         if (Event::hasListeners(DeletingSite::class)) {
             Event::dispatch($event = new DeletingSite(

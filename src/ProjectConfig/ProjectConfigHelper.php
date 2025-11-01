@@ -742,9 +742,7 @@ final class ProjectConfigHelper
      */
     public static function pathSegments(string $path): array
     {
-        if ($path === '') {
-            throw new InvalidArgumentException('No project config path provided.');
-        }
+        throw_if($path === '', new InvalidArgumentException('No project config path provided.'));
 
         return explode('.', $path);
     }

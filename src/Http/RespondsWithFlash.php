@@ -97,9 +97,7 @@ trait RespondsWithFlash
 
         $url = Craft::$app->getSecurity()->validateData($url);
 
-        if ($url === false) {
-            abort(400, 'Request contained an invalid body param');
-        }
+        abort_if($url === false, 400, 'Request contained an invalid body param');
 
         if ($object) {
             $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
