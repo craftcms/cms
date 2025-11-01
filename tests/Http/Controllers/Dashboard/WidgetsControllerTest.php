@@ -56,8 +56,7 @@ it('can store a widget with settings', function () {
 test('store needs a valid type', function () {
     postJson(action([WidgetsController::class, 'store']), [
         'type' => 'invalid',
-    ])
-        ->assertStatus(422)
+    ])->assertUnprocessable()
         ->assertJsonValidationErrorFor('type');
 });
 
