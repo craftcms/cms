@@ -34,12 +34,11 @@ trait EnforcesPermissions
         }
 
         abort_unless($canSave, 403, 'User is not authorized to perform this action.');
-        ;
     }
 
     protected function requirePermission(string $permission): void
     {
-        abort_unless($user = Auth::user(), 403, 'User is not authenticated.');
+        abort_if(is_null($user = Auth::user()), 403, 'User is not authenticated.');
 
         abort_unless($user->can($permission), 403, 'User is not permitted to perform this action.');
     }
