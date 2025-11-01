@@ -306,7 +306,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                     if (! $this->allowCustomColors) {
                         /** @var ColorData $value */
                         $value = $element->getFieldValue($this->handle);
-                        if (! Collection::make($this->palette)->contains(fn (array $color) => $color['color'] === $value->getHex())) {
+                        if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
                             $element->addError("field:$this->handle", t('{attribute} is invalid.', [
                                 'attribute' => $this->getUiLabel(),
                             ]));

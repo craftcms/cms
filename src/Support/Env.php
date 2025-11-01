@@ -163,7 +163,7 @@ final class Env extends \Illuminate\Support\Env
 
                 return [$property->getName() => self::get($prefix.$envName)];
             })
-            ->filter(fn (mixed $value) => ! is_null($value))
+            ->reject(fn (mixed $value): bool => is_null($value))
             ->all();
     }
 }

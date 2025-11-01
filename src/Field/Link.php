@@ -321,7 +321,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         $remainingTypes = Collection::make();
         if ($selectedTypes->count() < count(self::types())) {
             $remainingTypes = Collection::make(self::types())
-                ->filter(fn ($value, $key) => ! isset($selectedTypes[$key]))
+                ->reject(fn ($value, $key): bool => isset($selectedTypes[$key]))
                 // and sort them by label, with URL at the top
                 ->sort(function (string $a, string $b) {
                     /** @var class-string<BaseLinkType> $a */

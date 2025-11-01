@@ -193,7 +193,7 @@ final class Fields
 
         // Make sure the current field class is in there if it's supposed to be
         /** @var FieldInterface $field */
-        if ($includeCurrent && ! $types->contains($field::class)) {
+        if ($includeCurrent && $types->doesntContain($field::class)) {
             $types->add($field::class);
         }
 
