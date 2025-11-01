@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf407efe540224cafe642174d07625e5",
+    "content-hash": "9a0f2788594896a1647327e18c04ef9a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -637,7 +637,7 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "c9852f8ddcee818e992c07a99706f7db5c260d54"
+                "reference": "09715fea076de477be0b5a9581d61d65ace405c4"
             },
             "require": {
                 "craftcms/cms": "self.version",
@@ -726,7 +726,7 @@
                     "codecept build"
                 ],
                 "phpstan": [
-                    "phpstan --memory-limit=1G"
+                    "phpstan --memory-limit=2G"
                 ],
                 "rector": [
                     "rector"
@@ -11547,6 +11547,41 @@
                 "source": "https://github.com/dg/bypass-finals/tree/v1.9.0"
             },
             "time": "2025-01-16T00:46:05+00:00"
+        },
+        {
+            "name": "driftingly/rector-laravel",
+            "version": "2.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/driftingly/rector-laravel.git",
+                "reference": "abc336cbf06f53d90ab74cecfd319379fc55d408"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/driftingly/rector-laravel/zipball/abc336cbf06f53d90ab74cecfd319379fc55d408",
+                "reference": "abc336cbf06f53d90ab74cecfd319379fc55d408",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0",
+                "rector/rector": "^2.0"
+            },
+            "type": "rector-extension",
+            "autoload": {
+                "psr-4": {
+                    "RectorLaravel\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Rector upgrades rules for Laravel Framework",
+            "support": {
+                "issues": "https://github.com/driftingly/rector-laravel/issues",
+                "source": "https://github.com/driftingly/rector-laravel/tree/2.1.1"
+            },
+            "time": "2025-10-23T13:53:44+00:00"
         },
         {
             "name": "fakerphp/faker",

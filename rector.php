@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
+use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -14,6 +15,9 @@ return RectorConfig::configure()
         __DIR__.'/resources/icons/index.php',
         __DIR__.'/resources/icons/aliases.php',
     ])
+    ->withSetProviders(LaravelSetProvider::class)
+    ->withComposerBased(laravel: true)
+    ->withSets([])
     ->withRules([
         DeclareStrictTypesRector::class,
     ])

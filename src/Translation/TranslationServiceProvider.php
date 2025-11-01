@@ -15,7 +15,7 @@ final class TranslationServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        $this->app->singleton(Translator::class, function () {
+        $this->app->singleton(function (): Translator {
             $translator = new Translator(
                 locale: app()->getLocale(),
                 fallbackLocale: $this->app['config']->get('app.fallback_locale'),
