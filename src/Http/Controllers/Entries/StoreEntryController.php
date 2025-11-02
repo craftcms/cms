@@ -274,7 +274,7 @@ final readonly class StoreEntryController
      *
      * @return bool|bool[]|null
      */
-    protected function enabledForSiteValue(): array|bool|null
+    private function enabledForSiteValue(): array|bool|null
     {
         $enabledForSite = $this->request->input('enabledForSite');
 

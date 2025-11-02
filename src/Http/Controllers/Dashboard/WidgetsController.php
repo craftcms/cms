@@ -130,7 +130,7 @@ final readonly class WidgetsController
         return new JsonResponse;
     }
 
-    protected function saveAndReturnWidget(WidgetInterface $widget): JsonResponse
+    private function saveAndReturnWidget(WidgetInterface $widget): JsonResponse
     {
         $this->dashboard->saveWidget($widget);
 

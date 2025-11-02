@@ -53,9 +53,9 @@ final class UpdateCommand extends Command
 
     protected $description = 'Updates Craft and/or plugins.';
 
-    protected Composer $composer;
+    private Composer $composer;
 
-    protected Plugins $plugins;
+    private Plugins $plugins;
 
     public function handle(Plugins $plugins, Composer $composer, Updates $updates): int
     {

@@ -8,10 +8,10 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 
-final class RequireAdminChanges
+final readonly class RequireAdminChanges
 {
     public function __construct(
-        protected GeneralConfig $generalConfig,
+        private GeneralConfig $generalConfig,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed

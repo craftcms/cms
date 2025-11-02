@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Event;
 final readonly class Utilities
 {
     public function __construct(
-        protected GeneralConfig $generalConfig,
+        private GeneralConfig $generalConfig,
     ) {}
 
     /**

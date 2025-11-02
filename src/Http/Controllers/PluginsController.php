@@ -22,9 +22,9 @@ final readonly class PluginsController
     use RespondsWithFlash;
 
     public function __construct(
-        protected Plugins $plugins,
-        protected GeneralConfig $generalConfig,
-        #[Give('Craft')] protected Application $craft,
+        private Plugins $plugins,
+        private GeneralConfig $generalConfig,
+        #[Give('Craft')] private Application $craft,
     ) {}
 
     public function index(): string

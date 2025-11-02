@@ -49,6 +49,7 @@ return RectorConfig::configure()
     ])
     ->withPreparedSets(
         deadCode: true,
+        privatization: true,
         earlyReturn: true,
     )
     ->withPhpSets(php84: true);
