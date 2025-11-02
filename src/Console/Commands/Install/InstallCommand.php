@@ -158,7 +158,7 @@ final class InstallCommand extends Command
             }
         }
 
-        $this->info('Installing Craft');
+        $this->components->info('Installing Craft');
 
         $migrator->runMigration(new Install(
             username: $username,

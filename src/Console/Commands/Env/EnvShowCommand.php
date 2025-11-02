@@ -34,6 +34,6 @@ final class EnvShowCommand extends Command implements PromptsForMissingInput
 
         $value = Env::get($name);
 
-        $this->info(var_export($value, true));
+        $this->components->info(var_export($value, true));
     }
 }

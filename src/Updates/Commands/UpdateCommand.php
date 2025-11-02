@@ -210,7 +210,7 @@ final class UpdateCommand extends Command
         }
 
         $this->newLine();
-        $this->info($this->green(sprintf(
+        $this->components->info($this->green(sprintf(
             ' Performing <fg=green;options=bold>%s</> %s:',
             $total === 1 ? 'one' : $total,
             Str::plural('update', $total),
