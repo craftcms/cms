@@ -666,7 +666,7 @@ JS, [
     {
         return [
             [
-                fn (ElementInterface $element) => $this->validateContentBlock($element),
+                $this->validateContentBlock(...),
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
                 'skipOnEmpty' => false,
             ],

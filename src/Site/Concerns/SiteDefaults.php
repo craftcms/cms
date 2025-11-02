@@ -28,7 +28,7 @@ trait SiteDefaults
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
 
-        return implode(' ', array_map('ucfirst', $words));
+        return implode(' ', array_map(ucfirst(...), $words));
     }
 
     protected function defaultSiteUrl(): ?string

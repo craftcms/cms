@@ -710,7 +710,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     {
         return [
             [
-                fn (ElementInterface $element) => $this->validateAddresses($element),
+                $this->validateAddresses(...),
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
                 'skipOnEmpty' => false,
             ],

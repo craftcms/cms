@@ -91,7 +91,7 @@ final class SiteGroup extends Dto
         try {
             return parent::validate($payload);
         } catch (ValidationException $e) {
-            $errors = array_values(array_map(fn ($errors) => reset($errors), $e->errors()));
+            $errors = array_values(array_map(reset(...), $e->errors()));
             throw ValidationException::withMessages($errors);
         }
     }

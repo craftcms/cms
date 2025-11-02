@@ -180,7 +180,7 @@ final class I18N
         $language = strtolower(str_replace('_', '-', $language));
 
         $allLanguages = $this->getAllLocaleIds()->all();
-        $lcLanguages = array_map('strtolower', $allLanguages);
+        $lcLanguages = array_map(strtolower(...), $allLanguages);
         $allLanguages = array_combine($lcLanguages, $allLanguages);
 
         throw_unless(isset($allLanguages[$language]), new InvalidArgumentException('Invalid language: '.$language));

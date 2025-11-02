@@ -471,7 +471,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $entryTypesService = app(EntryTypes::class);
         $this->_entryTypes = array_values(array_filter(array_map(
-            fn ($entryType) => $entryTypesService->getEntryType($entryType),
+            $entryTypesService->getEntryType(...),
             $entryTypes,
         )));
     }
@@ -1224,7 +1224,7 @@ JS,
     {
         return [
             [
-                fn (ElementInterface $element) => $this->validateEntries($element),
+                $this->validateEntries(...),
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
                 'skipOnEmpty' => false,
             ],
