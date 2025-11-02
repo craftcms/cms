@@ -1802,7 +1802,10 @@ JS;
                 $entry->forceSave = $forceSave;
             } else {
                 // Make sure it's a valid entry type
-                if (! isset($entryData['type']) || ! isset($entryTypes[$entryData['type']])) {
+                if (! isset($entryData['type'])) {
+                    continue;
+                }
+                if (! isset($entryTypes[$entryData['type']])) {
                     continue;
                 }
                 $entry = new Entry;

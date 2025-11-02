@@ -47,7 +47,11 @@ abstract class Widget implements WidgetInterface
     #[\Override]
     public static function isSelectable(): bool
     {
-        return static::allowMultipleInstances() || ! app(Dashboard::class)->doesUserHaveWidget(static::class);
+        if (static::allowMultipleInstances()) {
+            return true;
+        }
+
+        return ! app(Dashboard::class)->doesUserHaveWidget(static::class);
     }
 
     /**

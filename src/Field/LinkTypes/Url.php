@@ -29,7 +29,14 @@ final class Url extends BaseTextLinkType
     #[\Override]
     public function supports(string $value): bool
     {
-        return parent::supports($value) || str_starts_with($value, '/') || str_starts_with($value, '#');
+        if (parent::supports($value)) {
+            return true;
+        }
+        if (str_starts_with($value, '/')) {
+            return true;
+        }
+
+        return str_starts_with($value, '#');
     }
 
     #[\Override]

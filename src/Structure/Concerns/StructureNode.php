@@ -353,7 +353,7 @@ trait StructureNode
             && $this->rgt < $node->getAttribute('rgt');
 
         if ($result) {
-            $result = $this->root === $node->getAttribute('root');
+            return $this->root === $node->getAttribute('root');
         }
 
         return $result;

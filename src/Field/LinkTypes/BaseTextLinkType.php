@@ -52,7 +52,7 @@ abstract class BaseTextLinkType extends BaseLinkType
             $value = Str::chopStart($value, $prefix);
         }
         if (preg_match('/^[^\/]+\/$/', $value)) {
-            $value = rtrim($value, '/');
+            return rtrim($value, '/');
         }
 
         return $value;

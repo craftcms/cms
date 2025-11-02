@@ -41,7 +41,7 @@ final class Env extends \Illuminate\Support\Env
 
         if (is_string($value)) {
             // parse nested variables
-            $value = self::parseNested($value);
+            return self::parseNested($value);
         }
 
         return $value;
@@ -87,7 +87,7 @@ final class Env extends \Illuminate\Support\Env
         }
 
         if (str_starts_with((string) $value, '@') && $alias = Aliases::get($value)) {
-            $value = $alias;
+            return $alias;
         }
 
         return $value;
