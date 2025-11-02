@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
@@ -21,18 +20,14 @@ afterEach(function () {
     Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 });
 
-class FakeProjectConfig extends CraftCms\Cms\ProjectConfig\ProjectConfig
+function getFakeProjectConfig(?array $internal = null, ?array $external = null): ProjectConfig
 {
-    public array $external = [
-        'aa' => 'bb',
-        'bb' => [
-            'vc' => 'dd',
-        ],
-        'ee' => [11, 22, 33],
-        'f' => 'g',
-    ];
+    app()->forgetInstance(ProjectConfig::class);
 
-    public array $internal = [
+    $projectConfig = app(ProjectConfig::class);
+
+    $reflectionClass = new ReflectionClass($projectConfig);
+    $reflectionClass->getProperty('_internalConfig')->setValue($projectConfig, new ReadOnlyProjectConfigData($internal ?? [
         'a' => 'b',
         'b' => [
             'c' => 'd',
@@ -41,56 +36,16 @@ class FakeProjectConfig extends CraftCms\Cms\ProjectConfig\ProjectConfig
         'f' => 'g',
         'randomString' => 'Entirely random',
         'dateModified' => 1609452000,
-    ];
+    ], $projectConfig));
 
-    #[\Override]
-    public function getExternalConfig(): ReadOnlyProjectConfigData
-    {
-        return new ReadOnlyProjectConfigData($this->external, $this);
-    }
-
-    #[\Override]
-    protected function getInternalConfig(): ReadOnlyProjectConfigData
-    {
-        return new ReadOnlyProjectConfigData($this->internal, $this);
-    }
-
-    #[\Override]
-    protected function persistInternalConfigValues(array $values): void
-    {
-        // Do nothing
-    }
-
-    #[\Override]
-    protected function removeInternalConfigValuesByPaths(array $paths): void
-    {
-        // Do nothing
-    }
-
-    #[\Override]
-    public function writeYamlFiles(bool $force = false): void
-    {
-        // Do nothing
-    }
-
-    #[\Override]
-    protected function updateConfigVersion(): void
-    {
-        // Do nothing
-    }
-}
-
-function getFakeProjectConfig(?array $internal = null, ?array $external = null): FakeProjectConfig
-{
-    $projectConfig = new FakeProjectConfig(Cms::config());
-
-    if (! is_null($internal)) {
-        $projectConfig->internal = $internal;
-    }
-
-    if (! is_null($external)) {
-        $projectConfig->external = $external;
-    }
+    $reflectionClass->getProperty('_externalConfig')->setValue($projectConfig, new ReadOnlyProjectConfigData($external ?? [
+        'aa' => 'bb',
+        'bb' => [
+            'vc' => 'dd',
+        ],
+        'ee' => [11, 22, 33],
+        'f' => 'g',
+    ], $projectConfig));
 
     return $projectConfig;
 }
