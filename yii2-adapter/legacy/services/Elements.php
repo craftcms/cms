@@ -3009,6 +3009,11 @@ class Elements extends Component
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
         if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
+            // Special cases for categories/tags/globals
+            if (in_array($refHandle, ['category', 'tag', 'globalset'])) {
+                $refHandle = Entry::refHandle();
+            }
+
             $class = $this->elementTypeByRefHandle($refHandle);
             $this->_elementTypesByRefHandle[$refHandle] = $class;
         }
