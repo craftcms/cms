@@ -889,7 +889,7 @@ final class Fields
     {
         $type = Arr::pull($config, 'type');
 
-        throw_if(! $type || ! is_subclass_of($type, FieldLayoutElement::class), new InvalidArgumentException("Invalid field layout element class: $type"));
+        throw_if(! $type || ! is_subclass_of($type, FieldLayoutElement::class), InvalidArgumentException::class, "Invalid field layout element class: $type");
 
         $config['class'] = $type;
 
@@ -959,7 +959,7 @@ final class Fields
                 ->andWhere(['id' => $layout->id])
                 ->one();
 
-            throw_unless($layoutRecord, new Exception('Invalid field layout ID: '.$layout->id));
+            throw_unless($layoutRecord, Exception::class, 'Invalid field layout ID: '.$layout->id);
         } else {
             $layoutRecord = new FieldLayoutRecord;
         }

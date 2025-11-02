@@ -457,7 +457,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $entryTypes = $event->entryTypes;
         }
 
-        throw_if(empty($entryTypes), new InvalidConfigException('At least one entry type is required.'));
+        throw_if(empty($entryTypes), InvalidConfigException::class, 'At least one entry type is required.');
 
         return array_values($entryTypes);
     }
@@ -1503,7 +1503,7 @@ JS;
 
         $entryType = Collection::make($this->getEntryTypes())->firstWhere('handle', $entryTypeHandle);
 
-        throw_unless($entryType, new InvalidArgumentException('Invalid fragment name: '.$fragmentName));
+        throw_unless($entryType, InvalidArgumentException::class, 'Invalid fragment name: '.$fragmentName);
 
         return $entryType;
     }

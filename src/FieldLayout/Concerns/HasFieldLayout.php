@@ -57,7 +57,7 @@ trait HasFieldLayout
             $id = $this->{$this->fieldLayoutId}();
         }
 
-        throw_if(! isset($id) || ! is_numeric($id), new RuntimeException('Unable to determine the field layout ID for '.$this::class.'.'));
+        throw_if(! isset($id) || ! is_numeric($id), RuntimeException::class, 'Unable to determine the field layout ID for '.$this::class.'.');
 
         return $this->fieldLayoutId = (int) $id;
     }
@@ -89,7 +89,7 @@ trait HasFieldLayout
 
         if ($id) {
             $fieldLayout = Fields::getLayoutById($id, true);
-            throw_unless($fieldLayout, new RuntimeException('Invalid field layout ID: '.$id));
+            throw_unless($fieldLayout, RuntimeException::class, 'Invalid field layout ID: '.$id);
         } else {
             $fieldLayout = new FieldLayout([
                 'type' => $this->getElementType(),

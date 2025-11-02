@@ -100,8 +100,8 @@ final class FilesystemsController
                 'fsTypes' => $allFsTypes,
                 'readOnly' => $this->readOnly,
             ])
-            ->when(
-                ! $this->readOnly,
+            ->unless(
+                $this->readOnly,
                 function (CpScreenResponse $response) {
                     $response
                         ->action('fs/save')

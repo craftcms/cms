@@ -29,7 +29,7 @@ final readonly class DbBackupController
             throw new Exception('Could not create backup: '.$e->getMessage());
         }
 
-        throw_unless(is_file($backupPath), new Exception("Could not create backup: the backup file doesn't exist."));
+        throw_unless(is_file($backupPath), Exception::class, "Could not create backup: the backup file doesn't exist.");
 
         // Zip it up and delete the SQL file
         $zipPath = FileHelper::zip($backupPath);

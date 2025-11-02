@@ -75,7 +75,7 @@ final class TimeRule implements DataAwareRule, ValidationRule
             $min = $this->data[$this->min] ?? $this->min;
             $min = DateTimeHelper::toDateTime(['time' => $min], true);
 
-            throw_unless($min, new RuntimeException("Invalid minimum time: $min"));
+            throw_unless($min, RuntimeException::class, "Invalid minimum time: $min");
 
             if ($value < $min) {
                 $fail(t($this->tooEarly, [
@@ -88,7 +88,7 @@ final class TimeRule implements DataAwareRule, ValidationRule
             $max = $this->data[$this->max] ?? $this->max;
             $max = DateTimeHelper::toDateTime(['time' => $max], true);
 
-            throw_unless($max, new RuntimeException("Invalid maximum time: $max"));
+            throw_unless($max, RuntimeException::class, "Invalid maximum time: $max");
 
             if ($value > $max) {
                 $fail(t($this->tooLate, [

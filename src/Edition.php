@@ -50,7 +50,7 @@ enum Edition: int
             return $edition;
         }
 
-        $edition = Env::get('CRAFT_EDITION') ?? ProjectConfig::get('system.edition');
+        $edition = Env::get('CRAFT_EDITION', ProjectConfig::get('system.edition'));
         $edition = $edition ? self::fromHandle($edition) : self::Solo;
 
         Context::addHidden(self::class, $edition);
@@ -157,6 +157,6 @@ enum Edition: int
         throw_unless(match ($orBetter) {
             true => self::get()->value >= $edition->value,
             false => self::get() === $edition
-        }, new WrongEditionException("Craft $edition->name is required for this."));
+        }, WrongEditionException::class, "Craft $edition->name is required for this.");
     }
 }

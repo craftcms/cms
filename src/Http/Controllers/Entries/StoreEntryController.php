@@ -68,7 +68,7 @@ final readonly class StoreEntryController
         if ($isNotNew) {
             $lockKey = "entry:$entry->id";
             $mutex = Cache::lock($lockKey, 15);
-            throw_unless($mutex->get(), new LockTimeoutException("Could not acquire a lock to save the entry: {$entry->id}."));
+            throw_unless($mutex->get(), LockTimeoutException::class, "Could not acquire a lock to save the entry: {$entry->id}.");
         }
 
         try {

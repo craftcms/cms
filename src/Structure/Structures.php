@@ -226,7 +226,7 @@ final class Structures
     ): bool {
         $parentElementRecord = $this->getElementModel($structureId, $parentElement);
 
-        throw_if($parentElementRecord === null, new Exception('There was a problem getting the parent element.'));
+        throw_if($parentElementRecord === null, Exception::class, 'There was a problem getting the parent element.');
 
         return $this->doIt($structureId, $element, $parentElementRecord, Action::Prepend, $mode);
     }
@@ -242,7 +242,7 @@ final class Structures
     ): bool {
         $parentElementRecord = $this->getElementModel($structureId, $parentElement);
 
-        throw_if($parentElementRecord === null, new Exception('There was a problem getting the parent element.'));
+        throw_if($parentElementRecord === null, Exception::class, 'There was a problem getting the parent element.');
 
         return $this->doIt($structureId, $element, $parentElementRecord, Action::Append, $mode);
     }
@@ -278,7 +278,7 @@ final class Structures
     ): bool {
         $nextElementRecord = $this->getElementModel($structureId, $nextElement);
 
-        throw_if($nextElementRecord === null, new Exception('There was a problem getting the next element.'));
+        throw_if($nextElementRecord === null, Exception::class, 'There was a problem getting the next element.');
 
         return $this->doIt($structureId, $element, $nextElementRecord, Action::PlaceBefore, $mode);
     }
@@ -294,7 +294,7 @@ final class Structures
     ): bool {
         $prevElementRecord = $this->getElementModel($structureId, $prevElement);
 
-        throw_if($prevElementRecord === null, new Exception('There was a problem getting the previous element.'));
+        throw_if($prevElementRecord === null, Exception::class, 'There was a problem getting the previous element.');
 
         return $this->doIt($structureId, $element, $prevElementRecord, Action::PlaceAfter, $mode);
     }

@@ -144,9 +144,11 @@ final class ClearCaches extends Utility
                     $request = Craft::$app->getRequest();
                     throw_if($request->getIsConsoleRequest() &&
                     $request->isWebrootAliasSetDynamically &&
-                    str_starts_with($basePath, '@webroot'), new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n".
-                        "Explicitly set the @webroot alias in config/general.php to avoid this error.\n".
-                        'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.'));
+                    str_starts_with($basePath, '@webroot'),
+                        Exception::class,
+                        "Unable to clear control panel resources because the location isn't known for console commands.\n".
+                            "Explicitly set the @webroot alias in config/general.php to avoid this error.\n".
+                            'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.');
 
                     $basePath = Craft::getAlias($basePath);
                     if ($basePath !== false && file_exists($basePath)) {

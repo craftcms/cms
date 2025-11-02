@@ -530,7 +530,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 $linkType = $linkTypes[$typeId];
             } else {
                 $type = self::types()[$typeId] ?? null;
-                throw_unless($type, new InvalidArgumentException("Invalid link type: $typeId"));
+                throw_unless($type, InvalidArgumentException::class, "Invalid link type: $typeId");
                 $linkType = Component::createComponent($type, BaseLinkType::class);
             }
 

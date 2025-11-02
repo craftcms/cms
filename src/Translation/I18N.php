@@ -111,8 +111,8 @@ final class I18N
     {
         return $this->allLocaleIds ??= collect(ResourceBundle::getLocales(''))
             ->map(fn (string $locale) => str_replace('_', '-', $locale))
-            ->when(
-                ! empty($this->generalConfig->localeAliases),
+            ->unless(
+                empty($this->generalConfig->localeAliases),
                 fn (Collection $localeIds) => $localeIds
                     ->merge(array_keys($this->generalConfig->localeAliases))
                     ->unique()
@@ -183,7 +183,7 @@ final class I18N
         $lcLanguages = array_map(strtolower(...), $allLanguages);
         $allLanguages = array_combine($lcLanguages, $allLanguages);
 
-        throw_unless(isset($allLanguages[$language]), new InvalidArgumentException('Invalid language: '.$language));
+        throw_unless(isset($allLanguages[$language]), InvalidArgumentException::class, 'Invalid language: '.$language);
 
         return $allLanguages[$language];
     }

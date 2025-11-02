@@ -66,7 +66,7 @@ final class Deprecator
             [$file, $line] = $this->findOrigin($traces);
         }
 
-        throw_if(self::$throwExceptions, new DeprecationException($message, $file, $line));
+        throw_if(self::$throwExceptions, DeprecationException::class, $message, $file, $line);
 
         $fingerprint = $file.($line ? ':'.$line : '');
 

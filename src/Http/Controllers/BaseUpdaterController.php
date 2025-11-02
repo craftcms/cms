@@ -257,7 +257,7 @@ abstract class BaseUpdaterController
             return null;
         }
 
-        throw_if(str_contains($returnUrl, '{'), new BadRequestHttpException("Invalid return URL: $returnUrl"));
+        throw_if(str_contains($returnUrl, '{'), BadRequestHttpException::class, "Invalid return URL: $returnUrl");
 
         return $returnUrl;
     }

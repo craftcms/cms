@@ -36,7 +36,7 @@ trait HasEditions
         $activeIndex = array_search($this->edition, $editions, true);
         $otherIndex = array_search($edition, $editions, true);
 
-        throw_if($otherIndex === false, new InvalidArgumentException('Unsupported edition: '.$edition));
+        throw_if($otherIndex === false, InvalidArgumentException::class, 'Unsupported edition: '.$edition);
 
         return match ($operator) {
             '<', 'lt' => $activeIndex < $otherIndex,

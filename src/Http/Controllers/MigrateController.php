@@ -42,7 +42,7 @@ final class MigrateController
         }
 
         // Bail if Craft is already in maintenance mode
-        throw_if(Craft::$app->getIsInMaintenanceMode(), new ServiceUnavailableHttpException('Craft is already being updated.'));
+        throw_if(Craft::$app->getIsInMaintenanceMode(), ServiceUnavailableHttpException::class, 'Craft is already being updated.');
 
         // Enable maintenance mode
         Craft::$app->enableMaintenanceMode();

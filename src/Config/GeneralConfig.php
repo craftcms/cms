@@ -4097,7 +4097,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCountryCode(string $value): self
     {
-        throw_if(empty($value), new InvalidConfigException('`defaultCountryCode` cannot be empty', 0));
+        throw_if(empty($value), InvalidConfigException::class, '`defaultCountryCode` cannot be empty', 0);
 
         $this->defaultCountryCode = $value;
 

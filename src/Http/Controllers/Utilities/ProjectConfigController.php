@@ -59,7 +59,7 @@ final readonly class ProjectConfigController
         $filename = Str::uuid()->toString().'.zip';
         $zipPath = Storage::disk('craft-tmp')->path($filename);
 
-        throw_if($zip->open($zipPath, ZipArchive::CREATE) !== true, new RuntimeException('Cannot create zip at '.$zipPath));
+        throw_if($zip->open($zipPath, ZipArchive::CREATE) !== true, RuntimeException::class, 'Cannot create zip at '.$zipPath);
 
         foreach ($splitConfig as $path => $pathConfig) {
             $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($pathConfig), 20, 2);

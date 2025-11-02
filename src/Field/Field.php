@@ -887,7 +887,7 @@ JS, [
     public function getSortOption(): array
     {
         $dbType = static::dbType();
-        throw_if($dbType === null || ! isset($this->layoutElement), new RuntimeException('getSortOption() not supported by '.$this->name));
+        throw_if($dbType === null || ! isset($this->layoutElement), RuntimeException::class, 'getSortOption() not supported by '.$this->name);
 
         $orderBy = $this->getValueSql();
 
@@ -1033,7 +1033,7 @@ JS, [
             return null;
         }
 
-        throw_if($key !== null && (! is_array($dbType) || ! isset($dbType[$key])), new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', self::class, $key)));
+        throw_if($key !== null && (! is_array($dbType) || ! isset($dbType[$key])), InvalidArgumentException::class, sprintf('%s doesn’t store values under the key “%s”.', self::class, $key));
 
         $db = Craft::$app->getDb();
         $qb = $db->getQueryBuilder();

@@ -24,7 +24,7 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
-        return redirect()->back()->with($data);
+        return back()->with($data);
     }
 
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
@@ -43,7 +43,7 @@ trait RespondsWithFlash
             return redirect($redirect)->with($data);
         }
 
-        return redirect()->back()->with($data);
+        return back()->with($data);
     }
 
     public function asModelFailure(

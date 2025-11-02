@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support;
 use Composer\Semver\Semver;
 use craft\helpers\FileHelper;
 use HTMLPurifier_Encoder;
+use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
 use Symfony\Component\Process\PhpExecutableFinder;
 
@@ -129,7 +130,7 @@ final class PHP
             try {
                 $path = preg_replace_callback('/\$\{(.*?)\}/', function ($match) {
                     $env = Env::get($match[1]);
-                    throw_if($env === false, new InvalidArgumentException);
+                    throw_if($env === false, InvalidArgumentException::class);
 
                     return $env;
                 }, $path);
@@ -176,8 +177,8 @@ final class PHP
     public static function executable(): ?string
     {
         // If PHP_BINARY was set to $_SERVER, update the environment variable to match
-        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
-            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
+        if (isset($_SERVER['PHP_BINARY']) && Request::server('PHP_BINARY') !== getenv('PHP_BINARY')) {
+            putenv(sprintf('PHP_BINARY=%s', Request::server('PHP_BINARY')));
         }
 
         if (

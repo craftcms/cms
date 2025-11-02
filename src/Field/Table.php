@@ -809,13 +809,13 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             case 'url':
                 $validator = ValidatorFacade::make(
                     data: ['value' => $value],
-                    rules: ['value' => 'url'],
+                    rules: ['value' => ['url']],
                 );
                 break;
             case 'email':
                 $validator = ValidatorFacade::make(
                     data: ['value' => $value],
-                    rules: ['value' => 'email'],
+                    rules: ['value' => ['email']],
                 );
                 break;
             default:

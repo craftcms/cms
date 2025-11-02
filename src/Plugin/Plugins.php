@@ -214,13 +214,16 @@ final class Plugins
             $plugin->minVersionRequired &&
             ! str_starts_with((string) $row['version'], 'dev-') &&
             ! str_ends_with((string) $row['version'], '-dev') &&
-            version_compare($row['version'], $plugin->minVersionRequired, '<'), new HttpException(200, t(
-                'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.',
-                [
-                    'version' => $plugin->minVersionRequired,
-                    'targetVersion' => $plugin->version,
-                    'plugin' => $plugin->name,
-                ])));
+            version_compare($row['version'], $plugin->minVersionRequired, '<'),
+                HttpException::class,
+                200,
+                t(
+                    'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.',
+                    [
+                        'version' => $plugin->minVersionRequired,
+                        'targetVersion' => $plugin->version,
+                        'plugin' => $plugin->name,
+                    ]));
 
             // If we're not updating, check if the plugin’s version number changed, but not its schema version.
             if (! app('Craft')->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
@@ -351,9 +354,9 @@ final class Plugins
             return true;
         }
 
-        throw_if(($info = $this->getStoredPluginInfo($handle)) === null, new InvalidPluginException($handle));
+        throw_if(($info = $this->getStoredPluginInfo($handle)) === null, InvalidPluginException::class, $handle);
 
-        throw_if(($plugin = $this->createPlugin($handle, $info)) === null, new InvalidPluginException($handle));
+        throw_if(($plugin = $this->createPlugin($handle, $info)) === null, InvalidPluginException::class, $handle);
 
         if (Event::hasListeners(EnablingPlugin::class)) {
             Event::dispatch(new EnablingPlugin($plugin));
@@ -386,13 +389,13 @@ final class Plugins
      */
     public function disablePlugin(string $handle): bool
     {
-        throw_unless($this->isPluginInstalled($handle), new InvalidPluginException($handle));
+        throw_unless($this->isPluginInstalled($handle), InvalidPluginException::class, $handle);
 
         if (! $this->isPluginEnabled($handle)) {
             return true;
         }
 
-        throw_if(($plugin = $this->getPlugin($handle)) === null, new InvalidPluginException($handle));
+        throw_if(($plugin = $this->getPlugin($handle)) === null, InvalidPluginException::class, $handle);
 
         if (Event::hasListeners(DisablingPlugin::class)) {
             Event::dispatch(new DisablingPlugin($plugin));
@@ -442,7 +445,7 @@ final class Plugins
 
         $plugin = $this->createPlugin($handle);
 
-        throw_if($plugin === null, new InvalidPluginException($handle));
+        throw_if($plugin === null, InvalidPluginException::class, $handle);
 
         // Set the edition
         if ($edition === null) {
@@ -555,14 +558,14 @@ final class Plugins
         // Don't allow uninstalling disabled plugins, because that could be buggy
         // if the plugin was composer-updated while disabled, and its uninstall()
         // function is out of sync with what's actually in the database
-        throw_if(! $enabled && ! $force, new InvalidPluginException($handle, 'Uninstalling disabled plugins is not allowed.'));
+        throw_if(! $enabled && ! $force, InvalidPluginException::class, $handle, 'Uninstalling disabled plugins is not allowed.');
 
         // Temporarily allow changes to the project config even if it's supposed to be read only
         $projectConfig = app(ProjectConfig::class);
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        throw_if(($plugin = $this->getPlugin($handle)) === null && ! $force, new InvalidPluginException($handle));
+        throw_if(($plugin = $this->getPlugin($handle)) === null && ! $force, InvalidPluginException::class, $handle);
 
         // Fire a 'beforeUninstallPlugin' event
         if (Event::hasListeners(UninstallingPlugin::class)) {
@@ -634,7 +637,7 @@ final class Plugins
         /** @var class-string<PluginInterface> $class */
         $class = $info['class'];
 
-        throw_unless(in_array($edition, $class::editions(), true), new InvalidArgumentException('Invalid plugin edition: '.$edition));
+        throw_unless(in_array($edition, $class::editions(), true), InvalidArgumentException::class, 'Invalid plugin edition: '.$edition);
 
         // Update the project config
         app(ProjectConfig::class)->set(
@@ -842,7 +845,7 @@ final class Plugins
      */
     public function createPlugin(string $handle, ?array $info = null): ?PluginInterface
     {
-        throw_unless(isset($this->composerPluginInfo[$handle]), new InvalidPluginException($handle));
+        throw_unless(isset($this->composerPluginInfo[$handle]), InvalidPluginException::class, $handle);
 
         $config = $this->composerPluginInfo[$handle];
 
@@ -916,7 +919,7 @@ final class Plugins
      */
     public function getPluginInfo(string $handle): array
     {
-        throw_unless(isset($this->composerPluginInfo[$handle]), new InvalidPluginException($handle));
+        throw_unless(isset($this->composerPluginInfo[$handle]), InvalidPluginException::class, $handle);
 
         $pluginInfo = $this->getStoredPluginInfo($handle);
 
@@ -1161,7 +1164,7 @@ final class Plugins
         $licenseKey = preg_replace('/[^A-Z0-9]/', '', $licenseKey);
 
         // Invalid key
-        throw_if(strlen((string) $licenseKey) !== 24, new InvalidLicenseKeyException($licenseKey));
+        throw_if(strlen((string) $licenseKey) !== 24, InvalidLicenseKeyException::class, $licenseKey);
 
         return $licenseKey;
     }
@@ -1280,7 +1283,7 @@ final class Plugins
             $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
         }
 
-        throw_unless($data, new InvalidPluginException($handle));
+        throw_unless($data, InvalidPluginException::class, $handle);
 
         // Force disable it?
         if (

@@ -18,7 +18,7 @@ final class RequireAdmin
 
     public function handle(Request $request, Closure $next): mixed
     {
-        throw_unless($user = $request->user(), new AuthenticationException('Unauthenticated.'));
+        throw_unless($user = $request->user(), AuthenticationException::class, 'Unauthenticated.');
 
         /** @var User $user */
         abort_unless($user->isAdmin(), 403, 'User is not permitted to perform this action.');
