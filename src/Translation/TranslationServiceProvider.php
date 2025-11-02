@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Translation;
 
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\ServiceProvider;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
@@ -18,7 +19,7 @@ final class TranslationServiceProvider extends ServiceProvider
         $this->app->singleton(function (): Translator {
             $translator = new Translator(
                 locale: app()->getLocale(),
-                fallbackLocale: $this->app['config']->get('app.fallback_locale'),
+                fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
                 defaultCategory: 'app',
             );
 

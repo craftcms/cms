@@ -9,6 +9,7 @@ use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
@@ -113,7 +114,7 @@ final class TwigCacheCommand extends Command
      */
     protected function paths(): Collection
     {
-        $finder = $this->laravel['view']->getFinder();
+        $finder = $this->laravel->make(ViewFactory::class)->getFinder();
 
         return Collection::make($finder->getPaths())->merge(
             (Collection::make($finder->getHints()))->flatten()

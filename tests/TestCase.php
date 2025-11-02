@@ -11,6 +11,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use Dotenv\Dotenv;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -111,7 +112,7 @@ class TestCase extends Orchestra
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
 
-        $app['config']->set($configKey, array_merge(
+        $app->make(ConfigRepository::class)->set($configKey, array_merge(
             Config::array($configKey, []),
             [
                 'host' => env('DB_HOST'),

@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -107,7 +108,7 @@ final class AppServiceProvider extends ServiceProvider
 
         Application::macro(
             'getTimezone',
-            fn (): string => $this['config']->get('app.timezone') ?? date_default_timezone_get(),
+            fn (): string => $this->make(ConfigRepository::class)->get('app.timezone') ?? date_default_timezone_get(),
         );
 
         // Register Collection::one() as an alias of first()
@@ -192,7 +193,7 @@ final class AppServiceProvider extends ServiceProvider
     private function setTimezone(): void
     {
         $timezone = app(ProjectConfig::class)->get('system.timeZone')
-            ?? $this->app['config']->get('app.timezone')
+            ?? $this->app->make(ConfigRepository::class)->get('app.timezone')
             ?? 'UTC';
 
         $timezone = Env::parse($timezone);
@@ -207,7 +208,7 @@ final class AppServiceProvider extends ServiceProvider
             }
         }
 
-        $this->app['config']->set('app.timezone', $timezone);
+        $this->app->make(ConfigRepository::class)->set('app.timezone', $timezone);
         date_default_timezone_set($timezone);
     }
 
