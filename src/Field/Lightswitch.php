@@ -182,7 +182,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->_inputHtmlInternal($value, $element, false);
+        return $this->_inputHtmlInternal($value, false);
     }
 
     /**
@@ -191,13 +191,13 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        return $this->_inputHtmlInternal($value, $element, true);
+        return $this->_inputHtmlInternal($value, true);
     }
 
     /**
      * Render html for both static and interactive lightswitch field
      */
-    private function _inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    private function _inputHtmlInternal(mixed $value, bool $static): string
     {
         $id = $this->getInputId();
 

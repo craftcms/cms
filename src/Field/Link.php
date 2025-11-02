@@ -448,9 +448,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 ]);
         }
 
-        $html .= Html::endTag('div');
-
-        return $html;
+        return $html.Html::endTag('div');
     }
 
     /**
@@ -771,9 +769,7 @@ JS;
             $html .= Html::endTag('div');
         }
 
-        $html .= Html::endTag('div');
-
-        return $html;
+        return $html.Html::endTag('div');
     }
 
     /**

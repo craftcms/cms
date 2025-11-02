@@ -47,4 +47,7 @@ return RectorConfig::configure()
         ResponseHelperCallToJsonResponseRector::class,
         UseComponentPropertyWithinCommandsRector::class,
     ])
+    ->withPreparedSets(
+        deadCode: true,
+    )
     ->withPhpSets(php84: true);

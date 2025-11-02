@@ -105,8 +105,6 @@ final class MyDrafts extends Widget
             ]);
         }
 
-        $html .= Html::endTag('ul');
-
-        return $html;
+        return $html.Html::endTag('ul');
     }
 }

@@ -45,7 +45,7 @@ class Json
 
         throw_unless(Str::isJson($json), InvalidArgumentException::class, 'Invalid JSON data.');
 
-        return json_decode((string) $json, $asArray);
+        return json_decode($json, $asArray);
     }
 
     /**

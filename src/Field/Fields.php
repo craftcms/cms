@@ -1276,7 +1276,7 @@ final class Fields
                 'translatable' => $field->getIsTranslatable(null)
                     ? ($field->getTranslationDescription(null) ?? t('This field is translatable.'))
                     : false,
-                'searchable' => (bool) $field->searchable,
+                'searchable' => $field->searchable,
                 'url' => $field->getCpEditUrl(),
                 'handle' => $field->handle,
                 'type' => [

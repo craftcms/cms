@@ -7285,7 +7285,7 @@ class GeneralConfig extends BaseConfig
      */
     public function getPostCpLoginRedirect(): string
     {
-        return ConfigHelper::localizedValue($this->postCpLoginRedirect, null);
+        return ConfigHelper::localizedValue($this->postCpLoginRedirect);
     }
 
     /**

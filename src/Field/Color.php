@@ -423,9 +423,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             Craft::$app->getView()->setInitialDeltaValue($this->handle, $value->getHex());
         }
 
-        $html .= Html::endTag('div');
-
-        return $html;
+        return $html.Html::endTag('div');
     }
 
     /**
