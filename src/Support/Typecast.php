@@ -8,7 +8,6 @@ use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Number;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use DateTimeInterface;
@@ -17,6 +16,7 @@ use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
+use RuntimeException;
 
 final class Typecast
 {
@@ -59,6 +59,28 @@ final class Typecast
         }
     }
 
+    public static function isInt(float|int|string $value): bool
+    {
+        if (! is_numeric($value)) {
+            throw new RuntimeException('Only numeric values can be typecast to an integer or float.');
+        }
+
+        return (float) (int) $value === (float) $value;
+    }
+
+    public static function isIntOrFloat(mixed $value): bool
+    {
+        return
+            is_int($value) ||
+            is_float($value) ||
+            (is_string($value) && preg_match('/^([1-9]\d*|0|([1-9]\d*|0)?\.\d+)$/', $value));
+    }
+
+    public static function toIntOrFloat(float|int|string $value): float|int
+    {
+        return self::isInt($value) ? (int) $value : (float) $value;
+    }
+
     /**
      * Typecasts the given property value based on its type declaration.
      *
@@ -95,7 +117,7 @@ final class Typecast
                         self::TYPE_BOOL => (bool) $value,
                         self::TYPE_FLOAT => (float) $value,
                         self::TYPE_INT => (int) $value,
-                        self::TYPE_INT_FLOAT => Number::toIntOrFloat($value ?? 0),
+                        self::TYPE_INT_FLOAT => self::toIntOrFloat($value ?? 0),
                         self::TYPE_INT_STRING => is_int($value) || ($value === (string) (int) $value) ? (int) $value : $value,
                         self::TYPE_STRING => (string) $value,
                     };

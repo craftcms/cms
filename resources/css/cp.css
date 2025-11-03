@@ -1,10 +1,11 @@
 /**
 CP Styles
  */
-@import 'tailwindcss' prefix(tw);
+@import '@craftcms/cp';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-@source '../**/*.twig';
+@import './global-sidebar.css';
+
+:root {
+  --global-sidebar-width: calc(226rem / 16);
+  --header-height: calc(44rem / 16);
+}

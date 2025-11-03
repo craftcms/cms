@@ -1,0 +1,311 @@
+:root,
+:host {
+  --c-text-lg: calc(16rem / 16);
+  --c-text-base: calc(14rem / 16);
+  --c-text-sm: calc(11rem / 16);
+
+  --c-leading-normal: 1.42;
+
+  --c-bg-body: var(--color-slate-50);
+  --c-bg-raised: #fff;
+  --c-bg-sunken: var(--color-slate-100);
+  --c-bg-form-control: hsla(212, 50%, 90%, 0.05);
+  --c-bg-overlay: #fff;
+
+  --c-bg-default: hsl(209 18% 100%);
+  --c-bg-accent: var(--color-blue-500);
+
+  --c-fg-white: var(--color-white);
+  --c-fg-text: hsl(209 18% 30%);
+  --c-fg-muted: var(--color-slate-500);
+  --c-fg-link: var(--color-blue-600);
+  --c-fg-on-accent: var(--color-white);
+  --c-fg-on-accent-subtle: var(--color-slate-800);
+  --c-fg-on-sunken: var(--c-fg-text);
+
+  /* Semantic colors */
+  --c-color-neutral-bg-emphasis: var(--color-slate-600);
+  --c-color-neutral-bg-subtle: var(--color-slate-100);
+  --c-color-neutral-bg-faint: var(--color-slate-50);
+  --c-color-neutral-border-emphasis: var(--color-slate-600);
+  --c-color-neutral-border-subtle: var(--color-slate-300);
+  --c-color-neutral-on-emphasis: var(--color-slate-100);
+  --c-color-neutral-on-subtle: inherit;
+  --c-color-neutral-on-faint: var(--c-color-neutral-on-subtle);
+
+  --c-color-brand-bg-emphasis: var(--color-red-600);
+  --c-color-brand-bg-subtle: var(--color-red-100);
+  --c-color-brand-border-emphasis: var(--color-red-600);
+  --c-color-brand-border-subtle: var(--color-red-600);
+  --c-color-brand-on-emphasis: var(--color-red-100);
+  --c-color-brand-on-subtle: var(--color-red-800);
+
+  --c-color-accent-bg-emphasis: var(--color-blue-600);
+  --c-color-accent-bg-subtle: var(--color-blue-100);
+  --c-color-accent-border-emphasis: var(--color-blue-600);
+  --c-color-accent-border-subtle: var(--color-blue-600);
+  --c-color-accent-on-emphasis: var(--color-blue-100);
+  --c-color-accent-on-subtle: var(--color-blue-800);
+
+  --c-color-info-bg-emphasis: var(--color-blue-600);
+  --c-color-info-bg-subtle: var(--color-blue-100);
+  --c-color-info-border-emphasis: var(--color-blue-600);
+  --c-color-info-border-subtle: var(--color-blue-600);
+  --c-color-info-on-emphasis: var(--color-blue-100);
+  --c-color-info-on-subtle: var(--color-blue-800);
+
+  --c-color-success-bg-emphasis: var(--color-emerald-600);
+  --c-color-success-bg-subtle: var(--color-emerald-100);
+  --c-color-success-border-emphasis: var(--color-emerald-800);
+  --c-color-success-border-subtle: var(--color-emerald-600);
+  --c-color-success-on-emphasis: var(--color-emerald-50);
+  --c-color-success-on-subtle: var(--color-emerald-800);
+
+  --c-color-warning-bg-emphasis: var(--color-yellow-600);
+  --c-color-warning-bg-subtle: var(--color-yellow-100);
+  --c-color-warning-border-emphasis: var(--color-yellow-600);
+  --c-color-warning-border-subtle: var(--color-yellow-600);
+  --c-color-warning-on-emphasis: var(--color-yellow-50);
+  --c-color-warning-on-subtle: var(--color-yellow-800);
+
+  --c-font-body: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  --c-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  --c-border-faint: hsl(210, 40%, 92%);
+  --c-border-subtle: var(--color-slate-300);
+  --c-border-default: hsl(209 18% 70%);
+  --c-border-emphasized: hsl(209 18% 50%);
+  --c-border-strong: hsl(209 18% 30%);
+  --c-border-accent: var(--color-blue-600);
+  --c-border-form-control: var(--color-slate-500);
+
+  --c-radius-sm: 3px;
+  --c-radius-md: 4px;
+  --c-radius-lg: 6px;
+  --c-radius-full: calc(Infinity * 1px);
+
+  --c-spacing: 0.25rem;
+  --c-spacing-1px: 1px;
+  --c-spacing-xs: calc(var(--spacing) * 0.5);
+  --c-spacing-sm: calc(var(--spacing) * 1);
+  --c-spacing-md: calc(var(--spacing) * 2);
+  --c-spacing-lg: calc(var(--spacing) * 4);
+  --c-spacing-xl: calc(var(--spacing) * 8);
+  --c-spacing-2xl: calc(var(--spacing) * 16);
+
+  --c-size-touch-target: calc(34rem / 16);
+
+  --c-size-icon-xs: calc(10rem / 16);
+  --c-size-icon-sm: calc(12rem / 16);
+  --c-size-icon-md: calc(14rem / 16);
+  --c-size-icon-lg: calc(22rem / 16);
+  --c-size-icon-xl: calc(30rem / 16);
+
+  --c-size-control-sm: calc(20rem / 16);
+  --c-size-control-md: calc(34rem / 16);
+  --c-size-control-lg: calc(44rem / 16);
+
+  --c-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
+  --c-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --c-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --c-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --c-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --c-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /**
+  Status
+   */
+
+  /* Live */
+  --c-status-live-bg: var(--color-emerald-500);
+  --c-status-live-border: var(--color-emerald-700);
+  --c-status-live-fg: var(--color-emerald-700);
+
+  /* Enabled */
+  --c-status-enabled-bg: var(--color-emerald-500);
+  --c-status-enabled-border: var(--color-emerald-700);
+  --c-status-enabled-fg: var(--color-emerald-700);
+
+  /* Pending */
+  --c-status-pending-bg: var(--color-orange-400);
+  --c-status-pending-fg: var(--color-orange-700);
+  --c-status-pending-border: var(--color-orange-700);
+
+  /* Expired */
+  --c-status-expired-bg: var(--color-red-400);
+  --c-status-expired-fg: var(--color-red-700);
+  --c-status-expired-border: var(--color-red-700);
+
+  /* Disabled */
+  --c-status-disabled-bg: var(--color-slate-200);
+  --c-status-disabled-fg: var(--color-slate-600);
+  --c-status-disabled-border: var(--color-slate-600);
+
+  /**
+  Components
+   */
+
+  /**
+  Form controls
+  Basic styles for all form controls. Buttons, inputs, etc. can each have their own settings but in general
+  they should be inherited from these styles.
+   */
+  /* Form Controls */
+  --c-form-control-bg: var(--c-bg-form-control);
+  --c-form-control-fg: var(--c-fg-text);
+  --c-form-control-border: var(--color-slate-500);
+  --c-form-control-radius: var(--c-radius-md);
+  --c-form-control-spacing-inline: var(--c-spacing-md);
+  --c-form-control-spacing-block: var(--c-spacing-sm);
+  --c-form-control-height: var(--c-size-control-md);
+  /*--c-form-control-placeholder-fg: var(--color-slate-500);*/
+  /*--c-form-control-placeholder-opacity: 1;*/
+  /*--c-form-control-focus-border: var(--color-blue-600);*/
+  /*--c-form-control-focus-shadow: 0 0 0 2px var(--color-blue-100);*/
+  /*--c-form-control-disabled-bg: var(--color-slate-200);*/
+
+  /* Input */
+  --c-input-bg: var(--c-form-control-bg);
+  --c-input-fg: var(--c-form-control-fg);
+  --c-input-border-color: var(--c-form-control-border);
+  --c-input-border: 1px solid var(--c-input-border-color);
+  --c-input-radius: var(--c-form-control-radius);
+  --c-input-spacing-inline: var(--c-form-control-spacing-inline);
+  --c-input-spacing-block: var(--c-form-control-spacing-block);
+  --c-input-shadow: var(--inset-shadow-sm);
+
+  /* Select */
+  --c-select-bg: var(--c-form-control-bg);
+  --c-select-fg: var(--c-form-control-fg);
+  --c-select-border-color: var(--c-form-control-border);
+  --c-select-border: 1px solid var(--c-select-border-color);
+  --c-select-radius: var(--c-form-control-radius);
+  --c-select-spacing-inline: var(--c-form-control-spacing-inline);
+  --c-select-spacing-block: var(--c-form-control-spacing-block);
+  --c-select-shadow: var(--shadow-sm);
+
+  /**
+  Buttons
+   */
+
+  /** Variants **/
+  /* Default */
+  --c-button-default-bg: var(--color-slate-200);
+  --c-button-default-bg-hover: var(--color-slate-300);
+  --c-button-default-fg: var(--c-fg-text);
+  --c-button-default-fg-hover: var(--c-button-default-fg);
+  --c-button-default-border: var(--color-slate-300);
+  --c-button-default-border-hover: var(--c-button-default-border);
+
+  /* Primary */
+  --c-button-primary-bg: var(--color-red-600);
+  --c-button-primary-border: var(--color-red-700);
+  --c-button-primary-fg: var(--color-white);
+  --c-button-primary-bg-hover: var(--color-red-700);
+  --c-button-primary-border-hover: var(--c-button-primary-border);
+  --c-button-primary-fg-hover: var(--c-button-primary-fg);
+
+  /* Danger */
+  --c-button-danger-bg: var(--color-red-600);
+  --c-button-danger-border: var(--color-red-700);
+  --c-button-danger-fg: var(--color-white);
+  --c-button-danger-bg-hover: var(--color-red-700);
+  --c-button-danger-border-hover: var(--c-button-danger-border);
+  --c-button-danger-fg-hover: var(--c-button-danger-fg);
+
+  /** Appearances **/
+  /* Plain */
+
+  /* Chip */
+  /**
+  --c-chip-border
+  --c-chip-bg
+  --c-chip-spacing-inline
+  --c-chip-spacing-block
+  --c-chip-radius
+   */
+
+  /** Card */
+  /*--c-card-border: var(--c-border-subtle);*/
+
+  /**
+  Web Awesome
+   */
+  --wa-panel-border-style: solid;
+  --wa-panel-border-width: 1px;
+  --wa-color-surface-border: var(--c-border-subtle);
+  --wa-panel-border-color: var(--c-border-subtle);
+  --wa-panel-border-radius: var(--c-radius-md);
+  --wa-color-surface-raised: var(--c-bg-raised);
+  --wa-shadow-l: var(--c-shadow-lg);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --c-bg-body: var(--color-slate-800);
+  --c-bg-button: hsl(0, 0%, 20%);
+  --c-bg-sunken: #091120;
+  /*--c-bg-sunken: var(--color-slate-950);*/
+  --c-bg-raised: var(--color-slate-900);
+  --c-bg-form-control: var(--color-slate-900);
+  --c-bg-overlay: var(--color-slate-950);
+
+  --c-fg-text: var(--color-slate-50);
+  --c-fg-muted: var(--color-slate-400);
+  --c-fg-link: var(--color-blue-400);
+
+  --c-border-faint: #000;
+  --c-border-subtle: #1a2744;
+  --c-border-form-control: var(--color-slate-600);
+
+  /* Semantic colors */
+  --c-color-neutral-bg-emphasis: var(--color-slate-400);
+  --c-color-neutral-bg-subtle: var(--color-slate-900);
+  --c-color-neutral-bg-faint: var(--color-slate-950);
+  --c-color-neutral-border-emphasis: var(--color-slate-400);
+  --c-color-neutral-border-subtle: var(--color-slate-600);
+  --c-color-neutral-on-emphasis: var(--color-slate-900);
+  --c-color-neutral-on-subtle: var(--color-slate-300);
+
+  --c-color-accent-bg-emphasis: var(--color-blue-400);
+  --c-color-accent-bg-subtle: var(--color-blue-900);
+  --c-color-accent-border-emphasis: var(--color-blue-400);
+  --c-color-accent-border-subtle: var(--color-blue-400);
+  --c-color-accent-on-emphasis: var(--color-slate-950);
+  --c-color-accent-on-subtle: var(--color-blue-200);
+
+  --c-color-info-bg-emphasis: var(--color-blue-600);
+  --c-color-info-bg-subtle: var(--color-blue-950);
+  --c-color-info-border-emphasis: var(--color-blue-600);
+  --c-color-info-border-subtle: var(--color-blue-600);
+  --c-color-info-on-emphasis: var(--color-blue-100);
+  --c-color-info-on-subtle: var(--color-blue-200);
+
+  --c-color-success-bg-emphasis: var(--color-emerald-400);
+  --c-color-success-bg-subtle: var(--color-emerald-900);
+  --c-color-success-border-emphasis: var(--color-emerald-400);
+  --c-color-success-border-subtle: var(--color-emerald-400);
+  --c-color-success-on-emphasis: var(--color-emerald-950);
+  --c-color-success-on-subtle: var(--color-emerald-200);
+
+  --c-color-warning-bg-emphasis: var(--color-yellow-400);
+  --c-color-warning-bg-subtle: var(--color-yellow-900);
+  --c-color-warning-border-emphasis: var(--color-yellow-400);
+  --c-color-warning-border-subtle: var(--color-yellow-400);
+  --c-color-warning-on-emphasis: var(--color-yellow-950);
+  --c-color-warning-on-subtle: var(--color-yellow-100);
+
+  /* Tooltip */
+
+  /* Button */
+  --c-button-default-bg: var(--color-slate-800);
+  --c-button-default-border: var(--color-slate-700);
+  --c-button-default-bg-hover: var(--color-slate-700);
+}
