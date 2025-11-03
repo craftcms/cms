@@ -384,6 +384,7 @@ JS, [
         $fieldId = $request->input('fieldId');
 
         if ($fieldId) {
+            $fieldId = (int) $fieldId;
             $oldField = clone $this->fieldsService->getFieldById($fieldId);
             abort_unless((bool) $oldField, 400, 'Invalid field ID: '.$fieldId);
             $fieldUid = $oldField->uid;
