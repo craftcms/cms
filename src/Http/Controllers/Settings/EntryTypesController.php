@@ -89,7 +89,9 @@ final class EntryTypesController
     {
         $entryTypeId ??= $request->input('entryTypeId');
 
-        abort_if(is_null($entryTypeId), 404, "Invalid entry type ID: $entryTypeId");
+        if ($entryTypeId === null) {
+            return $this->create();
+        }
 
         $entryTypeId = (int) $entryTypeId;
 
