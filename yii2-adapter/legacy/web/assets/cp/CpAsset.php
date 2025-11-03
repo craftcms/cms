@@ -643,6 +643,9 @@ JS;
             'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
+
+            // deprecated
+            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
         ];
 
         return $data;
@@ -675,6 +678,22 @@ JS;
             'secure' => $config['secure'] ?? false,
             'sameSite' => $config['sameSite'] ?? 'strict',
         ];
+    }
+
+    private function _editableCategoryGroups(): array
+    {
+        $groups = [];
+
+        foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
+            $groups[] = [
+                'handle' => $group->handle,
+                'id' => (int)$group->id,
+                'name' => t($group->name, category: 'site'),
+                'uid' => $group->uid,
+            ];
+        }
+
+        return $groups;
     }
 
     /**

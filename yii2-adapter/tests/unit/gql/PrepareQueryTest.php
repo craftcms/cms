@@ -9,10 +9,18 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
+use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
+use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\models\GqlSchema;
+use craft\records\CategoryGroup;
+use craft\records\Element;
 use craft\records\EntryType;
+use craft\records\GlobalSet;
+use craft\records\Structure;
+use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
@@ -35,8 +43,13 @@ class PrepareQueryTest extends TestCase
     protected UnitTester $tester;
 
     private Volume $_volume;
+    private Structure $_structure;
+    private CategoryGroup $_categoryGroup;
     private Section $_section;
     private EntryType $_entryType;
+    private Element $_element;
+    private GlobalSet $_globalSet;
+    private TagGroup $_tagGroup;
     private UserGroup $_userGroup;
 
 
@@ -53,7 +66,10 @@ class PrepareQueryTest extends TestCase
                 'getActiveSchema' => $this->make(GqlSchema::class, [
                     'scope' => [
                         'volumes.' . self::VOLUME_UID . ':read',
+                        'categorygroups.' . self::CATEGORY_GROUP_UID . ':read',
                         'sections.' . self::SECTION_UID . ':read',
+                        'globalsets.' . self::GLOBAL_SET_UID . ':read',
+                        'taggroups.' . self::TAG_GROUP_UID . ':read',
                         'usergroups.' . self::USER_GROUP_UID . ':read',
                     ],
                 ]),
@@ -61,7 +77,10 @@ class PrepareQueryTest extends TestCase
         );
 
         $this->_setupAssets();
+        $this->_setupCategories();
         $this->_setupEntries();
+        $this->_setupGlobals();
+        $this->_setupTags();
         $this->_setupUsers();
     }
 
@@ -71,16 +90,24 @@ class PrepareQueryTest extends TestCase
     protected function _after(): void
     {
         $this->_volume->delete();
+        $this->_structure->delete();
+        $this->_categoryGroup->delete();
         Sections::deleteSection($this->_section);
         $this->_entryType->delete();
+        $this->_element->delete();
+        $this->_globalSet->delete();
+        $this->_tagGroup->delete();
         $this->_userGroup->delete();
 
         Craft::$app->set('entries', new Entries());
     }
 
     public const VOLUME_UID = 'volume-uid--------------------------';
+    public const CATEGORY_GROUP_UID = 'categoryGroup-uid-------------------';
     public const SECTION_UID = 'section-uid-------------------------';
     public const ENTRY_TYPE_UID = 'entryType-uid-----------------------';
+    public const GLOBAL_SET_UID = 'globalSet-uid-----------------------';
+    public const TAG_GROUP_UID = 'tagGroup-uid------------------------';
     public const USER_GROUP_UID = 'userGroup-uid-----------------------';
 
     /**
@@ -128,6 +155,17 @@ class PrepareQueryTest extends TestCase
                 AssetResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
             ],
 
+            // Category
+            [
+                CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
+            ],
+            [
+                CategoryResolver::class, [null, ['groupId' => 2]], fn($result) => $result->groupId == 2,
+            ],
+            [
+                CategoryResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
+            ],
+
             // Entries
             [
                 EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
@@ -140,6 +178,25 @@ class PrepareQueryTest extends TestCase
                     $section = Sections::getSectionByUid(self::SECTION_UID);
                     return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
+            ],
+
+            // Global Sets
+            [
+                GlobalSetResolver::class, [null, ['handle' => 'foo']], fn($result) => $result->handle == 'foo',
+            ],
+            [
+                GlobalSetResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
+            ],
+
+            // Tags
+            [
+                TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
+            ],
+            [
+                TagResolver::class, [null, ['groupId' => 2]], fn($result) => $result->groupId == 2,
+            ],
+            [
+                TagResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
             ],
 
             // Users
@@ -180,6 +237,38 @@ class PrepareQueryTest extends TestCase
         ]);
     }
 
+    private function _setupCategories()
+    {
+        $this->_structure = new Structure();
+        $this->_structure->save();
+
+        $this->_categoryGroup = new CategoryGroup([
+            'uid' => self::CATEGORY_GROUP_UID,
+            'name' => Str::random(),
+            'handle' => Str::random(),
+            'structureId' => $this->_structure->id,
+        ]);
+
+        $this->_categoryGroup->save();
+
+        $categoriesService = Craft::$app->getCategories();
+
+        $this->tester->mockCraftMethods('categories', [
+            'getGroupByUid' => function($uid) use ($categoriesService) {
+                if ($uid === self::CATEGORY_GROUP_UID) {
+                    return new \craft\models\CategoryGroup([
+                        'id' => $this->_categoryGroup->id,
+                        'uid' => self::CATEGORY_GROUP_UID,
+                        'name' => $this->_categoryGroup->name,
+                        'handle' => $this->_categoryGroup->handle,
+                        'structureId' => $this->_structure->id,
+                    ]);
+                }
+                return $categoriesService->getGroupByUid($uid);
+            },
+        ]);
+    }
+
     private function _setupEntries()
     {
         $this->_entryType = new EntryType([
@@ -208,6 +297,51 @@ class PrepareQueryTest extends TestCase
             'sectionId' => $this->_section->id,
             'typeId' => $this->_entryType->id,
             'sortOrder' => 1,
+        ]);
+    }
+
+    private function _setupGlobals()
+    {
+        $this->_element = new Element([
+            'type' => Str::random(),
+            'enabled' => true,
+            'archived' => false,
+        ]);
+        $this->_element->save();
+
+        $this->_globalSet = new GlobalSet([
+            'uid' => self::GLOBAL_SET_UID,
+            'name' => Str::random(),
+            'handle' => Str::random(),
+            'id' => $this->_element->id,
+        ]);
+        $this->_globalSet->save();
+    }
+
+    private function _setupTags()
+    {
+        $this->_tagGroup = new TagGroup([
+            'uid' => self::TAG_GROUP_UID,
+            'name' => Str::random(),
+            'handle' => Str::random(),
+        ]);
+
+        $this->_tagGroup->save();
+
+        $tagsService = Craft::$app->getTags();
+
+        $this->tester->mockCraftMethods('tags', [
+            'getTagGroupByUid' => function($uid) use ($tagsService) {
+                if ($uid === self::TAG_GROUP_UID) {
+                    return new \craft\models\TagGroup([
+                        'id' => $this->_tagGroup->id,
+                        'uid' => self::TAG_GROUP_UID,
+                        'name' => $this->_tagGroup->name,
+                        'handle' => $this->_tagGroup->handle,
+                    ]);
+                }
+                return $tagsService->getTagGroupByUid($uid);
+            },
         ]);
     }
 

@@ -12,11 +12,17 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\elements\Address;
 use craft\elements\Asset;
+use craft\elements\Category;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\AssetQuery;
+use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
+use craft\elements\db\GlobalSetQuery;
+use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
+use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
@@ -180,6 +186,20 @@ class CraftVariable extends ServiceLocator
         return $query;
     }
 
+    /**
+     * Returns a new [category query](https://craftcms.com/docs/5.x/reference/element-types/categories.html#querying-categories).
+     *
+     * @param array $criteria
+     * @return CategoryQuery
+     * @deprecated in 6.0.0
+     */
+    public function categories(array $criteria = []): CategoryQuery
+    {
+        $query = Category::find();
+        Craft::configure($query, $criteria);
+        return $query;
+    }
+
     public function elementSources(): ElementSources
     {
         return app(ElementSources::class);
@@ -211,6 +231,21 @@ class CraftVariable extends ServiceLocator
     public function fields(): Fields
     {
         return app(Fields::class);
+    }
+
+    /**
+     * Returns a new [global set query](https://craftcms.com/docs/5.x/reference/element-types/globals.html#querying-globals).
+     *
+     * @param array $criteria
+     * @return GlobalSetQuery
+     * @since 3.0.4
+     * @deprecated in 6.0.0
+     */
+    public function globalSets(array $criteria = []): GlobalSetQuery
+    {
+        $query = GlobalSet::find();
+        Craft::configure($query, $criteria);
+        return $query;
     }
 
     public function i18n(): I18N
@@ -247,6 +282,20 @@ class CraftVariable extends ServiceLocator
     public function query(): Query
     {
         return new Query();
+    }
+
+    /**
+     * Returns a new [tag query](https://craftcms.com/docs/5.x/reference/element-types/tags.html#querying-tags).
+     *
+     * @param array $criteria
+     * @return TagQuery
+     * @deprecated in 6.0.0
+     */
+    public function tags(array $criteria = []): TagQuery
+    {
+        $query = Tag::find();
+        Craft::configure($query, $criteria);
+        return $query;
     }
 
     /**

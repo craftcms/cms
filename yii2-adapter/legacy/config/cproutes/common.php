@@ -41,4 +41,21 @@ return [
     'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
     'settings/users' => ['template' => 'settings/users/fields'],
     'preview/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/preview',
+
+    // deprecated
+    'categories' => 'categories/category-index',
+    'categories/<groupHandle:{handle}>' => 'categories/category-index',
+    'categories/<groupHandle:{handle}>/new' => 'categories/create',
+    'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'globals' => 'globals',
+    'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
+    'settings/categories' => 'categories/group-index',
+    'settings/categories/new' => 'categories/edit-category-group',
+    'settings/categories/<groupId:\d+>' => 'categories/edit-category-group',
+    'settings/globals' => 'system-settings/global-set-index',
+    'settings/globals/new' => 'system-settings/edit-global-set',
+    'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
+    'settings/tags' => 'tags/index',
+    'settings/tags/new' => 'tags/edit-tag-group',
+    'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
 ];

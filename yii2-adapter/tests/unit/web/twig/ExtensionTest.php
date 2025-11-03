@@ -24,11 +24,12 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
-use crafttests\fixtures\FieldLayoutFixture;
+use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
+use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -55,7 +56,7 @@ class ExtensionTest extends TestCase
     {
         return [
             'globals' => [
-                'class' => FieldLayoutFixture::class,
+                'class' => GlobalSetFixture::class,
             ],
         ];
     }
@@ -138,6 +139,19 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
+        );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws Throwable
+     */
+    public function test_element_globals(): void
+    {
+        $this->testRenderResult(
+            'A global set | A different global set',
+            '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
         );
     }
 

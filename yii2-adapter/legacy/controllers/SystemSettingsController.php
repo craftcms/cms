@@ -8,14 +8,17 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\MailerHelper;
+use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
+use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -23,6 +26,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Config;
 use yii\base\Exception;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use function CraftCms\Cms\t;
 
@@ -210,6 +215,97 @@ class SystemSettingsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'settings' => $settings ?? null,
             'adapter' => $adapter ?? null,
+        ]);
+    }
+
+    /**
+     * Global Set index
+     *
+     * @return Response
+     * @since 5.3.0
+     * @deprecated in 6.0.0
+     */
+    public function actionGlobalSetIndex(): Response
+    {
+        $view = $this->getView();
+        $view->registerAssetBundle(AdminTableAsset::class);
+        $view->registerTranslations('app', [
+            'Global Set Name',
+            'No global sets exist yet.',
+        ]);
+
+        return $this->renderTemplate('settings/globals/_index.twig', [
+            'title' => t('Globals'),
+            'crumbs' => [
+                [
+                    'label' => t('Settings'),
+                    'url' => UrlHelper::cpUrl('settings'),
+                ],
+            ],
+            'globalSets' => Craft::$app->getGlobals()->getAllSets(),
+            'buttonLabel' => mb_ucfirst(t('New {type}', [
+                'type' => GlobalSet::lowerDisplayName(),
+            ])),
+            'readOnly' => $this->readOnly,
+        ]);
+    }
+
+    /**
+     * Global Set edit form.
+     *
+     * @param int|null $globalSetId The global set’s ID, if any.
+     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
+     * @return Response
+     * @throws NotFoundHttpException if the requested global set cannot be found
+     * @deprecated in 6.0.0
+     */
+    public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
+    {
+        if ($globalSetId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
+        if ($globalSet === null) {
+            if ($globalSetId !== null) {
+                $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
+
+                if (!$globalSet) {
+                    throw new NotFoundHttpException('Global set not found');
+                }
+            } else {
+                $globalSet = new GlobalSet();
+            }
+        }
+
+        if ($globalSet->id) {
+            $title = trim($globalSet->name) ?: t('Edit {type}', [
+                'type' => GlobalSet::displayName(),
+            ]);
+        } else {
+            $title = t('Create a new {type}', [
+                'type' => GlobalSet::lowerDisplayName(),
+            ]);
+        }
+
+        // Breadcrumbs
+        $crumbs = [
+            [
+                'label' => t('Settings'),
+                'url' => UrlHelper::url('settings'),
+            ],
+            [
+                'label' => t('Globals'),
+                'url' => UrlHelper::url('settings/globals'),
+            ],
+        ];
+
+        // Render the template!
+        return $this->renderTemplate('settings/globals/_edit.twig', [
+            'globalSetId' => $globalSetId,
+            'globalSet' => $globalSet,
+            'title' => $title,
+            'crumbs' => $crumbs,
+            'readOnly' => $this->readOnly,
         ]);
     }
 

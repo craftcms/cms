@@ -9,14 +9,18 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\elements\Asset;
+use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\gql\ArgumentManager;
 use craft\gql\base\ArgumentHandlerInterface;
 use craft\gql\handlers\RelatedAssets;
+use craft\gql\handlers\RelatedCategories;
 use craft\gql\handlers\RelatedEntries;
+use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
@@ -119,6 +123,8 @@ class ArgumentHandlerTest extends TestCase
         $handlers = [
             'relatedToAssets' => $this->make(RelatedAssets::class, ['getIds' => $getIds]),
             'relatedToEntries' => $this->make(RelatedEntries::class, ['getIds' => $getIds]),
+            'relatedToCategories' => $this->make(RelatedCategories::class, ['getIds' => $getIds]),
+            'relatedToTags' => $this->make(RelatedTags::class, ['getIds' => $getIds]),
             'relatedToUsers' => $this->make(RelatedUsers::class, ['getIds' => $getIds]),
         ];
 
@@ -126,6 +132,8 @@ class ArgumentHandlerTest extends TestCase
             [[], ['relatedToAll' => [1, 2, 3]], ['and', ['element' => 1], ['element' => 2], ['element' => 3]]],
             [$handlers, ['relatedToAssets' => ['expected' => Asset::class, 'return' => [[1, 2]]]], ['and', ['element' => [1, 2]]]],
             [$handlers, ['relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]]], ['and', ['element' => [3]], ['element' => [4]]]],
+            [$handlers, ['relatedToCategories' => ['expected' => Category::class, 'return' => []]], ['and', ['element' => [0]]]],
+            [$handlers, ['relatedToTags' => ['expected' => Tag::class, 'return' => [[7], [8]]]], ['and', ['element' => [7]], ['element' => [8]]]],
             [$handlers, ['relatedToUsers' => ['expected' => User::class, 'return' => [[9, 10]]]], ['and', ['element' => [9, 10]]]],
 
             [

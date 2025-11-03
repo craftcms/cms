@@ -10,6 +10,9 @@ return [
         'id' => '1000',
         'name' => 'Sneakers',
         'scope' => [
+            'globalsets.globalset-1000-------------------uid:read',
+            'globalsets.globalset-1001-------------------uid:read',
+            'globalsets.globalset-1002-------------------uid:read',
             'volumes.volume-1000----------------------uid:read',
             'volumes.volume-1001----------------------uid:read',
             'volumes.volume-1002----------------------uid:read',
@@ -26,5 +29,16 @@ return [
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
         'uid' => 'gql-main-token-------------------uid',
+    ],
+    [
+        'id' => '1001',
+        'name' => 'Peter Parker',
+        'scope' => [
+            'globalsets.globalset-1001-------------------uid:read',
+            'globalsets.globalset-1002-------------------uid:read',
+        ],
+        'dateCreated' => '2018-08-08 20:00:00',
+        'dateUpdated' => '2018-08-08 20:00:00',
+        'uid' => 'gql-sub-token--------------------uid',
     ],
 ];

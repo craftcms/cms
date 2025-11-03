@@ -12,16 +12,19 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use crafttests\fixtures\UserFixture;
 use Exception;
@@ -53,6 +56,9 @@ class TypeResolverTest extends TestCase
             'users' => [
                 'class' => UserFixture::class,
             ],
+            'globalSets' => [
+                'class' => GlobalSetFixture::class,
+            ],
             'gqlSchemas' => [
                 'class' => GqlSchemasFixture::class,
             ],
@@ -74,6 +80,12 @@ class TypeResolverTest extends TestCase
             // Entries
             [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
             [Entry::class, ['title' => Str::random(128)], EntryResolver::class],
+
+            // Globals
+            [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => Str::random(128)], GlobalSetResolver::class, true],
 
             // Users
             [User::class, ['username' => 'user1'], UserResolver::class],

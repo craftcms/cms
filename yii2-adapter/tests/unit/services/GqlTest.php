@@ -8,6 +8,7 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
@@ -19,13 +20,18 @@ use craft\fs\Local;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
+use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
+use craft\models\TagGroup;
 use craft\models\UserGroup;
+use craft\services\Categories;
 use craft\services\Entries;
+use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
@@ -322,6 +328,34 @@ class GqlTest extends TestCase
             ],
         ]);
 
+        $globalService = $this->make(Globals::class, [
+            'getAllSets' => [
+                new GlobalSet([
+                    'id' => 1,
+                    'name' => 'Test global',
+                    'uid' => 'globalUid',
+                ]),
+            ],
+        ]);
+        $categoryService = $this->make(Categories::class, [
+            'getAllGroups' => [
+                new CategoryGroup([
+                    'id' => 1,
+                    'name' => 'Test category group',
+                    'uid' => 'categoryGroupUid',
+                ]),
+            ],
+        ]);
+        $tagService = $this->make(Tags::class, [
+            'getAllTagGroups' => [
+                new TagGroup([
+                    'id' => 1,
+                    'name' => 'Test tag group',
+                    'uid' => 'tagGroupUid',
+                ]),
+            ],
+        ]);
+
         $userGroupService = $this->make(UserGroups::class, [
             'getAllGroups' => [
                 new UserGroup([
@@ -334,6 +368,9 @@ class GqlTest extends TestCase
 
         Craft::$app->set('entries', $entriesService);
         Craft::$app->set('volumes', $volumeService);
+        Craft::$app->set('globals', $globalService);
+        Craft::$app->set('categories', $categoryService);
+        Craft::$app->set('tags', $tagService);
         Craft::$app->set('userGroups', $userGroupService);
 
         $edition = Edition::get();
@@ -346,10 +383,16 @@ class GqlTest extends TestCase
 
         self::assertNotEmpty($allSchemaComponents['queries']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Assets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Users'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Categories'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
 
         self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Global Sets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
 
         Edition::set($edition);
     }

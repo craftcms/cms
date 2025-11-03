@@ -10,6 +10,7 @@ use craft\services\Addresses;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
+use craft\services\Categories;
 use craft\services\Conditions;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
@@ -20,6 +21,7 @@ use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Fs;
 use craft\services\Gc;
+use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
@@ -34,6 +36,7 @@ use craft\services\Sites;
 use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
+use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\UserGroups;
@@ -73,6 +76,9 @@ return [
         'auth' => [
             'class' => Auth::class,
         ],
+        'categories' => [
+            'class' => Categories::class,
+        ],
         'conditions' => [
             'class' => Conditions::class,
         ],
@@ -102,6 +108,9 @@ return [
         ],
         'gc' => [
             'class' => Gc::class,
+        ],
+        'globals' => [
+            'class' => Globals::class,
         ],
         'gql' => [
             'class' => Gql::class,
@@ -162,6 +171,9 @@ return [
         ],
         'systemMessages' => [
             'class' => SystemMessages::class,
+        ],
+        'tags' => [
+            'class' => Tags::class,
         ],
         'templateCaches' => [
             'class' => TemplateCaches::class,

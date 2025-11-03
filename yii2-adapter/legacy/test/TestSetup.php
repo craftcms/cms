@@ -20,6 +20,7 @@ use craft\mail\Mailer;
 use craft\queue\Queue;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
+use craft\services\Categories;
 use craft\services\Config;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
@@ -27,6 +28,7 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Globals;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
@@ -37,6 +39,7 @@ use craft\services\Search;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
+use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\UserGroups;
@@ -509,6 +512,7 @@ class TestSetup
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
             [ImageTransforms::class, ['getImageTransforms', 'imageTransforms']],
+            [Categories::class, ['getCategories', 'categories']],
             [Config::class, ['getConfig', 'config']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
@@ -517,6 +521,7 @@ class TestSetup
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],
             [Fields::class, ['getFields', 'fields']],
+            [Globals::class, ['getGlobals', 'globals']],
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
             [Mailer::class, ['getMailer', 'mailer']],
@@ -531,6 +536,7 @@ class TestSetup
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
+            [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],
             [Tokens::class, ['getTokens', 'tokens']],
             [UserGroups::class, ['getUserGroups', 'userGroups']],
