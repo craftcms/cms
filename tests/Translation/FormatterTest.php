@@ -273,19 +273,25 @@ test('asDuration', function () {
 
 test('asTimestamp', function (mixed $input, string $output, ?string $locale = null) {
     $this->formatter->locale = $locale;
+    config()->set('app.timezone', 'UTC');
 
     expect($this->formatter->asTimestamp($input))->toBe($output);
-})->with([
-    [new DateTime()->format('Y-m-d'), 'Today'],
-    [new DateTime()->format('Y-m-d 00:00:00'), '5:00:00 PM'],
-    [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Yesterday'],
-    [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Yesterday'],
-    [new DateTime()->format('Y-m-d'), 'Vandaag', 'nl'],
-    [new DateTime()->format('Y-m-d 00:00:00'), '17:00:00', 'nl'],
-    [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Gisteren', 'nl'],
-    [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Gisteren', 'nl'],
-    [new DateTime('2021-01-01 00:00:00'), 'Dec 31, 2020'],
-]);
+})->with(function () {
+    $dateTime = new DateTime(timezone: new DateTimeZone('UTC'));
+    $dateTime->setTime(12, 0);
+
+    return [
+        [(clone $dateTime)->format('Y-m-d'), 'Today'],
+        [(clone $dateTime)->setTime(17, 0)->format('Y-m-d H:i:s'), '5:00:00 PM'],
+        [(clone $dateTime)->sub(DateInterval::createFromDateString('24 hours'))->format('Y-m-d'), 'Yesterday'],
+        [(clone $dateTime)->sub(DateInterval::createFromDateString('24 hours'))->format('Y-m-d H:i:s'), 'Yesterday'],
+        [(clone $dateTime)->format('Y-m-d'), 'Vandaag', 'nl'],
+        [(clone $dateTime)->format('Y-m-d 00:00:00'), '00:00:00', 'nl'],
+        [(clone $dateTime)->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Gisteren', 'nl'],
+        [(clone $dateTime)->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Gisteren', 'nl'],
+        [new DateTime('2021-01-01 00:00:00'), 'Jan 1, 2021'],
+    ];
+});
 
 test('asSize', function (string|int|float|null $input, string $output, int $sizeFormatBase = 1024, ?int $decimals = null) {
     $this->formatter->sizeFormatBase = $sizeFormatBase;
