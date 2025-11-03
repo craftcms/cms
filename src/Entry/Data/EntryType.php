@@ -63,7 +63,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
     ) {
         $this->fieldLayoutId = $fieldLayoutId;
         $this->showSlugField = (bool) $showSlugField;
-        $this->showStatusField = (bool) $showSlugField;
+        $this->showStatusField = (bool) $showStatusField;
 
         if ($this->titleFormat === '') {
             $this->titleFormat = null;
