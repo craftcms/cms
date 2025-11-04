@@ -31,6 +31,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -41,6 +42,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -69,6 +71,7 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware([RequireToken::class])->group(function () {
         Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
+        Route::any('users/impersonate-with-token', [ImpersonationController::class, 'withToken']);
     });
 });
 
@@ -260,6 +263,12 @@ Route::prefix(implode('/', [
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
+
+        // Users
+        Route::middleware([RequireElevatedSession::class])->group(function () {
+            Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
+            Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+        });
 
         // Pluginstore
         Route::middleware([

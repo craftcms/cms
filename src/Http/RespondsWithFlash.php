@@ -87,6 +87,11 @@ trait RespondsWithFlash
         return $this->asSuccess($message, $data, $redirect);
     }
 
+    public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): Response
+    {
+        return redirect($this->getPostedRedirectUrl($object) ?? $redirect);
+    }
+
     protected function getPostedRedirectUrl(?object $object = null): ?string
     {
         $url = request('redirect');

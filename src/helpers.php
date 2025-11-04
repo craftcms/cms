@@ -18,6 +18,11 @@ function t(string|Stringable|null $id, array $parameters = [], ?string $category
     return I18N::translate($id ?? '', $parameters, $category, $locale);
 }
 
+function action_url(string $url): string
+{
+    return Str::start($url, Str::finish(Cms::config()->actionTrigger, '/'));
+}
+
 function cp_url(string $url): string
 {
     return Str::start($url, Str::finish(Cms::config()->cpTrigger, '/'));
