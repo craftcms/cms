@@ -12,9 +12,11 @@ final readonly class RequireToken
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        $token = Context::getHidden('craft.token');
+        $token = Context::pullHidden(HandleTokenRequest::TOKEN_KEY);
 
         abort_if(is_null($token), 401, 'Valid token required');
+
+        $request->headers->remove(HandleTokenRequest::TOKEN_HEADER);
 
         return $next($request);
     }

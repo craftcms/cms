@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Token\Data\Token;
 use CraftCms\Cms\Token\Tokens;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
@@ -22,78 +22,53 @@ final readonly class PreviewController
 {
     use EnforcesPermissions;
 
-    public function createToken(Tokens $tokens, Request $request): JsonResponse|RedirectResponse
+    public function createToken(Request $request, Tokens $tokens, Token $tokenData): JsonResponse|RedirectResponse
     {
-        $data = $request->validate([
-            'elementType' => ['required', 'string'],
-            'canonicalId' => ['required_without:sourceId', 'int'],
-            'sourceId' => ['required_without:canonicalId', 'int'],
-            'siteId' => ['required', 'int'],
-            'draftId' => ['nullable', 'int'],
-            'revisionId' => ['nullable', 'int'],
-            'previewToken' => ['nullable', 'string'],
-            'redirect' => ['nullable', 'string'],
-        ]);
-
-        $canonicalId = $data['canonicalId'] ?? $data['sourceId'];
-
         match (true) {
-            isset($data['draftId']) => $this->requirePermission("previewDraft:{$data['draftId']}"),
-            isset($data['revisionId']) => $this->requirePermission("previewRevision:{$data['revisionId']}"),
-            default => $this->requirePermission("previewElement:{$canonicalId}"),
+            isset($tokenData->draftId) => $this->requirePermission("previewDraft:{$tokenData->draftId}"),
+            isset($tokenData->revisionId) => $this->requirePermission("previewRevision:{$tokenData->revisionId}"),
+            default => $this->requirePermission("previewElement:{$tokenData->getCanonicalId()}"),
         };
 
         $token = $tokens->createPreviewToken([
             route('craft.actions.preview', absolute: false), [
-                'elementType' => $data['elementType'],
-                'canonicalId' => (int) $canonicalId,
-                'siteId' => (int) $data['siteId'],
-                'draftId' => $data['draftId'] ?? null,
-                'revisionId' => $data['revisionId'] ?? null,
+                'elementType' => $tokenData->elementType,
+                'canonicalId' => $tokenData->getCanonicalId(),
+                'siteId' => $tokenData->siteId,
+                'draftId' => $tokenData->draftId ?? null,
+                'revisionId' => $tokenData->revisionId ?? null,
                 'userId' => $request->user()->id,
             ],
-        ], token: $data['previewToken']);
+        ], token: $tokenData->previewToken);
 
         abort_if($token === false, 500, t('Could not create a preview token.'));
 
-        if (isset($data['redirect'])) {
-            return redirect($data['redirect']);
+        if (isset($tokenData->redirect)) {
+            return redirect($tokenData->redirect);
         }
 
         return new JsonResponse(compact('token'));
     }
 
-    public function preview(Request $request, Kernel $kernel): mixed
+    public function preview(Request $request, Kernel $kernel, Token $tokenData): mixed
     {
-        $request->validate([
-            'elementType' => ['required', 'string'],
-            'canonicalId' => ['required', 'int'],
-            'siteId' => ['required', 'int'],
-            'draftId' => ['nullable', 'int'],
-            'revisionId' => ['nullable', 'int'],
-            'userId' => ['nullable', 'int'],
-        ]);
-
-        /** @var ElementInterface $elementType */
-        $elementType = $request->input('elementType');
-
-        $query = $elementType::find()
-            ->siteId($request->integer('siteId'))
+        $query = $tokenData->elementType::find()
+            ->siteId($tokenData->siteId)
             ->status(null);
 
         $elementFn = match (true) {
-            (bool) $draftId = $request->integer('draftId') => fn () => $query->draftId($draftId)->one(),
-            (bool) $revisionId = $request->integer('revisionId') => fn () => $query->revisionId($revisionId)->one(),
-            (bool) $userId = $request->integer('userId') => function () use ($userId, $query, $request) {
-                ElementHelper::setProvisionalDraftUser($userId);
+            ! is_null($tokenData->draftId) => fn () => $query->draftId($tokenData->draftId)->one(),
+            ! is_null($tokenData->revisionId) => fn () => $query->revisionId($tokenData->revisionId)->one(),
+            ! is_null($tokenData->userId) => function () use ($tokenData, $query) {
+                ElementHelper::setProvisionalDraftUser($tokenData->userId);
 
                 $element = (clone $query)
-                    ->draftOf($request->integer('canonicalId'))
+                    ->draftOf($tokenData->canonicalId)
                     ->provisionalDrafts()
-                    ->draftCreator($userId)
+                    ->draftCreator($tokenData->userId)
                     ->one();
 
-                return $element ?? $query->id($request->integer('canonicalId'))->one();
+                return $element ?? $query->id($tokenData->canonicalId)->one();
             },
             default => fn () => null,
         };
@@ -113,17 +88,13 @@ final readonly class PreviewController
             \Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
-        Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
-
         /** @var \Illuminate\Support\Uri $originalUri */
         $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
 
-        $newRequest = $request->duplicateWithUri(
+        $response = $kernel->handle($request->duplicateWithUri(
             newUri: $originalUri->value(),
             query: $originalUri->query()->all()
-        );
-        $newRequest->headers->remove(HandleTokenRequest::TOKEN_HEADER);
-        $response = $kernel->handle($newRequest);
+        ));
 
         return match (true) {
             $response instanceof Response => $response->setNoCacheHeaders(),
