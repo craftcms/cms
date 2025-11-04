@@ -386,7 +386,8 @@ export default Drag.extend(
                     this._getClosestItem._lastXDist)) &&
               (this.settings.axis === Garnish.X_AXIS ||
                 (this._getClosestItem._lastYDist !== null &&
-                  this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+                  this._getClosestItem._yDist >
+                    this._getClosestItem._lastYDist))
             )
           ) {
             if (this.settings.axis !== Garnish.Y_AXIS) {
@@ -447,7 +448,8 @@ export default Drag.extend(
                     this._getClosestItem._lastXDist)) &&
               (this.settings.axis === Garnish.X_AXIS ||
                 (this._getClosestItem._lastYDist !== null &&
-                  this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+                  this._getClosestItem._yDist >
+                    this._getClosestItem._lastYDist))
             )
           ) {
             if (this.settings.axis !== Garnish.Y_AXIS) {
