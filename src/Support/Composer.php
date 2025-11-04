@@ -134,7 +134,7 @@ final class Composer
     {
         $this->backupComposerFiles();
 
-        $packages = array_map('strtolower', $packages);
+        $packages = array_map(strtolower(...), $packages);
 
         // Get composer.json
         $jsonPath = $this->getJsonPath();

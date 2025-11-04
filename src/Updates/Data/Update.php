@@ -49,7 +49,7 @@ final readonly class Update implements Arrayable
     {
         $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '');
         $data['releases'] = array_map(
-            fn (array $release) => UpdateRelease::fromArray($release),
+            UpdateRelease::fromArray(...),
             $data['releases'] ?? [],
         );
         $data['abandoned'] = (bool) ($data['abandoned'] ?? false);

@@ -9,9 +9,9 @@ namespace craft\gql\directives;
 
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\MoneyHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Money as MoneyHelper;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;

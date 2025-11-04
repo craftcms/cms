@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms;
 
 use Closure;
-use craft\helpers\Number;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
@@ -57,8 +57,8 @@ function normalizeValue(mixed $value): mixed
             return null;
     }
 
-    if (Number::isIntOrFloat($value)) {
-        $intOrFloat = Number::toIntOrFloat($value);
+    if (Typecast::isIntOrFloat($value)) {
+        $intOrFloat = Typecast::toIntOrFloat($value);
         // make sure we didn't lose any precision
         if ((string) $intOrFloat === $value) {
             return $intOrFloat;

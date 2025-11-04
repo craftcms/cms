@@ -30,3 +30,8 @@ createInertiaApp({
     app.mount(el);
   },
 });
+
+/**
+ * Components
+ */
+import './components/CpGlobalSidebar.js';

@@ -4,10 +4,10 @@ namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\helpers\Cp;
-use craft\helpers\MoneyHelper;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Money as MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 use yii\base\InvalidConfigException;
