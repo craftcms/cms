@@ -140,9 +140,6 @@ export default Drag.extend(
       // This eliminates layout thrashing during drag operations
       this._precalculateMidpoints();
 
-      // Initialize throttling timestamp
-      this._lastDragUpdate = 0;
-
       this.base();
     },
 
@@ -150,14 +147,6 @@ export default Drag.extend(
      * On Drag
      */
     onDrag: function () {
-      // PERFORMANCE: Throttle updates to ~60fps (16ms)
-      // const now = performance.now();
-      // if (now - this._lastDragUpdate < 16) {
-      //   this.base();
-      //   return;
-      // }
-      // this._lastDragUpdate = now;
-
       // If there's a container set, make sure that we're hovering over it
       if (
         this.$heightedContainer &&
