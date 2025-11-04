@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Site\Models\Site;
