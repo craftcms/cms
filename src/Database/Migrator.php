@@ -47,7 +47,7 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
             $paths = $this->paths;
         }
 
-        $paths = array_map(fn (string $path) => Aliases::get($path), $paths);
+        $paths = array_map(Aliases::get(...), $paths);
 
         if (! $this->repository->repositoryExists()) {
             $this->repository->createRepository();
@@ -74,7 +74,7 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
             $paths = $this->paths;
         }
 
-        $paths = array_map(fn (string $path) => Aliases::get($path), $paths);
+        $paths = array_map(Aliases::get(...), $paths);
 
         $files = $this->getMigrationFiles($paths);
 

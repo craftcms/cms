@@ -163,7 +163,7 @@ final class Sections
 
                 if ($siteSettings = Arr::pull($siteSettingsBySection, $section->id)) {
                     $section->setSiteSettings(
-                        array_map(fn (object $config) => SectionSiteSettings::from($config), $siteSettings),
+                        array_map(SectionSiteSettings::from(...), $siteSettings),
                     );
                 }
 

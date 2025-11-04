@@ -501,11 +501,11 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'target' => (! empty($value['target']) && in_array('target', $this->advancedFields)) ? $value['target'] : null,
                 'title' => (! empty($value['title']) && in_array('title', $this->advancedFields)) ? $value['title'] : null,
                 'class' => (! empty($value['class']) && in_array('class', $this->advancedFields))
-                    ? (implode(' ', array_map(fn (string $class) => Html::id($class), explode(' ', (string) $value['class']))))
+                    ? (implode(' ', array_map(Html::id(...), explode(' ', (string) $value['class']))))
                     : null,
                 'id' => (! empty($value['id']) && in_array('id', $this->advancedFields)) ? Html::id($value['id']) : null,
                 'rel' => (! empty($value['rel']) && in_array('rel', $this->advancedFields))
-                    ? (implode(' ', array_map(fn (string $rel) => Html::id($rel), explode(' ', (string) $value['rel']))))
+                    ? (implode(' ', array_map(Html::id(...), explode(' ', (string) $value['rel']))))
                     : null,
                 'ariaLabel' => (! empty($value['ariaLabel']) && in_array('ariaLabel', $this->advancedFields)) ? $value['ariaLabel'] : null,
                 'download' => (! empty($value['download']) && in_array('download', $this->advancedFields)) ? (bool) $value['download'] : null,

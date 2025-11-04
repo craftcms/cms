@@ -118,7 +118,7 @@ final class Updates
 
         if (array_any(
             $this->plugins->getAllPlugins(),
-            fn ($plugin) => $this->plugins->isPluginUpdatePending($plugin)
+            $this->plugins->isPluginUpdatePending(...)
         )) {
             return true;
         }
@@ -239,7 +239,7 @@ final class Updates
     {
         return array_any(
             $this->plugins->getAllPlugins(),
-            fn ($plugin) => $this->plugins->isPluginUpdatePending($plugin)
+            $this->plugins->isPluginUpdatePending(...)
         );
     }
 
