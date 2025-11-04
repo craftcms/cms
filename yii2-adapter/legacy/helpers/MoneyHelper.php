@@ -7,51 +7,25 @@
 
 namespace craft\helpers;
 
-use CraftCms\Cms\Support\Facades\I18N;
-use Money\Currencies\ISOCurrencies;
 use Money\Currency;
-use Money\Formatter\DecimalMoneyFormatter;
-use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
-use Money\Parser\DecimalMoneyParser;
-use Money\Parser\IntlMoneyParser;
-use NumberFormatter;
 
 /**
  * Class MoneyHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Money} instead.
  */
 class MoneyHelper
 {
-    /**
-     * @var ISOCurrencies
-     */
-    private static ISOCurrencies $_isoCurrencies;
-
     /**
      * @param mixed $value
      * @return Money|false
      */
     public static function toMoney(mixed $value): Money|false
     {
-        if ($value instanceof Money) {
-            return $value;
-        }
-
-        if (!is_array($value) || empty($value) || (!array_key_exists('value', $value) || !array_key_exists('currency', $value))) {
-            return false;
-        }
-
-        if (isset($value['locale'])) {
-            $value['value'] = Localization::normalizeNumber($value['value'], $value['locale']);
-        }
-
-        $currency = !$value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
-
-        return (new DecimalMoneyParser(self::_getIsoCurrencies()))
-            ->parse((string)$value['value'], $currency);
+        return \CraftCms\Cms\Support\Money::toMoney($value);
     }
 
     /**
@@ -62,11 +36,7 @@ class MoneyHelper
      */
     public static function toDecimal(mixed $value): string|false
     {
-        if (!$value instanceof Money) {
-            return false;
-        }
-
-        return (new DecimalMoneyFormatter(self::_getIsoCurrencies()))->format($value);
+        return \CraftCms\Cms\Support\Money::toDecimal($value);
     }
 
     /**
@@ -78,18 +48,7 @@ class MoneyHelper
      */
     public static function toString(mixed $value, ?string $formatLocale = null): string|false
     {
-        if (is_string($value)) {
-            return $value;
-        }
-
-        if (!$value instanceof Money) {
-            return false;
-        }
-
-        $locale = $formatLocale ?? I18N::getFormattingLocale()->id;
-
-        $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-        return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
+        return \CraftCms\Cms\Support\Money::toString($value, $formatLocale);
     }
 
     /**
@@ -101,18 +60,7 @@ class MoneyHelper
      */
     public static function toNumber(mixed $value, ?string $formatLocale = null): string|false
     {
-        if (is_string($value)) {
-            return $value;
-        }
-
-        if (!$value instanceof Money) {
-            return false;
-        }
-
-        $locale = $formatLocale ?? I18N::getFormattingLocale()->id;
-
-        $numberFormatter = new NumberFormatter($locale, NumberFormatter::DECIMAL);
-        return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
+        return \CraftCms\Cms\Support\Money::toNumber($value, $formatLocale);
     }
 
     /**
@@ -123,24 +71,6 @@ class MoneyHelper
      */
     public static function normalizeString(string $value, ?Currency $fallbackCurrency = null): string
     {
-        $locale = I18N::getFormattingLocale()->id;
-        $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-        $moneyParser = new IntlMoneyParser($numberFormatter, self::_getIsoCurrencies());
-
-        $money = $moneyParser->parse($value, $fallbackCurrency);
-
-        return $money->getAmount();
-    }
-
-    /**
-     * @return ISOCurrencies
-     */
-    private static function _getIsoCurrencies(): ISOCurrencies
-    {
-        if (!isset(self::$_isoCurrencies)) {
-            self::$_isoCurrencies = new ISOCurrencies();
-        }
-
-        return self::$_isoCurrencies;
+        return \CraftCms\Cms\Support\Money::normalizeString($value, $fallbackCurrency);
     }
 }

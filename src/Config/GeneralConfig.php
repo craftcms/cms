@@ -3850,11 +3850,12 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.')]
     public function blowfishHashCost(int $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.blowfishHashCost', 'blowfishHashCost is deprecated. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS instead.');
+        app()->booting(function () use ($value) {
+            config()->set('hashing.bcrypt.rounds', $value);
+            Deprecator::log('generalConfig.blowfishHashCost', 'blowfishHashCost is deprecated. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS instead.');
+        });
 
         $this->blowfishHashCost = $value;
-
-        config()->set('hashing.bcrypt.rounds', $value);
 
         return $this;
     }
@@ -4050,7 +4051,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.')]
     public function csrfTokenName(string $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.csrfTokenName', 'Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.');
+        app()->booting(fn () => Deprecator::log('generalConfig.csrfTokenName', 'Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.'));
 
         $this->csrfTokenName = $value;
 
@@ -4353,7 +4354,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Set `app.debug` or `APP_DEBUG` environment variable instead.')]
     public function devMode(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.');
+        app()->booting(fn () => Deprecator::log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.'));
 
         $this->devMode = $value;
 
@@ -4547,7 +4548,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. A cookie will always be used to persist the CSRF token.')]
     public function enableCsrfCookie(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.enableCsrfCookie', 'A cookie will always be used to persist the CSRF token.');
+        app()->booting(fn () => Deprecator::log('generalConfig.enableCsrfCookie', 'A cookie will always be used to persist the CSRF token.'));
 
         $this->enableCsrfCookie = $value;
 
@@ -4569,7 +4570,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/12.x/csrf#csrf-excluding-uris)')]
     public function enableCsrfProtection(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.enableCsrfProtection', 'Configure excluded routes instead.');
+        app()->booting(fn () => Deprecator::log('generalConfig.enableCsrfProtection', 'Configure excluded routes instead.'));
 
         $this->enableCsrfProtection = $value;
 
@@ -5477,7 +5478,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Script name is now always omitted.')]
     public function omitScriptNameInUrls(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.omitScriptNameInUrls', 'Calling omitScriptNameInUrls() is deprecated. Script name is now always omitted.');
+        app()->booting(fn () => Deprecator::log('generalConfig.omitScriptNameInUrls', 'Calling omitScriptNameInUrls() is deprecated. Script name is now always omitted.'));
 
         $this->omitScriptNameInUrls = $value;
 
@@ -5592,7 +5593,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This method no longer does anything.')]
     public function pathParam(?string $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.pathParam', 'Calling pathParam() is deprecated.');
+        app()->booting(fn () => Deprecator::log('generalConfig.pathParam', 'Calling pathParam() is deprecated.'));
 
         $this->pathParam = $value;
 
@@ -5656,7 +5657,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.')]
     public function phpSessionName(string $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.');
+        app()->booting(fn () => Deprecator::log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.'));
 
         $this->phpSessionName = $value;
 
@@ -5982,7 +5983,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This method no longer does anything, sessions are cleaned up on a lottery basis when needed.')]
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.purgeStaleUserSessionDuration', 'Calling purgeStaleUserSessionDuration() is deprecated. Sessions are cleaned up on a lottery basis when needed.');
+        app()->booting(fn () => Deprecator::log('generalConfig.purgeStaleUserSessionDuration', 'Calling purgeStaleUserSessionDuration() is deprecated. Sessions are cleaned up on a lottery basis when needed.'));
 
         $this->purgeStaleUserSessionDuration = $value;
 
@@ -6113,7 +6114,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function requireMatchingUserAgentForSession(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.requireMatchingUserAgentForSession', 'Calling requireMatchingUserAgentForSession() is deprecated.');
+        app()->booting(fn () => Deprecator::log('generalConfig.requireMatchingUserAgentForSession', 'Calling requireMatchingUserAgentForSession() is deprecated.'));
 
         $this->requireMatchingUserAgentForSession = $value;
 
@@ -6135,7 +6136,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function requireUserAgentAndIpForSession(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.requireUserAgentAndIpForSession', 'Calling requireUserAgentAndIpForSession() is deprecated.');
+        app()->booting(fn () => Deprecator::log('generalConfig.requireUserAgentAndIpForSession', 'Calling requireUserAgentAndIpForSession() is deprecated.'));
 
         $this->requireUserAgentAndIpForSession = $value;
 
@@ -6315,7 +6316,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.')]
     public function sameSiteCookieValue(?string $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.sameSiteCookieValue', 'Calling sameSiteCookieValue() is deprecated. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.');
+        app()->booting(fn () => Deprecator::log('generalConfig.sameSiteCookieValue', 'Calling sameSiteCookieValue() is deprecated. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.'));
 
         $this->sameSiteCookieValue = $value;
 
@@ -6386,7 +6387,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
     public function secureHeaders(?array $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.secureHeaders', 'Calling secureHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies)');
+        app()->booting(fn () => Deprecator::log('generalConfig.secureHeaders', 'Calling secureHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies)'));
 
         $this->secureHeaders = $value;
 
@@ -6444,7 +6445,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function secureProtocolHeaders(?array $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.secureProtocolHeaders', 'Calling secureProtocolHeaders() is deprecated.');
+        app()->booting(fn () => Deprecator::log('generalConfig.secureProtocolHeaders', 'Calling secureProtocolHeaders() is deprecated.'));
 
         $this->secureProtocolHeaders = $value;
 
@@ -6479,7 +6480,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Configure `app.key` or set `APP_KEY` in your environment instead.')]
     public function securityKey(string $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.securityKey', 'Calling securityKey() is deprecated.');
+        app()->booting(fn () => Deprecator::log('generalConfig.securityKey', 'Calling securityKey() is deprecated.'));
 
         $this->securityKey = $value;
 
@@ -6779,9 +6780,9 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
     public function timezone(?string $value): self
     {
-        Config::set('app.timezone', $value);
+        config()->set('app.timezone', $value);
 
-        Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
+        app()->booting(fn () => Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.'));
 
         $this->timezone = $value;
 
@@ -6872,7 +6873,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
     public function trustedHosts(array $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.trustedHosts', 'Calling secureProtocolHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).');
+        app()->booting(fn () => Deprecator::log('generalConfig.trustedHosts', 'Calling secureProtocolHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).'));
 
         $this->trustedHosts = $value;
 
@@ -7022,7 +7023,7 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
     public function usePathInfo(bool $value = true): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.usePathInfo', 'Calling usePathInfo() is deprecated. This setting no longer has any effect.');
+        app()->booting(fn () => Deprecator::log('generalConfig.usePathInfo', 'Calling usePathInfo() is deprecated. This setting no longer has any effect.'));
 
         $this->usePathInfo = $value;
 
@@ -7047,11 +7048,11 @@ class GeneralConfig extends BaseConfig
     #[\Deprecated(message: 'in 6.0.0. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.')]
     public function useSecureCookies(string|bool $value): self
     {
-        // \app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.');
-
-        $this->useSecureCookies = $value;
+        app()->booting(fn () => Deprecator::log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.'));
 
         config()->set('session.secure', $value === 'auto' ? null : $value);
+
+        $this->useSecureCookies = $value;
 
         return $this;
     }

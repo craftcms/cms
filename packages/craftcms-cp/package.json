@@ -1,0 +1,90 @@
+{
+  "name": "@craftcms/cp",
+  "version": "0.0.0",
+  "description": "CP Components for Craft CMS",
+  "type": "module",
+  "main": "dist/cp.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftcms/npm-packages.git"
+  },
+  "keywords": [
+    "craftcms",
+    "cp",
+    "web-components"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "dev": "vite build -w",
+    "prebuild": "npm run format",
+    "build": "vite build",
+    "postbuild": "npm run build:manifest && npm run test",
+    "format": "npx prettier --write .",
+    "check:format": "prettier --check .",
+    "check:exports": "attw --pack .",
+    "check:types": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "style": "./dist/cp.css",
+      "import": "./dist/cp.js",
+      "require": "./dist/cp.cjs"
+    },
+    "./cp.css": "./dist/cp.css",
+    "./utilities/*": "./dist/utilities/*",
+    "./components/*": "./dist/components/*",
+    "./custom-elements.json": "./dist/custom-elements.json"
+  },
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/craftcms/npm-packages/issues"
+  },
+  "homepage": "https://github.com/craftcms/npm-packages#readme",
+  "peerDependencies": {
+    "lit": "3.x"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@awesome.me/webawesome": "^3.0.0-beta.4",
+    "@chromatic-com/storybook": "^4.0.1",
+    "@custom-elements-manifest/analyzer": "^0.10.10",
+    "@lion/ui": "^0.14.2",
+    "@shoelace-style/shoelace": "^2.20.1",
+    "@storybook/addon-a11y": "^9.1.5",
+    "@storybook/addon-docs": "^9.1.5",
+    "@storybook/addon-themes": "^9.1.5",
+    "@storybook/addon-vitest": "^9.1.5",
+    "@storybook/web-components-vite": "^9.1.5",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/jquery": "^3.5.32",
+    "@types/node": "^24.0.10",
+    "@vitest/browser": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@wc-toolkit/storybook-helpers": "^9.0.1",
+    "globby": "^14.1.0",
+    "happy-dom": "^18.0.1",
+    "playwright": "^1.53.2",
+    "plop": "^4.0.1",
+    "rimraf": "^6.0.1",
+    "storybook": "^9.1.5",
+    "typescript": "^5.8.3",
+    "unplugin-dts": "^1.0.0-beta.0",
+    "vite": "^7.1.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@github/relative-time-element": "^4.5.0",
+    "axios": "^1.12.2"
+  },
+  "customElements": "dist/custom-elements.json"
+}

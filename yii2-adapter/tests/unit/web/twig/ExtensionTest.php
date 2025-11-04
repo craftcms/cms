@@ -1091,7 +1091,7 @@ class ExtensionTest extends TestCase
     public function test_collect_function(string $expectedClass, array $items): void
     {
         $this->testRenderResult(
-            Collection::class,
+            $expectedClass,
             '{{ className(collect(items)) }}',
             ['items' => $items],
         );
@@ -1099,13 +1099,13 @@ class ExtensionTest extends TestCase
 
     public static function collectFunctionDataProvider(): array
     {
-        $users = User::find()->all();
+        $entry = new Entry();
 
         return [
             [Collection::class, []],
             [Collection::class, ['foo']],
-            [Collection::class, array_merge($users, ['foo'])],
-            [ElementCollection::class, $users],
+            [Collection::class, [$entry, 'foo']],
+            [ElementCollection::class, [$entry]],
         ];
     }
 
