@@ -136,7 +136,7 @@ function normalizeParseTagInfo(array $info): array
     return [
         $info['type'],
         $info['attributes'],
-        array_map('normalizeParseTagInfo', $info['children']),
+        array_map(normalizeParseTagInfo(...), $info['children']),
     ];
 }
 

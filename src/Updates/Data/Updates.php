@@ -36,7 +36,7 @@ final readonly class Updates
     {
         return new self(
             cms: Update::fromArray($data['cms'] ?? []),
-            plugins: array_map(fn (array $data) => Update::fromArray($data), $data['plugins'] ?? []),
+            plugins: array_map(Update::fromArray(...), $data['plugins'] ?? []),
         );
     }
 }
