@@ -8,20 +8,21 @@ use craft\db\Table as LegacyTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
-final class DropTagsTableCommand extends Command
+final class DropTagsSupportCommand extends Command
 {
     use CraftCommand;
     use ConfirmableTrait;
 
-    protected $signature = 'craft:drop-tags-table
+    protected $signature = 'craft:drop-tags-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
     ';
 
-    protected $description = 'Drops the database table for storing tags';
+    protected $description = 'Drops support for tags';
 
     public function handle(Migrator $migrator): void
     {
@@ -51,6 +52,8 @@ final class DropTagsTableCommand extends Command
                 Schema::dropIfExists($tagGroupsTable);
             },
         );
+
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

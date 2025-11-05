@@ -10,21 +10,22 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class CreateCategoriesTableCommand extends Command
+final class AddCategoriesSupportCommand extends Command
 {
     use CraftCommand;
     use ConfirmableTrait;
 
-    protected $signature = 'craft:create-categories-table
+    protected $signature = 'craft:add-categories-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
     ';
 
-    protected $description = 'Creates the database table for storing categories';
+    protected $description = 'Adds support for categories';
 
     public function handle(Migrator $migrator): void
     {
@@ -117,6 +118,8 @@ final class CreateCategoriesTableCommand extends Command
                 });
             },
         );
+
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

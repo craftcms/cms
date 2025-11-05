@@ -9,21 +9,22 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class CreateGlobalsetsTableCommand extends Command
+final class AddGlobalSetsSupportCommand extends Command
 {
     use CraftCommand;
     use ConfirmableTrait;
 
-    protected $signature = 'craft:create-globalsets-table
+    protected $signature = 'craft:add-global-sets-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
     ';
 
-    protected $description = 'Creates the database table for storing global sets';
+    protected $description = 'Adds support for global sets';
 
     public function handle(Migrator $migrator): void
     {
@@ -68,6 +69,8 @@ final class CreateGlobalsetsTableCommand extends Command
                 });
             },
         );
+
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

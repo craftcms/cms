@@ -8,20 +8,21 @@ use craft\db\Table as LegacyTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
-final class DropGlobalsetsTableCommand extends Command
+final class DropGlobalSetsSupportCommand extends Command
 {
     use CraftCommand;
     use ConfirmableTrait;
 
-    protected $signature = 'craft:drop-globalsets-table
+    protected $signature = 'craft:drop-global-sets-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
     ';
 
-    protected $description = 'Drops the database table for storing global sets';
+    protected $description = 'Drops support for global sets';
 
     public function handle(Migrator $migrator): void
     {
@@ -43,6 +44,8 @@ final class DropGlobalsetsTableCommand extends Command
                 Schema::dropIfExists($globalSetsTable);
             },
         );
+
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

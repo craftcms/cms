@@ -422,13 +422,13 @@ class TestSetup
         $site = new Site(...$siteConfig);
 
         LaravelEvent::listen(PostCreateTables::class, function() {
-            Artisan::call('craft:create-categories-table', [
+            Artisan::call('craft:add-categories-support', [
                 '--force' => true,
             ]);
-            Artisan::call('craft:create-globalsets-table', [
+            Artisan::call('craft:add-global-sets-support', [
                 '--force' => true,
             ]);
-            Artisan::call('craft:create-tags-table', [
+            Artisan::call('craft:add-tags-support', [
                 '--force' => true,
             ]);
         });

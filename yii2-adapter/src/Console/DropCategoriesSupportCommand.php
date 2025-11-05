@@ -8,20 +8,21 @@ use craft\db\Table as LegacyTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
-final class DropCategoriesTableCommand extends Command
+final class DropCategoriesSupportCommand extends Command
 {
     use CraftCommand;
     use ConfirmableTrait;
 
-    protected $signature = 'craft:drop-categories-table
+    protected $signature = 'craft:drop-categories-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
     ';
 
-    protected $description = 'Drops the database table for storing categories';
+    protected $description = 'Drops support for categories';
 
     public function handle(Migrator $migrator): void
     {
@@ -59,6 +60,8 @@ final class DropCategoriesTableCommand extends Command
                 Schema::dropIfExists($categoriesTable);
             },
         );
+
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

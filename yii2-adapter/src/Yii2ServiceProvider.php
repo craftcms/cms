@@ -72,12 +72,12 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Yii2Adapter\Console\CreateCategoriesTableCommand;
-use CraftCms\Yii2Adapter\Console\CreateGlobalsetsTableCommand;
-use CraftCms\Yii2Adapter\Console\CreateTagsTableCommand;
-use CraftCms\Yii2Adapter\Console\DropCategoriesTableCommand;
-use CraftCms\Yii2Adapter\Console\DropGlobalsetsTableCommand;
-use CraftCms\Yii2Adapter\Console\DropTagsTableCommand;
+use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
+use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
+use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropCategoriesSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
@@ -260,12 +260,12 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->commands([
-            CreateCategoriesTableCommand::class,
-            CreateGlobalsetsTableCommand::class,
-            CreateTagsTableCommand::class,
-            DropCategoriesTableCommand::class,
-            DropGlobalsetsTableCommand::class,
-            DropTagsTableCommand::class,
+            AddCategoriesSupportCommand::class,
+            AddGlobalSetsSupportCommand::class,
+            AddTagsSupportCommand::class,
+            DropCategoriesSupportCommand::class,
+            DropGlobalSetsSupportCommand::class,
+            DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
         ]);
 
@@ -461,13 +461,18 @@ class Yii2ServiceProvider extends ServiceProvider
          */
 
         Event::listen(\CraftCms\Cms\Field\Fields::class, function(RegisterFieldTypes $event) {
-            $event->types
-                ->add(CategoriesField::class)
-                ->add(TagsField::class);
+            if (self::supportsCategories()) {
+                $event->types->add(CategoriesField::class);
+            }
+            if (self::supportsTags()) {
+                $event->types->add(TagsField::class);
+            }
         });
 
         Event::listen(Link::class, function(RegisterLinkTypes $event) {
-            $event->types[] = CategoryLinkType::class;
+            if (self::supportsCategories()) {
+                $event->types[] = CategoryLinkType::class;
+            }
         });
     }
 
@@ -477,9 +482,15 @@ class Yii2ServiceProvider extends ServiceProvider
             Elements::class,
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             function(RegisterComponentTypesEvent $event) {
-                $event->types[] = Category::class;
-                $event->types[] = GlobalSet::class;
-                $event->types[] = Tag::class;
+                if (self::supportsCategories()) {
+                    $event->types[] = Category::class;
+                }
+                if (self::supportsGlobalSets()) {
+                    $event->types[] = GlobalSet::class;
+                }
+                if (self::supportsTags()) {
+                    $event->types[] = Tag::class;
+                }
             },
         );
 
@@ -487,8 +498,12 @@ class Yii2ServiceProvider extends ServiceProvider
             ArgumentManager::class,
             ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS,
             function(RegisterGqlArgumentHandlersEvent $event) {
-                $event->handlers['relatedToCategories'] = RelatedCategories::class;
-                $event->handlers['relatedToTags'] = RelatedTags::class;
+                if (self::supportsCategories()) {
+                    $event->handlers['relatedToCategories'] = RelatedCategories::class;
+                }
+                if (self::supportsTags()) {
+                    $event->handlers['relatedToTags'] = RelatedTags::class;
+                }
             },
         );
 
@@ -496,18 +511,22 @@ class Yii2ServiceProvider extends ServiceProvider
             ElementArguments::class,
             ElementArguments::EVENT_DEFINE_ARGUMENTS,
             function(DefineGqlArgumentsEvent $event) {
-                $event->arguments['relatedToCategories'] = [
-                    'name' => 'relatedToCategories',
-                    // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                    'type' => Type::listOf(CategoryRelation::getType()),
-                    'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
-                ];
-                $event->arguments['relatedToTags'] = [
-                    'name' => 'relatedToTags',
-                    // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                    'type' => Type::listOf(TagRelation::getType()),
-                    'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
-                ];
+                if (self::supportsCategories()) {
+                    $event->arguments['relatedToCategories'] = [
+                        'name' => 'relatedToCategories',
+                        // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                        'type' => Type::listOf(CategoryRelation::getType()),
+                        'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
+                    ];
+                }
+                if (self::supportsTags()) {
+                    $event->arguments['relatedToTags'] = [
+                        'name' => 'relatedToTags',
+                        // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                        'type' => Type::listOf(TagRelation::getType()),
+                        'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
+                    ];
+                }
             },
         );
 
@@ -515,17 +534,20 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
             function(RegisterGqlSchemaComponentsEvent $event) {
-                // Categories
-                $label = t('Categories');
-                [$event->queries[$label], $event->mutations[$label]] = self::categorySchemaComponents();
+                if (self::supportsCategories()) {
+                    $label = t('Categories');
+                    [$event->queries[$label], $event->mutations[$label]] = self::categorySchemaComponents();
+                }
 
-                // Global Sets
-                $label = t('Global Sets');
-                [$event->queries[$label], $event->mutations[$label]] = self::globalSetSchemaComponents();
+                if (self::supportsGlobalSets()) {
+                    $label = t('Global Sets');
+                    [$event->queries[$label], $event->mutations[$label]] = self::globalSetSchemaComponents();
+                }
 
-                // Tags
-                $label = t('Tags');
-                [$event->queries[$label], $event->mutations[$label]] = self::tagSchemaComponents();
+                if (self::supportsTags()) {
+                    $label = t('Tags');
+                    [$event->queries[$label], $event->mutations[$label]] = self::tagSchemaComponents();
+                }
             },
         );
 
@@ -533,9 +555,15 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
             function(RegisterGqlQueriesEvent $event) {
-                array_push($event->queries, ...CategoryQuery::getQueries());
-                array_push($event->queries, ...GlobalSetQuery::getQueries());
-                array_push($event->queries, ...TagQuery::getQueries());
+                if (self::supportsCategories()) {
+                    array_push($event->queries, ...CategoryQuery::getQueries());
+                }
+                if (self::supportsGlobalSets()) {
+                    array_push($event->queries, ...GlobalSetQuery::getQueries());
+                }
+                if (self::supportsTags()) {
+                    array_push($event->queries, ...TagQuery::getQueries());
+                }
             },
         );
 
@@ -543,9 +571,15 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_MUTATIONS,
             function(RegisterGqlMutationsEvent $event) {
-                array_push($event->mutations, ...CategoryMutation::getMutations());
-                array_push($event->mutations, ...GlobalSetMutation::getMutations());
-                array_push($event->mutations, ...TagMutation::getMutations());
+                if (self::supportsCategories()) {
+                    array_push($event->mutations, ...CategoryMutation::getMutations());
+                }
+                if (self::supportsGlobalSets()) {
+                    array_push($event->mutations, ...GlobalSetMutation::getMutations());
+                }
+                if (self::supportsTags()) {
+                    array_push($event->mutations, ...TagMutation::getMutations());
+                }
             },
         );
 
@@ -553,9 +587,15 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_TYPES,
             function(RegisterGqlTypesEvent $event) {
-                $event->types[] = CategoryInterface::class;
-                $event->types[] = GlobalSetInterface::class;
-                $event->types[] = TagInterface::class;
+                if (self::supportsCategories()) {
+                    $event->types[] = CategoryInterface::class;
+                }
+                if (self::supportsGlobalSets()) {
+                    $event->types[] = GlobalSetInterface::class;
+                }
+                if (self::supportsTags()) {
+                    $event->types[] = TagInterface::class;
+                }
             },
         );
 
@@ -563,7 +603,9 @@ class Yii2ServiceProvider extends ServiceProvider
             ElementQueryConditionBuilder::class,
             ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS,
             function(RegisterGqlEagerLoadableFields $event) {
-                $event->fieldList[ElementQueryConditionBuilder::LOCALIZED_NODENAME][] = CategoriesField::class;
+                if (self::supportsCategories()) {
+                    $event->fieldList[ElementQueryConditionBuilder::LOCALIZED_NODENAME][] = CategoriesField::class;
+                }
             },
         );
 
@@ -571,8 +613,12 @@ class Yii2ServiceProvider extends ServiceProvider
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function(RegisterUserPermissionsEvent $event) {
-                self::globalSetPermissions($event->permissions);
-                self::categoryPermissions($event->permissions);
+                if (self::supportsCategories()) {
+                    self::categoryPermissions($event->permissions);
+                }
+                if (self::supportsGlobalSets()) {
+                    self::globalSetPermissions($event->permissions);
+                }
             },
         );
 
@@ -580,14 +626,20 @@ class Yii2ServiceProvider extends ServiceProvider
             CpVariable::class,
             CpVariable::EVENT_REGISTER_CP_NAV_ITEMS,
             function(RegisterCpNavItemsEvent $event) {
-                if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
+                if (
+                    self::supportsGlobalSets() &&
+                    !empty(Craft::$app->getGlobals()->getEditableSets())
+                ) {
                     $event->navItems[] = [
                         'label' => t('Globals'),
                         'url' => 'globals',
                         'icon' => 'globe',
                     ];
                 }
-                if (Craft::$app->getCategories()->getEditableGroupIds()) {
+                if (
+                    self::supportsCategories() &&
+                    Craft::$app->getCategories()->getEditableGroupIds()
+                ) {
                     $event->navItems[] = [
                         'label' => t('Categories'),
                         'url' => 'categories',
@@ -602,22 +654,56 @@ class Yii2ServiceProvider extends ServiceProvider
             Cms::config()->allowAdminChanges ? CpVariable::EVENT_REGISTER_CP_SETTINGS : CpVariable::EVENT_REGISTER_READ_ONLY_CP_SETTINGS,
             function(RegisterCpSettingsEvent $event) {
                 $label = t('System');
-                $settings[$label]['globals'] = [
-                    'iconMask' => '@craftcms/resources/icons/light/globe.svg',
-                    'label' => t('Globals'),
-                ];
-                $settings[$label]['categories'] = [
-                    'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
-                    'label' => t('Categories'),
-                ];
-                $settings[$label]['tags'] = [
-                    'iconMask' => '@craftcms/resources/icons/light/tags.svg',
-                    'label' => t('Tags'),
-                ];
+                if (self::supportsGlobalSets()) {
+                    $settings[$label]['globals'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/globe.svg',
+                        'label' => t('Globals'),
+                    ];
+                }
+                if (self::supportsCategories()) {
+                    $settings[$label]['categories'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
+                        'label' => t('Categories'),
+                    ];
+                }
+                if (self::supportsTags()) {
+                    $settings[$label]['tags'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/tags.svg',
+                        'label' => t('Tags'),
+                    ];
+                }
             },
         );
 
-        Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+        if (self::supportsGlobalSets()) {
+            Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+        }
+    }
+
+    private static ?bool $supportsCategories = null;
+    private static ?bool $supportsGlobalSets = null;
+    private static ?bool $supportsTags = null;
+
+    private static function supportsCategories(): bool
+    {
+        return self::$supportsCategories ??= Schema::hasTable('categories');
+    }
+
+    private static function supportsGlobalSets(): bool
+    {
+        return self::$supportsGlobalSets ??= Schema::hasTable('globalsets');
+    }
+
+    private static function supportsTags(): bool
+    {
+        return self::$supportsTags ??= Schema::hasTable('tags');
+    }
+
+    public static function resetSupport(): void
+    {
+        self::$supportsCategories = null;
+        self::$supportsGlobalSets = null;
+        self::$supportsTags = null;
     }
 
     /**
