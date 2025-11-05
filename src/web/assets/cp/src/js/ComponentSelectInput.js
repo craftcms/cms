@@ -17,6 +17,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     $components: null,
     $addBtn: null,
     $createBtn: null,
+    $replaceComponent: null,
 
     _initialized: false,
 
@@ -166,6 +167,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
     },
 
+    isAtMinimum: function () {
+      return this.settings.min && this.$components.length <= this.settings.min;
+    },
+
     updateButtons() {
       if (this.canAddMoreComponents()) {
         if (this.$addBtn.length) {
@@ -270,6 +275,12 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         const moveBackwardBtn = disclosureMenu.$container.find(
           '[data-move-backward]'
         )[0];
+        const removeBtn = disclosureMenu.$container.find(
+          '[data-remove-action]'
+        )[0];
+        const replaceBtn = disclosureMenu.$container.find(
+          '[data-replace-action]'
+        )[0];
 
         disclosureMenu.on('show', () => {
           const $li = $component.parent();
@@ -281,6 +292,28 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           }
           if (moveBackwardBtn) {
             disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+          }
+
+          // Get the component select instance to check if we're at minimum
+          const componentSelect = $component
+            .closest('.componentselect')
+            .data('componentSelect');
+          const isAtMin = componentSelect.isAtMinimum();
+
+          // Count available options (excluding the current component's option)
+          const currentId = $component.data('id');
+          const otherOptionsCount = componentSelect
+            .getOptions()
+            .filter((index, btn) => $(btn).data('id') !== currentId).length;
+
+          // Only show replace if at minimum AND there are other options available
+          const canReplace = isAtMin && otherOptionsCount > 0;
+
+          if (removeBtn) {
+            disclosureMenu.toggleItem(removeBtn, !isAtMin);
+          }
+          if (replaceBtn) {
+            disclosureMenu.toggleItem(replaceBtn, canReplace);
           }
         });
 
@@ -381,6 +414,26 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
             .removeComponent($component);
         },
         destructive: true,
+        attributes: {
+          'data-remove-action': true,
+        },
+      });
+
+      actions.push({
+        icon: async () => await Craft.ui.icon('refresh'),
+        label: Craft.t('app', 'Replace'),
+        onActivate: (el) => {
+          // don't use `this` in case the chip ends up getting assigned to a different component select
+          $(el)
+            .closest('.menu')
+            .data('disclosureMenu')
+            .$trigger.closest('.componentselect')
+            .data('componentSelect')
+            .replaceComponent($component);
+        },
+        attributes: {
+          'data-replace-action': true,
+        },
       });
 
       return actions;
@@ -459,6 +512,41 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       });
     },
 
+    replaceComponent: function ($component) {
+      // Store the component to be replaced
+      this.$replaceComponent = $component;
+      const id = $component.data('id');
+
+      // Show the option being replaced so it appears in the menu
+      this.showOption(id);
+
+      // Open the add button's disclosure menu
+      if (this.$addBtn.length) {
+        const disclosureMenu = this.$addBtn
+          .disclosureMenu()
+          .data('disclosureMenu');
+
+        if (disclosureMenu) {
+          // Store original hide handler to clean up
+          const originalHideHandler = () => {
+            // Reset replace state if menu is closed without selection
+            setTimeout(() => {
+              if (this.$replaceComponent !== null) {
+                this.hideOption(id);
+                this.$replaceComponent = null;
+              }
+            }, 10);
+            disclosureMenu.off('hide', originalHideHandler);
+          };
+
+          disclosureMenu.on('hide', originalHideHandler);
+
+          // Trigger the button click to open menu
+          this.$addBtn.trigger('click');
+        }
+      }
+    },
+
     animateComponentAway: function ($component, callback) {
       $component.css('z-index', 0);
 
@@ -498,6 +586,15 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         ? this.$addBtn.disclosureMenu().data('disclosureMenu')
         : null;
 
+      // Capture replace state before async operation
+      const $componentToReplace = this.$replaceComponent;
+      const isReplacing = $componentToReplace !== null;
+
+      // Clear replace state immediately to prevent cleanup handler from interfering
+      if (isReplacing) {
+        this.$replaceComponent = null;
+      }
+
       const {data} = await Craft.sendActionRequest(
         'POST',
         'app/render-components',
@@ -516,13 +613,32 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      const canAdd = this.canAddMoreComponents();
+      const canAdd = this.canAddMoreComponents() || isReplacing;
       let $item = false;
 
       if (canAdd) {
         const $component = $(data.components[type][id][0]);
-        this.insertComponent($component);
-        this.addComponents($component);
+
+        if (isReplacing) {
+          // Replace mode: insert new component at the position of the old one
+          const $li = $componentToReplace.parent('li');
+          $li.before($('<li/>').append($component));
+
+          // Remove the old component
+          $('[name]', $componentToReplace).removeAttr('name');
+          this.removeComponents($componentToReplace);
+          this.animateComponentAway($componentToReplace, () => {
+            $componentToReplace.parent('li').remove();
+          });
+
+          // Add the new component
+          this.addComponents($component);
+        } else {
+          // Normal add mode
+          this.insertComponent($component);
+          this.addComponents($component);
+        }
+
         $item = $component;
       }
 
@@ -576,6 +692,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       id: null,
       name: null,
       limit: null,
+      min: null,
       showHandles: false,
       showDescription: false,
       sortable: true,
