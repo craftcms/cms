@@ -81,6 +81,7 @@ use CraftCms\Yii2Adapter\Console\DropTagsTableCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -548,9 +549,9 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_TYPES,
             function(RegisterGqlTypesEvent $event) {
-                array_push($event->types, ...CategoryInterface::class);
-                array_push($event->types, ...GlobalSetInterface::class);
-                array_push($event->types, ...TagInterface::class);
+                $event->types[] = CategoryInterface::class;
+                $event->types[] = GlobalSetInterface::class;
+                $event->types[] = TagInterface::class;
             },
         );
 
