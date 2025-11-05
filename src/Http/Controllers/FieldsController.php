@@ -26,6 +26,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -70,7 +71,7 @@ final class FieldsController
         return $this->cpScreenResponse($field);
     }
 
-    public function edit(Request $request, \CraftCms\Cms\Field\Models\Field $field): CpScreenResponse
+    public function edit(Request $request, FieldModel $field): CpScreenResponse
     {
         // swap model for FieldInterface
         $field = $this->fieldsService->getFieldById($field->id);
