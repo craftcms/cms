@@ -69,6 +69,10 @@ use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
+use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
+use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
+use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -485,6 +489,24 @@ class Yii2ServiceProvider extends ServiceProvider
             if (self::supportsCategories()) {
                 $event->types[] = CategoryLinkType::class;
             }
+        });
+
+        Event::listen(RunningGarbageCollection::class, function(RunningGarbageCollection $event) {
+            $gc = app(GarbageCollection::class);
+            $gc->runActions([
+                [HardDelete::class, [
+                    'tables' => [
+                        'categorygroups',
+                        'taggroups',
+                    ],
+                ]],
+                [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']],
+                [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
+                [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']],
+            ]);
         });
     }
 
