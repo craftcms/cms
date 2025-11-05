@@ -459,16 +459,6 @@ class Yii2ServiceProvider extends ServiceProvider
          * Deprecated concepts
          */
 
-        YiiEvent::on(
-            Elements::class,
-            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function(RegisterComponentTypesEvent $event) {
-                $event->types[] = Category::class;
-                $event->types[] = GlobalSet::class;
-                $event->types[] = Tag::class;
-            },
-        );
-
         Event::listen(\CraftCms\Cms\Field\Fields::class, function(RegisterFieldTypes $event) {
             $event->types
                 ->add(CategoriesField::class)
@@ -478,6 +468,23 @@ class Yii2ServiceProvider extends ServiceProvider
         Event::listen(Link::class, function(RegisterLinkTypes $event) {
             $event->types[] = CategoryLinkType::class;
         });
+
+        self::bootYiiEvents();
+
+        Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+    }
+
+    public static function bootYiiEvents(): void
+    {
+        YiiEvent::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = Category::class;
+                $event->types[] = GlobalSet::class;
+                $event->types[] = Tag::class;
+            },
+        );
 
         YiiEvent::on(
             ArgumentManager::class,
@@ -513,15 +520,15 @@ class Yii2ServiceProvider extends ServiceProvider
             function(RegisterGqlSchemaComponentsEvent $event) {
                 // Categories
                 $label = t('Categories');
-                [$event->queries[$label], $event->mutations[$label]] = $this->categorySchemaComponents();
+                [$event->queries[$label], $event->mutations[$label]] = self::categorySchemaComponents();
 
                 // Global Sets
                 $label = t('Global Sets');
-                [$event->queries[$label], $event->mutations[$label]] = $this->globalSetSchemaComponents();
+                [$event->queries[$label], $event->mutations[$label]] = self::globalSetSchemaComponents();
 
                 // Tags
                 $label = t('Tags');
-                [$event->queries[$label], $event->mutations[$label]] = $this->tagSchemaComponents();
+                [$event->queries[$label], $event->mutations[$label]] = self::tagSchemaComponents();
             },
         );
 
@@ -567,8 +574,8 @@ class Yii2ServiceProvider extends ServiceProvider
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function(RegisterUserPermissionsEvent $event) {
-                $this->globalSetPermissions($event->permissions);
-                $this->categoryPermissions($event->permissions);
+                self::globalSetPermissions($event->permissions);
+                self::categoryPermissions($event->permissions);
             },
         );
 
@@ -612,8 +619,6 @@ class Yii2ServiceProvider extends ServiceProvider
                 ];
             },
         );
-
-        Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
     }
 
     /**
@@ -621,7 +626,7 @@ class Yii2ServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    private function categorySchemaComponents(): array
+    private static function categorySchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -661,7 +666,7 @@ class Yii2ServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    private function globalSetSchemaComponents(): array
+    private static function globalSetSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -689,7 +694,7 @@ class Yii2ServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    private function tagSchemaComponents(): array
+    private static function tagSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -722,7 +727,7 @@ class Yii2ServiceProvider extends ServiceProvider
         return [$queryComponents, $mutationComponents];
     }
 
-    private function categoryPermissions(array &$permissions): void
+    private static function categoryPermissions(array &$permissions): void
     {
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
@@ -771,7 +776,7 @@ class Yii2ServiceProvider extends ServiceProvider
         }
     }
 
-    private function globalSetPermissions(array &$permissions): void
+    private static function globalSetPermissions(array &$permissions): void
     {
         $globalSets = Craft::$app->getGlobals()->getAllSets();
 

@@ -21,6 +21,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -134,6 +135,10 @@ class CraftConnector extends Yii2
         Session::reset();
         unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+
+        // parent::resetApplication() calls Event::offAll(),
+        // so we need to re-register the service provider events
+        Yii2ServiceProvider::bootYiiEvents();
     }
 
     /**
