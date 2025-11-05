@@ -8,6 +8,7 @@
 namespace crafttests\fixtures;
 
 use craft\test\fixtures\FieldLayoutFixture as BaseFieldLayoutFixture;
+use CraftCms\Cms\Support\Facades\Fields;
 
 /**
  * Class FieldLayoutFixture
@@ -27,4 +28,14 @@ class FieldLayoutFixture extends BaseFieldLayoutFixture
      * @inheritdoc
      */
     public $depends = [EntryTypeFixture::class];
+
+    public function afterLoad(): void
+    {
+        Fields::refreshFields();
+    }
+
+    public function afterUnload(): void
+    {
+        Fields::refreshFields();
+    }
 }
