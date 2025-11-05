@@ -130,4 +130,11 @@ test.describe('Sorting', () => {
       await page.reload();
     }
   });
+
+  test('Focus is managed when sorting from column header buttons', async ({page, baseURL}) => {
+    const postDateButton = page.getByRole('button', {name: 'Post Date'});
+    await postDateButton.click();
+    await expect(postDateButton).toBeFocused();
+    await page.reload();
+  });
 });
