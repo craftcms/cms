@@ -30,6 +30,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -144,11 +145,6 @@ class Craft extends Yii2
     {
         parent::_beforeSuite($settings);
 
-        /**
-         * Initialize the Laravel Craft Application
-         */
-        new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
-
         $generalConfig = Cms::config();
         foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
             $generalConfig->$key = $value;
@@ -169,6 +165,7 @@ class Craft extends Yii2
         }
 
         TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
+        TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
     }
 
     /**
@@ -179,6 +176,12 @@ class Craft extends Yii2
         parent::_afterSuite();
 
         TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
+        TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
+
+        app()->forgetInstance(Sites::class);
+        app()->forgetInstance(EntryTypes::class);
+        app()->forgetInstance(Fields::class);
+        app()->forgetInstance(ProjectConfig::class);
     }
 
     /**

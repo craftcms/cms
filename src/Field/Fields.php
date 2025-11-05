@@ -692,6 +692,7 @@ final class Fields
     public function refreshFields(): void
     {
         $this->_fields = null;
+        $this->_layouts = null;
 
         $this->updateFieldVersion();
     }
