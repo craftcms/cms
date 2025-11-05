@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Route;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;

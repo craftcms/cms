@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Request;
 
 it('throws if no token is found', function () {
     $this->expectExceptionMessage('Valid token required');
