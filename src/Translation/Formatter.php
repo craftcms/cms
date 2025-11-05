@@ -391,7 +391,7 @@ final class Formatter
 
         $index = floor(log($bytes, $this->sizeFormatBase));
         $value = $bytes / ($this->sizeFormatBase ** $index);
-        $unit = $units[$index];
+        $unit = $units[(int) $index];
 
         return t("{nFormatted} {n, plural, =1{{$unit[0]}} other{{$unit[1]}}}", [
             'n' => abs($value),
@@ -420,7 +420,7 @@ final class Formatter
         $index = floor(log($bytes, $this->sizeFormatBase));
         $value = $bytes / ($this->sizeFormatBase ** $index);
 
-        return t("{nFormatted} {$units[$index]}", [
+        return t("{nFormatted} {$units[(int) $index]}", [
             'nFormatted' => $this->asDecimal($value, $decimals),
         ], locale: $this->locale);
     }

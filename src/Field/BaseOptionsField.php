@@ -763,7 +763,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             /** @var OptionData[] $options */
             $options = (array) $value;
 
-            return array_map(fn (OptionData $value) => $this->encodeValue($value), $options);
+            return array_map($this->encodeValue(...), $options);
         }
 
         if ($value instanceof OptionData) {

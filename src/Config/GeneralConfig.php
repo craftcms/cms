@@ -3644,7 +3644,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowedFileExtensions(array $value): self
     {
-        $this->allowedFileExtensions = array_map('strtolower', $value);
+        $this->allowedFileExtensions = array_map(strtolower(...), $value);
 
         return $this;
     }
@@ -4740,7 +4740,7 @@ class GeneralConfig extends BaseConfig
     public function extraAllowedFileExtensions(?array $value): self
     {
         if (is_array($value)) {
-            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, array_map('strtolower', $value));
+            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, array_map(strtolower(...), $value));
         }
 
         $this->extraAllowedFileExtensions = null;

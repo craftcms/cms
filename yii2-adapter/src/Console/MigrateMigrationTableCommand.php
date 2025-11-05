@@ -4,7 +4,6 @@ namespace CraftCms\Yii2Adapter\Console;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -32,7 +31,9 @@ final class MigrateMigrationTableCommand extends Command
             return;
         }
 
-        $this->confirmToProceed('Application In Production or allowAdminChanges is disabled.');
+        if (!$this->confirmToProceed('Application In Production or allowAdminChanges is disabled.')) {
+            return;
+        }
 
         $history = DB::table(Table::MIGRATIONS)->get();
 
