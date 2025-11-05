@@ -356,8 +356,8 @@ Moved the following controllers:
 
 ## Tokens
 
-- Deprecated `craft\services\Tokens`. `CraftCms\Cms\Token\Tokens` should be used instead.
-- Deprecated `craft\records\Token`. `CraftCms\Cms\Token\Models\Token` should be used instead.
+- Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.
+- Deprecated `craft\records\Token`. `CraftCms\Cms\RouteToken\Models\RouteToken` should be used instead.
 
 ## Translations
 

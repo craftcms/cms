@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use function Pest\Laravel\artisan;
 
 it('runs migrations', function () {
+    DB::table(Table::MIGRATIONS)->delete();
+
     expect(DB::table(Table::MIGRATIONS)->count())->toBe(0);
 
     artisan('craft:migrate:all')

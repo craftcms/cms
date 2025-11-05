@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Token\Tokens;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -21,7 +21,7 @@ final readonly class HandleTokenRequest
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private Tokens $tokens,
+        private RouteTokens $tokens,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed

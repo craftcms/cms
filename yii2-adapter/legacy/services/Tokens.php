@@ -17,7 +17,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Token\Tokens} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\RouteToken\RouteTokens} instead.
  */
 class Tokens extends Component
 {
@@ -52,7 +52,7 @@ class Tokens extends Component
      */
     public function createToken(array|string $route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null): string|false
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->createToken($route, $usageLimit, $expiryDate, $token);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createToken($route, $usageLimit, $expiryDate, $token);
     }
 
     /**
@@ -67,7 +67,7 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->createPreviewToken($route, $usageLimit, $token);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createPreviewToken($route, $usageLimit, $token);
     }
 
     /**
@@ -78,7 +78,7 @@ class Tokens extends Component
      */
     public function getTokenRoute(string $token): array|false
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->getTokenRoute($token);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->getTokenRoute($token);
     }
 
     /**
@@ -89,7 +89,7 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->incrementTokenUsageCountById($tokenId);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->incrementTokenUsageCountById($tokenId);
     }
 
     /**
@@ -100,7 +100,7 @@ class Tokens extends Component
      */
     public function deleteTokenById(int $tokenId): bool
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->deleteTokenById($tokenId);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteTokenById($tokenId);
     }
 
     /**
@@ -110,6 +110,6 @@ class Tokens extends Component
      */
     public function deleteExpiredTokens(): bool
     {
-        return app(\CraftCms\Cms\Token\Tokens::class)->deleteExpiredTokens();
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteExpiredTokens();
     }
 }

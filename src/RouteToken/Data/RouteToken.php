@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Token\Data;
+namespace CraftCms\Cms\RouteToken\Data;
 
 use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 use Spatie\LaravelData\Dto;
 
-final class Token extends Dto
+final class RouteToken extends Dto
 {
     public function __construct(
         /** @var class-string<\craft\base\ElementInterface> */

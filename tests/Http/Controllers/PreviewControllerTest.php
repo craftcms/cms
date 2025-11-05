@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
-use CraftCms\Cms\Token\Model\Token;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -19,8 +19,7 @@ beforeEach(function () {
 });
 
 it('can create a token', function () {
-
-    expect(Token::count())->toBe(0);
+    expect(RouteToken::count())->toBe(0);
 
     postJson(action([PreviewController::class, 'createToken']), [
         'elementType' => \craft\elements\Entry::class,
@@ -28,7 +27,7 @@ it('can create a token', function () {
         'canonicalId' => $this->entry->id,
     ])->assertOk();
 
-    expect(Token::count())->toBe(1);
+    expect(RouteToken::count())->toBe(1);
 });
 
 test('elementType is required', function () {

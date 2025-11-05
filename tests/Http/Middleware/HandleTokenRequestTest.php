@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Token\Tokens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
@@ -44,7 +44,7 @@ it('does nothing more when the token does not return a route', function () {
 });
 
 it('returns the response of the token route', function () {
-    $token = app(Tokens::class)->createToken('token/route');
+    $token = app(RouteTokens::class)->createToken('token/route');
 
     $result = $this->middleware->handle(Request::create('foo', parameters: [
         Cms::config()->tokenParam => $token,

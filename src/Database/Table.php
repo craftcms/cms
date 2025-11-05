@@ -93,6 +93,8 @@ final readonly class Table
 
     public const string REVISIONS = 'revisions';
 
+    public const string ROUTETOKENS = 'routetokens';
+
     public const string SEARCHINDEX = 'searchindex';
 
     public const string SEARCHINDEXQUEUE = 'searchindexqueue';
@@ -126,8 +128,6 @@ final readonly class Table
     public const string TAGGROUPS = 'taggroups';
 
     public const string TAGS = 'tags';
-
-    public const string TOKENS = 'tokens';
 
     public const string USERGROUPS = 'usergroups';
 

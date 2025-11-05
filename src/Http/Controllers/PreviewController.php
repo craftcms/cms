@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Http\Controllers;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
-use CraftCms\Cms\Token\Data\Token;
-use CraftCms\Cms\Token\Tokens;
+use CraftCms\Cms\RouteToken\Data\RouteToken;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +22,7 @@ final readonly class PreviewController
 {
     use EnforcesPermissions;
 
-    public function createToken(Request $request, Tokens $tokens, Token $tokenData): JsonResponse|RedirectResponse
+    public function createToken(Request $request, RouteTokens $tokens, RouteToken $tokenData): JsonResponse|RedirectResponse
     {
         match (true) {
             isset($tokenData->draftId) => $this->requirePermission("previewDraft:{$tokenData->draftId}"),
@@ -50,7 +50,7 @@ final readonly class PreviewController
         return new JsonResponse(compact('token'));
     }
 
-    public function preview(Request $request, Kernel $kernel, Token $tokenData): mixed
+    public function preview(Request $request, Kernel $kernel, RouteToken $tokenData): mixed
     {
         $query = $tokenData->elementType::find()
             ->siteId($tokenData->siteId)

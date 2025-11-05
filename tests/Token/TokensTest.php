@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\RouteToken\Model\RouteToken;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Token\Model\Token;
-use CraftCms\Cms\Token\Tokens;
 
 beforeEach(function () {
-    $this->tokens = app(Tokens::class);
+    $this->tokens = app(RouteTokens::class);
 });
 
 it('can create tokens', function () {
     $token = $this->tokens->createToken('do/stuff', 1, $expiryDate = now()->addDay());
 
-    $tokenModel = Token::where('token', $token)->firstOrFail();
+    $tokenModel = RouteToken::where('token', $token)->firstOrFail();
 
     expect($tokenModel->route)->toBe('do/stuff');
     expect($tokenModel->usageLimit)->toBe(1);
@@ -26,7 +26,7 @@ it('can create tokens', function () {
 it('can create a preview token', function () {
     $token = $this->tokens->createPreviewToken('do/stuff');
 
-    $tokenModel = Token::where('token', $token)->firstOrFail();
+    $tokenModel = RouteToken::where('token', $token)->firstOrFail();
 
     expect($tokenModel->route)->toBe('do/stuff');
     expect(strlen((string) $token))->toBe(32);
@@ -41,7 +41,7 @@ it('creates tokens with config defaults', function () {
 
     expect(strlen((string) $token))->toBe(32);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     expect($model->usageLimit)->toBeNull();
     expect($model->usageCount)->toBeNull();
@@ -60,7 +60,7 @@ it('can get a token route', function () {
 it('increments usage count when there is a usage limit', function () {
     $token = $this->tokens->createToken('do/stuff', 10);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     expect($model->usageLimit)->toBe(10);
     expect($model->usageCount)->toBe(0);
@@ -73,7 +73,7 @@ it('increments usage count when there is a usage limit', function () {
 it('deletes the token when the usage limit is reached', function () {
     $token = $this->tokens->createToken('do/stuff', 1);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     $this->tokens->getTokenRoute($token);
 
@@ -93,7 +93,7 @@ it('decodes if the route is json', function () {
 it('can increment usage count for a token', function () {
     $token = $this->tokens->createToken('do/stuff', 10);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     expect($model->usageCount)->toBe(0);
 
@@ -105,7 +105,7 @@ it('can increment usage count for a token', function () {
 it('can delete tokens by id', function () {
     $token = $this->tokens->createToken('do/stuff', 10);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     $this->tokens->deleteTokenById($model->id);
 
@@ -115,7 +115,7 @@ it('can delete tokens by id', function () {
 it('can delete expired tokens', function () {
     $token = $this->tokens->createToken('do/stuff', 10);
 
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
 
     $model->update(['expiryDate' => now()->subSecond()]);
 
@@ -126,7 +126,7 @@ it('can delete expired tokens', function () {
 
 it('deletes expired tokens when getting token routes', function () {
     $token = $this->tokens->createToken('do/stuff', 10);
-    $model = Token::where('token', $token)->firstOrFail();
+    $model = RouteToken::where('token', $token)->firstOrFail();
     $model->update(['expiryDate' => now()->subSecond()]);
 
     expect($this->tokens->getTokenRoute($token))->toBeFalse();

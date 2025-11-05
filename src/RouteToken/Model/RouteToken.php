@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Token\Model;
+namespace CraftCms\Cms\RouteToken\Model;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
-final class Token extends BaseModel
+final class RouteToken extends BaseModel
 {
     use HasUid;
 
-    protected $table = Table::TOKENS;
+    protected $table = Table::ROUTETOKENS;
 
     protected $casts = [
         'usageLimit' => 'int',

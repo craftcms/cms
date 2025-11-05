@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Token;
+namespace CraftCms\Cms\RouteToken;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Token\Model\Token;
 use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Context;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use yii\base\InvalidArgumentException;
 
 #[Singleton]
-final class Tokens
+final class RouteTokens
 {
     private bool $deletedExpiredTokens = false;
 
@@ -56,7 +56,7 @@ final class Tokens
             throw new InvalidArgumentException("Invalid token: $token");
         }
 
-        $tokenModel = new Token;
+        $tokenModel = new RouteToken;
         $tokenModel->token = $token ?? \Craft::$app->getSecurity()->generateRandomString();
         $tokenModel->route = $route;
         $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
@@ -95,7 +95,7 @@ final class Tokens
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
 
-        $result = Token::where('token', $token)->first();
+        $result = RouteToken::where('token', $token)->first();
 
         if (! $result) {
             // Remove it from the request  so it doesn’t get added to generated URLs
@@ -123,14 +123,14 @@ final class Tokens
 
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        return (bool) DB::table(Table::TOKENS)
+        return (bool) DB::table(Table::ROUTETOKENS)
             ->where('id', $tokenId)
             ->increment('usageCount');
     }
 
     public function deleteTokenById(int $tokenId): bool
     {
-        DB::table(Table::TOKENS)->delete($tokenId);
+        DB::table(Table::ROUTETOKENS)->delete($tokenId);
 
         return true;
     }
@@ -142,7 +142,7 @@ final class Tokens
             return false;
         }
 
-        $affectedRows = DB::table(Table::TOKENS)
+        $affectedRows = DB::table(Table::ROUTETOKENS)
             ->where('expiryDate', '<=', now())
             ->delete();
 

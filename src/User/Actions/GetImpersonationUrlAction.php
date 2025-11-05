@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Actions;
 
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Token\Tokens;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +14,7 @@ use function CraftCms\Cms\action_url;
 final readonly class GetImpersonationUrlAction
 {
     public function __construct(
-        private Tokens $tokens,
+        private RouteTokens $tokens,
     ) {}
 
     public function __invoke(User $user): string|false
