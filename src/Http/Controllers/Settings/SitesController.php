@@ -148,7 +148,14 @@ final readonly class SitesController
             'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
         ]);
 
-        $siteData->id = $request->input('siteId');
+        $siteId = $request->input('siteId');
+        if ($siteId) {
+            $siteId = (int) $siteId;
+            abort_if(is_null($site = $this->sites->getSiteById($siteId)), 404, "Invalid section ID: $siteId");
+
+            $siteData->id = $site->id;
+            $siteData->uid = $site->uid;
+        }
 
         if (! $this->sites->saveSite($siteData)) {
             return $this->asModelFailure($siteData, t('Couldn’t save the site.'));
@@ -178,7 +185,7 @@ final readonly class SitesController
         ]);
 
         $this->sites->deleteSiteById(
-            siteId: $data['id'],
+            siteId: (int) $data['id'],
             transferContentTo: $data['transferContentTo'] ?? null,
         );
 
