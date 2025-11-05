@@ -63,8 +63,8 @@ Route::middleware('auth')->group(function () {
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
-        Route::get('settings/fields/new', [FieldsController::class, 'edit']);
-        Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
+        Route::get('settings/fields/edit/{field}', [FieldsController::class, 'edit']);
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index']);
