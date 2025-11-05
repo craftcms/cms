@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\test\TestSetup;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
@@ -96,6 +97,12 @@ class TestCase extends Orchestra
         );
 
         $migration->up();
+
+        // Mark all existing migrations as applied
+        $migrator = app(Migrator::class)->track('craft');
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+        }
     }
 
     #[\Override]

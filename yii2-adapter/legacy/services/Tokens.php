@@ -7,17 +7,8 @@
 
 namespace craft\services;
 
-use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db as DbHelper;
-use craft\records\Token as TokenRecord;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Json;
 use DateTime;
-use Illuminate\Support\Facades\DB;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 
 /**
  * The Tokens service.
@@ -26,28 +17,24 @@ use yii\base\InvalidArgumentException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\RouteToken\RouteTokens} instead.
  */
 class Tokens extends Component
 {
-    /**
-     * @var bool
-     */
-    private bool $_deletedExpiredTokens = false;
-
     /**
      * Creates a new token and returns it.
      * ---
      * ```php
      * // Route to a controller action
-     * Craft::$app->tokens->createToken('action/path');
+     * app(Tokens::class)->createToken('action/path');
      *
      * // Route to a controller action with params
-     * Craft::$app->tokens->createToken(['action/path', [
+     * app(Tokens::class)->createToken(['action/path', [
      *     'foo' => 'bar'
      * ]]);
      *
      * // Route to a template
-     * Craft::$app->tokens->createToken([
+     * app(Tokens::class)->createToken([
      *     'templates/render',
      *     [
      *         'template' => 'template/path',
@@ -65,34 +52,7 @@ class Tokens extends Component
      */
     public function createToken(array|string $route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null): string|false
     {
-        if ($token !== null && strlen($token) !== 32) {
-            throw new InvalidArgumentException("Invalid token: $token");
-        }
-
-        if (!$expiryDate) {
-            $generalConfig = Cms::config();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->defaultTokenDuration);
-            $expiryDate = DateTimeHelper::currentUTCDateTime();
-            $expiryDate->add($interval);
-        }
-
-        $tokenRecord = new TokenRecord();
-        $tokenRecord->token = $token ?? Craft::$app->getSecurity()->generateRandomString();
-        $tokenRecord->route = $route;
-
-        if ($usageLimit !== null) {
-            $tokenRecord->usageCount = 0;
-            $tokenRecord->usageLimit = $usageLimit;
-        }
-
-        $tokenRecord->expiryDate = DbHelper::prepareDateForDb($expiryDate);
-        $success = $tokenRecord->save();
-
-        if ($success) {
-            return $tokenRecord->token;
-        }
-
-        return false;
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createToken($route, $usageLimit, $expiryDate, $token);
     }
 
     /**
@@ -107,9 +67,7 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $interval = DateTimeHelper::secondsToInterval(Cms::config()->previewTokenDuration);
-        $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
-        return $this->createToken($route, $usageLimit, $expiryDate, $token);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createPreviewToken($route, $usageLimit, $token);
     }
 
     /**
@@ -120,36 +78,7 @@ class Tokens extends Component
      */
     public function getTokenRoute(string $token): array|false
     {
-        // Take the opportunity to delete any expired tokens
-        $this->deleteExpiredTokens();
-        $result = DB::table(Table::TOKENS)
-            ->select(['id', 'route', 'usageLimit', 'usageCount'])
-            ->where('token', $token)
-            ->first();
-
-        if (!$result) {
-            // Remove it from the request  so it doesn’t get added to generated URLs
-            Craft::$app->getRequest()->setToken(null);
-
-            return false;
-        }
-
-        // Usage limit enforcement (for future requests)
-        if ($result->usageLimit) {
-            // Does it have any more life after this?
-            if ($result->usageCount < $result->usageLimit - 1) {
-                // Increment its count
-                $this->incrementTokenUsageCountById($result->id);
-            } else {
-                // Just delete it
-                $this->deleteTokenById($result->id);
-
-                // Remove it from the request as well so it doesn’t get added to generated URLs
-                Craft::$app->getRequest()->setToken(null);
-            }
-        }
-
-        return (array)Json::decodeIfJson($result->route);
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->getTokenRoute($token);
     }
 
     /**
@@ -160,9 +89,7 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        return (bool) DB::table(Table::TOKENS)
-            ->where('id', $tokenId)
-            ->increment('usageCount');
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->incrementTokenUsageCountById($tokenId);
     }
 
     /**
@@ -173,9 +100,7 @@ class Tokens extends Component
      */
     public function deleteTokenById(int $tokenId): bool
     {
-        DB::table(Table::TOKENS)->delete($tokenId);
-
-        return true;
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteTokenById($tokenId);
     }
 
     /**
@@ -185,17 +110,6 @@ class Tokens extends Component
      */
     public function deleteExpiredTokens(): bool
     {
-        // Ignore if we've already done this once during the request
-        if ($this->_deletedExpiredTokens) {
-            return false;
-        }
-
-        $affectedRows = DB::table(Table::TOKENS)
-            ->where('expiryDate', '<=', now())
-            ->delete();
-
-        $this->_deletedExpiredTokens = true;
-
-        return (bool)$affectedRows;
+        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteExpiredTokens();
     }
 }
