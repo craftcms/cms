@@ -111,10 +111,11 @@ Route::prefix(implode('/', [
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryTypeId?}', [EntryTypesController::class, 'edit']);
+        Route::get('entry-types/edit/{entryType}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
+            Route::get('entry-types/new', [EntryTypesController::class, 'create']);
             Route::post('entry-types/save', [EntryTypesController::class, 'store']);
             Route::post('entry-types/delete', [EntryTypesController::class, 'destroy']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);

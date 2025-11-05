@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
         // Entry types
         Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        Route::get('settings/entry-types/{entryTypeId}', [EntryTypesController::class, 'edit']);
+        Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);

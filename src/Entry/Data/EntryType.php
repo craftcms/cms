@@ -52,16 +52,18 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
         public ?string $titleFormat = null,
-        public bool $showSlugField = true,
+        public ?bool $showSlugField = true,
         public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
         public ?string $slugTranslationKeyFormat = null,
-        public bool $showStatusField = true,
+        public ?bool $showStatusField = true,
         public ?string $uid = null,
         public bool $validateHandleUniqueness = true,
         public ?string $group = null,
         public ?self $original = null,
     ) {
         $this->fieldLayoutId = $fieldLayoutId;
+        $this->showSlugField = (bool) $showSlugField;
+        $this->showStatusField = (bool) $showStatusField;
 
         if ($this->titleFormat === '') {
             $this->titleFormat = null;
@@ -235,7 +237,7 @@ JS, [
         ];
 
         if ($validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null);
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null)->withoutTrashed('dateDeleted');
         }
 
         return $rules;

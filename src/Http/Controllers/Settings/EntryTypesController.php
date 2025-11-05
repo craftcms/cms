@@ -12,6 +12,7 @@ use craft\models\FieldLayout;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -85,17 +86,13 @@ final class EntryTypesController
             ]);
     }
 
-    public function edit(Request $request, ?int $entryTypeId = null): CpScreenResponse
+    public function edit(EntryTypeModel $entryType): CpScreenResponse
     {
-        $entryTypeId ??= $request->input('entryTypeId');
+        $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
-        $entryType = $this->entryTypes->getEntryTypeById($entryTypeId);
+        $fieldLayout = $entryTypeData->getFieldLayout();
 
-        abort_if(is_null($entryType), 404, 'Entry type not found');
-
-        $fieldLayout = $entryType->getFieldLayout();
-
-        if ($entryType->hasTitleField) {
+        if ($entryTypeData->hasTitleField) {
             // Ensure the Title field is present
             if (! $fieldLayout->isFieldIncluded('title')) {
                 $fieldLayout->prependElements([new EntryTitleField]);
@@ -110,20 +107,20 @@ final class EntryTypesController
         }
 
         return new CpScreenResponse()
-            ->editUrl($entryType->getCpEditUrl())
-            ->title(trim($entryType->name) ?: t('Edit Entry Type'))
+            ->editUrl($entryTypeData->getCpEditUrl())
+            ->title(trim($entryTypeData->name) ?: t('Edit Entry Type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
-                'entryTypeId' => $entryTypeId,
-                'entryType' => $entryType,
+                'entryTypeId' => $entryTypeData->id,
+                'entryType' => $entryTypeData,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,
             ])
             ->when(
                 value: ! $this->readOnly,
-                callback: function (CpScreenResponse $response) use ($entryType) {
+                callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
                         ->redirectUrl('settings/entry-types')
@@ -141,9 +138,9 @@ final class EntryTypesController
                             'destructive' => true,
                         ])
                         ->metaSidebarHtml(Cp::metadataHtml([
-                            t('ID') => $entryType->id,
-                            t('Used by') => function () use ($entryType) {
-                                $usages = $entryType->findUsages();
+                            t('ID') => $entryTypeData->id,
+                            t('Used by') => function () use ($entryTypeData) {
+                                $usages = $entryTypeData->findUsages();
                                 if (empty($usages)) {
                                     return Html::tag('i', t('No usages'));
                                 }
@@ -164,7 +161,7 @@ final class EntryTypesController
                                         Html::endTag('span');
 
                                     return Html::a($labelHtml, $usage->getCpEditUrl());
-                                }, $entryType->findUsages());
+                                }, $entryTypeData->findUsages());
 
                                 // sort by label
                                 array_multisort($labels, SORT_ASC, $items);
@@ -213,11 +210,12 @@ final class EntryTypesController
         $entryTypeId = $request->input('entryTypeId');
 
         if ($entryTypeId) {
+            $entryTypeId = (int) $entryTypeId;
             abort_if(is_null($found = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
+
+            $entryType->id = $found->id;
             $entryType->uid = $found->uid;
         }
-
-        $entryType->id = $entryTypeId;
 
         $saveAsNew = false;
         $originalEntryType = null;
