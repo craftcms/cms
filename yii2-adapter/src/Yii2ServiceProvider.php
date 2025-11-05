@@ -48,7 +48,7 @@ use craft\services\Fields;
 use craft\services\Gc;
 use craft\services\Gql;
 use craft\services\Plugins as LegacyPlugins;
-use craft\services\ProjectConfig;
+use craft\services\ProjectConfig as LegacyProjectConfig;
 use craft\services\Revisions;
 use craft\services\Routes;
 use craft\services\Sites;
@@ -70,6 +70,7 @@ use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -430,7 +431,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
-        ProjectConfig::registerEvents();
+        LegacyProjectConfig::registerEvents();
         Revisions::registerEvents();
         Routes::registerEvents();
         Sites::registerEvents();
@@ -692,8 +693,27 @@ class Yii2ServiceProvider extends ServiceProvider
             $event->roots['yii2-adapter'] = dirname(__DIR__) . '/resources/templates';
         });
 
+        if (self::supportsCategories()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleChangedCategoryGroup($event))
+                ->onUpdate(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleChangedCategoryGroup($event))
+                ->onRemove(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleDeletedCategoryGroup($event));
+        }
+
         if (self::supportsGlobalSets()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleChangedGlobalSet($event))
+                ->onUpdate(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleChangedGlobalSet($event))
+                ->onRemove(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleDeletedGlobalSet($event));
+
             Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+        }
+
+        if (self::supportsTags()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleChangedTagGroup($event))
+                ->onUpdate(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleChangedTagGroup($event))
+                ->onRemove(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleDeletedTagGroup($event));
         }
     }
 
