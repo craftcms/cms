@@ -1,0 +1,35 @@
+@layer preflight, theme, base, components, utilities;
+
+@import './shared/preflight.css' layer(preflight);
+@import './shared/variables.css' layer(theme);
+@import './shared/tokens.css' layer(theme);
+@import './shared/base.css' layer(base);
+
+.resizable-container {
+  border: 2px solid;
+  padding: 20px;
+  width: 300px;
+  resize: both;
+  overflow: auto;
+}
+
+.skip-link {
+  /* Copied from tailwind's sr-only class */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+
+  &:focus {
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    inset-inline-start: 0;
+  }
+}

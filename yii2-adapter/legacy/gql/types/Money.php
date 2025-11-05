@@ -10,7 +10,7 @@ namespace craft\gql\types;
 use craft\errors\GqlException;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\MoneyHelper;
+use CraftCms\Cms\Support\Money as MoneyHelper;
 use GraphQL\Language\AST\FloatValueNode;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\NullValueNode;

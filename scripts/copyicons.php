@@ -1,6 +1,8 @@
 <?php
 
-use craft\helpers\Search;
+declare(strict_types=1);
+
+use CraftCms\Cms\Support\Search;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 

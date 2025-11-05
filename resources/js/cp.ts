@@ -1,1 +1,6 @@
-console.log('hello from cp.ts');
+import '@craftcms/cp';
+
+/**
+ * Components
+ */
+import './components/CpGlobalSidebar.js';

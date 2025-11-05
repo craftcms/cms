@@ -73,3 +73,25 @@ test('enum properties', function () {
         'nullableSuit' => null,
     ]);
 });
+
+test('isIntOrFloat', function (bool $expected, mixed $value) {
+    expect(Typecast::isIntOrFloat($value))->toBe($expected);
+})->with([
+    [true, 0],
+    [true, 0.5],
+    [true, 10],
+    [true, 10.5],
+    [true, '0'],
+    [true, '0.5'],
+    [true, '0.50'],
+    [true, '10'],
+    [true, '10.5'],
+    [false, '00'],
+    [false, ' 0'],
+    [false, '00.5'],
+    [false, ' 0.5'],
+    [false, ' '],
+    [false, 'y'],
+    [false, true],
+    [false, []],
+]);

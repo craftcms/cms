@@ -17,6 +17,7 @@ use craft\db\QueryParam;
 use craft\db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Facades\DB as DbFacade;

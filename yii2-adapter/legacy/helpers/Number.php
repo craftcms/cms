@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use RuntimeException;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -15,6 +16,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class Number
 {
@@ -153,14 +155,11 @@ class Number
      * @param mixed $value
      * @return bool
      * @since 4.0.5
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Typecast::isIntOrFloat()} instead.
      */
     public static function isIntOrFloat(mixed $value): bool
     {
-        return (
-            is_int($value) ||
-            is_float($value) ||
-            (is_string($value) && preg_match('/^([1-9]\d*|0|([1-9]\d*|0)?\.\d+)$/', $value))
-        );
+        return \CraftCms\Cms\Support\Typecast::isIntOrFloat($value);
     }
 
     /**
@@ -170,14 +169,15 @@ class Number
      * @return bool
      * @throws InvalidArgumentException if $value isn’t numeric
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Typecast::isInt()} instead.
      */
     public static function isInt(float|int|string $value): bool
     {
-        if (!is_numeric($value)) {
-            throw new InvalidArgumentException('Only numeric values can be typecast to an integer or float.');
+        try {
+            return \CraftCms\Cms\Support\Typecast::isInt($value);
+        } catch (RuntimeException $e) {
+            throw new InvalidArgumentException($e->getMessage());
         }
-
-        return (float)(int)$value === (float)$value;
     }
 
     /**
@@ -187,9 +187,14 @@ class Number
      * @return int|float
      * @throws InvalidArgumentException if $value isn’t numeric
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Typecast::toIntOrFloat()} instead.
      */
     public static function toIntOrFloat(float|int|string $value): float|int
     {
-        return static::isInt($value) ? (int)$value : (float)$value;
+        try {
+            return \CraftCms\Cms\Support\Typecast::toIntOrFloat($value);
+        } catch (RuntimeException $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
     }
 }
