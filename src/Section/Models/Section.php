@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Section extends BaseModel
@@ -35,16 +36,25 @@ final class Section extends BaseModel
         'propagationMethod' => PropagationMethod::class,
     ];
 
+    /**
+     * @return BelongsTo<Structure, $this>
+     */
     public function structure(): BelongsTo
     {
         return $this->belongsTo(Structure::class, 'structureId');
     }
 
+    /**
+     * @return HasMany<SectionSiteSettings, $this>
+     */
     public function siteSettings(): HasMany
     {
         return $this->hasMany(SectionSiteSettings::class, 'sectionId');
     }
 
+    /**
+     * @return BelongsToMany<EntryType, $this, Pivot>
+     */
     public function entryTypes(): BelongsToMany
     {
         return $this->belongsToMany(EntryType::class, 'sections_entrytypes', 'sectionId', 'typeId')

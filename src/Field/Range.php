@@ -249,7 +249,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         $formatted = I18N::getFormatter()->asDecimal($value);
 
         if ($this->suffix) {
-            $formatted = $formatted.$this->suffix;
+            return $formatted.$this->suffix;
         }
 
         return $formatted;

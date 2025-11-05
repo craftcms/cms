@@ -65,7 +65,7 @@ final class RouteServiceProvider extends ServiceProvider
         });
     }
 
-    protected function bootMiddleware(Router $router): void
+    private function bootMiddleware(Router $router): void
     {
         collect([
             UpdateLocale::class,

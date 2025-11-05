@@ -24,6 +24,9 @@ final class FieldLayout extends BaseModel
         'config' => 'json',
     ];
 
+    /**
+     * @return HasMany<EntryType, $this>
+     */
     public function entryTypes(): HasMany
     {
         return $this->hasMany(EntryType::class, 'fieldLayoutId');

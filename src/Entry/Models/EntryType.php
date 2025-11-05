@@ -12,6 +12,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class EntryType extends BaseModel
@@ -28,11 +29,17 @@ final class EntryType extends BaseModel
         'showStatusField' => 'boolean',
     ];
 
+    /**
+     * @return BelongsTo<FieldLayout, $this>
+     */
     public function fieldLayout(): BelongsTo
     {
         return $this->belongsTo(FieldLayout::class, 'fieldLayoutId');
     }
 
+    /**
+     * @return BelongsToMany<Section, $this, Pivot>
+     */
     public function sections(): BelongsToMany
     {
         return $this->belongsToMany(Section::class, Table::SECTIONS_ENTRYTYPES, 'typeId', 'sectionId')

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
+use Illuminate\Support\Facades\DB;
 
 it('deletes orphaned data', function (string $table, string $fk, array $data) {
     $tableId = DB::table($table)->insertGetId($data);

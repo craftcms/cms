@@ -28,7 +28,7 @@ final class CloudCommand extends Command
 
         $moduleInstalled = class_exists('craft\cloud\Module');
 
-        $this->info(sprintf('%s the `craftcms/cloud` extension …',
+        $this->components->info(sprintf('%s the `craftcms/cloud` extension …',
             $moduleInstalled ? 'Updating' : 'Installing',
         ));
 

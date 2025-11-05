@@ -101,7 +101,7 @@ it('can save an entry type', function () {
     $this->entryTypes->saveEntryType($entryType);
 
     expect(EntryType::count())->toBe(1);
-    tap(EntryType::first(), function (EntryType $entryType) {
+    tap(EntryType::query()->firstOrFail(), function (EntryType $entryType) {
         expect($entryType->name)->toBe('Pages');
         expect($entryType->handle)->toBe('pages');
     });

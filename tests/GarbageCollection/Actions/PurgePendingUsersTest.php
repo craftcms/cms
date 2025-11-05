@@ -7,6 +7,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 
 it('purges pending users with stale activation codes', function () {
     $this->markTestSkipped('Currently causes lock timeouts');

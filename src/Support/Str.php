@@ -126,12 +126,10 @@ class Str extends \Illuminate\Support\Str
 
         // Convert it to UTF8 if possible
         if (PHP::checkForValidIconv()) {
-            $str = HtmlPurifier::convertToUtf8($str, $config);
-        } else {
-            $str = mb_convert_encoding($str, 'UTF-8');
+            return HtmlPurifier::convertToUtf8($str, $config);
         }
 
-        return $str;
+        return mb_convert_encoding($str, 'UTF-8');
     }
 
     /**
@@ -149,7 +147,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         if (str_starts_with($str, 'crypt:')) {
-            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
+            return Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
         }
 
         return $str;

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
     $this->markTestSkippedWhen(

@@ -371,7 +371,7 @@ trait StructureNode
             && $this->rgt < $node->getAttribute('rgt');
 
         if ($result) {
-            $result = $this->root === $node->getAttribute('root');
+            return $this->root === $node->getAttribute('root');
         }
 
         return $result;
@@ -382,14 +382,14 @@ trait StructureNode
         return $this->rgt - $this->lft === 1;
     }
 
-    public function scopeRoots(Builder $query): Builder
+    protected function scopeRoots(Builder $query): Builder
     {
         return $query
             ->where('lft', '=', 1)
             ->orderBy($this->getKeyName());
     }
 
-    public function scopeLeaves(Builder $query): Builder
+    protected function scopeLeaves(Builder $query): Builder
     {
         return $query
             ->where('rgt', DB::raw('lft'.' + 1'))

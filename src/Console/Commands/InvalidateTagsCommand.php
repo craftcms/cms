@@ -60,7 +60,7 @@ final class InvalidateTagsCommand extends Command
 
     public function list(): int
     {
-        $this->info('The following tags can be invalidated:');
+        $this->components->info('The following tags can be invalidated:');
 
         table(
             headers: ['Tag', 'Label'],

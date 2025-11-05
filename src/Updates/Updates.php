@@ -229,7 +229,11 @@ final class Updates
      */
     public function isUpdatePending(): bool
     {
-        return $this->isCraftUpdatePending() || $this->isPluginUpdatePending();
+        if ($this->isCraftUpdatePending()) {
+            return true;
+        }
+
+        return $this->isPluginUpdatePending();
     }
 
     /**

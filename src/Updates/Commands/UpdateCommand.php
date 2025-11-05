@@ -53,9 +53,9 @@ final class UpdateCommand extends Command
 
     protected $description = 'Updates Craft and/or plugins.';
 
-    protected Composer $composer;
+    private Composer $composer;
 
-    protected Plugins $plugins;
+    private Plugins $plugins;
 
     public function handle(Plugins $plugins, Composer $composer, Updates $updates): int
     {
@@ -210,7 +210,7 @@ final class UpdateCommand extends Command
         }
 
         $this->newLine();
-        $this->info($this->green(sprintf(
+        $this->components->info($this->green(sprintf(
             ' Performing <fg=green;options=bold>%s</> %s:',
             $total === 1 ? 'one' : $total,
             Str::plural('update', $total),

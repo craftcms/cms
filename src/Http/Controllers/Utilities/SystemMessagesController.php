@@ -36,8 +36,8 @@ final readonly class SystemMessagesController
     public function show(Request $request): Response
     {
         $data = $request->validate([
-            'key' => 'required',
-            'language' => 'nullable',
+            'key' => ['required'],
+            'language' => ['nullable'],
         ]);
 
         $message = $this->systemMessages->getMessage($data['key'], $data['language'] ?? null);

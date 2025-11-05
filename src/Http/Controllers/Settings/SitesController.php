@@ -105,7 +105,7 @@ final readonly class SitesController
             'groupOptions' => $allGroups->map(fn ($group) => [
                 'label' => $group->name,
                 'value' => $group->id,
-            ])->toArray(),
+            ])->all(),
             'readOnly' => $this->readOnly,
         ]);
     }
@@ -136,7 +136,7 @@ final readonly class SitesController
             'groupOptions' => $allGroups->map(fn ($group) => [
                 'label' => $group->name,
                 'value' => $group->id,
-            ])->toArray(),
+            ])->all(),
             'readOnly' => $this->readOnly,
         ]);
     }

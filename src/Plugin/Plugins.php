@@ -1257,7 +1257,7 @@ final class Plugins
     private function normalizeHandle(string $handle): string
     {
         if (strtolower($handle) !== $handle) {
-            $handle = preg_replace('/\-{2,}/', '-', str($handle)->slug()->value());
+            return preg_replace('/\-{2,}/', '-', str($handle)->slug()->value());
         }
 
         return $handle;

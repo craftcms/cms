@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
+use Illuminate\Support\Facades\DB;
 
 it('hard deletes soft deleted elements', function () {
     // Not soft deleted

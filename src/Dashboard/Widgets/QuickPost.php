@@ -109,11 +109,13 @@ final class QuickPost extends Widget
         $sections = [];
 
         foreach (Sections::getAllSections() as $section) {
-            if ($section->type !== SectionType::Single) {
-                if (Auth::user()->can('createEntries:'.$section->uid)) {
-                    $sections[] = $section;
-                }
+            if ($section->type === SectionType::Single) {
+                continue;
             }
+            if (! Auth::user()->can('createEntries:'.$section->uid)) {
+                continue;
+            }
+            $sections[] = $section;
         }
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings.twig', [

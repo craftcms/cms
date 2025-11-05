@@ -75,7 +75,7 @@ final class InstallCommand extends Command
     {
         $pluginInfo = $this->plugins
             ->getAllPluginInfo()
-            ->filter(fn (array $info) => ! $info['isInstalled'])
+            ->reject(fn (array $info): bool => (bool) $info['isInstalled'])
             ->keys();
 
         if ($pluginInfo->isEmpty()) {

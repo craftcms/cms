@@ -26,6 +26,9 @@ final class Structure extends BaseModel
         ];
     }
 
+    /**
+     * @return HasMany<StructureElement, $this>
+     */
     public function structureElements(): HasMany
     {
         return $this->hasMany(StructureElement::class, 'structureId');

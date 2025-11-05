@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
  */
 final class MigrationRepository extends DatabaseMigrationRepository
 {
-    protected ?string $track = null;
+    private ?string $track = null;
 
     public function track(?string $track): self
     {

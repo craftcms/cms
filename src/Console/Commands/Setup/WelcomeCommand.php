@@ -42,13 +42,13 @@ final class WelcomeCommand extends Command
 
 
 EOD;
-        $this->warn(str_replace("\n", PHP_EOL, $craft));
+        $this->components->warn(str_replace("\n", PHP_EOL, $craft));
 
         if (! Config::get('app.key')) {
             $this->call('key:generate');
         }
 
-        $this->info('Welcome to Craft CMS!');
+        $this->components->info('Welcome to Craft CMS!');
 
         if (! $this->input->isInteractive() || ! confirm('Are you ready to begin the setup?')) {
             $this->info('Run the following command if you want to setup Craft from your terminal: <fg=cyan>php craft setup</>');

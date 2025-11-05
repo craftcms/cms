@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
+use Illuminate\Support\Facades\DB;
 
 it('purges unsaved drafts that have gone stale', function () {
     Cms::config()->purgeUnsavedDraftsDuration = 60;

@@ -129,7 +129,6 @@ final class Api
     public function headers(): array
     {
         $allowAdminChanges = Cms::config()->allowAdminChanges;
-        $pluginsService = app(Plugins::class);
 
         $headers = [
             'Accept' => 'application/json',

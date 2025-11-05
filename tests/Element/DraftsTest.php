@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -35,7 +36,7 @@ it('can get editable drafts', function () {
 });
 
 it('can create a draft', function () {
-    \Illuminate\Support\Facades\Event::fake([
+    Event::fake([
         CreatingDraft::class,
         DraftCreated::class,
     ]);

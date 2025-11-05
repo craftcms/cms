@@ -72,6 +72,7 @@
   },
   "require-dev": {
     "dg/bypass-finals": "^1.9",
+    "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",

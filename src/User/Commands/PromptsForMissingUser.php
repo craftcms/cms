@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Validation\Rules\Password;
 
 use function Laravel\Prompts\password;
@@ -22,7 +23,7 @@ trait PromptsForMissingUser
                 label: 'Search for a user:',
                 options: fn ($value) => strlen($value) > 0
                     ? User::query()
-                        ->where(function ($query) use ($value) {
+                        ->where(function (Builder $query) use ($value) {
                             $query->whereLike('username', "%{$value}%")
                                 ->orWhereLike('email', "%{$value}%");
                         })

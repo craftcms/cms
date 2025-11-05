@@ -58,7 +58,7 @@ final class DatabaseCredentialsCommand extends Command
 
         top:
 
-        $envDriver = Config::get('database.default') ?? Env::get('DB_CONNECTION') ?? Env::get('CRAFT_DB_DRIVER');
+        $envDriver = Config::get('database.default') ?? Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER'));
         $this->driver = $this->option('driver') ?? select(
             label: 'Which database driver are you using?',
             options: [
@@ -71,13 +71,13 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->host = $this->option('host') ?? strtolower(text(
             label: 'Database server name or IP address:',
-            default: $this->host ?? Config::get("database.connections.{$this->driver}.host") ?? Env::get('DB_HOST') ?? Env::get('CRAFT_DB_SERVER') ?? '127.0.0.1',
+            default: $this->host ?? Config::get("database.connections.{$this->driver}.host") ?? Env::get('DB_HOST', Env::get('CRAFT_DB_SERVER', '127.0.0.1')),
             required: true,
         ));
 
         $this->port = (int) ($this->option('port') ?? text(
             label: 'Database port:',
-            default: $this->port ?? Config::get("database.connections.{$this->driver}.port") ?? Env::get('DB_PORT') ?? Env::get('CRAFT_DB_PORT') ?? ($this->driver === 'mysql' ? '3306' : '5432'),
+            default: $this->port ?? Config::get("database.connections.{$this->driver}.port") ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', $this->driver === 'mysql' ? '3306' : '5432')),
             required: true,
         ));
 
@@ -85,11 +85,11 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->user = $this->option('username') ?? text(
             label: 'Database username:',
-            default: $this->user ?? Config::get("database.connections.{$this->driver}.username") ?? Env::get('DB_USERNAME') ?? Env::get('CRAFT_DB_USER') ?? 'root',
+            default: $this->user ?? Config::get("database.connections.{$this->driver}.username") ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
         );
 
         if (! $this->password = $this->option('password')) {
-            $envPassword = Config::get("database.connections.{$this->driver}.password") ?? Env::get('DB_PASSWORD') ?? Env::get('CRAFT_DB_PASSWORD');
+            $envPassword = Config::get("database.connections.{$this->driver}.password") ?? Env::get('DB_PASSWORD', Env::get('CRAFT_DB_PASSWORD'));
             if ($envPassword && confirm('Use the password provided by $DB_PASSWORD?')) {
                 $this->password = $envPassword;
             } else {
@@ -113,21 +113,21 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->database = $this->option('database') ?? text(
             label: 'Database name:',
-            default: $this->database ?? Config::get("database.connections.{$this->driver}.database") ?? Env::get('DB_DATABASE') ?? Env::get('CRAFT_DB_NAME'),
+            default: $this->database ?? Config::get("database.connections.{$this->driver}.database") ?? Env::get('DB_DATABASE', Env::get('CRAFT_DB_NAME')),
             required: true,
         );
 
         if ($this->driver === 'pgsql') {
             $this->schema = $this->option('schema') ?? text(
                 label: 'Database schema:',
-                default: $this->schema ?? Config::get("database.connections.{$this->driver}.schema") ?? Env::get('DB_SCHEMA') ?? Env::get('CRAFT_DB_SCHEMA') ?? 'public',
+                default: $this->schema ?? Config::get("database.connections.{$this->driver}.schema") ?? Env::get('DB_SCHEMA', Env::get('CRAFT_DB_SCHEMA', 'public')),
                 required: true,
             );
         }
 
         $this->prefix = $this->option('prefix') ?? text(
             label: 'Database table prefix:',
-            default: $this->prefix ?? Config::get("database.connections.{$this->driver}.prefix") ?? Env::get('DB_PREFIX') ?? Env::get('CRAFT_DB_PREFIX') ?? '',
+            default: $this->prefix ?? Config::get("database.connections.{$this->driver}.prefix") ?? Env::get('DB_PREFIX', Env::get('CRAFT_DB_PREFIX', '')),
             validate: ['max:5'],
             transform: function ($value) {
                 if (! $value) {

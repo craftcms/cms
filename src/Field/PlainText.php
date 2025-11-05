@@ -155,7 +155,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     #[\Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->_normalizeValueInternal($value, $element, false);
+        return $this->_normalizeValueInternal($value, false);
     }
 
     /**
@@ -164,10 +164,10 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     #[\Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->_normalizeValueInternal($value, $element, true);
+        return $this->_normalizeValueInternal($value, true);
     }
 
-    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    private function _normalizeValueInternal(mixed $value, bool $fromRequest): mixed
     {
         if ($value !== null) {
             if (! $fromRequest) {

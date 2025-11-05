@@ -82,7 +82,7 @@ final class ClearCachesCommand extends Command
 
     public function list(): int
     {
-        $this->info('The following caches can be cleared:');
+        $this->components->info('The following caches can be cleared:');
 
         table(
             headers: ['Key', 'Label', 'Info'],

@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
+use Illuminate\Support\Facades\DB;
 
 it('hard deletes soft deleted elements', function () {
     // Active

@@ -522,10 +522,8 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 $leftoverValueRowIds = array_diff($usedValueRowIds, $order);
 
                 // if the rowId is missing from the defaults - remove it from the $value array
-                if (! empty($leftoverValueRowIds)) {
-                    foreach ($leftoverValueRowIds as $key => $rowId) {
-                        unset($value[$key]);
-                    }
+                foreach ($leftoverValueRowIds as $key => $rowId) {
+                    unset($value[$key]);
                 }
             }
 
@@ -809,13 +807,13 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             case 'url':
                 $validator = ValidatorFacade::make(
                     data: ['value' => $value],
-                    rules: ['value' => 'url'],
+                    rules: ['value' => ['url']],
                 );
                 break;
             case 'email':
                 $validator = ValidatorFacade::make(
                     data: ['value' => $value],
-                    rules: ['value' => 'email'],
+                    rules: ['value' => ['email']],
                 );
                 break;
             default:
