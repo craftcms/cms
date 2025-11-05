@@ -938,7 +938,7 @@ class Category extends Element
             }
         }
 
-        DB::table(\CraftCms\Cms\Database\Table::CATEGORIES)
+        DB::table('categories')
             ->where('id', $this->id)
             ->update($data);
 

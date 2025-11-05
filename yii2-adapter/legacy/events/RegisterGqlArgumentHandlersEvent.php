@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
+use craft\gql\base\ArgumentHandlerInterface;
 
 /**
  * RegisterGqlArgumentHandlersEvent class.
@@ -18,7 +19,7 @@ use craft\base\Event;
 class RegisterGqlArgumentHandlersEvent extends Event
 {
     /**
-     * @var array<array|object> List of Argument handler class names.
+     * @var array<string,class-string<ArgumentHandlerInterface>> List of Argument handler class names.
      */
     public array $handlers = [];
 }

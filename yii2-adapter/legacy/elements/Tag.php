@@ -17,7 +17,6 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
-use CraftCms\Cms\Database\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
@@ -364,7 +363,7 @@ class Tag extends Element
         }
 
         // Update the tag record
-        \Illuminate\Support\Facades\DB::table(Table::TAGS)
+        \Illuminate\Support\Facades\DB::table('tags')
             ->where('id', $this->id)
             ->update([
                 'deletedWithGroup' => $this->deletedWithGroup,

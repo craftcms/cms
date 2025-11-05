@@ -520,6 +520,7 @@ class Yii2ServiceProvider extends ServiceProvider
         );
 
         YiiEvent::on(
+            /** @phpstan-ignore-next-line */
             ElementArguments::class,
             ElementArguments::EVENT_DEFINE_ARGUMENTS,
             function(DefineGqlArgumentsEvent $event) {
