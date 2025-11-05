@@ -54,19 +54,29 @@ trait StructureNode
         static::saving(function (self $model) {
             switch ($model->nestedSetOperation) {
                 case Operation::MakeRoot:
-                    throw_if($model->isRoot(), RuntimeException::class, 'Can not move the root node as the root.');
+                    if ($model->isRoot()) {
+                        throw new RuntimeException('Can not move the root node as the root.');
+                    }
 
                     break;
                 case Operation::InsertBefore:
                 case Operation::InsertAfter:
-                    throw_if($model->node->isRoot(), RuntimeException::class, 'Can not move a node when the target node is root.');
+                    if ($model->node->isRoot()) {
+                        throw new RuntimeException('Can not move a node when the target node is root.');
+                    }
                 case Operation::PrependTo:
                 case Operation::AppendTo:
-                    throw_unless($model->node->exists, RuntimeException::class, 'Can not move a node when the target node is new record.');
+                    if (! $model->node->exists) {
+                        throw new RuntimeException('Can not move a node when the target node is new record.');
+                    }
 
-                    throw_if($model->is($model->node), RuntimeException::class, 'Can not move a node when the target node is same.');
+                    if ($model->is($model->node)) {
+                        throw new RuntimeException('Can not move a node when the target node is same.');
+                    }
 
-                    throw_if($model->node->isChildOf($model), RuntimeException::class, 'Can not move a node when the target node is child.');
+                    if ($model->node->isChildOf($model)) {
+                        throw new RuntimeException('Can not move a node when the target node is child.');
+                    }
             }
         });
 
@@ -99,7 +109,9 @@ trait StructureNode
         });
 
         static::deleting(function (self $model) {
-            throw_if($model->isRoot() && $model->nestedSetOperation !== Operation::DeleteWithChildren, RuntimeException::class, 'Can not delete the root node when "nestedSetOperation" is not "deleteWithChildren".');
+            if ($model->isRoot() && $model->nestedSetOperation !== Operation::DeleteWithChildren) {
+                throw new RuntimeException('Can not delete the root node when "nestedSetOperation" is not "deleteWithChildren".');
+            }
         });
 
         static::deleted(function (self $model) {
@@ -129,7 +141,9 @@ trait StructureNode
 
     protected function beforeSavingRootNode(): void
     {
-        throw_if($this->treeQuery()->roots()->exists(), RuntimeException::class, "A root already exists for structure {$this->root}.");
+        if ($this->treeQuery()->roots()->exists()) {
+            throw new RuntimeException("A root already exists for structure {$this->root}.");
+        }
 
         $this->lft = 1;
         $this->rgt = 2;
@@ -138,9 +152,13 @@ trait StructureNode
 
     protected function beforeSavingNode(int $value, int $depth): void
     {
-        throw_unless($this->node->exists, RuntimeException::class, 'Can not create a node when the target node is a new record.');
+        if (! $this->node->exists) {
+            throw new RuntimeException('Can not create a node when the target node is a new record.');
+        }
 
-        throw_if($depth === 0 && $this->node->isRoot(), RuntimeException::class, 'Can not create a node when the target node is root.');
+        if ($depth === 0 && $this->node->isRoot()) {
+            throw new RuntimeException('Can not create a node when the target node is root.');
+        }
 
         $this->node->refresh();
 

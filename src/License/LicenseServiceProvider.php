@@ -49,6 +49,8 @@ class LicenseServiceProvider extends ServiceProvider
             return;
         }
 
-        abort_if(File::put($licenseFullPath, 'temp') === false || File::get($licenseFullPath) !== 'temp', 503, $licensePath.' isn\'t writable by PHP. Please fix that.');
+        if (File::put($licenseFullPath, 'temp') === false || File::get($licenseFullPath) !== 'temp') {
+            abort(503, $licensePath.' isn\'t writable by PHP. Please fix that.');
+        }
     }
 }

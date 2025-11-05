@@ -18,7 +18,9 @@ final readonly class DbBackupController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        abort_unless($utilitiesService->checkAuthorization(DbBackup::class), 403, 'User is not authorized to perform this action.');
+        if (! $utilitiesService->checkAuthorization(DbBackup::class)) {
+            abort(403, 'User is not authorized to perform this action.');
+        }
     }
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft)
@@ -29,7 +31,9 @@ final readonly class DbBackupController
             throw new Exception('Could not create backup: '.$e->getMessage());
         }
 
-        throw_unless(is_file($backupPath), Exception::class, "Could not create backup: the backup file doesn't exist.");
+        if (! is_file($backupPath)) {
+            throw new Exception("Could not create backup: the backup file doesn't exist.");
+        }
 
         // Zip it up and delete the SQL file
         $zipPath = FileHelper::zip($backupPath);

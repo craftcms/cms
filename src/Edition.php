@@ -154,9 +154,11 @@ enum Edition: int
             return;
         }
 
-        throw_unless(match ($orBetter) {
+        if (! match ($orBetter) {
             true => self::get()->value >= $edition->value,
             false => self::get() === $edition
-        }, WrongEditionException::class, "Craft $edition->name is required for this.");
+        }) {
+            throw new WrongEditionException("Craft $edition->name is required for this.");
+        }
     }
 }

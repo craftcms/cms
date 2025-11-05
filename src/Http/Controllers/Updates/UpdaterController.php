@@ -354,7 +354,9 @@ final class UpdaterController extends BaseUpdaterController
             } catch (InvalidPluginException) {
             }
 
-            throw_if($pluginInfo === null || ! $pluginInfo['isInstalled'], BadRequestHttpException::class, 'Invalid update handle: '.$handle);
+            if ($pluginInfo === null || ! $pluginInfo['isInstalled']) {
+                throw new BadRequestHttpException('Invalid update handle: '.$handle);
+            }
 
             $fromVersion = $pluginInfo['version'];
         }

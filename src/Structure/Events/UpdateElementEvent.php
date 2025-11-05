@@ -53,7 +53,9 @@ abstract class UpdateElementEvent
             ->structureId($this->structureId)
             ->one();
 
-        throw_unless($targetElement, RuntimeException::class, "Invalid target element ID: $this->targetElementId");
+        if (! $targetElement) {
+            throw new RuntimeException("Invalid target element ID: $this->targetElementId");
+        }
 
         return $this->targetElement = $targetElement;
     }

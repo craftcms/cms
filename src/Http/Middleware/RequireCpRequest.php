@@ -11,7 +11,9 @@ final readonly class RequireCpRequest
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        abort_unless($request->isCpRequest(), 401, 'Request must be a control panel request');
+        if (! $request->isCpRequest()) {
+            abort(401, 'Request must be a control panel request');
+        }
 
         return $next($request);
     }

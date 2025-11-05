@@ -67,7 +67,9 @@ final class FieldsController
     {
         $fieldId ??= $request->input('fieldId');
 
-        abort_if(! $fieldId && $this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
+        if (! $fieldId && $this->readOnly) {
+            abort(403, 'Administrative changes are disallowed in this environment.');
+        }
 
         // The field
         // ---------------------------------------------------------------------

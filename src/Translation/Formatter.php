@@ -391,7 +391,7 @@ final class Formatter
 
         $index = floor(log($bytes, $this->sizeFormatBase));
         $value = $bytes / ($this->sizeFormatBase ** $index);
-        $unit = $units[(int) $index];
+        $unit = $units[$index];
 
         return t("{nFormatted} {n, plural, =1{{$unit[0]}} other{{$unit[1]}}}", [
             'n' => abs($value),
@@ -420,7 +420,7 @@ final class Formatter
         $index = floor(log($bytes, $this->sizeFormatBase));
         $value = $bytes / ($this->sizeFormatBase ** $index);
 
-        return t("{nFormatted} {$units[(int) $index]}", [
+        return t("{nFormatted} {$units[$index]}", [
             'nFormatted' => $this->asDecimal($value, $decimals),
         ], locale: $this->locale);
     }
@@ -644,7 +644,9 @@ final class Formatter
             return (float) $value;
         }
 
-        throw_unless(is_numeric($value), InvalidArgumentException::class, "'$value' is not a numeric value.");
+        if (! is_numeric($value)) {
+            throw new InvalidArgumentException("'$value' is not a numeric value.");
+        }
 
         return $value;
     }

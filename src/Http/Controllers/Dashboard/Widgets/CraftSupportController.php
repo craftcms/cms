@@ -205,7 +205,9 @@ final readonly class CraftSupportController
         // Create the zip
         $zip = new ZipArchive;
 
-        throw_if($zip->open($zipPath, ZipArchive::CREATE) !== true, RuntimeException::class, 'Cannot create zip at '.$zipPath);
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+            throw new RuntimeException('Cannot create zip at '.$zipPath);
+        }
 
         // License key
         if (($licenseKey = $this->license->key()) !== null) {

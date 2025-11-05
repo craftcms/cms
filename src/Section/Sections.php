@@ -803,7 +803,9 @@ final class Sections
             $siteSettings = $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
         }
 
-        throw_if(empty($siteSettings), Exception::class, 'No site settings exist for section '.$section->id);
+        if (empty($siteSettings)) {
+            throw new Exception('No site settings exist for section '.$section->id);
+        }
 
         $siteIds = Sites::getAllSites()
             ->filter(fn (Site $site) => isset($siteSettings[$site->uid]))
@@ -819,7 +821,9 @@ final class Sections
             ->all();
 
         // There should always be at least one entry type by the time this is called
-        throw_if(empty($entryTypeIds), Exception::class, 'No entry types exist for section '.$section->id);
+        if (empty($entryTypeIds)) {
+            throw new Exception('No entry types exist for section '.$section->id);
+        }
 
         // Get/save the entry with updated title, slug, and URI format
         // ---------------------------------------------------------------------
@@ -886,11 +890,13 @@ final class Sections
             $entry->validate();
         }
 
-        throw_if($entry->hasErrors() ||
-        ! \Craft::$app->getElements()->saveElement($entry, false),
-            Exception::class,
-            "Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
+        if (
+            $entry->hasErrors() ||
+            ! \Craft::$app->getElements()->saveElement($entry, false)
+        ) {
+            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));
+        }
 
         // Delete any other entries in the section
         // ---------------------------------------------------------------------

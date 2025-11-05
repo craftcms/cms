@@ -26,7 +26,9 @@ final readonly class SystemMessagesController
         private SystemMessages $systemMessages,
         Utilities $utilities,
     ) {
-        abort_unless($utilities->checkAuthorization(Utilities\SystemMessages::class), 403, 'User is not authorized to perform this action.');
+        if (! $utilities->checkAuthorization(Utilities\SystemMessages::class)) {
+            abort(403, 'User is not authorized to perform this action.');
+        }
 
         Edition::require(Edition::Pro);
     }

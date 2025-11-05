@@ -42,7 +42,9 @@ final readonly class InstallController
     public function __construct()
     {
         // Return a 404 if Craft is already installed
-        abort_if(! app()->hasDebugModeEnabled() && Craft::$app->getIsInstalled(), 404, 'Craft is already installed');
+        if (! app()->hasDebugModeEnabled() && Craft::$app->getIsInstalled()) {
+            abort(404, 'Craft is already installed');
+        }
     }
 
     public function index(): Response

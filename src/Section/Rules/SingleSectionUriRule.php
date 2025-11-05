@@ -50,7 +50,9 @@ final class SingleSectionUriRule implements DataAwareRule, ValidationRule
 
         $site = Sites::getSiteById($this->data['siteId']);
 
-        throw_unless($site, Exception::class, 'Invalid site ID: '.$this->data['siteId']);
+        if (! $site) {
+            throw new Exception('Invalid site ID: '.$this->data['siteId']);
+        }
 
         if ($this->data['uriFormat'] === '__home__') {
             $message = '{site} already has a homepage.';

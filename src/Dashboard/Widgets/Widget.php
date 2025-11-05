@@ -159,7 +159,9 @@ EOD;
         $class = Arr::pull($config, 'type');
         $config = Arr::except($config, ['uid', 'userId', 'sortOrder', 'enabled']);
 
-        throw_if(! $class || ! Component::validateComponentClass($class, WidgetInterface::class), RuntimeException::class, 'The config passed into Widget::fromConfig() did not specify a valid type: '.Json::encode($config));
+        if (! $class || ! Component::validateComponentClass($class, WidgetInterface::class)) {
+            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a valid type: '.Json::encode($config));
+        }
 
         $config = Component::mergeSettings($config);
 

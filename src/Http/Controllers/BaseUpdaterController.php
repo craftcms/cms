@@ -62,9 +62,11 @@ abstract class BaseUpdaterController
         if (! is_null($data = $this->request->input('data'))) {
             $data = Craft::$app->getSecurity()->validateData($this->request->input('data', ''));
 
-            throw_if($data === false, ValidationException::withMessages([
-                'data' => t('Invalid data.'),
-            ]));
+            if ($data === false) {
+                throw ValidationException::withMessages([
+                    'data' => t('Invalid data.'),
+                ]);
+            }
 
             $this->data = Json::decode($data);
         }
@@ -257,7 +259,9 @@ abstract class BaseUpdaterController
             return null;
         }
 
-        throw_if(str_contains($returnUrl, '{'), BadRequestHttpException::class, "Invalid return URL: $returnUrl");
+        if (str_contains($returnUrl, '{')) {
+            throw new BadRequestHttpException("Invalid return URL: $returnUrl");
+        }
 
         return $returnUrl;
     }

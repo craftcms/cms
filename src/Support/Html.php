@@ -378,7 +378,9 @@ final class Html
         }
 
         // Find the closing tag
-        throw_if(($htmlEnd = stripos($tag, "</$type>", $cursor)) === false, InvalidHtmlTagException::class, "Could not find a </$type> tag in string: $tag", $type, $attributes, $start, $htmlStart);
+        if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
+            throw new InvalidHtmlTagException("Could not find a </$type> tag in string: $tag", $type, $attributes, $start, $htmlStart);
+        }
 
         $end = $htmlEnd + strlen($type) + 3;
 
@@ -485,8 +487,10 @@ final class Html
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
         if (! preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            // No `>`
-            throw_unless(preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset), InvalidArgumentException::class, "Malformed HTML tag attribute in string: $html");
+            if (! preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
+                // No `>`
+                throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
+            }
 
             // No more attributes here
             return null;
@@ -503,8 +507,10 @@ final class Html
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
                 $q = preg_quote($html[$offset], '/');
-                // No matching end quote
-                throw_unless(preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset), InvalidArgumentException::class, "Malformed HTML tag attribute in string: $html");
+                if (! preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
+                    // No matching end quote
+                    throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
+                }
 
                 $offset += strlen($m[0]);
                 if (isset($m[1]) && $m[1] !== '') {
@@ -650,12 +656,14 @@ final class Html
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
-        throw_if(! preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/',
-            InvalidHtmlTagException::class,
-            "Could not find an HTML tag in string: $html",
-            isset($match[1][0]) ? strtolower($match[1][0]) : null,
-            null,
-            $match[0][1] ?? null);
+        if (! preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
+            throw new InvalidHtmlTagException(
+                "Could not find an HTML tag in string: $html",
+                isset($match[1][0]) ? strtolower($match[1][0]) : null,
+                null,
+                $match[0][1] ?? null
+            );
+        }
 
         return [strtolower($match[1][0]), $match[0][1]];
     }
@@ -668,7 +676,9 @@ final class Html
         $info = self::parseTag($tag);
 
         // Make sure it’s not a void tag
-        throw_unless(isset($info['htmlStart']), InvalidArgumentException::class, "<{$info['type']}> can't have children.");
+        if (! isset($info['htmlStart'])) {
+            throw new InvalidArgumentException("<{$info['type']}> can't have children.");
+        }
 
         if ($ifExists) {
             // See if we have a child of the same type
@@ -1068,18 +1078,26 @@ final class Html
      */
     public static function dataUrl(string $file, ?string $mimeType = null): string
     {
-        throw_unless(is_file($file), InvalidArgumentException::class, "Invalid file path: $file");
+        if (! is_file($file)) {
+            throw new InvalidArgumentException("Invalid file path: $file");
+        }
 
         $file = FileHelper::absolutePath(Aliases::get($file), '/');
 
         // make sure it's contained within the project rot
         $rootPath = FileHelper::absolutePath(Aliases::get('@root'), '/');
-        throw_unless(str_starts_with($file, "$rootPath/"), InvalidArgumentException::class, sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
+        if (! str_starts_with($file, "$rootPath/")) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
+        }
 
-        throw_if(Craft::$app->getSecurity()->isSystemDir(dirname($file)), InvalidArgumentException::class, sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        }
 
         $ext = pathinfo($file, PATHINFO_EXTENSION);
-        throw_if(strtolower($ext) === 'php', InvalidArgumentException::class, sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        if (strtolower($ext) === 'php') {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        }
 
         if ($mimeType === null) {
             try {
@@ -1197,7 +1215,9 @@ final class Html
             try {
                 $svg = $svg->getContents();
             } catch (Throwable $e) {
-                throw_if($throwException, $e);
+                if ($throwException) {
+                    throw $e;
+                }
                 Log::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", [__METHOD__]);
                 report($e);
 
@@ -1208,14 +1228,18 @@ final class Html
             try {
                 $svg = Aliases::get($svg);
             } catch (InvalidArgumentException $e) {
-                throw_if($throwException, $e);
+                if ($throwException) {
+                    throw $e;
+                }
                 Log::error("Could not get the contents of $svg: {$e->getMessage()}", [__METHOD__]);
                 report($e);
 
                 return '';
             }
             if (! is_file($svg) || ! FileHelper::isSvg($svg)) {
-                throw_if($throwException, InvalidArgumentException::class, "Invalid SVG path: $svg");
+                if ($throwException) {
+                    throw new InvalidArgumentException("Invalid SVG path: $svg");
+                }
                 Log::warning("Could not get the contents of $svg: The file doesn't exist", [__METHOD__]);
 
                 return '';

@@ -264,9 +264,11 @@ final class EntryTypesController
     {
         $id = $request->input('entryTypeId') ?? $request->input('id');
 
-        throw_unless($id, ValidationException::withMessages([
-            'id' => t('id or entryTypeId is required.'),
-        ]));
+        if (! $id) {
+            throw ValidationException::withMessages([
+                'id' => t('id or entryTypeId is required.'),
+            ]);
+        }
 
         $entryType = $this->entryTypes->getEntryTypeById($id);
 

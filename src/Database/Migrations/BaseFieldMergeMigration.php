@@ -29,11 +29,15 @@ class BaseFieldMergeMigration extends Migration
     {
         /** @var MergeableFieldInterface|false $persistingField */
         $persistingField = $this->field($this->persistingFieldUid);
-        throw_unless($persistingField, RuntimeException::class);
+        if (! $persistingField) {
+            throw new RuntimeException;
+        }
 
         /** @var MergeableFieldInterface|false $outgoingField */
         $outgoingField = $this->field($this->outgoingFieldUid);
-        throw_unless($outgoingField, RuntimeException::class);
+        if (! $outgoingField) {
+            throw new RuntimeException;
+        }
 
         $reason = null;
         if (! $outgoingField->canMergeInto($persistingField, $reason)) {

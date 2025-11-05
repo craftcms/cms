@@ -186,9 +186,13 @@ final class Site extends Dto implements Chippable, Stringable
      */
     public function getGroup(): SiteGroup
     {
-        throw_unless(isset($this->groupId), RuntimeException::class, 'Site is missing its group ID');
+        if (! isset($this->groupId)) {
+            throw new RuntimeException('Site is missing its group ID');
+        }
 
-        throw_if(($group = SiteGroups::getGroupById($this->groupId)) === null, RuntimeException::class, 'Invalid site group ID: '.$this->groupId);
+        if (($group = SiteGroups::getGroupById($this->groupId)) === null) {
+            throw new RuntimeException('Invalid site group ID: '.$this->groupId);
+        }
 
         return $group;
     }
