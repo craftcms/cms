@@ -30,6 +30,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -176,6 +177,11 @@ class Craft extends Yii2
 
         TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
         TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
+
+        app()->forgetInstance(Sites::class);
+        app()->forgetInstance(EntryTypes::class);
+        app()->forgetInstance(Fields::class);
+        app()->forgetInstance(ProjectConfig::class);
     }
 
     /**
