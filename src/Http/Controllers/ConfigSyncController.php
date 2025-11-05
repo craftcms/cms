@@ -40,7 +40,7 @@ final class ConfigSyncController extends BaseUpdaterController
         Composer $composer,
         Plugins $plugins,
         Updates $updates,
-        protected ProjectConfig $projectConfig,
+        private readonly ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
     }

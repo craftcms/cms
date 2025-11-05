@@ -20,8 +20,8 @@ use function CraftCms\Cms\cp_redirect;
 final readonly class UtilitiesController
 {
     public function __construct(
-        protected Utilities $utilitiesService,
-        #[Give('Craft')] protected Application $craft,
+        private Utilities $utilitiesService,
+        #[Give('Craft')] private Application $craft,
     ) {}
 
     public function badgeCount(): JsonResponse

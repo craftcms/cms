@@ -20,19 +20,13 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * @var array Holds the already parsed paths as keys.
      */
-    protected array $parsedChanges;
-
-    /**
-     * @var array Keeps track of all the project config name changes.
-     */
-    protected array $projectConfigNameChanges;
+    private array $parsedChanges;
 
     public function __construct(public array $data, public ProjectConfig $projectConfig)
     {
         parent::__construct($data, $projectConfig);
 
         $this->parsedChanges = [];
-        $this->projectConfigNameChanges = [];
     }
 
     /**
@@ -105,7 +99,7 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
      *
      * @param  string|string[]  $path
      */
-    protected function setInternal(string|array $path, mixed $value): void
+    private function setInternal(string|array $path, mixed $value): void
     {
         if ($value === null) {
             $this->delete($path);
@@ -119,7 +113,7 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
      *
      * @param  string|string[]  $path
      */
-    protected function delete(string|array $path): mixed
+    private function delete(string|array $path): mixed
     {
         ProjectConfigHelper::traverseDataArray($this->data, $path, null, true);
 
@@ -136,11 +130,9 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
             if (isset($newValue['name'])) {
                 // Set/update it
                 $this->projectConfig->setNameMapping($lastPathSegment, $newValue['name']);
-                $this->projectConfigNameChanges[$lastPathSegment] = $newValue['name'];
             } elseif (isset($oldValue['name'])) {
                 // Remove it
                 $this->projectConfig->removeNameMapping($lastPathSegment);
-                $this->projectConfigNameChanges[$lastPathSegment] = null;
             }
         }
 

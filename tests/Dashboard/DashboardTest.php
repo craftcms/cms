@@ -47,6 +47,7 @@ it('can create a widget from config', function () {
         ],
     ];
 
+    /** @var Feed $widget */
     $widget = $this->dashboard->createWidget($config);
     expect($widget)->toBeInstanceOf(Feed::class);
     tap($widget, function (Feed $widget) {

@@ -29,7 +29,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ConsoleServiceProvider extends ServiceProvider
 {
-    protected array $commands = [
+    private array $commands = [
         // Install
         UpCommand::class,
         InstallCommand::class,

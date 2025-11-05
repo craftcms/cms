@@ -114,7 +114,7 @@ final class FieldsMergeCommand extends Command
                 }
 
                 $singleInstanceFields = $fields
-                    ->filter(fn (FieldInterface $field) => ! $field::isMultiInstance())
+                    ->reject(fn (FieldInterface $field): bool => $field::isMultiInstance())
                     ->map(fn (FieldInterface $field) => sprintf('%s (%s)', $field->name, $field::displayName()))
                     ->all();
 

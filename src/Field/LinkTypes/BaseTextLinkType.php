@@ -29,7 +29,7 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         $value = mb_strtolower($value);
 
-        return array_any((array) $this->urlPrefix(), fn ($prefix) => str_starts_with($value, (string) $prefix));
+        return array_any((array) $this->urlPrefix(), fn ($prefix) => str_starts_with($value, $prefix));
     }
 
     #[\Override]
@@ -52,7 +52,7 @@ abstract class BaseTextLinkType extends BaseLinkType
             $value = Str::chopStart($value, $prefix);
         }
         if (preg_match('/^[^\/]+\/$/', $value)) {
-            $value = rtrim($value, '/');
+            return rtrim($value, '/');
         }
 
         return $value;

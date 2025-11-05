@@ -26,6 +26,6 @@ final class EnvRemoveCommand extends Command implements PromptsForMissingInput
 
         Env::removeVariable($name, $app->environmentFilePath());
 
-        $this->info("`{$name}` has been removed.");
+        $this->components->info("`{$name}` has been removed.");
     }
 }

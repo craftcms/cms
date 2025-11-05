@@ -1598,12 +1598,10 @@ JS, [
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         if ($this->allowMultipleSources) {
-            $sources = $this->sources;
-        } else {
-            $sources = [$this->source];
+            return $this->sources;
         }
 
-        return $sources;
+        return [$this->source];
     }
 
     /**

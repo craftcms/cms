@@ -295,7 +295,7 @@ final readonly class Drafts
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on
         if ($newCanonical->siteId !== $originalDraft->siteId) {
-            $newCanonical = $originalDraft->getCanonical();
+            return $originalDraft->getCanonical();
         }
 
         return $newCanonical;

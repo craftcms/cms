@@ -743,7 +743,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
             $invalidAddressIds = [];
             $scenario = $element->getScenario();
 
-            foreach ($addresses as $i => $address) {
+            foreach ($addresses as $address) {
                 /** @var Address $address */
                 if (
                     $scenario === Element::SCENARIO_ESSENTIALS ||

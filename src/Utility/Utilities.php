@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Event;
 final readonly class Utilities
 {
     public function __construct(
-        protected GeneralConfig $generalConfig,
+        private GeneralConfig $generalConfig,
     ) {}
 
     /**
@@ -54,8 +54,8 @@ final readonly class Utilities
                 Edition::get()->value >= Edition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
-            ->when(
-                ! empty(app('Craft')->getVolumes()->getAllVolumes()),
+            ->unless(
+                empty(app('Craft')->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->when(

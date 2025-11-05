@@ -48,11 +48,9 @@ final readonly class Search
         }
 
         // Remove ignore-words?
-        if (! empty($ignore)) {
-            foreach ($ignore as $word) {
-                $word = preg_quote(self::normalizeKeywords($word, [], true, $language), '/');
-                $str = preg_replace("/\b$word\b/u", '', (string) $str);
-            }
+        foreach ($ignore as $word) {
+            $word = preg_quote(self::normalizeKeywords($word, [], true, $language), '/');
+            $str = preg_replace("/\b$word\b/u", '', (string) $str);
         }
 
         // Get rid of invisible Unicode special characters

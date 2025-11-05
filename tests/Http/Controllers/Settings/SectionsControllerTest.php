@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
@@ -103,12 +102,12 @@ it('can save a section', function () {
         ->assertRedirectBack();
 
     expect(Section::count())->toBe(2);
-    tap($this->sections->getSectionByHandle('a_new_section'), function (SectionData $section) {
-        expect($section->name)->toBe('A new section');
-        expect($section->type)->toBe(SectionType::Single);
-        expect(Arr::first($section->getSiteSettings()))->toBeInstanceOf(SectionSiteSettingsData::class);
-        expect(Arr::first($section->getSiteSettings())->template)->toBe('_foo');
-    });
+    /** @var Section $section */
+    $section = $this->sections->getSectionByHandle('a_new_section');
+    expect($section->name)->toBe('A new section');
+    expect($section->type)->toBe(SectionType::Single);
+    expect(Arr::first($section->getSiteSettings()))->toBeInstanceOf(SectionSiteSettingsData::class);
+    expect(Arr::first($section->getSiteSettings())->template)->toBe('_foo');
 });
 
 test('values are validated', function (string $attribute, string $value = '') {

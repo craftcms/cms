@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Foundation\Application;

@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\web\Controller;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
 use yii\web\BadRequestHttpException;
@@ -61,7 +62,7 @@ class LivePreviewController extends Controller
         }
 
         // Create the token
-        $token = Craft::$app->getTokens()->createPreviewToken([
+        $token = app(RouteTokens::class)->createPreviewToken([
             'live-preview/preview', [
                 'previewAction' => $action,
                 'userId' => Craft::$app->getUser()->getId(),

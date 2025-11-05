@@ -26,11 +26,17 @@ final class SectionSiteSettings extends BaseModel
         ];
     }
 
+    /**
+     * @return BelongsTo<Section, $this>
+     */
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class, 'sectionId');
     }
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class, 'siteId');

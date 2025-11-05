@@ -27,6 +27,9 @@ final class Site extends BaseModel
         ];
     }
 
+    /**
+     * @return BelongsTo<SiteGroup, $this>
+     */
     public function siteGroup(): BelongsTo
     {
         return $this->belongsTo(SiteGroup::class, 'groupId');

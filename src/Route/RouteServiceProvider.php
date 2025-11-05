@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -35,6 +36,7 @@ final class RouteServiceProvider extends ServiceProvider
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
+            HandleTokenRequest::class,
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
     }
@@ -65,7 +67,7 @@ final class RouteServiceProvider extends ServiceProvider
         });
     }
 
-    protected function bootMiddleware(Router $router): void
+    private function bootMiddleware(Router $router): void
     {
         collect([
             UpdateLocale::class,

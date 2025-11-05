@@ -43,14 +43,14 @@ final class MigrateCommand extends Command implements Isolatable
 
     protected $aliases = ['migrate/all', 'migrate:up', 'migrate/up'];
 
-    protected Updates $updates;
+    private Updates $updates;
 
-    protected Plugins $plugins;
+    private Plugins $plugins;
 
     /**
      * @var array<string, Migrator>
      */
-    protected array $migrators = [];
+    private array $migrators = [];
 
     public function handle(Updates $updates, Plugins $plugins): int
     {
@@ -76,7 +76,7 @@ final class MigrateCommand extends Command implements Isolatable
         return self::SUCCESS;
     }
 
-    protected function getMigrator(string $track): Migrator
+    private function getMigrator(string $track): Migrator
     {
         if (str_starts_with($track, 'plugin')) {
             $handle = substr($track, 7);
@@ -91,7 +91,7 @@ final class MigrateCommand extends Command implements Isolatable
             ->track($track);
     }
 
-    protected function runMigrations(): void
+    private function runMigrations(): void
     {
         $this->prepareDatabase();
 
@@ -201,7 +201,7 @@ final class MigrateCommand extends Command implements Isolatable
     /**
      * Prepare the migration database for running.
      */
-    protected function prepareDatabase(): void
+    private function prepareDatabase(): void
     {
         if ($this->getMigrator('craft')->repositoryExists()) {
             return;

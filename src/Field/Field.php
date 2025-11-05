@@ -487,7 +487,7 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
     public function attributes(): array
     {
         return Collection::make($this->settingsAttributes())
-            ->filter(fn ($value, $name) => ! in_array($name, [
+            ->reject(fn ($value, $name): bool => in_array($name, [
                 'validateHandleUniqueness',
                 'layoutElement',
                 'static',

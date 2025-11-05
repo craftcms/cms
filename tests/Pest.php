@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
 

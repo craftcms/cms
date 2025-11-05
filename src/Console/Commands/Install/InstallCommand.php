@@ -119,7 +119,7 @@ final class InstallCommand extends Command
                         return 'The site language is required.';
                     }
 
-                    if (! $i18n->getAllLocaleIds()->contains($value)) {
+                    if ($i18n->getAllLocaleIds()->doesntContain($value)) {
                         return "$value is not a valid language.";
                     }
 
@@ -158,7 +158,7 @@ final class InstallCommand extends Command
             }
         }
 
-        $this->info('Installing Craft');
+        $this->components->info('Installing Craft');
 
         $migrator->runMigration(new Install(
             username: $username,

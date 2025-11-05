@@ -42,8 +42,8 @@ abstract class GarbageCollectionAction
 
         return $query
             ->whereNotNull("{$tableAlias}dateDeleted")
-            ->when(
-                ! $this->garbageCollection->deleteAllTrashed,
+            ->unless(
+                $this->garbageCollection->deleteAllTrashed,
                 fn (Builder $query) => $query->where(
                     "{$tableAlias}dateDeleted",
                     '<',

@@ -39,7 +39,7 @@ final class SystemMessages
 
         // If the current language isn't one of the site's languages, switch to the primary site's language
         $language = app()->getLocale();
-        if (! I18N::getSiteLocaleIds()->contains($language)) {
+        if (I18N::getSiteLocaleIds()->doesntContain($language)) {
             app()->setLocale(Sites::getPrimarySite()->getLanguage());
         }
 

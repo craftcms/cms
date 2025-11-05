@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
+use Illuminate\Support\Facades\DB;
 
 it('deletes stale bulk op data', function (string $table, array $attributes) {
     DB::table($table)->insert(array_merge($attributes, [

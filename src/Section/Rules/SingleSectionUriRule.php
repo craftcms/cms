@@ -25,7 +25,7 @@ final class SingleSectionUriRule implements DataAwareRule, ValidationRule
      *
      * @var array<string, mixed>
      */
-    protected array $data = [];
+    private array $data = [];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

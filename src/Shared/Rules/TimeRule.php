@@ -22,7 +22,7 @@ final class TimeRule implements DataAwareRule, ValidationRule
      *
      * @var array<string, mixed>
      */
-    protected array $data = [];
+    private array $data = [];
 
     public function __construct(
         /**

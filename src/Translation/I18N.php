@@ -111,8 +111,8 @@ final class I18N
     {
         return $this->allLocaleIds ??= collect(ResourceBundle::getLocales(''))
             ->map(fn (string $locale) => str_replace('_', '-', $locale))
-            ->when(
-                ! empty($this->generalConfig->localeAliases),
+            ->unless(
+                empty($this->generalConfig->localeAliases),
                 fn (Collection $localeIds) => $localeIds
                     ->merge(array_keys($this->generalConfig->localeAliases))
                     ->unique()

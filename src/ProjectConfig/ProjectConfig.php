@@ -788,7 +788,7 @@ final class ProjectConfig
     /**
      * Remove values from internal config by a list of paths.
      */
-    protected function removeInternalConfigValuesByPaths(array $paths): void
+    private function removeInternalConfigValuesByPaths(array $paths): void
     {
         $chunks = array_chunk($paths, 1000);
 
@@ -802,7 +802,7 @@ final class ProjectConfig
     /**
      * Persist an array of `$path => $value` to the internal config.
      */
-    protected function persistInternalConfigValues(array $values): void
+    private function persistInternalConfigValues(array $values): void
     {
         DB::table(Table::PROJECTCONFIG)
             ->insert(Collection::make($values)->map(fn ($value, $path) => [
@@ -1443,7 +1443,7 @@ final class ProjectConfig
      *
      * @throws Exception
      */
-    protected function storeYamlHistory(array $configData): void
+    private function storeYamlHistory(array $configData): void
     {
         $basePath = Craft::$app->getPath()->getConfigDeltaPath().'/'.self::CONFIG_DELTA_FILENAME;
 
@@ -1465,7 +1465,7 @@ final class ProjectConfig
     /**
      * Updates the config version used for cache invalidation.
      */
-    protected function updateConfigVersion(): void
+    private function updateConfigVersion(): void
     {
         Info::fetch()->update([
             'configVersion' => Str::random(12),
@@ -1621,7 +1621,7 @@ final class ProjectConfig
     /**
      * Get the external project config data.
      */
-    protected function getExternalConfig(): ReadOnlyProjectConfigData
+    private function getExternalConfig(): ReadOnlyProjectConfigData
     {
         if ($this->_externalConfig === null) {
             $this->_externalConfig = $this->_loadExternalConfig();
@@ -1633,7 +1633,7 @@ final class ProjectConfig
     /**
      * Get the internal project config data.
      */
-    protected function getInternalConfig(): ReadOnlyProjectConfigData
+    private function getInternalConfig(): ReadOnlyProjectConfigData
     {
         if ($this->_internalConfig === null) {
             $this->_internalConfig = $this->_loadInternalConfig();
@@ -1645,7 +1645,7 @@ final class ProjectConfig
     /**
      * Get the current working project config data.
      */
-    protected function getCurrentWorkingConfig(): ProjectConfigData
+    private function getCurrentWorkingConfig(): ProjectConfigData
     {
         return $this->_currentWorkingConfig ??= new ProjectConfigData(
             data: $this->getInternalConfig()->export(),

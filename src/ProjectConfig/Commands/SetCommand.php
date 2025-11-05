@@ -72,8 +72,8 @@ final class SetCommand extends Command implements PromptsForMissingInput
         }
 
         $dumpedValue = Yaml::dump($value);
-        $this->info("Project config path <fg=cyan>{$path}</> has been set to:");
-        $this->info($dumpedValue);
+        $this->components->info("Project config path <fg=cyan>{$path}</> has been set to:");
+        $this->components->info($dumpedValue);
 
         return self::SUCCESS;
     }

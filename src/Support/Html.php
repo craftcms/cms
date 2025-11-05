@@ -522,7 +522,7 @@ final class Html
             }
         }
 
-        $start = (int) $match[1][1];
+        $start = $match[1][1];
         $end = $offset;
 
         return [$match[1][0], $value];

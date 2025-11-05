@@ -50,7 +50,7 @@ enum Edition: int
             return $edition;
         }
 
-        $edition = Env::get('CRAFT_EDITION') ?? ProjectConfig::get('system.edition');
+        $edition = Env::get('CRAFT_EDITION', ProjectConfig::get('system.edition'));
         $edition = $edition ? self::fromHandle($edition) : self::Solo;
 
         Context::addHidden(self::class, $edition);

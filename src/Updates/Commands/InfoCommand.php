@@ -68,7 +68,7 @@ final class InfoCommand extends Command
         }
 
         $this->newLine();
-        $this->info($this->green(sprintf(
+        $this->components->info($this->green(sprintf(
             ' You’ve got <fg=green;options=bold>%s</> available %s:',
             $total === 1 ? 'one' : $total,
             Str::plural('update', $total),
@@ -79,7 +79,7 @@ final class InfoCommand extends Command
             $lines,
         );
 
-        $this->info(implode(' ', [
+        $this->components->info(implode(' ', [
             ' Run',
             $this->cyan('php craft update all'),
             $this->green('or'),
