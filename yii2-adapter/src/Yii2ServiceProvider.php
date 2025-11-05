@@ -228,6 +228,7 @@ class Yii2ServiceProvider extends ServiceProvider
             \Craft::$app = $app;
 
             $this->bootEvents();
+            self::bootYiiEvents();
 
             return $app;
         });
@@ -468,10 +469,6 @@ class Yii2ServiceProvider extends ServiceProvider
         Event::listen(Link::class, function(RegisterLinkTypes $event) {
             $event->types[] = CategoryLinkType::class;
         });
-
-        self::bootYiiEvents();
-
-        Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
     }
 
     public static function bootYiiEvents(): void
@@ -619,6 +616,8 @@ class Yii2ServiceProvider extends ServiceProvider
                 ];
             },
         );
+
+        Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
     }
 
     /**
