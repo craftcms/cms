@@ -846,7 +846,6 @@ return [
     'License' => 'License',
     'Licensed' => 'Licensed',
     'Lightswitch' => 'Lightswitch',
-    'Limit the number of selectable category branches.' => 'Limit the number of selectable category branches.',
     'Limit the number of selectable {type} branches.' => 'Limit the number of selectable {type} branches.',
     'Limit' => 'Limit',
     'Line Break' => 'Line Break',
