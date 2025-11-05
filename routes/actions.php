@@ -9,7 +9,6 @@ use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
-use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -143,11 +142,6 @@ Route::prefix(implode('/', [
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
 
         // Widgets
-        Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
-        Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
-        Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
-        Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
-        Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
 

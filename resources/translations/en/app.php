@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     ' and ' => ' and ',
     '"{attribute}" does not support operator "{operator}".' => '"{attribute}" does not support operator "{operator}".',

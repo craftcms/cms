@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Dashboard\Dashboard;
-use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -24,15 +23,12 @@ it('requires login', function () {
         ->assertUnauthorized();
 });
 
-it('requires a widget id', function () {
-    postJson(action(CraftSupportController::class))
-        ->assertJsonValidationErrorFor('widgetId');
-});
+it('validates data', function (array $data, array $errors) {
+    Http::fake([
+        'https://api.craftcms.com/v1/support' => Http::response([]),
+    ]);
 
-it('validates data after widget id', function (array $data, array $errors) {
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(CraftSupport::class));
-
-    $response = postJson(action(CraftSupportController::class), array_merge(['widgetId' => $widget->id], $data));
+    $response = postJson(action(CraftSupportController::class), $data);
 
     if (count($errors) === 0) {
         $response->assertOk();
@@ -40,9 +36,10 @@ it('validates data after widget id', function (array $data, array $errors) {
         return;
     }
 
-    foreach ($errors as $error) {
-        $response->assertSee("errors: {\"$error\"", escape: false);
-    }
+    $response->assertStatus(422);
+    $errorKeys = array_keys($response->json('errors'));
+
+    expect($errorKeys)->toMatchArray($errors);
 })->with([
     [
         'data' => [

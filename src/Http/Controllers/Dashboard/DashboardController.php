@@ -11,6 +11,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 
 final readonly class DashboardController
 {
@@ -85,16 +86,20 @@ final readonly class DashboardController
                 $allWidgetJs .= $widgetJs ? $widgetJs."\n" : '';
             });
 
-        // Include all the JS and CSS stuff
-        $this->view->registerAssetBundle(DashboardAsset::class);
-        $this->view->registerJsWithVars(
-            fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
-            [$widgetTypeInfo]
-        );
-        $this->view->registerJs($allWidgetJs);
-
         $variables['widgetTypes'] = $widgetTypeInfo;
 
-        return $this->view->renderPageTemplate('dashboard/_index.twig', $variables);
+        if (request()->has('legacy')) {
+            // Include all the JS and CSS stuff
+            $this->view->registerAssetBundle(DashboardAsset::class);
+            $this->view->registerJsWithVars(
+                fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
+                [$widgetTypeInfo]
+            );
+            $this->view->registerJs($allWidgetJs);
+
+            return $this->view->renderPageTemplate('dashboard/_index.twig', $variables);
+        }
+
+        return Inertia::render('Dashboard', $variables);
     }
 }

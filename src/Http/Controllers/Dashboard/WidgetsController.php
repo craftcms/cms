@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use craft\web\Application;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
-use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -66,7 +65,7 @@ final readonly class WidgetsController
             ],
         ]);
 
-        $widget = $this->dashboard->getWidgetById($request->input('widgetId'));
+        $widget = $this->dashboard->getWidgetById($request->integer('widgetId'));
 
         // Create a new widget model with the new settings
         $settings = $request->input("widget{$widget->id}-settings");
@@ -85,6 +84,14 @@ final readonly class WidgetsController
 
     public function updateColspan(Request $request): JsonResponse
     {
+        /**
+         * For backwards compatibility, if the request came in to `/widgets/{widgetId}/update-colspan`,
+         * we need to merge the `widgetId` into the request data.
+         */
+        if ($request->route()->parameter('widgetId') !== null) {
+            $request->merge(['id' => (int) $request->route()->parameter('widgetId')]);
+        }
+
         $request->validate([
             'id' => [
                 'required',
@@ -101,9 +108,9 @@ final readonly class WidgetsController
 
     public function reorder(Request $request): JsonResponse
     {
-        $ids = Json::decode($request->input('ids'));
+        $ids = $request->input('ids');
 
-        Validator::validate(['ids' => $ids], [
+        Validator::validate(['ids' => $request->input('ids')], [], [
             'ids' => ['required', 'array'],
             'ids.*' => [
                 'required',
@@ -119,6 +126,13 @@ final readonly class WidgetsController
 
     public function delete(Request $request): JsonResponse
     {
+        /**
+         * For backwards compatibility, if the request came in to `DELETE /widgets/{widgetId}`,
+         * we need to merge the `widgetId` into the request data.
+         */
+        if ($request->route()->parameter('widgetId') !== null) {
+            $request->merge(['id' => (int) $request->route()->parameter('widgetId')]);
+        }
         $request->validate([
             'id' => [
                 'required',

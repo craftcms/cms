@@ -22,6 +22,7 @@ use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
+use Inertia\ServiceProvider as InertiaServiceProvider;
 
 final class CraftServiceProvider extends AggregateServiceProvider
 {
@@ -44,6 +45,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
         UserServiceProvider::class,
         FieldsServiceProvider::class,
         SectionServiceProvider::class,
+        InertiaServiceProvider::class,
         EntryServiceProvider::class,
         StructureServiceProvider::class,
     ];

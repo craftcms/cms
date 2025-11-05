@@ -34,6 +34,9 @@ class TestCase extends Orchestra
 
         app()->setLocale('en-US');
         Config::set('app.timezone', 'America/Los_Angeles');
+        Config::set('inertia.testing.page_paths', [
+            dirname(__DIR__).'/resources/js/Pages',
+        ]);
 
         Edition::set(Edition::Solo);
 

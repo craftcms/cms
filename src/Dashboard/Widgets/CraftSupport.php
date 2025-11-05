@@ -125,25 +125,20 @@ final class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
-new Craft.CraftSupportWidget($id, $settings);
-JS, [
-            $this->id,
-            [
-                'issueTitlePrefix' => sprintf('[%s.x]: ', $cmsMajorVersion),
-                'issueParams' => [
-                    'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
-                    'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
-                    'body' => $body,
-                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
-                    'phpVersion' => PHP::version(),
-                    'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
-                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),
-                    'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
-                    'plugins' => implode("\n", $pluginVersions),
-                ],
+        $jsVariables = [
+            'issueTitlePrefix' => sprintf('[%s.x]: ', $cmsMajorVersion),
+            'issueParams' => [
+                'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
+                'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
+                'body' => $body,
+                'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
+                'phpVersion' => PHP::version(),
+                'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
+                'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),
+                'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
+                'plugins' => implode("\n", $pluginVersions),
             ],
-        ]);
+        ];
 
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = $this->generalConfig->backupCommand !== false;
@@ -152,6 +147,7 @@ JS, [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
             'bundleUrl' => $assetBundle->baseUrl,
+            ...$jsVariables,
         ]);
     }
 }

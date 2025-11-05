@@ -76,13 +76,11 @@ final class Updates extends Widget
             $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
-        if ($cached) {
-            return $view->renderTemplate('_components/widgets/Updates/body.twig',
-                [
-                    'total' => $this->updates->totalAvailableUpdates(),
-                ]);
-        }
-
-        return '<p class="centeralign">'.t('Checking for updates…').'</p>';
+        return $view->renderTemplate('_components/widgets/Updates/body.twig',
+            [
+                'cached' => $cached,
+                'total' => $this->updates->totalAvailableUpdates(),
+            ]
+        );
     }
 }
