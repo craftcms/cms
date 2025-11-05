@@ -199,7 +199,7 @@ Route::prefix(implode('/', [
 
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
-        Route::get('sections/edit/{sectionId?}', [SectionsController::class, 'edit']);
+        Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
