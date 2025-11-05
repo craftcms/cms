@@ -961,7 +961,6 @@ return [
     'Licensed' => 'Licensed',
     'Lightswitch' => 'Lightswitch',
     'Lime' => 'Lime',
-    'Limit the number of selectable category branches.' => 'Limit the number of selectable category branches.',
     'Limit the number of selectable {type} branches.' => 'Limit the number of selectable {type} branches.',
     'Limit' => 'Limit',
     'Line Break' => 'Line Break',
