@@ -69,7 +69,6 @@ use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -473,7 +472,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Deprecated concepts
          */
 
-        Event::listen(\CraftCms\Cms\Field\Fields::class, function(RegisterFieldTypes $event) {
+        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
             if (self::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
             }
@@ -482,7 +481,7 @@ class Yii2ServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(Link::class, function(RegisterLinkTypes $event) {
+        Event::listen(RegisterLinkTypes::class, function(RegisterLinkTypes $event) {
             if (self::supportsCategories()) {
                 $event->types[] = CategoryLinkType::class;
             }
