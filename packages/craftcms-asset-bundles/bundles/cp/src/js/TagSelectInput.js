@@ -223,7 +223,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             for (var i = 0; i < response.data.tags.length; i++) {
               $li = $('<li/>').appendTo($ul);
               optionLabel = `${Craft.t('app', 'Existing {type}', {
-                type: Craft.t('app', 'Tag'),
+                type: Craft.t('yii2-adapter', 'Tag'),
               })}: ${response.data.tags[i].title}`;
               $li.attr('aria-label', optionLabel);
 
@@ -237,7 +237,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             if (!response.data.exactMatch) {
               $li = $('<li/>').appendTo($ul);
               optionLabel = `${Craft.t('app', 'Create {type}', {
-                type: Craft.t('app', 'Tag'),
+                type: Craft.t('yii2-adapter', 'Tag'),
               })}: ${data.search}`;
               $li.attr('aria-label', optionLabel);
 

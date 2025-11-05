@@ -477,6 +477,13 @@ JS;
             '“{name}” deleted.',
         ]);
 
+        $view->registerTranslations('yii2-adapter', [
+            'New category in the {group} category group',
+            'New category, choose a category group',
+            'New {group} category',
+            'Tag',
+        ]);
+
         $view->registerTranslations('yii', [
             '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',

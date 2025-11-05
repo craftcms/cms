@@ -37,7 +37,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     #[\Override]
     public static function displayName(): string
     {
-        return t('Tags');
+        return t('Tags', category: 'yii2-adapter');
     }
 
     /**
@@ -63,7 +63,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     #[\Override]
     public static function defaultSelectionLabel(): string
     {
-        return t('Add a tag');
+        return t('Add a tag', category: 'yii2-adapter');
     }
 
     /**
@@ -128,7 +128,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
         $tagGroup = $this->_getTagGroup();
 
         if ($tagGroup) {
-            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input.twig',
+            return Craft::$app->getView()->renderTemplate('yii2-adapter/_components/fieldtypes/Tags/input.twig',
                 [
                     'elementType' => self::elementType(),
                     'id' => $this->getInputId(),

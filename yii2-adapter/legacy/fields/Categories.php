@@ -71,7 +71,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     #[\Override]
     public static function defaultSelectionLabel(): string
     {
-        return t('Add a category');
+        return t('Add a category', category: 'yii2-adapter');
     }
 
     /**
@@ -144,7 +144,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">' . t('This field is not set to a valid category group.') . '</p>';
+            return '<p class="error">' . t('This field is not set to a valid category group.', category: 'yii2-adapter') . '</p>';
         }
 
         return parent::inputHtml($value, $element, $inline);

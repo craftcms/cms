@@ -26,7 +26,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return t('Tag Group');
+        return t('Tag Group', category: 'yii2-adapter');
     }
 
     /**

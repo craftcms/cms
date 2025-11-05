@@ -18,6 +18,7 @@ use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
@@ -59,6 +60,7 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\variables\Cp as CpVariable;
+use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
@@ -290,6 +292,16 @@ class Yii2ServiceProvider extends ServiceProvider
                 new IntlMessageFormatter(),
             ));
         }
+
+        /**
+         * Load legacy translations
+         */
+        $translator = app(Translator::class);
+        $translator->addCategorySources(new CategorySource(
+            'yii2-adapter',
+            new MessageSource(dirname(__DIR__) . '/resources/translations'),
+            new IntlMessageFormatter(),
+        ));
 
         /**
          * Load Craft
@@ -540,12 +552,12 @@ class Yii2ServiceProvider extends ServiceProvider
                 }
 
                 if (self::supportsGlobalSets()) {
-                    $label = t('Global Sets');
+                    $label = t('Global Sets', category: 'yii2-adapter');
                     [$event->queries[$label], $event->mutations[$label]] = self::globalSetSchemaComponents();
                 }
 
                 if (self::supportsTags()) {
-                    $label = t('Tags');
+                    $label = t('Tags', category: 'yii2-adapter');
                     [$event->queries[$label], $event->mutations[$label]] = self::tagSchemaComponents();
                 }
             },
@@ -631,7 +643,7 @@ class Yii2ServiceProvider extends ServiceProvider
                     !empty(Craft::$app->getGlobals()->getEditableSets())
                 ) {
                     $event->navItems[] = [
-                        'label' => t('Globals'),
+                        'label' => t('Globals', category: 'yii2-adapter'),
                         'url' => 'globals',
                         'icon' => 'globe',
                     ];
@@ -653,27 +665,31 @@ class Yii2ServiceProvider extends ServiceProvider
             CpVariable::class,
             Cms::config()->allowAdminChanges ? CpVariable::EVENT_REGISTER_CP_SETTINGS : CpVariable::EVENT_REGISTER_READ_ONLY_CP_SETTINGS,
             function(RegisterCpSettingsEvent $event) {
-                $label = t('System');
+                $label = t('Content');
                 if (self::supportsGlobalSets()) {
-                    $settings[$label]['globals'] = [
+                    $event->settings[$label]['globals'] = [
                         'iconMask' => '@craftcms/resources/icons/light/globe.svg',
-                        'label' => t('Globals'),
+                        'label' => t('Globals', category: 'yii2-adapter'),
                     ];
                 }
                 if (self::supportsCategories()) {
-                    $settings[$label]['categories'] = [
+                    $event->settings[$label]['categories'] = [
                         'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
                         'label' => t('Categories'),
                     ];
                 }
                 if (self::supportsTags()) {
-                    $settings[$label]['tags'] = [
+                    $event->settings[$label]['tags'] = [
                         'iconMask' => '@craftcms/resources/icons/light/tags.svg',
-                        'label' => t('Tags'),
+                        'label' => t('Tags', category: 'yii2-adapter'),
                     ];
                 }
             },
         );
+
+        YiiEvent::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) {
+            $event->roots['yii2-adapter'] = dirname(__DIR__) . '/resources/templates';
+        });
 
         if (self::supportsGlobalSets()) {
             Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
@@ -723,20 +739,24 @@ class Yii2ServiceProvider extends ServiceProvider
                 $name = t($categoryGroup->name, category: 'site');
                 $prefix = "categorygroups.$categoryGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for categories in the “{name}” category group',
-                        ['name' => $name]),
+                    'label' => t('Query for categories in the “{name}” category group', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit categories in the “{categoryGroup}” category group',
-                        ['categoryGroup' => $name]),
+                    'label' => t('Edit categories in the “{categoryGroup}” category group', [
+                        'categoryGroup' => $name,
+                    ], 'yii2-adapter'),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => t('Save categories in the “{categoryGroup}” category group',
-                                ['categoryGroup' => $name]),
+                            'label' => t('Save categories in the “{categoryGroup}” category group', [
+                                'categoryGroup' => $name,
+                            ], 'yii2-adapter'),
                         ],
                         "$prefix:delete" => [
-                            'label' => t('Delete categories from the “{categoryGroup}” category group',
-                                ['categoryGroup' => $name]),
+                            'label' => t('Delete categories from the “{categoryGroup}” category group', [
+                                'categoryGroup' => $name,
+                            ], 'yii2-adapter'),
                         ],
                     ],
                 ];
@@ -763,10 +783,14 @@ class Yii2ServiceProvider extends ServiceProvider
                 $name = t($globalSet->name, category: 'site');
                 $prefix = "globalsets.$globalSet->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for the “{name}” global set', ['name' => $name]),
+                    'label' => t('Query for the “{name}” global set', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit the “{globalSet}” global set.', ['globalSet' => $name]),
+                    'label' => t('Edit the “{globalSet}” global set.', [
+                        'globalSet' => $name,
+                    ], 'yii2-adapter'),
                 ];
             }
         }
@@ -791,18 +815,24 @@ class Yii2ServiceProvider extends ServiceProvider
                 $name = t($tagGroup->name, category: 'site');
                 $prefix = "taggroups.$tagGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for tags in the “{name}” tag group', ['name' => $name]),
+                    'label' => t('Query for tags in the “{name}” tag group', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                    'label' => t('Edit tags in the “{tagGroup}” tag group', [
+                        'tagGroup' => $name,
+                    ], 'yii2-adapter'),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => t('Save tags in the “{tagGroup}” tag group',
-                                ['tagGroup' => $name]),
+                            'label' => t('Save tags in the “{tagGroup}” tag group', [
+                                'tagGroup' => $name,
+                            ], 'yii2-adapter'),
                         ],
                         "$prefix:delete" => [
-                            'label' => t('Delete tags from the “{tagGroup}” tag group',
-                                ['tagGroup' => $name]),
+                            'label' => t('Delete tags from the “{tagGroup}” tag group', [
+                                'tagGroup' => $name,
+                            ], 'yii2-adapter'),
                         ],
                     ],
                 ];
@@ -826,7 +856,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $permissions[] = [
                 'heading' => t('Category Group - {name}', [
                     'name' => t($group->name, category: 'site'),
-                ]),
+                ], 'yii2-adapter'),
                 'permissions' => [
                     "viewCategories:$group->uid" => [
                         'label' => mb_ucfirst(t('View {type}', ['type' => $type])),
@@ -880,7 +910,7 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         $permissions[] = [
-            'heading' => t('Global Sets'),
+            'heading' => t('Global Sets', category: 'yii2-adapter'),
             'permissions' => $globalSetPermissions,
         ];
     }

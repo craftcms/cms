@@ -53,7 +53,7 @@ class Category extends Element
      */
     public static function displayName(): string
     {
-        return t('Category');
+        return t('Category', category: 'yii2-adapter');
     }
 
     /**
@@ -61,7 +61,7 @@ class Category extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return t('category');
+        return t('category', category: 'yii2-adapter');
     }
 
     /**
@@ -77,7 +77,7 @@ class Category extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return t('categories');
+        return t('categories', category: 'yii2-adapter');
     }
 
     /**

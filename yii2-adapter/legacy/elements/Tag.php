@@ -38,7 +38,7 @@ class Tag extends Element
      */
     public static function displayName(): string
     {
-        return t('Tag');
+        return t('Tag', category: 'yii2-adapter');
     }
 
     /**
@@ -46,7 +46,7 @@ class Tag extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return t('tag');
+        return t('tag', category: 'yii2-adapter');
     }
 
     /**
@@ -54,7 +54,7 @@ class Tag extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return t('Tags');
+        return t('Tags', category: 'yii2-adapter');
     }
 
     /**
@@ -62,7 +62,7 @@ class Tag extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return t('tags');
+        return t('tags', category: 'yii2-adapter');
     }
 
     /**
