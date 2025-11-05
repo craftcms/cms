@@ -175,6 +175,7 @@ class Craft extends Yii2
         parent::_afterSuite();
 
         TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
+        TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
     }
 
     /**
