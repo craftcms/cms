@@ -15,6 +15,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 
@@ -61,6 +63,10 @@ class Install extends Migration
         $this->components->task('Creating tables', fn () => $this->createTables());
         $this->components->task('Creating indexes', fn () => $this->createIndexes());
         $this->components->task('Adding foreign keys', fn () => $this->addForeignKeys());
+
+        if (Event::hasListeners(PostCreateTables::class)) {
+            Event::dispatch(new PostCreateTables);
+        }
 
         DB::afterCommit(function () {
             $this->insertDefaultData();

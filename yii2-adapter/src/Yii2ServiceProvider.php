@@ -72,6 +72,12 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Console\CreateCategoriesTableCommand;
+use CraftCms\Yii2Adapter\Console\CreateGlobalsetsTableCommand;
+use CraftCms\Yii2Adapter\Console\CreateTagsTableCommand;
+use CraftCms\Yii2Adapter\Console\DropCategoriesTableCommand;
+use CraftCms\Yii2Adapter\Console\DropGlobalsetsTableCommand;
+use CraftCms\Yii2Adapter\Console\DropTagsTableCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
@@ -252,6 +258,12 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->commands([
+            CreateCategoriesTableCommand::class,
+            CreateGlobalsetsTableCommand::class,
+            CreateTagsTableCommand::class,
+            DropCategoriesTableCommand::class,
+            DropGlobalsetsTableCommand::class,
+            DropTagsTableCommand::class,
             MigrateMigrationTableCommand::class,
         ]);
 
@@ -498,7 +510,6 @@ class Yii2ServiceProvider extends ServiceProvider
             Gql::class,
             Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
             function(RegisterGqlSchemaComponentsEvent $event) {
-
                 // Categories
                 $label = t('Categories');
                 [$event->queries[$label], $event->mutations[$label]] = $this->categorySchemaComponents();
