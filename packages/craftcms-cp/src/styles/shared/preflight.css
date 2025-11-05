@@ -23,7 +23,8 @@ Use a better box model (opinionated).
 */
 
 html {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+  font-family:
+    system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji'; /* 1 */
   line-height: 1.15; /* 2 */
   -webkit-text-size-adjust: 100%; /* 3 */
@@ -66,8 +67,8 @@ code,
 kbd,
 samp,
 pre {
-  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo,
-    monospace; /* 1 */
+  font-family:
+    ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; /* 1 */
   font-size: 1em; /* 2 */
 }
 

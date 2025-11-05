@@ -1,9 +1,11 @@
 :root {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans:
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
   --color-red-50: oklch(97.1% 0.013 17.38);
   --color-red-100: oklch(93.6% 0.032 17.717);
   --color-red-200: oklch(88.5% 0.062 18.334);
@@ -324,10 +326,10 @@
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-    0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);
   --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);
@@ -340,11 +342,14 @@
   --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);
   --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);
   --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);
-  --text-shadow-sm: 0px 1px 0px rgb(0 0 0 / 0.075),
-    0px 1px 1px rgb(0 0 0 / 0.075), 0px 2px 2px rgb(0 0 0 / 0.075);
-  --text-shadow-md: 0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),
+  --text-shadow-sm:
+    0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),
+    0px 2px 2px rgb(0 0 0 / 0.075);
+  --text-shadow-md:
+    0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),
     0px 2px 4px rgb(0 0 0 / 0.1);
-  --text-shadow-lg: 0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),
+  --text-shadow-lg:
+    0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),
     0px 4px 8px rgb(0 0 0 / 0.1);
   --blur-xs: 4px;
   --blur-sm: 8px;
