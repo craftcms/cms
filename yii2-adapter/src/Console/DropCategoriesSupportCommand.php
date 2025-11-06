@@ -40,19 +40,10 @@ final class DropCategoriesSupportCommand extends Command
             return;
         }
 
-        Schema::disableForeignKeyConstraints();
-
         $this->components->task(
             "Dropping <fg=cyan>$categoryGroupsSitesTable</> table",
             function() use ($categoryGroupsSitesTable) {
                 Schema::dropIfExists($categoryGroupsSitesTable);
-            },
-        );
-
-        $this->components->task(
-            "Dropping <fg=cyan>$categoryGroupsTable</> table",
-            function() use ($categoryGroupsTable) {
-                Schema::dropIfExists($categoryGroupsTable);
             },
         );
 
@@ -63,9 +54,14 @@ final class DropCategoriesSupportCommand extends Command
             },
         );
 
-        Yii2ServiceProvider::resetSupport();
+        $this->components->task(
+            "Dropping <fg=cyan>$categoryGroupsTable</> table",
+            function() use ($categoryGroupsTable) {
+                Schema::dropIfExists($categoryGroupsTable);
+            },
+        );
 
-        Schema::enableForeignKeyConstraints();
+        Yii2ServiceProvider::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure
