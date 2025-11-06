@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use Closure;
@@ -12,14 +14,18 @@ use Illuminate\Database\Query\Builder;
  */
 trait QueriesStatuses
 {
+    use QueriesPlaceholderElements;
+
     /**
      * @var bool Whether to return only archived elements.
+     *
      * @used-by archived()
      */
     public bool $archived = false;
 
     /**
      * @var string|string[]|null The status(es) that the resulting elements must have.
+     *
      * @used-by status()
      */
     public array|string|null $status = [
@@ -28,9 +34,10 @@ trait QueriesStatuses
 
     protected function initializeQueriesStatuses(): void
     {
-        $this->query->beforeQuery(function () {
+        $this->beforeQuery(function () {
             if ($this->archived) {
                 $this->subQuery->where('elements.archived', true);
+
                 return;
             }
 
@@ -38,15 +45,17 @@ trait QueriesStatuses
 
             // only set archived=false if 'archived' doesn't show up in the status param
             // (_applyStatusParam() will normalize $this->status to an array if applicable)
-            if (!is_array($this->status) || !in_array($this->elementType::STATUS_ARCHIVED, $this->status)) {
+            if (! is_array($this->status) || ! in_array($this->elementType::STATUS_ARCHIVED, $this->status)) {
                 $this->subQuery->where('elements.archived', false);
             }
         });
     }
 
     /**
-     * @inheritdoc
-     * @uses $archived
+     * Sets the [[$archived]] property.
+     *
+     * @param  bool  $value  The property value (defaults to true)
+     * @return static self reference
      */
     public function archived(bool $value = true): static
     {
@@ -56,8 +65,34 @@ trait QueriesStatuses
     }
 
     /**
-     * @inheritdoc
-     * @uses $status
+     * Narrows the query results based on the {elements}’ statuses.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'enabled'` _(default)_ | that are enabled.
+     * | `'disabled'` | that are disabled.
+     * | `['not', 'disabled']` | that are not disabled.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch disabled {elements} #}
+     * {% set {elements-var} = {twig-method}
+     *   .status('disabled')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch disabled {elements}
+     * ${elements-var} = {php-method}
+     *     ->status('disabled')
+     *     ->all();
+     * ```
+     *
+     * @param  string|string[]|null  $value  The property value
+     * @return static self reference
      */
     public function status(array|string|null $value): static
     {
@@ -73,7 +108,7 @@ trait QueriesStatuses
      */
     private function applyStatusParam(): void
     {
-        if (!$this->status || !$this->elementType::hasStatuses()) {
+        if (! $this->status || ! $this->elementType::hasStatuses()) {
             return;
         }
 
@@ -83,16 +118,16 @@ trait QueriesStatuses
         }
 
         $statuses = array_merge($this->status);
+        $firstVal = strtolower((string) reset($statuses));
+        $glue = 'or';
 
-        $firstVal = strtolower(reset($statuses));
         if (in_array($firstVal, ['not', 'or'])) {
             $glue = $firstVal;
             array_shift($statuses);
-            if (!$statuses) {
-                return;
-            }
-        } else {
-            $glue = 'or';
+        }
+
+        if (! $statuses) {
+            return;
         }
 
         if ($negate = ($glue === 'not')) {
@@ -101,11 +136,12 @@ trait QueriesStatuses
 
         $this->subQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
             foreach ($statuses as $status) {
-                $query->where(
-                    column: $this->placeholderCondition($this->statusCondition($status)),
-                    operator: $negate ? '!=' : '=',
-                    boolean: $glue,
-                );
+                match (true) {
+                    $glue === 'or' && $negate === false => $query->orWhere($this->placeholderCondition($this->statusCondition($status))),
+                    $glue === 'or' && $negate === true => $query->orWhereNot($this->placeholderCondition($this->statusCondition($status))),
+                    $negate === false => $query->where($this->placeholderCondition($this->statusCondition($status))),
+                    $negate === true => $query->whereNot($this->placeholderCondition($this->statusCondition($status))),
+                };
             }
         });
     }
@@ -127,9 +163,9 @@ trait QueriesStatuses
      *     }
      * ```
      *
-     * @param string $status The status
-     *
+     * @param  string  $status  The status
      * @return Closure(Builder): Builder The status condition, or false if $status is an unsupported status
+     *
      * @throws \CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException on unsupported status.
      */
     protected function statusCondition(string $status): Closure
@@ -140,7 +176,7 @@ trait QueriesStatuses
             Element::STATUS_ENABLED => fn (Builder $q) => $q->where('elements.enabled', true)->where('elements_sites.enabled', true),
             Element::STATUS_DISABLED => fn (Builder $q) => $q->where('elements.enabled', false)->orWhere('elements_sites.enabled', false),
             Element::STATUS_ARCHIVED => fn (Builder $q) => $q->where('elements.archived', true),
-            default => throw new QueryAbortedException('Unsupported status: ' . $status),
+            default => throw new QueryAbortedException('Unsupported status: '.$status),
         };
     }
 }
