@@ -43,7 +43,9 @@ use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
 use craft\helpers\Queue;
+use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
+use craft\models\TagGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
 use craft\services\Dashboard;
@@ -536,7 +538,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 if (!$projectConfig->isApplyingExternalChanges && is_array($existingCategorySettings)) {
                     foreach ($existingCategorySettings as $categoryUid => $settings) {
                         $projectConfig->set(
-                            path: LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid,
+                            path: LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $event->site->uid,
                             value: $settings['siteSettings'][$oldPrimarySiteUid],
                             message: 'Copy site settings for category groups',
                         );
