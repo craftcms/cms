@@ -24,11 +24,11 @@ final readonly class LanguageRule implements ValidationRule
             return;
         }
 
-        if ($this->onlySiteLanguages && ! I18N::getSiteLocaleIds()->contains($value)) {
+        if ($this->onlySiteLanguages && I18N::getSiteLocaleIds()->doesntContain($value)) {
             $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
 
-        if (! I18N::getAllLocaleIds()->contains($value)) {
+        if (I18N::getAllLocaleIds()->doesntContain($value)) {
             $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
     }

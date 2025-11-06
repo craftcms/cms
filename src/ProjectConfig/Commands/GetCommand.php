@@ -37,6 +37,6 @@ final class GetCommand extends Command implements PromptsForMissingInput
     {
         $value = $projectConfig->get($this->argument('path'), $this->option('external'));
 
-        $this->line(Yaml::dump($value));
+        $this->components->info(Yaml::dump($value));
     }
 }

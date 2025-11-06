@@ -1179,12 +1179,16 @@ class ElementHelper
     /**
      * Sets user to be used for swapping in provisional drafts.
      *
-     * @param UserElement|null $user
+     * @param UserElement|int|null $user
      *
      * @since 5.8.0
      */
-    public static function setProvisionalDraftUser(?UserElement $user): void
+    public static function setProvisionalDraftUser(UserElement|int|null $user): void
     {
+        if (is_int($user)) {
+            $user = \Craft::$app->getUsers()->getUserById($user);
+        }
+
         self::$provisionalDraftUser = $user;
     }
 }

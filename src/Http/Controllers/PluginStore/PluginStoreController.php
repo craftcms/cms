@@ -101,6 +101,6 @@ final readonly class PluginStoreController
             );
         }
 
-        return response()->json();
+        return new JsonResponse;
     }
 }

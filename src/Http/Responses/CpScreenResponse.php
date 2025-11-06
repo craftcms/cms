@@ -89,7 +89,7 @@ final class CpScreenResponse implements Responsable
      * @see crumbs()
      * @see addCrumb()
      */
-    public $crumbs = null;
+    public $crumbs;
 
     /**
      * @var array Tabs.
@@ -139,7 +139,7 @@ final class CpScreenResponse implements Responsable
      * @see altActions()
      * @see addAltAction()
      */
-    public $altActions = null;
+    public $altActions;
 
     /**
      * @var string|null The URL the form should redirect to after posting.
@@ -165,7 +165,7 @@ final class CpScreenResponse implements Responsable
      *
      * @see contextMenuItems()
      */
-    public $contextMenuItems = null;
+    public $contextMenuItems;
 
     /**
      * @var string|callable|null Toolbar HTML
@@ -173,14 +173,14 @@ final class CpScreenResponse implements Responsable
      * @see toolbarHtml()
      * @see toolbarTemplate()
      */
-    public $toolbarHtml = null;
+    public $toolbarHtml;
 
     /**
      * @var callable|null Action menu items factory.
      *
      * @see actionMenuItems()
      */
-    public $actionMenuItems = null;
+    public $actionMenuItems;
 
     /**
      * @var string|null The submit button label.
@@ -197,7 +197,7 @@ final class CpScreenResponse implements Responsable
      * @see additionalButtonsHtml()
      * @see additionalButtonsTemplate()
      */
-    public $additionalButtonsHtml = null;
+    public $additionalButtonsHtml;
 
     /**
      * @var string|callable|null The content HTML.
@@ -205,7 +205,7 @@ final class CpScreenResponse implements Responsable
      * @see contentHtml()
      * @see contentTemplate()
      */
-    public $contentHtml = null;
+    public $contentHtml;
 
     /**
      * @var string|callable|null The right-hand meta sidebar HTML.
@@ -213,7 +213,7 @@ final class CpScreenResponse implements Responsable
      * @see metaSidebarHtml()
      * @see metaSidebarTemplate()
      */
-    public $metaSidebarHtml = null;
+    public $metaSidebarHtml;
 
     /**
      * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
@@ -221,7 +221,7 @@ final class CpScreenResponse implements Responsable
      * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
      */
-    public $pageSidebarHtml = null;
+    public $pageSidebarHtml;
 
     /**
      * @var string|callable|null The content notice HTML.
@@ -229,7 +229,7 @@ final class CpScreenResponse implements Responsable
      * @see noticeHtml()
      * @see noticeTemplate()
      */
-    public $noticeHtml = null;
+    public $noticeHtml;
 
     /**
      * @var string|callable|null The errors summary HTML (DEV-212).
@@ -237,7 +237,7 @@ final class CpScreenResponse implements Responsable
      * @see errorSummary()
      * @see errorSummaryTemplate()
      */
-    public $errorSummary = null;
+    public $errorSummary;
 
     /**
      * Sets a callable that will be called before other properties are added to the screen.

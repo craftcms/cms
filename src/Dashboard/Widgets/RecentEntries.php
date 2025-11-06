@@ -217,7 +217,7 @@ final class RecentEntries extends Widget
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
         if (! $editableSiteIds->contains($targetSiteId)) {
-            $targetSiteId = $editableSiteIds[0];
+            return $editableSiteIds[0];
         }
 
         return $targetSiteId;

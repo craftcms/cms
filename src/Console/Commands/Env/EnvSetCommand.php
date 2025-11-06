@@ -40,6 +40,6 @@ final class EnvSetCommand extends Command implements PromptsForMissingInput
 
         $value = trim(var_export($value, true));
 
-        $this->info("`{$name}` is now {$value}");
+        $this->components->info("`{$name}` is now {$value}");
     }
 }

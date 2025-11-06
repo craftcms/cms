@@ -10,6 +10,7 @@ use craft\web\View;
 use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\View\Factory as ViewFactory;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -69,7 +70,7 @@ final class TwigCacheCommand extends Command
     /**
      * Compile the given view files.
      */
-    protected function compileTemplates(Collection $views): void
+    private function compileTemplates(Collection $views): void
     {
         $views->map(function (SplFileInfo $file) {
             $this->components->task('    '.$file->getRelativePathname(), null, OutputInterface::VERBOSITY_VERY_VERBOSE);
@@ -97,7 +98,7 @@ final class TwigCacheCommand extends Command
     /**
      * Get the Twig files in the given path.
      */
-    protected function twigFilesIn(array $paths): Collection
+    private function twigFilesIn(array $paths): Collection
     {
         return Collection::make(
             Finder::create()
@@ -111,9 +112,10 @@ final class TwigCacheCommand extends Command
     /**
      * Get all the possible view paths.
      */
-    protected function paths(): Collection
+    private function paths(): Collection
     {
-        $finder = $this->laravel['view']->getFinder();
+        /** @var \Illuminate\View\FileViewFinder $finder */
+        $finder = $this->laravel->make(ViewFactory::class)->getFinder();
 
         return Collection::make($finder->getPaths())->merge(
             (Collection::make($finder->getHints()))->flatten()

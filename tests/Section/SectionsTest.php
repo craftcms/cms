@@ -15,6 +15,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -100,9 +101,9 @@ it('can get a section\'s site settings', function () {
     $sectionSiteSettings = $this->sections->getSectionSiteSettings($siteSettings->sectionId);
 
     expect($sectionSiteSettings)->not()->toBeEmpty();
-    expect(array_last($sectionSiteSettings))->toBeInstanceOf(SectionSiteSettingsData::class);
-    expect(array_last($sectionSiteSettings)->id)->toBe($siteSettings->id);
-    expect(array_last($sectionSiteSettings)->hasUrls)->toBe($siteSettings->hasUrls);
+    expect(Arr::last($sectionSiteSettings))->toBeInstanceOf(SectionSiteSettingsData::class);
+    expect(Arr::last($sectionSiteSettings)->id)->toBe($siteSettings->id);
+    expect(Arr::last($sectionSiteSettings)->hasUrls)->toBe($siteSettings->hasUrls);
 });
 
 it('can save a section', function () {

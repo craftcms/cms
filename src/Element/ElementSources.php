@@ -103,7 +103,7 @@ final class ElementSources
             ->sources($elementType, $context)
             ->when(
                 ! $withDisabled,
-                fn (Collection $sources) => $sources->filter(fn (array $source) => ! ($source['disabled'] ?? false))
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))
             );
 
         if ($page && isset($sources[0]['page'])) {

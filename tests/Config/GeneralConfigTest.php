@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
+use Illuminate\Support\Facades\Config;
 
 it('can get from container', function () {
     expect(app(GeneralConfig::class))->toBe(Config::get('craft.general'));

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Config;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -24,7 +25,7 @@ final class ConfigServiceProvider extends ServiceProvider
     {
         Env::extend(fn () => ConstAdapter::class);
 
-        $this->app->singleton(GeneralConfig::class, fn () => $this->app['config']->get('craft.general'));
+        $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
     }
 
     public function boot(): void

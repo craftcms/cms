@@ -353,7 +353,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         $settings = parent::getSettings();
         $settings['entryTypes'] = array_map(
             fn (EntryType $entryType) => $entryType->getUsageConfig(),
-            $this->getEntryTypes(),
+            $this->_entryTypes,
         );
 
         return $settings;
@@ -444,7 +444,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public function getEntryTypesForField(array $value, ?ElementInterface $element): array
     {
-        $entryTypes = $this->getEntryTypes();
+        $entryTypes = $this->_entryTypes;
 
         // Fire a 'defineEntryTypes' event
         if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
@@ -483,7 +483,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public function getFieldLayoutProviders(): array
     {
-        return $this->getEntryTypes();
+        return $this->_entryTypes;
     }
 
     /**
@@ -649,7 +649,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $view = Craft::$app->getView();
 
-        $entryTypes = Collection::make($this->getEntryTypes());
+        $entryTypes = Collection::make($this->_entryTypes);
         $entryTypeSelectConfig = [
             'name' => 'entryTypes[]',
             'renderDefaultInput' => false,
@@ -683,7 +683,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             'entryTypeSelectConfig' => $entryTypeSelectConfig,
             'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
             'entryTypeSelectJs' => $entryTypeSelectJs ?? null,
-            'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->getEntryTypes()),
+            'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
             'indexViewModes' => array_filter(
                 Entry::indexViewModes(),
@@ -1133,7 +1133,7 @@ JS;
 
     private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
     {
-        $entryTypes = $this->getEntryTypes();
+        $entryTypes = $this->_entryTypes;
         $config = [
             'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,
@@ -1367,7 +1367,7 @@ JS;
         return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,
-            'entryTypes' => $this->getEntryTypes(),
+            'entryTypes' => $this->_entryTypes,
             'entries' => $entries,
             'static' => true,
             'staticEntries' => true,
@@ -1433,7 +1433,7 @@ JS;
 
         // Make sure this field has all the entry types the outgoing field has
         $outgoingEntryTypeIds = array_map(fn (EntryType $entryType) => $entryType->id, $outgoingField->getEntryTypes());
-        $persistentEntryTypeIds = array_map(fn (EntryType $entryType) => $entryType->id, $this->getEntryTypes());
+        $persistentEntryTypeIds = array_map(fn (EntryType $entryType) => $entryType->id, $this->_entryTypes);
         $missingEntryTypeIds = array_diff($outgoingEntryTypeIds, $persistentEntryTypeIds);
         if (! empty($missingEntryTypeIds)) {
             $reason = "$this->name doesn’t have all of the entry types that $outgoingField->name does.";
@@ -1472,7 +1472,7 @@ JS;
         $arguments = EntryArguments::getArguments();
         $gqlService = Craft::$app->getGql();
 
-        foreach ($this->getEntryTypes() as $entryType) {
+        foreach ($this->_entryTypes as $entryType) {
             $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
         }
 
@@ -1503,7 +1503,7 @@ JS;
     {
         $entryTypeHandle = Str::between($fragmentName, $this->handle.'_', '_Entry');
 
-        $entryType = Collection::make($this->getEntryTypes())->firstWhere('handle', $entryTypeHandle);
+        $entryType = Collection::make($this->_entryTypes)->firstWhere('handle', $entryTypeHandle);
 
         if (! $entryType) {
             throw new InvalidArgumentException('Invalid fragment name: '.$fragmentName);
@@ -1669,7 +1669,7 @@ JS;
     {
         // Get the possible entry types for this field
         /** @var EntryType[] $entryTypes */
-        $entryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
+        $entryTypes = Arr::keyBy($this->_entryTypes, 'handle');
 
         // Were the entries posted by UUID or ID?
         $uids = (
@@ -1806,7 +1806,10 @@ JS;
                 $entry->forceSave = $forceSave;
             } else {
                 // Make sure it's a valid entry type
-                if (! isset($entryData['type']) || ! isset($entryTypes[$entryData['type']])) {
+                if (! isset($entryData['type'])) {
+                    continue;
+                }
+                if (! isset($entryTypes[$entryData['type']])) {
                     continue;
                 }
                 $entry = new Entry;

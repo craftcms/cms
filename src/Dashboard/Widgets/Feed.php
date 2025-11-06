@@ -105,7 +105,7 @@ final class Feed extends Widget
         return $this->render($data);
     }
 
-    protected function render(mixed $data): string
+    private function render(mixed $data): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body.twig', [
             'feed' => $data,

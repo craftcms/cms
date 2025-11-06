@@ -7,10 +7,12 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\test\TestSetup;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use Dotenv\Dotenv;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -95,6 +97,12 @@ class TestCase extends Orchestra
         );
 
         $migration->up();
+
+        // Mark all existing migrations as applied
+        $migrator = app(Migrator::class)->track('craft');
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+        }
     }
 
     #[\Override]
@@ -111,7 +119,7 @@ class TestCase extends Orchestra
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
 
-        $app['config']->set($configKey, array_merge(
+        $app->make(ConfigRepository::class)->set($configKey, array_merge(
             Config::array($configKey, []),
             [
                 'host' => env('DB_HOST'),

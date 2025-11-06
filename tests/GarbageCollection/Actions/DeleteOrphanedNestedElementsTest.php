@@ -6,6 +6,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
     $this->action = app(DeleteOrphanedNestedElements::class, [

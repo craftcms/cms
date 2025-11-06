@@ -43,7 +43,7 @@ final class FilesystemsController
 
     public function create()
     {
-        return $this->edit(null);
+        return $this->edit();
     }
 
     public function edit(?string $handle = null): CpScreenResponse
@@ -102,8 +102,8 @@ final class FilesystemsController
                 'fsTypes' => $allFsTypes,
                 'readOnly' => $this->readOnly,
             ])
-            ->when(
-                ! $this->readOnly,
+            ->unless(
+                $this->readOnly,
                 function (CpScreenResponse $response) {
                     $response
                         ->action('fs/save')

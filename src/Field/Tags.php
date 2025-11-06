@@ -138,7 +138,7 @@ final class Tags extends BaseRelationField
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel, category: 'site') : self::defaultSelectionLabel(),
-                    'allowSelfRelations' => (bool) $this->allowSelfRelations,
+                    'allowSelfRelations' => $this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }

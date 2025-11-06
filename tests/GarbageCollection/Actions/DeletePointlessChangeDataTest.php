@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
+use Illuminate\Support\Facades\DB;
 
 it('deletes pointless change data', function (string $table, array $attributes) {
     $field = Field::factory()->create();

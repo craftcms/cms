@@ -10,6 +10,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Element extends BaseModel
@@ -18,6 +19,9 @@ final class Element extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    /**
+     * @return BelongsToMany<Site, $this, Pivot>
+     */
     public function sites(): BelongsToMany
     {
         return $this->belongsToMany(Site::class, Table::ELEMENTS_SITES, 'elementId', 'siteId')

@@ -44,7 +44,7 @@ final class ColorRule implements ValidationRule
 
         // #abc => #aabbcc
         if (strlen($color) === 4) {
-            $color = '#'.$color[1].$color[1].$color[2].$color[2].$color[3].$color[3];
+            return '#'.$color[1].$color[1].$color[2].$color[2].$color[3].$color[3];
         }
 
         return $color;

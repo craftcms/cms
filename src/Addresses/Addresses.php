@@ -88,7 +88,7 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     public function getCountryList(?string $locale = null): array
     {
         $locale ??= app()->getLocale();
-        $countries = $this->getCountryRepository()->getList($locale);
+        $countries = $this->countryRepository->getList($locale);
 
         if (Event::hasListeners(DefineAddressCountries::class)) {
             Event::dispatch($event = new DefineAddressCountries($locale, $countries));
@@ -108,7 +108,7 @@ final readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function getUsedFields(string $countryCode): array
     {
-        $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedFields();
+        $fields = $this->addressFormatRepository->get($countryCode)->getUsedFields();
 
         if (Event::hasListeners(DefineAddressUsedFields::class)) {
             Event::dispatch($event = new DefineAddressUsedFields($countryCode, $fields));
@@ -128,7 +128,7 @@ final readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function getUsedSubdivisionFields(string $countryCode): array
     {
-        $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedSubdivisionFields();
+        $fields = $this->addressFormatRepository->get($countryCode)->getUsedSubdivisionFields();
 
         if (Event::hasListeners(DefineAddressUsedSubdivisionFields::class)) {
             Event::dispatch($event = new DefineAddressUsedSubdivisionFields($countryCode, $fields));
@@ -149,10 +149,10 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     public function getFieldLabel(string $field, string $countryCode): string
     {
         $label = match ($field) {
-            AddressField::ADMINISTRATIVE_AREA => $this->getAdministrativeAreaTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getAdministrativeAreaType()),
-            AddressField::LOCALITY => $this->getLocalityTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getLocalityType()),
-            AddressField::DEPENDENT_LOCALITY => $this->getDependentLocalityTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getDependentLocalityType()),
-            AddressField::POSTAL_CODE => $this->getPostalCodeTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getPostalCodeType()),
+            AddressField::ADMINISTRATIVE_AREA => $this->getAdministrativeAreaTypeLabel($this->addressFormatRepository->get($countryCode)->getAdministrativeAreaType()),
+            AddressField::LOCALITY => $this->getLocalityTypeLabel($this->addressFormatRepository->get($countryCode)->getLocalityType()),
+            AddressField::DEPENDENT_LOCALITY => $this->getDependentLocalityTypeLabel($this->addressFormatRepository->get($countryCode)->getDependentLocalityType()),
+            AddressField::POSTAL_CODE => $this->getPostalCodeTypeLabel($this->addressFormatRepository->get($countryCode)->getPostalCodeType()),
             AddressField::SORTING_CODE => t('Sorting Code'),
             AddressField::ADDRESS_LINE1 => t('Address Line 1'),
             AddressField::ADDRESS_LINE2 => t('Address Line 2'),

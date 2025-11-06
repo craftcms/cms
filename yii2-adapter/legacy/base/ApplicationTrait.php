@@ -1245,6 +1245,7 @@ trait ApplicationTrait
      * Returns the tokens service.
      *
      * @return Tokens The tokens service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\RouteToken\RouteTokens} instead.
      */
     public function getTokens(): Tokens
     {

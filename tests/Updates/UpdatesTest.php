@@ -8,6 +8,7 @@ use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\UpdateRelease;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {

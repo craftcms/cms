@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedStructureElements;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 it('deletes orphaned data', function () {
     $element = Element::factory()->create();

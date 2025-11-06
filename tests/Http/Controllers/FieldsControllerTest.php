@@ -111,7 +111,7 @@ it('can save a new field', function () {
     ])->assertOk();
 
     expect(FieldModel::count())->toBe($currentCount + 1);
-    tap(FieldModel::latest('id')->first(), function (FieldModel $field) {
+    tap(FieldModel::query()->latest('id')->firstOrFail(), function (FieldModel $field) {
         expect($field->name)->toBe('My plaintext field');
         expect($field->handle)->toBe('plainText');
         expect($field->type)->toBe(PlainText::class);

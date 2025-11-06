@@ -47,7 +47,7 @@ class Json
             throw new InvalidArgumentException('Invalid JSON data.');
         }
 
-        return json_decode((string) $json, $asArray);
+        return json_decode($json, $asArray);
     }
 
     /**

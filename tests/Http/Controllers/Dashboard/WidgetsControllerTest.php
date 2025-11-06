@@ -48,7 +48,7 @@ it('can store a widget with settings', function () {
     expect($response->json('bodyHtml'))->not()->toBeEmpty();
 
     expect(WidgetModel::count())->toBe(1);
-    tap(WidgetModel::first(), function (WidgetModel $widget) {
+    tap(WidgetModel::query()->firstOrFail(), function (WidgetModel $widget) {
         expect(Widget::fromConfig($widget)->url)->toBe('https://craftcms.com/news.rss');
     });
 });
@@ -56,8 +56,7 @@ it('can store a widget with settings', function () {
 test('store needs a valid type', function () {
     postJson(action([WidgetsController::class, 'store']), [
         'type' => 'invalid',
-    ])
-        ->assertStatus(422)
+    ])->assertUnprocessable()
         ->assertJsonValidationErrorFor('type');
 });
 

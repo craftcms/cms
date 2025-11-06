@@ -581,6 +581,18 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        Schema::create('routetokens', function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->char('token', 32);
+            $table->text('route')->nullable();
+            $table->unsignedTinyInteger('usageLimit')->nullable();
+            $table->unsignedTinyInteger('usageCount')->nullable();
+            $table->dateTime('expiryDate');
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->char('uid', 36)->default('0');
+        });
+
         Schema::create(Table::SEARCHINDEXQUEUE, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('elementId');
@@ -737,18 +749,6 @@ class Install extends Migration
             $table->boolean('deletedWithGroup')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
-        });
-
-        Schema::create(Table::TOKENS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->char('token', 32);
-            $table->text('route')->nullable();
-            $table->unsignedTinyInteger('usageLimit')->nullable();
-            $table->unsignedTinyInteger('usageCount')->nullable();
-            $table->dateTime('expiryDate');
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
         });
 
         Schema::create(Table::USERGROUPS, function (Blueprint $table) {
@@ -996,8 +996,8 @@ class Install extends Migration
         Schema::createIndex(Table::TAGGROUPS, ['handle']);
         Schema::createIndex(Table::TAGGROUPS, ['dateDeleted']);
         Schema::createIndex(Table::TAGS, ['groupId']);
-        Schema::createIndex(Table::TOKENS, ['token'], unique: true);
-        Schema::createIndex(Table::TOKENS, ['expiryDate']);
+        Schema::createIndex(Table::ROUTETOKENS, ['token'], unique: true);
+        Schema::createIndex(Table::ROUTETOKENS, ['expiryDate']);
         Schema::createIndex(Table::USERGROUPS, ['handle']);
         Schema::createIndex(Table::USERGROUPS, ['name']);
         Schema::createIndex(Table::USERGROUPS_USERS, ['groupId', 'userId'], unique: true);

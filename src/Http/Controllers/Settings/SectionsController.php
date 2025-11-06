@@ -121,7 +121,7 @@ final readonly class SectionsController
         Sections $sections,
         Section $section,
     ): Response {
-        $sectionId = $request->input('sectionId');
+        $sectionId = $request->integer('sectionId');
 
         if ($sectionId) {
             $sectionId = (int) $sectionId;

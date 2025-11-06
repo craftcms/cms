@@ -122,8 +122,8 @@ final class EntryTypesController
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,
             ])
-            ->when(
-                value: ! $this->readOnly,
+            ->unless(
+                $this->readOnly,
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')

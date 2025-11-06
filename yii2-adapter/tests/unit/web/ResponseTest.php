@@ -81,6 +81,8 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
+        \Craft::$app->getRequest()->setIsConsoleRequest(false);
+
         self::assertEquals(
             $expected,
             str_replace(':80', '', $this->response->redirect($url)->headers->get('location')),

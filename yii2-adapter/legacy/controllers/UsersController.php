@@ -56,7 +56,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -67,7 +66,6 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -387,136 +385,6 @@ class UsersController extends Controller
     public function actionRedirect(): Response
     {
         return $this->redirect(Craft::$app->getUser()->getDefaultReturnUrl());
-    }
-
-    /**
-     * Logs a user in for impersonation.
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     */
-    public function actionImpersonate(): ?Response
-    {
-        $this->requirePostRequest();
-        $this->requireElevatedSession();
-
-        $userSession = Craft::$app->getUser();
-        $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
-
-        if (!$user) {
-            throw new BadRequestHttpException("Invalid user ID: $userId");
-        }
-
-        // Make sure they're allowed to impersonate this user
-        $this->_enforceImpersonatePermission($user);
-
-        // Save the original user ID to the session now so User::findIdentity()
-        // knows not to worry if the user isn't active yet
-        $userSession->setImpersonatorId($userSession->getId());
-
-        if (!$userSession->loginByUserId($userId)) {
-            $userSession->setImpersonatorId(null);
-            $this->setFailFlash(t('There was a problem impersonating this user.'));
-            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
-            return null;
-        }
-
-        return $this->_handleSuccessfulLogin($user);
-    }
-
-    /**
-     * Generates and returns a new impersonation URL
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     * @since 3.6.0
-     */
-    public function actionGetImpersonationUrl(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireElevatedSession();
-
-        $userId = $this->request->getBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
-
-        if (!$user) {
-            throw new BadRequestHttpException("Invalid user ID: $userId");
-        }
-
-        // Make sure they're allowed to impersonate this user
-        $this->_enforceImpersonatePermission($user);
-
-        // Create a single-use token that expires in an hour
-        $token = Craft::$app->getTokens()->createToken([
-            'users/impersonate-with-token', [
-                'userId' => $userId,
-                'prevUserId' => Craft::$app->getUser()->getId(),
-            ],
-        ], 1, new DateTime('+1 hour'));
-
-        if (!$token) {
-            throw new ServerErrorHttpException('Unable to create the invalidation token.');
-        }
-
-        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
-        $url = UrlHelper::urlWithToken($url, $token);
-
-        return $this->asJson(compact('url'));
-    }
-
-    /**
-     * Logs a user in for impersonation via an impersonation token.
-     *
-     * @param int $userId
-     * @param int $prevUserId
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @since 3.6.0
-     */
-    public function actionImpersonateWithToken(int $userId, int $prevUserId): ?Response
-    {
-        $this->requireToken();
-
-        $userSession = Craft::$app->getUser();
-        $user = Craft::$app->getUsers()->getUserById($userId);
-        $success = false;
-
-        if ($user) {
-            // Save the original user ID to the session now so User::findIdentity()
-            // knows not to worry if the user isn't active yet
-            $userSession->setImpersonatorId($prevUserId);
-            $success = $userSession->login($user);
-            if (!$success) {
-                $userSession->setImpersonatorId(null);
-            }
-        }
-
-        if (!$success) {
-            $this->setFailFlash(t('There was a problem impersonating this user.'));
-            Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
-                $userSession->getIdentity()->username, $userId), __METHOD__);
-            return null;
-        }
-
-        return $this->_handleSuccessfulLogin($user);
-    }
-
-    /**
-     * Ensures that the current user has permission to impersonate the given user.
-     *
-     * @param User $user
-     * @throws ForbiddenHttpException
-     */
-    private function _enforceImpersonatePermission(User $user): void
-    {
-        if (!Craft::$app->getUsers()->canImpersonate(static::currentUser(), $user)) {
-            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
-        }
     }
 
     /**

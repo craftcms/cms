@@ -20,10 +20,13 @@ use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
@@ -33,6 +36,7 @@ use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -52,14 +56,10 @@ class ExtensionTest extends TestCase
 {
     protected View $view;
 
-    public function _fixtures(): array
-    {
-        return [
-            'globals' => [
-                'class' => GlobalSetFixture::class,
-            ],
-        ];
-    }
+    /**
+     * @var UnitTester
+     */
+    protected UnitTester $tester;
 
     /**
      * @throws LoaderError
@@ -149,6 +149,12 @@ class ExtensionTest extends TestCase
      */
     public function test_element_globals(): void
     {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
         $this->testRenderResult(
             'A global set | A different global set',
             '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
@@ -894,6 +900,12 @@ class ExtensionTest extends TestCase
 
     public function test_field_value_sql_function(): void
     {
+        $this->tester->haveFixtures([
+            'fieldLayouts' => FieldLayoutFixture::class,
+        ]);
+
+        EntryType::whereHandle('test1')->update(['fieldLayoutId' => FieldLayout::whereUid('field-layout-1002----------------uid')->first()->id]);
+
         $entryType = EntryTypes::getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
         $valueSql = $field->getValueSql();

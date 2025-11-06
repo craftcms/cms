@@ -24,8 +24,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         $this->markTestIncomplete('Page not found: '.$url);
     }
 
-    $response
-        ->assertStatus(200)
+    $response->assertOk()
         ->assertSee($title);
     foreach ($extraContent as $content) {
         $response->assertSeeText($content['rendered']);

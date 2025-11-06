@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexes;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\DB;
 
 it('deletes orphaned data', function () {
     $element = Element::factory()->create();

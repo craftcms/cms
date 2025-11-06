@@ -6,6 +6,7 @@ use craft\elements\Entry;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
+use Illuminate\Support\Facades\DB;
 
 it('deletes elements that are missing data in the element extension table', function () {
     $element = Element::factory([

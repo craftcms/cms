@@ -22,7 +22,7 @@ final class CpModalResponse implements Responsable
      *
      * @see prepareModal()
      */
-    public $prepareModal = null;
+    public $prepareModal;
 
     /**
      * @var array Custom attributes to add to the `<form>` tag.
@@ -53,7 +53,7 @@ final class CpModalResponse implements Responsable
      * @see contentHtml()
      * @see contentTemplate()
      */
-    public $contentHtml = null;
+    public $contentHtml;
 
     /**
      * @var string|callable|null The errors summary HTML (DEV-212).
@@ -61,7 +61,7 @@ final class CpModalResponse implements Responsable
      * @see errorSummary()
      * @see errorSummaryTemplate()
      */
-    public $errorSummary = null;
+    public $errorSummary;
 
     /**
      * Sets a callable that will be called before other properties are added to the modal.

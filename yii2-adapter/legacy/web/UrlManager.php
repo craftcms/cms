@@ -15,6 +15,7 @@ use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\UrlRule as YiiUrlRule;
@@ -563,6 +564,6 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        return Craft::$app->getTokens()->getTokenRoute($token);
+        return app(RouteTokens::class)->getTokenRoute($token);
     }
 }

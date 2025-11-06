@@ -178,8 +178,8 @@ final class PHP
     public static function executable(): ?string
     {
         // If PHP_BINARY was set to $_SERVER, update the environment variable to match
-        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
-            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
+        if (isset($_SERVER['PHP_BINARY']) && \Illuminate\Support\Facades\Request::server('PHP_BINARY') !== getenv('PHP_BINARY')) {
+            putenv(sprintf('PHP_BINARY=%s', \Illuminate\Support\Facades\Request::server('PHP_BINARY')));
         }
 
         if (

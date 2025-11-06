@@ -51,6 +51,14 @@ class LegacyMiddleware
         $this->restoreEmptyStrings($request);
 
         try {
+            /** @var \craft\web\Request $request */
+            $request = Craft::$app->get('request');
+
+            // Remove any token as it was already handled by Laravel's HandleTokenRequest
+            $request->setToken(null);
+
+            Craft::$app->set('request', $request);
+
             /**
              * Reset the user as it could have been set before.
              */

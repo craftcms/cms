@@ -9,6 +9,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class EntryType extends BaseModel
@@ -28,6 +29,9 @@ final class EntryType extends BaseModel
         ];
     }
 
+    /**
+     * @return BelongsToMany<Section, $this, Pivot>
+     */
     public function sections(): BelongsToMany
     {
         return $this->belongsToMany(Section::class, Table::SECTIONS_ENTRYTYPES, 'typeId', 'sectionId')
