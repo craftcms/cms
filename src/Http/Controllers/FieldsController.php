@@ -26,7 +26,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
-use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -73,7 +72,7 @@ final class FieldsController
 
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
     {
-        $fieldId ??= $field?->id ?? $request->input('fieldId');
+        $fieldId ??= $field->id ?? $request->input('fieldId');
 
         abort_if(is_null($fieldId), 404, 'Field not found');
 
