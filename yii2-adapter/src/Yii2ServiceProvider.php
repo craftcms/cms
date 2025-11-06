@@ -39,6 +39,8 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
+use craft\helpers\Queue;
+use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
 use craft\services\Dashboard;
 use craft\services\Drafts;
@@ -74,6 +76,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -509,6 +512,30 @@ class Yii2ServiceProvider extends ServiceProvider
                 [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
                 [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']],
             ]);
+        });
+
+        Event::listen(SiteSaved::class, function(SiteSaved $event) {
+            $elementTypes = [];
+            if (self::supportsCategories()) {
+                $elementTypes[] = Category::class;
+            }
+            if (self::supportsGlobalSets()) {
+                $elementTypes[] = GlobalSet::class;
+            }
+            if (self::supportsTags()) {
+                $elementTypes[] = Tag::class;
+            }
+
+            foreach ($elementTypes as $elementType) {
+                Queue::push(new PropagateElements([
+                    'elementType' => $elementType,
+                    'criteria' => [
+                        'siteId' => $event->oldPrimarySiteId,
+                    ],
+                    'siteId' => $event->site->id,
+                    'isNewSite' => true,
+                ]));
+            }
         });
     }
 
