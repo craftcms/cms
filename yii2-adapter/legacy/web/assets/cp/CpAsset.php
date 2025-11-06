@@ -50,6 +50,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -690,6 +691,10 @@ JS;
     private function _editableCategoryGroups(): array
     {
         $groups = [];
+
+        if (!Yii2ServiceProvider::supportsCategories()) {
+            return $groups;
+        }
 
         foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
             $groups[] = [

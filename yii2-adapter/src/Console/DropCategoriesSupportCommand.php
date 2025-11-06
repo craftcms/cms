@@ -40,6 +40,8 @@ final class DropCategoriesSupportCommand extends Command
             return;
         }
 
+        Schema::disableForeignKeyConstraints();
+
         $this->components->task(
             "Dropping <fg=cyan>$categoryGroupsSitesTable</> table",
             function() use ($categoryGroupsSitesTable) {
@@ -62,6 +64,8 @@ final class DropCategoriesSupportCommand extends Command
         );
 
         Yii2ServiceProvider::resetSupport();
+
+        Schema::enableForeignKeyConstraints();
     }
 
     protected function getDefaultConfirmCallback(): Closure

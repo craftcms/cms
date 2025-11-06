@@ -790,17 +790,17 @@ class Yii2ServiceProvider extends ServiceProvider
     private static ?bool $supportsGlobalSets = null;
     private static ?bool $supportsTags = null;
 
-    private static function supportsCategories(): bool
+    public static function supportsCategories(): bool
     {
         return self::$supportsCategories ??= Schema::hasTable('categories');
     }
 
-    private static function supportsGlobalSets(): bool
+    public static function supportsGlobalSets(): bool
     {
         return self::$supportsGlobalSets ??= Schema::hasTable('globalsets');
     }
 
-    private static function supportsTags(): bool
+    public static function supportsTags(): bool
     {
         return self::$supportsTags ??= Schema::hasTable('tags');
     }
