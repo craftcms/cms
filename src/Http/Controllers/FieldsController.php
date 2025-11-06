@@ -71,10 +71,17 @@ final class FieldsController
         return $this->cpScreenResponse($field);
     }
 
-    public function edit(Request $request, FieldModel $field): CpScreenResponse
+    public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
     {
-        // swap model for FieldInterface
-        $field = $this->fieldsService->getFieldById($field->id);
+        $fieldId ??= $field?->id ?? $request->input('fieldId');
+
+        abort_if(is_null($fieldId), 404, 'Field not found');
+
+        abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
+
+        if ($field == null) {
+            $field = $found;
+        }
 
         return $this->cpScreenResponse($field, $request);
     }
@@ -170,7 +177,7 @@ final class FieldsController
         if (! $this->fieldsService->saveField($field)) {
             Flash::fail(t('Couldn’t save field.'));
 
-            return $this->edit($request, $field, $field->id);
+            return $this->edit($request, $field);
         }
 
         if ($request->input('addAnother')) {
