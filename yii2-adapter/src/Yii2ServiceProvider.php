@@ -20,6 +20,7 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\fieldlayoutelements\TitleField;
 use craft\fields\Categories as CategoriesField;
@@ -65,6 +66,7 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\variables\Cp as CpVariable;
+use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -813,6 +815,42 @@ class Yii2ServiceProvider extends ServiceProvider
                     $event->settings[$label]['tags'] = [
                         'iconMask' => '@craftcms/resources/icons/light/tags.svg',
                         'label' => t('Tags', category: 'yii2-adapter'),
+                    ];
+                }
+            },
+        );
+
+        YiiEvent::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function(RegisterUrlRulesEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->rules += [
+                        'categories' => 'categories/category-index',
+                        'categories/<groupHandle:{handle}>' => 'categories/category-index',
+                        'categories/<groupHandle:{handle}>/new' => 'categories/create',
+                        'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+                        'settings/categories' => 'categories/group-index',
+                        'settings/categories/new' => 'categories/edit-category-group',
+                        'settings/categories/<groupId:\d+>' => 'categories/edit-category-group',
+                    ];
+                }
+
+                if (self::supportsGlobalSets()) {
+                    $event->rules += [
+                        'globals' => 'globals',
+                        'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
+                        'settings/globals' => 'system-settings/global-set-index',
+                        'settings/globals/new' => 'system-settings/edit-global-set',
+                        'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
+                    ];
+                }
+
+                if (self::supportsTags()) {
+                    $event->rules += [
+                        'settings/tags' => 'tags/index',
+                        'settings/tags/new' => 'tags/edit-tag-group',
+                        'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
                     ];
                 }
             },
