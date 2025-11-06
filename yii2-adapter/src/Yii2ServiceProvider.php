@@ -86,6 +86,7 @@ use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
+use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Login;
@@ -273,6 +274,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
+            RepairCategoryGroupStructureCommand::class,
         ]);
 
         /**
