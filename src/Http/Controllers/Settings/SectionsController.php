@@ -75,9 +75,12 @@ final readonly class SectionsController
 
     public function edit(Sections $sections, SectionModel $section): CpScreenResponse
     {
+        abort_if(is_null($section->id), 404, 'Section not found');
+
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
         $sectionData = $sections->getSectionById($section->id);
+        abort_if(is_null($sectionData), 404, 'Section not found');
 
         return new CpScreenResponse()
             ->title(trim($sectionData->name) ?: t('Edit Section'))
