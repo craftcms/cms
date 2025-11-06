@@ -78,7 +78,7 @@ final class FieldsController
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
-        if ($field == null) {
+        if ($field === null) {
             $field = $found;
         }
 

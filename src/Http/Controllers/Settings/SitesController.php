@@ -112,8 +112,6 @@ final readonly class SitesController
 
     public function edit(SiteModel $site): View
     {
-        abort_if(is_null($site->id), 404, 'Site not found');
-
         $allGroups = $this->siteGroups->getAllGroups();
 
         abort_if($allGroups->isEmpty(), 500, 'No site groups exist.');

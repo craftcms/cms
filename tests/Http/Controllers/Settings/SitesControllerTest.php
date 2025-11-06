@@ -111,6 +111,11 @@ test('it can edit a site', function () {
         ->assertSee($site->getBaseUrl(false));
 });
 
+it('404s when a site does not exist', function () {
+    get(action([SitesController::class, 'edit'], [999]))
+        ->assertNotFound();
+});
+
 it('can save a site', function () {
     expect(Site::count())->toBe(1);
 

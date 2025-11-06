@@ -88,8 +88,6 @@ final class EntryTypesController
 
     public function edit(EntryTypeModel $entryType): CpScreenResponse
     {
-        abort_if(is_null($entryType->id), 404, 'Entry type not found');
-
         $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');

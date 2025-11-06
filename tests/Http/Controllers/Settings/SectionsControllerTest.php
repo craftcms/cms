@@ -73,6 +73,11 @@ test('it can edit a section', function () {
         ->assertSee($section->name);
 });
 
+it('404s when a section does not exist', function () {
+    get(action([SectionsController::class, 'edit'], [999]))
+        ->assertNotFound();
+});
+
 function validSectionData(array $overrides = []): array
 {
     $entryType = EntryType::factory()->create();

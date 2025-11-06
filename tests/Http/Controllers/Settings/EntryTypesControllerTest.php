@@ -72,6 +72,11 @@ test('it can edit an entry type', function () {
         ->assertSee($entryType->name);
 });
 
+it('404s when an entry type does not exist', function () {
+    get(action([EntryTypesController::class, 'edit'], [999]))
+        ->assertNotFound();
+});
+
 function validEntryTypeData(array $overrides = []): array
 {
     return array_merge([
