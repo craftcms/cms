@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
@@ -116,8 +115,6 @@ class UserPermissions extends Component
             $this->_userPermissions($this->_allPermissions);
             $this->_sitePermissions($this->_allPermissions);
             $this->_entryPermissions($this->_allPermissions);
-            $this->_globalSetPermissions($this->_allPermissions);
-            $this->_categoryPermissions($this->_allPermissions);
             $this->_volumePermissions($this->_allPermissions);
             $this->_utilityPermissions($this->_allPermissions);
 
@@ -707,79 +704,6 @@ class UserPermissions extends Component
                     'section' => t($section->name, category: 'site'),
                 ]),
                 'permissions' => $sectionPermissions,
-            ];
-        }
-    }
-
-    private function _globalSetPermissions(array &$permissions): void
-    {
-        $globalSets = Craft::$app->getGlobals()->getAllSets();
-
-        if (!$globalSets) {
-            return;
-        }
-
-        $globalSetPermissions = [];
-
-        foreach ($globalSets as $globalSet) {
-            $globalSetPermissions["editGlobalSet:$globalSet->uid"] = [
-                'label' => t('Edit “{title}”', [
-                    'title' => t($globalSet->name, category: 'site'),
-                ]),
-            ];
-        }
-
-        $permissions[] = [
-            'heading' => t('Global Sets'),
-            'permissions' => $globalSetPermissions,
-        ];
-    }
-
-    private function _categoryPermissions(array &$permissions): void
-    {
-        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
-
-        if (!$categoryGroups) {
-            return;
-        }
-
-        $type = Category::pluralLowerDisplayName();
-
-        foreach ($categoryGroups as $group) {
-            $permissions[] = [
-                'heading' => t('Category Group - {name}', [
-                    'name' => t($group->name, category: 'site'),
-                ]),
-                'permissions' => [
-                    "viewCategories:$group->uid" => [
-                        'label' => mb_ucfirst(t('View {type}', ['type' => $type])),
-                        'nested' => [
-                            "saveCategories:$group->uid" => [
-                                'label' => mb_ucfirst(t('Save {type}', ['type' => $type])),
-                            ],
-                            "deleteCategories:$group->uid" => [
-                                'label' => mb_ucfirst(t('Delete {type}', ['type' => $type])),
-                            ],
-                            "viewPeerCategoryDrafts:$group->uid" => [
-                                'label' => mb_ucfirst(t('View other users’ {type}', [
-                                    'type' => t('drafts'),
-                                ])),
-                                'nested' => [
-                                    "savePeerCategoryDrafts:$group->uid" => [
-                                        'label' => mb_ucfirst(t('Save other users’ {type}', [
-                                            'type' => t('drafts'),
-                                        ])),
-                                    ],
-                                    "deletePeerCategoryDrafts:$group->uid" => [
-                                        'label' => t('Delete other users’ {type}', [
-                                            'type' => t('drafts'),
-                                        ]),
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
             ];
         }
     }

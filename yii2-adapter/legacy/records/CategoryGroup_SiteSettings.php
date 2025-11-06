@@ -24,6 +24,7 @@ use yii\db\ActiveQueryInterface;
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class CategoryGroup_SiteSettings extends ActiveRecord
 {

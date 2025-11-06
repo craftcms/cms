@@ -32,8 +32,11 @@ abstract class Table
     public const BULKOPEVENTS = '{{%bulkopevents}}';
     /** @since 3.4.14 */
     public const CACHE = '{{%cache}}';
+    /** @deprecated in 6.0.0 */
     public const CATEGORIES = '{{%categories}}';
+    /** @deprecated in 6.0.0 */
     public const CATEGORYGROUPS = '{{%categorygroups}}';
+    /** @deprecated in 6.0.0 */
     public const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
     /** @since 3.4.0 */
     public const CHANGEDATTRIBUTES = '{{%changedattributes}}';
@@ -59,6 +62,7 @@ abstract class Table
     public const ENTRYTYPES = '{{%entrytypes}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
     public const FIELDS = '{{%fields}}';
+    /** @deprecated in 6.0.0 */
     public const GLOBALSETS = '{{%globalsets}}';
     /** @since 3.3.0 */
     public const GQLSCHEMAS = '{{%gqlschemas}}';
@@ -101,7 +105,9 @@ abstract class Table
     public const STRUCTUREELEMENTS = '{{%structureelements}}';
     public const STRUCTURES = '{{%structures}}';
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
+    /** @deprecated in 6.0.0 */
     public const TAGGROUPS = '{{%taggroups}}';
+    /** @deprecated in 6.0.0 */
     public const TAGS = '{{%tags}}';
     public const TOKENS = '{{%tokens}}';
     public const USERGROUPS = '{{%usergroups}}';

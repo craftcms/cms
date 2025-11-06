@@ -27,6 +27,7 @@ use function CraftCms\Cms\t;
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class GlobalSet extends Element implements FieldLayoutProviderInterface
 {
@@ -40,7 +41,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function displayName(): string
     {
-        return t('Global set');
+        return t('Global set', category: 'yii2-adapter');
     }
 
     /**
@@ -48,7 +49,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function lowerDisplayName(): string
     {
-        return t('global set');
+        return t('global set', category: 'yii2-adapter');
     }
 
     /**
@@ -56,7 +57,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function pluralDisplayName(): string
     {
-        return t('Global sets');
+        return t('Global sets', category: 'yii2-adapter');
     }
 
     /**
@@ -64,7 +65,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return t('global sets');
+        return t('global sets', category: 'yii2-adapter');
     }
 
     /**

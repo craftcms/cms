@@ -6,11 +6,8 @@ namespace CraftCms\Cms\GarbageCollection;
 
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\ContentBlock;
 use craft\elements\Entry;
-use craft\elements\GlobalSet;
-use craft\elements\Tag;
 use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
@@ -89,26 +86,18 @@ final class GarbageCollection
 
             [HardDelete::class, [
                 'tables' => [
-                    Table::CATEGORYGROUPS,
                     Table::ENTRYTYPES,
                     Table::FIELDS,
                     Table::SECTIONS,
-                    Table::TAGGROUPS,
                 ],
             ]],
             [DeletePartialElements::class, ['elementType' => Address::class, 'table' => Table::ADDRESSES]],
             [DeletePartialElements::class, ['elementType' => Asset::class, 'table' => Table::ASSETS]],
-            [DeletePartialElements::class, ['elementType' => Category::class, 'table' => Table::CATEGORIES]],
             [DeletePartialElements::class, ['elementType' => ContentBlock::class, 'table' => Table::CONTENTBLOCKS]],
             [DeletePartialElements::class, ['elementType' => Entry::class, 'table' => Table::ENTRIES]],
-            [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => Table::GLOBALSETS]],
-            [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => Table::TAGS]],
             [DeletePartialElements::class, ['elementType' => User::class, 'table' => Table::USERS]],
             [DeleteOrphanedFieldLayouts::class, ['elementType' => Asset::class, 'table' => Table::VOLUMES]],
-            [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => Table::CATEGORYGROUPS]],
             [DeleteOrphanedFieldLayouts::class, ['elementType' => Entry::class, 'table' => Table::ENTRYTYPES]],
-            [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => Table::GLOBALSETS]],
-            [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => Table::TAGGROUPS]],
             DeleteUnsupportedSiteEntries::class,
             [DeleteOrphanedNestedElements::class, ['elementType' => Address::class, 'table' => Table::ADDRESSES]],
             [DeleteOrphanedNestedElements::class, ['elementType' => ContentBlock::class, 'table' => Table::CONTENTBLOCKS]],

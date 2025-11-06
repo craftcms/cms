@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property TagGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class Tag extends ActiveRecord
 {

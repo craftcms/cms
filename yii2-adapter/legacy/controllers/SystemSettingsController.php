@@ -223,18 +223,19 @@ class SystemSettingsController extends Controller
      *
      * @return Response
      * @since 5.3.0
+     * @deprecated in 6.0.0
      */
     public function actionGlobalSetIndex(): Response
     {
         $view = $this->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
-        $view->registerTranslations('app', [
+        $view->registerTranslations('yii2-adapter', [
             'Global Set Name',
             'No global sets exist yet.',
         ]);
 
-        return $this->renderTemplate('settings/globals/_index.twig', [
-            'title' => t('Globals'),
+        return $this->renderTemplate('yii2-adapter/settings/globals/_index.twig', [
+            'title' => t('Globals', category: 'yii2-adapter'),
             'crumbs' => [
                 [
                     'label' => t('Settings'),
@@ -256,6 +257,7 @@ class SystemSettingsController extends Controller
      * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
+     * @deprecated in 6.0.0
      */
     public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
@@ -292,13 +294,13 @@ class SystemSettingsController extends Controller
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => t('Globals'),
+                'label' => t('Globals', category: 'yii2-adapter'),
                 'url' => UrlHelper::url('settings/globals'),
             ],
         ];
 
         // Render the template!
-        return $this->renderTemplate('settings/globals/_edit.twig', [
+        return $this->renderTemplate('yii2-adapter/settings/globals/_edit.twig', [
             'globalSetId' => $globalSetId,
             'globalSet' => $globalSet,
             'title' => $title,

@@ -50,6 +50,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -291,8 +292,6 @@ JS;
             'Move up',
             'Move',
             'Name',
-            'New category in the {group} category group',
-            'New category, choose a category group',
             'New child',
             'New custom source',
             'New entry in the {section} section',
@@ -305,7 +304,6 @@ JS;
             'New position saved.',
             'New position saved.',
             'New subfolder',
-            'New {group} category',
             'New {section} entry',
             'New {type}',
             'Next Page',
@@ -480,6 +478,13 @@ JS;
             '“{name}” deleted.',
         ]);
 
+        $view->registerTranslations('yii2-adapter', [
+            'New category in the {group} category group',
+            'New category, choose a category group',
+            'New {group} category',
+            'Tag',
+        ]);
+
         $view->registerTranslations('yii', [
             '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
@@ -610,7 +615,6 @@ JS;
                 ?? $generalConfig->accessibilityDefaults['disableAutofocus']
                 ?? false
             ),
-            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Edition::get()->value,
             'elementTypeNames' => $elementTypeNames,
             'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
@@ -647,6 +651,9 @@ JS;
             'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
+
+            // deprecated
+            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
         ];
 
         return $data;
@@ -684,6 +691,10 @@ JS;
     private function _editableCategoryGroups(): array
     {
         $groups = [];
+
+        if (!Yii2ServiceProvider::supportsCategories()) {
+            return $groups;
+        }
 
         foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
             $groups[] = [

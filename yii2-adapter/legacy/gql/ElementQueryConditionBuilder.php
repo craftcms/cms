@@ -19,7 +19,6 @@ use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql;
 use CraftCms\Cms\Field\Assets as AssetField;
 use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Categories as CategoryField;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntryField;
@@ -304,7 +303,7 @@ class ElementQueryConditionBuilder extends Component
                 'drafts' => [BaseRelationField::class, 'canBeAliased' => false],
                 'revisions' => [BaseRelationField::class, 'canBeAliased' => false],
                 'revisionCreator' => [BaseRelationField::class, 'canBeAliased' => false],
-                self::LOCALIZED_NODENAME => [CategoryField::class, EntryField::class],
+                self::LOCALIZED_NODENAME => [EntryField::class],
             ];
 
             // Fire a 'registerGqlEagerLoadableFields' event

@@ -7,16 +7,16 @@
 
 namespace craft\gql\base;
 
+use craft\events\DefineGqlArgumentsEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
-use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\EntryRelation;
-use craft\gql\types\input\criteria\TagRelation;
 use craft\gql\types\input\criteria\UserRelation;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use yii\base\Event;
 
 /**
  * Class ElementArguments
@@ -27,11 +27,17 @@ use GraphQL\Type\Definition\Type;
 abstract class ElementArguments extends Arguments
 {
     /**
+     * @event RegisterGqlArgumentsEvent The event that is triggered when arguments are being defined.
+     * @since 6.0.0
+     */
+    public const EVENT_DEFINE_ARGUMENTS = 'defineArguments';
+
+    /**
      * @inheritdoc
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
+        $arguments = array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
@@ -125,18 +131,6 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::listOf(UserRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.',
             ],
-            'relatedToCategories' => [
-                'name' => 'relatedToCategories',
-                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                'type' => Type::listOf(CategoryRelation::getType()),
-                'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
-            ],
-            'relatedToTags' => [
-                'name' => 'relatedToTags',
-                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
-                'type' => Type::listOf(TagRelation::getType()),
-                'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
-            ],
             'relatedToAll' => [
                 'name' => 'relatedToAll',
                 'type' => Type::listOf(QueryArgument::getType()),
@@ -193,6 +187,14 @@ abstract class ElementArguments extends Arguments
                 'description' => 'Narrows the query results based on the unique identifier for an element-site relation.',
             ],
         ]);
+
+        if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ARGUMENTS)) {
+            $event = new DefineGqlArgumentsEvent(compact('arguments'));
+            Event::trigger(self::class, self::EVENT_DEFINE_ARGUMENTS, $event);
+            return $event->arguments;
+        }
+
+        return $arguments;
     }
 
     /**

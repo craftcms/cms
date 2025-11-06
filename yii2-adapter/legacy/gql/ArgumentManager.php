@@ -14,9 +14,7 @@ use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\gql\base\ArgumentHandlerInterface;
 use craft\gql\base\RelationArgumentHandler;
 use craft\gql\handlers\RelatedAssets;
-use craft\gql\handlers\RelatedCategories;
 use craft\gql\handlers\RelatedEntries;
-use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
@@ -53,6 +51,9 @@ class ArgumentManager extends Component
      */
     public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
+    /**
+     * @var array<string,class-string<ArgumentHandlerInterface>>
+     */
     private array $_argumentHandlers = [];
 
     private bool $_handlersCreated = false;
@@ -62,8 +63,6 @@ class ArgumentManager extends Component
         $this->_argumentHandlers = [
             'relatedToEntries' => RelatedEntries::class,
             'relatedToAssets' => RelatedAssets::class,
-            'relatedToCategories' => RelatedCategories::class,
-            'relatedToTags' => RelatedTags::class,
             'relatedToUsers' => RelatedUsers::class,
             'site' => Site::class,
             'siteId' => SiteId::class,

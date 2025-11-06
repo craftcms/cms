@@ -191,6 +191,7 @@ class CraftVariable extends ServiceLocator
      *
      * @param array $criteria
      * @return CategoryQuery
+     * @deprecated in 6.0.0
      */
     public function categories(array $criteria = []): CategoryQuery
     {
@@ -238,6 +239,7 @@ class CraftVariable extends ServiceLocator
      * @param array $criteria
      * @return GlobalSetQuery
      * @since 3.0.4
+     * @deprecated in 6.0.0
      */
     public function globalSets(array $criteria = []): GlobalSetQuery
     {
@@ -287,6 +289,7 @@ class CraftVariable extends ServiceLocator
      *
      * @param array $criteria
      * @return TagQuery
+     * @deprecated in 6.0.0
      */
     public function tags(array $criteria = []): TagQuery
     {

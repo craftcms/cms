@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
-use CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand;
 use CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +13,6 @@ final class StructureServiceProvider extends ServiceProvider
     {
         $this->commands([
             RepairSectionStructureCommand::class,
-            RepairCategoryGroupStructureCommand::class,
         ]);
     }
 }

@@ -45,6 +45,7 @@ use function CraftCms\Cms\maxPowerCaptain;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class Categories extends Component
 {
@@ -302,12 +303,12 @@ class Categories extends Component
             }
         }
 
-        $configPath = ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid;
+        $configPath = \craft\services\ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         app(ProjectConfig::class)->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
-            $group->id = DB::table(Table::CATEGORYGROUPS)->idByUid($group->uid);
+            $group->id = DB::table('categorygroups')->idByUid($group->uid);
         }
 
         return true;
@@ -557,7 +558,7 @@ class Categories extends Component
         }
 
         app(ProjectConfig::class)->remove(
-            ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid,
+            \craft\services\ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid,
             "Delete category group “{$group->handle}”"
         );
 
@@ -612,7 +613,7 @@ class Categories extends Component
         try {
             // Delete the categories
             $elementsTable = Table::ELEMENTS;
-            $categoriesTable = Table::CATEGORIES;
+            $categoriesTable = 'categories';
             $now = now();
 
             $condition = fn(Builder $query): Builder => $query
@@ -639,7 +640,7 @@ class Categories extends Component
             }
 
             // Delete the category group
-            DB::table(Table::CATEGORYGROUPS)->softDelete($categoryGroupRecord->id);
+            DB::table('categorygroups')->softDelete($categoryGroupRecord->id);
 
             DB::commit();
         } catch (Throwable $e) {
@@ -678,12 +679,12 @@ class Categories extends Component
         $siteUid = $event->site->uid;
 
         $projectConfig = app(ProjectConfig::class);
-        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
+        $categoryGroups = $projectConfig->get(\craft\services\ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid,
+                $projectConfig->remove(\craft\services\ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid,
                     'Prune deleted site settings');
             }
         }
@@ -709,9 +710,9 @@ class Categories extends Component
 
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(new Alias(Table::CATEGORIES,
+            $criteria['structureId'] = DB::table(new Alias('categories',
                 'categories'))
-                ->join(new Alias(Table::CATEGORYGROUPS, 'categorygroups'), 'categorygroups.id',
+                ->join(new Alias('categorygroups', 'categorygroups'), 'categorygroups.id',
                     'categories.groupId')
                 ->where('categories.id', $categoryId)
                 ->value('categorygroups.structureId');

@@ -35,6 +35,7 @@ use CraftCms\Cms\Support\Arr;
  * @replace {twig-method} craft.tags()
  * @replace {myElement} myTag
  * @replace {element-class} \craft\elements\Tag
+ * @deprecated in 6.0.0
  */
 class TagQuery extends ElementQuery
 {

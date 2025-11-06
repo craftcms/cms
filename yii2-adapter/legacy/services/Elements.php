@@ -19,15 +19,12 @@ use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
-use craft\elements\GlobalSet;
-use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -2954,10 +2951,7 @@ class Elements extends Component
         $elementTypes = [
             Address::class,
             Asset::class,
-            Category::class,
             Entry::class,
-            GlobalSet::class,
-            Tag::class,
             User::class,
         ];
 
@@ -3017,12 +3011,8 @@ class Elements extends Component
         if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
             $class = $this->elementTypeByRefHandle($refHandle);
 
-            // Special cases for categories/tags/globals, if they’ve been entrified
-            if (
-                ($class === Category::class && empty(Craft::$app->getCategories()->getAllGroups())) ||
-                ($class === Tag::class && empty(Craft::$app->getTags()->getAllTagGroups())) ||
-                ($class === GlobalSet::class && empty(Craft::$app->getGlobals()->getAllSets()))
-            ) {
+            // Special cases for categories/tags/globals, if they've been removed
+            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
                 $class = Entry::class;
             }
 
