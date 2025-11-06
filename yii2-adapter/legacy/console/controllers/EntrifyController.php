@@ -47,6 +47,7 @@ use yii\helpers\Console;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
+ * @deprecated in 6.0.0
  */
 class EntrifyController extends Controller
 {
