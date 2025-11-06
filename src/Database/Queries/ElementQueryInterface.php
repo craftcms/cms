@@ -15,18 +15,15 @@ interface ElementQueryInterface extends Builder
 {
     /**
      * Execute the query and get the first result.
-     *
-     * @param  array|string  $columns
-     * @return ElementInterface|null
      */
     public function one(array|string $columns = ['*']): ?ElementInterface;
 
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, ElementInterface>
+     * @return \Illuminate\Database\Eloquent\Collection<int, ElementInterface>|array<int, ElementInterface>
      */
-    public function all(array|string $columns = ['*']): Collection;
+    public function all(array|string $columns = ['*']): Collection|array;
 
     /**
      * Causes the query results to be returned in reverse order.
@@ -47,7 +44,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function inReverse(bool $value = true): static;
@@ -56,7 +53,7 @@ interface ElementQueryInterface extends Builder
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function withProvisionalDrafts(bool $value = true): static;
@@ -82,7 +79,7 @@ interface ElementQueryInterface extends Builder
      *     ->one();
      * ```
      *
-     * @param bool|null $value The property value (defaults to true)
+     * @param  bool|null  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function drafts(?bool $value = true): static;
@@ -112,7 +109,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function draftId(?int $value = null): static;
@@ -147,7 +144,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function draftOf(mixed $value): static;
@@ -178,7 +175,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function draftCreator(mixed $value): static;
@@ -204,7 +201,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param bool|null $value The property value
+     * @param  bool|null  $value  The property value
      * @return static self reference
      */
     public function provisionalDrafts(?bool $value = true): static;
@@ -217,7 +214,7 @@ interface ElementQueryInterface extends Builder
      * Unpublished drafts can be included as well if `drafts(null)` and
      * `draftOf(false)` are also passed.
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function canonicalsOnly(bool $value = true): static;
@@ -243,7 +240,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function savedDraftsOnly(bool $value = true): static;
@@ -269,7 +266,7 @@ interface ElementQueryInterface extends Builder
      *     ->one();
      * ```
      *
-     * @param bool|null $value The property value (defaults to true)
+     * @param  bool|null  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function revisions(?bool $value = true): static;
@@ -299,7 +296,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function revisionId(?int $value = null): static;
@@ -330,7 +327,7 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function revisionOf(mixed $value): static;
@@ -361,9 +358,8 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function revisionCreator(mixed $value): static;
 }
-

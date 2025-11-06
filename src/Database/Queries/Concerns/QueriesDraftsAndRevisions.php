@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use CraftCms\Cms\Db\Table;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
+use craft\base\ElementInterface;
+use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Query\Builder;
@@ -13,12 +16,15 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
  */
 trait QueriesDraftsAndRevisions
 {
     /**
      * @var bool Whether to replace canonical elements with provisional drafts,
-     * when they exist for the current user.
+     *           when they exist for the current user.
+     *
      * @used-by withProvisionalDrafts()
      */
     public bool $withProvisionalDrafts = false;
@@ -48,7 +54,6 @@ trait QueriesDraftsAndRevisions
      *  - An array of source elements or element IDs
      * - `'*'` – matches drafts of any source element
      * - `false` – matches unpublished drafts that have no source element
-     *
      */
     public mixed $draftOf = null;
 
@@ -59,8 +64,8 @@ trait QueriesDraftsAndRevisions
 
     /**
      * @var bool Whether only canonical elements should be included in the
-     * results, including elements that reference another canonical element via
-     * `canonicalId` so long as they aren’t a draft.
+     *           results, including elements that reference another canonical element via
+     *           `canonicalId` so long as they aren’t a draft.
      */
     public bool $canonicalsOnly = false;
 
@@ -91,22 +96,22 @@ trait QueriesDraftsAndRevisions
 
     protected function initializeQueriesDraftsAndRevisions(): void
     {
-        $this->query->beforeQuery(function (Builder $query) {
+        $this->beforeQuery(function (ElementQuery $query) {
             $this->applyDraftParams($query);
             $this->applyRevisionParams($query);
         });
     }
 
-    private function applyDraftParams(Builder $query): void
+    private function applyDraftParams(ElementQuery $query): void
     {
         if ($this->drafts === false) {
-            $this->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.draftId')));
+            $query->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.draftId')));
 
             return;
         }
 
         $joinType = $this->drafts === true ? 'inner' : 'left';
-        $this->subQuery->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $query->subQuery->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
         $query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
 
         $query->addSelect([
@@ -118,44 +123,44 @@ trait QueriesDraftsAndRevisions
         ]);
 
         if ($this->draftId) {
-            $this->subQuery->where('elements.draftId', $this->draftId);
+            $query->subQuery->where('elements.draftId', $this->draftId);
         }
 
         if ($this->draftOf === '*') {
-            $this->subQuery->whereNotNull('elements.canonicalId');
+            $query->subQuery->whereNotNull('elements.canonicalId');
         } elseif (isset($this->draftOf)) {
             if ($this->draftOf === false) {
-                $this->subQuery->whereNull('elements.canonicalId', null);
+                $query->subQuery->whereNull('elements.canonicalId', null);
             } else {
-                $this->subQuery->whereIn('elements.canonicalId', $this->draftOf);
+                $query->subQuery->whereIn('elements.canonicalId', $this->draftOf);
             }
         }
 
         if ($this->draftCreator) {
-            $this->subQuery->where('drafts.creatorId', $this->draftCreator);
+            $query->subQuery->where('drafts.creatorId', $this->draftCreator);
         }
 
         if (isset($this->provisionalDrafts)) {
-            $this->subQuery->where(function (Builder $query) {
+            $query->subQuery->where(function (Builder $query) {
                 $query->whereNull('elements.draftId')
                     ->orWhere('drafts.provisional', $this->provisionalDrafts);
             });
         }
 
         if ($this->canonicalsOnly) {
-            $this->subQuery->where(function (Builder $query) {
+            $query->subQuery->where(function (Builder $query) {
                 $query->whereNull('elements.draftId')
                     ->orWhere(function (Builder $query) {
                         $query
                             ->whereNull('elements.canonicalId')
                             ->when(
                                 $this->savedDraftsOnly,
-                                fn(Builder $q) => $q->where('drafts.saved', true)
+                                fn (Builder $q) => $q->where('drafts.saved', true)
                             );
                     });
             });
         } elseif ($this->savedDraftsOnly) {
-            $this->subQuery->where(function (Builder $query) {
+            $query->subQuery->where(function (Builder $query) {
                 $query->whereNull('elements.draftId')
                     ->orWhereNotNull('elements.canonicalId')
                     ->orWhere('drafts.saved', true);
@@ -163,16 +168,16 @@ trait QueriesDraftsAndRevisions
         }
     }
 
-    private function applyRevisionParams(Builder $query): void
+    private function applyRevisionParams(ElementQuery $query): void
     {
         if ($this->revisions === false) {
-            $this->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
+            $query->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
 
             return;
         }
 
         $joinType = $this->revisions === true ? 'inner' : 'left';
-        $this->subQuery->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $query->subQuery->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
         $query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
 
         $query->addSelect([
@@ -183,20 +188,21 @@ trait QueriesDraftsAndRevisions
         ]);
 
         if ($this->revisionId) {
-            $this->subQuery->where('elements.revisionId', $this->revisionId);
+            $query->subQuery->where('elements.revisionId', $this->revisionId);
         }
 
         if ($this->revisionOf) {
-            $this->subQuery->where('elements.canonicalId', $this->revisionOf);
+            $query->subQuery->where('elements.canonicalId', $this->revisionOf);
         }
 
         if ($this->revisionCreator) {
-            $this->subQuery->where('revisions.creatorId', $this->revisionCreator);
+            $query->subQuery->where('revisions.creatorId', $this->revisionCreator);
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $drafts
      */
     public function drafts(?bool $value = true): static
@@ -207,7 +213,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $withProvisionalDrafts
      */
     public function withProvisionalDrafts(bool $value = true): static
@@ -218,7 +225,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $draftId
      * @uses $drafts
      */
@@ -234,7 +242,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $draftOf
      * @uses $drafts
      */
@@ -266,10 +275,10 @@ trait QueriesDraftsAndRevisions
             return $this;
         }
 
-        if (is_array($value) && !empty($value)) {
+        if (is_array($value) && ! empty($value)) {
             $c = Collection::make($value);
-            if ($c->every(fn($v) => $v instanceof ElementInterface || is_numeric($v))) {
-                $this->draftOf = $c->map(fn($v) => $v instanceof ElementInterface ? $v->id : $v)->all();
+            if ($c->every(fn ($v) => $v instanceof ElementInterface || is_numeric($v))) {
+                $this->draftOf = $c->map(fn ($v) => $v instanceof ElementInterface ? $v->id : $v)->all();
 
                 if ($this->drafts === false) {
                     $this->drafts = true;
@@ -283,13 +292,14 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $draftCreator
      * @uses $drafts
      */
     public function draftCreator($value): static
     {
-        $this->draftCreator = match(true) {
+        $this->draftCreator = match (true) {
             $value instanceof User => $value->id,
             is_numeric($value) || $value === null => $value,
             default => throw new InvalidArgumentException('Invalid draftCreator value'),
@@ -303,7 +313,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $provisionalDrafts
      * @uses $drafts
      */
@@ -319,7 +330,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $canonicalsOnly
      */
     public function canonicalsOnly(bool $value = true): static
@@ -330,7 +342,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $savedDraftsOnly
      */
     public function savedDraftsOnly(bool $value = true): static
@@ -341,7 +354,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $revisions
      */
     public function revisions(?bool $value = true): static
@@ -352,7 +366,8 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $revisionId
      * @uses $revisions
      */
@@ -368,13 +383,14 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $revisionOf
      * @uses $revisions
      */
     public function revisionOf($value): static
     {
-        $this->revisionOf = match(true) {
+        $this->revisionOf = match (true) {
             $value instanceof ElementInterface => $value->getCanonicalId(),
             is_numeric($value) || $value === null => $value,
             default => throw new InvalidArgumentException('Invalid revisionOf value'),
@@ -388,13 +404,14 @@ trait QueriesDraftsAndRevisions
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $revisionCreator
      * @uses $revisions
      */
     public function revisionCreator($value): static
     {
-        $this->revisionCreator = match(true) {
+        $this->revisionCreator = match (true) {
             $value instanceof User => $value->id,
             is_numeric($value) || $value === null => $value,
             default => throw new InvalidArgumentException('Invalid revisionCreator value'),

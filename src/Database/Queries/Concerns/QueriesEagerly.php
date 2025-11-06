@@ -1,11 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use craft\base\ElementInterface;
 use craft\elements\db\EagerLoadPlan;
 use Illuminate\Support\Collection;
 
+/**
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
+ */
 trait QueriesEagerly
 {
     /**
@@ -20,33 +27,38 @@ trait QueriesEagerly
 
     /**
      * @var ElementInterface|null The source element that this query is fetching relations for.
+     *
      * @since 5.0.0
      */
     public ?ElementInterface $eagerLoadSourceElement = null;
 
     /**
      * @var string|null The handle that could be used to eager-load the query's target elmeents.
+     *
      * @since 5.0.0
      */
     public ?string $eagerLoadHandle = null;
 
     /**
      * @var string|null The eager-loading alias that should be used.
+     *
      * @since 5.0.0
      */
     public ?string $eagerLoadAlias = null;
 
     /**
      * @var bool Whether the query should be used to eager-load results for the [[$eagerSourceElement|source element]]
-     * and any other elements in its collection.
+     *           and any other elements in its collection.
+     *
      * @used-by eagerly()
+     *
      * @since 5.0.0
      */
     public bool $eagerly = false;
 
     protected function initializeQueriesEagerly(): void
     {
-        $this->query->afterQuery(function (Collection $elements) {
+        $this->afterQuery(function (Collection $elements) {
             if ($this->with) {
                 $elementsService = \Craft::$app->getElements();
                 $elementsService->eagerLoadElements($this->elementType, $elements->all(), $this->with);
@@ -57,7 +69,8 @@ trait QueriesEagerly
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $with
      */
     public function with(array|string|null $value): static
@@ -68,7 +81,8 @@ trait QueriesEagerly
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $with
      */
     public function andWith(array|string|null $value): static
@@ -89,7 +103,7 @@ trait QueriesEagerly
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function eagerly(string|bool $value = true): static
     {
@@ -100,7 +114,7 @@ trait QueriesEagerly
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static
     {
@@ -114,11 +128,11 @@ trait QueriesEagerly
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function wasEagerLoaded(?string $alias = null): bool
     {
-        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+        if (! isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
             return false;
         }
 
@@ -127,18 +141,19 @@ trait QueriesEagerly
         }
 
         $planHandle = $this->eagerLoadHandle;
-        if (str_contains($planHandle, ':')) {
-            $planHandle = explode(':', $planHandle, 2)[1];
+        if (str_contains((string) $planHandle, ':')) {
+            $planHandle = explode(':', (string) $planHandle, 2)[1];
         }
+
         return $this->eagerLoadSourceElement->hasEagerLoadedElements($planHandle);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function wasCountEagerLoaded(?string $alias = null): bool
     {
-        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+        if (! isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
             return false;
         }
 
@@ -147,17 +162,18 @@ trait QueriesEagerly
         }
 
         $planHandle = $this->eagerLoadHandle;
-        if (str_contains($planHandle, ':')) {
-            $planHandle = explode(':', $planHandle, 2)[1];
+        if (str_contains((string) $planHandle, ':')) {
+            $planHandle = explode(':', (string) $planHandle, 2)[1];
         }
+
         return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
     }
 
     private function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
     {
         if (
-            !$this->eagerly ||
-            !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle) ||
+            ! $this->eagerly ||
+            ! isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle) ||
             count($this->eagerLoadSourceElement->elementQueryResult) < 2
         ) {
             return null;
@@ -171,7 +187,7 @@ trait QueriesEagerly
             false => $this->wasEagerLoaded($alias),
         };
 
-        if (!$eagerLoaded) {
+        if (! $eagerLoaded) {
             \Craft::$app->getElements()->eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -180,7 +196,7 @@ trait QueriesEagerly
                         'handle' => $this->eagerLoadHandle,
                         'alias' => $alias,
                         'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
-                        'all' => !$count,
+                        'all' => ! $count,
                         'count' => $count,
                         'lazy' => true,
                     ]),

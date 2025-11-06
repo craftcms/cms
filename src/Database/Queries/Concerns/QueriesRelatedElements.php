@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use craft\base\FieldInterface;
@@ -8,6 +10,11 @@ use craft\elements\db\ElementRelationParamParser;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
+ */
 trait QueriesRelatedElements
 {
     /**
@@ -36,22 +43,22 @@ trait QueriesRelatedElements
 
     private function applyRelatedToParam(): void
     {
-        if (!$this->relatedTo) {
+        if (! $this->relatedTo) {
             return;
         }
 
-        $this->query->beforeQuery(function (Builder $query) {
+        $this->beforeQuery(function (Builder $query) {
             $parser = new ElementRelationParamParser([
                 'fields' => $this->customFields ? Arr::keyBy(
                     $this->customFields,
-                    fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+                    fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
                 ) : [],
             ]);
 
             $condition = $parser->parse($this->relatedTo, $this->siteId !== '*' ? $this->siteId : null);
 
             if ($condition === false) {
-                throw new QueryAbortedException();
+                throw new QueryAbortedException;
             }
 
             $this->subQuery->where($condition);
@@ -64,13 +71,13 @@ trait QueriesRelatedElements
             return;
         }
 
-        $this->query->beforeQuery(function () {
+        $this->beforeQuery(function () {
             $notRelatedToParam = $this->notRelatedTo;
 
             $parser = new ElementRelationParamParser([
                 'fields' => $this->customFields ? Arr::keyBy(
                     $this->customFields,
-                    fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+                    fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
                 ) : [],
             ]);
 
@@ -86,17 +93,20 @@ trait QueriesRelatedElements
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $notRelatedTo
      */
     public function notRelatedTo($value): static
     {
         $this->notRelatedTo = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $notRelatedTo
      */
     public function andNotRelatedTo($value): static
@@ -111,18 +121,22 @@ trait QueriesRelatedElements
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $relatedTo
      */
     public function relatedTo($value): static
     {
         $this->relatedTo = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws NotSupportedException
+     *
      * @uses $relatedTo
      */
     public function andRelatedTo($value): static
@@ -137,19 +151,15 @@ trait QueriesRelatedElements
     }
 
     /**
-     * @param $value
-     * @param $currentValue
-     *
-     * @return mixed
      * @throws NotSupportedException
      */
     private function _andRelatedToCriteria($value, $currentValue): mixed
     {
-        if (!$value) {
+        if (! $value) {
             return false;
         }
 
-        if (!$currentValue) {
+        if (! $currentValue) {
             return $value;
         }
 
@@ -167,5 +177,4 @@ trait QueriesRelatedElements
 
         return $relatedTo;
     }
-
 }

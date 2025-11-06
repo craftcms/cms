@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use craft\base\FieldInterface;
@@ -11,9 +13,13 @@ use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Database\Query\Builder;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+/**
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
+ */
 trait QueriesCustomFields
 {
     /**
@@ -28,12 +34,14 @@ trait QueriesCustomFields
 
     /**
      * @var bool Whether custom fields should be factored into the query.
+     *
      * @used-by withCustomFields()
      */
     public bool $withCustomFields = true;
 
     /**
      * @var array<string,string|string[]> Column alias => cast type
+     *
      * @see prepare()
      * @see _applyOrderByParams()
      */
@@ -59,13 +67,14 @@ trait QueriesCustomFields
         // Map custom field handles to their content values
         $this->addCustomFieldsToColumnMap();
 
-        $this->query->beforeQuery(function () {
+        $this->beforeQuery(function () {
             $this->applyCustomFieldParams();
         });
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $withCustomFields
      */
     public function withCustomFields(bool $value = true): static
@@ -86,7 +95,7 @@ trait QueriesCustomFields
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFieldLayouts(): array
     {
@@ -112,8 +121,8 @@ trait QueriesCustomFields
                 }
 
                 foreach ($dbTypes as $key => $dbType) {
-                    $alias = $field->handle . ($key !== '*' ? ".$key" : '');
-                    $resolver = fn() => $field->getValueSql($key !== '*' ? $key : null);
+                    $alias = $field->handle.($key !== '*' ? ".$key" : '');
+                    $resolver = fn () => $field->getValueSql($key !== '*' ? $key : null);
 
                     $this->addToColumnMap($alias, $resolver);
 
@@ -126,7 +135,7 @@ trait QueriesCustomFields
             }
         }
 
-        if (!empty($this->generatedFields)) {
+        if (! empty($this->generatedFields)) {
             foreach ($this->generatedFields as $field) {
                 if (($field['handle'] ?? '') !== '') {
                     $this->addToColumnMap($field['handle'], new JsonExtract('elements_sites.content', '$.'.$field['uid']));
@@ -163,7 +172,7 @@ trait QueriesCustomFields
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
 
-        if (!empty($this->customFields)) {
+        if (! empty($this->customFields)) {
             // Group the fields by handle and field UUID
             foreach ($this->customFields as $field) {
                 $fieldsByHandle[$field->handle][$field->uid][] = $field;
@@ -171,12 +180,14 @@ trait QueriesCustomFields
 
             foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
                 // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
-                if ($handle === 'owner' || ($fieldAttributes->$handle ?? null) === null) {
+                if ($handle === 'owner') {
                     continue;
                 }
-
+                if (($fieldAttributes->$handle ?? null) === null) {
+                    continue;
+                }
                 // Make sure the custom field exists in one of the field layouts
-                if (!isset($fieldsByHandle[$handle])) {
+                if (! isset($fieldsByHandle[$handle])) {
                     // If it looks like null/:empty: is a valid option, let it slide
                     $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
                         ? $fieldAttributes->$handle['value']
@@ -202,7 +213,7 @@ trait QueriesCustomFields
 
                     // aborting?
                     if ($condition === false) {
-                        throw new QueryAbortedException();
+                        throw new QueryAbortedException;
                     }
 
                     if ($condition !== null) {
@@ -210,7 +221,7 @@ trait QueriesCustomFields
                     }
                 }
 
-                if (!empty($conditions)) {
+                if (! empty($conditions)) {
                     if (count($conditions) === 1) {
                         $this->subQuery->andWhere(reset($conditions), $params);
                     } else {
@@ -220,12 +231,12 @@ trait QueriesCustomFields
             }
         }
 
-        if (!empty($this->generatedFields)) {
+        if (! empty($this->generatedFields)) {
             $generatedFieldColumns = [];
 
             foreach ($this->generatedFields as $field) {
                 $handle = $field['handle'] ?? '';
-                if ($handle !== '' && isset($fieldAttributes->$handle) && !isset($fieldsByHandle[$handle])) {
+                if ($handle !== '' && isset($fieldAttributes->$handle) && ! isset($fieldsByHandle[$handle])) {
                     $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', '$.'.$field['uid']);
                 }
             }

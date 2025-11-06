@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
@@ -51,4 +52,9 @@ function loadTestPlugin(): void
         ],
     ]);
     $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
+}
+
+function entryQuery(): EntryQuery
+{
+    return new EntryQuery;
 }

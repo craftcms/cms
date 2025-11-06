@@ -10,7 +10,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Element extends BaseModel
@@ -20,20 +20,23 @@ final class Element extends BaseModel
     use SoftDeletes;
 
     /**
-     * @return BelongsToMany<Site, $this, Pivot>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function sites(): BelongsToMany
     {
-        return $this->belongsToMany(Site::class, Table::ELEMENTS_SITES, 'elementId', 'siteId')
-            ->withPivot([
-                'title',
-                'slug',
-                'uri',
-                'content',
-                'enabled',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ]);
+        return $this->belongsToMany(
+            related: Site::class,
+            table: Table::ELEMENTS_SITES,
+            foreignPivotKey: 'elementId',
+            relatedPivotKey: 'siteId'
+        )->using(ElementSiteSettings::class);
+    }
+
+    /**
+     * @return HasMany<ElementSiteSettings, $this>
+     */
+    public function siteSettings(): HasMany
+    {
+        return $this->hasMany(ElementSiteSettings::class, 'elementId');
     }
 }

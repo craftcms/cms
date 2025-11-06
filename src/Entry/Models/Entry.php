@@ -12,7 +12,6 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
 
 final class Entry extends BaseModel
 {

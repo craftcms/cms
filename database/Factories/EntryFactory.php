@@ -27,4 +27,45 @@ final class EntryFactory extends Factory
             'dateUpdated' => $created,
         ];
     }
+
+    #[\Override]
+    public function configure(): self
+    {
+        $this->afterCreating(function (Entry $entry) {
+            $entry->element->update([
+                'dateCreated' => $entry->dateCreated,
+                'dateUpdated' => $entry->dateUpdated,
+            ]);
+        });
+
+        return $this;
+    }
+
+    public function trashed(bool $trashed = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->trashed($trashed),
+        ]);
+    }
+
+    public function archived(bool $archived = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->set('archived', $archived),
+        ]);
+    }
+
+    public function enabled(bool $enabled = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->set('enabled', $enabled),
+        ]);
+    }
+
+    public function disabled(bool $disabled = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->set('enabled', ! $disabled),
+        ]);
+    }
 }

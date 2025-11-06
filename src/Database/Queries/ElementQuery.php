@@ -1,26 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
-use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
-use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
-use CraftCms\Cms\Database\Table;
+use craft\base\Element;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\ForwardsCalls;
+use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @template TElement of ElementInterface
@@ -30,19 +37,22 @@ use ReflectionMethod;
 class ElementQuery implements ElementQueryInterface
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
-    use BuildsQueries;
-    use ForwardsCalls;
+    use BuildsQueries { BuildsQueries::sole as baseSole; }
 
+    use Concerns\CollectsCacheTags;
+    use Concerns\FormatsResults;
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
+    use Concerns\QueriesFields;
     use Concerns\QueriesPlaceholderElements;
     use Concerns\QueriesRelatedElements;
     use Concerns\QueriesSites;
     use Concerns\QueriesStatuses;
     use Concerns\QueriesStructures;
     use Concerns\QueriesUniqueElements;
-    use Concerns\ElementQueryTrait;
+    use Concerns\SearchesElements;
+    use ForwardsCalls;
 
     /**
      * The base query builder instance.
@@ -53,18 +63,6 @@ class ElementQuery implements ElementQueryInterface
      * The subquery that the main query will select from.
      */
     protected Builder $subQuery;
-
-    /**
-     * The element being queried.
-     *
-     * @var class-string<TElement>
-     */
-    protected string $elementType;
-
-    /**
-     * The table to be joined to elements.
-     */
-    protected string $table = Table::ELEMENTS;
 
     /**
      * All of the globally registered builder macros.
@@ -80,6 +78,7 @@ class ElementQuery implements ElementQueryInterface
      * The properties that should be returned from query builder.
      *
      * @var string[]
+     *
      * @see \Illuminate\Database\Eloquent\Builder::$propertyPassthru for inspiration.
      */
     protected array $propertyPassthru = [
@@ -90,6 +89,7 @@ class ElementQuery implements ElementQueryInterface
      * The methods that should be returned from query builder.
      *
      * @var string[]
+     *
      * @see \Illuminate\Database\Eloquent\Builder::$passthru for inspiration.
      */
     protected array $passthru = [
@@ -129,6 +129,23 @@ class ElementQuery implements ElementQueryInterface
         'value',
     ];
 
+    protected array $passthruAggregates = [
+        'aggregate',
+        'average',
+        'avg',
+        'count',
+        'getcountforpagination',
+        'max',
+        'min',
+        'numericaggregate',
+        'sum',
+    ];
+
+    /**
+     * The callbacks that should be invoked before retrieving data from the database.
+     */
+    protected array $beforeQueryCallbacks = [];
+
     /**
      * The callbacks that should be invoked after retrieving data from the database.
      */
@@ -142,20 +159,49 @@ class ElementQuery implements ElementQueryInterface
     // Use ** as a placeholder for "all the default columns"
     protected array $columns = ['**'];
 
+    // For internal use
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var array<string,array<string|\Illuminate\Contracts\Database\Query\Expression>> Column alias => name mapping
+     *
+     * @see joinElementTable()
+     * @see applyOrderByParams()
+     * @see applySelectParam()
+     */
+    private array $columnMap;
+
+    /**
+     * @var bool Whether an element table has been joined for the query
+     *
+     * @see prepare()
+     * @see joinElementTable()
+     */
+    private bool $joinedElementTable = false;
+
     /**
      * Create a new Element query instance.
      *
-     * @param class-string<TElement> $elementType
+     * @param  class-string<TElement>  $elementType
      */
-    public function __construct(string $elementType)
-    {
-        $this->elementType = $elementType;
+    public function __construct(
+        /** @var class-string<TElement> */
+        protected string $elementType = Element::class,
+        protected array $config = [],
+    ) {
+        Typecast::properties(static::class, $config);
 
-        $this->query = DB::query();
+        foreach ($config as $key => $value) {
+            $this->{$key} = $value;
+        }
 
-        // Build the query
-        // ---------------------------------------------------------------------
-        $this->subQuery = DB::table(Table::ELEMENTS, 'elements');
+        $this->query = DB::query()->select('**');
+        $this->subQuery = DB::table(Table::ELEMENTS, 'elements')
+            ->select([
+                'elements.id as elementsId',
+                'elements_sites.id as siteSettingsId',
+            ])
+            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -168,14 +214,14 @@ class ElementQuery implements ElementQueryInterface
         ];
 
         if ($this->elementType::hasTitles()) {
-            $this->columnMap[] = 'elements_sites.title as title';
+            $this->columnMap['title'] = 'elements_sites.title';
         }
-
-        $this->query->beforeQuery(fn (Builder $builder) => $this->elementQueryBeforeQuery($builder));
 
         $this->initializeTraits();
 
-        $this->query->afterQuery(fn (Collection $collection) => $this->elementQueryAfterQuery($collection));
+        $this->query->beforeQuery(function () {
+            $this->applyBeforeQueryCallbacks();
+        });
     }
 
     protected function initializeTraits(): void
@@ -196,15 +242,15 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Create a collection of elements from plain arrays.
      *
-     * @param  array  $items
      * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
      */
     public function hydrate(array $items): Collection
     {
-        return new Collection(array_map(function ($item) {
+        return new Collection(array_map(fn ($item) =>
             // @TODO: Actually populate
-            return new $this->elementType;
-        }, $items));
+            new $this->elementType([
+                'id' => $item->id,
+            ]), $items));
     }
 
     /**
@@ -234,7 +280,7 @@ class ElementQuery implements ElementQueryInterface
             return $this->findMany($id, $columns);
         }
 
-        return $this->where('id', $id)->first($columns);
+        return $this->where('elements.id', $id)->first($columns);
     }
 
     /**
@@ -242,9 +288,9 @@ class ElementQuery implements ElementQueryInterface
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
      * @param  array|string  $columns
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
+     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
      */
-    public function findMany($ids, $columns = ['*']): Collection
+    public function findMany($ids, $columns = ['*']): Collection|array
     {
         $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
 
@@ -252,7 +298,7 @@ class ElementQuery implements ElementQueryInterface
             return new Collection;
         }
 
-        return $this->whereIn('id', $ids)->get($columns);
+        return $this->whereIn('elements.id', $ids)->get($columns);
     }
 
     /**
@@ -381,13 +427,14 @@ class ElementQuery implements ElementQueryInterface
      * Execute the query as a "select" statement.
      *
      * @param  array|string  $columns
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
+     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
      */
-    public function get($columns = ['*']): Collection
+    public function get($columns = ['*']): Collection|array
     {
         $models = $this->getModels($columns);
 
-        return $this->applyAfterQueryCallbacks(new Collection($models));
+        return $this->applyAfterQueryCallbacks(new Collection($models))
+            ->when($this->asArray, fn (Collection $collection) => $collection->all());
     }
 
     /**
@@ -403,7 +450,12 @@ class ElementQuery implements ElementQueryInterface
         )->all();
     }
 
-    public function all(array|string $columns = ['*']): Collection
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
+     */
+    public function all(array|string $columns = ['*']): Collection|array
     {
         return $this->get($columns);
     }
@@ -413,17 +465,17 @@ class ElementQuery implements ElementQueryInterface
         return $this->first($columns);
     }
 
-    public function pluck($column, $key = null)
+    public function pluck($column, $key = null): Collection|array
     {
         $column = $this->columnMap[$column] ?? $column;
 
-        return $this->query->pluck($column, $key);
+        return $this->query->pluck($column, $key)
+            ->when($this->asArray, fn (Collection $collection) => $collection->all());
     }
 
     /**
      * Register a closure to be invoked after the query is executed.
      *
-     * @param  \Closure  $callback
      * @return $this
      */
     public function afterQuery(Closure $callback): self
@@ -435,9 +487,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Invoke the "after query" modification callbacks.
-     *
-     * @param  mixed  $result
-     * @return mixed
      */
     public function applyAfterQueryCallbacks(mixed $result): mixed
     {
@@ -457,7 +506,7 @@ class ElementQuery implements ElementQueryInterface
     {
         return $this->applyScopes()->query->cursor()->map(function ($record) {
             // @TODO: Actually populate
-            $model = new $this->elementType;
+            $model = new $this->elementType(['id' => $record->id]);
 
             return $this->applyAfterQueryCallbacks($this->newModelInstance()->newCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
@@ -465,8 +514,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Get the underlying query builder instance.
-     *
-     * @return \Illuminate\Database\Query\Builder
      */
     public function getQuery(): Builder
     {
@@ -475,8 +522,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Get the underlying subquery builder instance.
-     *
-     * @return \Illuminate\Database\Query\Builder
      */
     public function getSubQuery(): Builder
     {
@@ -485,8 +530,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Get the "limit" value from the query or null if it's not set.
-     *
-     * @return mixed
      */
     public function getLimit(): mixed
     {
@@ -495,8 +538,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Get the "offset" value from the query or null if it's not set.
-     *
-     * @return mixed
      */
     public function getOffset(): mixed
     {
@@ -507,7 +548,6 @@ class ElementQuery implements ElementQueryInterface
      * Get the given macro by name.
      *
      * @param  string  $name
-     * @return \Closure
      */
     public function getMacro($name): Closure
     {
@@ -518,7 +558,6 @@ class ElementQuery implements ElementQueryInterface
      * Checks if a macro is registered.
      *
      * @param  string  $name
-     * @return bool
      */
     public function hasMacro($name): bool
     {
@@ -529,7 +568,6 @@ class ElementQuery implements ElementQueryInterface
      * Get the given global macro by name.
      *
      * @param  string  $name
-     * @return \Closure
      */
     public static function getGlobalMacro($name): Closure
     {
@@ -540,7 +578,6 @@ class ElementQuery implements ElementQueryInterface
      * Checks if a global macro is registered.
      *
      * @param  string  $name
-     * @return bool
      */
     public static function hasGlobalMacro($name): bool
     {
@@ -551,7 +588,6 @@ class ElementQuery implements ElementQueryInterface
      * Dynamically access builder proxies.
      *
      * @param  string  $key
-     * @return mixed
      *
      * @throws \Exception
      */
@@ -569,7 +605,6 @@ class ElementQuery implements ElementQueryInterface
      *
      * @param  string  $method
      * @param  array  $parameters
-     * @return mixed
      */
     public function __call($method, $parameters): mixed
     {
@@ -596,7 +631,17 @@ class ElementQuery implements ElementQueryInterface
         }
 
         if (in_array(strtolower($method), $this->passthru)) {
+            if (in_array(strtolower($method), $this->passthruAggregates)) {
+                $this->applyBeforeQueryCallbacks();
+            }
+
             return $this->getQuery()->{$method}(...$parameters);
+        }
+
+        if (in_array(strtolower($method), ['orderby'])) {
+            $this->forwardCallTo($this->query, $method, $parameters);
+
+            return $this;
         }
 
         $this->forwardCallTo($this->subQuery, $method, $parameters);
@@ -609,7 +654,6 @@ class ElementQuery implements ElementQueryInterface
      *
      * @param  string  $method
      * @param  array  $parameters
-     * @return mixed
      *
      * @throws \BadMethodCallException
      */
@@ -641,8 +685,6 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Register the given mixin with the builder.
      *
-     * @param  string  $mixin
-     * @param  bool  $replace
      * @return void
      */
     protected static function registerMixin(string $mixin, bool $replace = true)
@@ -666,7 +708,6 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Register a closure to be invoked on a clone.
      *
-     * @param  \Closure  $callback
      * @return $this
      */
     public function onClone(Closure $callback): self
@@ -677,16 +718,190 @@ class ElementQuery implements ElementQueryInterface
     }
 
     /**
-     * Force a clone of the underlying query builder when cloning.
-     *
-     * @return void
+     * Force a clone of the underlying query builders when cloning.
      */
-    public function __clone()
+    public function __clone(): void
     {
         $this->query = clone $this->query;
+        $this->subQuery = clone $this->subQuery;
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);
         }
+    }
+
+    /**
+     * Register a closure to be invoked after the query is executed.
+     *
+     * @return $this
+     */
+    public function beforeQuery(Closure $callback): self
+    {
+        $this->beforeQueryCallbacks[] = $callback;
+
+        return $this;
+    }
+
+    public function applyBeforeQueryCallbacks(): void
+    {
+        foreach ($this->beforeQueryCallbacks as $callback) {
+            $callback($this);
+        }
+
+        $this->beforeQueryCallbacks = [];
+
+        $this->elementQueryBeforeQuery();
+    }
+
+    protected function elementQueryBeforeQuery(): void
+    {
+        // Is the query already doomed?
+        throw_if(isset($this->id) && empty($this->id), QueryAbortedException::class);
+
+        // Give other classes a chance to make changes up front
+        /*if (!$this->beforePrepare()) {
+            throw new QueryAbortedException();
+        }*/
+
+        // @TODO: Params?
+        // ->addParams($this->params);
+
+        $this->applySelectParams();
+
+        // If an element table was never joined in, explicitly filter based on the element type
+        if (! $this->joinedElementTable && $this->elementType !== Element::class) {
+            try {
+                $ref = new ReflectionClass($this->elementType);
+            } catch (ReflectionException) {
+                $ref = null;
+            }
+
+            if ($ref && ! $ref->isAbstract()) {
+                $this->subQuery->where('elements.type', $this->elementType);
+            }
+        }
+
+        $this->query
+            ->fromSub($this->subQuery, 'subquery')
+            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')
+            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'subquery.elementsId');
+    }
+
+    /**
+     * Joins in a table with an `id` column that has a foreign key pointing to `elements.id`.
+     *
+     * The table will be joined with an alias based on the unprefixed table name. For example,
+     * if `{{%entries}}` is passed, the table will be aliased to `entries`.
+     *
+     * @param  string  $table  The table name, e.g. `entries` or `{{%entries}}`
+     */
+    protected function joinElementTable(string $table, ?string $alias = null): void
+    {
+        $alias ??= $table;
+
+        $this->query->join(new Alias($table, $alias), "$alias.id", 'subquery.elementsId');
+        $this->subQuery->join(new Alias($table, $alias), "$alias.id", 'elements.id');
+        $this->joinedElementTable = true;
+
+        // Add element table cols to the column map
+        foreach (Schema::getColumnListing($table) as $column) {
+            if (! isset($this->columnMap[$column])) {
+                $this->columnMap[$column] = "$alias.$column";
+            }
+        }
+    }
+
+    /**
+     * Applies the 'select' param to the query being executed.
+     */
+    private function applySelectParams(): void
+    {
+        // Select all columns defined by [[select]], swapping out any mapped column names
+        $select = [];
+        $includeDefaults = false;
+
+        foreach ($this->query->columns as $column) {
+            if ($column instanceof Alias) {
+                $column = $column->getValue($this->getGrammar());
+            }
+
+            [$column, $alias] = explode(' as ', $column, 2) + [1 => null];
+
+            $alias ??= $column;
+
+            if ($column === '**') {
+                $includeDefaults = true;
+            } else {
+                // Is this a mapped column name?
+                if (is_string($column) && isset($this->columnMap[$column])) {
+                    $column = $this->resolveColumnMapping($column);
+
+                    // Completely ditch the mapped name if instantiated elements are going to be returned
+                    if (! $this->asArray && is_string($column)) {
+                        $alias = $column;
+                    }
+                }
+
+                if (is_array($column)) {
+                    $select[] = new Alias(new Coalesce($column), $alias);
+                } else {
+                    $select[] = new Alias($column, $alias);
+                }
+            }
+        }
+
+        // Is there still a ** placeholder param?
+        if (! $includeDefaults) {
+            $this->query->columns = $select;
+
+            return;
+        }
+
+        // Merge in the default columns
+        $select = array_merge($select, [
+            'elements.id',
+            'elements.canonicalId',
+            'elements.fieldLayoutId',
+            'elements.uid',
+            'elements.enabled',
+            'elements.archived',
+            'elements.dateLastMerged',
+            'elements.dateCreated',
+            'elements.dateUpdated',
+            'elements_sites.id as siteSettingsId',
+            'elements_sites.siteId',
+            'elements_sites.title',
+            'elements_sites.slug',
+            'elements_sites.uri',
+            'elements_sites.content',
+            'elements_sites.enabled as enabledForSite',
+        ]);
+
+        // If the query includes soft-deleted elements, include the date deleted
+        if ($this->trashed !== false) {
+            $select[] = 'elements.dateDeleted';
+        }
+
+        $this->query->columns = $select;
+    }
+
+    private function resolveColumnMapping(string $key): string|array
+    {
+        if (! isset($this->columnMap[$key])) {
+            throw new InvalidArgumentException("Invalid column map key: $key");
+        }
+
+        // make sure it's not still a callback
+        if (is_callable($this->columnMap[$key])) {
+            $this->columnMap[$key] = $this->columnMap[$key]();
+        } elseif (is_array($this->columnMap[$key])) {
+            foreach ($this->columnMap[$key] as $i => $mapping) {
+                if (is_callable($mapping)) {
+                    $this->columnMap[$key][$i] = $mapping();
+                }
+            }
+        }
+
+        return $this->columnMap[$key];
     }
 }

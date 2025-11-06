@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Expressions;
 
 use Illuminate\Contracts\Database\Query\Expression;
@@ -7,16 +9,15 @@ use Illuminate\Database\Grammar;
 use Tpetry\QueryExpressions\Concerns\IdentifiesDriver;
 use Tpetry\QueryExpressions\Concerns\StringizeExpression;
 
-final class JsonExtract implements Expression
+final readonly class JsonExtract implements Expression
 {
     use IdentifiesDriver;
     use StringizeExpression;
 
     public function __construct(
-        private readonly string|Expression $expression,
-        private readonly string $path,
-    ) {
-    }
+        private string|Expression $expression,
+        private string $path,
+    ) {}
 
     public function getValue(Grammar $grammar): string
     {

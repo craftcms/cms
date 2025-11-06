@@ -1,62 +1,43 @@
 <?php
 
-use craft\elements\Entry;
-use CraftCms\Cms\Database\Queries\ElementQuery;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Models\Element;
-use Illuminate\Support\Facades\DB;
-
-function query(): ElementQuery
-{
-    return new ElementQuery(Entry::class);
-}
+use craft\base\Element;
+use CraftCms\Cms\Entry\Models\Entry;
 
 it('queries enabled elements by default', function () {
-    $element1 = Element::factory()->create([
-        'enabled' => true,
-    ]);
+    $element1 = Entry::factory()->enabled()->create();
 
-    Element::factory()->create(['enabled' => false]);
+    Entry::factory()->disabled()->create();
 
-    $element3 = Element::factory()->create([
-        'enabled' => true,
-    ]);
-    DB::table(Table::ELEMENTS_SITES)->where('elementId', $element3->id)->update([
-        'enabled' => false,
-    ]);
+    $element3 = Entry::factory()->enabled()->create();
+    // Disabled in site
+    $element3->element->siteSettings->first()->update(['enabled' => false]);
 
-    expect(query()->count())->toBe(1);
-    expect(query()->firstOrFail()->id)->toBe($element1->id);
+    expect(entryQuery()->count())->toBe(1);
+    expect(entryQuery()->firstOrFail()->id)->toBe($element1->id);
 });
 
 it('can query archived and statuses', function () {
-    $element1 = Element::factory()->create([
-        'enabled' => true,
-    ]);
+    $element1 = Entry::factory()->create();
+    $element2 = Entry::factory()->archived()->create();
 
-    $element2 = Element::factory()->create([
-        'enabled' => true,
-        'archived' => true,
-    ]);
+    expect(entryQuery()->count())->toBe(1);
+    expect(entryQuery()->first()->id)->toBe($element1->id);
 
-    expect(query()->count())->toBe(1);
-    expect(query()->first()->id)->toBe($element1->id);
+    expect(entryQuery()->archived()->count())->toBe(1);
+    expect(entryQuery()->archived()->first()->id)->toBe($element2->id);
 
-    expect(query()->archived()->count())->toBe(1);
-    expect(query()->archived()->first()->id)->toBe($element2->id);
-
-    expect(query()->status([
-        \craft\base\Element::STATUS_ENABLED,
-        \craft\base\Element::STATUS_ARCHIVED,
+    expect(entryQuery()->status([
+        Element::STATUS_ENABLED,
+        Element::STATUS_ARCHIVED,
     ])->count())->toBe(2);
 
-    expect(query()->status([
-        \craft\base\Element::STATUS_ARCHIVED,
+    expect(entryQuery()->status([
+        Element::STATUS_ARCHIVED,
     ])->count())->toBe(1);
 
     // Does not fail but doesn't apply parameters
-    expect(query()->status(['not'])->count())->toBe(1);
+    expect(entryQuery()->status(['not'])->count())->toBe(1);
 
-    expect(query()->status(['not', \craft\base\Element::STATUS_ENABLED])->count())->toBe(0);
-    expect(query()->status(['not', \craft\base\Element::STATUS_ARCHIVED])->count())->toBe(1);
+    expect(entryQuery()->status(['not', Element::STATUS_ENABLED])->count())->toBe(0);
+    expect(entryQuery()->status(['not', Element::STATUS_ARCHIVED])->count())->toBe(1);
 });

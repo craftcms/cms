@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use CraftCms\Cms\Db\Table;
@@ -9,18 +11,25 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
+/**
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
+ */
 trait QueriesUniqueElements
 {
     use QueriesSites;
 
     /**
      * @var bool Whether only elements with unique IDs should be returned by the query.
+     *
      * @used-by unique()
      */
     public bool $unique = false;
 
     /**
      * @var array|null Determines which site should be selected when querying multi-site elements.
+     *
      * @used-by preferSites()
      */
     public ?array $preferSites = null;
@@ -28,11 +37,11 @@ trait QueriesUniqueElements
     protected function initializeQueriesUniqueElements(): void
     {
         if (
-            !$this->unique ||
-            !\Craft::$app->getIsMultiSite(false, true) ||
+            ! $this->unique ||
+            ! \Craft::$app->getIsMultiSite(false, true) ||
             (
                 $this->siteId &&
-                (!is_array($this->siteId) || count($this->siteId) === 1)
+                (! is_array($this->siteId) || count($this->siteId) === 1)
             )
         ) {
             return;
@@ -40,7 +49,7 @@ trait QueriesUniqueElements
 
         $sitesService = \Craft::$app->getSites();
 
-        if (!$this->preferSites) {
+        if (! $this->preferSites) {
             $preferSites = [$sitesService->getCurrentSite()->id];
         } else {
             $preferSites = [];
@@ -71,9 +80,9 @@ trait QueriesUniqueElements
             ->toRawSql();
 
         // `elements` => `subElements`
-        $qElements = DB::getTablePrefix() . 'Concerns' . Table::ELEMENTS;
-        $qSubElements = DB::getTablePrefix() . '.subElements';
-        $qTmpElements = DB::getTablePrefix() . '.tmpElements';
+        $qElements = DB::getTablePrefix().'Concerns'.Table::ELEMENTS;
+        $qSubElements = DB::getTablePrefix().'.subElements';
+        $qTmpElements = DB::getTablePrefix().'.tmpElements';
         $q = $qElements[0];
         $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
         $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
@@ -83,8 +92,8 @@ trait QueriesUniqueElements
     }
 
     /**
-     * @inheritdoc
-     * @return static
+     * {@inheritdoc}
+     *
      * @uses $unique
      */
     public function unique(bool $value = true): static
@@ -95,7 +104,8 @@ trait QueriesUniqueElements
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $preferSites
      */
     public function preferSites(?array $value = null): static

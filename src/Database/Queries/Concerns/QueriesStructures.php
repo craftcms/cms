@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use CraftCms\Cms\Database\Table;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -12,102 +15,117 @@ use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
- * @since 6.0.0
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
+ * @internal
  */
 trait QueriesStructures
 {
     /**
      * @var bool Whether the elements must be “leaves” in the structure.
+     *
      * @used-by leaves()
      */
     public bool $leaves = false;
 
     /**
      * @var bool|null Whether element structure data should automatically be left-joined into the query.
+     *
      * @used-by withStructure()
      */
     public ?bool $withStructure = null;
 
     /**
      * @var mixed The structure ID that should be used to join in the structureelements table.
+     *
      * @used-by structureId()
      */
     public mixed $structureId = null;
 
     /**
      * @var mixed The element’s level within the structure
+     *
      * @used-by level()
      */
     public mixed $level = null;
 
     /**
      * @var bool|null Whether the resulting elements must have descendants.
+     *
      * @used-by hasDescendants()
-     * @since 3.0.4
      */
     public ?bool $hasDescendants = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
+     *
      * @used-by ancestorOf()
      */
     public ElementInterface|int|null $ancestorOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
+     *
      * @used-by ancestorDist()
      */
     public ?int $ancestorDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
+     *
      * @used-by descendantOf()
      */
     public ElementInterface|int|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
+     *
      * @used-by descendantDist()
      */
     public ?int $descendantDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
+     *
      * @used-by siblingOf()
      */
     public ElementInterface|int|null $siblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
+     *
      * @used-by prevSiblingOf()
      */
     public ElementInterface|int|null $prevSiblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
+     *
      * @used-by nextSiblingOf()
      */
     public ElementInterface|int|null $nextSiblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
+     *
      * @used-by positionedBefore()
      */
     public ElementInterface|int|null $positionedBefore = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
+     *
      * @used-by positionedAfter()
      */
     public ElementInterface|int|null $positionedAfter = null;
 
     protected function initializeQueriesStructures(): void
     {
-        $this->query->beforeQuery(function (Builder $query) {
+        $this->beforeQuery(function (ElementQuery $query) {
             $this->applyStructureParams($query);
         });
 
-        $this->query->afterQuery(function (Collection $collection) {
+        $this->afterQuery(function (Collection $collection) {
             if ($this->structureId) {
                 return $collection->map(function ($element) {
                     $element->structureId = $this->structureId;
@@ -119,154 +137,181 @@ trait QueriesStructures
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $withStructure
      */
     public function withStructure(bool $value = true): static
     {
         $this->withStructure = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $structureId
      */
     public function structureId(?int $value = null): static
     {
         $this->structureId = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $level
      */
     public function level($value = null): static
     {
         $this->level = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $hasDescendants
      */
     public function hasDescendants(bool $value = true): static
     {
         $this->hasDescendants = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $leaves
      */
     public function leaves(bool $value = true): static
     {
         $this->leaves = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $ancestorOf
      */
     public function ancestorOf(ElementInterface|int|null $value): static
     {
         $this->ancestorOf = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $ancestorDist
      */
     public function ancestorDist(?int $value = null): static
     {
         $this->ancestorDist = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $descendantOf
      */
     public function descendantOf(ElementInterface|int|null $value): static
     {
         $this->descendantOf = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $descendantDist
      */
     public function descendantDist(?int $value = null): static
     {
         $this->descendantDist = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $siblingOf
      */
     public function siblingOf(ElementInterface|int|null $value): static
     {
         $this->siblingOf = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $prevSiblingOf
      */
     public function prevSiblingOf(ElementInterface|int|null $value): static
     {
         $this->prevSiblingOf = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $nextSiblingOf
      */
     public function nextSiblingOf(ElementInterface|int|null $value): static
     {
         $this->nextSiblingOf = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $positionedBefore
      */
     public function positionedBefore(ElementInterface|int|null $value): static
     {
         $this->positionedBefore = $value;
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @uses $positionedAfter
      */
     public function positionedAfter(ElementInterface|int|null $value): static
     {
         $this->positionedAfter = $value;
+
         return $this;
     }
 
     private function shouldJoinStructureData(): bool
     {
-        return (
-            !$this->revisions &&
-            ($this->withStructure ?? ($this->structureId && !$this->trashed))
-        );
+        return
+            ! $this->revisions &&
+            ($this->withStructure ?? ($this->structureId && ! $this->trashed));
     }
 
-    private function applyStructureParams(Builder $query): void
+    private function applyStructureParams(ElementQuery $query): void
     {
         if (! $this->shouldJoinStructureData()) {
             $structureParams = [
@@ -290,7 +335,7 @@ trait QueriesStructures
             return;
         }
 
-        $this->query->addSelect([
+        $query->query->addSelect([
             'structureelements.root',
             'structureelements.lft',
             'structureelements.rgt',
@@ -298,17 +343,17 @@ trait QueriesStructures
         ]);
 
         if ($this->structureId) {
-            $this->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn(JoinClause $join) => $join
+            $query->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                 ->whereColumn('structureelements.elementId', 'subquery.elementsId')
                 ->where('structureelements.structureId', $this->structureId));
 
-            $this->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn(JoinClause $join) => $join
-                ->whereColumn('structureelements.elementId', 'subquery.elementsId')
+            $query->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
+                ->whereColumn('structureelements.elementId', 'elements.id')
                 ->where('structureelements.structureId', $this->structureId));
         } else {
-            $this->query
+            $query->query
                 ->addSelect('structureelements.structureId')
-                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn(JoinClause $join) => $join
+                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->whereColumn('structureelements.elementId', 'subquery.elementsId')
                     ->whereColumn('structureelements.structureId', 'subquery.structureId'));
 
@@ -322,26 +367,26 @@ trait QueriesStructures
                 ->whereColumn('id', 'structureelements.structureId')
                 ->whereNull('dateDeleted');
 
-            $this->subQuery
-                ->addSelect('structureelements.structureId as sructureId')
-                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn(JoinClause $join) => $join
+            $query->subQuery
+                ->addSelect('structureelements.structureId as structureId')
+                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->whereColumn('structureelements.elementId', 'elements.id')
                     ->whereExists($existsQuery)
                 );
         }
 
         if (isset($this->hasDescendants)) {
-            $this->subQuery->when(
+            $query->subQuery->when(
                 $this->hasDescendants,
-                fn(Builder $query) => $query->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
-                fn(Builder $query) => $query->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
+                fn (Builder $query) => $query->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
+                fn (Builder $query) => $query->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
             );
         }
 
         if ($this->ancestorOf) {
             $ancestorOf = $this->normalizeStructureParamValue('ancestorOf');
 
-            $this->subQuery
+            $query->subQuery
                 ->where('structureelements.lft', '<', $ancestorOf->lft)
                 ->where('structureelements.rgt', '>', $ancestorOf->rgt)
                 ->where('structureelements.root', '>', $ancestorOf->root)
@@ -354,7 +399,7 @@ trait QueriesStructures
         if ($this->descendantOf) {
             $descendantOf = $this->normalizeStructureParamValue('descendantOf');
 
-            $this->subQuery
+            $query->subQuery
                 ->where('structureelements.lft', '>', $descendantOf->lft)
                 ->where('structureelements.rgt', '<', $descendantOf->rgt)
                 ->where('structureelements.root', $descendantOf->root)
@@ -371,7 +416,7 @@ trait QueriesStructures
 
             $siblingOf = $this->normalizeStructureParamValue($param);
 
-            $this->subQuery
+            $query->subQuery
                 ->where('structureelements.level', $siblingOf->level)
                 ->where('structureelements.root', $siblingOf->root)
                 ->whereNot('structureelements.elementId', $siblingOf->id);
@@ -380,25 +425,25 @@ trait QueriesStructures
                 $parent = $siblingOf->getParent();
 
                 if (! $parent) {
-                    throw new QueryAbortedException();
+                    throw new QueryAbortedException;
                 }
 
-                $this->subQuery
+                $query->subQuery
                     ->where('structureelements.lft', '>', $parent->lft)
                     ->where('structureelements.rgt', '>', $parent->rgt);
             }
 
             switch ($param) {
                 case 'prevSiblingOf':
-                    $this->query->orderByDesc('structureelements.lft');
-                    $this->subQuery
+                    $query->orderByDesc('structureelements.lft');
+                    $query->subQuery
                         ->where('structureelements.lft', '<', $siblingOf->lft)
                         ->orderByDesc('structureelements.lft')
                         ->limit(1);
                     break;
                 case 'nextSiblingOf':
-                    $this->query->orderBy('structureelements.lft');
-                    $this->subQuery
+                    $query->orderBy('structureelements.lft');
+                    $query->subQuery
                         ->where('structureelements.lft', '>', $siblingOf->lft)
                         ->orderBy('structureelements.lft')
                         ->limit(1);
@@ -409,7 +454,7 @@ trait QueriesStructures
         if ($this->positionedBefore) {
             $positionedBefore = $this->normalizeStructureParamValue('positionedBefore');
 
-            $this->subQuery
+            $query->subQuery
                 ->where('structureelements.lft', '<', $positionedBefore->lft)
                 ->where('structureelements.root', $positionedBefore->root);
         }
@@ -417,7 +462,7 @@ trait QueriesStructures
         if ($this->positionedAfter) {
             $positionedAfter = $this->normalizeStructureParamValue('positionedAfter');
 
-            $this->subQuery
+            $query->subQuery
                 ->where('structureelements.lft', '>', $positionedAfter->rgt)
                 ->where('structureelements.root', $positionedAfter->root);
         }
@@ -425,10 +470,10 @@ trait QueriesStructures
         if ($this->level) {
             $allowNull = is_array($this->level) && in_array(null, $this->level, true);
 
-            $this->subQuery->when(
+            $query->subQuery->when(
                 $allowNull,
                 fn (Builder $q) => $q->where(function (Builder $q) {
-                    $q->where(Db::parseNumericParam('structureelements.level', array_filter($this->level, fn($v) => $v !== null)))
+                    $q->where(Db::parseNumericParam('structureelements.level', array_filter($this->level, fn ($v) => $v !== null)))
                         ->orWhereNull('structureelements.level');
                 }),
                 fn (Builder $q) => Db::parseNumericParam('structureelements.level', $this->level),
@@ -436,16 +481,17 @@ trait QueriesStructures
         }
 
         if ($this->leaves) {
-            $this->subQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
+            $query->subQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
         }
     }
 
     /**
      * Normalizes a structure param value to either an Element object or false.
      *
-     * @param string $property The parameter’s property name.
-     * @param class-string<ElementInterface> $class The element class
+     * @param  string  $property  The parameter’s property name.
+     * @param  class-string<ElementInterface>  $class  The element class
      * @return ElementInterface The normalized element
+     *
      * @throws QueryAbortedException if the element can't be found
      */
     private function normalizeStructureParamValue(string $property): ElementInterface
@@ -453,25 +499,25 @@ trait QueriesStructures
         $element = $this->$property;
 
         if ($element === false) {
-            throw new QueryAbortedException();
+            throw new QueryAbortedException;
         }
 
-        if ($element instanceof ElementInterface && !$element->lft) {
+        if ($element instanceof ElementInterface && ! $element->lft) {
             $element = $element->getCanonicalId();
 
             if ($element === null) {
-                throw new QueryAbortedException();
+                throw new QueryAbortedException;
             }
         }
 
-        if (!$element instanceof ElementInterface) {
+        if (! $element instanceof ElementInterface) {
             $element = \Craft::$app->getElements()->getElementById($element, $this->elementType, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 
             if ($element === null) {
                 $this->$property = false;
-                throw new QueryAbortedException();
+                throw new QueryAbortedException;
             }
         }
 
@@ -482,7 +528,7 @@ trait QueriesStructures
 
             if (! $element->lft) {
                 $this->$property = false;
-                throw new QueryAbortedException();
+                throw new QueryAbortedException;
             }
         }
 
