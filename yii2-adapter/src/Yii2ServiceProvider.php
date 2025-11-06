@@ -7,6 +7,7 @@ use craft\console\controllers\HelpController;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -20,6 +21,7 @@ use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\fieldlayoutelements\TitleField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
@@ -40,6 +42,7 @@ use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
 use craft\helpers\Queue;
+use craft\models\FieldLayout;
 use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
 use craft\services\Dashboard;
@@ -759,6 +762,21 @@ class Yii2ServiceProvider extends ServiceProvider
 
             Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
         }
+
+        YiiEvent::on(
+            FieldLayout::class,
+            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
+            function(DefineFieldLayoutFieldsEvent $event) {
+                /** @var FieldLayout $fieldLayout */
+                $fieldLayout = $event->sender;
+                switch ($fieldLayout->type) {
+                    case Category::class:
+                    case Tag::class:
+                        $event->fields[] = TitleField::class;
+                        break;
+                }
+            },
+        );
 
         if (self::supportsTags()) {
             app(ProjectConfig::class)

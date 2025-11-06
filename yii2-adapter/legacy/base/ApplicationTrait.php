@@ -13,9 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
-use craft\elements\Category;
 use craft\elements\Entry;
-use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\events\DefineFieldLayoutFieldsEvent;
@@ -1443,12 +1441,6 @@ trait ApplicationTrait
                     if (\CraftCms\Cms\Support\Facades\Sites::isMultiSite()) {
                         $event->fields[] = AffiliatedSiteField::class;
                     }
-                    break;
-
-                // deprecated
-                case Category::class:
-                case Tag::class:
-                    $event->fields[] = TitleField::class;
                     break;
             }
         });
