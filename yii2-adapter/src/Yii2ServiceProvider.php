@@ -108,6 +108,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use yii\base\Event as YiiEvent;
@@ -905,17 +906,26 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public static function supportsCategories(): bool
     {
-        return self::$supportsCategories ??= Schema::hasTable('categories');
+        return self::$supportsCategories ??= self::supports('categories');
     }
 
     public static function supportsGlobalSets(): bool
     {
-        return self::$supportsGlobalSets ??= Schema::hasTable('globalsets');
+        return self::$supportsGlobalSets ??= self::supports('globalsets');
     }
 
     public static function supportsTags(): bool
     {
-        return self::$supportsTags ??= Schema::hasTable('tags');
+        return self::$supportsTags ??= self::supports('tags');
+    }
+
+    private static function supports(string $table): bool
+    {
+        try {
+            return Schema::hasTable($table);
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 
     public static function resetSupport(): void
