@@ -102,6 +102,7 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -520,16 +521,31 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Event::listen(SiteSaved::class, function(SiteSaved $event) {
-            $elementTypes = [];
+            if (!$event->isNew || !$event->oldPrimarySiteId) {
+                return;
+            }
+
             if (self::supportsCategories()) {
-                $elementTypes[] = Category::class;
+                $projectConfig = app(ProjectConfig::class);
+                $oldPrimarySiteUid = DB::table(Table::SITES)->uidById($event->oldPrimarySiteId);
+                $existingCategorySettings = $projectConfig->get(LegacyProjectConfig::PATH_CATEGORY_GROUPS);
+
+                if (!$projectConfig->isApplyingExternalChanges && is_array($existingCategorySettings)) {
+                    foreach ($existingCategorySettings as $categoryUid => $settings) {
+                        $projectConfig->set(
+                            path: LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid,
+                            value: $settings['siteSettings'][$oldPrimarySiteUid],
+                            message: 'Copy site settings for category groups',
+                        );
+                    }
+                }
             }
-            if (self::supportsGlobalSets()) {
-                $elementTypes[] = GlobalSet::class;
-            }
-            if (self::supportsTags()) {
-                $elementTypes[] = Tag::class;
-            }
+
+            $elementTypes = array_keys(array_filter([
+                Category::class => self::supportsCategories(),
+                GlobalSet::class => self::supportsGlobalSets(),
+                Tag::class => self::supportsTags(),
+            ]));
 
             foreach ($elementTypes as $elementType) {
                 Queue::push(new PropagateElements([
