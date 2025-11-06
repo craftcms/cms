@@ -63,259 +63,26 @@ final class FieldsController
         ]);
     }
 
+    public function create(): CpScreenResponse
+    {
+        $field = $this->fieldsService->createField(PlainText::class);
+
+        return $this->cpScreenResponse($field);
+    }
+
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
     {
-        $fieldId ??= $request->input('fieldId');
+        $fieldId ??= $field->id ?? $request->input('fieldId');
 
-        if (! $fieldId && $this->readOnly) {
-            abort(403, 'Administrative changes are disallowed in this environment.');
-        }
+        abort_if(is_null($fieldId), 404, 'Field not found');
 
-        // The field
-        // ---------------------------------------------------------------------
-
-        if ($fieldId !== null) {
-            $field = $this->fieldsService->getFieldById((int) $fieldId);
-
-            abort_if(is_null($field), 404, 'Field not found');
-        }
+        abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
         if ($field === null) {
-            $field = $this->fieldsService->createField($request->input('type', PlainText::class));
+            $field = $found;
         }
 
-        // Supported translation methods
-        // ---------------------------------------------------------------------
-
-        $supportedTranslationMethods = [];
-        $allFieldTypes = $this->fieldsService->getAllFieldTypes();
-
-        foreach ($allFieldTypes as $class) {
-            if ($class === $field::class || $class::isSelectable()) {
-                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
-            }
-        }
-
-        // Allowed field types
-        // ---------------------------------------------------------------------
-
-        if (! $field->id) {
-            $compatibleFieldTypes = $allFieldTypes;
-        } else {
-            $compatibleFieldTypes = $this->fieldsService->getCompatibleFieldTypes($field, includeCurrent: true);
-        }
-
-        $fieldTypeOptions = [];
-        $fieldTypeNames = [];
-        $foundCurrent = false;
-        $missingFieldPlaceholder = null;
-        $multiInstanceTypesOnly = (bool) $request->input('multiInstanceTypesOnly');
-
-        foreach ($allFieldTypes as $class) {
-            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : $field::class);
-            $foundCurrent = $foundCurrent || $isCurrent;
-
-            if (
-                $isCurrent ||
-                (
-                    $class::isSelectable() &&
-                    (! $multiInstanceTypesOnly || $class::isMultiInstance())
-                )
-            ) {
-                $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
-                $name = $class::displayName();
-                $option = [
-                    'icon' => $class::icon(),
-                    'value' => $class,
-                ];
-                if ($compatible) {
-                    $option['label'] = $name;
-                } else {
-                    $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
-                        Html::tag('span', Html::encode($name)).
-                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
-                        Html::endTag('div');
-                }
-                $fieldTypeOptions[] = $option;
-                $fieldTypeNames[] = $name;
-            }
-        }
-
-        // Sort them by name
-        array_multisort($fieldTypeNames, $fieldTypeOptions);
-
-        if ($field instanceof MissingField) {
-            if ($foundCurrent) {
-                $field = $this->fieldsService->createField($field->expectedType);
-            } else {
-                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
-                $missingFieldPlaceholder = $field->getPlaceholderHtml();
-            }
-        }
-
-        // Page setup + render
-        // ---------------------------------------------------------------------
-
-        if ($fieldId !== null) {
-            $title = trim((string) $field->name) ?: t('Edit Field');
-        } else {
-            $title = t('Create a new field');
-        }
-
-        $response = new CpScreenResponse()
-            ->title($title)
-            ->addCrumb(t('Settings'), 'settings')
-            ->addCrumb(t('Fields'), 'settings/fields')
-            ->contentTemplate('settings/fields/_edit.twig', [
-                'fieldId' => $fieldId,
-                'field' => $field,
-                'fieldTypeOptions' => $fieldTypeOptions,
-                'missingFieldPlaceholder' => $missingFieldPlaceholder,
-                'supportedTranslationMethods' => $supportedTranslationMethods,
-                'readOnly' => $this->readOnly,
-            ]);
-
-        if (! $this->readOnly) {
-            $response
-                ->action('fields/save-field')
-                ->redirectUrl('settings/fields')
-                ->addAltAction(t('Save and continue editing'), [
-                    'redirect' => 'settings/fields/edit/{id}',
-                    'shortcut' => true,
-                    'retainScroll' => true,
-                ])
-                ->addAltAction(t('Save and add another'), [
-                    'shortcut' => true,
-                    'shift' => true,
-                    'params' => ['addAnother' => 1],
-                ])
-                ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
-        } else {
-            $response->noticeHtml(Cp::readOnlyNoticeHtml());
-        }
-
-        $response
-            ->prepareScreen(function () {
-                $view = Craft::$app->getView();
-                $view->registerAssetBundle(FieldSettingsAsset::class);
-                $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
-new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
-  wrapWithTypeClassDiv: true
-})
-JS, [
-                    $view->namespaceInputId('type'),
-                    $view->namespaceInputId('settings'),
-                    $view->namespaceInputName('types[__TYPE__]'),
-                ]);
-            });
-
-        if ($field->id) {
-            if (! $this->readOnly) {
-                $response
-                    ->addAltAction(t('Delete'), [
-                        'action' => 'fields/delete-field',
-                        'redirect' => 'settings/fields',
-                        'destructive' => true,
-                        'confirm' => t('Are you sure you want to delete “{name}”?', [
-                            'name' => $field->name,
-                        ]),
-                    ]);
-            }
-            $response
-                ->metaSidebarHtml(Cp::metadataHtml([
-                    t('ID') => $field->id,
-                    t('Used by') => function () use ($field) {
-                        $layouts = $this->fieldsService->findFieldUsages($field);
-
-                        if ($layouts->isEmpty()) {
-                            return Html::tag('i', t('No usages'));
-                        }
-
-                        /** @var FieldLayout[][] $layoutsByType */
-                        $layoutsByType = $layouts
-                            ->keyBy('uid')
-                            ->groupBy(fn (FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
-                            ->all();
-
-                        /** @var FieldLayout[] $unknownLayouts */
-                        $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
-                        /** @var FieldLayout[] $layoutsWithProviders */
-                        $layoutsWithProviders = [];
-
-                        // re-fetch as many of these as we can from the element types,
-                        // so they have a chance to supply the layout providers
-                        foreach ($layoutsByType as $type => &$typeLayouts) {
-                            /** @var class-string<ElementInterface> $type */
-                            /** @phpstan-ignore-next-line */
-                            foreach ($type::fieldLayouts(null) as $layout) {
-                                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
-                                    $layoutsWithProviders[] = $layout;
-                                    unset($typeLayouts[$layout->uid]);
-                                }
-                            }
-                        }
-                        unset($typeLayouts);
-
-                        $labels = [];
-                        $items = array_map(function (FieldLayout $layout) use (&$labels) {
-                            /** @var FieldLayoutProviderInterface&Chippable $provider */
-                            $provider = $layout->provider;
-                            $label = $labels[] = $provider->getUiLabel();
-                            // special case for global sets, where we should link to the settings rather than the edit page
-                            if ($provider instanceof GlobalSet) {
-                                $url = "settings/globals/$provider->id";
-                            } else {
-                                $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
-                            }
-                            $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
-
-                            $labelHtml = Html::beginTag('span', [
-                                'class' => ['flex', 'flex-nowrap', 'gap-s'],
-                            ]);
-                            if ($icon) {
-                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
-                                    'class' => array_filter([
-                                        'cp-icon',
-                                        'small',
-                                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
-                                    ]),
-                                ]);
-                            }
-                            $labelHtml .= Html::tag('span', Html::encode($label)).
-                                Html::endTag('span');
-
-                            return $url ? Html::a($labelHtml, $url) : $labelHtml;
-                        }, $layoutsWithProviders);
-
-                        // sort by label
-                        array_multisort($labels, SORT_ASC, $items);
-
-                        foreach ($layoutsByType as $type => $typeLayouts) {
-                            // any remaining layouts for this type?
-                            if (! empty($typeLayouts)) {
-                                /** @var class-string<ElementInterface> $type */
-                                $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
-                                    'total' => count($typeLayouts),
-                                    'type' => $type::lowerDisplayName(),
-                                ]);
-                            }
-                        }
-
-                        if (! empty($unknownLayouts)) {
-                            $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
-                                'total' => count($unknownLayouts),
-                                'type' => t('unknown'),
-                            ]);
-                        }
-
-                        $items = array_map(fn ($item) => Html::li($item)->encode(false), $items);
-
-                        return Html::ul()->items(...$items)->render();
-                    },
-                ]));
-        }
-
-        return $response;
+        return $this->cpScreenResponse($field, $request);
     }
 
     public function renderSettings(Request $request): JsonResponse
@@ -371,7 +138,7 @@ JS, [
     {
         $request->validate([
             'type' => ['required', 'string'],
-            'fieldId' => ['nullable', 'string'],
+            'fieldId' => ['nullable', 'integer'],
             'name' => ['nullable', 'string'],
             'handle' => ['nullable', 'string'],
             'instructions' => ['nullable', 'string'],
@@ -384,6 +151,7 @@ JS, [
         $fieldId = $request->input('fieldId');
 
         if ($fieldId) {
+            $fieldId = (int) $fieldId;
             $oldField = clone $this->fieldsService->getFieldById($fieldId);
             abort_unless((bool) $oldField, 400, 'Invalid field ID: '.$fieldId);
             $fieldUid = $oldField->uid;
@@ -408,7 +176,7 @@ JS, [
         if (! $this->fieldsService->saveField($field)) {
             Flash::fail(t('Couldn’t save field.'));
 
-            return $this->edit($request, $field, $field->id);
+            return $this->edit($request, $field);
         }
 
         if ($request->input('addAnother')) {
@@ -635,5 +403,241 @@ JS, [
         abort_if(! $element, 400, "Invalid layout element UUID: $uid");
 
         return $element;
+    }
+
+    private function cpScreenResponse(FieldInterface $field, ?Request $request = null): CpScreenResponse
+    {
+        // Supported translation methods
+        // ---------------------------------------------------------------------
+
+        $supportedTranslationMethods = [];
+        $allFieldTypes = $this->fieldsService->getAllFieldTypes();
+
+        foreach ($allFieldTypes as $class) {
+            if ($class === $field::class || $class::isSelectable()) {
+                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
+            }
+        }
+
+        // Allowed field types
+        // ---------------------------------------------------------------------
+
+        if (! $field->id) {
+            $compatibleFieldTypes = $allFieldTypes;
+        } else {
+            $compatibleFieldTypes = $this->fieldsService->getCompatibleFieldTypes($field, includeCurrent: true);
+        }
+
+        $fieldTypeOptions = [];
+        $fieldTypeNames = [];
+        $foundCurrent = false;
+        $missingFieldPlaceholder = null;
+        $multiInstanceTypesOnly = (bool) $request?->input('multiInstanceTypesOnly');
+
+        foreach ($allFieldTypes as $class) {
+            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : $field::class);
+            $foundCurrent = $foundCurrent || $isCurrent;
+
+            if (
+                $isCurrent ||
+                (
+                    $class::isSelectable() &&
+                    (! $multiInstanceTypesOnly || $class::isMultiInstance())
+                )
+            ) {
+                $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
+                $name = $class::displayName();
+                $option = [
+                    'icon' => $class::icon(),
+                    'value' => $class,
+                ];
+                if ($compatible) {
+                    $option['label'] = $name;
+                } else {
+                    $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
+                        Html::tag('span', Html::encode($name)).
+                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
+                        Html::endTag('div');
+                }
+                $fieldTypeOptions[] = $option;
+                $fieldTypeNames[] = $name;
+            }
+        }
+
+        // Sort them by name
+        array_multisort($fieldTypeNames, $fieldTypeOptions);
+
+        if ($field instanceof MissingField) {
+            if ($foundCurrent) {
+                $field = $this->fieldsService->createField($field->expectedType);
+            } else {
+                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
+            }
+        }
+
+        // Page setup + render
+        // ---------------------------------------------------------------------
+
+        if ($field->id) {
+            $title = trim((string) $field->name) ?: t('Edit Field');
+        } else {
+            $title = t('Create a new field');
+        }
+
+        $response = new CpScreenResponse()
+            ->title($title)
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Fields'), 'settings/fields')
+            ->contentTemplate('settings/fields/_edit.twig', [
+                'fieldId' => $field->id,
+                'field' => $field,
+                'fieldTypeOptions' => $fieldTypeOptions,
+                'missingFieldPlaceholder' => $missingFieldPlaceholder,
+                'supportedTranslationMethods' => $supportedTranslationMethods,
+                'readOnly' => $this->readOnly,
+            ]);
+
+        if (! $this->readOnly) {
+            $response
+                ->action('fields/save-field')
+                ->redirectUrl('settings/fields')
+                ->addAltAction(t('Save and continue editing'), [
+                    'redirect' => 'settings/fields/edit/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ])
+                ->addAltAction(t('Save and add another'), [
+                    'shortcut' => true,
+                    'shift' => true,
+                    'params' => ['addAnother' => 1],
+                ])
+                ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        $response
+            ->prepareScreen(function () {
+                $view = Craft::$app->getView();
+                $view->registerAssetBundle(FieldSettingsAsset::class);
+                $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
+  wrapWithTypeClassDiv: true
+})
+JS, [
+                    $view->namespaceInputId('type'),
+                    $view->namespaceInputId('settings'),
+                    $view->namespaceInputName('types[__TYPE__]'),
+                ]);
+            });
+
+        if ($field->id) {
+            if (! $this->readOnly) {
+                $response
+                    ->addAltAction(t('Delete'), [
+                        'action' => 'fields/delete-field',
+                        'redirect' => 'settings/fields',
+                        'destructive' => true,
+                        'confirm' => t('Are you sure you want to delete “{name}”?', [
+                            'name' => $field->name,
+                        ]),
+                    ]);
+            }
+            $response
+                ->metaSidebarHtml(Cp::metadataHtml([
+                    t('ID') => $field->id,
+                    t('Used by') => function () use ($field) {
+                        $layouts = $this->fieldsService->findFieldUsages($field);
+
+                        if ($layouts->isEmpty()) {
+                            return Html::tag('i', t('No usages'));
+                        }
+
+                        /** @var FieldLayout[][] $layoutsByType */
+                        $layoutsByType = $layouts
+                            ->keyBy('uid')
+                            ->groupBy(fn (FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
+                            ->all();
+
+                        /** @var FieldLayout[] $unknownLayouts */
+                        $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
+                        /** @var FieldLayout[] $layoutsWithProviders */
+                        $layoutsWithProviders = [];
+
+                        // re-fetch as many of these as we can from the element types,
+                        // so they have a chance to supply the layout providers
+                        foreach ($layoutsByType as $type => &$typeLayouts) {
+                            /** @var class-string<ElementInterface> $type */
+                            /** @phpstan-ignore-next-line */
+                            foreach ($type::fieldLayouts(null) as $layout) {
+                                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
+                                    $layoutsWithProviders[] = $layout;
+                                    unset($typeLayouts[$layout->uid]);
+                                }
+                            }
+                        }
+                        unset($typeLayouts);
+
+                        $labels = [];
+                        $items = array_map(function (FieldLayout $layout) use (&$labels) {
+                            /** @var FieldLayoutProviderInterface&Chippable $provider */
+                            $provider = $layout->provider;
+                            $label = $labels[] = $provider->getUiLabel();
+                            // special case for global sets, where we should link to the settings rather than the edit page
+                            if ($provider instanceof GlobalSet) {
+                                $url = "settings/globals/$provider->id";
+                            } else {
+                                $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            }
+                            $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
+
+                            $labelHtml = Html::beginTag('span', [
+                                'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                            ]);
+                            if ($icon) {
+                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                    'class' => array_filter([
+                                        'cp-icon',
+                                        'small',
+                                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
+                                    ]),
+                                ]);
+                            }
+                            $labelHtml .= Html::tag('span', Html::encode($label)).
+                                Html::endTag('span');
+
+                            return $url ? Html::a($labelHtml, $url) : $labelHtml;
+                        }, $layoutsWithProviders);
+
+                        // sort by label
+                        array_multisort($labels, SORT_ASC, $items);
+
+                        foreach ($layoutsByType as $type => $typeLayouts) {
+                            // any remaining layouts for this type?
+                            if (! empty($typeLayouts)) {
+                                /** @var class-string<ElementInterface> $type */
+                                $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                    'total' => count($typeLayouts),
+                                    'type' => $type::lowerDisplayName(),
+                                ]);
+                            }
+                        }
+
+                        if (! empty($unknownLayouts)) {
+                            $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                'total' => count($unknownLayouts),
+                                'type' => t('unknown'),
+                            ]);
+                        }
+
+                        $items = array_map(fn ($item) => Html::li($item)->encode(false), $items);
+
+                        return Html::ul()->items(...$items)->render();
+                    },
+                ]));
+        }
+
+        return $response;
     }
 }

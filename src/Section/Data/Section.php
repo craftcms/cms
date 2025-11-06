@@ -45,7 +45,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
         public ?SectionType $type = null,
         public ?int $maxAuthors = 1,
         public ?int $maxLevels = null,
-        public bool $enableVersioning = true,
+        public ?bool $enableVersioning = true,
         public PropagationMethod $propagationMethod = PropagationMethod::All,
         public DefaultPlacement $defaultPlacement = DefaultPlacement::End,
         public ?array $previewTargets = null,
@@ -62,6 +62,8 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                 'urlFormat' => '{url}',
             ],
         ];
+
+        $this->enableVersioning = (bool) $enableVersioning;
     }
 
     /**
@@ -93,7 +95,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
                 'string',
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($context->payload['sectionId'] ?? null),
+                Rule::unique(Table::SECTIONS)->ignore($context->payload['sectionId'] ?? null)->withoutTrashed('dateDeleted'),
             ],
             'entryTypes' => ['required'],
             'type' => ['required', Rule::enum(SectionType::class)],

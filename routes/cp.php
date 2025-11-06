@@ -59,11 +59,11 @@ Route::middleware('auth')->group(function () {
         // Entry types
         Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        Route::get('settings/entry-types/{entryTypeId}', [EntryTypesController::class, 'edit']);
+        Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
-        Route::get('settings/fields/new', [FieldsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
 
         // General

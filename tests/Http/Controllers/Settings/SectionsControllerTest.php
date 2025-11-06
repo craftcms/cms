@@ -73,6 +73,11 @@ test('it can edit a section', function () {
         ->assertSee($section->name);
 });
 
+it('404s when a section does not exist', function () {
+    get(action([SectionsController::class, 'edit'], [999]))
+        ->assertNotFound();
+});
+
 function validSectionData(array $overrides = []): array
 {
     $entryType = EntryType::factory()->create();
@@ -134,6 +139,24 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['defaultPlacement', 'foo'],
     ['propagationMethod', 'foo'],
 ]);
+
+test('handle needs to be unique', function () {
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasErrors('handle');
+});
+
+test('handle needs to be unique without trashed', function () {
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+
+    Section::latest('id')->first()->update(['dateDeleted' => now()]);
+
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+});
 
 it('can delete a section', function () {
     $newSection = Section::factory()->create();

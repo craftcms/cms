@@ -111,6 +111,11 @@ test('it can edit a site', function () {
         ->assertSee($site->getBaseUrl(false));
 });
 
+it('404s when a site does not exist', function () {
+    get(action([SitesController::class, 'edit'], [999]))
+        ->assertNotFound();
+});
+
 it('can save a site', function () {
     expect(Site::count())->toBe(1);
 
@@ -138,6 +143,33 @@ test('handle is required', function () {
         'language' => 'en-US',
         'group' => SiteGroup::first()->id,
     ])->assertSessionHasErrors('handle');
+});
+
+test('handle needs to be unique', function () {
+    Site::factory()->create([
+        'handle' => 'a_new_site',
+    ]);
+
+    post(action([SitesController::class, 'store']), [
+        'name' => 'A new site',
+        'handle' => 'a_new_site',
+        'language' => 'en-US',
+        'group' => SiteGroup::first()->id,
+    ])->assertSessionHasErrors('handle');
+});
+
+test('handle can be duplicate if trashed', function () {
+    Site::factory()->create([
+        'handle' => 'a_new_site',
+        'dateDeleted' => now(),
+    ]);
+
+    post(action([SitesController::class, 'store']), [
+        'name' => 'A new site',
+        'handle' => 'a_new_site',
+        'language' => 'en-US',
+        'group' => SiteGroup::first()->id,
+    ])->assertSessionHasNoErrors();
 });
 
 test('language is required', function () {
