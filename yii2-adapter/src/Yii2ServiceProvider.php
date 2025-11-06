@@ -79,6 +79,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
@@ -541,6 +542,48 @@ class Yii2ServiceProvider extends ServiceProvider
                 ]));
             }
         });
+
+        Event::listen(RebuildConfig::class, function(RebuildConfig $event) {
+            if (self::supportsCategories()) {
+                $event->config[LegacyProjectConfig::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
+            }
+            if (self::supportsGlobalSets()) {
+                $event->config[LegacyProjectConfig::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
+            }
+            if (self::supportsTags()) {
+                $event->config[LegacyProjectConfig::PATH_TAG_GROUPS] = $this->_getTagGroupData();
+            }
+        });
+    }
+
+    /**
+     * Return category group data config array.
+     */
+    private function _getCategoryGroupData(): array
+    {
+        return collect(Craft::$app->getCategories()->getAllGroups())
+            ->mapWithKeys(fn(CategoryGroup $group) => [$group->uid => $group->getConfig()])
+            ->all();
+    }
+
+    /**
+     * Return tag group data config array.
+     */
+    private function _getTagGroupData(): array
+    {
+        return collect(Craft::$app->getTags()->getAllTagGroups())
+            ->mapWithKeys(fn(TagGroup $group) => [$group->uid => $group->getConfig()])
+            ->all();
+    }
+
+    /**
+     * Return global set data config array.
+     */
+    private function _getGlobalSetData(): array
+    {
+        return collect(Craft::$app->getGlobals()->getAllSets())
+            ->mapWithKeys(fn(GlobalSet $globalSet) => [$globalSet->uid => $globalSet->getConfig()])
+            ->all();
     }
 
     public static function bootYiiEvents(): void
