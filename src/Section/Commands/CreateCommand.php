@@ -99,7 +99,6 @@ final class CreateCommand extends Command
             ->confirm(
                 label: 'Enable entry versioning for the section?',
                 default: ! $this->option('noVersioning'),
-                required: true,
                 name: 'enableVersioning',
             )
             ->addIf(empty($entryTypes) && $allEntryTypes->isNotEmpty(), fn () => confirm(
@@ -139,7 +138,7 @@ final class CreateCommand extends Command
                         'string',
                         'max:255',
                         new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                        Rule::unique(Table::ENTRYTYPES, 'handle'),
+                        Rule::unique(Table::ENTRYTYPES, 'handle')->withoutTrashed('dateDeleted'),
                     ]],
                 ),
                 name: 'entryTypeHandle'
