@@ -753,11 +753,13 @@ class Yii2ServiceProvider extends ServiceProvider
             CpVariable::class,
             CpVariable::EVENT_REGISTER_CP_NAV_ITEMS,
             function(RegisterCpNavItemsEvent $event) {
+                $newItems = [];
+
                 if (
                     self::supportsGlobalSets() &&
                     !empty(Craft::$app->getGlobals()->getEditableSets())
                 ) {
-                    $event->navItems[] = [
+                    $newItems[] = [
                         'label' => t('Globals', category: 'yii2-adapter'),
                         'url' => 'globals',
                         'icon' => 'globe',
@@ -767,11 +769,25 @@ class Yii2ServiceProvider extends ServiceProvider
                     self::supportsCategories() &&
                     Craft::$app->getCategories()->getEditableGroupIds()
                 ) {
-                    $event->navItems[] = [
+                    $newItems[] = [
                         'label' => t('Categories'),
                         'url' => 'categories',
                         'icon' => 'sitemap',
                     ];
+                }
+
+                if (!empty($newItems)) {
+                    // Find the last item with a "content/" URL
+                    $lastContentKey = array_find_key($event->navItems, fn(array $item, int $key) => (
+                        str_starts_with($item['url'], 'content/') &&
+                        (!isset($event->navItems[$key + 1]) || !str_starts_with($event->navItems[$key + 1]['url'], 'content/'))
+                    ));
+
+                    if ($lastContentKey !== null) {
+                        array_splice($event->navItems, $lastContentKey + 1, 0, $newItems);
+                    } else {
+                        array_push($event->navItems, ...$newItems);
+                    }
                 }
             },
         );
