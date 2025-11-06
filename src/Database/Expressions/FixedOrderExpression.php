@@ -28,9 +28,9 @@ final readonly class FixedOrderExpression implements Expression
         $key = -1;
 
         foreach ($this->values as $key => $value) {
-            $cases[] = new CaseRule(new Value($key), new Equal($this->column, new Value($value)));
+            $cases[] = new CaseRule(result: new Value($key), condition: new Equal($this->column, new Value($value)));
         }
 
-        return new CaseGroup($cases, new Value($key))->getValue($grammar);
+        return new CaseGroup(when: $cases, else: new Value($key))->getValue($grammar);
     }
 }

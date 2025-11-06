@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Models;
 
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Field\Models\Field;
@@ -11,6 +12,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 final class Entry extends BaseModel
 {
@@ -73,5 +75,10 @@ final class Entry extends BaseModel
     public function entryType(): BelongsTo
     {
         return $this->belongsTo(EntryType::class, 'typeId');
+    }
+
+    public static function elementQuery(): EntryQuery
+    {
+        return new EntryQuery(\craft\elements\Entry::class);
     }
 }

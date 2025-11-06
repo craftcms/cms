@@ -390,7 +390,7 @@ class Search extends Component
      * @return bool
      * @since 4.8.0
      */
-    public function shouldCallSearchElements(ElementQuery $elementQuery): bool
+    public function shouldCallSearchElements(ElementQuery|\CraftCms\Cms\Element\Queries\ElementQuery $elementQuery): bool
     {
         return false;
     }
@@ -402,7 +402,7 @@ class Search extends Component
      * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
      * @since 3.7.14
      */
-    public function searchElements(ElementQuery $elementQuery): array
+    public function searchElements(ElementQuery|\CraftCms\Cms\Element\Queries\ElementQuery $elementQuery): array
     {
         $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
 
