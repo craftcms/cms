@@ -145,6 +145,33 @@ test('handle is required', function () {
     ])->assertSessionHasErrors('handle');
 });
 
+test('handle needs to be unique', function () {
+    Site::factory()->create([
+        'handle' => 'a_new_site',
+    ]);
+
+    post(action([SitesController::class, 'store']), [
+        'name' => 'A new site',
+        'handle' => 'a_new_site',
+        'language' => 'en-US',
+        'group' => SiteGroup::first()->id,
+    ])->assertSessionHasErrors('handle');
+});
+
+test('handle can be duplicate if trashed', function () {
+    Site::factory()->create([
+        'handle' => 'a_new_site',
+        'dateDeleted' => now(),
+    ]);
+
+    post(action([SitesController::class, 'store']), [
+        'name' => 'A new site',
+        'handle' => 'a_new_site',
+        'language' => 'en-US',
+        'group' => SiteGroup::first()->id,
+    ])->assertSessionHasNoErrors();
+});
+
 test('language is required', function () {
     post(action([SitesController::class, 'store']), [
         'name' => 'A new site',

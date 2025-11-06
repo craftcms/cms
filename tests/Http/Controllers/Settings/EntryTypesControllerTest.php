@@ -124,6 +124,24 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['slugTranslationMethod', 'foo'],
 ]);
 
+test('handle needs to be unique', function () {
+    post(action([EntryTypesController::class, 'store']), validEntryTypeData())
+        ->assertSessionHasNoErrors();
+
+    post(action([EntryTypesController::class, 'store']), validEntryTypeData())
+        ->assertSessionHasErrors('handle');
+});
+
+test('handle needs to be unique without trashed', function () {
+    post(action([EntryTypesController::class, 'store']), validEntryTypeData())
+        ->assertSessionHasNoErrors();
+
+    EntryType::latest('id')->first()->update(['dateDeleted' => now()]);
+
+    post(action([EntryTypesController::class, 'store']), validEntryTypeData())
+        ->assertSessionHasNoErrors();
+});
+
 it('can delete an entry type', function () {
     $newEntryType = EntryType::factory()->create();
 

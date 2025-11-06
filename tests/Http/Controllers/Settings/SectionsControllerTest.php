@@ -140,6 +140,24 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['propagationMethod', 'foo'],
 ]);
 
+test('handle needs to be unique', function () {
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasErrors('handle');
+});
+
+test('handle needs to be unique without trashed', function () {
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+
+    Section::latest('id')->first()->update(['dateDeleted' => now()]);
+
+    post(action([SectionsController::class, 'store']), validSectionData())
+        ->assertSessionHasNoErrors();
+});
+
 it('can delete a section', function () {
     $newSection = Section::factory()->create();
 
