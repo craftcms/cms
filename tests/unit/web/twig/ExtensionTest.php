@@ -26,6 +26,7 @@ use Illuminate\Support\Collection;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -46,14 +47,10 @@ class ExtensionTest extends TestCase
      */
     protected View $view;
 
-    public function _fixtures(): array
-    {
-        return [
-            'globals' => [
-                'class' => GlobalSetFixture::class,
-            ],
-        ];
-    }
+    /**
+     * @var UnitTester
+     */
+    protected UnitTester $tester;
 
     /**
      * @throws LoaderError
@@ -141,6 +138,12 @@ class ExtensionTest extends TestCase
      */
     public function testElementGlobals(): void
     {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
         $this->testRenderResult(
             'A global set | A different global set',
             '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
@@ -1023,6 +1026,12 @@ class ExtensionTest extends TestCase
 
     public function testFieldValueSqlFunction(): void
     {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
         $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
         $valueSql = $field->getValueSql();
@@ -1233,7 +1242,7 @@ class ExtensionTest extends TestCase
     public function testCollectFunction(string $expectedClass, array $items): void
     {
         $this->testRenderResult(
-            Collection::class,
+            $expectedClass,
             "{{ className(collect(items)) }}",
             ['items' => $items],
         );
@@ -1241,12 +1250,13 @@ class ExtensionTest extends TestCase
 
     public static function collectFunctionDataProvider(): array
     {
-        $users = User::find()->all();
+        $entry = new Entry();
+
         return [
             [Collection::class, []],
             [Collection::class, ['foo']],
-            [Collection::class, array_merge($users, ['foo'])],
-            [ElementCollection::class, $users],
+            [Collection::class, [$entry, 'foo']],
+            [ElementCollection::class, [$entry]],
         ];
     }
 

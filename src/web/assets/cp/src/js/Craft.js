@@ -3258,19 +3258,14 @@ $.extend($.fn, {
         }
 
         if (!isExpanded) {
+          $collapsed.addClass('hidden');
           $expanded.removeClass('hidden');
         }
-        const expandedButtonWidth = $expanded[0].getBoundingClientRect().width;
-        if (
-          isExpanded !== (isExpanded = expandedButtonWidth <= containerWidth)
-        ) {
-          if (isExpanded) {
-            $collapsed.addClass('hidden');
-          } else {
-            $collapsed.removeClass('hidden');
-            $expanded.addClass('hidden');
-          }
-        } else if (!isExpanded) {
+
+        isExpanded = $container[0].scrollWidth <= containerWidth;
+
+        if (!isExpanded) {
+          $collapsed.removeClass('hidden');
           $expanded.addClass('hidden');
         }
       };

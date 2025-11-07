@@ -87,8 +87,15 @@ class ClearCachesController extends Controller
         $actions = parent::defineActions();
 
         foreach (ClearCaches::cacheOptions() as $option) {
+            $summary = $option['label'];
+
+            // When available, supplement with the tooltip text:
+            if (isset($option['info'])) {
+                $summary = sprintf('%s (%s)', $summary, $option['info']);
+            }
+
             $actions[$option['key']] = [
-                'helpSummary' => $option['label'],
+                'helpSummary' => $summary,
                 'action' => [
                     'class' => ClearCacheAction::class,
                     'action' => $option['action'],
