@@ -926,28 +926,42 @@ class Matrix extends Field implements
         $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
   const field = $('#' + $fieldId);
-  const expandAllBtn = $('#' + $expandAllId);
-  const collapseAllBtn = $('#' + $collapseAllId);
-  const getBlocks = () => field.find(' > .blocks > .matrixblock');
+  const expandBtn = $('#' + $expandAllId);
+  const collapseBtn = $('#' + $collapseAllId);
+  const getBlocks = () => {
+    const blocks = field.find(' > .blocks > .matrixblock');
+    const selectedBlocks = blocks.filter('.sel');
+    return selectedBlocks.length ? selectedBlocks : blocks;
+  };
 
-  expandAllBtn.on('activate', () => {
+  expandBtn.on('activate', () => {
     getBlocks().each((i, block) => {
       $(block).data('entry').expand();
     });
   });
 
-  collapseAllBtn.on('activate', () => {
+  collapseBtn.on('activate', () => {
     getBlocks().each((i, block) => {
       $(block).data('entry').collapse();
     });
   });
 
   setTimeout(() => {
-    const menu = expandAllBtn.closest('.menu').data('disclosureMenu');
+    const menu = expandBtn.closest('.menu').data('disclosureMenu');
     menu.on('show', () => {
-      const blocks = getBlocks();
-      menu.toggleItem(expandAllBtn[0], blocks.is('.collapsed'));
-      menu.toggleItem(collapseAllBtn[0], blocks.is(':not(.collapsed)'));
+      let blocks = getBlocks();
+      let expandLabel, collapseLabel;
+      if (blocks.is('.sel')) {
+        expandLabel = Craft.t('app', 'Expand selected blocks');
+        collapseLabel = Craft.t('app', 'Collapse selected blocks');
+      } else {
+        expandLabel = Craft.t('app', 'Expand all blocks');
+        collapseLabel = Craft.t('app', 'Collapse all blocks');
+      }
+      expandBtn.find('.menu-item-label').text(expandLabel);
+      collapseBtn.find('.menu-item-label').text(collapseLabel);
+      menu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
+      menu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
   }, 1);
 })();
@@ -957,7 +971,7 @@ JS, [
             $view->namespaceInputId($this->getInputId()),
         ]);
 
-        // Copy all
+        // Copy
         if ($this->maxEntries !== 1) {
             $items[] = ['type' => 'hr'];
 
@@ -975,39 +989,62 @@ JS, [
                 'type' => Entry::class,
                 'fieldId' => $this->id,
             ]);
-            $copyAllJs = <<<JS
-copyAllBtn.on('activate', () => {
-  const elementInfo = [];
-  field.find('> .blocks > .matrixblock').each((i, element) => {
-    element = $(element);
-    elementInfo.push(Object.assign({
-        id: element.data('id'),
-        draftId: element.data('draftId'),
-        revisionId: element.data('revisionId'),
-        ownerId: element.data('ownerId'),
-        siteId: element.data('siteId'),
-      }, $baseInfo));
-  });
-  Craft.cp.copyElements(elementInfo);
-});
-JS;
 
-            $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
+            $view->registerJsWithVars(fn($copyAllId, $fieldId, $type) => <<<JS
 (() => {
-  const copyAllBtn = $('#' + $copyAllId);
+  const copyBtn = $('#' + $copyAllId);
   const field = $('#' + $fieldId);
+  const getBlocks = () => {
+    const blocks = field.find(' > .blocks > .matrixblock');
+    const selectedBlocks = blocks.filter('.sel');
+    return selectedBlocks.length ? selectedBlocks : blocks;
+  };
+  
   if (field.length) {
-    $copyAllJs
+    copyBtn.on('activate', () => {
+      const elementInfo = [];
+      getBlocks().each((i, element) => {
+        element = $(element);
+        elementInfo.push(Object.assign({
+            id: element.data('id'),
+            draftId: element.data('draftId'),
+            revisionId: element.data('revisionId'),
+            ownerId: element.data('ownerId'),
+            siteId: element.data('siteId'),
+          }, $baseInfo));
+      });
+      Craft.cp.copyElements(elementInfo);
+    });
   } else {
     setTimeout(() => {
-      const menu = copyAllBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyAllBtn[0]);
+      const menu = copyBtn.closest('.menu').data('disclosureMenu');
+      menu.removeItem(copyBtn[0]);
     }, 1);
   }
+  
+  setTimeout(() => {
+    const menu = copyBtn.closest('.menu').data('disclosureMenu');
+    menu.on('show', () => {
+      let blocks = getBlocks();
+      let copyLabel;
+      if (blocks.is('.sel')) {
+        copyLabel = Craft.t('app', 'Copy selected {type}', {
+          type: $type,
+        });
+      } else {
+        copyLabel = Craft.t('app', 'Copy all {type}', {
+          type: $type,
+        });
+      }
+      copyBtn.find('.menu-item-label').text(copyLabel);
+      menu.toggleItem(copyBtn[0], !!blocks.length);
+    });
+  }, 1);
 })();
 JS, [
                 $view->namespaceInputId($copyAllId),
                 $view->namespaceInputId($this->getInputId()),
+                Entry::pluralLowerDisplayName(),
             ]);
         }
 
@@ -1031,22 +1068,19 @@ JS, [
                 ])),
             ];
 
-            $copyAllJs = <<<JS
-copyAllBtn.on('activate', () => {
-  Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
-});
-JS;
 
             $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
 (() => {
-  const copyAllBtn = $('#' + $copyAllId);
+  const copyBtn = $('#' + $copyAllId);
   const field = $('#' + $fieldId);
   if (field.length) {
-    $copyAllJs
+    copyBtn.on('activate', () => {
+      Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
+    });
   } else {
     setTimeout(() => {
-      const menu = copyAllBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyAllBtn[0]);
+      const menu = copyBtn.closest('.menu').data('disclosureMenu');
+      menu.removeItem(copyBtn[0]);
     }, 1);
   }
 })();

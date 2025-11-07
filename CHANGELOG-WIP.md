@@ -2,6 +2,7 @@
 
 ### Content Management
 - Matrix fields using “Cards” or “Inline” view modes now show an “Add” button per entry type group, when the viewport is wide enough to support it. ([#17731](https://github.com/craftcms/cms/pull/17731))
+- Matrix fields set to the “Inline” view mode now have “Expand/collapse selected blocks” and “Copy selected blocks” field-level actions, if any blocks are selected. ([#18001](https://github.com/craftcms/cms/discussions/18001))
 - Chips and cards are generally no longer hyperlinked. ([#17591](https://github.com/craftcms/cms/pull/17591))
 - It’s now possible to add new sites to entries via their slideout editors. ([#17795](https://github.com/craftcms/cms/issues/17795))
 - Elements created via “Save as a new…” actions now initially have an empty slug. ([#17932](https://github.com/craftcms/cms/pull/17932))
