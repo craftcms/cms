@@ -46,6 +46,8 @@
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
 - Added `craft\base\ElementIndex::multiPageSources()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
+- Added `craft\base\ElementTrait::$propagateRequired`.
+- Added `craft\base\FieldInterface::propagateValue()`.
 - Added `craft\elements\User::isInGroups()`. ([#17989](https://github.com/craftcms/cms/discussions/17989))
 - Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
 - Added `craft\events\RegisterElementCardAttributesEvent::$fieldLayout`. ([#17920](https://github.com/craftcms/cms/pull/17920))
@@ -100,4 +102,5 @@
 - Fixed a bug where elements with unsaved changes could show outdated attribute/field values within element index tables, chips, and cards throughout the control panel. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
 - Fixed a bug where requests with invalid tokens would throw an exception before the application was fully initialized, which could lead to other errors. ([#18000](https://github.com/craftcms/cms/issues/18000))
+- Fixed a bug where titles, slugs, and required custom field values weren’t always getting propagated to other sites when creating a new element. ([#17955](https://github.com/craftcms/cms/issues/17955))
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
