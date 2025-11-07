@@ -8,6 +8,7 @@
 {% set options = options ?? [] %}
 {% set values = values ?? (value ?? false ? [value] : []) -%}
 {% set limit = limit ?? null %}
+{% set min = min ?? null %}
 {% set showHandles = showHandles ?? false %}
 {% set showIndicators = showIndicators ?? false %}
 {% set showDescription = showDescription ?? false %}
@@ -115,6 +116,7 @@
     id: id|namespaceInputId,
     name: name|namespaceInputName,
     limit,
+    min,
     showHandles,
     showDescription,
     sortable,
