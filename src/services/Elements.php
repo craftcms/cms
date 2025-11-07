@@ -4390,35 +4390,22 @@ class Elements extends Component
                 $fieldLayout = $element->getFieldLayout();
 
                 if ($fieldLayout !== null) {
-                    // Only copy the non-translatable field values
                     foreach ($fieldLayout->getCustomFields() as $field) {
-                        // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
                             $element->propagateAll ||
+                            // If propagateRequired is set, is the field value invalid on the propagated site element?
+                            (
+                                $element->propagateRequired &&
+                                $field->layoutElement->required &&
+                                !$siteElement->validate("field:$field->handle")
+                            ) ||
+                            // Has this field changed, and does it produce the same translation key as it did for the initial element?
                             (
                                 $element->isFieldDirty($field->handle) &&
                                 $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                             )
                         ) {
-                            // Copy the initial element’s value over
-                            $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
-                        }
-                    }
-
-                    // if propagateRequired is true and site element doesn't already validate
-                    if ($element->propagateRequired && !$siteElement->validate()) {
-                        // iterate through the custom fields again
-                        foreach ($fieldLayout->getCustomFields() as $field) {
-                            // the layout element is required and invalid
-                            if (
-                                $field->layoutElement->required &&
-                                !empty($siteElement->getErrors($field->handle))
-                            ) {
-                                // copy the initial element’s value over
-                                $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
-                                // give plugins a chance to do special processing if required
-                                $field->handlePropagateRequired($element, $siteElement);
-                            }
+                            $field->propagateValue($element, $siteElement);
                         }
                     }
                 }

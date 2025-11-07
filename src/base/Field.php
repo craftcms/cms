@@ -1370,16 +1370,10 @@ JS, [
     }
 
     /**
-     * Gives fields a chance to handle special cases when propagating required fields.
-     *
-     * @param ElementInterface $element
-     * @param ElementInterface $siteElement
-     * @return void
-     * @since 5.9.0
+     * @inheritdoc
      */
-    public function handlePropagateRequired(ElementInterface $element, ElementInterface $siteElement): void
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
-        // by default, no extra processing is needed when propagating required fields,
-        // but plugins can use this method when they need to;
+        $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
 }
