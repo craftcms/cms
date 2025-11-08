@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the Live Preview drag bar wasn’t easily draggable when a nested slideout was open. ([#17781](https://github.com/craftcms/cms/issues/17781))
+- Fixed a bug where nested slideouts within Live Preview weren’t getting resized when the window was resized.
 
 ## 5.8.19 - 2025-10-28
 

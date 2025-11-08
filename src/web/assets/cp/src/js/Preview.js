@@ -146,7 +146,7 @@ Craft.Preview = Garnish.Base.extend(
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
       this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
-      this.$dragHandle.css(Craft.left, (this.editorWidthInPx - 2) + 'px');
+      this.$dragHandle.css(Craft.left, this.editorWidthInPx - 2 + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
       this.slideIn(animate);
@@ -738,7 +738,7 @@ Craft.Preview = Garnish.Base.extend(
 
     updateWidths: function () {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
-      this.$dragHandle.css(Craft.left, (this.editorWidthInPx - 2) + 'px');
+      this.$dragHandle.css(Craft.left, this.editorWidthInPx - 2 + 'px');
       this.$previewContainer.width(this.getIframeWidth());
       if (this._devicePreviewIsActive()) {
         this.updateDevicePreview();
