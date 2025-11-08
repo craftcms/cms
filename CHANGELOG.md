@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where the Live Preview drag bar wasn’t easily draggable when a nested slideout was open. ([#17781](https://github.com/craftcms/cms/issues/17781))
+
 ## 5.8.19 - 2025-10-28
 
 - Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
