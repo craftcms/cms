@@ -11,6 +11,7 @@ use craft\db\QueryParam;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Contracts\Database\Query\Expression;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -67,8 +68,8 @@ trait QueriesCustomFields
         // Map custom field handles to their content values
         $this->addCustomFieldsToColumnMap();
 
-        $this->beforeQuery(function () {
-            $this->applyCustomFieldParams();
+        $this->beforeQuery(function (ElementQuery $query) {
+            $this->applyCustomFieldParams($query);
         });
     }
 
@@ -162,7 +163,7 @@ trait QueriesCustomFields
      *
      * @throws QueryAbortedException
      */
-    private function applyCustomFieldParams(): void
+    private function applyCustomFieldParams(ElementQuery $query): void
     {
         if (empty($this->customFields) && empty($this->generatedFields)) {
             return;
@@ -244,9 +245,9 @@ trait QueriesCustomFields
             foreach ($generatedFieldColumns as $handle => $columns) {
                 $column = count($columns) === 1
                     ? $columns[0]
-                    : new Coalesce($columns)->getValue($this->subQuery->getGrammar());
+                    : new Coalesce($columns)->getValue($query->subQuery->getGrammar());
 
-                $this->subQuery->where(DbHelper::parseParam($column, $fieldAttributes->$handle));
+                $query->subQuery->where(DbHelper::parseParam($column, $fieldAttributes->$handle));
             }
         }
     }

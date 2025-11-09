@@ -17,6 +17,15 @@ use Illuminate\Database\Query\Builder;
 trait SearchesElements
 {
     /**
+     * @var mixed The search term to filter the resulting elements by.
+     *
+     * See [Searching](https://craftcms.com/docs/5.x/system/searching.html) for supported syntax options.
+     *
+     * @used-by ElementQuery::search()
+     */
+    public mixed $search = null;
+
+    /**
      * @var array<string,int>|null
      *
      * @see applySearchParam()
@@ -101,5 +110,42 @@ trait SearchesElements
         }
 
         $query->subQuery->whereIn('elements.id', $searchQuery->select('elementId'));
+    }
+
+    /**
+     * Narrows the query results to only {elements} that match a search query.
+     *
+     * See [Searching](https://craftcms.com/docs/5.x/system/searching.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Get the search query from the 'q' query string param #}
+     * {% set searchQuery = craft.app.request.getQueryParam('q') %}
+     *
+     * {# Fetch all {elements} that match the search query #}
+     * {% set {elements-var} = {twig-method}
+     *   .search(searchQuery)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Get the search query from the 'q' query string param
+     * $searchQuery = \Craft::$app->request->getQueryParam('q');
+     *
+     * // Fetch all {elements} that match the search query
+     * ${elements-var} = {php-method}
+     *     ->search($searchQuery)
+     *     ->all();
+     * ```
+     *
+     * @param  mixed  $value  The property value
+     * @return static self reference
+     */
+    public function search($value): static
+    {
+        $this->search = $value;
+
+        return $this;
     }
 }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\Connection;
@@ -58,6 +59,18 @@ final class DatabaseServiceProvider extends ServiceProvider
 
     public function registerQueryBuilderMacros(): void
     {
+        Builder::macro('applyParam', function (string $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null) {
+            Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType);
+        });
+
+        Builder::macro('applyNumericParam', function (string $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER) {
+            Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType);
+        });
+
+        Builder::macro('applyDateParam', function (string $column, mixed $param, string $defaultOperator = '=') {
+            Query::whereDateParam($this, $column, $param, $defaultOperator);
+        });
+
         Builder::macro('idByUid', fn (string $uid): ?int => (int) $this->where('uid', $uid)->value('id') ?: null);
         Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());
         Builder::macro('uidById', fn (int $id): ?string => $this->where('id', $id)->value('uid') ?: null);
