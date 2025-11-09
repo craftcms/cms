@@ -1108,15 +1108,28 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         return match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element),
-            default => Html::tag('div', $this->nestedElementManagerHtml($element), [
+            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
+            default => Html::tag('div', $this->nestedElementManagerHtml($element, $static), [
                 'id' => $this->getInputId(),
             ]),
         };
     }
 
-    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
+    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
     {
         if (!$element?->id) {
             $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
@@ -1139,6 +1152,10 @@ JS, [
                 ->all();
         }
 
+        if ($static && empty($value)) {
+            return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
+        }
+
         $view = Craft::$app->getView();
         $id = $this->getInputId();
         /** @var Entry[] $value */
@@ -1156,9 +1173,12 @@ JS, [
             !$element->hasErrors($this->handle)
         );
         $staticEntries = (
-            $createDefaultEntries &&
-            $this->minEntries == $this->maxEntries &&
-            $this->maxEntries >= count($value)
+            $static ||
+            (
+                $createDefaultEntries &&
+                $this->minEntries == $this->maxEntries &&
+                $this->maxEntries >= count($value)
+            )
         );
 
         $view->registerAssetBundle(MatrixAsset::class);
@@ -1171,6 +1191,7 @@ JS, [
             'ownerElementType' => $element::class,
             'ownerId' => $element->id,
             'siteId' => $element->siteId,
+            'static' => $static,
             'staticEntries' => $staticEntries,
         ];
 
@@ -1222,7 +1243,7 @@ JS;
             'name' => $this->handle,
             'entryTypes' => $entryTypes,
             'entries' => $value,
-            'static' => false,
+            'static' => $static,
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
@@ -1425,46 +1446,6 @@ JS,
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->entryManager()->getSearchKeywords($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
-            return $this->nestedElementManagerHtml($element, true);
-        }
-
-        /** @var EntryQuery|ElementCollection $value */
-        $entries = $value->status(null)->all();
-
-        if (empty($entries)) {
-            return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
-        }
-
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(MatrixAsset::class);
-
-        $id = StringHelper::randomString();
-        $js = '';
-
-        foreach ($entries as $entry) {
-            $js .= <<<JS
-Craft.MatrixInput.initTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
-JS;
-        }
-
-        $view->registerJs("(() => {\n$js\n})();");
-
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
-            'id' => $id,
-            'name' => $id,
-            'entryTypes' => $this->getEntryTypes(),
-            'entries' => $entries,
-            'static' => true,
-            'staticEntries' => true,
-        ]);
     }
 
     /**
