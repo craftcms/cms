@@ -928,6 +928,7 @@ class Matrix extends Field implements
   const field = $('#' + $fieldId);
   const expandBtn = $('#' + $expandAllId);
   const collapseBtn = $('#' + $collapseAllId);
+  const menu = expandBtn.closest('.menu');
   const getBlocks = () => {
     const blocks = field.find(' > .blocks > .matrixblock');
     const selectedBlocks = blocks.filter('.sel');
@@ -947,8 +948,8 @@ class Matrix extends Field implements
   });
 
   setTimeout(() => {
-    const menu = expandBtn.closest('.menu').data('disclosureMenu');
-    menu.on('show', () => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
       let blocks = getBlocks();
       let expandLabel, collapseLabel;
       if (blocks.is('.sel')) {
@@ -960,8 +961,8 @@ class Matrix extends Field implements
       }
       expandBtn.find('.menu-item-label').text(expandLabel);
       collapseBtn.find('.menu-item-label').text(collapseLabel);
-      menu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
-      menu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
+      disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
+      disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
   }, 1);
 })();
@@ -994,6 +995,7 @@ JS, [
 (() => {
   const copyBtn = $('#' + $copyAllId);
   const field = $('#' + $fieldId);
+  const menu = copyBtn.closest('.menu');
   const getBlocks = () => {
     const blocks = field.find(' > .blocks > .matrixblock');
     const selectedBlocks = blocks.filter('.sel');
@@ -1017,14 +1019,13 @@ JS, [
     });
   } else {
     setTimeout(() => {
-      const menu = copyBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyBtn[0]);
+      menu.data('disclosureMenu').removeItem(copyBtn[0]);
     }, 1);
   }
   
   setTimeout(() => {
-    const menu = copyBtn.closest('.menu').data('disclosureMenu');
-    menu.on('show', () => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
       let blocks = getBlocks();
       let copyLabel;
       if (blocks.is('.sel')) {
@@ -1037,7 +1038,7 @@ JS, [
         });
       }
       copyBtn.find('.menu-item-label').text(copyLabel);
-      menu.toggleItem(copyBtn[0], !!blocks.length);
+      disclosureMenu.toggleItem(copyBtn[0], !!blocks.length);
     });
   }, 1);
 })();
