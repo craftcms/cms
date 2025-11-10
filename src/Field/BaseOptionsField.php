@@ -6,12 +6,12 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\QueryParam;
 use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;

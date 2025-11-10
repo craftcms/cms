@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\mysql\Schema;
-use craft\db\QueryParam;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Database\QueryParam;
 use Illuminate\Contracts\Database\Query\Expression;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
