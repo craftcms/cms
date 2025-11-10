@@ -68,13 +68,15 @@ trait SearchesElements
 
             if (($query->query->orders[0]['column'] ?? null) === 'score') {
                 // Only use the portion we're actually querying for
-                if (is_int($query->query->offset) && $query->query->offset !== 0) {
-                    $searchResults = array_slice($searchResults, $query->query->offset, null, true);
+                if (is_int($query->query->getOffset()) && $query->query->getOffset() !== 0) {
+                    $searchResults = array_slice($searchResults, $query->query->getOffset(), null, true);
                     $query->subQuery->offset = null;
+                    $query->subQuery->unionOffset = null;
                 }
-                if (is_int($query->query->limit) && $query->query->limit !== 0) {
-                    $searchResults = array_slice($searchResults, 0, $query->query->limit, true);
+                if (is_int($query->query->getLimit()) && $query->query->getLimit() !== 0) {
+                    $searchResults = array_slice($searchResults, 0, $query->query->getLimit(), true);
                     $query->subQuery->limit = null;
+                    $query->subQuery->unionLimit = null;
                 }
             }
 
@@ -109,7 +111,7 @@ trait SearchesElements
             throw new QueryAbortedException;
         }
 
-        $query->subQuery->whereIn('elements.id', $searchQuery->select('elementId'));
+        $query->subQuery->whereIn('elements.id', $searchQuery->select('elementId')->all());
     }
 
     /**
