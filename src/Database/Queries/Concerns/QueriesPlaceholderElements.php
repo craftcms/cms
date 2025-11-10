@@ -36,9 +36,8 @@ trait QueriesPlaceholderElements
     private mixed $placeholderSiteIds = null;
 
     /**
-     * {@inheritdoc}
-     *
-     * @uses $ignorePlaceholders
+     * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
+     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
      */
     public function ignorePlaceholders(bool $value = true): static
     {

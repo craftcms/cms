@@ -38,6 +38,7 @@ trait HydratesElements
                 }
 
                 $key = sprintf('%s-%s', $row['id'], $row['siteId']);
+
                 if (isset($this->searchResults[$key])) {
                     $row['searchScore'] = (int) round($this->searchResults[$key]);
                 }
@@ -46,8 +47,7 @@ trait HydratesElements
             }))->map(fn (array $row) => $this->createElement($row));
 
         if ($this->withProvisionalDrafts) {
-            // @TODO
-            // ElementHelper::swapInProvisionalDrafts($elements);
+            ElementHelper::swapInProvisionalDrafts($elements);
         }
 
         if (Event::hasListeners(ElementsHydrated::class)) {
@@ -65,7 +65,7 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ($element = \Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+            ! is_null($element = \Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
         ) {
             return $element;
         }
@@ -93,18 +93,27 @@ trait HydratesElements
             }
 
             foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
-                    $handle = $field->layoutElement->handle ?? $field->handle;
-                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
+                if (is_null($field::dbType())) {
+                    continue;
                 }
+
+                if (! isset($content[$field->layoutElement->uid])) {
+                    continue;
+                }
+
+                $handle = $field->layoutElement->handle ?? $field->handle;
+                $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
             }
 
             foreach ($this->generatedFields as $field) {
-                if (isset($content[$field['uid']])) {
-                    $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
-                    if (($field['handle'] ?? '') !== '') {
-                        $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
-                    }
+                if (! isset($content[$field['uid']])) {
+                    continue;
+                }
+
+                $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
+
+                if (! empty($field['handle'] ?? '')) {
+                    $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
                 }
             }
         }

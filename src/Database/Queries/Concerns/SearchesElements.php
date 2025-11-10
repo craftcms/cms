@@ -138,11 +138,8 @@ trait SearchesElements
      *     ->search($searchQuery)
      *     ->all();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
-    public function search($value): static
+    public function search(mixed $value): static
     {
         $this->search = $value;
 

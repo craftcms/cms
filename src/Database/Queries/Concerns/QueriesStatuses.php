@@ -53,12 +53,6 @@ trait QueriesStatuses
         });
     }
 
-    /**
-     * Sets the [[$archived]] property.
-     *
-     * @param  bool  $value  The property value (defaults to true)
-     * @return static self reference
-     */
     public function archived(bool $value = true): static
     {
         $this->archived = $value;

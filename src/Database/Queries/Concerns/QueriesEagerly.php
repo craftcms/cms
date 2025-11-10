@@ -27,22 +27,16 @@ trait QueriesEagerly
 
     /**
      * @var ElementInterface|null The source element that this query is fetching relations for.
-     *
-     * @since 5.0.0
      */
     public ?ElementInterface $eagerLoadSourceElement = null;
 
     /**
      * @var string|null The handle that could be used to eager-load the query's target elmeents.
-     *
-     * @since 5.0.0
      */
     public ?string $eagerLoadHandle = null;
 
     /**
      * @var string|null The eager-loading alias that should be used.
-     *
-     * @since 5.0.0
      */
     public ?string $eagerLoadAlias = null;
 
@@ -51,8 +45,6 @@ trait QueriesEagerly
      *           and any other elements in its collection.
      *
      * @used-by eagerly()
-     *
-     * @since 5.0.0
      */
     public bool $eagerly = false;
 
@@ -69,9 +61,25 @@ trait QueriesEagerly
     }
 
     /**
-     * {@inheritdoc}
+     * Causes the query to return matching {elements} eager-loaded with related elements.
      *
-     * @uses $with
+     * See [Eager-Loading Elements](https://craftcms.com/docs/5.x/development/eager-loading.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} eager-loaded with the "Related" field’s relations #}
+     * {% set {elements-var} = {twig-method}
+     *   .with(['related'])
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} eager-loaded with the "Related" field’s relations
+     * ${elements-var} = {php-method}
+     *     ->with(['related'])
+     *     ->all();
+     * ```
      */
     public function with(array|string|null $value): static
     {
@@ -81,9 +89,7 @@ trait QueriesEagerly
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @uses $with
+     * Causes the query to return matching {elements} eager-loaded with related elements, in addition to the elements that were already specified by [[with()]]..
      */
     public function andWith(array|string|null $value): static
     {
@@ -103,7 +109,10 @@ trait QueriesEagerly
     }
 
     /**
-     * {@inheritdoc}
+     * Causes the query to be used to eager-load results for the query’s source element
+     * and any other elements in its collection.
+     *
+     * @param  string|bool  $value  The property value. If a string, the value will be used as the eager-loading alias.
      */
     public function eagerly(string|bool $value = true): static
     {
@@ -114,21 +123,24 @@ trait QueriesEagerly
     }
 
     /**
-     * {@inheritdoc}
+     * Prepares the query for lazy eager loading.
+     *
+     * @param  string  $handle  The eager loading handle the query is for
+     * @param  ElementInterface  $sourceElement  One of the source elements the query is fetching elements for
      */
     public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static
     {
         // Prefix the handle with the provider's handle, if there is one
         $providerHandle = $sourceElement->getFieldLayout()?->provider?->getHandle();
-        $this->eagerLoadHandle = $providerHandle ? "$providerHandle:$handle" : $handle;
 
+        $this->eagerLoadHandle = $providerHandle ? "$providerHandle:$handle" : $handle;
         $this->eagerLoadSourceElement = $sourceElement;
 
         return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * Returns whether the query results were already eager loaded by the query's source element.
      */
     public function wasEagerLoaded(?string $alias = null): bool
     {
@@ -149,7 +161,7 @@ trait QueriesEagerly
     }
 
     /**
-     * {@inheritdoc}
+     * Returns whether the query result count was already eager loaded by the query's source element.
      */
     public function wasCountEagerLoaded(?string $alias = null): bool
     {

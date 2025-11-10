@@ -92,9 +92,28 @@ trait QueriesUniqueElements
     }
 
     /**
-     * {@inheritdoc}
+     * Determines whether only elements with unique IDs should be returned by the query.
      *
-     * @uses $unique
+     * This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+     * desired.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} across all sites #}
+     * {% set {elements-var} = {twig-method}
+     *   .site('*')
+     *   .unique()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} across all sites
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->all();
+     * ```
      */
     public function unique(bool $value = true): static
     {
@@ -104,9 +123,33 @@ trait QueriesUniqueElements
     }
 
     /**
-     * {@inheritdoc}
+     * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
      *
-     * @uses $preferSites
+     * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site B, and Bar will be returned
+     * for Site C.
+     *
+     * If this isn’t set, then preference goes to the current site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A #}
+     * {% set {elements-var} = {twig-method}
+     *   .site('*')
+     *   .unique()
+     *   .preferSites(['a', 'b'])
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->preferSites(['a', 'b'])
+     *     ->all();
+     * ```
      */
     public function preferSites(?array $value = null): static
     {

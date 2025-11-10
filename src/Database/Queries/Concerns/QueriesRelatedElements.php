@@ -9,6 +9,7 @@ use craft\db\QueryAbortedException;
 use craft\elements\db\ElementRelationParamParser;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
+use RuntimeException;
 
 /**
  * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
@@ -93,9 +94,25 @@ trait QueriesRelatedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are not related to certain other elements.
      *
-     * @uses $notRelatedTo
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myEntry #}
+     * {% set {elements-var} = {twig-method}
+     *   .notRelatedTo(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myEntry
+     * ${elements-var} = {php-method}
+     *     ->notRelatedTo($myEntry)
+     *     ->all();
+     * ```
      */
     public function notRelatedTo($value): static
     {
@@ -105,9 +122,27 @@ trait QueriesRelatedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are not related to certain other elements.
      *
-     * @uses $notRelatedTo
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and not myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *   .relatedTo(myCategoryA)
+     *   .andNotRelatedTo(myCategoryB)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and not $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andNotRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
      */
     public function andNotRelatedTo($value): static
     {
@@ -121,9 +156,25 @@ trait QueriesRelatedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * @uses $relatedTo
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategory #}
+     * {% set {elements-var} = {twig-method}
+     *   .relatedTo(myCategory)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategory
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategory)
+     *     ->all();
+     * ```
      */
     public function relatedTo($value): static
     {
@@ -133,11 +184,27 @@ trait QueriesRelatedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * @throws NotSupportedException
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
      *
-     * @uses $relatedTo
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *   .relatedTo(myCategoryA)
+     *   .andRelatedTo(myCategoryB)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
      */
     public function andRelatedTo($value): static
     {
@@ -150,9 +217,6 @@ trait QueriesRelatedElements
         return $this->relatedTo($relatedTo);
     }
 
-    /**
-     * @throws NotSupportedException
-     */
     private function _andRelatedToCriteria($value, $currentValue): mixed
     {
         if (! $value) {
@@ -169,7 +233,7 @@ trait QueriesRelatedElements
 
         // Not possible to switch from `or` to `and` if there are multiple criteria
         if ($relatedTo[0] === 'or' && $criteriaCount > 1) {
-            throw new NotSupportedException('It’s not possible to combine “or” and “and” relatedTo conditions.');
+            throw new RuntimeException('It’s not possible to combine “or” and “and” relatedTo conditions.');
         }
 
         $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';

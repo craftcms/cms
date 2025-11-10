@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use craft\errors\SiteNotFoundException;
-use craft\models\Site;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Site\Models\Site as SiteModel;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Updates;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 /**
@@ -32,42 +38,71 @@ trait QueriesSites
             try {
                 if (! $this->elementType::isLocalized()) {
                     // The criteria *must* be set to the primary site ID
-                    $this->siteId = \Craft::$app->getSites()->getPrimarySite()->id;
+                    $this->siteId = Sites::getPrimarySite()->id;
                 } else {
                     $this->normalizeSiteId();
                 }
             } catch (SiteNotFoundException $e) {
                 // Fail silently if Craft isn't installed yet or is in the middle of updating
-                if (\Craft::$app->getIsInstalled() && ! \Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+                if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
                     throw $e;
                 }
 
                 throw new QueryAbortedException($e->getMessage(), 0, $e);
             }
 
-            if (\Craft::$app->getIsMultiSite(false, true)) {
+            if (Sites::isMultiSite(false, true)) {
                 $this->subQuery->where('elements_sites.siteId', $this->siteId);
             }
         });
     }
 
     /**
-     * {@inheritdoc}
+     * Determines which site(s) the {elements} should be queried in.
      *
-     * @throws InvalidArgumentException if $value is invalid
+     * The current site will be used by default.
      *
-     * @uses $siteId
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | from the site with a handle of `foo`.
+     * | `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
+     * | a [[Site]] object | from the site represented by the object.
+     * | `'*'` | from any site.
+     *
+     * ::: tip
+     * If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} from the Foo site #}
+     * {% set {elements-var} = {twig-method}
+     *   .site('foo')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} from the Foo site
+     * ${elements-var} = {php-method}
+     *     ->site('foo')
+     *     ->all();
+     * ```
      */
     public function site($value): static
     {
         if ($value === null) {
             $this->siteId = null;
         } elseif ($value === '*') {
-            $this->siteId = \Craft::$app->getSites()->getAllSiteIds();
-        } elseif ($value instanceof Site) {
+            $this->siteId = Sites::getAllSiteIds();
+        } elseif ($value instanceof Site || $value instanceof SiteModel) {
             $this->siteId = $value->id;
         } elseif (is_string($value)) {
-            $this->siteId = \Craft::$app->getSites()->getSiteByHandle($value)?->id ?? throw new InvalidArgumentException('Invalid site handle: '.$value);
+            $this->siteId = Sites::getSiteByHandle($value)?->id ?? throw new InvalidArgumentException('Invalid site handle: '.$value);
         } else {
             if ($not = (strtolower((string) reset($value)) === 'not')) {
                 array_shift($value);
@@ -75,7 +110,7 @@ trait QueriesSites
 
             $this->siteId = [];
 
-            foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Sites::getAllSites() as $site) {
                 if (in_array($site->handle, $value, true) === ! $not) {
                     $this->siteId[] = $site->id;
                 }
@@ -91,9 +126,34 @@ trait QueriesSites
     }
 
     /**
-     * {@inheritdoc}
+     * Determines which site(s) the {elements} should be queried in, per the site’s ID.
      *
-     * @uses $siteId
+     * The current site will be used by default.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | from the site with an ID of `1`.
+     * | `[1, 2]` | from a site with an ID of `1` or `2`.
+     * | `['not', 1, 2]` | not in a site with an ID of `1` or `2`.
+     * | `'*'` | from any site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} from the site with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .siteId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} from the site with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->siteId(1)
+     *     ->all();
+     * ```
      */
     public function siteId($value): static
     {
@@ -117,11 +177,36 @@ trait QueriesSites
     }
 
     /**
-     * {@inheritdoc}
+     * Determines which site(s) the {elements} should be queried in, based on their language.
      *
-     * @return static
+     * Possible values include:
      *
-     * @uses $siteId
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'en'` | from sites with a language of `en`.
+     * | `['en-GB', 'en-US']` | from sites with a language of `en-GB` or `en-US`.
+     * | `['not', 'en-GB', 'en-US']` | not in sites with a language of `en-GB` or `en-US`.
+     *
+     * ::: tip
+     * Elements that belong to multiple sites will be returned multiple times by default. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} from English sites #}
+     * {% set {elements-var} = {twig-method}
+     *   .language('en')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} from English sites
+     * ${elements-var} = {php-method}
+     *     ->language('en')
+     *     ->all();
+     * ```
      */
     public function language($value): self
     {
@@ -162,20 +247,21 @@ trait QueriesSites
      */
     private function normalizeSiteId(): void
     {
-        $sitesService = \Craft::$app->getSites();
         if (! $this->siteId) {
             // Default to the current site
-            $this->siteId = $sitesService->getCurrentSite()->id;
+            $this->siteId = Sites::getCurrentSite()->id;
         } elseif ($this->siteId === '*') {
-            $this->siteId = $sitesService->getAllSiteIds();
+            $this->siteId = Sites::getAllSiteIds();
         } elseif (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
             // Filter out any invalid site IDs
             $siteIds = Collection::make((array) $this->siteId)
-                ->filter(fn ($siteId) => $sitesService->getSiteById($siteId, true) !== null)
+                ->filter(fn ($siteId) => Sites::getSiteById($siteId, true) !== null)
                 ->all();
+
             if (empty($siteIds)) {
                 throw new QueryAbortedException;
             }
+
             $this->siteId = is_array($this->siteId) ? $siteIds : reset($siteIds);
         }
     }

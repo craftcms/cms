@@ -137,9 +137,7 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @uses $withStructure
+     * Explicitly determines whether the query should join in the structure data.
      */
     public function withStructure(bool $value = true): static
     {
@@ -149,9 +147,7 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @uses $structureId
+     * Determines which structure data should be joined into the query.
      */
     public function structureId(?int $value = null): static
     {
@@ -161,9 +157,34 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on the {elements}’ level within the structure.
      *
-     * @uses $level
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with a level of 1.
+     * | `'not 1'` | not with a level of 1.
+     * | `'>= 3'` | with a level greater than or equal to 3.
+     * | `[1, 2]` | with a level of 1 or 2.
+     * | `[null, 1]` | without a level, or a level of 1.
+     * | `['not', 1, 2]` | not with level of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} positioned at level 3 or above #}
+     * {% set {elements-var} = {twig-method}
+     *   .level('>= 3')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} positioned at level 3 or above
+     * ${elements-var} = {php-method}
+     *     ->level('>= 3')
+     *     ->all();
+     * ```
      */
     public function level($value = null): static
     {
@@ -173,9 +194,25 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on whether the {elements} have any descendants in their structure.
      *
-     * @uses $hasDescendants
+     * (This has the opposite effect of calling [[leaves()]].)
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} that have descendants #}
+     * {% set {elements-var} = {twig-method}
+     *   .hasDescendants()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} that have descendants
+     * ${elements-var} = {php-method}
+     *     ->hasDescendants()
+     *     ->all();
+     * ```
      */
     public function hasDescendants(bool $value = true): static
     {
@@ -185,9 +222,25 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on whether the {elements} are “leaves” ({elements} with no descendants).
      *
-     * @uses $leaves
+     * (This has the opposite effect of calling [[hasDescendants()]].)
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} that have no descendants #}
+     * {% set {elements-var} = {twig-method}
+     *   .leaves()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} that have no descendants
+     * ${elements-var} = {php-method}
+     *     ->leaves()
+     *     ->all();
+     * ```
      */
     public function leaves(bool $value = true): static
     {
@@ -197,9 +250,36 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are ancestors of another {element} in its structure.
      *
-     * @uses $ancestorOf
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | above the {element} with an ID of 1.
+     * | a [[{element-class}]] object | above the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} above this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .ancestorOf({myElement})
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} above this one
+     * ${elements-var} = {php-method}
+     *     ->ancestorOf(${myElement})
+     *     ->all();
+     * ```
+     *
+     * ---
+     *
+     * ::: tip
+     * This can be combined with [[ancestorDist()]] if you want to limit how far away the ancestor {elements} can be.
+     * :::
      */
     public function ancestorOf(ElementInterface|int|null $value): static
     {
@@ -209,9 +289,25 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are up to a certain distance away from the {element} specified by [[ancestorOf()]].
      *
-     * @uses $ancestorDist
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} above this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .ancestorOf({myElement})
+     *   .ancestorDist(3)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} above this one
+     * ${elements-var} = {php-method}
+     *     ->ancestorOf(${myElement})
+     *     ->ancestorDist(3)
+     *     ->all();
+     * ```
      */
     public function ancestorDist(?int $value = null): static
     {
@@ -221,9 +317,36 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are descendants of another {element} in its structure.
      *
-     * @uses $descendantOf
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | below the {element} with an ID of 1.
+     * | a [[{element-class}]] object | below the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} below this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .descendantOf({myElement})
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} below this one
+     * ${elements-var} = {php-method}
+     *     ->descendantOf(${myElement})
+     *     ->all();
+     * ```
+     *
+     * ---
+     *
+     * ::: tip
+     * This can be combined with [[descendantDist()]] if you want to limit how far away the descendant {elements} can be.
+     * :::
      */
     public function descendantOf(ElementInterface|int|null $value): static
     {
@@ -233,9 +356,25 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are up to a certain distance away from the {element} specified by [[descendantOf()]].
      *
-     * @uses $descendantDist
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} below this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .descendantOf({myElement})
+     *   .descendantDist(3)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} below this one
+     * ${elements-var} = {php-method}
+     *     ->descendantOf(${myElement})
+     *     ->descendantDist(3)
+     *     ->all();
+     * ```
      */
     public function descendantDist(?int $value = null): static
     {
@@ -245,9 +384,30 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are siblings of another {element} in its structure.
      *
-     * @uses $siblingOf
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | beside the {element} with an ID of 1.
+     * | a [[{element-class}]] object | beside the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} beside this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .siblingOf({myElement})
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} beside this one
+     * ${elements-var} = {php-method}
+     *     ->siblingOf(${myElement})
+     *     ->all();
+     * ```
      */
     public function siblingOf(ElementInterface|int|null $value): static
     {
@@ -257,9 +417,30 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only the {element} that comes immediately before another {element} in its structure.
      *
-     * @uses $prevSiblingOf
+     * Possible values include:
+     *
+     * | Value | Fetches the {element}…
+     * | - | -
+     * | `1` | before the {element} with an ID of 1.
+     * | a [[{element-class}]] object | before the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the previous {element} #}
+     * {% set {element-var} = {twig-method}
+     *   .prevSiblingOf({myElement})
+     *   .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the previous {element}
+     * ${element-var} = {php-method}
+     *     ->prevSiblingOf(${myElement})
+     *     ->one();
+     * ```
      */
     public function prevSiblingOf(ElementInterface|int|null $value): static
     {
@@ -269,9 +450,30 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only the {element} that comes immediately after another {element} in its structure.
      *
-     * @uses $nextSiblingOf
+     * Possible values include:
+     *
+     * | Value | Fetches the {element}…
+     * | - | -
+     * | `1` | after the {element} with an ID of 1.
+     * | a [[{element-class}]] object | after the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the next {element} #}
+     * {% set {element-var} = {twig-method}
+     *   .nextSiblingOf({myElement})
+     *   .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the next {element}
+     * ${element-var} = {php-method}
+     *     ->nextSiblingOf(${myElement})
+     *     ->one();
+     * ```
      */
     public function nextSiblingOf(ElementInterface|int|null $value): static
     {
@@ -281,9 +483,30 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are positioned before another {element} in its structure.
      *
-     * @uses $positionedBefore
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | before the {element} with an ID of 1.
+     * | a [[{element-class}]] object | before the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} before this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .positionedBefore({myElement})
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} before this one
+     * ${elements-var} = {php-method}
+     *     ->positionedBefore(${myElement})
+     *     ->all();
+     * ```
      */
     public function positionedBefore(ElementInterface|int|null $value): static
     {
@@ -293,9 +516,30 @@ trait QueriesStructures
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results to only {elements} that are positioned after another {element} in its structure.
      *
-     * @uses $positionedAfter
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | after the {element} with an ID of 1.
+     * | a [[{element-class}]] object | after the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} after this one #}
+     * {% set {elements-var} = {twig-method}
+     *   .positionedAfter({myElement})
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} after this one
+     * ${elements-var} = {php-method}
+     *     ->positionedAfter(${myElement})
+     *     ->all();
+     * ```
      */
     public function positionedAfter(ElementInterface|int|null $value): static
     {
