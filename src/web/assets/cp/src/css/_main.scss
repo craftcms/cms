@@ -3261,7 +3261,7 @@ table {
             --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
-            --focus-ring: 0 0 0 3px hsl(--focus-light);
+            --focus-ring: var(--focus-ring-light);
 
             .status-label .status-label-text {
               --status-label-text-color: var(--white) !important;
@@ -3487,7 +3487,7 @@ table {
     --link-color: var(--white);
     --ui-control-color: var(--white);
     --custom-border-color: rgb(0 0 0 / 10%) !important;
-    --focus-ring: 0 0 0 3px hsl(var(--focus-outline-light));
+    --focus-ring: var(--focus-ring-light);
     color: var(--white);
 
     &:not(.chromeless) {
@@ -3871,7 +3871,7 @@ table {
     --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
-    --focus-ring: 0 0 0 3px hsl(var(--focus-outline-light));
+    --focus-ring: var(--focus-ring-light);
     color: var(--white);
     background-color: var(
       --custom-sel-bg-color,
@@ -4021,6 +4021,7 @@ table {
   }
 
   .label {
+    --focus-ring: var(--focus-ring-inner);
     display: flex;
     align-items: center;
     gap: var(--xs);
@@ -4032,8 +4033,8 @@ table {
       overflow: hidden;
       text-overflow: ellipsis;
 
-      &:focus {
-        box-shadow: var(--focus-ring-inner);
+      .sel & {
+        --focus-ring: var(--focus-ring-inner-light);
       }
     }
 
@@ -6430,6 +6431,7 @@ $min2ColWidth: 400px;
     inset-inline-start: 0;
     transition: inset-block-start linear 250ms;
     will-change: inset-block-start;
+    box-shadow: none !important;
   }
 
   &.so-mobile {
@@ -8413,7 +8415,7 @@ div.checkbox.indeterminate::before {
 }
 
 input.checkbox:focus-visible + label::before,
-:focus-visible div.checkbox::before {
+div.checkbox:focus-visible > ::before {
   @include mixins.input-focused-styles;
 }
 

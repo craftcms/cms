@@ -953,6 +953,11 @@ JS, [
             $contentBlock->setFieldParamNamespace("$baseFieldNamespace.fields");
         }
 
+        // if the owner is fresh, ensure the content block's content gets propagated to all sites
+        if ($element->getIsFresh()) {
+            $contentBlock->propagateAll = true;
+        }
+
         if (isset($value['fields'])) {
             foreach ($value['fields'] as $fieldHandle => $fieldValue) {
                 try {

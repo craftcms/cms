@@ -2,7 +2,34 @@
 
 ## Unreleased
 
+- Fixed a bug where the Live Preview drag bar wasn’t easily draggable when a nested slideout was open. ([#17781](https://github.com/craftcms/cms/issues/17781))
+- Fixed a bug where nested slideouts within Live Preview weren’t getting resized when the window was resized.
+
+## 5.8.19 - 2025-10-28
+
 - Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
+- Fields’ type names are now included as keywords when searching within field layout designers. ([#17979](https://github.com/craftcms/cms/pull/17979))
+- Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Updated Axios to 1.12.2. ([#17988](https://github.com/craftcms/cms/pull/17988))
+- Fixed a bug where plugin license keys were getting generated for environments that didn’t allow admin changes, which could result in an error that prevented the Plugin Store from loading. ([#17942](https://github.com/craftcms/cms/issues/17942))
+- Fixed a bug where new plugin license keys weren’t getting saved to `.env` if the environment variable didn’t exist yet. ([#17942](https://github.com/craftcms/cms/issues/17942))
+- Fixed a bug where pressing <kbd>Return</kbd> within an editable table within a slideout would submit the slideout.
+- Fixed an error that could occur when retrieving an array/hash value in Twig, if the fetched key wasn’t an integer or string.
+- Fixed a bug where it wasn’t possible to clear out a volume’s “Transform Filesystem” setting. ([#17953](https://github.com/craftcms/cms/issues/17953))
+- Fixed a bug where disclosure menus could have unnecessary horizontal rules.
+- Fixed a bug where Content Block fields weren’t copying field values across all sites for freshly-created owner elements. ([#17927](https://github.com/craftcms/cms/issues/17927))
+- Fixed an error that could occur if the `_includes/field.twig` template was included without passing an `element` variable. ([#17926](https://github.com/craftcms/cms/issues/17926))
+- Fixed a bug where orphaned content block data wasn’t getting garbage collected. ([#17936](https://github.com/craftcms/cms/pull/17936))
+- Fixed a bug where newly-uploaded assets within Assets fields weren’t getting action menus. ([#17941](https://github.com/craftcms/cms/issues/17941))
+- Fixed a bug where Checkboxes and Multi-select fields weren’t handling `:empty:`/`:notempty:` params properly. ([#17763](https://github.com/craftcms/cms/pull/17763))
+- Fixed a bug where focus rings within selected table rows had insufficient contrast. ([#17952](https://github.com/craftcms/cms/pull/17952))
+- Fixed a bug where all nested checkboxes could show focus rings within element index containers. ([#17952](https://github.com/craftcms/cms/pull/17952))
+- Fixed a bug where “New entry” buttons within Matrix fields didn’t have accessible labels that matched the visible labels. ([#17962](https://github.com/craftcms/cms/pull/17962))
+- Fixed a bug where the QR code shown when setting up an authenticator app didn’t have alt text. ([#17963](https://github.com/craftcms/cms/pull/17963))
+- Fixed a bug where it wasn’t possible to clear out assets’ alternative text translations. ([#17969](https://github.com/craftcms/cms/issues/17969))
+- Fixed a bug where batched Find and Replace jobs were skipping several matches. ([#17974](https://github.com/craftcms/cms/issues/17974))
+- Fixed an error that occurred when saving an entry with a field with an Author Group condition rule, if the entry didn’t have an author assigned yet. ([#17995](https://github.com/craftcms/cms/issues/17995))
+- Fixed styling issues. ([#17991](https://github.com/craftcms/cms/issues/17991))
 
 ## 5.8.18 - 2025-10-06
 

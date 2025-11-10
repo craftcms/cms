@@ -134,6 +134,7 @@ class Gc extends Component
         $this->deletePartialElements(Address::class, Table::ADDRESSES, 'id');
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
+        $this->deletePartialElements(ContentBlock::class, Table::CONTENTBLOCKS, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
@@ -512,6 +513,7 @@ class Gc extends Component
     {
         $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
+        // IDs of nested elements where the owner no longer exists
         $ids1 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])
@@ -524,6 +526,7 @@ class Gc extends Component
             ])
             ->column();
 
+        // IDs of nested elements where the field no longer exists
         $ids2 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])

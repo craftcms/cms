@@ -22,8 +22,9 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
+    "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
-    "@playwright/test": "^1.19.2",
+    "@playwright/test": "^1.52.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "3.1.1",
@@ -45,7 +46,7 @@
     "@simplewebauthn/browser": "^7.1.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
-    "axios": "^1.8.4",
+    "axios": "^1.12.2",
     "blueimp-file-upload": "^10.31.0",
     "codemirror": "^5.65.18",
     "d3": "^7.8.5",
