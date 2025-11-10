@@ -59,17 +59,11 @@ final class DatabaseServiceProvider extends ServiceProvider
 
     public function registerQueryBuilderMacros(): void
     {
-        Builder::macro('applyParam', function (string $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null) {
-            Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType);
-        });
-
-        Builder::macro('applyNumericParam', function (string $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER) {
-            Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType);
-        });
-
-        Builder::macro('applyDateParam', function (string $column, mixed $param, string $defaultOperator = '=') {
-            Query::whereDateParam($this, $column, $param, $defaultOperator);
-        });
+        Builder::macro('whereParam', fn (string $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null) => Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType));
+        Builder::macro('whereNumericParam', fn (string $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER) => Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType));
+        Builder::macro('whereDateParam', fn (string $column, mixed $param, string $defaultOperator = '=') => Query::whereDateParam($this, $column, $param, $defaultOperator));
+        Builder::macro('whereMoneyParam', fn (string $column, string $currency, mixed $param, string $defaultOperator = '=') => Query::whereMoneyParam($this, $column, $currency, $param, $defaultOperator));
+        Builder::macro('whereBooleanParam', fn (string $column, mixed $param, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN) => Query::whereBooleanParam($this, $column, $param, $defaultValue, $columnType));
 
         Builder::macro('idByUid', fn (string $uid): ?int => (int) $this->where('uid', $uid)->value('id') ?: null);
         Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());

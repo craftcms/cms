@@ -372,7 +372,7 @@ class ElementQuery implements ElementQueryInterface
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function firstOrFail($columns = ['*'])
+    public function firstOrFail($columns = ['*']): ElementInterface
     {
         if (! is_null($model = $this->first($columns))) {
             return $model;
@@ -638,7 +638,7 @@ class ElementQuery implements ElementQueryInterface
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['orderby'])) {
+        if (strtolower($method) === 'orderby') {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
@@ -684,10 +684,8 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Register the given mixin with the builder.
-     *
-     * @return void
      */
-    protected static function registerMixin(string $mixin, bool $replace = true)
+    protected static function registerMixin(string $mixin, bool $replace = true): void
     {
         $methods = new ReflectionClass($mixin)->getMethods(
             ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED
@@ -707,8 +705,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Register a closure to be invoked on a clone.
-     *
-     * @return $this
      */
     public function onClone(Closure $callback): self
     {
@@ -731,9 +727,7 @@ class ElementQuery implements ElementQueryInterface
     }
 
     /**
-     * Register a closure to be invoked after the query is executed.
-     *
-     * @return $this
+     * Register a closure to be invoked before the query is executed.
      */
     public function beforeQuery(Closure $callback): self
     {
@@ -762,9 +756,6 @@ class ElementQuery implements ElementQueryInterface
         /*if (!$this->beforePrepare()) {
             throw new QueryAbortedException();
         }*/
-
-        // @TODO: Params?
-        // ->addParams($this->params);
 
         $this->applySelectParams();
 

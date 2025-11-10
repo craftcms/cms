@@ -17,14 +17,14 @@ final class ElementNotFoundException extends RecordsNotFoundException
      *
      * @var class-string<TElement>
      */
-    protected string $element;
+    private string $element;
 
     /**
      * The affected element IDs.
      *
      * @var array<int, int|string>
      */
-    protected array $ids;
+    private array $ids;
 
     /**
      * Set the affected Eloquent model and instance ids.

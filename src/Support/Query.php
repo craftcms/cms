@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\db\QueryParam;
+use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
+use Money\Money;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
-final class Query
+final readonly class Query
 {
     const string TYPE_CHAR = 'char';
 
@@ -57,10 +59,7 @@ final class Query
 
     const string TYPE_JSON = 'json';
 
-    /**
-     * @var string[] Numeric column types
-     */
-    private static array $numericColumnTypes = [
+    private const array NUMERIC_COLUMN_TYPES = [
         self::TYPE_TINYINT,
         self::TYPE_SMALLINT,
         self::TYPE_INTEGER,
@@ -70,10 +69,7 @@ final class Query
         self::TYPE_DECIMAL,
     ];
 
-    /**
-     * @var string[] Textual column types
-     */
-    private static array $textualColumnTypes = [
+    private const array TEXTUAL_COLUMN_TYPES = [
         self::TYPE_CHAR,
         self::TYPE_STRING,
         self::TYPE_TEXT,
@@ -85,10 +81,7 @@ final class Query
         self::TYPE_ENUM,
     ];
 
-    /**
-     * @var string[]
-     */
-    private static array $operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+    private const array OPERATORS = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
      * Parses a query param value and applies it to a query builder.
@@ -106,6 +99,7 @@ final class Query
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either `NULL` or an empty string of text).
      *
+     * @param  Builder  $query  The query builder to apply the param to.
      * @param  string  $column  The database column that the param is targeting.
      * @param  string|int|array  $value  The param value(s).
      * @param  string  $defaultOperator  The default operator to apply to the values
@@ -120,11 +114,11 @@ final class Query
         string $defaultOperator = '=',
         bool $caseInsensitive = false,
         ?string $columnType = null,
-    ): void {
+    ): Builder {
         $parsed = QueryParam::parse($param);
 
         if (empty($parsed->values)) {
-            return;
+            return $query;
         }
 
         $parsedColumnType = $columnType
@@ -139,8 +133,8 @@ final class Query
         }
 
         $caseColumn = $caseInsensitive
-            ? $column
-            : new Lower($column);
+            ? new Lower($column)
+            : $column;
 
         $query->where(function (Builder $query) use ($caseColumn, $isMysql, $parsedColumnType, $columnType, $defaultOperator, $parsed, $column, $caseInsensitive) {
             $boolean = match ($parsed->operator) {
@@ -182,14 +176,18 @@ final class Query
                         ($columnType === null && $isMysql) ||
                         ($columnType !== null && self::isTextualColumnType($columnType))
                     ) {
-                        $query->where(function (Builder $query) use ($column) {
+                        $method = $operator === '!=' ? 'whereNot' : 'where';
+
+                        $query->$method(function (Builder $query) use ($column) {
                             $query->whereNull($column)->orWhere($column, '');
                         }, boolean: $boolean);
 
                         continue;
                     }
 
-                    $query->whereNull($column, boolean: $boolean);
+                    $method = $operator === '!=' ? 'whereNotNull' : 'whereNull';
+
+                    $query->$method($column, boolean: $boolean);
 
                     continue;
                 }
@@ -266,6 +264,8 @@ final class Query
                 $query->whereNotIn($caseColumn, $notInVals, boolean: $boolean);
             }
         });
+
+        return $query;
     }
 
     /**
@@ -278,6 +278,7 @@ final class Query
      * - `'not x'` or `'!= x'`
      * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
      *
+     * @param  Builder  $query  The query builder to apply the param to.
      * @param  string  $column  The database column that the param is targeting.
      * @param  string|string[]  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
@@ -290,14 +291,15 @@ final class Query
         mixed $value,
         string $defaultOperator = '=',
         ?string $columnType = self::TYPE_INTEGER,
-    ): void {
-        self::whereParam($query, $column, $value, $defaultOperator, false, $columnType);
+    ): Builder {
+        return self::whereParam($query, $column, $value, $defaultOperator, false, $columnType);
     }
 
     /**
-     * Parses a query param value for a date/time column, and returns a
-     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     * Parses a query param value for a date/time column,
+     * and applies it to the Query builder.
      *
+     * @param  Builder  $query  The query builder to apply the param to.
      * @param  string  $column  The database column that the param is targeting.
      * @param  string|array|DateTimeInterface  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
@@ -308,11 +310,11 @@ final class Query
         string $column,
         mixed $value,
         string $defaultOperator = '='
-    ): void {
+    ): Builder {
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
-            return;
+            return $query;
         }
 
         $normalizedValues = [$param->operator];
@@ -336,7 +338,126 @@ final class Query
             $normalizedValues[] = $operator.$val;
         }
 
-        self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME);
+        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME);
+    }
+
+    /**
+     * Parses a query param value for a money column, and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * @param  Builder  $query  The query builder to apply the param to.
+     * @param  string  $column  The database column that the param is targeting.
+     * @param  string  $currency  The currency code to use for the money object.
+     * @param  string|array|Money  $value  The param value
+     * @param  string  $defaultOperator  The default operator to apply to the values
+     *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     */
+    public static function whereMoneyParam(
+        Builder $query,
+        string $column,
+        string $currency,
+        mixed $value,
+        string $defaultOperator = '=',
+    ): Builder {
+        $param = QueryParam::parse($value);
+
+        if (empty($param->values)) {
+            return $query;
+        }
+
+        $normalizedValues = [$param->operator];
+
+        foreach ($param->values as $val) {
+            // Is this an empty value?
+            $val = self::normalizeEmptyValue($val);
+
+            if ($val === ':empty:' || $val === 'not :empty:') {
+                $normalizedValues[] = $val;
+
+                // Sneak out early
+                continue;
+            }
+
+            $operator = self::parseParamOperator($val, $defaultOperator);
+
+            // Assume that date params are set in the system timezone
+            $val = MoneyHelper::toMoney(['value' => $val, 'currency' => $currency]);
+
+            $normalizedValues[] = $operator.$val->getAmount();
+        }
+
+        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME);
+    }
+
+    /**
+     * Parses a query param value for a boolean column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - `true` or `false`
+     * - `:empty:` or `:notempty:` (normalizes to `false` and `true`)
+     * - `'not x'` or `'!= x'` (normalizes to the opposite of the boolean value of `x`)
+     * - Anything else (normalizes to the boolean value of itself)
+     *
+     * If `$defaultValue` is set, and it matches the normalized `$value`, then the resulting condition will match any
+     * `null` values as well.
+     *
+     * @param  Builder  $query  The query builder to apply the param to.
+     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|bool|null|array<string|bool|null>  $value  The param value
+     * @param  bool|null  $defaultValue  How `null` values should be treated
+     * @param  string  $columnType  The database column type the param is targeting
+     */
+    public static function whereBooleanParam(
+        Builder $query,
+        string $column,
+        mixed $value,
+        ?bool $defaultValue = null,
+        string $columnType = self::TYPE_BOOLEAN,
+    ): Builder {
+        if (is_array($value)) {
+            foreach ($value as $val) {
+                $query->orWhere(fn (Builder $query) => self::whereBooleanParam($query, $column, $val, $defaultValue, $columnType));
+            }
+
+            return $query;
+        }
+
+        if ($value !== null) {
+            $value = self::normalizeEmptyValue($value);
+            $operator = self::parseParamOperator($value, '=');
+            $value = $value && $value !== ':empty:';
+        } else {
+            $operator = self::parseParamOperator($value, '=');
+        }
+
+        if ($operator === '!=' && is_bool($value)) {
+            $value = ! $value;
+        }
+
+        if ($columnType === self::TYPE_JSON) {
+            /** @phpstan-ignore-next-line */
+            $value = match ($value) {
+                true => 'true',
+                false => 'false',
+                null => null,
+            };
+            $defaultValue = match ($defaultValue) {
+                true => 'true',
+                false => 'false',
+                null => null,
+            };
+        }
+
+        return $query->where(function (Builder $query) use ($column, $value, $defaultValue) {
+            $query
+                ->where($column, $value)
+                ->when(
+                    $defaultValue === $value && $value !== null,
+                    fn (Builder $query) => $query->orWhereNull($column),
+                );
+        });
     }
 
     /**
@@ -393,7 +514,7 @@ final class Query
         $op = null;
 
         if (is_string($value)) {
-            foreach (self::$operators as $operator) {
+            foreach (self::OPERATORS as $operator) {
                 // Does the value start with this operator?
                 if (stripos($value, $operator) === 0) {
                     $value = mb_substr($value, strlen($operator));
@@ -427,7 +548,7 @@ final class Query
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnType($columnType), self::$numericColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::NUMERIC_COLUMN_TYPES, true);
     }
 
     /**
@@ -435,7 +556,34 @@ final class Query
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnType($columnType), self::$textualColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::TEXTUAL_COLUMN_TYPES, true);
+    }
+
+    /**
+     * Escapes commas, asterisks, and colons in a string, so they are not treated as special characters in
+     * [[whereParam()]].
+     *
+     * @param  string  $value  The param value.
+     * @return string The escaped param value.
+     */
+    public static function escapeParam(string $value): string
+    {
+        if (in_array(strtolower($value), [':empty:', 'not :empty:', ':notempty:'])) {
+            return "\\$value";
+        }
+
+        $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
+
+        // If the value starts with an operator, escape that too.
+        foreach (self::OPERATORS as $operator) {
+            if (stripos((string) $value, $operator) === 0) {
+                $value = "\\$value";
+
+                break;
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -447,7 +595,7 @@ final class Query
     }
 
     /**
-     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[parseParam()]].
+     * Escapes commas in a string so the value doesn’t get interpreted as an array by {@see self::whereParam()}.
      */
     public static function escapeCommas(string $value): string
     {

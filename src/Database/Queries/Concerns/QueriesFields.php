@@ -191,6 +191,11 @@ trait QueriesFields
     {
         $this->id = $value;
 
+        // Adjust query right away?
+        // $this->subQuery->whereNumericParam('elements.id', $this->id);
+
+        // Query::whereNumericParam($this->subQuery, 'elements.id', $this->id);
+
         return $this;
     }
 
