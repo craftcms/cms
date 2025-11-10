@@ -35,7 +35,7 @@ trait QueriesRelatedElements
      */
     public mixed $notRelatedTo = null;
 
-    protected function initializeQueriesRelatedElements(): void
+    protected function initQueriesRelatedElements(): void
     {
         $this->applyRelatedToParam();
         $this->applyNotRelatedToParam();

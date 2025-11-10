@@ -139,7 +139,7 @@ trait FormatsResults
         return $this;
     }
 
-    protected function initializeFormatsResults(): void
+    protected function initFormatsResults(): void
     {
         $this->query->orderBy(new OrderByPlaceholderExpression);
 

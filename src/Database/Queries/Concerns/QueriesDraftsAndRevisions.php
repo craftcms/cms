@@ -94,7 +94,7 @@ trait QueriesDraftsAndRevisions
      */
     public ?int $revisionCreator = null;
 
-    protected function initializeQueriesDraftsAndRevisions(): void
+    protected function initQueriesDraftsAndRevisions(): void
     {
         $this->beforeQuery(function (ElementQuery $query) {
             $this->applyDraftParams($query);
@@ -112,9 +112,9 @@ trait QueriesDraftsAndRevisions
 
         $joinType = $this->drafts === true ? 'inner' : 'left';
         $query->subQuery->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
-        $query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $query->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
 
-        $query->addSelect([
+        $query->query->addSelect([
             'elements.draftId',
             'drafts.creatorId as draftCreatorId',
             'drafts.provisional as isProvisionalDraft',
@@ -178,9 +178,9 @@ trait QueriesDraftsAndRevisions
 
         $joinType = $this->revisions === true ? 'inner' : 'left';
         $query->subQuery->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
-        $query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $query->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
 
-        $query->addSelect([
+        $query->query->addSelect([
             'elements.revisionId',
             'revisions.creatorId as revisionCreatorId',
             'revisions.num as revisionNum',

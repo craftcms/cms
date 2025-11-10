@@ -48,7 +48,7 @@ trait QueriesCustomFields
      */
     private array $columnsToCast = [];
 
-    protected function initializeQueriesCustomFields(): void
+    protected function initQueriesCustomFields(): void
     {
         // Gather custom fields and generated field handles
         $this->customFields = [];

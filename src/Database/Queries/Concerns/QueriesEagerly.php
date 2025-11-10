@@ -56,7 +56,7 @@ trait QueriesEagerly
      */
     public bool $eagerly = false;
 
-    protected function initializeQueriesEagerly(): void
+    protected function initQueriesEagerly(): void
     {
         $this->afterQuery(function (Collection $elements) {
             if ($this->with) {

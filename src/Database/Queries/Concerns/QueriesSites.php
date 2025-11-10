@@ -25,7 +25,7 @@ trait QueriesSites
      */
     public mixed $siteId = null;
 
-    protected function initializeQueriesSites(): void
+    protected function initQueriesSites(): void
     {
         $this->beforeQuery(function () {
             // Make sure the siteId param is set

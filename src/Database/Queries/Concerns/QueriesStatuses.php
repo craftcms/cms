@@ -34,7 +34,7 @@ trait QueriesStatuses
         Element::STATUS_ENABLED,
     ];
 
-    protected function initializeQueriesStatuses(): void
+    protected function initQueriesStatuses(): void
     {
         $this->beforeQuery(function () {
             if ($this->archived) {

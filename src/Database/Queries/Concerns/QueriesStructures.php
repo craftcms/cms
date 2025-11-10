@@ -119,7 +119,7 @@ trait QueriesStructures
      */
     public ElementInterface|int|null $positionedAfter = null;
 
-    protected function initializeQueriesStructures(): void
+    protected function initQueriesStructures(): void
     {
         $this->beforeQuery(function (ElementQuery $query) {
             $this->applyStructureParams($query);

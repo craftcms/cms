@@ -34,7 +34,7 @@ trait SearchesElements
      */
     private ?array $searchResults = null;
 
-    protected function initializeSearchesElements(): void
+    protected function initSearchesElements(): void
     {
         $this->beforeQuery(function (ElementQuery $query) {
             $this->applySearchParam($query);

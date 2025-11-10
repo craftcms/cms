@@ -195,7 +195,11 @@ class ElementQuery implements ElementQueryInterface
             $this->{$key} = $value;
         }
 
-        $this->query = DB::query()->select('**');
+        $this->query = DB::query()
+            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')
+            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'subquery.elementsId')
+            ->select('**');
+
         $this->subQuery = DB::table(Table::ELEMENTS, 'elements')
             ->select([
                 'elements.id as elementsId',
@@ -217,20 +221,20 @@ class ElementQuery implements ElementQueryInterface
             $this->columnMap['title'] = 'elements_sites.title';
         }
 
-        $this->initializeTraits();
+        $this->initTraits();
 
         $this->query->beforeQuery(function () {
             $this->applyBeforeQueryCallbacks();
         });
     }
 
-    protected function initializeTraits(): void
+    protected function initTraits(): void
     {
         $class = static::class;
 
         $uses = class_uses_recursive($class);
 
-        $conventionalInitMethods = array_map(static fn ($trait) => 'initialize'.class_basename($trait), $uses);
+        $conventionalInitMethods = array_map(static fn ($trait) => 'init'.class_basename($trait), $uses);
 
         foreach (new ReflectionClass($class)->getMethods() as $method) {
             if (in_array($method->getName(), $conventionalInitMethods)) {
@@ -772,10 +776,7 @@ class ElementQuery implements ElementQueryInterface
             }
         }
 
-        $this->query
-            ->fromSub($this->subQuery, 'subquery')
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'subquery.elementsId');
+        $this->query->fromSub($this->subQuery, 'subquery');
     }
 
     /**

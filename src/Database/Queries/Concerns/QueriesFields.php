@@ -87,20 +87,19 @@ trait QueriesFields
      */
     public ?string $inBulkOp = null;
 
-    protected function initializeQueriesFields(): void
+    protected function initQueriesFields(): void
     {
         $this->beforeQuery(function (ElementQuery $query) {
             if ($this->id) {
-                Query::whereNumericParam($query->subQuery, 'elements.id', $this->id);
-                // $query->subQuery->whereNumericParam('elements.id', $this->id);
+                $query->subQuery->whereNumericParam('elements.id', $this->id);
             }
 
             if ($this->uid) {
-                Query::whereParam($query->subQuery, 'elements.uid', $this->uid);
+                $query->subQuery->whereParam('elements.uid', $this->uid);
             }
 
             if ($this->siteSettingsId) {
-                Query::whereNumericParam($query->subQuery, 'elements_sites.id', $this->siteSettingsId);
+                $query->subQuery->whereNumericParam('elements_sites.id', $this->siteSettingsId);
             }
 
             match ($this->trashed) {
@@ -110,11 +109,11 @@ trait QueriesFields
             };
 
             if ($this->dateCreated) {
-                Query::whereDateParam($query->subQuery, 'elements.dateCreated', $this->dateCreated);
+                $query->subQuery->whereDateParam('elements.dateCreated', $this->dateCreated);
             }
 
             if ($this->dateUpdated) {
-                Query::whereDateParam($query->subQuery, 'elements.dateUpdated', $this->dateUpdated);
+                $query->subQuery->whereDateParam('elements.dateUpdated', $this->dateUpdated);
             }
 
             if (isset($this->title) && $this->title !== '' && $this->elementType::hasTitles()) {
@@ -122,15 +121,15 @@ trait QueriesFields
                     $this->title = Query::escapeCommas($this->title);
                 }
 
-                Query::whereParam($query->subQuery, 'elements_sites.title', $this->title, caseInsensitive: true);
+                $query->subQuery->whereParam('elements_sites.title', $this->title, caseInsensitive: true);
             }
 
             if ($this->slug) {
-                Query::whereParam($query->subQuery, 'elements_sites.slug', $this->slug);
+                $query->subQuery->whereParam('elements_sites.slug', $this->slug);
             }
 
             if ($this->uri) {
-                Query::whereParam($query->subQuery, 'elements_sites.uri', $this->uri, caseInsensitive: true);
+                $query->subQuery->whereParam('elements_sites.uri', $this->uri, caseInsensitive: true);
             }
 
             if ($this->inBulkOp) {
@@ -181,11 +180,6 @@ trait QueriesFields
     public function id(mixed $value): static
     {
         $this->id = $value;
-
-        // Adjust query right away?
-        // $this->subQuery->whereNumericParam('elements.id', $this->id);
-
-        // Query::whereNumericParam($this->subQuery, 'elements.id', $this->id);
 
         return $this;
     }

@@ -22,7 +22,7 @@ trait CollectsCacheTags
      */
     private ?array $cacheTags = null;
 
-    protected function initializeCollectsCacheTags(): void
+    protected function initCollectsCacheTags(): void
     {
         $this->beforeQuery(function () {
             $this->cacheTags = null;
@@ -101,7 +101,7 @@ trait CollectsCacheTags
     /**
      * Returns any cache invalidation tags that caches involving this element query should use as dependencies.
      *
-     * Use the most specific tag(s) possible, to reduce the likelihood of pointless cache clearing.
+     * Use the most specific tag(s) possible to reduce the likelihood of pointless cache clearing.
      *
      * When elements are created/updated/deleted, their [[ElementInterface::getCacheTags()]] method will be called,
      * and any caches that have those tags listed as dependencies will be invalidated.

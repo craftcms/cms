@@ -34,7 +34,7 @@ trait QueriesUniqueElements
      */
     public ?array $preferSites = null;
 
-    protected function initializeQueriesUniqueElements(): void
+    protected function initQueriesUniqueElements(): void
     {
         if (
             ! $this->unique ||
