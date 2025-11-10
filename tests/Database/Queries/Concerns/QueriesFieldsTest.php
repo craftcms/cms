@@ -1,6 +1,8 @@
 <?php
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use Illuminate\Support\Facades\DB;
 
 test('id', function () {
     [$element1, $element2] = EntryModel::factory(3)->create();
@@ -34,6 +36,15 @@ test('siteSettingsId', function () {
     expect(entryQuery()->siteSettingsId([$element1->element->siteSettings->first()->id, $element2->element->siteSettings->first()->id])->get())->toHaveCount(2);
 });
 
+test('trashed', function () {
+    EntryModel::factory()->trashed()->create();
+    EntryModel::factory()->create();
+
+    expect(entryQuery()->count())->toBe(1);
+    expect(entryQuery()->trashed()->count())->toBe(1);
+    expect(entryQuery()->trashed(null)->count())->toBe(2);
+});
+
 test('dateCreated & dateUpdated', function (string $column, mixed $param, int $expectedCount) {
     // Yesterday
     EntryModel::factory()->create()->element->update([
@@ -59,3 +70,39 @@ test('dateCreated & dateUpdated', function (string $column, mixed $param, int $e
     [['< today', '> today'], 2],
     [['and', '> yesterday', '> today'], 1],
 ]);
+
+test('title, slug & uri', function (string $attribute) {
+    EntryModel::factory()->create()->element->siteSettings->first()->update([
+        $attribute => 'String 1',
+    ]);
+
+    EntryModel::factory()->create()->element->siteSettings->first()->update([
+        $attribute => 'String 2',
+    ]);
+
+    expect(entryQuery()->count())->toBe(2);
+    expect(entryQuery()->$attribute('String 1')->count())->toBe(1);
+    expect(entryQuery()->$attribute('String 2')->count())->toBe(1);
+    expect(entryQuery()->$attribute('String*')->count())->toBe(2);
+})->with([
+    'title',
+    'slug',
+    'uri',
+]);
+
+test('inBulkOp', function () {
+    $entry = EntryModel::factory()->create();
+
+    EntryModel::factory()->create();
+
+    DB::table(Table::ELEMENTS_BULKOPS)
+        ->insert([
+            'elementId' => $entry->id,
+            'key' => 'foo',
+            'timestamp' => now(),
+        ]);
+
+    expect(entryQuery()->count())->toBe(2);
+    expect(entryQuery()->inBulkOp('foo')->count())->toBe(1);
+    expect(entryQuery()->inBulkOp('non-existing')->count())->toBe(0);
+});

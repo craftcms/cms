@@ -87,15 +87,6 @@ trait QueriesFields
      */
     public ?string $inBulkOp = null;
 
-    /**
-     * @var mixed The reference code(s) used to identify the element(s).
-     *
-     * This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
-     *
-     * @used-by ElementQuery::ref()
-     */
-    public mixed $ref = null;
-
     protected function initializeQueriesFields(): void
     {
         $this->beforeQuery(function (ElementQuery $query) {
@@ -525,19 +516,6 @@ trait QueriesFields
     public function inBulkOp(?string $value): static
     {
         $this->inBulkOp = $value;
-
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on a reference string.
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
-     */
-    public function ref(mixed $value): static
-    {
-        $this->ref = $value;
 
         return $this;
     }
