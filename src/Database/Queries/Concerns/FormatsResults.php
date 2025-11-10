@@ -224,6 +224,10 @@ trait FormatsResults
         }
 
         $query->query->orders = array_map(function ($order) {
+            if (! is_string($order['column'])) {
+                return $order;
+            }
+
             $order['column'] = $this->columnMap[$order['column']] ?? $order['column'];
 
             return $order;

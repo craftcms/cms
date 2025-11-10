@@ -34,14 +34,28 @@ test('siteSettingsId', function () {
     expect(entryQuery()->siteSettingsId([$element1->element->siteSettings->first()->id, $element2->element->siteSettings->first()->id])->get())->toHaveCount(2);
 });
 
-test('dateCreated', function () {
-    $entry1 = EntryModel::factory()->create([
-        'dateCreated' => now()->subDay(),
+test('dateCreated & dateUpdated', function (string $column, mixed $param, int $expectedCount) {
+    // Yesterday
+    EntryModel::factory()->create()->element->update([
+        $column => today()->subDay(),
     ]);
 
-    $entry2 = EntryModel::factory()->create([
-        'dateCreated' => now()->subDays(2),
+    // Today
+    EntryModel::factory()->create()->element->update([
+        $column => today(),
     ]);
 
-    expect(entryQuery()->dateCreated(['and', '<= yesterday'])->count())->toBe(1);
-});
+    // Tomorrow
+    EntryModel::factory()->create()->element->update([
+        $column => today()->addDay(),
+    ]);
+
+    expect(entryQuery()->$column($param)->count())->toBe($expectedCount);
+})->with([
+    'dateCreated',
+    'dateUpdated',
+])->with([
+    ['<= yesterday', 1],
+    [['< today', '> today'], 2],
+    [['and', '> yesterday', '> today'], 1],
+]);
