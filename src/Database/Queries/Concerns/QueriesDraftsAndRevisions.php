@@ -115,7 +115,7 @@ trait QueriesDraftsAndRevisions
         $query->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
 
         $query->query->addSelect([
-            'elements.draftId',
+            'elements.draftId as draftId',
             'drafts.creatorId as draftCreatorId',
             'drafts.provisional as isProvisionalDraft',
             'drafts.name as draftName',
@@ -181,7 +181,7 @@ trait QueriesDraftsAndRevisions
         $query->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
 
         $query->query->addSelect([
-            'elements.revisionId',
+            'elements.revisionId as revisionId',
             'revisions.creatorId as revisionCreatorId',
             'revisions.num as revisionNum',
             'revisions.notes as revisionNotes',

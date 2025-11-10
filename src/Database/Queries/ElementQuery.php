@@ -41,6 +41,7 @@ class ElementQuery implements ElementQueryInterface
 
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
+    use Concerns\HydratesElements;
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -241,20 +242,6 @@ class ElementQuery implements ElementQueryInterface
                 $this->{$method->getName()}();
             }
         }
-    }
-
-    /**
-     * Create a collection of elements from plain arrays.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
-     */
-    public function hydrate(array $items): Collection
-    {
-        return new Collection(array_map(fn ($item) =>
-            // @TODO: Actually populate
-            new $this->elementType([
-                'id' => $item->id,
-            ]), $items));
     }
 
     /**
@@ -509,8 +496,7 @@ class ElementQuery implements ElementQueryInterface
     public function cursor(): LazyCollection
     {
         return $this->applyScopes()->query->cursor()->map(function ($record) {
-            // @TODO: Actually populate
-            $model = new $this->elementType(['id' => $record->id]);
+            $model = $this->createElement((array) $record);
 
             return $this->applyAfterQueryCallbacks($this->newModelInstance()->newCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));

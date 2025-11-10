@@ -336,10 +336,10 @@ trait QueriesStructures
         }
 
         $query->query->addSelect([
-            'structureelements.root',
-            'structureelements.lft',
-            'structureelements.rgt',
-            'structureelements.level',
+            'structureelements.root as root',
+            'structureelements.lft as lft',
+            'structureelements.rgt as rgt',
+            'structureelements.level as level',
         ]);
 
         if ($this->structureId) {
@@ -352,7 +352,7 @@ trait QueriesStructures
                 ->where('structureelements.structureId', $this->structureId));
         } else {
             $query->query
-                ->addSelect('structureelements.structureId')
+                ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->whereColumn('structureelements.elementId', 'subquery.elementsId')
                     ->whereColumn('structureelements.structureId', 'subquery.structureId'));

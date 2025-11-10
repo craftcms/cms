@@ -30,16 +30,16 @@ final class EntryQuery extends ElementQuery
             $this->joinElementTable(Table::ENTRIES);
 
             $query->query->addSelect([
-                'entries.sectionId',
-                'entries.fieldId',
-                'entries.primaryOwnerId',
-                'entries.typeId',
-                'entries.postDate',
-                'entries.expiryDate',
+                'entries.sectionId as sectionId',
+                'entries.fieldId as fieldId',
+                'entries.primaryOwnerId as primaryOwnerId',
+                'entries.typeId as typeId',
+                'entries.postDate as postDate',
+                'entries.expiryDate as expiryDate',
             ]);
 
             if (Cms::config()->staticStatuses) {
-                $query->query->addSelect(['entries.status']);
+                $query->query->addSelect(['entries.status as status']);
             }
         });
     }
