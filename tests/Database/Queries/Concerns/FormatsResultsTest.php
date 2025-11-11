@@ -32,3 +32,63 @@ test('fixedOrder', function () {
     expect(entryQuery()->id([$element3->id, $element1->id, $element2->id])->fixedOrder()->pluck('id')->all())->toBe([$element3->id, $element1->id, $element2->id]);
     expect(entryQuery()->id(implode(', ', [$element3->id, $element1->id, $element2->id]))->fixedOrder()->pluck('id')->all())->toBe([$element3->id, $element1->id, $element2->id]);
 });
+
+test('it applies a default order when no orderBy is specified', function () {
+    $query = entryQuery();
+    $query->applyBeforeQueryCallbacks();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'elements.dateCreated')
+            ->where('direction', 'desc')
+            ->first()
+    )->not()->toBeNull();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'elements.id')
+            ->where('direction', 'desc')
+            ->first()
+    )->not()->toBeNull();
+
+    $query = entryQuery()->orderBy('slug');
+    $query->applyBeforeQueryCallbacks();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'elements.dateCreated')
+            ->where('direction', 'desc')
+            ->first()
+    )->toBeNull();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'elements.id')
+            ->where('direction', 'desc')
+            ->first()
+    )->toBeNull();
+});
+
+it('orders by revisions when revisions are requested', function () {
+    $query = entryQuery()->revisions();
+    $query->applyBeforeQueryCallbacks();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'num')
+            ->where('direction', 'desc')
+            ->first()
+    )->not()->toBeNull();
+});
+
+it('adds a sort on structureelements.lft when the element has structures', function () {
+    $query = entryQuery();
+    $query->applyBeforeQueryCallbacks();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', 'structureelements.lft')
+            ->where('direction', 'asc')
+            ->first()
+    )->not()->toBeNull();
+});
