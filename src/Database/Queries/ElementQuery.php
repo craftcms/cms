@@ -602,7 +602,7 @@ class ElementQuery implements ElementQueryInterface
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['orderby', 'select', 'reorder'])) {
+        if (in_array(strtolower($method), ['orderby', 'orderbydesc', 'select', 'reorder'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
@@ -737,6 +737,8 @@ class ElementQuery implements ElementQueryInterface
                 $this->subQuery->where('elements.type', $this->elementType);
             }
         }
+
+        $this->applyOrderByParams($this);
 
         $this->query->fromSub($this->subQuery, 'subquery');
     }

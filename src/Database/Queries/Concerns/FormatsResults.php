@@ -149,30 +149,31 @@ trait FormatsResults
     protected function initFormatsResults(): void
     {
         $this->query->orderBy(new OrderByPlaceholderExpression);
+    }
 
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            $this->orderBySearchResults($elementQuery);
-            $this->applyDefaultOrder($elementQuery);
+    protected function applyOrderByParams(ElementQuery $elementQuery): void
+    {
+        $this->orderBySearchResults($elementQuery);
+        $this->applyDefaultOrder($elementQuery);
 
-            if ($elementQuery->inReverse) {
-                $orders = $elementQuery->query->orders;
+        if ($elementQuery->inReverse) {
+            $orders = $elementQuery->query->orders;
 
-                $elementQuery->query->reorder();
+            $elementQuery->query->reorder();
 
-                foreach (array_reverse($orders) as $order) {
-                    // If it's an expression we can't reverse it
-                    if ($order['column'] instanceof Expression) {
-                        $elementQuery->query->orderBy($order['column']);
+            foreach (array_reverse($orders) as $order) {
+                // If it's an expression we can't reverse it
+                if ($order['column'] instanceof Expression) {
+                    $elementQuery->query->orderBy($order['column']);
 
-                        continue;
-                    }
-
-                    $elementQuery->query->orderBy($order['column'], $order['direction'] === 'asc' ? 'desc' : 'asc');
+                    continue;
                 }
-            }
 
-            $this->parseOrderColumnMappings($elementQuery);
-        });
+                $elementQuery->query->orderBy($order['column'], $order['direction'] === 'asc' ? 'desc' : 'asc');
+            }
+        }
+
+        $this->parseOrderColumnMappings($elementQuery);
     }
 
     private function applyDefaultOrder(ElementQuery $elementQuery): void
@@ -213,12 +214,6 @@ trait FormatsResults
 
         if ($elementQuery->shouldJoinStructureData()) {
             $elementQuery->query->orderBy('structureelements.lft');
-
-            foreach ($elementQuery->defaultOrderBy as $column => $direction) {
-                $elementQuery->query->orderBy($column, $direction === SORT_ASC ? 'asc' : 'desc');
-            }
-
-            return;
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
@@ -251,20 +246,16 @@ trait FormatsResults
 
     private function orderBySearchResults(ElementQuery $elementQuery): void
     {
-        if (! $elementQuery->searchResults) {
-            $elementQuery->query->orders = array_filter(
-                $elementQuery->query->orders,
-                fn (array $order) => $order['column'] !== 'score',
-            );
+        $elementQuery->query->orders = array_filter(
+            $elementQuery->query->orders ?? [],
+            fn (array $order) => $order['column'] !== 'score',
+        );
 
+        if (! $elementQuery->searchResults) {
             return;
         }
 
         $keys = array_keys($elementQuery->searchResults);
-
-        if ($elementQuery->inReverse) {
-            $keys = array_reverse($keys);
-        }
 
         $i = -1;
 
@@ -286,6 +277,6 @@ trait FormatsResults
             );
         }
 
-        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
+        $elementQuery->query->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

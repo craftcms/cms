@@ -33,7 +33,7 @@ test('search with score', function () {
     $entry2 = EntryModel::factory()->create();
     $entry2->element->siteSettings->first()->update([
         'title' => 'Bar',
-        'content' => 'foo',
+        'slug' => 'Foo',
     ]);
 
     $element1 = Craft::$app->getElements()->getElementById($entry1->id);
@@ -43,5 +43,20 @@ test('search with score', function () {
     Craft::$app->getSearch()->indexElementAttributes($element2);
 
     expect(entryQuery()->orderBy('score')->count())->toBe(2);
-    expect(entryQuery()->search('Foo')->orderBy('score')->count())->toBe(1);
+    expect(entryQuery()->search('Foo')->orderBy('score')->count())->toBe(2);
+
+    $results = entryQuery()->search('Foo')->orderBy('score')->get();
+
+    expect($results[0]->id)->toBe($entry2->id);
+    expect($results[1]->id)->toBe($entry1->id);
+
+    $results = entryQuery()->search('Foo')->orderByDesc('score')->get();
+
+    expect($results[0]->id)->toBe($entry1->id);
+    expect($results[1]->id)->toBe($entry2->id);
+
+    $results = entryQuery()->search('Foo')->orderBy('score')->inReverse()->get();
+
+    expect($results[0]->id)->toBe($entry1->id);
+    expect($results[1]->id)->toBe($entry2->id);
 });
