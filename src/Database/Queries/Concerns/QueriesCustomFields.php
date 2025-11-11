@@ -50,26 +50,26 @@ trait QueriesCustomFields
 
     protected function initQueriesCustomFields(): void
     {
-        // Gather custom fields and generated field handles
-        $this->customFields = [];
-        $this->generatedFields = [];
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            // Gather custom fields and generated field handles
+            $elementQuery->customFields = [];
+            $elementQuery->generatedFields = [];
 
-        if ($this->withCustomFields) {
-            foreach ($this->fieldLayouts() as $fieldLayout) {
-                foreach ($fieldLayout->getCustomFields() as $field) {
-                    $this->customFields[] = $field;
-                }
-                foreach ($fieldLayout->getGeneratedFields() as $field) {
-                    $this->generatedFields[] = $field;
+            if ($elementQuery->withCustomFields) {
+                foreach ($elementQuery->fieldLayouts() as $fieldLayout) {
+                    foreach ($fieldLayout->getCustomFields() as $field) {
+                        $elementQuery->customFields[] = $field;
+                    }
+                    foreach ($fieldLayout->getGeneratedFields() as $field) {
+                        $elementQuery->generatedFields[] = $field;
+                    }
                 }
             }
-        }
 
-        // Map custom field handles to their content values
-        $this->addCustomFieldsToColumnMap();
+            // Map custom field handles to their content values
+            $this->addCustomFieldsToColumnMap();
 
-        $this->beforeQuery(function (ElementQuery $query) {
-            $this->applyCustomFieldParams($query);
+            $this->applyCustomFieldParams($elementQuery);
         });
     }
 
@@ -165,7 +165,7 @@ trait QueriesCustomFields
      */
     private function applyCustomFieldParams(ElementQuery $query): void
     {
-        if (empty($this->customFields) && empty($this->generatedFields)) {
+        if (empty($query->customFields) && empty($query->generatedFields)) {
             return;
         }
 
@@ -173,9 +173,9 @@ trait QueriesCustomFields
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
 
-        if (! empty($this->customFields)) {
+        if (! empty($query->customFields)) {
             // Group the fields by handle and field UUID
-            foreach ($this->customFields as $field) {
+            foreach ($query->customFields as $field) {
                 $fieldsByHandle[$field->handle][$field->uid][] = $field;
             }
 
@@ -224,18 +224,18 @@ trait QueriesCustomFields
 
                 if (! empty($conditions)) {
                     if (count($conditions) === 1) {
-                        $this->subQuery->andWhere(reset($conditions), $params);
+                        $query->subQuery->andWhere(reset($conditions), $params);
                     } else {
-                        $this->subQuery->andWhere(['or', ...$conditions], $params);
+                        $query->subQuery->andWhere(['or', ...$conditions], $params);
                     }
                 }
             }
         }
 
-        if (! empty($this->generatedFields)) {
+        if (! empty($query->generatedFields)) {
             $generatedFieldColumns = [];
 
-            foreach ($this->generatedFields as $field) {
+            foreach ($query->generatedFields as $field) {
                 $handle = $field['handle'] ?? '';
                 if ($handle !== '' && isset($fieldAttributes->$handle) && ! isset($fieldsByHandle[$handle])) {
                     $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', '$.'.$field['uid']);

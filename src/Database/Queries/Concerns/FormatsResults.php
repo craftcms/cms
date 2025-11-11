@@ -8,6 +8,13 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use Illuminate\Database\Query\Expression;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\Equal;
+use Tpetry\QueryExpressions\Operator\Logical\CondAnd;
+use Tpetry\QueryExpressions\Value\Value;
+use yii\base\InvalidValueException;
 
 /**
  * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
@@ -143,71 +150,79 @@ trait FormatsResults
     {
         $this->query->orderBy(new OrderByPlaceholderExpression);
 
-        $this->beforeQuery(function (ElementQuery $query) {
-            $this->applyDefaultOrder($query);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            $this->orderBySearchResults($elementQuery);
+            $this->applyDefaultOrder($elementQuery);
 
-            if ($this->inReverse) {
-                $orders = $query->query->orders;
+            if ($elementQuery->inReverse) {
+                $orders = $elementQuery->query->orders;
 
-                $query->query->reorder();
+                $elementQuery->query->reorder();
 
                 foreach (array_reverse($orders) as $order) {
-                    $query->query->orderBy($order['column'], $order['direction'] === 'asc' ? 'desc' : 'asc');
+                    // If it's an expression we can't reverse it
+                    if ($order['column'] instanceof Expression) {
+                        $elementQuery->query->orderBy($order['column']);
+
+                        continue;
+                    }
+
+                    $elementQuery->query->orderBy($order['column'], $order['direction'] === 'asc' ? 'desc' : 'asc');
                 }
             }
 
-            $this->parseOrderColumnMappings($query);
+            $this->parseOrderColumnMappings($elementQuery);
         });
     }
 
-    private function applyDefaultOrder(ElementQuery $query): void
+    private function applyDefaultOrder(ElementQuery $elementQuery): void
     {
-        $orders = $query->query->orders;
+        $orders = $elementQuery->query->orders;
 
         if (is_null($orders)) {
             return;
         }
 
-        $query->query->orders = array_filter(
+        $elementQuery->query->orders = array_filter(
             array: $orders,
             callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
         // Order by was set
-        if (count($query->query->orders) > 0) {
+        if (count($elementQuery->query->orders) > 0) {
             return;
         }
 
-        if ($this->fixedOrder) {
-            throw_if(empty($this->id), QueryAbortedException::class);
+        if ($elementQuery->fixedOrder) {
+            throw_if(empty($elementQuery->id), QueryAbortedException::class);
 
-            if (! is_array($ids = $this->id)) {
+            if (! is_array($ids = $elementQuery->id)) {
                 $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
-            $query->query->orderBy(new FixedOrderExpression('elements.id', $ids));
+            $elementQuery->query->orderBy(new FixedOrderExpression('elements.id', $ids));
 
             return;
         }
 
-        if ($this->revisions) {
-            $query->query->orderByDesc('num');
+        if ($elementQuery->revisions) {
+            $elementQuery->query->orderByDesc('num');
 
             return;
         }
 
-        if ($this->shouldJoinStructureData()) {
-            $query->query->orderBy('structureelements.lft');
+        if ($elementQuery->shouldJoinStructureData()) {
+            $elementQuery->query->orderBy('structureelements.lft');
 
-            foreach ($this->defaultOrderBy as $column => $direction) {
-                $query->query->orderBy($column, $direction === SORT_ASC ? 'asc' : 'desc');
+            foreach ($elementQuery->defaultOrderBy as $column => $direction) {
+                $elementQuery->query->orderBy($column, $direction === SORT_ASC ? 'asc' : 'desc');
             }
 
             return;
         }
 
-        foreach ($this->defaultOrderBy as $column => $direction) {
-            $query->query->orderBy($column, match ($direction) {
+        foreach ($elementQuery->defaultOrderBy as $column => $direction) {
+            $elementQuery->query->orderBy($column, match ($direction) {
                 SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
                 default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
@@ -215,22 +230,62 @@ trait FormatsResults
         }
     }
 
-    private function parseOrderColumnMappings(ElementQuery $query): void
+    private function parseOrderColumnMappings(ElementQuery $elementQuery): void
     {
-        $orders = $query->query->orders;
+        $orders = $elementQuery->query->orders;
 
         if (is_null($orders)) {
             return;
         }
 
-        $query->query->orders = array_map(function ($order) {
+        $elementQuery->query->orders = array_map(function ($order) use ($elementQuery) {
             if (! is_string($order['column'])) {
                 return $order;
             }
 
-            $order['column'] = $this->columnMap[$order['column']] ?? $order['column'];
+            $order['column'] = $elementQuery->columnMap[$order['column']] ?? $order['column'];
 
             return $order;
         }, $orders);
+    }
+
+    private function orderBySearchResults(ElementQuery $elementQuery): void
+    {
+        if (! $elementQuery->searchResults) {
+            $elementQuery->query->orders = array_filter(
+                $elementQuery->query->orders,
+                fn (array $order) => $order['column'] !== 'score',
+            );
+
+            return;
+        }
+
+        $keys = array_keys($elementQuery->searchResults);
+
+        if ($elementQuery->inReverse) {
+            $keys = array_reverse($keys);
+        }
+
+        $i = -1;
+
+        $rules = [];
+
+        foreach ($keys as $i => $key) {
+            [$elementId, $siteId] = array_pad(explode('-', (string) $key, 2), 2, null);
+
+            if ($siteId === null) {
+                throw new InvalidValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
+            }
+
+            $rules[] = new CaseRule(
+                result: new Value($i),
+                condition: new CondAnd(
+                    value1: new Equal('elements.id', new Value($elementId)),
+                    value2: new Equal('elements_sites.siteId', new Value($siteId))
+                )
+            );
+        }
+
+        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

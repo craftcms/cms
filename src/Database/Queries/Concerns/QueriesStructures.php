@@ -121,8 +121,8 @@ trait QueriesStructures
 
     protected function initQueriesStructures(): void
     {
-        $this->beforeQuery(function (ElementQuery $query) {
-            $this->applyStructureParams($query);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            $this->applyStructureParams($elementQuery);
         });
 
         $this->afterQuery(function (Collection $collection) {
@@ -555,9 +555,9 @@ trait QueriesStructures
             ($this->withStructure ?? ($this->structureId && ! $this->trashed));
     }
 
-    private function applyStructureParams(ElementQuery $query): void
+    private function applyStructureParams(ElementQuery $elementQuery): void
     {
-        if (! $this->shouldJoinStructureData()) {
+        if (! $elementQuery->shouldJoinStructureData()) {
             $structureParams = [
                 'hasDescendants',
                 'ancestorOf',
@@ -571,7 +571,7 @@ trait QueriesStructures
             ];
 
             foreach ($structureParams as $param) {
-                if ($this->$param !== null) {
+                if ($elementQuery->$param !== null) {
                     throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
@@ -579,23 +579,23 @@ trait QueriesStructures
             return;
         }
 
-        $query->query->addSelect([
+        $elementQuery->query->addSelect([
             'structureelements.root as root',
             'structureelements.lft as lft',
             'structureelements.rgt as rgt',
             'structureelements.level as level',
         ]);
 
-        if ($this->structureId) {
-            $query->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
+        if ($elementQuery->structureId) {
+            $elementQuery->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                 ->whereColumn('structureelements.elementId', 'subquery.elementsId')
-                ->where('structureelements.structureId', $this->structureId));
+                ->where('structureelements.structureId', $elementQuery->structureId));
 
-            $query->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
+            $elementQuery->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                 ->whereColumn('structureelements.elementId', 'elements.id')
-                ->where('structureelements.structureId', $this->structureId));
+                ->where('structureelements.structureId', $elementQuery->structureId));
         } else {
-            $query->query
+            $elementQuery->query
                 ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->whereColumn('structureelements.elementId', 'subquery.elementsId')
@@ -611,7 +611,7 @@ trait QueriesStructures
                 ->whereColumn('id', 'structureelements.structureId')
                 ->whereNull('dateDeleted');
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->whereColumn('structureelements.elementId', 'elements.id')
@@ -619,48 +619,48 @@ trait QueriesStructures
                 );
         }
 
-        if (isset($this->hasDescendants)) {
-            $query->subQuery->when(
-                $this->hasDescendants,
-                fn (Builder $query) => $query->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
-                fn (Builder $query) => $query->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
+        if (isset($elementQuery->hasDescendants)) {
+            $elementQuery->subQuery->when(
+                $elementQuery->hasDescendants,
+                fn (Builder $query) => $elementQuery->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
+                fn (Builder $query) => $elementQuery->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
             );
         }
 
-        if ($this->ancestorOf) {
-            $ancestorOf = $this->normalizeStructureParamValue('ancestorOf');
+        if ($elementQuery->ancestorOf) {
+            $ancestorOf = $elementQuery->normalizeStructureParamValue('ancestorOf');
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->where('structureelements.lft', '<', $ancestorOf->lft)
                 ->where('structureelements.rgt', '>', $ancestorOf->rgt)
                 ->where('structureelements.root', '>', $ancestorOf->root)
                 ->when(
-                    $this->ancestorDist,
-                    fn (Builder $q) => $q->where('structureelements.level', '>=', $ancestorOf->level - $this->ancestorDist)
+                    $elementQuery->ancestorDist,
+                    fn (Builder $q) => $q->where('structureelements.level', '>=', $ancestorOf->level - $elementQuery->ancestorDist)
                 );
         }
 
-        if ($this->descendantOf) {
-            $descendantOf = $this->normalizeStructureParamValue('descendantOf');
+        if ($elementQuery->descendantOf) {
+            $descendantOf = $elementQuery->normalizeStructureParamValue('descendantOf');
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->where('structureelements.lft', '>', $descendantOf->lft)
                 ->where('structureelements.rgt', '<', $descendantOf->rgt)
                 ->where('structureelements.root', $descendantOf->root)
                 ->when(
-                    $this->descendantDist,
-                    fn (Builder $q) => $q->where('structureelements.level', '<=', $descendantOf->level + $this->descendantDist)
+                    $elementQuery->descendantDist,
+                    fn (Builder $q) => $q->where('structureelements.level', '<=', $descendantOf->level + $elementQuery->descendantDist)
                 );
         }
 
         foreach (['siblingOf', 'prevSiblingOf', 'nextSiblingOf'] as $param) {
-            if (! $this->$param) {
+            if (! $elementQuery->$param) {
                 continue;
             }
 
-            $siblingOf = $this->normalizeStructureParamValue($param);
+            $siblingOf = $elementQuery->normalizeStructureParamValue($param);
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->where('structureelements.level', $siblingOf->level)
                 ->where('structureelements.root', $siblingOf->root)
                 ->whereNot('structureelements.elementId', $siblingOf->id);
@@ -672,22 +672,22 @@ trait QueriesStructures
                     throw new QueryAbortedException;
                 }
 
-                $query->subQuery
+                $elementQuery->subQuery
                     ->where('structureelements.lft', '>', $parent->lft)
                     ->where('structureelements.rgt', '>', $parent->rgt);
             }
 
             switch ($param) {
                 case 'prevSiblingOf':
-                    $query->orderByDesc('structureelements.lft');
-                    $query->subQuery
+                    $elementQuery->orderByDesc('structureelements.lft');
+                    $elementQuery->subQuery
                         ->where('structureelements.lft', '<', $siblingOf->lft)
                         ->orderByDesc('structureelements.lft')
                         ->limit(1);
                     break;
                 case 'nextSiblingOf':
-                    $query->orderBy('structureelements.lft');
-                    $query->subQuery
+                    $elementQuery->orderBy('structureelements.lft');
+                    $elementQuery->subQuery
                         ->where('structureelements.lft', '>', $siblingOf->lft)
                         ->orderBy('structureelements.lft')
                         ->limit(1);
@@ -695,37 +695,37 @@ trait QueriesStructures
             }
         }
 
-        if ($this->positionedBefore) {
-            $positionedBefore = $this->normalizeStructureParamValue('positionedBefore');
+        if ($elementQuery->positionedBefore) {
+            $positionedBefore = $elementQuery->normalizeStructureParamValue('positionedBefore');
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->where('structureelements.lft', '<', $positionedBefore->lft)
                 ->where('structureelements.root', $positionedBefore->root);
         }
 
-        if ($this->positionedAfter) {
-            $positionedAfter = $this->normalizeStructureParamValue('positionedAfter');
+        if ($elementQuery->positionedAfter) {
+            $positionedAfter = $elementQuery->normalizeStructureParamValue('positionedAfter');
 
-            $query->subQuery
+            $elementQuery->subQuery
                 ->where('structureelements.lft', '>', $positionedAfter->rgt)
                 ->where('structureelements.root', $positionedAfter->root);
         }
 
-        if ($this->level) {
-            $allowNull = is_array($this->level) && in_array(null, $this->level, true);
+        if ($elementQuery->level) {
+            $allowNull = is_array($elementQuery->level) && in_array(null, $elementQuery->level, true);
 
-            $query->subQuery->when(
+            $elementQuery->subQuery->when(
                 $allowNull,
-                fn (Builder $q) => $q->where(function (Builder $q) {
-                    $q->where(Db::parseNumericParam('structureelements.level', array_filter($this->level, fn ($v) => $v !== null)))
+                fn (Builder $q) => $q->where(function (Builder $q) use ($elementQuery) {
+                    $q->where(Db::parseNumericParam('structureelements.level', array_filter($elementQuery->level, fn ($v) => $v !== null)))
                         ->orWhereNull('structureelements.level');
                 }),
-                fn (Builder $q) => Db::parseNumericParam('structureelements.level', $this->level),
+                fn (Builder $q) => Db::parseNumericParam('structureelements.level', $elementQuery->level),
             );
         }
 
-        if ($this->leaves) {
-            $query->subQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
+        if ($elementQuery->leaves) {
+            $elementQuery->subQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
         }
     }
 

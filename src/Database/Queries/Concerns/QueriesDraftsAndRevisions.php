@@ -96,25 +96,25 @@ trait QueriesDraftsAndRevisions
 
     protected function initQueriesDraftsAndRevisions(): void
     {
-        $this->beforeQuery(function (ElementQuery $query) {
-            $this->applyDraftParams($query);
-            $this->applyRevisionParams($query);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            $this->applyDraftParams($elementQuery);
+            $this->applyRevisionParams($elementQuery);
         });
     }
 
-    private function applyDraftParams(ElementQuery $query): void
+    private function applyDraftParams(ElementQuery $elementQuery): void
     {
-        if ($this->drafts === false) {
-            $query->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.draftId')));
+        if ($elementQuery->drafts === false) {
+            $elementQuery->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.draftId')));
 
             return;
         }
 
-        $joinType = $this->drafts === true ? 'inner' : 'left';
-        $query->subQuery->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
-        $query->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
+        $elementQuery->subQuery->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $elementQuery->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
 
-        $query->query->addSelect([
+        $elementQuery->query->addSelect([
             'elements.draftId as draftId',
             'drafts.creatorId as draftCreatorId',
             'drafts.provisional as isProvisionalDraft',
@@ -122,45 +122,45 @@ trait QueriesDraftsAndRevisions
             'drafts.notes as draftNotes',
         ]);
 
-        if ($this->draftId) {
-            $query->subQuery->where('elements.draftId', $this->draftId);
+        if ($elementQuery->draftId) {
+            $elementQuery->subQuery->where('elements.draftId', $elementQuery->draftId);
         }
 
-        if ($this->draftOf === '*') {
-            $query->subQuery->whereNotNull('elements.canonicalId');
-        } elseif (isset($this->draftOf)) {
-            if ($this->draftOf === false) {
-                $query->subQuery->whereNull('elements.canonicalId', null);
+        if ($elementQuery->draftOf === '*') {
+            $elementQuery->subQuery->whereNotNull('elements.canonicalId');
+        } elseif (isset($elementQuery->draftOf)) {
+            if ($elementQuery->draftOf === false) {
+                $elementQuery->subQuery->whereNull('elements.canonicalId', null);
             } else {
-                $query->subQuery->whereIn('elements.canonicalId', $this->draftOf);
+                $elementQuery->subQuery->whereIn('elements.canonicalId', $elementQuery->draftOf);
             }
         }
 
-        if ($this->draftCreator) {
-            $query->subQuery->where('drafts.creatorId', $this->draftCreator);
+        if ($elementQuery->draftCreator) {
+            $elementQuery->subQuery->where('drafts.creatorId', $elementQuery->draftCreator);
         }
 
-        if (isset($this->provisionalDrafts)) {
-            $query->subQuery->where(function (Builder $query) {
-                $query->whereNull('elements.draftId')
-                    ->orWhere('drafts.provisional', $this->provisionalDrafts);
+        if (isset($elementQuery->provisionalDrafts)) {
+            $elementQuery->subQuery->where(function (Builder $q) use ($elementQuery) {
+                $q->whereNull('elements.draftId')
+                    ->orWhere('drafts.provisional', $elementQuery->provisionalDrafts);
             });
         }
 
-        if ($this->canonicalsOnly) {
-            $query->subQuery->where(function (Builder $query) {
+        if ($elementQuery->canonicalsOnly) {
+            $elementQuery->subQuery->where(function (Builder $query) use ($elementQuery) {
                 $query->whereNull('elements.draftId')
-                    ->orWhere(function (Builder $query) {
-                        $query
+                    ->orWhere(function (Builder $q) use ($elementQuery) {
+                        $q
                             ->whereNull('elements.canonicalId')
                             ->when(
-                                $this->savedDraftsOnly,
+                                $elementQuery->savedDraftsOnly,
                                 fn (Builder $q) => $q->where('drafts.saved', true)
                             );
                     });
             });
-        } elseif ($this->savedDraftsOnly) {
-            $query->subQuery->where(function (Builder $query) {
+        } elseif ($elementQuery->savedDraftsOnly) {
+            $elementQuery->subQuery->where(function (Builder $query) {
                 $query->whereNull('elements.draftId')
                     ->orWhereNotNull('elements.canonicalId')
                     ->orWhere('drafts.saved', true);
@@ -168,35 +168,35 @@ trait QueriesDraftsAndRevisions
         }
     }
 
-    private function applyRevisionParams(ElementQuery $query): void
+    private function applyRevisionParams(ElementQuery $elementQuery): void
     {
-        if ($this->revisions === false) {
-            $query->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
+        if ($elementQuery->revisions === false) {
+            $elementQuery->subQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
 
             return;
         }
 
-        $joinType = $this->revisions === true ? 'inner' : 'left';
-        $query->subQuery->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
-        $query->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
+        $elementQuery->subQuery->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $elementQuery->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
 
-        $query->query->addSelect([
+        $elementQuery->query->addSelect([
             'elements.revisionId as revisionId',
             'revisions.creatorId as revisionCreatorId',
             'revisions.num as revisionNum',
             'revisions.notes as revisionNotes',
         ]);
 
-        if ($this->revisionId) {
-            $query->subQuery->where('elements.revisionId', $this->revisionId);
+        if ($elementQuery->revisionId) {
+            $elementQuery->subQuery->where('elements.revisionId', $elementQuery->revisionId);
         }
 
-        if ($this->revisionOf) {
-            $query->subQuery->where('elements.canonicalId', $this->revisionOf);
+        if ($elementQuery->revisionOf) {
+            $elementQuery->subQuery->where('elements.canonicalId', $elementQuery->revisionOf);
         }
 
-        if ($this->revisionCreator) {
-            $query->subQuery->where('revisions.creatorId', $this->revisionCreator);
+        if ($elementQuery->revisionCreator) {
+            $elementQuery->subQuery->where('revisions.creatorId', $elementQuery->revisionCreator);
         }
     }
 

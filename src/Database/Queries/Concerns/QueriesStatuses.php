@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use Closure;
 use craft\base\Element;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 
@@ -36,19 +37,19 @@ trait QueriesStatuses
 
     protected function initQueriesStatuses(): void
     {
-        $this->beforeQuery(function () {
-            if ($this->archived) {
-                $this->subQuery->where('elements.archived', true);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            if ($elementQuery->archived) {
+                $elementQuery->subQuery->where('elements.archived', true);
 
                 return;
             }
 
-            $this->applyStatusParam();
+            $this->applyStatusParam($elementQuery);
 
             // only set archived=false if 'archived' doesn't show up in the status param
             // (_applyStatusParam() will normalize $this->status to an array if applicable)
-            if (! is_array($this->status) || ! in_array($this->elementType::STATUS_ARCHIVED, $this->status)) {
-                $this->subQuery->where('elements.archived', false);
+            if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
+                $elementQuery->subQuery->where('elements.archived', false);
             }
         });
     }
@@ -102,18 +103,18 @@ trait QueriesStatuses
      *
      * @throws QueryAbortedException
      */
-    private function applyStatusParam(): void
+    private function applyStatusParam(ElementQuery $elementQuery): void
     {
-        if (! $this->status || ! $this->elementType::hasStatuses()) {
+        if (! $elementQuery->status || ! $elementQuery->elementType::hasStatuses()) {
             return;
         }
 
         // Normalize the status param
-        if (! is_array($this->status)) {
-            $this->status = str($this->status)->explode(',')->all();
+        if (! is_array($elementQuery->status)) {
+            $elementQuery->status = str($elementQuery->status)->explode(',')->all();
         }
 
-        $statuses = array_merge($this->status);
+        $statuses = array_merge($elementQuery->status);
         $firstVal = strtolower((string) reset($statuses));
         $glue = 'or';
 
@@ -130,7 +131,7 @@ trait QueriesStatuses
             $glue = 'and';
         }
 
-        $this->subQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
+        $elementQuery->subQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
             foreach ($statuses as $status) {
                 match (true) {
                     $glue === 'or' && $negate === false => $query->orWhere($this->placeholderCondition($this->statusCondition($status))),

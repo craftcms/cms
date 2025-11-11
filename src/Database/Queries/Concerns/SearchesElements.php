@@ -30,14 +30,14 @@ trait SearchesElements
      *
      * @see applySearchParam()
      * @see applyOrderByParams()
-     * @see populate()
+     * @see hydrate()
      */
     private ?array $searchResults = null;
 
     protected function initSearchesElements(): void
     {
-        $this->beforeQuery(function (ElementQuery $query) {
-            $this->applySearchParam($query);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            $this->applySearchParam($elementQuery);
         });
     }
 
@@ -46,37 +46,38 @@ trait SearchesElements
      *
      * @throws QueryAbortedException
      */
-    private function applySearchParam(ElementQuery $query): void
+    private function applySearchParam(ElementQuery $elementQuery): void
     {
-        $this->searchResults = null;
+        $elementQuery->searchResults = null;
 
-        if (! $query->search) {
+        if (! $elementQuery->search) {
             return;
         }
 
         $searchService = \Craft::$app->getSearch();
 
-        $scoreOrder = Arr::first($query->query->orders, fn ($order) => $order['column'] === 'score');
+        $scoreOrder = Arr::first($elementQuery->query->orders ?? [], fn ($order) => $order['column'] === 'score');
 
-        if ($scoreOrder || $searchService->shouldCallSearchElements($this)) {
+        if ($scoreOrder || $searchService->shouldCallSearchElements($elementQuery)) {
             // Get the scored results up front
-            $searchResults = $searchService->searchElements($this);
+            $searchResults = $searchService->searchElements($elementQuery);
 
             if ($scoreOrder['direction'] === 'asc') {
                 $searchResults = array_reverse($searchResults, true);
             }
 
-            if (($query->query->orders[0]['column'] ?? null) === 'score') {
+            if (($elementQuery->query->orders[0]['column'] ?? null) === 'score') {
                 // Only use the portion we're actually querying for
-                if (is_int($query->query->getOffset()) && $query->query->getOffset() !== 0) {
-                    $searchResults = array_slice($searchResults, $query->query->getOffset(), null, true);
-                    $query->subQuery->offset = null;
-                    $query->subQuery->unionOffset = null;
+                if (is_int($elementQuery->query->getOffset()) && $elementQuery->query->getOffset() !== 0) {
+                    $searchResults = array_slice($searchResults, $elementQuery->query->getOffset(), null, true);
+                    $elementQuery->subQuery->offset = null;
+                    $elementQuery->subQuery->unionOffset = null;
                 }
-                if (is_int($query->query->getLimit()) && $query->query->getLimit() !== 0) {
-                    $searchResults = array_slice($searchResults, 0, $query->query->getLimit(), true);
-                    $query->subQuery->limit = null;
-                    $query->subQuery->unionLimit = null;
+
+                if (is_int($elementQuery->query->getLimit()) && $elementQuery->query->getLimit() !== 0) {
+                    $searchResults = array_slice($searchResults, 0, $elementQuery->query->getLimit(), true);
+                    $elementQuery->subQuery->limit = null;
+                    $elementQuery->subQuery->unionLimit = null;
                 }
             }
 
@@ -84,7 +85,7 @@ trait SearchesElements
                 throw new QueryAbortedException;
             }
 
-            $this->searchResults = $searchResults;
+            $elementQuery->searchResults = $searchResults;
 
             $elementIdsBySiteId = [];
             foreach (array_keys($searchResults) as $key) {
@@ -92,7 +93,7 @@ trait SearchesElements
                 $elementIdsBySiteId[$siteId][] = $elementId;
             }
 
-            $query->subQuery->where(function (Builder $query) use ($elementIdsBySiteId) {
+            $elementQuery->subQuery->where(function (Builder $query) use ($elementIdsBySiteId) {
                 foreach ($elementIdsBySiteId as $siteId => $elementIds) {
                     $query->orWhere(function (Builder $query) use ($siteId, $elementIds) {
                         $query->where('elements_sites.siteId', $siteId)
@@ -105,13 +106,13 @@ trait SearchesElements
         }
 
         // Just filter the main query by the search query
-        $searchQuery = $searchService->createDbQuery($this->search, $this);
+        $searchQuery = $searchService->createDbQuery($elementQuery->search, $elementQuery);
 
         if ($searchQuery === false) {
             throw new QueryAbortedException;
         }
 
-        $query->subQuery->whereIn('elements.id', $searchQuery->select('elementId')->all());
+        $elementQuery->subQuery->whereIn('elements.id', $searchQuery->select('elementId')->all());
     }
 
     /**

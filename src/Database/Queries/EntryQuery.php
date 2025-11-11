@@ -26,22 +26,20 @@ final class EntryQuery extends ElementQuery
 
         parent::__construct(Entry::class, $config);
 
-        $this->beforeQuery(function (self $query) {
-            $this->joinElementTable(Table::ENTRIES);
+        $this->joinElementTable(Table::ENTRIES);
 
-            $query->query->addSelect([
-                'entries.sectionId as sectionId',
-                'entries.fieldId as fieldId',
-                'entries.primaryOwnerId as primaryOwnerId',
-                'entries.typeId as typeId',
-                'entries.postDate as postDate',
-                'entries.expiryDate as expiryDate',
-            ]);
+        $this->query->addSelect([
+            'entries.sectionId as sectionId',
+            'entries.fieldId as fieldId',
+            'entries.primaryOwnerId as primaryOwnerId',
+            'entries.typeId as typeId',
+            'entries.postDate as postDate',
+            'entries.expiryDate as expiryDate',
+        ]);
 
-            if (Cms::config()->staticStatuses) {
-                $query->query->addSelect(['entries.status as status']);
-            }
-        });
+        if (Cms::config()->staticStatuses) {
+            $this->query->addSelect(['entries.status as status']);
+        }
     }
 
     protected function statusCondition(string $status): Closure

@@ -27,6 +27,13 @@ it('can run basic queries', function () {
     entryQuery()->findOrFail(999);
 });
 
+it('can create with an array of parameters', function () {
+    EntryModel::factory()->create();
+    $entry = EntryModel::factory()->create();
+
+    expect(entryQuery(['id' => $entry->id])->count())->toBe(1);
+});
+
 test('trashed', function () {
     EntryModel::factory(2)->create();
     EntryModel::factory(2)->trashed()->create();

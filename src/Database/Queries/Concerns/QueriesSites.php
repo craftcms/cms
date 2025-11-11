@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
@@ -33,14 +34,14 @@ trait QueriesSites
 
     protected function initQueriesSites(): void
     {
-        $this->beforeQuery(function () {
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
             // Make sure the siteId param is set
             try {
-                if (! $this->elementType::isLocalized()) {
+                if (! $elementQuery->elementType::isLocalized()) {
                     // The criteria *must* be set to the primary site ID
-                    $this->siteId = Sites::getPrimarySite()->id;
+                    $elementQuery->siteId = Sites::getPrimarySite()->id;
                 } else {
-                    $this->normalizeSiteId();
+                    $elementQuery->siteId = $this->normalizeSiteId($elementQuery);
                 }
             } catch (SiteNotFoundException $e) {
                 // Fail silently if Craft isn't installed yet or is in the middle of updating
@@ -52,7 +53,7 @@ trait QueriesSites
             }
 
             if (Sites::isMultiSite(false, true)) {
-                $this->subQuery->where('elements_sites.siteId', $this->siteId);
+                $elementQuery->subQuery->where('elements_sites.siteId', $elementQuery->siteId);
             }
         });
     }
@@ -245,16 +246,20 @@ trait QueriesSites
     /**
      * Normalizes the siteId param value.
      */
-    private function normalizeSiteId(): void
+    private function normalizeSiteId(ElementQuery $query): mixed
     {
-        if (! $this->siteId) {
+        if (! $query->siteId) {
             // Default to the current site
-            $this->siteId = Sites::getCurrentSite()->id;
-        } elseif ($this->siteId === '*') {
-            $this->siteId = Sites::getAllSiteIds();
-        } elseif (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
+            return Sites::getCurrentSite()->id;
+        }
+
+        if ($query->siteId === '*') {
+            return Sites::getAllSiteIds();
+        }
+
+        if (is_numeric($query->siteId) || Arr::isNumeric($query->siteId)) {
             // Filter out any invalid site IDs
-            $siteIds = Collection::make((array) $this->siteId)
+            $siteIds = Collection::make((array) $query->siteId)
                 ->filter(fn ($siteId) => Sites::getSiteById($siteId, true) !== null)
                 ->all();
 
@@ -262,7 +267,9 @@ trait QueriesSites
                 throw new QueryAbortedException;
             }
 
-            $this->siteId = is_array($this->siteId) ? $siteIds : reset($siteIds);
+            return is_array($query->siteId) ? $siteIds : reset($siteIds);
         }
+
+        return $query->siteId;
     }
 }

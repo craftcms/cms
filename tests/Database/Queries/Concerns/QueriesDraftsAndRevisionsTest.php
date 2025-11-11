@@ -10,6 +10,7 @@ test('drafts', function () {
     $entry->element->update([
         'draftId' => Draft::factory()->create([
             'canonicalId' => $entry->id,
+            'provisional' => false,
         ])->id,
     ]);
 

@@ -54,7 +54,7 @@ function loadTestPlugin(): void
     $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
 }
 
-function entryQuery(): EntryQuery
+function entryQuery(array $config = []): EntryQuery
 {
-    return new EntryQuery;
+    return new EntryQuery($config);
 }

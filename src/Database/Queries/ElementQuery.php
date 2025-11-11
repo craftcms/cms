@@ -84,6 +84,7 @@ class ElementQuery implements ElementQueryInterface
      */
     protected array $propertyPassthru = [
         'from',
+        'orders',
     ];
 
     /**
@@ -128,18 +129,6 @@ class ElementQuery implements ElementQueryInterface
         'tosql',
         'torawsql',
         'value',
-    ];
-
-    protected array $passthruAggregates = [
-        'aggregate',
-        'average',
-        'avg',
-        'count',
-        'getcountforpagination',
-        'max',
-        'min',
-        'numericaggregate',
-        'sum',
     ];
 
     /**
@@ -223,10 +212,6 @@ class ElementQuery implements ElementQueryInterface
         }
 
         $this->initTraits();
-
-        $this->query->beforeQuery(function () {
-            $this->applyBeforeQueryCallbacks();
-        });
     }
 
     protected function initTraits(): void
@@ -245,27 +230,11 @@ class ElementQuery implements ElementQueryInterface
     }
 
     /**
-     * Create a collection of models from a raw query.
-     *
-     * @param  string  $query
-     * @param  array  $bindings
-     * @return Collection<int, TElement>
-     */
-    public function fromQuery($query, $bindings = []): Collection
-    {
-        return $this->hydrate(
-            $this->query->getConnection()->select($query, $bindings)
-        );
-    }
-
-    /**
      * Find a model by its primary key.
      *
-     * @param  mixed  $id
-     * @param  array|string  $columns
      * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \Illuminate\Database\Eloquent\Collection<int, TElement> : TElement|null)
      */
-    public function find($id, $columns = ['*']): ElementInterface|Collection|null
+    public function find(mixed $id, array|string $columns = ['*']): ElementInterface|Collection|null
     {
         if (is_array($id) || $id instanceof Arrayable) {
             return $this->findMany($id, $columns);
@@ -278,10 +247,9 @@ class ElementQuery implements ElementQueryInterface
      * Find multiple elements by their primary keys.
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @param  array|string  $columns
      * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
      */
-    public function findMany($ids, $columns = ['*']): Collection|array
+    public function findMany(mixed $ids, array|string $columns = ['*']): Collection|array
     {
         $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
 
@@ -295,13 +263,11 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @param  mixed  $id
-     * @param  array|string  $columns
      * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \Illuminate\Database\Eloquent\Collection<int, TElement> : TElement)
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function findOrFail($id, $columns = ['*']): ElementInterface|Collection
+    public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|Collection
     {
         $result = $this->find($id, $columns);
 
@@ -331,7 +297,6 @@ class ElementQuery implements ElementQueryInterface
      *
      * @template TValue
      *
-     * @param  mixed  $id
      * @param  (\Closure(): TValue)|list<string>|string  $columns
      * @param  (\Closure(): TValue)|null  $callback
      * @return (
@@ -340,7 +305,7 @@ class ElementQuery implements ElementQueryInterface
      *     : TElement|TValue
      * )
      */
-    public function findOr($id, $columns = ['*'], ?Closure $callback = null): mixed
+    public function findOr(mixed $id, array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
     {
         if ($columns instanceof Closure) {
             $callback = $columns;
@@ -358,12 +323,11 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Execute the query and get the first result or throw an exception.
      *
-     * @param  array|string  $columns
      * @return TElement
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function firstOrFail($columns = ['*']): ElementInterface
+    public function firstOrFail(array|string $columns = ['*']): ElementInterface
     {
         if (! is_null($model = $this->first($columns))) {
             return $model;
@@ -381,7 +345,7 @@ class ElementQuery implements ElementQueryInterface
      * @param  (\Closure(): TValue)|null  $callback
      * @return TElement|TValue
      */
-    public function firstOr($columns = ['*'], ?Closure $callback = null): mixed
+    public function firstOr(array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
     {
         if ($columns instanceof Closure) {
             $callback = $columns;
@@ -399,13 +363,12 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Execute the query and get the first result if it's the sole matching record.
      *
-     * @param  array|string  $columns
      * @return TElement
      *
      * @throws ElementNotFoundException<TElement>
      * @throws \Illuminate\Database\MultipleRecordsFoundException
      */
-    public function sole($columns = ['*']): mixed
+    public function sole(array|string $columns = ['*']): ElementInterface
     {
         try {
             return $this->baseSole($columns);
@@ -417,10 +380,9 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  array|string  $columns
      * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
      */
-    public function get($columns = ['*']): Collection|array
+    public function get(array|string $columns = ['*']): Collection|array
     {
         $models = $this->getModels($columns);
 
@@ -431,11 +393,12 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Get the hydrated elements
      *
-     * @param  array|string  $columns
      * @return array<int, TElement>
      */
-    public function getModels($columns = ['*']): array
+    public function getModels(array|string $columns = ['*']): array
     {
+        $this->applyBeforeQueryCallbacks();
+
         return $this->hydrate(
             $this->query->get($columns)->all()
         )->all();
@@ -458,6 +421,8 @@ class ElementQuery implements ElementQueryInterface
 
     public function pluck($column, $key = null): Collection|array
     {
+        $this->applyBeforeQueryCallbacks();
+
         $column = $this->columnMap[$column] ?? $column;
 
         return $this->query->pluck($column, $key)
@@ -466,8 +431,6 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Register a closure to be invoked after the query is executed.
-     *
-     * @return $this
      */
     public function afterQuery(Closure $callback): self
     {
@@ -495,6 +458,8 @@ class ElementQuery implements ElementQueryInterface
      */
     public function cursor(): LazyCollection
     {
+        $this->applyBeforeQueryCallbacks();
+
         return $this->applyScopes()->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
 
@@ -536,30 +501,24 @@ class ElementQuery implements ElementQueryInterface
 
     /**
      * Get the given macro by name.
-     *
-     * @param  string  $name
      */
-    public function getMacro($name): Closure
+    public function getMacro(string $name): Closure
     {
         return Arr::get($this->localMacros, $name);
     }
 
     /**
      * Checks if a macro is registered.
-     *
-     * @param  string  $name
      */
-    public function hasMacro($name): bool
+    public function hasMacro(string $name): bool
     {
         return isset($this->localMacros[$name]);
     }
 
     /**
      * Get the given global macro by name.
-     *
-     * @param  string  $name
      */
-    public static function getGlobalMacro($name): Closure
+    public static function getGlobalMacro(string $name): Closure
     {
         return Arr::get(static::$macros, $name);
     }
@@ -588,6 +547,23 @@ class ElementQuery implements ElementQueryInterface
         }
 
         throw new Exception("Property [{$key}] does not exist on the Element query instance.");
+    }
+
+    public function __set(string $name, $value): void
+    {
+        if (method_exists($this, $name)) {
+            $this->{$name}($value);
+
+            return;
+        }
+
+        if (in_array($name, $this->propertyPassthru)) {
+            $this->getQuery()->{$name} = $value;
+
+            return;
+        }
+
+        throw new Exception("Property [{$name}] does not exist on the Element query instance.");
     }
 
     /**
@@ -621,14 +597,12 @@ class ElementQuery implements ElementQueryInterface
         }
 
         if (in_array(strtolower($method), $this->passthru)) {
-            if (in_array(strtolower($method), $this->passthruAggregates)) {
-                $this->applyBeforeQueryCallbacks();
-            }
+            $this->applyBeforeQueryCallbacks();
 
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (strtolower($method) === 'orderby') {
+        if (in_array(strtolower($method), ['orderby', 'select', 'reorder'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
@@ -728,8 +702,10 @@ class ElementQuery implements ElementQueryInterface
 
     public function applyBeforeQueryCallbacks(): void
     {
-        foreach ($this->beforeQueryCallbacks as $callback) {
+        foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
+
+            unset($this->beforeQueryCallbacks[$i]);
         }
 
         $this->beforeQueryCallbacks = [];

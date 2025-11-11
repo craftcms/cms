@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
@@ -38,7 +39,7 @@ trait QueriesUniqueElements
     {
         if (
             ! $this->unique ||
-            ! \Craft::$app->getIsMultiSite(false, true) ||
+            ! Sites::isMultiSite(false, true) ||
             (
                 $this->siteId &&
                 (! is_array($this->siteId) || count($this->siteId) === 1)
@@ -47,16 +48,14 @@ trait QueriesUniqueElements
             return;
         }
 
-        $sitesService = \Craft::$app->getSites();
-
         if (! $this->preferSites) {
-            $preferSites = [$sitesService->getCurrentSite()->id];
+            $preferSites = [Sites::getCurrentSite()->id];
         } else {
             $preferSites = [];
             foreach ($this->preferSites as $preferSite) {
                 if (is_numeric($preferSite)) {
                     $preferSites[] = $preferSite;
-                } elseif ($site = $sitesService->getSiteByHandle($preferSite)) {
+                } elseif ($site = Sites::getSiteByHandle($preferSite)) {
                     $preferSites[] = $site->id;
                 }
             }

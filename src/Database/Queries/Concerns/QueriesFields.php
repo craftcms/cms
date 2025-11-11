@@ -89,53 +89,53 @@ trait QueriesFields
 
     protected function initQueriesFields(): void
     {
-        $this->beforeQuery(function (ElementQuery $query) {
-            if ($this->id) {
-                $query->subQuery->whereNumericParam('elements.id', $this->id);
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            if ($elementQuery->id) {
+                $elementQuery->subQuery->whereNumericParam('elements.id', $elementQuery->id);
             }
 
-            if ($this->uid) {
-                $query->subQuery->whereParam('elements.uid', $this->uid);
+            if ($elementQuery->uid) {
+                $elementQuery->subQuery->whereParam('elements.uid', $elementQuery->uid);
             }
 
-            if ($this->siteSettingsId) {
-                $query->subQuery->whereNumericParam('elements_sites.id', $this->siteSettingsId);
+            if ($elementQuery->siteSettingsId) {
+                $elementQuery->subQuery->whereNumericParam('elements_sites.id', $elementQuery->siteSettingsId);
             }
 
-            match ($this->trashed) {
-                true => $query->subQuery->whereNotNull('elements.dateDeleted'),
-                false => $query->subQuery->whereNull('elements.dateDeleted'),
+            match ($elementQuery->trashed) {
+                true => $elementQuery->subQuery->whereNotNull('elements.dateDeleted'),
+                false => $elementQuery->subQuery->whereNull('elements.dateDeleted'),
                 default => null,
             };
 
-            if ($this->dateCreated) {
-                $query->subQuery->whereDateParam('elements.dateCreated', $this->dateCreated);
+            if ($elementQuery->dateCreated) {
+                $elementQuery->subQuery->whereDateParam('elements.dateCreated', $elementQuery->dateCreated);
             }
 
-            if ($this->dateUpdated) {
-                $query->subQuery->whereDateParam('elements.dateUpdated', $this->dateUpdated);
+            if ($elementQuery->dateUpdated) {
+                $elementQuery->subQuery->whereDateParam('elements.dateUpdated', $elementQuery->dateUpdated);
             }
 
-            if (isset($this->title) && $this->title !== '' && $this->elementType::hasTitles()) {
-                if (is_string($this->title)) {
-                    $this->title = Query::escapeCommas($this->title);
+            if (isset($elementQuery->title) && $elementQuery->title !== '' && $elementQuery->elementType::hasTitles()) {
+                if (is_string($elementQuery->title)) {
+                    $elementQuery->title = Query::escapeCommas($elementQuery->title);
                 }
 
-                $query->subQuery->whereParam('elements_sites.title', $this->title, caseInsensitive: true);
+                $elementQuery->subQuery->whereParam('elements_sites.title', $elementQuery->title, caseInsensitive: true);
             }
 
-            if ($this->slug) {
-                $query->subQuery->whereParam('elements_sites.slug', $this->slug);
+            if ($elementQuery->slug) {
+                $elementQuery->subQuery->whereParam('elements_sites.slug', $elementQuery->slug);
             }
 
-            if ($this->uri) {
-                $query->subQuery->whereParam('elements_sites.uri', $this->uri, caseInsensitive: true);
+            if ($elementQuery->uri) {
+                $elementQuery->subQuery->whereParam('elements_sites.uri', $elementQuery->uri, caseInsensitive: true);
             }
 
-            if ($this->inBulkOp) {
-                $query->subQuery
+            if ($elementQuery->inBulkOp) {
+                $elementQuery->subQuery
                     ->join(new Alias(Table::ELEMENTS_BULKOPS, 'elements_bulkops'), 'elements_bulkops.elementId', 'elements.id')
-                    ->where('elements_bulkops.key', $this->inBulkOp);
+                    ->where('elements_bulkops.key', $elementQuery->inBulkOp);
             }
         });
     }
