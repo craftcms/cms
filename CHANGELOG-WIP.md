@@ -53,7 +53,9 @@
 - Added `craft\base\FieldInterface::propagateValue()`.
 - Added `craft\elements\User::isInGroups()`. ([#17989](https://github.com/craftcms/cms/discussions/17989))
 - Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
+- Added `craft\events\DefineFieldActionsEvent`.
 - Added `craft\events\RegisterElementCardAttributesEvent::$fieldLayout`. ([#17920](https://github.com/craftcms/cms/pull/17920))
+- Added `craft\fieldlayoutelements\BaseField::EVENT_DEFINE_ACTION_MENU_ITEMS`. ([#18037](https://github.com/craftcms/cms/issues/18037))
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
