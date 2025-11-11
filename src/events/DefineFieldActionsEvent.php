@@ -16,7 +16,7 @@ use craft\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.9.0
  */
-class DefineFieldActionsEvent extends Event
+class DefineFieldActionsEvent extends DefineMenuItemsEvent
 {
     /**
      * @var ElementInterface|null $element The element the form is being rendered for
@@ -27,9 +27,4 @@ class DefineFieldActionsEvent extends Event
      * @var bool $static Whether the form should be static (non-interactive)
      */
     public bool $static;
-
-    /**
-     * @var array The action menu items
-     */
-    public array $items;
 }
