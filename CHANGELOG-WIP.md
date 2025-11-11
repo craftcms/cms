@@ -17,6 +17,7 @@
 
 ### Administration
 - It’s now possible to divide entry sources into multiple index pages, via the Customize Sources modal. ([#17779](https://github.com/craftcms/cms/pull/17779))
+- Added the “UI Label Format” entry type setting. ([#18044](https://github.com/craftcms/cms/pull/18044))
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
 - Users’ User Groups settings now show a component select input, and support inline group editing/creation on environments that allow administrative changes.
 - Address labels can now be made optional. ([#11410](https://github.com/craftcms/cms/discussions/11410))
@@ -59,6 +60,7 @@
 - Added `craft\fields\BaseRelationField::VIEW_MODE_THUMBS`.
 - Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
+- Added `craft\models\EntryType::$uiLabelFormat`.
 - Added `craft\services\ElementSources::getFirstPage()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::getPageSettings()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::getPages()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
