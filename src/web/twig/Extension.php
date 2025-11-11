@@ -1429,6 +1429,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('randomString', [StringHelper::class, 'randomString']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('seq', [$this, 'seqFunction']),
