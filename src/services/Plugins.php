@@ -1160,6 +1160,13 @@ class Plugins extends Component
     public function getPluginLicenseKey(string $handle): ?string
     {
         $licenseKey = App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+
+        // also check if pc has the license key
+        if ($licenseKey === null) {
+            $pcPlugins = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_PLUGINS);
+            $licenseKey = App::parseEnv($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
         return $this->normalizePluginLicenseKey($licenseKey);
     }
 
