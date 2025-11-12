@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\db\mysql\Schema;
-use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 /**
@@ -48,8 +51,14 @@ trait QueriesCustomFields
      */
     private array $columnsToCast = [];
 
+    private array $customFieldValues = [];
+
     protected function initQueriesCustomFields(): void
     {
+        foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
+            $this->customFieldValues[$handle] = null;
+        }
+
         $this->beforeQuery(function (ElementQuery $elementQuery) {
             // Gather custom fields and generated field handles
             $elementQuery->customFields = [];
@@ -68,15 +77,15 @@ trait QueriesCustomFields
 
             // Map custom field handles to their content values
             $this->addCustomFieldsToColumnMap();
+            $this->addGeneratedFieldsToColumnMap();
 
             $this->applyCustomFieldParams($elementQuery);
+            $this->applyGeneratedFieldParams($elementQuery);
         });
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @uses $withCustomFields
+     * Sets whether custom fields should be factored into the query.
      */
     public function withCustomFields(bool $value = true): static
     {
@@ -88,17 +97,19 @@ trait QueriesCustomFields
     /**
      * Returns the field layouts whose custom fields should be returned by [[customFields()]].
      *
-     * @return FieldLayout[]
+     * @return Collection<FieldLayout>
      */
-    protected function fieldLayouts(): array
+    protected function fieldLayouts(): Collection
     {
-        return \Craft::$app->getFields()->getLayoutsByType($this->elementType);
+        return Fields::getLayoutsByType($this->elementType);
     }
 
     /**
-     * {@inheritdoc}
+     * Returns the field layouts that could be associated with the resulting elements.
+     *
+     * @return Collection<FieldLayout>
      */
-    public function getFieldLayouts(): array
+    public function getFieldLayouts(): Collection
     {
         return $this->fieldLayouts();
     }
@@ -111,37 +122,48 @@ trait QueriesCustomFields
         foreach ($this->customFields as $field) {
             $dbTypes = $field::dbType();
 
-            if ($dbTypes !== null) {
-                if (is_string($dbTypes)) {
-                    $dbTypes = ['*' => $dbTypes];
-                } else {
-                    $dbTypes = [
-                        '*' => reset($dbTypes),
-                        ...$dbTypes,
-                    ];
-                }
+            if (is_null($dbTypes)) {
+                continue;
+            }
 
-                foreach ($dbTypes as $key => $dbType) {
-                    $alias = $field->handle.($key !== '*' ? ".$key" : '');
-                    $resolver = fn () => $field->getValueSql($key !== '*' ? $key : null);
+            if (is_string($dbTypes)) {
+                $dbTypes = ['*' => $dbTypes];
+            } else {
+                $dbTypes = [
+                    '*' => reset($dbTypes),
+                    ...$dbTypes,
+                ];
+            }
 
-                    $this->addToColumnMap($alias, $resolver);
+            foreach ($dbTypes as $key => $dbType) {
+                $alias = $field->handle.($key !== '*' ? ".$key" : '');
+                $resolver = fn () => $field->getValueSql($key !== '*' ? $key : null);
 
-                    // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
-                    // see https://github.com/craftcms/cms/issues/15609
-                    if ($this->getConnection()->getDriverName() === 'mysql' && DbHelper::parseColumnType($dbType) === Schema::TYPE_TEXT) {
-                        $this->columnsToCast[$alias] = 'CHAR(255)';
-                    }
+                $this->addToColumnMap($alias, $resolver);
+
+                // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+                // see https://github.com/craftcms/cms/issues/15609
+                if ($this->query->getConnection()->getDriverName() === 'mysql' && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+                    $this->columnsToCast[$alias] = 'CHAR(255)';
                 }
             }
         }
+    }
 
-        if (! empty($this->generatedFields)) {
-            foreach ($this->generatedFields as $field) {
-                if (($field['handle'] ?? '') !== '') {
-                    $this->addToColumnMap($field['handle'], new JsonExtract('elements_sites.content', '$.'.$field['uid']));
-                }
+    /**
+     * Include custom fields in the column map
+     */
+    private function addGeneratedFieldsToColumnMap(): void
+    {
+        foreach ($this->generatedFields as $field) {
+            if (empty($field['handle'] ?? '')) {
+                continue;
             }
+
+            $this->addToColumnMap(
+                $field['handle'],
+                new JsonExtract(Table::ELEMENTS_SITES.'.content', '$.'.$field['uid']),
+            );
         }
     }
 
@@ -163,92 +185,111 @@ trait QueriesCustomFields
      *
      * @throws QueryAbortedException
      */
-    private function applyCustomFieldParams(ElementQuery $query): void
+    private function applyCustomFieldParams(ElementQuery $elementQuery): void
     {
-        if (empty($query->customFields) && empty($query->generatedFields)) {
+        if (empty($elementQuery->customFields)) {
             return;
         }
 
-        $fieldAttributes = $this->getBehavior('customFields');
+        $fieldsByHandle = $this->fieldsByHandle($elementQuery);
+
+        foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
+            // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
+            if ($handle === 'owner') {
+                continue;
+            }
+            if (($elementQuery->customFieldValues[$handle] ?? null) === null) {
+                continue;
+            }
+            // Make sure the custom field exists in one of the field layouts
+            if (! isset($fieldsByHandle[$handle])) {
+                // If it looks like null/:empty: is a valid option, let it slide
+                $value = is_array($elementQuery->customFieldValues[$handle]) && isset($elementQuery->customFieldValues[$handle]['value'])
+                    ? $elementQuery->customFieldValues[$handle]['value']
+                    : $elementQuery->customFieldValues[$handle];
+
+                if (is_array($value) && in_array(null, $value, true)) {
+                    $values = [...$value];
+                    $operator = QueryParam::extractOperator($values) ?? QueryParam::OR;
+                    if ($operator === QueryParam::OR) {
+                        continue;
+                    }
+                }
+
+                throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
+            }
+
+            $conditions = [];
+            $params = [];
+
+            foreach ($fieldsByHandle[$handle] as $instances) {
+                $firstInstance = $instances[0];
+                $condition = $firstInstance::queryCondition($instances, $elementQuery->customFieldValues[$handle], $params);
+
+                // aborting?
+                if ($condition === false) {
+                    throw new QueryAbortedException;
+                }
+
+                if ($condition !== null) {
+                    $conditions[] = $condition;
+                }
+            }
+
+            if (empty($conditions)) {
+                return;
+            }
+
+            $elementQuery->subQuery->where(function (Builder $query) use ($handle, $elementQuery, $conditions) {
+                if (count($conditions) === 1) {
+                    Query::applyConditions($query, reset($conditions));
+                } else {
+                    $glue = $elementQuery->customFieldValues[$handle] === ':empty:' ? QueryParam::AND : QueryParam::OR;
+                    Query::applyConditions($query, [$glue, ...$conditions]);
+                }
+            });
+        }
+    }
+
+    private function applyGeneratedFieldParams(ElementQuery $elementQuery): void
+    {
+        if (empty($elementQuery->generatedFields)) {
+            return;
+        }
+
+        $fieldsByHandle = $this->fieldsByHandle($elementQuery);
+
+        $generatedFieldColumns = [];
+
+        foreach ($elementQuery->generatedFields as $field) {
+            $handle = $field['handle'] ?? '';
+            if ($handle !== '' && isset($elementQuery->customFieldValues[$handle]) && ! isset($fieldsByHandle[$handle])) {
+                $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', '$.'.$field['uid']);
+            }
+        }
+
+        foreach ($generatedFieldColumns as $handle => $columns) {
+            $column = count($columns) === 1
+                ? $columns[0]
+                : new Coalesce($columns);
+
+            $elementQuery->subQuery->whereParam($column, $elementQuery->customFieldValues[$handle]);
+        }
+    }
+
+    /**
+     * @return FieldInterface[][][]
+     */
+    private function fieldsByHandle(ElementQuery $elementQuery): array
+    {
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
 
-        if (! empty($query->customFields)) {
-            // Group the fields by handle and field UUID
-            foreach ($query->customFields as $field) {
-                $fieldsByHandle[$field->handle][$field->uid][] = $field;
-            }
-
-            foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
-                // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
-                if ($handle === 'owner') {
-                    continue;
-                }
-                if (($fieldAttributes->$handle ?? null) === null) {
-                    continue;
-                }
-                // Make sure the custom field exists in one of the field layouts
-                if (! isset($fieldsByHandle[$handle])) {
-                    // If it looks like null/:empty: is a valid option, let it slide
-                    $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
-                        ? $fieldAttributes->$handle['value']
-                        : $fieldAttributes->$handle;
-
-                    if (is_array($value) && in_array(null, $value, true)) {
-                        $values = [...$value];
-                        $operator = QueryParam::extractOperator($values) ?? QueryParam::OR;
-                        if ($operator === QueryParam::OR) {
-                            continue;
-                        }
-                    }
-
-                    throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
-                }
-
-                $conditions = [];
-                $params = [];
-
-                foreach ($fieldsByHandle[$handle] as $instances) {
-                    $firstInstance = $instances[0];
-                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
-
-                    // aborting?
-                    if ($condition === false) {
-                        throw new QueryAbortedException;
-                    }
-
-                    if ($condition !== null) {
-                        $conditions[] = $condition;
-                    }
-                }
-
-                if (! empty($conditions)) {
-                    if (count($conditions) === 1) {
-                        $query->subQuery->andWhere(reset($conditions), $params);
-                    } else {
-                        $query->subQuery->andWhere(['or', ...$conditions], $params);
-                    }
-                }
-            }
+        // Group the fields by handle and field UUID
+        foreach ($elementQuery->customFields as $field) {
+            $fieldsByHandle[$field->handle][$field->uid][] = $field;
         }
 
-        if (! empty($query->generatedFields)) {
-            $generatedFieldColumns = [];
-
-            foreach ($query->generatedFields as $field) {
-                $handle = $field['handle'] ?? '';
-                if ($handle !== '' && isset($fieldAttributes->$handle) && ! isset($fieldsByHandle[$handle])) {
-                    $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', '$.'.$field['uid']);
-                }
-            }
-
-            foreach ($generatedFieldColumns as $handle => $columns) {
-                $column = count($columns) === 1
-                    ? $columns[0]
-                    : new Coalesce($columns)->getValue($query->subQuery->getGrammar());
-
-                $query->subQuery->where(DbHelper::parseParam($column, $fieldAttributes->$handle));
-            }
-        }
+        return $fieldsByHandle;
     }
 }

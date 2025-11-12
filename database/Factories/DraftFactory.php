@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use craft\elements\Entry;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\User\Models\User;
@@ -25,5 +26,18 @@ final class DraftFactory extends Factory
             'dateLastMerged' => now(),
             'saved' => fake()->boolean(),
         ];
+    }
+
+    #[\Override]
+    public function configure(): self
+    {
+        return $this->afterCreating(function (Draft $draft) {
+            $element = Element::create([
+                'type' => Entry::class,
+                'canonicalId' => $draft->canonicalId,
+            ]);
+
+            $draft->update(['id' => $element->id]);
+        });
     }
 }

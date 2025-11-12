@@ -542,6 +542,10 @@ class ElementQuery implements ElementQueryInterface
      */
     public function __get($key): mixed
     {
+        if (array_key_exists($key, $this->customFieldValues)) {
+            return $this->customFieldValues[$key];
+        }
+
         if (in_array($key, $this->propertyPassthru)) {
             return $this->getQuery()->{$key};
         }
@@ -551,6 +555,12 @@ class ElementQuery implements ElementQueryInterface
 
     public function __set(string $name, $value): void
     {
+        if (array_key_exists($name, $this->customFieldValues)) {
+            $this->customFieldValues[$name] = $value;
+
+            return;
+        }
+
         if (method_exists($this, $name)) {
             $this->{$name}($value);
 
@@ -578,6 +588,12 @@ class ElementQuery implements ElementQueryInterface
             $this->localMacros[$parameters[0]] = $parameters[1];
 
             return null;
+        }
+
+        if (array_key_exists($method, $this->customFieldValues)) {
+            $this->customFieldValues[$method] = $parameters[0];
+
+            return $this;
         }
 
         if ($this->hasMacro($method)) {

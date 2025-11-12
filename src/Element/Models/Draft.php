@@ -28,6 +28,14 @@ final class Draft extends BaseModel
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
      */
+    public function element(): BelongsTo
+    {
+        return $this->belongsTo(Element::class, 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     */
     public function canonical(): BelongsTo
     {
         return $this->belongsTo(Element::class, 'canonicalId');

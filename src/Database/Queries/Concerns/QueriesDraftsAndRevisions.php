@@ -132,7 +132,7 @@ trait QueriesDraftsAndRevisions
             if ($elementQuery->draftOf === false) {
                 $elementQuery->subQuery->whereNull('elements.canonicalId', null);
             } else {
-                $elementQuery->subQuery->whereIn('elements.canonicalId', $elementQuery->draftOf);
+                $elementQuery->subQuery->whereIn('elements.canonicalId', Arr::wrap($elementQuery->draftOf));
             }
         }
 

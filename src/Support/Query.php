@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
@@ -82,6 +83,98 @@ final readonly class Query
     ];
 
     private const array OPERATORS = ['not ', '!=', '<=', '>=', '<', '>', '='];
+
+    /**
+     * Recursively applies Yii-style condition arrays to a Laravel query builder instance.
+     *
+     * This helper applies Yii condition arrays onto a Laravel Query Builder instance
+     * `where` / `orWhere` clauses. It supports nested logical groups (`and`, `or`),
+     * comparison operators (`=`, `!=`, `>`, `>=`, `<`, `<=`), negations (`not`),
+     * and automatic handling of `IN` / `NOT IN` conditions for array values.
+     *
+     * Example Yii-style input:
+     *
+     * [
+     *     'and',
+     *     ['>=', 'users.age', 18],
+     *     ['or',
+     *         ['status' => 'active'],
+     *         ['not', ['status' => ['banned', 'suspended']]]
+     *     ]
+     * ]
+     *
+     * This would translate to roughly:
+     *
+     * $query->where(function($q) {
+     *     $q->where('users.age', '>=', 18)
+     *       ->where(function($q2) {
+     *           $q2->where('status', 'active')
+     *              ->orWhereNotIn('status', ['banned', 'suspended']);
+     *       });
+     * });
+     */
+    public static function applyConditions(Builder $query, array|string|false|null $conditions): Builder
+    {
+        if ($conditions === false) {
+            return $query;
+        }
+
+        // Condition is an operator-style array like ['>=', 'field', value]
+        if (is_array($conditions) && isset($conditions[0]) && is_string($conditions[0])) {
+            $operator = strtolower($conditions[0]);
+
+            switch ($operator) {
+                case 'and':
+                case 'or':
+                    // Group of conditions
+                    $method = $operator === 'and' ? 'where' : 'orWhere';
+
+                    return $query->$method(function ($q) use ($conditions) {
+                        foreach (array_slice($conditions, 1) as $subCondition) {
+                            self::applyConditions($q, $subCondition);
+                        }
+                    });
+
+                case 'not':
+                    // NOT inside Yii usually means != or NOT IN
+                    foreach ($conditions[1] as $field => $value) {
+                        if (is_array($value)) {
+                            return $query->whereNotIn(new Expression($field), $value);
+                        }
+
+                        return $query->where(new Expression($field), '!=', $value);
+                    }
+
+                case '=':
+                case '!=':
+                case '>':
+                case '>=':
+                case '<':
+                case '<=':
+                case 'like':
+                    return $query->where(new Expression($conditions[1]), $operator, $conditions[2]);
+
+                default:
+                    // If operator unknown, treat as field = value map.
+                    return self::applyConditions($query, $conditions);
+            }
+        }
+
+        // Handle "field => value" or "field => [values]" style arrays
+        foreach ($conditions as $field => $value) {
+            if (is_array($value)) {
+                // IN condition
+                $query->whereIn(new Expression($field), $value);
+
+                continue;
+            }
+
+            // Simple equals
+            $query->where(new Expression($field), '=', $value);
+        }
+
+        return $query;
+    }
 
     /**
      * Parses a query param value and applies it to a query builder.

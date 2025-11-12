@@ -754,7 +754,7 @@ final class Fields
             return $this->_layouts;
         }
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Info::isInstalled()) {
             $layoutConfigs = $this->_createLayoutQuery()->get()->all();
         } else {
             $layoutConfigs = [];

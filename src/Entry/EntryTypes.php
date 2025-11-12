@@ -178,7 +178,7 @@ final class EntryTypes
         if (! $entryType && $withTrashed) {
             $record = $this->getEntryTypeModel($entryTypeId, true);
             if ($record->exists) {
-                return new EntryType(...Arr::only($record->toArray(), [
+                return EntryType::from(Arr::only($record->toArray(), [
                     'id',
                     'fieldLayoutId',
                     'name',
