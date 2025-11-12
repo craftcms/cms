@@ -812,7 +812,7 @@ JS, [
             $revisionsPageUrl = $element->getCpRevisionsUrl();
 
             if ($revisionsPageUrl) {
-                $hasMoreRevisions = ($revisionsQuery->count() - 1) > count($revisions);
+                $hasMoreRevisions = ($revisionsQuery->count() - 1) > 0;
             }
         } else {
             $revisions = [];
