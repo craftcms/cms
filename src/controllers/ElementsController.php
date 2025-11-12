@@ -36,6 +36,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\ElementActivity;
@@ -882,17 +883,20 @@ JS, [
                     /** @var ElementInterface&DraftBehavior $draft */
                     $creator = $draft->getCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
+                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT);
 
                     return [
                         'label' => $draft->draftName,
                         'description' => $creator
-                            ? Craft::t('app', 'Saved {timestamp} by {creator}', [
+                            ? Template::raw(Craft::t('app', 'Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
-                            ])
-                            : Craft::t('app', 'Last saved {timestamp}', [
+                            ]))
+                            : Template::raw(Craft::t('app', 'Last saved <time title="{timestampWithDate}">{timestamp}</time>', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                            ]),
+                            ])),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'draftId' => $draft->draftId,
                         ])),
@@ -910,17 +914,20 @@ JS, [
                     /** @var ElementInterface&RevisionBehavior $revision */
                     $creator = $revision->getCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
+                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT);
 
                     return [
                         'label' => $revision->getRevisionLabel(),
                         'description' => $creator
-                            ? Craft::t('app', 'Saved {timestamp} by {creator}', [
+                            ? Template::raw(Craft::t('app', 'Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
-                            ])
-                            : Craft::t('app', 'Saved {timestamp}', [
+                            ]))
+                            : Template::raw(Craft::t('app', 'Saved <time title="{timestampWithDate}">{timestamp}</time>', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                            ]),
+                            ])),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'revisionId' => $revision->revisionId,
                         ])),
