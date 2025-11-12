@@ -1291,7 +1291,7 @@ class AssetsController extends Controller
             throw new UploadFailedException($uploadedFile->error);
         }
 
-        // Make sure the new filename has a valid extension
+        // Make sure the file extension is allowed
         $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
