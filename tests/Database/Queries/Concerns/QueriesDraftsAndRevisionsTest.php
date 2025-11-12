@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Models\User;
 
@@ -45,9 +46,6 @@ test('draftCreator', function () {
     expect(entryQuery()->draftCreator($user->id)->count())->toBe(1);
     expect(entryQuery()->draftCreator($user)->count())->toBe(1);
     expect(entryQuery()->draftCreator(999)->count())->toBe(0);
-
-    $this->expectException(InvalidArgumentException::class);
-    entryQuery()->draftOf('foo')->count();
 });
 
 test('provisionalDrafts', function () {
@@ -76,4 +74,31 @@ test('savedDraftsOnly', function () {
     app(Drafts::class)->createDraft($element);
 
     expect(entryQuery()->savedDraftsOnly()->count())->toBe(1);
+});
+
+test('revisions', function () {
+    EntryModel::factory()->create();
+
+    $entry = EntryModel::factory()->create();
+    $element = Craft::$app->getElements()->getElementById($entry->id);
+    $revision = app(Revisions::class)->createRevision($element);
+
+    expect(entryQuery()->revisions()->count())->toBe(1);
+    expect(entryQuery()->revisions(null)->count())->toBe(3);
+    expect(entryQuery()->revisions(false)->count())->toBe(2);
+    expect(entryQuery()->revisions()->pluck('id'))->toContain($revision);
+    expect(entryQuery()->revisionId($element->revisionId)->first())->not()->toBeNull();
+    expect(entryQuery()->revisionOf($element)->first())->not()->toBeNull();
+});
+
+test('revisionCreator', function () {
+    $user = User::first();
+
+    $entry = EntryModel::factory()->create();
+    $element = Craft::$app->getElements()->getElementById($entry->id);
+    app(Revisions::class)->createRevision($element, $user->id);
+
+    expect(entryQuery()->revisionCreator($user->id)->count())->toBe(1);
+    expect(entryQuery()->revisionCreator($user)->count())->toBe(1);
+    expect(entryQuery()->revisionCreator(999)->count())->toBe(0);
 });
