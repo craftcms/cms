@@ -48,9 +48,9 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 use yii\db\Schema;
 use yii\validators\NumberValidator;
 
@@ -130,7 +130,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array|false
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
         $field = reset($instances);
@@ -139,18 +139,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $value = [$value];
         }
 
-        $conditions = [];
-
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
             $emptyCondition = array_shift($value);
             if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
-                $conditions[] = static::existsQueryCondition($field);
+                $query->orWhereExists(static::existsQuery($field));
             } else {
-                $conditions[] = ['not', static::existsQueryCondition($field)];
+                $query->orWhereNotExists(static::existsQuery($field));
             }
         }
 
         if (! empty($value)) {
+            /** @TODO Port to Laravel */
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -161,17 +160,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'field' => $field->handle,
             ]);
             if ($condition !== false) {
-                $conditions[] = $condition;
+                $params = [];
+                $sql = Craft::$app->getDb()->getQueryBuilder()->buildCondition($condition, $params);
+
+                // Yii uses named parameters, Laravel uses positional
+                $sql = preg_replace('/:qp\d+/', '?', (string) $sql);
+
+                $query->whereRaw($sql, $params);
             }
         }
 
-        if (empty($conditions)) {
-            return false;
-        }
-
-        array_unshift($conditions, 'or');
-
-        return $conditions;
+        return $query;
     }
 
     /**
@@ -181,46 +180,34 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @param  self  $field  The relation field
      * @param  bool  $enabledOnly  Whether to only
      */
-    public static function existsQueryCondition(
+    public static function existsQuery(
         self $field,
         bool $enabledOnly = true,
         bool $inTargetSiteOnly = true,
-    ): array {
+    ): Builder {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
-        $query = (new Query)
-            ->from(["relations_$ns" => DbTable::RELATIONS])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-            ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES],
-                "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
-            ->where([
-                'and',
-                "[[relations_$ns.sourceId]] = [[elements.id]]",
-                [
-                    "relations_$ns.fieldId" => $field->id,
-                    "elements_$ns.dateDeleted" => null,
-                ],
-                [
-                    'or',
-                    ["relations_$ns.sourceSiteId" => null],
-                    ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
-                ],
-            ]);
+        $query = DB::table(\CraftCms\Cms\Database\Table::RELATIONS, "relations_$ns")
+            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+            ->whereColumn("relations_$ns.sourceId", 'elements.id')
+            ->where("relations_$ns.fieldId", $field->id)
+            ->whereNull("relations_$ns.dateDeleted")
+            ->where(function (Builder $query) use ($ns) {
+                $query->whereNull("relations_$ns.sourceSiteId")
+                    ->orWhereColumn("relations_$ns.sourceSiteId", 'elements_sites.siteId');
+            });
 
         if ($enabledOnly) {
-            $query->andWhere([
-                "elements_$ns.enabled" => true,
-                "elements_sites_$ns.enabled" => true,
-            ]);
+            $query->where("elements_$ns.enabled", true);
+            $query->where("elements_sites_$ns.enabled", true);
         }
 
         if ($inTargetSiteOnly) {
-            $query->andWhere([
-                "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
-            ]);
+            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw('elements_sites.siteId'));
         }
 
-        return ['exists', $query];
+        return $query;
     }
 
     /**
@@ -1083,7 +1070,7 @@ JS, [
                 ])
                 ->where(fn (Builder $query) => $query
                     ->where('sourceSiteId', $sourceSiteId)
-                    ->orWhereNull('sourceSiteId')
+                    ->orWhereNull('sourceSiteId'),
                 )
                 ->orderBy('sortOrder')
                 ->get()

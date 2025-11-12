@@ -24,8 +24,8 @@ final readonly class JsonExtract implements Expression
         $expression = $this->stringize($grammar, $this->expression);
 
         return match ($this->identify($grammar)) {
-            'mariadb' => "JSON_UNQUOTE(JSON_EXTRACT($expression, $this->path))",
-            default => "($expression->>$this->path)",
+            'mariadb' => "JSON_UNQUOTE(JSON_EXTRACT($expression, '$this->path'))",
+            default => "($expression->>'$this->path')",
         };
     }
 }

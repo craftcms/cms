@@ -219,33 +219,15 @@ trait QueriesCustomFields
                 throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
             }
 
-            $conditions = [];
-            $params = [];
+            $glue = $elementQuery->customFieldValues[$handle] === ':empty:'
+                ? QueryParam::AND
+                : QueryParam::OR;
 
-            foreach ($fieldsByHandle[$handle] as $instances) {
-                $firstInstance = $instances[0];
-                $condition = $firstInstance::queryCondition($instances, $elementQuery->customFieldValues[$handle], $params);
-
-                // aborting?
-                if ($condition === false) {
-                    throw new QueryAbortedException;
-                }
-
-                if ($condition !== null) {
-                    $conditions[] = $condition;
-                }
-            }
-
-            if (empty($conditions)) {
-                return;
-            }
-
-            $elementQuery->subQuery->where(function (Builder $query) use ($handle, $elementQuery, $conditions) {
-                if (count($conditions) === 1) {
-                    Query::applyConditions($query, reset($conditions));
-                } else {
-                    $glue = $elementQuery->customFieldValues[$handle] === ':empty:' ? QueryParam::AND : QueryParam::OR;
-                    Query::applyConditions($query, [$glue, ...$conditions]);
+            $this->subQuery->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
+                foreach ($fieldsByHandle[$handle] as $instances) {
+                    $query->where(function (Builder $query) use ($handle, $elementQuery, $instances) {
+                        $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
+                    }, boolean: $glue);
                 }
             });
         }

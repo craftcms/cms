@@ -2833,11 +2833,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
-                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
-                        // aborting?
-                        if ($condition === false) {
-                            throw new QueryAbortedException();
+                        $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
+                        $condition = $query->toSql();
+                        $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
+                            return [':lqp' . $key => $binding];
+                        })->all();
+
+                        foreach ($params as $key => $binding) {
+                            $condition = Str::replaceFirst('?', $key, $condition);
+                        }
+
+                        $condition = Str::after($condition, 'select * where ');
+
+                        if (empty($condition)) {
+                            continue;
                         }
 
                         if ($condition !== null) {

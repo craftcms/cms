@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -25,6 +23,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
@@ -89,41 +88,41 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
-        if (static::$multi) {
-            $param = QueryParam::parse($value);
+        if (! static::$multi) {
+            return parent::modifyQuery($query, $instances, $value);
+        }
 
-            if (empty($param->values)) {
-                return null;
-            }
+        $param = QueryParam::parse($value);
 
-            if ($param->operator === QueryParam::NOT) {
-                $param->operator = QueryParam::OR;
-                $negate = true;
-            } else {
-                $negate = false;
-            }
+        if (empty($param->values)) {
+            return $query;
+        }
 
-            $condition = [$param->operator];
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            $valueSql = static::valueSql($instances);
+        if ($param->operator === QueryParam::NOT) {
+            $param->operator = QueryParam::OR;
+            $negate = true;
+        } else {
+            $negate = false;
+        }
 
+        $valueSql = static::valueSql($instances);
+
+        return $query->where(function (Builder $query) use ($param, $valueSql) {
             foreach ($param->values as $value) {
                 if (
                     is_string($value) &&
                     in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
                 ) {
-                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
-                } else {
-                    $condition[] = $qb->jsonContains($valueSql, $value);
+                    $query->whereParam($valueSql, $value, columnType: Schema::TYPE_JSON, boolean: $param->operator);
+
+                    continue;
                 }
+
+                $query->whereJsonContains($valueSql, $value, $param->operator);
             }
-
-            return $negate ? ['not', $condition] : $condition;
-        }
-
-        return parent::queryCondition($instances, $value, $params);
+        }, boolean: $negate ? 'and not' : 'and');
     }
 
     /**

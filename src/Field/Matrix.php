@@ -12,7 +12,6 @@ use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -59,6 +58,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +67,6 @@ use Illuminate\Validation\Validator;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 use function CraftCms\Cms\t;
 
@@ -143,29 +142,26 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
         $field = reset($instances);
         $ns = $field->handle.'_'.Str::random(5);
 
-        $existsQuery = (new Query)
-            ->from(["entries_$ns" => DbTable::ENTRIES])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[entries_$ns.id]]")
-            ->innerJoin(["elements_owners_$ns" => DbTable::ELEMENTS_OWNERS], "[[elements_owners_$ns.elementId]] = [[elements_$ns.id]]")
-            ->andWhere([
-                "entries_$ns.fieldId" => $field->id,
-                "elements_$ns.enabled" => true,
-                "elements_$ns.dateDeleted" => null,
-                "[[elements_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
-            ]);
+        $exists = DB::table(Table::ENTRIES, "entries_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->where("entries_$ns.fieldId", $field->id)
+            ->where("elements_$ns.enabled", true)
+            ->whereNull("elements_$ns.dateDeleted")
+            ->whereColumn("elements_owners_$ns.ownerId", 'elements.id');
 
         if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
         if ($value === ':empty:') {
-            return ['not exists', $existsQuery];
+            return $query->whereNotExists($exists);
         }
 
         if ($value !== ':notempty:') {
@@ -176,10 +172,10 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
             $ids = array_map(fn ($id) => $id instanceof Entry ? $id->id : (int) $id, $ids);
 
-            $existsQuery->andWhere(["entries_$ns.id" => $ids]);
+            $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return ['exists', $existsQuery];
+        return $query->whereExists($exists);
     }
 
     /**

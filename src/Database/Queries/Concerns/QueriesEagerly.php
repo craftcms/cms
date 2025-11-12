@@ -51,10 +51,12 @@ trait QueriesEagerly
     protected function initQueriesEagerly(): void
     {
         $this->afterQuery(function (Collection $elements) {
-            if ($this->with) {
-                $elementsService = \Craft::$app->getElements();
-                $elementsService->eagerLoadElements($this->elementType, $elements->all(), $this->with);
+            if (! $this->with) {
+                return $elements;
             }
+
+            $elementsService = \Craft::$app->getElements();
+            $elementsService->eagerLoadElements($this->elementType, $elements->all(), $this->with);
 
             return $elements;
         });
@@ -83,7 +85,23 @@ trait QueriesEagerly
      */
     public function with(array|string|null $value): static
     {
-        $this->with = $value;
+        if (is_null($value)) {
+            $this->with = null;
+
+            return $this;
+        }
+
+        $this->with ??= [];
+
+        if (is_string($this->with)) {
+            $this->with = str($this->with)->explode(',')->all();
+        }
+
+        if (! is_array($value)) {
+            $value = str($value)->explode(',')->all();
+        }
+
+        $this->with = array_merge($this->with, $value);
 
         return $this;
     }
@@ -93,19 +111,11 @@ trait QueriesEagerly
      */
     public function andWith(array|string|null $value): static
     {
-        if (empty($this->with)) {
-            $this->with = [$value];
-
+        if (! is_null($value)) {
             return $this;
         }
 
-        if (is_string($this->with)) {
-            $this->with = str($this->with)->explode(',')->all();
-        }
-
-        $this->with[] = $value;
-
-        return $this;
+        return $this->with($value);
     }
 
     /**

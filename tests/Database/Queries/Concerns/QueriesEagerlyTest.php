@@ -1,0 +1,3 @@
+<?php
+
+test('with', function () {});

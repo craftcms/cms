@@ -9,8 +9,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\Address;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQuery;
@@ -29,6 +27,7 @@ use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Gql;
 use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -38,13 +37,13 @@ use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 use function CraftCms\Cms\t;
 
@@ -116,29 +115,26 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
         $field = reset($instances);
         $ns = $field->handle.'_'.Str::random(5);
 
-        $existsQuery = (new Query)
-            ->from(["addresses_$ns" => DbTable::ADDRESSES])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[addresses_$ns.id]]")
-            ->innerJoin(["elements_owners_$ns" => DbTable::ELEMENTS_OWNERS], "[[elements_owners_$ns.elementId]] = [[elements_$ns.id]]")
-            ->andWhere([
-                "addresses_$ns.fieldId" => $field->id,
-                "elements_$ns.enabled" => true,
-                "elements_$ns.dateDeleted" => null,
-                "[[elements_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
-            ]);
+        $exists = DB::table(DbTable::ADDRESSES, "addresses_$ns")
+            ->join(new Alias(DbTable::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "addresses_$ns.id")
+            ->join(new Alias(DbTable::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->where("addresses_$ns.fieldId", $field->id)
+            ->where("elements_$ns.enabled", true)
+            ->whereNull("elements_$ns.dateDeleted")
+            ->whereColumn("elements_owners_$ns.ownerId", 'elements.id');
 
         if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
         if ($value === ':empty:') {
-            return ['not exists', $existsQuery];
+            return $query->whereNotExists($exists);
         }
 
         if ($value !== ':notempty:') {
@@ -149,10 +145,10 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
             $ids = array_map(fn ($id) => $id instanceof Address ? $id->id : (int) $id, $ids);
 
-            $existsQuery->andWhere(["addresses_$ns.id" => $ids]);
+            $exists->whereIn("addresses_$ns.id", $ids);
         }
 
-        return ['exists', $existsQuery];
+        return $query->whereExists($exists);
     }
 
     /**
@@ -820,12 +816,12 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(\CraftCms\Cms\Database\Table::ADDRESSES, 'addresses')
+        $map = DB::table(DbTable::ADDRESSES, 'addresses')
             ->select([
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
             ])
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
+            ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
                 $join->where('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
@@ -852,7 +848,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     #[\Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
-        DB::table(\CraftCms\Cms\Database\Table::ADDRESSES)
+        DB::table(DbTable::ADDRESSES)
             ->where('fieldId', $outgoingField->id)
             ->update(['fieldId' => $this->id]);
 

@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Support;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
@@ -85,98 +85,6 @@ final readonly class Query
     private const array OPERATORS = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
-     * Recursively applies Yii-style condition arrays to a Laravel query builder instance.
-     *
-     * This helper applies Yii condition arrays onto a Laravel Query Builder instance
-     * `where` / `orWhere` clauses. It supports nested logical groups (`and`, `or`),
-     * comparison operators (`=`, `!=`, `>`, `>=`, `<`, `<=`), negations (`not`),
-     * and automatic handling of `IN` / `NOT IN` conditions for array values.
-     *
-     * Example Yii-style input:
-     *
-     * [
-     *     'and',
-     *     ['>=', 'users.age', 18],
-     *     ['or',
-     *         ['status' => 'active'],
-     *         ['not', ['status' => ['banned', 'suspended']]]
-     *     ]
-     * ]
-     *
-     * This would translate to roughly:
-     *
-     * $query->where(function($q) {
-     *     $q->where('users.age', '>=', 18)
-     *       ->where(function($q2) {
-     *           $q2->where('status', 'active')
-     *              ->orWhereNotIn('status', ['banned', 'suspended']);
-     *       });
-     * });
-     */
-    public static function applyConditions(Builder $query, array|string|false|null $conditions): Builder
-    {
-        if ($conditions === false) {
-            return $query;
-        }
-
-        // Condition is an operator-style array like ['>=', 'field', value]
-        if (is_array($conditions) && isset($conditions[0]) && is_string($conditions[0])) {
-            $operator = strtolower($conditions[0]);
-
-            switch ($operator) {
-                case 'and':
-                case 'or':
-                    // Group of conditions
-                    $method = $operator === 'and' ? 'where' : 'orWhere';
-
-                    return $query->$method(function ($q) use ($conditions) {
-                        foreach (array_slice($conditions, 1) as $subCondition) {
-                            self::applyConditions($q, $subCondition);
-                        }
-                    });
-
-                case 'not':
-                    // NOT inside Yii usually means != or NOT IN
-                    foreach ($conditions[1] as $field => $value) {
-                        if (is_array($value)) {
-                            return $query->whereNotIn(new Expression($field), $value);
-                        }
-
-                        return $query->where(new Expression($field), '!=', $value);
-                    }
-
-                case '=':
-                case '!=':
-                case '>':
-                case '>=':
-                case '<':
-                case '<=':
-                case 'like':
-                    return $query->where(new Expression($conditions[1]), $operator, $conditions[2]);
-
-                default:
-                    // If operator unknown, treat as field = value map.
-                    return self::applyConditions($query, $conditions);
-            }
-        }
-
-        // Handle "field => value" or "field => [values]" style arrays
-        foreach ($conditions as $field => $value) {
-            if (is_array($value)) {
-                // IN condition
-                $query->whereIn(new Expression($field), $value);
-
-                continue;
-            }
-
-            // Simple equals
-            $query->where(new Expression($field), '=', $value);
-        }
-
-        return $query;
-    }
-
-    /**
      * Parses a query param value and applies it to a query builder.
      *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
@@ -193,7 +101,7 @@ final readonly class Query
      * database values. (An “empty” value is either `NULL` or an empty string of text).
      *
      * @param  Builder  $query  The query builder to apply the param to.
-     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string|int|array  $value  The param value(s).
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
@@ -202,11 +110,12 @@ final readonly class Query
      */
     public static function whereParam(
         Builder $query,
-        string $column,
+        string|Expression $column,
         mixed $param,
         string $defaultOperator = '=',
         bool $caseInsensitive = false,
         ?string $columnType = null,
+        string $boolean = 'and',
     ): Builder {
         $parsed = QueryParam::parse($param);
 
@@ -356,7 +265,7 @@ final readonly class Query
             if (! empty($notInVals)) {
                 $query->whereNotIn($caseColumn, $notInVals, boolean: $boolean);
             }
-        });
+        }, boolean: $boolean);
 
         return $query;
     }
@@ -372,7 +281,7 @@ final readonly class Query
      * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
      *
      * @param  Builder  $query  The query builder to apply the param to.
-     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string|string[]  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
@@ -380,12 +289,13 @@ final readonly class Query
      */
     public static function whereNumericParam(
         Builder $query,
-        string $column,
+        string|Expression $column,
         mixed $value,
         string $defaultOperator = '=',
         ?string $columnType = self::TYPE_INTEGER,
+        string $boolean = 'and',
     ): Builder {
-        return self::whereParam($query, $column, $value, $defaultOperator, false, $columnType);
+        return self::whereParam($query, $column, $value, $defaultOperator, false, $columnType, $boolean);
     }
 
     /**
@@ -393,16 +303,17 @@ final readonly class Query
      * and applies it to the Query builder.
      *
      * @param  Builder  $query  The query builder to apply the param to.
-     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string|array|DateTimeInterface  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      */
     public static function whereDateParam(
         Builder $query,
-        string $column,
+        string|Expression $column,
         mixed $value,
-        string $defaultOperator = '='
+        string $defaultOperator = '=',
+        string $boolean = 'and',
     ): Builder {
         $param = QueryParam::parse($value);
 
@@ -431,7 +342,7 @@ final readonly class Query
             $normalizedValues[] = $operator.$val;
         }
 
-        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME);
+        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME, $boolean);
     }
 
     /**
@@ -439,7 +350,7 @@ final readonly class Query
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param  Builder  $query  The query builder to apply the param to.
-     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string  $currency  The currency code to use for the money object.
      * @param  string|array|Money  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
@@ -447,10 +358,11 @@ final readonly class Query
      */
     public static function whereMoneyParam(
         Builder $query,
-        string $column,
+        string|Expression $column,
         string $currency,
         mixed $value,
         string $defaultOperator = '=',
+        string $boolean = 'and',
     ): Builder {
         $param = QueryParam::parse($value);
 
@@ -479,7 +391,7 @@ final readonly class Query
             $normalizedValues[] = $operator.$val->getAmount();
         }
 
-        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME);
+        return self::whereParam($query, $column, $normalizedValues, $defaultOperator, false, self::TYPE_DATETIME, $boolean);
     }
 
     /**
@@ -497,17 +409,18 @@ final readonly class Query
      * `null` values as well.
      *
      * @param  Builder  $query  The query builder to apply the param to.
-     * @param  string  $column  The database column that the param is targeting.
+     * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string|bool|null|array<string|bool|null>  $value  The param value
      * @param  bool|null  $defaultValue  How `null` values should be treated
      * @param  string  $columnType  The database column type the param is targeting
      */
     public static function whereBooleanParam(
         Builder $query,
-        string $column,
+        string|Expression $column,
         mixed $value,
         ?bool $defaultValue = null,
         string $columnType = self::TYPE_BOOLEAN,
+        string $boolean = 'and',
     ): Builder {
         if (is_array($value)) {
             foreach ($value as $val) {
@@ -550,7 +463,7 @@ final readonly class Query
                     $defaultValue === $value && $value !== null,
                     fn (Builder $query) => $query->orWhereNull($column),
                 );
-        });
+        }, boolean: $boolean);
     }
 
     /**

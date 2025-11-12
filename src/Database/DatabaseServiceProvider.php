@@ -9,10 +9,10 @@ use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\Facades\DB;
@@ -59,11 +59,16 @@ final class DatabaseServiceProvider extends ServiceProvider
 
     public function registerQueryBuilderMacros(): void
     {
-        Builder::macro('whereParam', fn (string $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null): Builder => Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType));
-        Builder::macro('whereNumericParam', fn (string $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER): Builder => Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType));
-        Builder::macro('whereDateParam', fn (string $column, mixed $param, string $defaultOperator = '='): Builder => Query::whereDateParam($this, $column, $param, $defaultOperator));
-        Builder::macro('whereMoneyParam', fn (string $column, string $currency, mixed $param, string $defaultOperator = '='): Builder => Query::whereMoneyParam($this, $column, $currency, $param, $defaultOperator));
-        Builder::macro('whereBooleanParam', fn (string $column, mixed $param, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN): Builder => Query::whereBooleanParam($this, $column, $param, $defaultValue, $columnType));
+        Builder::macro('whereParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null, string $boolean = 'and'): Builder => Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType, $boolean));
+        Builder::macro('orWhereParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null): Builder => Query::whereParam($this, $column, $param, $defaultOperator, $caseInsensitive, $columnType, 'or'));
+        Builder::macro('whereNumericParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER, string $boolean = 'and'): Builder => Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType, $boolean));
+        Builder::macro('orWhereNumericParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '=', ?string $columnType = Query::TYPE_INTEGER): Builder => Query::whereNumericParam($this, $column, $param, $defaultOperator, $columnType, 'or'));
+        Builder::macro('whereDateParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '=', string $boolean = 'and'): Builder => Query::whereDateParam($this, $column, $param, $defaultOperator, $boolean));
+        Builder::macro('orWhereDateParam', fn (string|Expression $column, mixed $param, string $defaultOperator = '='): Builder => Query::whereDateParam($this, $column, $param, $defaultOperator, 'or'));
+        Builder::macro('whereMoneyParam', fn (string|Expression $column, string $currency, mixed $param, string $defaultOperator = '=', string $boolean = 'and'): Builder => Query::whereMoneyParam($this, $column, $currency, $param, $defaultOperator, $boolean));
+        Builder::macro('orWhereMoneyParam', fn (string|Expression $column, string $currency, mixed $param, string $defaultOperator = '='): Builder => Query::whereMoneyParam($this, $column, $currency, $param, $defaultOperator, 'or'));
+        Builder::macro('whereBooleanParam', fn (string|Expression $column, mixed $param, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN, string $boolean = 'and'): Builder => Query::whereBooleanParam($this, $column, $param, $defaultValue, $columnType, $boolean));
+        Builder::macro('orWhereBooleanParam', fn (string|Expression $column, mixed $param, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN): Builder => Query::whereBooleanParam($this, $column, $param, $defaultValue, $columnType, 'or'));
 
         Builder::macro('idByUid', fn (string $uid): ?int => (int) $this->where('uid', $uid)->value('id') ?: null);
         Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());
