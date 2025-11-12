@@ -13,7 +13,8 @@ test('The My Account page exists', async ({page, baseURL}) => {
 });
 
 test('The active page has an accessible state', async ({page, baseURL}) => {
-  const activeLink = page.getByRole('link').filter({ hasText: 'Profile', hasClass: 'sel' });
+  const activeLink = page
+    .getByRole('link')
+    .filter({hasText: 'Profile', hasClass: 'sel'});
   await expect(activeLink).toHaveAttribute('aria-current', 'page');
 });
-
