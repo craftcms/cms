@@ -2,10 +2,12 @@
 
 ## Unreleased
 
+- Plugin licenses are now assigned immediately when installed via the `plugin/install` command. ([#17871](https://github.com/craftcms/cms/issues/17871))
 - Fixed a bug where the Live Preview drag bar wasn’t easily draggable when a nested slideout was open. ([#17781](https://github.com/craftcms/cms/issues/17781))
 - Fixed a bug where nested slideouts within Live Preview weren’t getting resized when the window was resized.
 - Fixed a bug where element index table column sort buttons weren’t being focused after activation. ([#18021](https://github.com/craftcms/cms/pull/18021))
 - Fixed a bug where component select inputs could show a “Choose” button even if disabled. ([#18032](https://github.com/craftcms/cms/issues/18032))
+- Fixed a bug where plugin licenses in the project config could be discarded when plugins were installed. ([#18042](https://github.com/craftcms/cms/pull/18042))
 
 ## 5.8.19 - 2025-10-28
 
