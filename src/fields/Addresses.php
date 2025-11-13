@@ -40,6 +40,7 @@ use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use craft\web\assets\cp\CpAsset;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -365,9 +366,12 @@ class Addresses extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
         ]);
     }
 

@@ -126,7 +126,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -729,6 +729,27 @@ class ExtensionTest extends TestCase
         // invalid value
         self::expectException(RuntimeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
+    }
+
+    /**
+     *
+     */
+    public function testHashFilter(): void
+    {
+        $this->testRenderResult(
+            Craft::$app->getSecurity()->hashData('test'),
+            '{{ "test"|hash }}'
+        );
+
+        $this->testRenderResult(
+            '098f6bcd4621d373cade4e832627b4f6',
+            '{{ "test"|hash("md5") }}'
+        );
+
+        $this->testRenderResult(
+            '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+            '{{ "test"|hash("sha256") }}'
+        );
     }
 
     /**

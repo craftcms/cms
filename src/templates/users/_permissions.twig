@@ -9,27 +9,20 @@
     <h2>{{ 'User Groups'|t('app') }}</h2>
 
     {% do view.registerDeltaName('groups') %}
-    {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
     {% embed '_includes/forms/field.twig' with {
       fieldId: 'user-groups',
+      data: {'error-key': 'groups'},
     } %}
       {% block input %}
-        {% from '_includes/forms' import checkboxField %}
-        {{ hiddenInput('groups', '') }}
-        {% if assignableGroups %}
-          {% for group in assignableGroups %}
-            {{ checkboxField({
-              label: group.name|t('site'),
-              instructions: group.description ? group.description|t('site')|e,
-              name: 'groups[]',
-              value: group.id,
-              checked: (group.id in currentGroupIds)
-            }) }}
-          {% endfor %}
-        {% else %}
-          <p>{{ 'No user groups exist yet.'|t('app') }}</p>
-        {% endif %}
+        {% include '_includes/forms/componentSelect.twig' with {
+          name: 'groups[]',
+          options: craft.app.userGroups.getAssignableGroups(user),
+          values: user.getGroups(),
+          showDescription: true,
+          sortable: false,
+          createAction: currentUser.admin and craft.app.config.general.allowAdminChanges ? 'user-settings/edit-group' : null,
+        } %}
       {% endblock %}
     {% endembed %}
   </fieldset>
@@ -98,7 +91,7 @@
 {% js %}
 new Craft.ElevatedSessionForm('#main-form', [
   '[name="admin"][value=""]',
-  '#user-groups input[type="checkbox"]:not(:checked)',
+  '#user-groups input',
   '#permissions input[type="checkbox"]:not(:checked)',
 ]);
 {% endjs %}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>fit</title>
+    <defs>
+        <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
+        <path d="M0,0 L56,0 L56,56 L0,56 L0,0 Z" id="path-2"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-3"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-4"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-5"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-6"></path>
+    </defs>
+    <g id="fit" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <use fill="#FFFFFF" xlink:href="#path-1"></use>
+        <g id="image" stroke-width="1" transform="translate(14, 13)">
+            <rect id="pane" fill="#F3F7FD" x="0" y="0" width="52" height="34" rx="5"></rect>
+            <path d="M29.7467389,10 C28.9967855,10 28.2937042,10.3541667 27.8718554,10.9473958 L22.6221816,18.3848958 L21.0004073,16.4635417 C20.5691841,15.9588542 19.9317237,15.6666667 19.2473912,15.6666667 C18.5630587,15.6666667 17.9162239,15.9588542 17.4943751,16.4635417 L11.4947479,23.546875 C10.9510317,24.184375 10.8479131,25.0609375 11.2228898,25.7958333 C11.5978665,26.5307292 12.3853176,27 13.247764,27 L20.747298,27 L25.2470185,27 L38.7461798,27 C39.5805029,27 40.3398307,26.5661458 40.7335563,25.8755208 C41.1272818,25.1848958 41.0804097,24.34375 40.6210633,23.6973958 L31.6216224,10.9473958 C31.1997736,10.3541667 30.4966923,10 29.7467389,10 Z" id="Path" fill="#CDD8E4"></path>
+            <path d="M14,13 C15.6568542,13 17,11.6568542 17,10 C17,8.34314575 15.6568542,7 14,7 C12.3431458,7 11,8.34314575 11,10 C11,11.6568542 12.3431458,13 14,13 Z" id="Path" fill="#CDD8E4"></path>
+            <g id="crop" transform="translate(-2, -11)" xlink:href="#path-2">
+                <path d="M2,2 L54,2 L54,54 L2,54 Z" id="crop-border" stroke="#5A6572" stroke-width="1" stroke-dasharray="1"></path>
+                <g id="corner" xlink:href="#path-3" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy" transform="translate(4, 52) rotate(-90) translate(-4, -52)translate(0, 48)" xlink:href="#path-4" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy-3" transform="translate(52, 4) scale(-1, 1) translate(-52, -4)translate(48, 0)" xlink:href="#path-5" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy-2" transform="translate(52, 52) scale(-1, 1) rotate(-90) translate(-52, -52)translate(48, 48)" xlink:href="#path-6" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -447,6 +447,7 @@ class Install extends Migration
             'description' => $this->text(),
             'icon' => $this->string(),
             'color' => $this->string(),
+            'uiLabelFormat' => $this->string()->defaultValue('{title}')->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
@@ -856,7 +857,6 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'colspan' => $this->tinyInteger(),
             'settings' => $this->json(),
-            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -901,6 +901,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
         $this->createIndex(null, Table::ELEMENTS_BULKOPS, ['timestamp'], false);
+        $this->createIndex(null, Table::ELEMENTS_OWNERS, ['sortOrder'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId'], false);

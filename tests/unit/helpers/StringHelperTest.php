@@ -1868,6 +1868,7 @@ class StringHelperTest extends TestCase
             ['', ''],
             ['i_😘_u', 'I 😘 U'],
             ['2_2_alpha_n_numeric', '22 AlphaN Numeric'],
+            ['foo_bar', 'fooBar'],
         ];
     }
 
@@ -1884,7 +1885,6 @@ class StringHelperTest extends TestCase
             ['hello!@#iam!@#astring', 'HelloIamAstring', '!@#'],
             ['hello😀😁😂iam😀😁😂astring', 'HelloIamAstring', '😀😁😂'],
             ['hello😀😁😂iam😀😁😂a2string', 'HelloIamA2string', '😀😁😂'],
-
         ];
     }
 

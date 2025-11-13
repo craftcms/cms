@@ -177,8 +177,8 @@ Craft.EditableTable = Garnish.Base.extend(
         return;
       }
 
-      const $deleteBtn = $row.find('button.delete');
-      const $actionsBtn = $row.find('button.action-btn');
+      const $deleteBtn = $row.children('td.action').find('.delete');
+      const $actionsBtn = $row.children('td.action').find('.action-btn');
 
       if ($deleteBtn.length) {
         $deleteBtn.attr(
@@ -330,7 +330,9 @@ Craft.EditableTable = Garnish.Base.extend(
         baseName,
         values,
         this.settings.allowReorder,
-        this.settings.allowDelete
+        this.settings.allowDelete,
+        this.settings.staticRows,
+        this.settings.includeRowId
       );
     },
 
@@ -460,6 +462,9 @@ Craft.EditableTable = Garnish.Base.extend(
       lazyInitRows: true,
       onAddRow: $.noop,
       onDeleteRow: $.noop,
+      staticRows: false,
+      includeRowId: false,
+      maxRowId: null,
     },
 
     createRow: function (
@@ -468,7 +473,9 @@ Craft.EditableTable = Garnish.Base.extend(
       baseName,
       values,
       allowReorder,
-      allowDelete
+      allowDelete,
+      staticRows = false,
+      includeRowId = false
     ) {
       const $tr = $('<tr/>', {
         'data-id': rowId,
@@ -685,6 +692,14 @@ Craft.EditableTable = Garnish.Base.extend(
             })
           )
           .appendTo($tr);
+      }
+
+      if (staticRows && includeRowId) {
+        $('<input/>', {
+          type: 'hidden',
+          name: `${baseName}[${rowId}][rowId]`,
+          value: Craft.uuid(),
+        }).appendTo($tr);
       }
 
       return $tr;

@@ -803,8 +803,8 @@ class AppController extends Controller
 
             $elements = $query->all();
 
-            // See if there are any provisional drafts we should swap these out with
-            ElementHelper::swapInProvisionalDrafts($elements);
+            // See if there are any provisional changes we should show
+            ElementHelper::loadProvisionalChanges($elements);
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
