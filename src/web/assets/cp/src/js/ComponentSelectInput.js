@@ -581,7 +581,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       sortable: true,
       selectable: true,
       showActionMenus: true,
-      hyperlinks: true,
+      hyperlinks: false,
       createAction: null,
       addItemsToActionMenus: true,
     },

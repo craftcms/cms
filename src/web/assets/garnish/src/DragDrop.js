@@ -105,22 +105,6 @@ export default Drag.extend(
 
       this.base();
     },
-
-    /**
-     * Fade Out Helpers
-     */
-    fadeOutHelpers: function () {
-      for (var i = 0; i < this.helpers.length; i++) {
-        (function ($draggeeHelper) {
-          $draggeeHelper.velocity('fadeOut', {
-            duration: Garnish.FX_DURATION,
-            complete: function () {
-              $draggeeHelper.remove();
-            },
-          });
-        })(this.helpers[i]);
-      }
-    },
   },
   {
     defaults: {

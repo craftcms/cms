@@ -71,9 +71,10 @@ use IteratorAggregate;
 use Money\Money;
 use Throwable;
 use Traversable;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
-use Twig\ExpressionParser;
+use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
@@ -113,6 +114,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
+    /**
+     * Called by:
+     * - has every (operator)
+     * - has some (operator)
+     * - |filter
+     * - |find
+     * - |map
+     * - |reduce
+     * - |sort
+     */
     private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
     {
         if (
@@ -162,7 +173,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder(),
+            new EventTagAdder($this->view),
         ];
     }
 
@@ -243,11 +254,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
-            new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
@@ -330,15 +341,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    /** @phpstan-ignore-next-line */
-    public function getOperators(): array
+    public function getExpressionParsers(): array
     {
         return [
-            [],
-            [
-                'has some' => ['precedence' => 20, 'class' => HasSomeBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-                'has every' => ['precedence' => 20, 'class' => HasEveryBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-            ],
+            new BinaryOperatorExpressionParser(HasSomeBinary::class, 'has some', 20),
+            new BinaryOperatorExpressionParser(HasEveryBinary::class, 'has every', 20),
         ];
     }
 
@@ -1213,6 +1220,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $groups;
     }
 
+    /**
+     * Hashes the given data
+     *
+     * @param string $data The data to be hashed
+     * @param string|null $algo The hashing algorithm to use, e.g. `md5` or `sha256`.
+     * @return string
+     * @since 5.9.0
+     */
+    public function hashFilter(string $data, ?string $algo = null): string
+    {
+        if ($algo === null) {
+            return Craft::$app->getSecurity()->hashData($data);
+        }
+
+        return hash($algo, $data);
+    }
 
     /**
      * Converts a date to the HTTP format (used by HTTP headers such as `Expires`).
@@ -1406,12 +1429,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('randomString', [StringHelper::class, 'randomString']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('seq', [$this, 'seqFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
+            new TwigFunction('uuid', [StringHelper::class, 'UUID']),
 
             // Element authorization functions
             new TwigFunction('canCreateDrafts', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),

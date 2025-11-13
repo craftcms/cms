@@ -26,11 +26,10 @@ class DeprecatedNode extends Node
      *
      * @param AbstractExpression $expr
      * @param int $lineno
-     * @param string|null $tag
      */
-    public function __construct(AbstractExpression $expr, int $lineno, string $tag = null)
+    public function __construct(AbstractExpression $expr, int $lineno)
     {
-        parent::__construct(['expr' => $expr], [], $lineno, $tag);
+        parent::__construct(['expr' => $expr], [], $lineno);
     }
 
     /**

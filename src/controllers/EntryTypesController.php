@@ -221,6 +221,7 @@ class EntryTypesController extends Controller
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $this->request->getBodyParam('uiLabelFormat', $entryType->uiLabelFormat);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);

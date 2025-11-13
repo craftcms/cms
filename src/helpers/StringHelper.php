@@ -1949,9 +1949,14 @@ class StringHelper extends \yii\helpers\StringHelper
             return $email;
         }
 
+        if (Craft::$app->getConfig()->getGeneral()->useIdnaNontransitionalToUnicode && defined('IDNA_NONTRANSITIONAL_TO_UNICODE')) {
+            $variant = IDNA_NONTRANSITIONAL_TO_UNICODE;
+        } else {
+            $variant = INTL_IDNA_VARIANT_UTS46;
+        }
         $parts = explode('@', $email, 2);
         foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
+            if (($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
                 return $email;
             }
         }

@@ -15,6 +15,9 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }
@@ -723,9 +726,13 @@ Craft.ui = {
       }
     }
 
-    new Craft.IconPicker($container, {
+    const iconPicker = new Craft.IconPicker($container, {
       freeOnly: config.freeOnly,
     });
+
+    if (config.value) {
+      iconPicker.selectIcon(config.value);
+    }
 
     return $container;
   },
@@ -1368,16 +1375,26 @@ Craft.ui = {
     if (label) {
       const $heading = $('<div class="heading"/>').appendTo($field);
 
-      $(config.fieldset ? '<legend/>' : '<label/>', {
+      const $label = $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
-        class: config.required ? 'required' : null,
         for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
+
+      if (config.required) {
+        $('<span/>', {
+          class: 'visually-hidden',
+          text: Craft.t('app', 'Required'),
+        }).appendTo($label);
+        $('<span/>', {
+          class: 'required',
+          'aria-hidden': 'true',
+        }).appendTo($label);
+      }
     }
 
     if (config.instructions) {
