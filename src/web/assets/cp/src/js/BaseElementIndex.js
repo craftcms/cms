@@ -112,7 +112,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canViewAsStructure) {
-        return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
+        let viewMode = this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
+        this.selectViewMode(viewMode);
+        return viewMode;
       }
 
       return this.validateViewMode(this._viewMode);
