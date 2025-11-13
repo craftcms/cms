@@ -109,6 +109,7 @@ class TestCase extends Orchestra
     protected function getEnvironmentSetUp($app)
     {
         File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(storage_path('runtime/compiled_classes'));
 
         if (! file_exists(__DIR__.'/.env')) {
             return;

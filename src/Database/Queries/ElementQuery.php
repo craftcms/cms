@@ -104,7 +104,6 @@ class ElementQuery implements ElementQueryInterface
         'aggregate',
         'average',
         'avg',
-        'count',
         'dd',
         'ddrawsql',
         'doesntexist',
@@ -473,6 +472,8 @@ class ElementQuery implements ElementQueryInterface
 
     public function count($columns = '*'): int
     {
+        $this->applyBeforeQueryCallbacks();
+
         $eagerLoadedCount = $this->eagerLoad(count: true);
 
         if ($eagerLoadedCount !== null) {
