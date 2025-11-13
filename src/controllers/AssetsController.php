@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
@@ -1288,6 +1289,14 @@ class AssetsController extends Controller
     {
         if ($uploadedFile->getHasError()) {
             throw new UploadFailedException($uploadedFile->error);
+        }
+
+        // Make sure the file extension is allowed
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+        $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
+
+        if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+            throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
         }
 
         // Move the uploaded file to the temp folder
