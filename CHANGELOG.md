@@ -4,6 +4,7 @@
 
 - Plugin licenses are now assigned immediately when installed via the `plugin/install` command. ([#17871](https://github.com/craftcms/cms/issues/17871))
 - Improved drag-n-drop performance. ([#18019](https://github.com/craftcms/cms/pull/18019))
+- Fixed a bug where assets with disallowed file extensions could still be uploaded to the system’s temp directory. ([#18015](https://github.com/craftcms/cms/issues/18015))
 - Fixed a bug where the Live Preview drag bar wasn’t easily draggable when a nested slideout was open. ([#17781](https://github.com/craftcms/cms/issues/17781))
 - Fixed a bug where nested slideouts within Live Preview weren’t getting resized when the window was resized.
 - Fixed a bug where element index table column sort buttons weren’t being focused after activation. ([#18021](https://github.com/craftcms/cms/pull/18021))
