@@ -87,7 +87,15 @@ final class ClearCachesCommand extends Command
         table(
             headers: ['Key', 'Label', 'Info'],
             rows: collect(ClearCaches::cacheOptions())
-                ->map(fn (array $option) => Arr::only($option, ['key', 'label', 'info']))
+                ->map(function (array $option) {
+                    $data = Arr::only($option, ['key', 'label', 'info']);
+
+                    if (isset($option['info'])) {
+                        $data['label'] = sprintf('%s (%s)', $data['label'], $option['info']);
+                    }
+
+                    return $data;
+                })
                 ->all(),
         );
 

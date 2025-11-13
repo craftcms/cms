@@ -1296,9 +1296,6 @@ class Asset extends Element
 
         if (isset($this->alt)) {
             $this->alt = trim($this->alt);
-            if ($this->alt === '') {
-                $this->alt = null;
-            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;

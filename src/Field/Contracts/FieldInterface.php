@@ -498,6 +498,11 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function setIsFresh(?bool $isFresh = null): void;
 
     /**
+     * Copies the field value from one site to another.
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void;
+
+    /**
      * Returns whether the field should be included in the given GraphQL schema.
      */
     public function includeInGqlSchema(GqlSchema $schema): bool;

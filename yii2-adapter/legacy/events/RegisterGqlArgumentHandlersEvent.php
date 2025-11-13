@@ -19,7 +19,7 @@ use craft\gql\base\ArgumentHandlerInterface;
 class RegisterGqlArgumentHandlersEvent extends Event
 {
     /**
-     * @var array<string,class-string<ArgumentHandlerInterface>> List of Argument handler class names.
+     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface> List of Argument handler class names.
      */
     public array $handlers = [];
 }

@@ -645,7 +645,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     this.elementIndex.updateElements();
 
     // No need for two spinners
-    this.elementIndex.setIndexAvailable();
+    this.elementIndex.hideIndexLoadingStyles();
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

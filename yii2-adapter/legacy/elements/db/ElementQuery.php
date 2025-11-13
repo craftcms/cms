@@ -38,7 +38,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -1607,7 +1609,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !app(\CraftCms\Cms\Updates\Updates::class)->isCraftUpdatePending()) {
+            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -2656,9 +2658,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_joinedElementTable = true;
 
         // Add element table cols to the column map
-        foreach (Craft::$app->getDb()->getTableSchema($table)->columns as $column) {
-            if (!isset($this->_columnMap[$column->name])) {
-                $this->_columnMap[$column->name] = "$alias.$column->name";
+        foreach (SchemaFacade::getColumns(Table::withoutYiiPlaceholder($table)) as $column) {
+            if (!isset($this->_columnMap[$column['name']])) {
+                $this->_columnMap[$column['name']] = "$alias." . $column['name'];
             }
         }
     }

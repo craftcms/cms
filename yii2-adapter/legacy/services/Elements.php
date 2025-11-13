@@ -4380,7 +4380,10 @@ class Elements extends Component
         // Copy the title value?
         if (
             $element::hasTitles() &&
-            $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey()
+            (
+                $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->title))
+            )
         ) {
             $siteElement->title = $element->title;
         }
@@ -4388,7 +4391,10 @@ class Elements extends Component
         // Copy the slug value?
         if (
             $element->slug !== null &&
-            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+            (
+                $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->slug))
+            )
         ) {
             $siteElement->slug = $element->slug;
         }
@@ -4411,6 +4417,19 @@ class Elements extends Component
             }
         }
 
+        // Save it
+        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if (
+            ($crossSiteValidate || $element->propagateRequired) &&
+            $siteElement->enabled &&
+            $siteElement->getEnabledForSite()
+        ) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
+        }
+
+
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),
             fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
@@ -4424,30 +4443,26 @@ class Elements extends Component
                 $fieldLayout = $element->getFieldLayout();
 
                 if ($fieldLayout !== null) {
-                    // Only copy the non-translatable field values
                     foreach ($fieldLayout->getCustomFields() as $field) {
-                        // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
                             $element->propagateAll ||
+                            // If propagateRequired is set, is the field value invalid on the propagated site element?
+                            (
+                                $element->propagateRequired &&
+                                $field->layoutElement->required &&
+                                !$siteElement->validate("field:$field->handle")
+                            ) ||
+                            // Has this field changed, and does it produce the same translation key as it did for the initial element?
                             (
                                 $element->isFieldDirty($field->handle) &&
                                 $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                             )
                         ) {
-                            // Copy the initial element’s value over
-                            $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                            $field->propagateValue($element, $siteElement);
                         }
                     }
                 }
             }
-        }
-
-        // Save it
-        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        // validate element against "live" scenario across all sites, if element is enabled for the site
-        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
-            $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
         $siteElement->propagating = true;

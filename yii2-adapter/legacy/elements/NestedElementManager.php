@@ -680,7 +680,7 @@ JS, [
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
-        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds)) {
+        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds) || $owner->propagateRequired) {
             $this->saveNestedElements($owner);
         } elseif ($owner->mergingCanonicalChanges) {
             $this->mergeCanonicalChanges($owner);
@@ -798,6 +798,11 @@ JS, [
                     $elementsService->restoreElement($element);
                 }
 
+                // if the owner is propagating required fields and attributes, so should the nested elements
+                if ($owner->propagateRequired) {
+                    $element->propagateRequired = true;
+                }
+
                 $sortOrder++;
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
@@ -851,8 +856,11 @@ JS, [
 
             // Should we duplicate the elements to other sites?
             if (
-                $this->propagationMethod !== PropagationMethod::All &&
-                ($owner->propagateAll || !empty($owner->newSiteIds))
+                (
+                    $this->propagationMethod !== PropagationMethod::All &&
+                    ($owner->propagateAll || !empty($owner->newSiteIds))
+                ) ||
+                ($owner->propagateRequired && $this->field->layoutElement->required)
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
                 $ownerSiteIds = array_map(
@@ -863,7 +871,7 @@ JS, [
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll) {
+                if (!$owner->propagateAll && !$owner->propagateRequired) {
                     $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
                 } else {
@@ -917,7 +925,16 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            if ($owner->propagateAll) {
+                                $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            } elseif ($owner->propagateRequired && $this->field->layoutElement->required) {
+                                // if we're propagating required and the field is required, and it doesn't validate because of this field,
+                                // duplicate like above
+                                $localizedOwner->setScenario(Element::SCENARIO_LIVE);
+                                if (!$localizedOwner->validate() && !empty($localizedOwner->getErrors($this->field->handle))) {
+                                    $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                                }
+                            }
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
@@ -997,7 +1014,7 @@ JS, [
      * which weren’t included in the duplication
      * @param bool $force Whether to force duplication, even if it looks like only the nested element ownership was duplicated
      */
-    private function duplicateNestedElements(
+    public function duplicateNestedElements(
         ElementInterface $source,
         ElementInterface $target,
         bool $checkOtherSites = false,

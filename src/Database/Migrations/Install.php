@@ -403,6 +403,7 @@ class Install extends Migration
             $table->text('description')->nullable();
             $table->string('icon')->nullable();
             $table->string('color')->nullable();
+            $table->string('uiLabelFormat')->default('{title}');
             $table->boolean('hasTitleField')->default(true);
             $table->string('titleTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
             $table->text('titleTranslationKeyFormat')->nullable();
@@ -825,7 +826,6 @@ class Install extends Migration
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->tinyInteger('colspan')->nullable();
             $table->jsonb('settings')->nullable();
-            $table->boolean('enabled')->default(true);
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
