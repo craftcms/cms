@@ -2740,11 +2740,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         unset(
+            $names['applyingDraft'],
             $names['awaitingFieldValues'],
             $names['duplicateOf'],
             $names['elementQueryResult'],
             $names['firstSave'],
-            $names['fullSave'],
             $names['hardDelete'],
             $names['mergingCanonicalChanges'],
             $names['newSiteIds'],
