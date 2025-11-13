@@ -42,7 +42,7 @@ trait QueriesSections
     protected function initQueriesSections(): void
     {
         $this->beforeQuery(function (EntryQuery $entryQuery) {
-            $this->normalizeSectionId();
+            $this->normalizeSectionId($entryQuery);
             $this->applySectionIdParam($entryQuery);
         });
     }
@@ -118,15 +118,55 @@ trait QueriesSections
     }
 
     /**
+     * Narrows the query results based on the sections the entries belong to, per the sections’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches entries…
+     * | - | -
+     * | `1` | in a section with an ID of 1.
+     * | `'not 1'` | not in a section with an ID of 1.
+     * | `[1, 2]` | in a section with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not in a section with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch entries in the section with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .sectionId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch entries in the section with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->sectionId(1)
+     *     ->all();
+     * ```
+     *
+     * @param  mixed  $value  The property value
+     * @return static self reference
+     *
+     * @uses $sectionId
+     */
+    public function sectionId(mixed $value): static
+    {
+        $this->sectionId = $value;
+
+        return $this;
+    }
+
+    /**
      * Applies the 'sectionId' param to the query being prepared.
      */
     private function applySectionIdParam(EntryQuery $entryQuery): void
     {
-        if (! $this->sectionId) {
+        if (! $entryQuery->sectionId) {
             return;
         }
 
-        $entryQuery->subQuery->where('entries.sectionId', $this->sectionId);
+        $entryQuery->subQuery->whereIn('entries.sectionId', $entryQuery->sectionId);
 
         // Should we set the structureId param?
         if (
@@ -146,15 +186,16 @@ trait QueriesSections
     /**
      * Normalizes the sectionId param to an array of IDs or null
      */
-    private function normalizeSectionId(): void
+    private function normalizeSectionId(EntryQuery $entryQuery): void
     {
-        $this->sectionId = match (true) {
-            empty($this->sectionId) => is_array($this->sectionId) ? [] : null,
-            is_numeric($this->sectionId) => [$this->sectionId],
-            ! is_array($this->sectionId) || ! Arr::isNumeric($this->sectionId) => DB::table(Table::SECTIONS)
-                ->whereNumericParam('id', $this->sectionId)
-                ->value('id'),
-            default => $this->sectionId,
+        $entryQuery->sectionId = match (true) {
+            empty($entryQuery->sectionId) => is_array($entryQuery->sectionId) ? [] : null,
+            is_numeric($entryQuery->sectionId) => [$entryQuery->sectionId],
+            ! is_array($entryQuery->sectionId) || ! Arr::isNumeric($entryQuery->sectionId) => DB::table(Table::SECTIONS)
+                ->whereNumericParam('id', $entryQuery->sectionId)
+                ->pluck('id')
+                ->all(),
+            default => $entryQuery->sectionId,
         };
     }
 }

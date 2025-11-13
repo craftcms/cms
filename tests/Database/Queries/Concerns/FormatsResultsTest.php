@@ -39,7 +39,7 @@ test('it applies a default order when no orderBy is specified', function () {
 
     expect(
         collect($query->getQuery()->orders)
-            ->where('column', 'elements.dateCreated')
+            ->where('column', 'entries.postDate')
             ->where('direction', 'desc')
             ->first()
     )->not()->toBeNull();
@@ -56,7 +56,7 @@ test('it applies a default order when no orderBy is specified', function () {
 
     expect(
         collect($query->getQuery()->orders)
-            ->where('column', 'elements.dateCreated')
+            ->where('column', 'entries.postDate')
             ->where('direction', 'desc')
             ->first()
     )->toBeNull();
@@ -83,6 +83,7 @@ it('orders by revisions when revisions are requested', function () {
 
 it('adds a sort on structureelements.lft when the element has structures', function () {
     $query = entryQuery();
+    $query->withStructure();
     $query->applyBeforeQueryCallbacks();
 
     expect(

@@ -16,7 +16,13 @@ final class EntryQuery extends ElementQuery
 {
     use QueriesSections;
 
-    public ?bool $withStructure = true;
+    /**
+     * {@inheritdoc}
+     */
+    protected array $defaultOrderBy = [
+        'entries.postDate' => SORT_DESC,
+        'elements.id' => SORT_DESC,
+    ];
 
     public function __construct(array $config = [])
     {
