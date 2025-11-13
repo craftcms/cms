@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Queries;
 use Closure;
 use craft\elements\Entry;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\Concerns\QueriesEntryTypes;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesSections;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Date;
 
 final class EntryQuery extends ElementQuery
 {
+    use QueriesEntryTypes;
     use QueriesSections;
 
     /**
