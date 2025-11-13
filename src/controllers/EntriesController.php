@@ -313,7 +313,6 @@ class EntriesController extends BaseEntriesController
                 $mutex->release($lockKey);
             }
         }
-        $entry->fullSave = false;
 
         if (!$success) {
             return $this->asModelFailure(

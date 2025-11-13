@@ -1440,7 +1440,6 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
-        $element->fullSave = false;
 
         if (!$success) {
             return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
@@ -2132,7 +2131,6 @@ JS, [
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
-        $element->fullSave = false;
 
         if (!$isUnpublishedDraft) {
             $lockKey = "element:$element->canonicalId";
@@ -2148,6 +2146,7 @@ JS, [
         }
 
         try {
+            $element->fullSave = false;
             $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
