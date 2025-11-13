@@ -146,6 +146,11 @@ trait FormatsResults
         return $this;
     }
 
+    public function ids(): array
+    {
+        return $this->pluck('elements.id')->all();
+    }
+
     protected function initFormatsResults(): void
     {
         $this->query->orderBy(new OrderByPlaceholderExpression);
@@ -272,8 +277,8 @@ trait FormatsResults
                 result: new Value($i),
                 condition: new CondAnd(
                     value1: new Equal('elements.id', new Value($elementId)),
-                    value2: new Equal('elements_sites.siteId', new Value($siteId))
-                )
+                    value2: new Equal('elements_sites.siteId', new Value($siteId)),
+                ),
             );
         }
 

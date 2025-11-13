@@ -254,7 +254,11 @@ trait QueriesSites
         }
 
         if ($query->siteId === '*') {
-            return Sites::getAllSiteIds();
+            return Sites::getAllSiteIds()->all();
+        }
+
+        if ($query->siteId instanceof Collection) {
+            $query->siteId = $query->siteId->all();
         }
 
         if (is_numeric($query->siteId) || Arr::isNumeric($query->siteId)) {

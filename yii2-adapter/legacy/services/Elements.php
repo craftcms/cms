@@ -3354,14 +3354,16 @@ class Elements extends Component
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array<string|array>|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
-    public function eagerLoadElements(string $elementType, array $elements, array|string $with): void
+    public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {
+        $elements = collect($elements);
+
         // Bail if there aren't even any elements
-        if (empty($elements)) {
+        if ($elements->isEmpty()) {
             return;
         }
 
-        $elementsBySite = Collection::make($elements)
+        $elementsBySite = $elements
             ->groupBy(fn(ElementInterface $element) => $element->siteId)
             ->map(fn(Collection $elements) => $elements->all())
             ->all();

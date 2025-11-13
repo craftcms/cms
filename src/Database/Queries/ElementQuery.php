@@ -7,11 +7,13 @@ namespace CraftCms\Cms\Database\Queries;
 use Closure;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Utils;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
@@ -28,6 +30,7 @@ use ReflectionException;
 use ReflectionMethod;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
+use Twig\Markup;
 
 /**
  * @template TElement of ElementInterface
@@ -37,7 +40,10 @@ use Tpetry\QueryExpressions\Language\Alias;
 class ElementQuery implements ElementQueryInterface
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
-    use BuildsQueries { BuildsQueries::sole as baseSole; }
+    use BuildsQueries {
+        BuildsQueries::sole as baseSole;
+        BuildsQueries::first as baseFirst;
+    }
 
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
@@ -230,6 +236,18 @@ class ElementQuery implements ElementQueryInterface
     }
 
     /**
+     * Executes the query and renders the resulting elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @see ElementHelper::renderElements()
+     */
+    public function render(array $variables = []): Markup
+    {
+        return ElementHelper::renderElements($this->all(), $variables);
+    }
+
+    /**
      * Find a model by its primary key.
      *
      * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \Illuminate\Database\Eloquent\Collection<int, TElement> : TElement|null)
@@ -377,6 +395,18 @@ class ElementQuery implements ElementQueryInterface
         }
     }
 
+    public function first($columns = ['*']): ?ElementInterface
+    {
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
+
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
+        }
+
+        return $this->baseFirst($columns);
+    }
+
     /**
      * Execute the query as a "select" statement.
      *
@@ -399,7 +429,7 @@ class ElementQuery implements ElementQueryInterface
     {
         $this->applyBeforeQueryCallbacks();
 
-        return $this->hydrate(
+        return $this->eagerLoad()?->all() ?? $this->hydrate(
             $this->query->get($columns)->all()
         )->all();
     }
@@ -411,6 +441,18 @@ class ElementQuery implements ElementQueryInterface
      */
     public function all(array|string $columns = ['*']): Collection|array
     {
+        return $this->get($columns);
+    }
+
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
+     */
+    public function collect(array|string $columns = ['*']): Collection
+    {
+        $this->asArray = false;
+
         return $this->get($columns);
     }
 
@@ -427,6 +469,32 @@ class ElementQuery implements ElementQueryInterface
 
         return $this->query->pluck($column, $key)
             ->when($this->asArray, fn (Collection $collection) => $collection->all());
+    }
+
+    public function count($columns = '*'): int
+    {
+        $eagerLoadedCount = $this->eagerLoad(count: true);
+
+        if ($eagerLoadedCount !== null) {
+            return $eagerLoadedCount;
+        }
+
+        return $this->query->count($columns);
+    }
+
+    public function nth(int $n, array|string $columns = ['*']): ?ElementInterface
+    {
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: [
+            'offset' => ($this->offset ?: 0) + $n,
+            'limit' => 1,
+        ]);
+
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
+        }
+
+        return $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
     }
 
     /**
@@ -483,6 +551,13 @@ class ElementQuery implements ElementQueryInterface
         return $this->subQuery;
     }
 
+    public function limit(?int $value): self
+    {
+        $this->subQuery->limit = $value;
+
+        return $this;
+    }
+
     /**
      * Get the "limit" value from the query or null if it's not set.
      */
@@ -491,12 +566,56 @@ class ElementQuery implements ElementQueryInterface
         return $this->subQuery->getLimit();
     }
 
+    public function offset(?int $value): self
+    {
+        $this->subQuery->offset = $value;
+
+        return $this;
+    }
+
     /**
      * Get the "offset" value from the query or null if it's not set.
      */
     public function getOffset(): mixed
     {
         return $this->subQuery->getOffset();
+    }
+
+    public function getWhereForColumn(string $column): ?array
+    {
+        return collect($this->subQuery->wheres)
+            ->firstWhere('column', $column);
+    }
+
+    /**
+     * Returns an array of the current criteria attribute values.
+     */
+    public function getCriteria(): array
+    {
+        return collect($this->criteriaAttributes())
+            ->mapWithKeys(fn (string $name) => [$name => $this->{$name}])
+            ->all();
+    }
+
+    /**
+     * Returns the query's criteria attributes.
+     *
+     * @return string[]
+     */
+    public function criteriaAttributes(): array
+    {
+        $names = [];
+
+        // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
+        foreach (Utils::getPublicProperties($this, fn (\ReflectionProperty $property) => ! in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)) as $name => $value) {
+            $names[] = $name;
+        }
+
+        foreach ($this->customFieldValues as $name => $value) {
+            $names[] = $name;
+        }
+
+        return $names;
     }
 
     /**

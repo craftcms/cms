@@ -8,6 +8,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 
 it('can query custom fields', function () {
     $field = Field::factory()->create([
@@ -20,11 +21,11 @@ it('can query custom fields', function () {
         'config' => [
             'tabs' => [
                 [
-                    'uid' => \Illuminate\Support\Str::uuid()->toString(),
+                    'uid' => Str::uuid()->toString(),
                     'name' => 'Tab 1',
                     'elements' => [
                         [
-                            'uid' => \Illuminate\Support\Str::uuid()->toString(),
+                            'uid' => Str::uuid()->toString(),
                             'type' => CustomField::class,
                             'fieldUid' => $field->uid,
                         ],

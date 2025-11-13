@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use Craft;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Database\Queries\Events\ElementsHydrated;
@@ -44,7 +46,38 @@ trait HydratesElements
                 }
 
                 return $row;
-            }))->map(fn (array $row) => $this->createElement($row));
+            }))
+            ->map(fn (array $row) => $this->createElement($row))
+            ->unless($this->asArray, function (Collection $elements) {
+                $elementsService = Craft::$app->getElements();
+
+                $allElements = $elements->all();
+
+                $elements = $elements->map(function (ElementInterface $element) use ($allElements, $elementsService) {
+                    // Set the full query result on the element, in case it's needed for lazy eager loading
+                    $element->elementQueryResult = $allElements;
+
+                    // If we're collecting cache info and the element is expirable, register its expiry date
+                    if (
+                        $element instanceof ExpirableElementInterface &&
+                        $elementsService->getIsCollectingCacheInfo() &&
+                        ($expiryDate = $element->getExpiryDate()) !== null
+                    ) {
+                        $elementsService->setCacheExpiryDate($expiryDate);
+                    }
+
+                    return $element;
+                });
+
+                ElementHelper::setNextPrevOnElements($elements);
+
+                // Should we eager-load some elements onto these?
+                if ($this->with) {
+                    $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                }
+
+                return $elements;
+            });
 
         if ($this->withProvisionalDrafts) {
             ElementHelper::swapInProvisionalDrafts($elements);

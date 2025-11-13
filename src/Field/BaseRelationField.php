@@ -10,18 +10,13 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\EventBehavior;
-use craft\db\FixedOrderExpression;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\elements\db\OrderByPlaceholderExpression;
 use craft\elements\ElementCollection;
-use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -30,6 +25,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -46,6 +42,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -662,8 +659,8 @@ JS, [
     #[\Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
-        if ($value instanceof ElementQueryInterface) {
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
             return ! $this->_all($value, $element)->exists();
         }
 
@@ -680,7 +677,7 @@ JS, [
         // only save relations to elements in the current site.
         // (see https://github.com/craftcms/cms/issues/15459)
         if (
-            $value instanceof ElementQueryInterface &&
+            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
             $element?->propagating &&
             $element->isNewForSite &&
             ! $element->resaving &&
@@ -693,20 +690,20 @@ JS, [
                 ->ids();
         }
 
-        if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
+        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery || $value instanceof ElementCollection) {
             return $value;
         }
 
         $class = static::elementType();
-        /** @var ElementQuery $query */
-        $query = $class::find()
+        // TODO: $class::find()
+        $query = new EntryQuery()
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value)) {
             $value = array_values(array_filter($value));
-            $query->andWhere(['elements.id' => $value]);
+            $query->whereIn('elements.id', $value);
             if (! empty($value)) {
-                $query->orderBy([new FixedOrderExpression('elements.id', $value, Craft::$app->getDb())]);
+                $query->orderBy(new \CraftCms\Cms\Database\Expressions\FixedOrderExpression('elements.id', $value));
             }
         } elseif ($value === null && $element?->id && $this->fetchRelationsFromDbTable($element)) {
             // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
@@ -726,46 +723,42 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_AFTER_PREPARE => function (
-                    CancelableEvent $event,
-                    ElementQuery $query,
-                ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
-                                [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ],
-                            );
+            $query->beforeQuery(function (\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery) use (
+                $element,
+                $relationsAlias) {
+                if ($elementQuery->id !== null) {
+                    return;
+                }
 
-                            if (
-                                $this->sortable &&
-                                ! $this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                // to the eager-loading query and cause a SQL error.
+                /** @var \Illuminate\Database\Query\Builder $q */
+                foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
+                    $q->join(
+                        new Alias(\CraftCms\Cms\Database\Table::RELATIONS, $relationsAlias),
+                        function (JoinClause $join) use ($element, $relationsAlias) {
+                            $join->whereColumn("$relationsAlias.targetId", 'elements.id')
+                                ->where("$relationsAlias.sourceId", $element->id)
+                                ->where("$relationsAlias.fieldId", $this->id)
+                                ->where(function (JoinClause $join) use ($element, $relationsAlias) {
+                                    $join->whereNull("$relationsAlias.sourceSiteId")
+                                        ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
+                                });
                         }
+                    );
+
+                    if (
+                        $this->sortable &&
+                        ! $this->maintainHierarchy &&
+                        count($query->orderBy ?? []) === 1 &&
+                        ($query->orderBy[0]['column'] ?? null) instanceof \CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression
+                    ) {
+                        $q->orderBy("$relationsAlias.sortOrder");
                     }
-                },
-            ]));
+                }
+            });
         } else {
             $query->id(false);
         }
@@ -1195,10 +1188,10 @@ JS, [
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
-            isset($value->where['elements.id']) &&
-            Arr::isNumeric($value->where['elements.id'])
+            ($where = $value->getWhereForColumn('elements.id')) !== null &&
+            Arr::isNumeric($where['values'])
         ) {
-            $targetIds = $value->where['elements.id'] ?: [];
+            $targetIds = $where['values'] ?? [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
@@ -1742,7 +1735,7 @@ JS, [
     /**
      * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      */
-    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
+    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
     {
         $clone = (clone $query)
             ->drafts(null)
@@ -1751,6 +1744,7 @@ JS, [
             ->limit(null)
             ->unique()
             ->eagerly(false);
+
         if ($element !== null) {
             $clone->preferSites([$this->targetSiteId($element)]);
         }

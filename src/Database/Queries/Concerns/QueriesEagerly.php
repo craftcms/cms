@@ -191,7 +191,7 @@ trait QueriesEagerly
         return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
     }
 
-    private function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
+    protected function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
     {
         if (
             ! $this->eagerly ||

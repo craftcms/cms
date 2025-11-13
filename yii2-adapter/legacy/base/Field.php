@@ -9,6 +9,9 @@ namespace craft\base;
 
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Field} instead.
+ */
 abstract class Field extends \CraftCms\Cms\Field\Field
 {
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder

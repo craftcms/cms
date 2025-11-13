@@ -119,7 +119,7 @@ trait QueriesCustomFields
      */
     private function addCustomFieldsToColumnMap(): void
     {
-        foreach ($this->customFields as $field) {
+        foreach ($this->customFields ?? [] as $field) {
             $dbTypes = $field::dbType();
 
             if (is_null($dbTypes)) {
@@ -155,7 +155,7 @@ trait QueriesCustomFields
      */
     private function addGeneratedFieldsToColumnMap(): void
     {
-        foreach ($this->generatedFields as $field) {
+        foreach ($this->generatedFields ?? [] as $field) {
             if (empty($field['handle'] ?? '')) {
                 continue;
             }
