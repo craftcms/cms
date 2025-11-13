@@ -922,12 +922,12 @@ JS, [
                     return [
                         'label' => $revision->getRevisionLabel(),
                         'description' => $creator
-                            ? Template::raw(t('app', 'Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
+                            ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
                             ]))
-                            : Template::raw(t('app', 'Saved <time title="{timestampWithDate}">{timestamp}</time>', [
+                            : Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time>', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
