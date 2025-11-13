@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use craft\base\FieldInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementRelationParamParser;
+use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 /**
@@ -44,52 +44,52 @@ trait QueriesRelatedElements
 
     private function applyRelatedToParam(): void
     {
-        if (! $this->relatedTo) {
-            return;
-        }
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            if (! $elementQuery->relatedTo) {
+                return;
+            }
 
-        $this->beforeQuery(function (Builder $query) {
             $parser = new ElementRelationParamParser([
-                'fields' => $this->customFields ? Arr::keyBy(
-                    $this->customFields,
+                'fields' => $elementQuery->customFields ? Arr::keyBy(
+                    $elementQuery->customFields,
                     fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
                 ) : [],
             ]);
 
-            $condition = $parser->parse($this->relatedTo, $this->siteId !== '*' ? $this->siteId : null);
+            $condition = $parser->parse($elementQuery->relatedTo, $elementQuery->siteId !== '*' ? $elementQuery->siteId : null);
 
             if ($condition === false) {
                 throw new QueryAbortedException;
             }
 
-            $this->subQuery->where($condition);
+            $elementQuery->subQuery->where($condition);
         });
     }
 
     private function applyNotRelatedToParam(): void
     {
-        if (! $this->notRelatedTo) {
-            return;
-        }
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            if (! $elementQuery->notRelatedTo) {
+                return;
+            }
 
-        $this->beforeQuery(function () {
-            $notRelatedToParam = $this->notRelatedTo;
+            $notRelatedToParam = $elementQuery->notRelatedTo;
 
             $parser = new ElementRelationParamParser([
-                'fields' => $this->customFields ? Arr::keyBy(
-                    $this->customFields,
+                'fields' => $elementQuery->customFields ? Arr::keyBy(
+                    $elementQuery->customFields,
                     fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
                 ) : [],
             ]);
 
-            $condition = $parser->parse($notRelatedToParam, $this->siteId !== '*' ? $this->siteId : null);
+            $condition = $parser->parse($notRelatedToParam, $elementQuery->siteId !== '*' ? $elementQuery->siteId : null);
 
             if ($condition === false) {
                 // just don't modify the query
                 return;
             }
 
-            $this->subQuery->whereNot($condition);
+            $elementQuery->subQuery->whereNot($condition);
         });
     }
 

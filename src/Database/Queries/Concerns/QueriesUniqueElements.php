@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
@@ -37,57 +38,59 @@ trait QueriesUniqueElements
 
     protected function initQueriesUniqueElements(): void
     {
-        if (
-            ! $this->unique ||
-            ! Sites::isMultiSite(false, true) ||
-            (
-                $this->siteId &&
-                (! is_array($this->siteId) || count($this->siteId) === 1)
-            )
-        ) {
-            return;
-        }
+        $this->beforeQuery(function (ElementQuery $elementQuery) {
+            if (
+                ! $elementQuery->unique ||
+                ! Sites::isMultiSite(false, true) ||
+                (
+                    $elementQuery->siteId &&
+                    (! is_array($elementQuery->siteId) || count($elementQuery->siteId) === 1)
+                )
+            ) {
+                return;
+            }
 
-        if (! $this->preferSites) {
-            $preferSites = [Sites::getCurrentSite()->id];
-        } else {
-            $preferSites = [];
-            foreach ($this->preferSites as $preferSite) {
-                if (is_numeric($preferSite)) {
-                    $preferSites[] = $preferSite;
-                } elseif ($site = Sites::getSiteByHandle($preferSite)) {
-                    $preferSites[] = $site->id;
+            if (! $elementQuery->preferSites) {
+                $preferSites = [Sites::getCurrentSite()->id];
+            } else {
+                $preferSites = [];
+                foreach ($elementQuery->preferSites as $preferSite) {
+                    if (is_numeric($preferSite)) {
+                        $preferSites[] = $preferSite;
+                    } elseif ($site = Sites::getSiteByHandle($preferSite)) {
+                        $preferSites[] = $site->id;
+                    }
                 }
             }
-        }
 
-        $cases = [];
+            $cases = [];
 
-        foreach ($preferSites as $index => $siteId) {
-            $cases[] = new CaseRule(new Value($index), new Equal('elements_sites.siteId', new Value($siteId)));
-        }
+            foreach ($preferSites as $index => $siteId) {
+                $cases[] = new CaseRule(new Value($index), new Equal('elements_sites.siteId', new Value($siteId)));
+            }
 
-        $caseGroup = new CaseGroup($cases, new Value(count($preferSites)));
+            $caseGroup = new CaseGroup($cases, new Value(count($preferSites)));
 
-        $subSelectSql = $this->subQuery->clone()
-            ->select(['elements_sites.id'])
-            ->whereColumn('subElements.id', 'tmpElements.id')
-            ->orderBy($caseGroup)
-            ->orderBy('elements_sites.id')
-            ->offset(0)
-            ->limit(1)
-            ->toRawSql();
+            $subSelectSql = $elementQuery->subQuery->clone()
+                ->select(['elements_sites.id'])
+                ->whereColumn('subElements.id', 'tmpElements.id')
+                ->orderBy($caseGroup)
+                ->orderBy('elements_sites.id')
+                ->offset(0)
+                ->limit(1)
+                ->toRawSql();
 
-        // `elements` => `subElements`
-        $qElements = DB::getTablePrefix().'Concerns'.Table::ELEMENTS;
-        $qSubElements = DB::getTablePrefix().'.subElements';
-        $qTmpElements = DB::getTablePrefix().'.tmpElements';
-        $q = $qElements[0];
-        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
-        $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
-        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+            // `elements` => `subElements`
+            $qElements = DB::getTablePrefix().'Concerns'.Table::ELEMENTS;
+            $qSubElements = DB::getTablePrefix().'.subElements';
+            $qTmpElements = DB::getTablePrefix().'.tmpElements';
+            $q = $qElements[0];
+            $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+            $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
+            $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $this->subQuery->where(DB::raw("elements_sites.id = ($subSelectSql)"));
+            $elementQuery->subQuery->where(DB::raw("elements_sites.id = ($subSelectSql)"));
+        });
     }
 
     /**
