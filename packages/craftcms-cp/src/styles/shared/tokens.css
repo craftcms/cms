@@ -68,6 +68,14 @@
   --c-color-warning-on-emphasis: var(--color-yellow-50);
   --c-color-warning-on-subtle: var(--color-yellow-800);
 
+  --c-color-danger-bg-emphasis: var(--color-red-600);
+  --c-color-danger-bg-subtle: var(--color-red-100);
+  --c-color-danger-border-emphasis: var(--color-red-600);
+  --c-color-danger-border-subtle: var(--color-red-600);
+  --c-color-danger-on-emphasis: var(--color-red-50);
+  --c-color-danger-on-normal: var(--color-red-700);
+  --c-color-danger-on-subtle: var(--color-red-800);
+
   --c-font-body:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -87,6 +95,7 @@
   --c-radius-sm: 3px;
   --c-radius-md: 4px;
   --c-radius-lg: 6px;
+  --c-radius-xl: 12px;
   --c-radius-full: calc(Infinity * 1px);
 
   --c-spacing: 0.25rem;
@@ -223,6 +232,21 @@
   --c-button-danger-fg-hover: var(--c-button-danger-fg);
 
   /** Appearances **/
+  /* Generic Panes */
+  --c-pane-bg: var(--c-bg-overlay);
+  --c-pane-fg: var(--c-fg-text);
+  --c-pane-border: 1px solid var(--c-border-subtle);
+  --c-pane-radius: var(--c-radius-md);
+
+  /* Modals */
+  --c-modal-bg: var(--c-pane-bg);
+  --c-modal-fg: var(--c-pane-fg);
+  --c-modal-radius: var(--c-radius-lg);
+  --c-modal-border: var(--c-pane-border);
+  --c-modal-shadow:
+    0 0 0 1px hsl(from var(--gray-400) h s l / 25%),
+    0 25px 100px hsl(from var(--gray-900) h s l / 50%);
+
   /* Plain */
 
   /* Chip */

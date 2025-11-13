@@ -45,6 +45,7 @@
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
+    "inertiajs/inertia-laravel": "^2.0",
     "laravel/framework": "^12.21.0",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",

@@ -27,6 +27,7 @@ export class CraftSelectInvoker extends LionSelectInvoker {
       css`
         :host {
           ${baseInputStyles}
+          width: 100% !important;
           box-shadow: var(--c-select-shadow);
         }
       `,

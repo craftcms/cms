@@ -33,3 +33,10 @@
     inset-inline-start: 0;
   }
 }
+
+.error-list {
+  color: var(--c-color-danger-on-normal);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

@@ -7,6 +7,9 @@ export const baseInputStyles = css`
   min-height: var(--c-input-height, var(--c-size-control-md));
   border: var(--c-input-border, 1px solid var(--c-form-control-border));
   border-radius: var(--c-input-radius, var(--c-radius-sm));
+  padding-block: 0;
+  width: 100%;
+  flex: 1 1 auto;
   padding-inline: var(--c-input-spacing-inline, var(--c-spacing-md));
   background-color: var(--c-input-bg, var(--c-form-control-bg));
   box-shadow: var(--c-input-shadow);
@@ -15,6 +18,14 @@ export const baseInputStyles = css`
 export const inputStyles = css`
   :host(:not([label-sr-only])) .form-field__group-one {
     margin-bottom: var(--c-spacing-sm);
+  }
+
+  :host([has-feedback-for='error']) {
+    color: var(--c-color-danger-on-normal);
+
+    ::slotted([slot='input']) {
+      border-color: var(--c-color-danger-border-emphasis);
+    }
   }
 
   ::slotted(label) {

@@ -22,5 +22,7 @@ export default css`
     padding: var(--c-spacing-sm);
     border: 1px solid var(--c-color-neutral-border-subtle);
     border-radius: var(--c-radius-md);
+    max-height: 300px;
+    overflow: auto;
   }
 `;
