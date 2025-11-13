@@ -2743,6 +2743,7 @@ abstract class Element extends Component implements ElementInterface
             $names['duplicateOf'],
             $names['elementQueryResult'],
             $names['firstSave'],
+            $names['fullSave'],
             $names['hardDelete'],
             $names['mergingCanonicalChanges'],
             $names['newSiteIds'],

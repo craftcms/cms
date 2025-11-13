@@ -1425,6 +1425,7 @@ JS, [
         }
 
         try {
+            $element->fullSave = true;
             $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
@@ -1439,6 +1440,7 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
+        $element->fullSave = false;
 
         if (!$success) {
             return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
@@ -2125,10 +2127,12 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
+        $element->fullSave = true;
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
+        $element->fullSave = false;
 
         if (!$isUnpublishedDraft) {
             $lockKey = "element:$element->canonicalId";
