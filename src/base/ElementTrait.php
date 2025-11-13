@@ -239,10 +239,10 @@ trait ElementTrait
     public bool $firstSave = false;
 
     /**
-     * @var bool Whether the element is being fully saved (a draft is being applied or canonical element is being saved).
-     * @since 5.8.20
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     * @since 5.9.0
      */
-    public bool $fullSave = false;
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.

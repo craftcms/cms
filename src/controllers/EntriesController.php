@@ -311,9 +311,6 @@ class EntriesController extends BaseEntriesController
         }
 
         try {
-            if (!ElementHelper::isDraftOrRevision($entry) && $entry->getIsCanonical()) {
-                $entry->fullSave = true;
-            }
             $success = Craft::$app->getElements()->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
             $entry->addError('siteId', $e->getMessage());

@@ -1433,7 +1433,6 @@ JS, [
         }
 
         try {
-            $element->fullSave = true;
             $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
@@ -2143,17 +2142,19 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        $element->fullSave = true;
-
         // if we're about to apply an unpublished draft, set propagateRequired to true
         if ($isUnpublishedDraft) {
             $element->propagateRequired = true;
         }
 
+        $element->applyingDraft = true;
+
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
+
+        $element->applyingDraft = false;
 
         if (!$isUnpublishedDraft) {
             $lockKey = "element:$element->canonicalId";
@@ -2169,7 +2170,6 @@ JS, [
         }
 
         try {
-            $element->fullSave = false;
             $element->propagateRequired = false;
             $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
