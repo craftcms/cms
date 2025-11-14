@@ -21,7 +21,7 @@ class DefineFieldActionsEvent extends DefineMenuItemsEvent
     /**
      * @var ElementInterface|null $element The element the form is being rendered for
      */
-    public ?ElementInterface $element;
+    public ?ElementInterface $element = null;
 
     /**
      * @var bool $static Whether the form should be static (non-interactive)

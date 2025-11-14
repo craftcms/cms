@@ -165,6 +165,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     /** @since 5.8.0 */
     public const RESERVED_HANDLES = [
         'ancestors',
+        'applyingDraft',
         'archived',
         'attributeLabel',
         'attributes',
