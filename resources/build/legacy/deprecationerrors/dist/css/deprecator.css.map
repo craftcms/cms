@@ -1,0 +1,1 @@
+{"version":3,"file":"css/deprecator.css","mappings":"AAIE,cAEE,YACA,cAFA,UAEA,CAEA,qBACE","sources":["webpack:///./deprecator.scss"],"sourcesContent":["@charset \"UTF-8\";\n@import '@craftcms/sass/mixins';\n\n#traces {\n  .body {\n    width: 100%;\n    height: 100%;\n    overflow: auto;\n\n    strong {\n      color: var(--fg-subtle);\n    }\n  }\n}\n"],"names":[],"sourceRoot":""}

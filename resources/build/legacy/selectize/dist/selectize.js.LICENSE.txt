@@ -1,0 +1,5 @@
+/**
+ * @link https://github.com/SalmenBejaoui/selectize-plugin-a11y/blob/master/selectize-plugin-a11y.js
+ * @copyright Copyright (c) Salmen Bejaoui.
+ * @license https://github.com/SalmenBejaoui/selectize-plugin-a11y/blob/master/LICENSE
+ */
