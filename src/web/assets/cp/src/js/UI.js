@@ -575,7 +575,7 @@ Craft.ui = {
       }).appendTo($container);
 
       if (config.sortable) {
-        $('<div/>', {class: 'icon move'}).appendTo($option);
+        $('<div/>', {class: 'icon move draggable-handle'}).appendTo($option);
       }
 
       this.createCheckbox({
@@ -586,15 +586,21 @@ Craft.ui = {
         disabled: allChecked || config.disabled,
       }).appendTo($option);
     }
+    if (config.includeSortActions) {
+      new Craft.SortableCheckboxSelect($container);
+    } else {
+      new Garnish.CheckboxSelect($container);
 
-    new Garnish.CheckboxSelect($container);
-
-    if (config.sortable) {
-      const dragSort = new Garnish.DragSort($container.children(':not(.all)'), {
-        handle: '.move',
-        axis: 'y',
-      });
-      $container.data('dragSort', dragSort);
+      if (config.sortable) {
+        const dragSort = new Garnish.DragSort(
+          $container.children(':not(.all)'),
+          {
+            handle: '.move',
+            axis: 'y',
+          }
+        );
+        $container.data('dragSort', dragSort);
+      }
     }
 
     return $container;
@@ -604,6 +610,9 @@ Craft.ui = {
     config.fieldset = true;
     if (!config.id) {
       config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
+    }
+    if (typeof config.includeSortActions == 'undefined') {
+      config.includeSortActions = false;
     }
     return this.createField(this.createCheckboxSelect(config), config);
   },

@@ -1620,6 +1620,7 @@ Craft.CustomizeSourcesModal.Source =
           })),
           values: this.sourceData.tableAttributes.map(([key]) => key),
           sortable: true,
+          includeSortActions: true,
         })
         .appendTo($container);
     },
