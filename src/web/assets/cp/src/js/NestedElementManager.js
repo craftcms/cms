@@ -247,7 +247,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$container.children('.zilch').addClass('hidden');
       }
 
-      if (this.settings.sortable) {
+      // only initialise drag-sorting if the device has mouse events
+      if (this.settings.sortable && Craft.hasMouseEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elements,
           handle:
@@ -274,7 +275,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
       this.$elements.remove();
       this.$elements = null;
-      this.elementSort.destroy();
+      this.elementSort?.destroy();
       this.elementSort = null;
       this.$container.children('.zilch').removeClass('hidden');
     },
@@ -703,7 +704,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           const getNext = () => $li.next('li');
 
           if (this.settings.sortable) {
-            this.elementSort.addItems($li);
+            this.elementSort?.addItems($li);
 
             const ul = actionDisclosure.addGroup(null, true, destructiveGroup);
 
@@ -900,7 +901,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.removeItems($element);
+        this.elementSort?.removeItems($element);
       }
 
       $element.parent().remove();

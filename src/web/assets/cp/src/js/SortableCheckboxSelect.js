@@ -29,7 +29,7 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
       $sortItems = this.$container.children('.checkbox-select-item:not(.all)');
     }
 
-    if ($sortItems.length) {
+    if ($sortItems.length && Craft.hasMouseEvents()) {
       this.dragSort = new Garnish.DragSort($sortItems, {
         axis: Garnish.Y_AXIS,
         handle: '.draggable-handle',

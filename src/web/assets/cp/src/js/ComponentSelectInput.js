@@ -123,7 +123,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     initComponentSort: function () {
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMouseEvents()) {
         this.componentSort = new Garnish.DragSort({
           container: this.$list,
           filter: this.settings.selectable

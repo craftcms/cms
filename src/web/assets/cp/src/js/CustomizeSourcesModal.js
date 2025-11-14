@@ -295,10 +295,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     );
 
     // Create the page item sorter
-    this.pageDrag = new Garnish.DragSort({
-      handle: '.move',
-      axis: 'y',
-    });
+    if (Craft.hasMouseEvents()) {
+      this.pageDrag = new Garnish.DragSort({
+        handle: '.move',
+        axis: 'y',
+      });
+    }
 
     // create the pages
     this.pages = [];
@@ -389,7 +391,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       icon,
       isNew
     );
-    this.pageDrag.addItems($item);
+    this.pageDrag?.addItems($item);
 
     // Select this by default?
     if (
@@ -1063,7 +1065,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     },
 
     destroy: function () {
-      this.modal.pageDrag.removeItems(this.$item);
+      this.modal.pageDrag?.removeItems(this.$item);
       this.modal.pages = this.modal.pages.filter((p) => p !== this);
 
       let $closestItem = this.$item.prev('.cs-item');
@@ -1078,7 +1080,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
         closestPage?.select();
       }
 
-      closestPage.$actionBtn.focus();
+      closestPage?.$actionBtn.focus();
 
       const $sourceContainer = this.getSourceContainer(false);
       if ($sourceContainer) {
