@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {computed} from 'vue';
+  import {useFocusField} from '@/composables/useFocusField';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', data: any): void;
@@ -11,7 +12,7 @@
       localeOptions?: Array<{id: string; name: string; selected: boolean}>;
       errors?: Record<string, string[]>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({})}
+    {modelValue: () => ({}), errors: () => ({}), localeOptions: () => []}
   );
 
   const model = computed({
@@ -30,27 +31,28 @@
       language: target?.modelValue,
     });
   }
+
+  useFocusField('site-name');
 </script>
 
 <template>
+  <!-- @TODO add error output -->
   <craft-input
     name="name"
     :label="t('app', 'System Name')"
     id="site-name"
     v-model="model.name"
     maxlength="255"
+    ref="site-name"
   >
-    <!--    <ul class="error-list" v-if="validationErrors?.name" slot="feedback">-->
-    <!--      <li v-for="error in validationErrors?.name">{{ error }}</li>-->
-    <!--    </ul>-->
   </craft-input>
 
+  <!-- @TODO this should be autocomplete -->
   <craft-input
     name="baseUrl"
     :label="t('app', 'Base URL')"
     v-model="model.baseUrl"
   >
-    <!--              <div slot="input">Autosuggest</div>-->
   </craft-input>
 
   <craft-select
@@ -60,13 +62,16 @@
     .modelValue="model.language"
     @model-value-changed="handleUpdate"
   >
-    <craft-option
-      v-for="locale in localeOptions"
-      :key="locale.id"
-      :selected="locale.id === model.language"
-      .choiceValue="locale.id"
-      >{{ locale.id }} ({{ locale.name }})</craft-option
-    >
+    <select slot="input">
+      <option
+        v-for="locale in localeOptions"
+        :key="locale.id"
+        :selected="locale.id === model.language"
+        :value="locale.id"
+      >
+        {{ locale.id }} ({{ locale.name }})
+      </option>
+    </select>
   </craft-select>
 </template>
 

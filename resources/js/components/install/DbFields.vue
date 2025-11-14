@@ -24,7 +24,6 @@
 
   function handleUpdate(event: CustomEvent) {
     const target = event.target as HTMLSelectElement & {modelValue: string};
-    console.log({value: target?.modelValue, name: target?.name});
     if (target) {
       model.value[target.name] = target.modelValue;
     }
@@ -47,13 +46,15 @@
           .modelValue="model.driver"
           @model-value-changed="handleUpdate"
         >
-          <craft-option
-            v-for="option in options"
-            :key="option.value"
-            .choiceValue="option.value"
-          >
-            {{ option.label }}
-          </craft-option>
+          <select slot="input">
+            <option
+              v-for="option in options"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
         </craft-select>
       </div>
       <div class="tw:col-span-2">

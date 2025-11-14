@@ -37,7 +37,7 @@
       password: string | null;
       prefix: string | null;
     };
-    localeOptions: Array<any>;
+    localeOptions?: Array<{id: string; name: string; selected: boolean}>;
     licenseHtml?: string;
     defaultSystemName: string;
     defaultSiteUrl: string;
@@ -95,7 +95,6 @@
     } catch (e: any) {
       errors[currentId.value!] = e.response.data.errors;
       state.value = 'error';
-      console.log('error', e);
     }
   }
 
@@ -198,40 +197,44 @@
           </div>
 
           <template #actions>
-            <craft-button
-              type="button"
-              @click="goToPrevious"
-              appearance="plain"
-            >
-              {{ t('app', 'Back') }}
-              <craft-icon name="arrow-left" slot="prefix"></craft-icon>
-            </craft-button>
-            <nav>
-              <ul class="tw:flex tw:gap-2">
-                <li v-for="(step, id) in dotSteps" :key="id">
-                  <button
-                    class="dot"
-                    type="button"
-                    @click="goTo(id)"
-                    :class="{
-                      'dot--active': isCurrent(id),
-                    }"
-                  >
-                    <span class="tw:sr-only">
-                      {{ step.label }}
-                    </span>
-                  </button>
-                </li>
-              </ul>
-            </nav>
-            <craft-button
-              type="submit"
-              variant="primary"
-              :loading="state === 'loading'"
-            >
-              {{ current.submitLabel ?? t('app', 'Next') }}
-              <craft-icon name="arrow-right" slot="suffix"></craft-icon>
-            </craft-button>
+            <div class="tw:grid tw:grid-cols-3 tw:items-center tw:gap-2">
+              <craft-button
+                type="button"
+                @click="goToPrevious"
+                appearance="plain"
+                class="tw:justify-self-start"
+              >
+                {{ t('app', 'Back') }}
+                <craft-icon name="arrow-left" slot="prefix"></craft-icon>
+              </craft-button>
+              <nav class="tw:justify-self-center">
+                <ul class="tw:flex tw:gap-2">
+                  <li v-for="(step, id) in dotSteps" :key="id">
+                    <button
+                      class="dot"
+                      type="button"
+                      @click="goTo(id)"
+                      :class="{
+                        'dot--active': isCurrent(id),
+                      }"
+                    >
+                      <span class="tw:sr-only">
+                        {{ step.label }}
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+              <craft-button
+                class="tw:justify-self-end"
+                type="submit"
+                variant="primary"
+                :loading="state === 'loading'"
+              >
+                {{ current.submitLabel ?? t('app', 'Next') }}
+                <craft-icon name="arrow-right" slot="suffix"></craft-icon>
+              </craft-button>
+            </div>
           </template>
         </Pane>
       </template>
@@ -272,8 +275,9 @@
     background-color: var(--c-color-neutral-bg-subtle);
     border-radius: var(--c-radius-full);
     padding: 0;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    cursor: pointer;
   }
 
   .dot--active {

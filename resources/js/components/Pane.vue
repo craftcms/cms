@@ -84,6 +84,9 @@
     border-top: 1px solid var(--c-color-neutral-border-subtle);
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing);
+  }
+
+  .actions {
     display: flex;
     justify-content: space-between;
     align-items: center;

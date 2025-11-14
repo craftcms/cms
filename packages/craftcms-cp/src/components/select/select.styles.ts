@@ -1,28 +1,32 @@
 import {css} from 'lit';
+import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+
 export default css`
+  ${baseFieldStyles}
+
   :host {
     width: 100%;
   }
 
-  ::slotted(label) {
-    font-weight: bold;
+  ::slotted(select) {
+    width: 100%;
+    height: 100%;
+    appearance: none;
+    border: 0;
+    padding-inline: var(--c-input-spacing-inline);
+    border-radius: var(--c-input-radius);
   }
 
-  .form-field__group-one {
-    margin-bottom: var(--c-spacing-sm);
+  .input-group__input {
+    ${baseInputStyles}
+    padding-inline: 0;
+    position: relative;
   }
 
-  .form-field__help-text {
-    font-size: var(--text-sm);
-    color: var(--color-slate-600);
-  }
-
-  #overlay-content-node-wrapper {
-    background-color: canvas;
-    padding: var(--c-spacing-sm);
-    border: 1px solid var(--c-color-neutral-border-subtle);
-    border-radius: var(--c-radius-md);
-    max-height: 300px;
-    overflow: auto;
+  .indicator {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--c-input-spacing-inline);
+    transform: translateY(-50%);
   }
 `;

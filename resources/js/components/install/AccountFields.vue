@@ -1,12 +1,14 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {computed} from 'vue';
+  import {useFocusField} from '@/composables/useFocusField';
 
   const emit = defineEmits<{
     (e: 'success'): void;
     (e: 'click:back'): void;
     (e: 'update:modelValue', value: any): void;
   }>();
+
   const props = withDefaults(
     defineProps<{
       modelValue?: any;
@@ -24,6 +26,8 @@
       emit('update:modelValue', value);
     },
   });
+
+  useFocusField('username-input');
 </script>
 
 <template>
@@ -35,6 +39,7 @@
     v-model="model.username"
     :has-feedback-for="errors?.username ? 'error' : ''"
     maxlength="255"
+    ref="username-input"
   >
     <ul class="error-list" v-if="errors?.username" slot="feedback">
       <li v-for="error in errors?.username">{{ error }}</li>
