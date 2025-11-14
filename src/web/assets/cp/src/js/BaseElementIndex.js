@@ -3516,7 +3516,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete this.view;
       }
 
-      this.view = this.createView(this.getSelectedViewMode(), settings);
+      this.view = this.createView(this.viewMode, settings);
 
       // Auto-select elements
       // -------------------------------------------------------------

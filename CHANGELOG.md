@@ -12,6 +12,7 @@
 - Fixed a bug where component select inputs could show a “Choose” button even if disabled. ([#18032](https://github.com/craftcms/cms/issues/18032))
 - Fixed a bug where plugin licenses in the project config could be discarded when plugins were installed. ([#18042](https://github.com/craftcms/cms/pull/18042))
 - Fixed a bug where logging in with a passkey wasn’t possible in some environments. ([#18048](https://github.com/craftcms/cms/pull/18048))
+- Fixed a bug where elements weren’t selectable within element select modals when searching, if the Structure view mode had been selected. ([#18051](https://github.com/craftcms/cms/issues/18051))
 
 ## 5.8.19 - 2025-10-28
 
