@@ -15,7 +15,6 @@ use craft\errors\GlobalSetNotFoundException;
 use craft\events\GlobalSetEvent;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -34,6 +33,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class Globals extends Component
 {
@@ -311,17 +311,17 @@ class Globals extends Component
 
         if ($isNewSet) {
             $globalSet->uid = $globalSet->uid ?: Str::uuid()->toString();
-            $globalSet->sortOrder = DB::table(Table::GLOBALSETS)->max('sortOrder') + 1;
+            $globalSet->sortOrder = DB::table('globalsets')->max('sortOrder') + 1;
         } elseif (!$globalSet->uid) {
-            $globalSet->uid = DB::table(Table::GLOBALSETS)->uidById($globalSet->id);
+            $globalSet->uid = DB::table('globalsets')->uidById($globalSet->id);
         }
 
-        $configPath = ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
+        $configPath = \craft\services\ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
         $configData = $globalSet->getConfig();
         app(ProjectConfig::class)->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
-            $globalSet->id = DB::table(Table::GLOBALSETS)->idByUid($globalSet->uid);
+            $globalSet->id = DB::table('globalsets')->idByUid($globalSet->uid);
         }
 
         return true;
@@ -437,12 +437,12 @@ class Globals extends Component
     {
         $projectConfig = app(ProjectConfig::class);
 
-        $uidsByIds = DB::table(Table::GLOBALSETS)->uidsByIds($setIds);
+        $uidsByIds = DB::table('globalsets')->uidsByIds($setIds);
 
         foreach ($setIds as $i => $setId) {
             if (!empty($uidsByIds[$setId])) {
                 $setUid = $uidsByIds[$setId];
-                $projectConfig->set(ProjectConfig::PATH_GLOBAL_SETS . ".$setUid.sortOrder", $i + 1, 'Reorder global sets');
+                $projectConfig->set(\craft\services\ProjectConfig::PATH_GLOBAL_SETS . ".$setUid.sortOrder", $i + 1, 'Reorder global sets');
             }
         }
 
@@ -480,7 +480,7 @@ class Globals extends Component
      */
     public function deleteSet(GlobalSet $globalSet): void
     {
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        app(ProjectConfig::class)->remove(\craft\services\ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**
@@ -501,7 +501,7 @@ class Globals extends Component
 
         try {
             // Get the field layout
-            $fieldLayoutId = DB::table(Table::GLOBALSETS)
+            $fieldLayoutId = DB::table('globalsets')
                 ->where('id', $globalSetRecord->id)
                 ->value('fieldLayoutId');
 

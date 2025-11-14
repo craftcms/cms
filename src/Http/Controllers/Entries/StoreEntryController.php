@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
+use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
@@ -74,7 +75,7 @@ final readonly class StoreEntryController
         }
 
         try {
-            $success = \Craft::$app->getElements()->saveElement($entry);
+            $success = Craft::$app->getElements()->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
             $entry->addError('siteId', $e->getMessage());
             $success = false;
@@ -103,7 +104,7 @@ final readonly class StoreEntryController
             ->one();
 
         if ($provisional) {
-            \Craft::$app->getElements()->deleteElement($provisional, true);
+            Craft::$app->getElements()->deleteElement($provisional, true);
         }
 
         $data = [];
@@ -185,7 +186,7 @@ final readonly class StoreEntryController
             $wasEnabled = $entry->enabled;
             $entry->draftId = null;
             $entry->isProvisionalDraft = false;
-            $entry = \Craft::$app->getElements()->duplicateElement($entry);
+            $entry = Craft::$app->getElements()->duplicateElement($entry);
             if ($wasEnabled && ! $entry->enabled) {
                 $forceDisabled = true;
             }
@@ -242,18 +243,12 @@ final readonly class StoreEntryController
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->input('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
         // Authors
         $authorIds = $this->request->input('authors') ?? $this->request->input('author');
         if ($authorIds !== null) {
             $entry->setAuthorIds($authorIds);
         } elseif (! $entry->id) {
-            $craftUser = \Craft::$app->getUsers()->getUserById($this->request->user()->id);
+            $craftUser = Craft::$app->getUsers()->getUserById($this->request->user()->id);
             $entry->setAuthor($craftUser);
         }
 
@@ -261,6 +256,12 @@ final readonly class StoreEntryController
         if (($parentId = $this->request->input('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        $fieldsLocation = $this->request->input('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Is fresh?
         if ($this->request->input('isFresh')) {

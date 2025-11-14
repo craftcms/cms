@@ -17,6 +17,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated in 6.0.0
  */
 class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -25,7 +26,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return t('Tag Group');
+        return t('Tag Group', category: 'yii2-adapter');
     }
 
     /**

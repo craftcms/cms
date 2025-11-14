@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
-use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -584,12 +583,7 @@ JS, [
                             /** @var FieldLayoutProviderInterface&Chippable $provider */
                             $provider = $layout->provider;
                             $label = $labels[] = $provider->getUiLabel();
-                            // special case for global sets, where we should link to the settings rather than the edit page
-                            if ($provider instanceof GlobalSet) {
-                                $url = "settings/globals/$provider->id";
-                            } else {
-                                $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
-                            }
+                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
                             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 
                             $labelHtml = Html::beginTag('span', [

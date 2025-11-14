@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
+use Craft;
 use craft\base\MemoizableArray;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
@@ -141,6 +142,7 @@ final class EntryTypes
                 'slugTranslationKeyFormat',
                 'showStatusField',
                 'showSlugField',
+                'uiLabelFormat',
                 'uid',
             ])
             ->whereNull('dateDeleted');
@@ -328,6 +330,7 @@ final class EntryTypes
             $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
+            $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
@@ -394,7 +397,7 @@ final class EntryTypes
                 $entriesBySection = collect($entries)->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
                     try {
-                        \Craft::$app->getElements()->restoreElements($sectionEntries);
+                        Craft::$app->getElements()->restoreElements($sectionEntries);
                     } catch (InvalidConfigException) {
                         // the section probably wasn't restored
                     }
@@ -426,7 +429,7 @@ final class EntryTypes
         }
 
         // Invalidate entry caches
-        \Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -555,7 +558,7 @@ final class EntryTypes
         }
 
         // Invalidate entry caches
-        \Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**

@@ -46,6 +46,7 @@ use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Actions that should not have CSRF token verification. These are automatically

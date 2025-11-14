@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
-use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +21,7 @@ use Throwable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated in 6.0.0
  */
 class Tag extends ElementMutationResolver
 {
@@ -92,7 +92,7 @@ class Tag extends ElementMutationResolver
             return false;
         }
 
-        $tagGroupUid = DB::table(Table::TAGGROUPS)->uidById($tag->groupId);
+        $tagGroupUid = DB::table('taggroups')->uidById($tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
         return $elementService->deleteElementById($tagId);

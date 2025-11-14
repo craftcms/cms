@@ -17,6 +17,9 @@
               }|filter|keys,
               href: url(item.url),
               text: item.label,
+              aria: {
+                current: (item.selected ?? false) or (selectedItem and key == selectedItem) ? 'page' : false,
+              }
             }) }}
           {% endif %}
         {% endtag %}

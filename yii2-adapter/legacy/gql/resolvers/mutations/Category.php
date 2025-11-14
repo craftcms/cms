@@ -12,7 +12,6 @@ use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\CategoryGroup;
-use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +22,7 @@ use Throwable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated in 6.0.0
  */
 class Category extends ElementMutationResolver
 {
@@ -98,7 +98,7 @@ class Category extends ElementMutationResolver
             return false;
         }
 
-        $categoryGroupUid = DB::table(Table::CATEGORYGROUPS)->uidById($category->groupId);
+        $categoryGroupUid = DB::table('categorygroups')->uidById($category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
         return $elementService->deleteElementById($categoryId);

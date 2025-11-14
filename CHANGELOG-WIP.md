@@ -2,6 +2,7 @@
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
+- Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
 
 ### Extensibility
 - Added `CraftCms\Cms\Support\Arr`.

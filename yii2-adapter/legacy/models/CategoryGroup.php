@@ -32,6 +32,7 @@ use function CraftCms\Cms\t;
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class CategoryGroup extends Model implements
     Chippable,

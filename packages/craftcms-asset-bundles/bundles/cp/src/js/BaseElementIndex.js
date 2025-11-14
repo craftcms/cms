@@ -1705,8 +1705,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           cancelToken: this._createCancelToken(),
         })
           .then((response) => {
-            this.setIndexAvailable();
-
             if (this.settings.context === 'index') {
               if (Craft.cp.fixedHeader) {
                 const headerContainerHeight =
@@ -1721,7 +1719,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this.$main.scrollTop(0);
             }
 
-            this._updateView(this._viewParams, response.data);
+            this._updateView(this._viewParams, response.data).then(() => {
+              this.setIndexAvailable();
+            });
 
             if (this.criteriaHasChanged() && !this.sourceHasChanged()) {
               const itemLabel = this.getItemLabel();
@@ -2951,8 +2951,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     setIndexAvailable: function () {
-      this.$elements.removeClass('busy');
-      this.$updateSpinner.remove();
+      this.hideIndexLoadingStyles();
       this.isIndexBusy = false;
 
       // Refocus the previously-focused element
@@ -2969,6 +2968,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
         this._activeElement = null;
       }
+    },
+
+    /**
+     * Hides the loading styles on the element listing pane.
+     */
+    hideIndexLoadingStyles: function () {
+      this.$elements.removeClass('busy');
+      this.$updateSpinner.remove();
     },
 
     createCustomizeSourcesModal: function () {

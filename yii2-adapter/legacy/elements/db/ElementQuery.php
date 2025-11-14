@@ -41,6 +41,7 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -2658,7 +2659,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_joinedElementTable = true;
 
         // Add element table cols to the column map
-        foreach (\Illuminate\Support\Facades\Schema::getColumns(Table::withoutYiiPlaceholder($table)) as $column) {
+        foreach (SchemaFacade::getColumns(Table::withoutYiiPlaceholder($table)) as $column) {
             if (!isset($this->_columnMap[$column['name']])) {
                 $this->_columnMap[$column['name']] = "$alias." . $column['name'];
             }

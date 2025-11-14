@@ -17,6 +17,7 @@ use GraphQL\Type\Definition\InputObjectType;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.4.0
+ * @deprecated in 6.0.0
  */
 class CategoryRelation extends InputObjectType
 {

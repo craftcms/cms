@@ -22,7 +22,6 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;
-use CraftCms\Cms\Field\Categories as CategoriesField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
@@ -41,7 +40,6 @@ use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
-use CraftCms\Cms\Field\Tags as TagsField;
 use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -114,7 +112,6 @@ final class Fields
             AddressesField::class,
             AssetsField::class,
             ButtonGroup::class,
-            CategoriesField::class,
             Checkboxes::class,
             Color::class,
             ContentBlock::class,
@@ -135,7 +132,6 @@ final class Fields
             RadioButtons::class,
             Range::class,
             TableField::class,
-            TagsField::class,
             Time::class,
             UsersField::class,
         ]);

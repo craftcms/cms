@@ -14,6 +14,7 @@ use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated in 6.0.0
  */
 class GlobalSet extends Element
 {

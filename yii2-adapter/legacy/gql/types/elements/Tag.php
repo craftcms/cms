@@ -16,6 +16,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated in 6.0.0
  */
 class Tag extends Element
 {

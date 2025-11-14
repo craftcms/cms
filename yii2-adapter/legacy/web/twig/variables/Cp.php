@@ -264,22 +264,6 @@ class Cp extends Component
             }
         }
 
-        if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
-            $navItems[] = [
-                'label' => t('Globals'),
-                'url' => 'globals',
-                'icon' => 'globe',
-            ];
-        }
-
-        if (Craft::$app->getCategories()->getEditableGroupIds()) {
-            $navItems[] = [
-                'label' => t('Categories'),
-                'url' => 'categories',
-                'icon' => 'sitemap',
-            ];
-        }
-
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
             $navItems[] = [
                 'label' => t('Assets'),
@@ -486,18 +470,6 @@ class Cp extends Component
         $settings[$label]['fields'] = [
             'iconMask' => '@craftcms/resources/icons/light/pen-to-square.svg',
             'label' => t('Fields'),
-        ];
-        $settings[$label]['globals'] = [
-            'iconMask' => '@craftcms/resources/icons/light/globe.svg',
-            'label' => t('Globals'),
-        ];
-        $settings[$label]['categories'] = [
-            'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
-            'label' => t('Categories'),
-        ];
-        $settings[$label]['tags'] = [
-            'iconMask' => '@craftcms/resources/icons/light/tags.svg',
-            'label' => t('Tags'),
         ];
 
         $label = t('Media');

@@ -15,6 +15,7 @@ use craft\models\CategoryGroup;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class CategoryGroupEvent extends Event
 {

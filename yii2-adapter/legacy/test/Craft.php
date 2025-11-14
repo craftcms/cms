@@ -32,6 +32,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -197,6 +198,10 @@ class Craft extends Yii2
         self::$currentTest = $test;
 
         parent::_before($test);
+
+        // Codeception\Lib\Connector\Yii2::resetApplication() calls Event::offAll(),
+        // so we need to re-register the service provider events
+        Yii2ServiceProvider::bootYiiEvents();
 
         // transaction events are registered now, so it's ok to open the connection
         \Craft::$app->db->open();

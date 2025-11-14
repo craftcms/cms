@@ -20,6 +20,7 @@ use yii\base\UnknownMethodException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated in 6.0.0
  */
 class Category extends ElementResolver
 {

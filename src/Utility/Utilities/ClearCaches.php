@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -28,7 +31,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Caches');
@@ -37,7 +40,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'clear-caches';
@@ -46,7 +49,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'trash';
@@ -55,7 +58,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $cacheOptions = [];
@@ -121,7 +124,7 @@ final class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => t('Compiled templates'),
                 'info' => t('Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_templates/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledTemplatesPath(false), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
@@ -129,7 +132,7 @@ final class ClearCaches extends Utility
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),
                 'info' => t('Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_classes/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledClassesPath(false), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->getCompiledClassesPath(false),
             ],
@@ -137,7 +140,7 @@ final class ClearCaches extends Utility
                 'key' => 'cp-resources',
                 'label' => t('Control panel resources'),
                 'info' => t('Contents of {path}', [
-                    'path' => '`web/cpresources/`',
+                    'path' => sprintf('`%s/`', Cms::config()->resourceBasePath),
                 ]),
                 'action' => function () {
                     $basePath = Cms::config()->resourceBasePath;
@@ -152,7 +155,7 @@ final class ClearCaches extends Utility
                             'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.');
                     }
 
-                    $basePath = Craft::getAlias($basePath);
+                    $basePath = Aliases::get($basePath);
                     if ($basePath !== false && file_exists($basePath)) {
                         if (File::exists($basePath.'/.gitignore')) {
                             $gitignoreContents = File::get($basePath.'/.gitignore');
@@ -173,7 +176,7 @@ final class ClearCaches extends Utility
                 'key' => 'temp-files',
                 'label' => t('Temp files'),
                 'info' => t('Contents of {path}', [
-                    'path' => '`storage/runtime/temp/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getTempPath(), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->getTempPath(),
             ],

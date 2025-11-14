@@ -37,6 +37,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class CategoriesController extends Controller
 {
@@ -64,7 +65,7 @@ class CategoriesController extends Controller
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
-        return $this->renderTemplate('settings/categories/index.twig', [
+        return $this->renderTemplate('yii2-adapter/settings/categories/index.twig', [
             'categoryGroups' => $groups,
             'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
@@ -113,21 +114,21 @@ class CategoriesController extends Controller
                 }
             }
 
-            $variables['title'] = trim($categoryGroup->name) ?: t('Edit Category Group');
+            $variables['title'] = trim($categoryGroup->name) ?: t('Edit Category Group', category: 'yii2-adapter');
         } else {
             if ($categoryGroup === null) {
                 $categoryGroup = new CategoryGroup();
                 $variables['brandNewGroup'] = true;
             }
 
-            $variables['title'] = t('Create a new category group');
+            $variables['title'] = t('Create a new category group', category: 'yii2-adapter');
         }
 
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
         $variables['readOnly'] = $readOnly;
 
-        return $this->renderTemplate('settings/categories/_edit.twig', $variables);
+        return $this->renderTemplate('yii2-adapter/settings/categories/_edit.twig', $variables);
     }
 
     /**
@@ -185,7 +186,7 @@ class CategoriesController extends Controller
 
         // Save it
         if (!$categoriesService->saveGroup($group)) {
-            $this->setFailFlash(t('Couldn’t save the category group.'));
+            $this->setFailFlash(t('Couldn’t save the category group.', category: 'yii2-adapter'));
 
             // Send the category group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -195,7 +196,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(t('Category group saved.'));
+        $this->setSuccessFlash(t('Category group saved.', category: 'yii2-adapter'));
         return $this->redirectToPostedUrl($group);
     }
 
@@ -235,7 +236,7 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
-        return $this->renderTemplate('categories/_index.twig', [
+        return $this->renderTemplate('yii2-adapter/categories/_index.twig', [
             'groupHandle' => $groupHandle,
             'groups' => $groups,
         ]);
@@ -369,7 +370,7 @@ class CategoriesController extends Controller
                     'category'
                 );
             } catch (Throwable $e) {
-                throw new ServerErrorHttpException(t('An error occurred when duplicating the category.'), 0, $e);
+                throw new ServerErrorHttpException(t('An error occurred when duplicating the category.', category: 'yii2-adapter'), 0, $e);
             }
         }
 
@@ -492,49 +493,5 @@ class CategoriesController extends Controller
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             $category->setParentId($parentId);
         }
-    }
-
-    /**
-     * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
-     *
-     * @return Response
-     * @since 4.0.0
-     */
-    public function actionInputHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $categoryIds = $this->request->getParam('categoryIds', []);
-
-        $categories = [];
-
-        if (!empty($categoryIds)) {
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->id($categoryIds)
-                ->siteId($this->request->getParam('siteId'))
-                ->status(null)
-                ->all();
-
-            // Fill in the gaps
-            Structures::fillGapsInElements($categories);
-
-            // Enforce the branch limit
-            if ($branchLimit = $this->request->getParam('branchLimit')) {
-                Structures::applyBranchLimitToElements($categories, $branchLimit);
-            }
-        }
-
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input.twig',
-            [
-                'elements' => $categories,
-                'id' => $this->request->getParam('id'),
-                'name' => $this->request->getParam('name'),
-                'selectionLabel' => $this->request->getParam('selectionLabel'),
-            ]);
-
-        return $this->asJson([
-            'html' => $html,
-        ]);
     }
 }

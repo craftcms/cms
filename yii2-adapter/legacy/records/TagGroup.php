@@ -27,6 +27,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class TagGroup extends ActiveRecord
 {
