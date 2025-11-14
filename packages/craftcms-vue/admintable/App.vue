@@ -498,7 +498,8 @@
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: new URL(window.location.href).searchParams.get('q') || '',
+        searchTerm:
+          new URL(window.location.href).searchParams.get('search') || '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -719,7 +720,11 @@
         }
 
         const url = new URL(window.location.href);
-        url.searchParams.set('q', this.searchTerm);
+        if (this.searchTerm) {
+          url.searchParams.set('search', this.searchTerm);
+        } else {
+          url.searchParams.delete('search');
+        }
         window.history.replaceState({}, '', url);
       }, 500),
 
