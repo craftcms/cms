@@ -12,6 +12,7 @@
 - The control panel is no longer scrollable when a menu is expanded. ([#17960](https://github.com/craftcms/cms/issues/17960))
 - Most site breadcrumbs no longer include selection menus if there’s only one selectable site. ([#16526](https://github.com/craftcms/cms/discussions/16526))
 - Number fields with “Step Size” and “Min Value” or “Max Value” settings will now get `min`/`max` attributes set on their input. ([#17973](https://github.com/craftcms/cms/pull/17973))
+- Element, field, and entry type edit pages now redirect back to the previous page’s URL on save. ([#16140](https://github.com/craftcms/cms/pull/16140))
 
 ### Accessibility
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
@@ -69,6 +70,7 @@
 - Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
 - Added `craft\gql\base\ElementArguments::EVENT_DEFINE_ARGUMENTS`. ([#18062](https://github.com/craftcms/cms/discussions/18062))
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
+- Added `craft\helpers\UrlHelper::cpReferralUrl()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
 - Added `craft\services\ElementSources::getFirstPage()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::getPageSettings()`. ([#17779](https://github.com/craftcms/cms/pull/17779))

@@ -440,7 +440,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   addSource: function (sourceData, isNew) {
-    const pageName = sourceData.page ?? this.selectedPage.name ?? '__DEFAULT__';
+    const pageName =
+      sourceData.page ?? this.selectedPage?.name ?? '__DEFAULT__';
     sourceData.page = pageName;
     const isHeading = sourceData.type === 'heading';
 

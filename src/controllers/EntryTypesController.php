@@ -18,6 +18,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -122,7 +123,7 @@ class EntryTypesController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('entry-types/save')
-                ->redirectUrl('settings/entry-types')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/entry-types/{id}',
                     'shortcut' => true,
