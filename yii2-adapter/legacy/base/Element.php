@@ -2726,6 +2726,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         unset(
+            $names['applyingDraft'],
             $names['awaitingFieldValues'],
             $names['duplicateOf'],
             $names['elementQueryResult'],

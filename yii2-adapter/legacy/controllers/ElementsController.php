@@ -2140,10 +2140,14 @@ JS, [
             $element->propagateRequired = true;
         }
 
+        $element->applyingDraft = true;
+
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
+
+        $element->applyingDraft = false;
 
         if (!$isUnpublishedDraft) {
             $mutex = Cache::lock("element:$element->canonicalId", 15);

@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\base\Event;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
@@ -16,7 +17,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use yii\base\Event;
 
 /**
  * Class ElementArguments
@@ -28,7 +28,7 @@ abstract class ElementArguments extends Arguments
 {
     /**
      * @event DefineGqlArgumentsEvent The event that is triggered when arguments are being defined.
-     * @since 6.0.0
+     * @since 5.9.0
      */
     public const EVENT_DEFINE_ARGUMENTS = 'defineArguments';
 

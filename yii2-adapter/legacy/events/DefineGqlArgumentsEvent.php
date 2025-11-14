@@ -13,7 +13,7 @@ use craft\base\Event;
  * DefineGqlArgumentsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 6.0.0
+ * @since 5.9.0
  */
 class DefineGqlArgumentsEvent extends Event
 {

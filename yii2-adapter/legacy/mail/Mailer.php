@@ -201,7 +201,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
                 try {
                     $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                        'body' => Template::raw(Markdown::process($htmlBody)),
+                        'body' => Template::raw(Markdown::process($htmlBody, 'gfm')),
                     ]), $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body

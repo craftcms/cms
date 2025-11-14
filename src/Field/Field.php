@@ -239,6 +239,7 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
 
     public const array RESERVED_HANDLES = [
         'ancestors',
+        'applyingDraft',
         'archived',
         'attributeLabel',
         'attributes',
