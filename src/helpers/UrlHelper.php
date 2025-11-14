@@ -590,7 +590,7 @@ class UrlHelper
         }
 
         // Make sure the CP referred it
-        if (!str_contains($referrer, self::baseCpUrl())) {
+        if (!str_starts_with($referrer, self::baseCpUrl())) {
             return null;
         }
 
