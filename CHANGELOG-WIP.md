@@ -50,6 +50,7 @@
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
 - Added `craft\base\ElementIndex::multiPageSources()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
+- Added `craft\base\ElementTrait::$applyingDraft`. ([#18057](https://github.com/craftcms/cms/pull/18057))
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\base\ElementTrait::$propagateRequired`.
 - Added `craft\base\FieldInterface::propagateValue()`.
