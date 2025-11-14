@@ -578,7 +578,7 @@ class UrlHelper
      * Returns a CP referral URL.
      *
      * @return string|null
-     * @since 5.6.0
+     * @since 5.9.0
      */
     public static function cpReferralUrl(): ?string
     {
