@@ -293,7 +293,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         });
       }
 
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMouseEvents()) {
         const $chipActions = $component.find('.chip-actions');
         if (!$chipActions.has('.move').length) {
           $('<button/>', {

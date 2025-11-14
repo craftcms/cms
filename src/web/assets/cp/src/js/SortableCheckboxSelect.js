@@ -29,11 +29,15 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
       $sortItems = this.$container.children('.checkbox-select-item:not(.all)');
     }
 
-    if ($sortItems.length && Craft.hasMouseEvents()) {
-      this.dragSort = new Garnish.DragSort($sortItems, {
-        axis: Garnish.Y_AXIS,
-        handle: '.draggable-handle',
-      });
+    if (!Craft.hasMouseEvents()) {
+      $('.checkbox-select-item .move').hide();
+    } else {
+      if ($sortItems.length) {
+        this.dragSort = new Garnish.DragSort($sortItems, {
+          axis: Garnish.Y_AXIS,
+          handle: '.draggable-handle',
+        });
+      }
     }
   },
 
@@ -79,7 +83,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
       this.onUncheck();
     }
 
-    this.$moveHandle.removeClass('disabled');
+    this.$moveHandle?.removeClass('disabled');
 
     const menuId = 'menu-' + Math.floor(Math.random() * 1000000000);
     this.$actionMenuBtn = $('<button/>', {
