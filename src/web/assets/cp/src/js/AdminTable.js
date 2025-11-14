@@ -207,12 +207,16 @@ Craft.AdminTable = Garnish.Base.extend(
 
       // Disable the sort buttons if there's only one row
       if (this.settings.sortable) {
-        var $moveButtons = this.$table.find('.move');
-
-        if (this.totalItems === 1) {
-          $moveButtons.addClass('disabled');
+        if (!Craft.hasMouseEvents()) {
+          this.$table.find('.move').hide();
         } else {
-          $moveButtons.removeClass('disabled');
+          var $moveButtons = this.$table.find('.move');
+
+          if (this.totalItems === 1) {
+            $moveButtons.addClass('disabled');
+          } else {
+            $moveButtons.removeClass('disabled');
+          }
         }
       }
 
