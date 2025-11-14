@@ -242,7 +242,7 @@ class ConfigSyncController extends BaseUpdaterController
      */
     protected function postComposerInstallState(): array
     {
-        throw new NotSupportedException('postComposerInstallState() is not supported by ' . __CLASS__);
+        throw new NotSupportedException('postComposerInstallState() is not supported by ' . self::class);
     }
 
     /**

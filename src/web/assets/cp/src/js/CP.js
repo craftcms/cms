@@ -9,6 +9,7 @@
 Craft.CP = Garnish.Base.extend(
   {
     elementThumbLoader: null,
+    animationBlocker: null,
     authManager: null,
     announcerTimeout: null,
     modalLayers: [],
@@ -16,6 +17,7 @@ Craft.CP = Garnish.Base.extend(
     $nav: null,
     $navToggle: null,
     $globalLiveRegion: null,
+    $globalSkipLinkList: null,
     $activeLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
@@ -37,6 +39,8 @@ Craft.CP = Garnish.Base.extend(
     $header: null,
     $mainContent: null,
     $details: null,
+    $detailsToggle: null,
+    $detailsSkipLink: null,
     $sidebarContainer: null,
     $sidebarToggle: null,
     $sidebar: null,
@@ -68,6 +72,9 @@ Craft.CP = Garnish.Base.extend(
     checkForUpdatesCallbacks: null,
     checkForUpdatesFailureCallbacks: null,
 
+    copyElementCallbacks: null,
+    elementCopyNotification: null,
+
     resizeTimeout: null,
 
     init: function () {
@@ -82,6 +89,7 @@ Craft.CP = Garnish.Base.extend(
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
       this.$globalLiveRegion = $('#global-live-region');
+      this.$globalSkipLinkList = $('#global-skip-links');
       this.$activeLiveRegion = this.$globalLiveRegion;
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
@@ -99,6 +107,8 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsToggle = $('#details-toggle');
+      this.$detailsSkipLink = $('[href="#details-container"]');
       this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
@@ -109,22 +119,6 @@ Craft.CP = Garnish.Base.extend(
       this.isMobile = Garnish.isMobileBrowser();
 
       //this.updateContentHeading();
-
-      // Swap any instruction text with info icons
-      let $allInstructions = this.$details
-        .find('.meta > .field > .instructions')
-        .add($('.field.info-icon-instructions > .instructions'));
-
-      for (let i = 0; i < $allInstructions.length; i++) {
-        let $instructions = $allInstructions.eq(i);
-        let $label = $instructions.siblings('.heading').children('label');
-        $('<div/>', {
-          class: 'info',
-          html: $instructions.children().html(),
-        }).appendTo($label);
-        // Keep the original element around in case an aria-describedby attribute is referencing it
-        $instructions.addClass('visually-hidden');
-      }
 
       if (!this.isMobile && this.$header.length) {
         this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
@@ -158,9 +152,21 @@ Craft.CP = Garnish.Base.extend(
         this.initAlerts();
       }
 
+      // Global Animation Blocker
+      this.animationBlocker = new Craft.AnimationBlocker();
+
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Update skip link target when details are opened/closed
+      this.addListener(this.$detailsToggle, 'open', () => {
+        this.$detailsSkipLink.attr('href', '#details-container');
+      });
+
+      this.addListener(this.$detailsToggle, 'close', () => {
+        this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
+      });
 
       // Layers
       Garnish.uiLayerManager.on('addLayer', () => {
@@ -281,7 +287,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Announcements HUD
-      if (Craft.announcements.length) {
+      if (Craft.announcements?.length) {
         let $btn = $('#announcements-btn').removeClass('hidden');
         const hasUnreads = Craft.announcements.some((a) => a.unread);
         let $unreadMessage;
@@ -380,6 +386,17 @@ Craft.CP = Garnish.Base.extend(
       this.on('notificationClose', () => {
         this.updateNotificationHeadingDisplay();
       });
+
+      // See if there are any copied elements
+      this.copyElementCallbacks = [];
+      if (Craft.username) {
+        const elementInfo = Craft.getLocalStorage('copiedElements');
+        if (elementInfo) {
+          this.showElementCopyNotification(elementInfo, {
+            animate: false,
+          });
+        }
+      }
     },
 
     get $contentHeader() {
@@ -601,7 +618,9 @@ Craft.CP = Garnish.Base.extend(
         return;
       }
 
-      this.tabManager = new Craft.Tabs($tabs);
+      this.tabManager = new Craft.Tabs($tabs, {
+        handleCtrlClicks: true,
+      });
 
       this.tabManager.on('selectTab', (ev) => {
         const href = ev.$tab.attr('href');
@@ -720,6 +739,23 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    handleSkipLinkVisibility: function () {
+      if (!this.$globalSkipLinkList.length) return;
+
+      const $links = this.$globalSkipLinkList.find('a');
+
+      $links.each((i, link) => {
+        const $link = $(link);
+        const $target = $($link.attr('href'));
+
+        if ($target.length) {
+          $link.removeClass('hidden');
+        } else {
+          $link.addClass('hidden');
+        }
+      });
+    },
+
     handleBreadcrumbVisibility: function () {
       if (!this.$crumbItems.length) {
         return;
@@ -796,6 +832,7 @@ Craft.CP = Garnish.Base.extend(
     handleWindowResize: function () {
       this.updateResponsiveTables();
       this.handleBreadcrumbVisibility();
+      this.handleSkipLinkVisibility();
     },
 
     handleLayerUpdates: function () {
@@ -1007,8 +1044,8 @@ Craft.CP = Garnish.Base.extend(
     /**
      * Displays a notification.
      *
-     * @param {string} type `notice`, `success`, or `error`
-     * @param {string} message
+     * @param {string|Craft.CP.Notification} type `notice`, `success`, or `error`
+     * @param {string} [message]
      * @param {Object} [settings]
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
@@ -1016,15 +1053,22 @@ Craft.CP = Garnish.Base.extend(
      * @returns {Object} The notification
      */
     displayNotification: function (type, message, settings) {
-      const notification = new Craft.CP.Notification(type, message, settings);
+      let notification;
+      if (type instanceof Craft.CP.Notification) {
+        notification = type;
+      } else {
+        notification = new Craft.CP.Notification(type, message, settings);
+      }
 
-      this.trigger('displayNotification', {
-        notificationType: type,
-        message,
-        notification,
+      notification.show().then(() => {
+        this.trigger('displayNotification', {
+          notificationType: notification.type,
+          message: notification.message,
+          notification,
+        });
+
+        this.updateNotificationHeadingDisplay();
       });
-
-      this.updateNotificationHeadingDisplay();
 
       return notification;
     },
@@ -1106,6 +1150,153 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
+    copyElements(elementInfo) {
+      if (elementInfo instanceof jQuery) {
+        const $elements = elementInfo;
+        elementInfo = [];
+        $elements.each((i, element) => {
+          const $element = $(element);
+          elementInfo.push({
+            type: $element.data('type'),
+            id: $element.data('id'),
+            draftId: $element.data('draftId'),
+            revisionId: $element.data('revisionId'),
+            fieldId: $element.data('fieldId'),
+            ownerId: $element.data('ownerId'),
+            siteId: $element.data('siteId'),
+          });
+        });
+      }
+
+      if (elementInfo.length) {
+        Craft.setLocalStorage('copiedElements', elementInfo);
+      } else {
+        Craft.removeLocalStorage('copiedElements');
+      }
+
+      this.showElementCopyNotification(elementInfo);
+
+      // Tell other browser windows about it
+      if (Craft.broadcaster) {
+        Craft.broadcaster.postMessage({
+          event: 'copyElements',
+        });
+      }
+    },
+
+    clearCopiedElements() {
+      this.copyElements([]);
+    },
+
+    showElementCopyNotification: function (elementInfo = [], settings = {}) {
+      this.closeElementCopyNotification(false);
+
+      if (!elementInfo.length) {
+        this._invokeElementCopyCallbacks(elementInfo);
+        return;
+      }
+
+      this.elementCopyNotification = new Craft.CP.ElementCopyNotification(
+        elementInfo,
+        settings
+      );
+      this.displayNotification(this.elementCopyNotification);
+      this.elementCopyNotification.on('show', () => {
+        // make sure the notification is still there
+        // (it could have been removed if none of the copied elements still exist)
+        if (this.elementCopyNotification) {
+          this._invokeElementCopyCallbacks(
+            this.elementCopyNotification.elementInfo
+          );
+        }
+      });
+    },
+
+    _invokeElementCopyCallbacks: function (elementInfo) {
+      const buttonLabel = this._pasteElementsButtonLabel(elementInfo);
+      for (callback of this.copyElementCallbacks) {
+        callback(elementInfo, buttonLabel);
+      }
+    },
+
+    _pasteElementsButtonLabel: function (elementInfo) {
+      if (!elementInfo.length) {
+        return null;
+      }
+
+      const elementType = elementInfo[0].type;
+
+      return Craft.uppercaseFirst(
+        Craft.t('app', 'Paste {type}', {
+          type:
+            elementInfo.length === 1
+              ? Craft.elementTypeNames[elementType][2]
+              : Craft.elementTypeNames[elementType][3],
+        })
+      );
+    },
+
+    closeElementCopyNotification: function (invokeCallbacks = true) {
+      if (this.elementCopyNotification) {
+        const notification = this.elementCopyNotification;
+        this.elementCopyNotification = null;
+        notification.close();
+
+        if (invokeCallbacks) {
+          this._invokeElementCopyCallbacks([]);
+        }
+      }
+    },
+
+    onCopyElements: function (callback) {
+      this.copyElementCallbacks.push(callback);
+
+      if (this.elementCopyNotification?.loaded) {
+        callback(
+          this.elementCopyNotification.elementInfo,
+          this._pasteElementsButtonLabel(
+            this.elementCopyNotification.elementInfo
+          )
+        );
+      }
+    },
+
+    getCopiedElements: function () {
+      if (!this.elementCopyNotification?.loaded) {
+        return [];
+      }
+      return this.elementCopyNotification.elementInfo;
+    },
+
+    async pasteElements(newAttributes = {}) {
+      const elementInfo = Craft.getLocalStorage('copiedElements');
+      if (!elementInfo?.length) {
+        return;
+      }
+
+      let data;
+      try {
+        const response = await Craft.sendActionRequest(
+          'POST',
+          'elements/bulk-duplicate',
+          {
+            data: {
+              elements: elementInfo,
+              newAttributes,
+            },
+          }
+        );
+        data = response.data;
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return [];
+      }
+
+      this.clearCopiedElements();
+      this.displaySuccess(data.message);
+      return data.newElements;
+    },
+
     fetchAlerts: function () {
       return Craft.queue.push(
         () =>
@@ -1122,13 +1313,13 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    displayAlerts: function (alerts, animate = true) {
+    displayAlerts: async function (alerts, animate = true) {
       this.$alerts.remove();
 
       if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (let alert of alerts) {
+        for (const alert of alerts) {
           if (!$.isPlainObject(alert)) {
             alert = {
               content: alert,
@@ -1142,14 +1333,15 @@ Craft.CP = Garnish.Base.extend(
               'Error'
             )}"></span> ${content}`;
           }
-          $(`<li>${content}</li>`).appendTo(this.$alerts);
+          $(`<li><div>${content}</div></li>`).appendTo(this.$alerts);
         }
 
         if (animate) {
           const height = this.$alerts.outerHeight();
-          this.$alerts
-            .css('margin-top', -height)
-            .velocity({'margin-top': 0}, 'fast');
+          this.$alerts.css('margin-top', -height);
+          await Craft.animate(this.$alerts, {
+            'margin-top': 0,
+          });
         }
 
         this.initAlerts();
@@ -1330,7 +1522,7 @@ Craft.CP = Garnish.Base.extend(
             const callbacks = this.checkForUpdatesFailureCallbacks;
             this.checkForUpdatesFailureCallbacks = null;
 
-            for (let callback of callbacks) {
+            for (const callback of callbacks) {
               callback();
             }
           }
@@ -1345,7 +1537,7 @@ Craft.CP = Garnish.Base.extend(
           const callbacks = this.checkForUpdatesCallbacks;
           this.checkForUpdatesCallbacks = null;
 
-          for (let callback of callbacks) {
+          for (const callback of callbacks) {
             callback(info);
           }
         }
@@ -1746,7 +1938,9 @@ Craft.CP = Garnish.Base.extend(
 
       // update the base URLs used get Craft.getUrl(), etc.
       Craft.actionUrl = Craft.getUrl(Craft.actionUrl, {site: site.handle});
-      Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      if (Craft.baseCpUrl) {
+        Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      }
       Craft.baseUrl = Craft.getUrl(Craft.baseUrl, {site: site.handle});
 
       // update the current URL
@@ -1754,7 +1948,7 @@ Craft.CP = Garnish.Base.extend(
       history.replaceState({}, '', url);
 
       // update the site--x body class
-      for (let className of document.body.classList) {
+      for (const className of document.body.classList) {
         if (className.match(/^site--/)) {
           document.body.classList.remove(className);
         }
@@ -1764,6 +1958,7 @@ Craft.CP = Garnish.Base.extend(
       // update other URLs on the page
       $('a').each(function () {
         if (
+          Craft.cpTrigger &&
           this.hostname.length &&
           this.hostname === location.hostname &&
           this.href.indexOf(Craft.cpTrigger) !== -1
@@ -1772,10 +1967,38 @@ Craft.CP = Garnish.Base.extend(
         }
       });
     },
+
+    previewCountBadge: function (event, item, thumbLoader = true) {
+      let e = event || window.event;
+
+      if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
+        // prevent e.g. the space key from scrolling the page too
+        e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
+
+        // get the item's parent so that the thumb loader can work as expected
+        const parent = $(item).parent();
+
+        let r = $(item).data('other');
+        if (r) {
+          r = JSON.parse(r);
+          $(item).replaceWith(r);
+
+          if (thumbLoader) {
+            this.elementThumbLoader.load(parent);
+          }
+        }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
+      }
+    },
   },
   {
-    //maxWidth: 1051, //1024,
-
     /**
      * @deprecated in 4.2.0. Use Craft.notificationDuration instead.
      */
@@ -1788,36 +2011,52 @@ Craft.CP = Garnish.Base.extend(
   }
 );
 
-Craft.CP.Notification = Garnish.Base.extend({
-  type: null,
-  message: null,
-  settings: null,
-  closing: false,
-  closeTimeout: null,
-  _preventDelayedClose: false,
-  $container: null,
-  $closeBtn: null,
-  originalActiveElement: null,
+Craft.CP.Notification = Garnish.Base.extend(
+  {
+    type: null,
+    message: null,
+    settings: null,
+    closing: false,
+    closeTimeout: null,
+    _preventDelayedClose: false,
+    $container: null,
+    $innerContainer: null,
+    $closeBtn: null,
+    $main: null,
+    $message: null,
+    $detailsContainer: null,
+    originalActiveElement: null,
 
-  init: function (type, message, settings) {
-    this.type = type;
-    this.message = message;
-    this.settings = settings || {};
+    init: function (type, message, settings = {}) {
+      this.type = type;
+      this.message = message;
+      this.setSettings(settings, Craft.CP.Notification.defaults);
+    },
 
-    this.$container = $('<div/>', {
-      class: 'notification',
-      'data-type': this.type,
-    }).appendTo(Craft.cp.$notificationContainer);
+    show: async function () {
+      this.$container = $('<div/>', {
+        class: 'notification',
+        'data-type': this.type,
+      });
 
-    const $body = $('<div class="notification-body"/>').appendTo(
-      this.$container
-    );
+      if (this.settings.class) {
+        this.$container.addClass(this.settings.class);
+      }
 
-    if (this.settings.icon) {
-      const $icon = $('<span/>', {
-        class: 'notification-icon',
-        'data-icon': this.settings.icon,
-      }).appendTo($body);
+      this.$innerContainer = $('<div/>', {
+        class: 'notification-inner',
+      }).appendTo(this.$container);
+
+      const $body = $('<div class="notification-body"/>').appendTo(
+        this.$innerContainer
+      );
+
+      const $icon = $('<div/>', {
+        class: 'cp-icon notification-icon',
+      })
+        .append(await Craft.ui.icon(this.settings.icon))
+        .appendTo($body);
+
       if (this.settings.iconLabel) {
         $icon.attr({
           'aria-label': this.settings.iconLabel,
@@ -1826,152 +2065,330 @@ Craft.CP.Notification = Garnish.Base.extend({
       } else {
         $icon.attr('aria-hidden', 'true');
       }
-    }
 
-    const $main = $('<div class="notification-main"/>').appendTo($body);
+      this.$main = $('<div class="notification-main"/>').appendTo($body);
 
-    $('<div/>', {
-      class: 'notification-message',
-      text: this.message,
-    }).appendTo($main);
+      this.$message = $('<div/>', {
+        class: 'notification-message',
+        text: this.message,
+      }).appendTo(this.$main);
 
-    const $closeBtnContainer = $('<div/>').appendTo(this.$container);
-    this.$closeBtn = $('<button/>', {
-      type: 'button',
-      class: 'notification-close-btn',
-      'aria-label': Craft.t('app', 'Close'),
-      'data-icon': 'remove',
-    }).appendTo($closeBtnContainer);
+      const $closeBtnContainer = $('<div/>').appendTo(this.$innerContainer);
+      this.$closeBtn = this.createCloseButton().appendTo($closeBtnContainer);
 
-    if (this.settings.details) {
-      const $detailsContainer = $('<div class="notification-details"/>')
-        .append(this.settings.details)
-        .appendTo($main);
+      const details = await this.getDetails();
+      if (details) {
+        this.$detailsContainer = $('<div class="notification-details"/>')
+          .append(details)
+          .appendTo(this.$main);
 
-      if ($detailsContainer.find('button,input').length) {
-        this.originalActiveElement = document.activeElement;
-        this.$container.attr('tabindex', '-1').focus();
-        this.addListener(this.$container, 'keydown', (ev) => {
-          if (ev.keyCode === Garnish.ESC_KEY) {
-            this.close();
-          }
+        if (this.$detailsContainer.find('button,input').length) {
+          this.originalActiveElement = document.activeElement;
+          this.$container.attr('tabindex', '-1').focus();
+          this.addListener(this.$container, 'keydown', (ev) => {
+            if (ev.keyCode === Garnish.ESC_KEY) {
+              this.close();
+            }
+          });
+        }
+      }
+
+      Craft.initUiElements(this.$innerContainer);
+      this.addListener(this.$closeBtn, 'click', () => {
+        this.handleCloseButtonClick();
+      });
+
+      this.$container.appendTo(Craft.cp.$notificationContainer);
+
+      if (this.settings.animate) {
+        const prop = Craft.notificationPosition.startsWith('start-')
+          ? 'top'
+          : 'bottom';
+        this.$container.css({
+          opacity: 0,
+          [`margin-${prop}`]: this._negMargin(),
+        });
+
+        await Craft.animate(this.$container, {
+          opacity: 1,
+          [`margin-${prop}`]: 0,
         });
       }
-    }
 
-    this.$container
-      .css({
-        opacity: 0,
-        'margin-bottom': this._negMargin(),
-      })
-      .velocity({opacity: 1, 'margin-bottom': 0}, {duration: 'fast'});
+      if (this.$detailsContainer) {
+        Craft.cp.elementThumbLoader.load(this.$detailsContainer);
+      }
 
-    Craft.initUiElements(this.$container);
-
-    this.addListener(this.$closeBtn, 'click', 'close');
-
-    if (Craft.notificationDuration) {
-      this._initDelayedClose();
-    }
-  },
-
-  _initDelayedClose: function () {
-    if (this._preventDelayedClose) {
-      return;
-    }
-
-    if (!Craft.isVisible()) {
-      Garnish.$doc.one('visibilitychange', () => {
+      if (Craft.notificationDuration && !this.settings.persist) {
         this._initDelayedClose();
+      }
+
+      this.trigger('show');
+    },
+
+    createCloseButton() {
+      return $('<button/>', {
+        type: 'button',
+        class: 'notification-close-btn',
+        'aria-label': Craft.t('app', 'Close'),
+        'data-icon': 'remove',
       });
-      return;
-    }
+    },
 
-    this.delayedClose();
+    updateMessage(message) {
+      this.message = message;
+      this.$message.text(message);
+    },
 
-    this.$container.on(
-      'keypress keyup change focus click mousedown mouseup',
-      (ev) => {
-        if (ev.target != this.$closeBtn[0]) {
-          this.$container.off(
-            'keypress keyup change focus click mousedown mouseup'
-          );
-          this.preventDelayedClose();
+    getDetails: async function () {
+      return this.settings.details;
+    },
+
+    _initDelayedClose: function () {
+      if (this._preventDelayedClose) {
+        return;
+      }
+
+      if (!Craft.isVisible()) {
+        Garnish.$doc.one('visibilitychange', () => {
+          this._initDelayedClose();
+        });
+        return;
+      }
+
+      this.delayedClose();
+
+      this.$container.on(
+        'keypress keyup change focus click mousedown mouseup',
+        (ev) => {
+          if (ev.target != this.$closeBtn[0]) {
+            this.$container.off(
+              'keypress keyup change focus click mousedown mouseup'
+            );
+            this.preventDelayedClose();
+          }
         }
-      }
-    );
-  },
+      );
+    },
 
-  _negMargin: function () {
-    return `-${this.$container.outerHeight() + 12}px`;
-  },
+    _negMargin: function () {
+      return `-${this.$container.outerHeight() + 12}px`;
+    },
 
-  close: function () {
-    if (this.closing) {
-      return;
-    }
-
-    if (this.closeTimeout) {
-      clearTimeout(this.closeTimeout);
-      this.closeTimeout = null;
-    }
-
-    this.closing = true;
-
-    if (
-      this.originalActiveElement &&
-      document.activeElement &&
-      (document.activeElement === this.$container[0] ||
-        $.contains(this.$container[0], document.activeElement))
-    ) {
-      $(this.originalActiveElement).focus();
-    }
-
-    this.$container.velocity(
-      {opacity: 0, 'margin-bottom': this._negMargin()},
-      {
-        duration: 'fast',
-        complete: () => {
-          this.destroy();
-          Craft.cp.trigger('notificationClose');
-        },
-      }
-    );
-  },
-
-  delayedClose: function () {
-    this.closeTimeout = setTimeout(() => {
+    handleCloseButtonClick: function () {
       this.close();
-    }, Craft.notificationDuration);
+    },
 
-    // Hold off on closing automatically on hover
-    this.$container.one('mouseover', () => {
-      clearTimeout(this.closeTimeout);
-      this.closeTimeout = null;
+    close: async function () {
+      if (this.closing) {
+        return;
+      }
 
-      this.$container.on('mouseout', (ev) => {
-        if (ev.target == this.$container[0]) {
-          this.$container.off('mouseout');
-          this.delayedClose();
-        }
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+      }
+
+      this.closing = true;
+
+      if (
+        this.originalActiveElement &&
+        document.activeElement &&
+        (document.activeElement === this.$container[0] ||
+          $.contains(this.$container[0], document.activeElement))
+      ) {
+        $(this.originalActiveElement).focus();
+      }
+
+      const prop = Craft.notificationPosition.startsWith('start-')
+        ? 'top'
+        : 'bottom';
+      await Craft.animate(this.$container, {
+        opacity: 0,
+        [`margin-${prop}`]: this._negMargin(),
       });
+
+      this.destroy();
+      Craft.cp.trigger('notificationClose');
+    },
+
+    delayedClose: function () {
+      this.closeTimeout = setTimeout(() => {
+        this.close();
+      }, Craft.notificationDuration);
+
+      // Hold off on closing automatically on hover
+      this.$container.one('mouseover', () => {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+
+        this.$container.on('mouseout', (ev) => {
+          if (ev.currentTarget == this.$container[0]) {
+            this.$container.off('mouseout');
+            this.delayedClose();
+          }
+        });
+      });
+    },
+
+    preventDelayedClose: function () {
+      this._preventDelayedClose = true;
+
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+      }
+
+      this.$container.off('mouseover mouseout');
+    },
+
+    destroy: function () {
+      this.$container.remove();
+      this.base();
+    },
+  },
+  {
+    defaults: {
+      icon: 'info',
+      iconLabel: null,
+      details: null,
+      persist: false,
+      class: null,
+      animate: true,
+    },
+  }
+);
+
+Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
+  elementInfo: null,
+  elementType: null,
+  loaded: false,
+  $copiedElements: null,
+
+  init: function (elementInfo, settings = {}) {
+    this.elementInfo = elementInfo;
+    if (!this.elementInfo?.length) {
+      throw 'No elements are copied.';
+    }
+
+    this.elementType = this.elementInfo[0].type;
+    const message = this.getMessage();
+
+    this.base(
+      'notice',
+      message,
+      Object.assign(
+        {
+          icon: 'clone-dashed',
+          //iconLabel: Craft.t('app', 'Notice'), // todo
+          persist: true,
+          class: 'copied-elements-notification',
+        },
+        settings
+      )
+    );
+  },
+
+  createCloseButton() {
+    return Craft.ui.createButton({
+      icon: 'xmark',
+      label: Craft.t('app', 'Cancel'),
+      class: 'chromeless notification-close-btn',
     });
   },
 
-  preventDelayedClose: function () {
-    this._preventDelayedClose = true;
-
-    if (this.closeTimeout) {
-      clearTimeout(this.closeTimeout);
-      this.closeTimeout = null;
-    }
-
-    this.$container.off('mouseover mouseout');
+  getMessage() {
+    return this.elementInfo.length === 1
+      ? Craft.t('app', '{type} copied.', {
+          type: Craft.elementTypeNames[this.elementType][0],
+        })
+      : Craft.uppercaseFirst(
+          Craft.t('app', '{total, number} {type} copied.', {
+            total: this.elementInfo.length,
+            type: Craft.elementTypeNames[this.elementType][3],
+          })
+        );
   },
 
-  destroy: function () {
-    this.$container.remove();
-    this.base();
+  getDetails: async function () {
+    const {data} = await Craft.sendActionRequest(
+      'POST',
+      'app/render-elements',
+      {
+        data: {
+          elements: this.elementInfo.map((e) => ({
+            type: e.type,
+            id: e.id,
+            siteId: e.siteId,
+            instances: [
+              {
+                ui: 'chip',
+                hyperlink: false,
+              },
+            ],
+          })),
+        },
+      }
+    );
+
+    if (!$.isPlainObject(data.elements)) {
+      Craft.cp.clearCopiedElements();
+      return;
+    }
+
+    setTimeout(async () => {
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
+    }, 1);
+
+    const gap = 4;
+    this.$copiedElements = $('<div class="copied-elements"/>');
+    let $chips = $();
+
+    for (const elementInfo of this.elementInfo) {
+      for (const chip of data.elements[elementInfo.id] || []) {
+        $chips = $chips.add(chip);
+      }
+    }
+
+    const filteredElementInfo = [];
+
+    for (let i = 0; i < this.elementInfo.length; i++) {
+      const element = this.elementInfo[i];
+      const $chip = $chips.filter(
+        `[data-id=${element.id}][data-site-id=${element.siteId}]:first`
+      );
+      if ($chip.length) {
+        element.data = $chip.data();
+        $chip
+          .css('z-index', this.elementInfo.length - i)
+          .addClass('copied-element-chip')
+          .appendTo(this.$copiedElements);
+
+        // overlay opacities: 0, .4, .55, .7, .85
+        if (i !== 0) {
+          $chip.css({
+            'inset-block-start': i * gap,
+            'inset-inline-start': i * gap,
+            '--overlay-opacity': Math.min(0.25 + 0.15 * i, 1),
+          });
+        }
+        filteredElementInfo.push(element);
+      }
+    }
+
+    if (filteredElementInfo.length !== this.elementInfo.length) {
+      this.elementInfo = filteredElementInfo;
+      this.updateMessage(this.getMessage());
+    }
+
+    this.loaded = true;
+
+    return this.$copiedElements;
+  },
+
+  handleCloseButtonClick: function () {
+    Craft.cp.clearCopiedElements();
   },
 });
 
@@ -1983,6 +2400,7 @@ Craft.cp = new Craft.CP();
  */
 var JobProgressIcon = Garnish.Base.extend({
   $li: null,
+  $container: null,
   $a: null,
   $label: null,
   $progressLabel: null,
@@ -2014,16 +2432,17 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>', {
+    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$container = $('<div/>', {
       class: 'nav-item nav-item--job',
-    }).appendTo(Craft.cp.$nav.children('ul'));
+    }).appendTo(this.$li);
     this.$a = $('<a/>', {
       id: 'job-icon',
       class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
-    }).appendTo(this.$li);
+    }).appendTo(this.$container);
     const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
     this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
       $prefixContainer
@@ -2054,8 +2473,14 @@ var JobProgressIcon = Garnish.Base.extend({
     this._lineWidth = 3 * m;
 
     this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
-    this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
-    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
+    this._$staticCanvas = this._createCanvas(
+      'static',
+      this.$container.css('color')
+    );
+    this._$hoverCanvas = this._createCanvas(
+      'hover',
+      this.$container.css('color')
+    );
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');

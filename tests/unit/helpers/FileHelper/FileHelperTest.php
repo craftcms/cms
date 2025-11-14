@@ -171,18 +171,6 @@ class FileHelperTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetMimeTypeExceptions(): void
-    {
-        if (PHP_VERSION_ID < 80100) {
-            $this->tester->expectThrowable(ErrorException::class, function() {
-                FileHelper::getMimeType('notafile');
-            });
-        }
-    }
-
-    /**
      * @dataProvider getExtensionByMimeTypeDataProvider
      *
      * @param string $expected

@@ -19,7 +19,7 @@ use craft\base\RelationalFieldTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fields\conditions\TextFieldConditionRule;
+use craft\fields\conditions\LinkFieldConditionRule;
 use craft\fields\data\LinkData;
 use craft\fields\linktypes\Asset;
 use craft\fields\linktypes\BaseLinkType;
@@ -28,6 +28,7 @@ use craft\fields\linktypes\Category;
 use craft\fields\linktypes\Email as EmailType;
 use craft\fields\linktypes\Entry;
 use craft\fields\linktypes\Phone;
+use craft\fields\linktypes\Sms;
 use craft\fields\linktypes\Url as UrlType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
@@ -110,6 +111,8 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             'id' => Schema::TYPE_STRING,
             'rel' => Schema::TYPE_STRING,
             'ariaLabel' => Schema::TYPE_STRING,
+            'download' => Schema::TYPE_BOOLEAN,
+            'filename' => Schema::TYPE_STRING,
         ];
     }
 
@@ -126,6 +129,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                 EmailType::class,
                 Entry::class,
                 Phone::class,
+                Sms::class,
             ];
 
             // Fire a registerLinkTypes event
@@ -157,7 +161,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
 
     /**
      * @var string[] Attribute fields to show.
-     * @phpstan-var array<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'>
+     * @phpstan-var array<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'>
      * @since 5.6.0
      */
     public array $advancedFields = [];
@@ -189,6 +193,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     /**
      * @var bool Whether GraphQL values should be returned as objects with `type`,
      * `value`, `label`, `urlSuffix`, and `url` keys.
+     * @since 5.6.0
      */
     public bool $fullGraphqlData = true;
 
@@ -213,13 +218,17 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         $config['advancedFields'] ??= [];
 
         if (isset($config['showTargetField'])) {
+            if ($config['showTargetField'] === true) {
+                $config['advancedFields'][] = 'target';
+            }
             unset($config['showTargetField']);
-            $config['advancedFields'][] = 'target';
         }
 
         if (isset($config['showUrlSuffixField'])) {
+            if ($config['showUrlSuffixField'] === true) {
+                $config['advancedFields'][] = 'urlSuffix';
+            }
             unset($config['showUrlSuffixField']);
-            $config['advancedFields'][] = 'urlSuffix';
         }
 
         if (isset($config['graphqlMode'])) {
@@ -360,9 +369,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         $remainingTypes = Collection::make();
         if ($selectedTypes->count() < count(self::types())) {
             $remainingTypes = Collection::make(self::types())
-                ->filter(function($value, $key) use ($selectedTypes) {
-                    return !isset($selectedTypes[$key]);
-                })
+                ->filter(fn($value, $key) => !isset($selectedTypes[$key]))
                 // and sort them by label, with URL at the top
                 ->sort(function(string $a, string $b) {
                     /** @var class-string<BaseLinkType> $a */
@@ -444,6 +451,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                     ['label' => Craft::t('app', 'ID'), 'value' => 'id'],
                     ['label' => Template::raw(Craft::t('app', 'Relation ({ex})', ['ex' => '<code>rel</code>'])), 'value' => 'rel'],
                     ['label' => Craft::t('app', 'ARIA Label'), 'value' => 'ariaLabel'],
+                    ['label' => Craft::t('app', 'Download'), 'value' => 'download'],
                 ],
                 'values' => $this->advancedFields,
                 'sortable' => true,
@@ -502,7 +510,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         if (
             $value instanceof LinkData &&
             $element?->propagating &&
-            $element->propagateAll &&
+            ($element->propagateAll || ($element->isNewForSite && !isset($element->duplicateOf))) &&
             isset($element->propagatingFrom) &&
             $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
         ) {
@@ -543,6 +551,8 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                     ? (implode(' ', array_map(fn(string $rel) => Html::id($rel), explode(' ', $value['rel']))))
                     : null,
                 'ariaLabel' => (!empty($value['ariaLabel']) && in_array('ariaLabel', $this->advancedFields)) ? $value['ariaLabel'] : null,
+                'download' => (!empty($value['download']) && in_array('download', $this->advancedFields)) ? (bool)$value['download'] : null,
+                'filename' => (!empty($value['filename']) && in_array('download', $this->advancedFields)) ? $value['filename'] : null,
             ]);
 
             $value = $value['value'] ?? $value[$typeId]['value'] ?? '';
@@ -625,14 +635,6 @@ new Craft.LinkField($('#' + $id));
 JS, [
             $view->namespaceInputId($id),
         ]);
-
-        if (!$value) {
-            // Override the initial value being set to null by CustomField::inputHtml()
-            $view->setInitialDeltaValue($this->handle, [
-                'type' => $valueTypeId,
-                'value' => '',
-            ]);
-        }
 
         $typeInputName = "$this->handle[type]";
 
@@ -789,6 +791,25 @@ JS;
                         'name' => "$this->handle[ariaLabel]",
                         'value' => $value?->ariaLabel,
                     ]),
+                    'download' =>
+                        Cp::lightswitchFieldHtml([
+                            'label' => Craft::t('app', 'Download'),
+                            'id' => "$id-download",
+                            'name' => "$this->handle[download]",
+                            'on' => $value?->download,
+                            'toggle' => "$id-filename-field",
+                        ]) .
+                        Cp::textFieldHtml([
+                            'fieldClass' => !$value?->download ? 'hidden' : null,
+                            'fieldAttributes' => [
+                                'data' => ['filename-field' => true],
+                            ],
+                            'label' => Craft::t('app', 'Filename'),
+                            'id' => "$id-filename",
+                            'name' => "$this->handle[filename]",
+                            'value' => $value?->getFilename(),
+                            'placeholder' => $value?->getFilename(false),
+                        ]),
                 };
             }
 
@@ -842,9 +863,27 @@ JS;
     /**
      * @inheritdoc
      */
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        if (parent::isValueEmpty($value, $element)) {
+            return true;
+        }
+
+        /** @var LinkData $value */
+        $value = $element->getFieldValue($this->handle);
+        $linkTypes = $this->getLinkTypes();
+        $linkType = $linkTypes[$value->type] ?? $linkTypes[UrlType::id()] ?? new UrlType();
+        $value = $value->serialize()['value'];
+
+        return $linkType->isValueEmpty($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
-        return TextFieldConditionRule::class;
+        return LinkFieldConditionRule::class;
     }
 
     /**
@@ -853,11 +892,7 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        if (!$value) {
-            return '';
-        }
-        $value = Html::encode((string)$value);
-        return "<a href=\"$value\" target=\"_blank\">$value</a>";
+        return $value?->getLink() ?? '';
     }
 
     /**
@@ -866,7 +901,8 @@ JS;
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $value = Craft::$app->getSites()->getCurrentSite()->baseUrl;
+            $url = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? 'https://craftcms.com/';
+            $value = new LinkData($url, new UrlType());
         }
 
         return $this->getPreviewHtml($value, new EntryElement());

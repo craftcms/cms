@@ -117,7 +117,7 @@ class Update extends Model
     public function getHasCritical(): bool
     {
         foreach ($this->releases as $release) {
-            if ($release->critical) {
+            if ($release->isCritical($this)) {
                 return true;
             }
         }

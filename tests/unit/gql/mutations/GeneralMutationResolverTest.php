@@ -64,12 +64,8 @@ class GeneralMutationResolverTest extends TestCase
             'three' => ['four', 'five'],
         ];
         $valueNormalizers = [
-            'reverseArgument' => function(string $value) {
-                return strrev($value);
-            },
-            'allCaps' => function(string $value) {
-                return strtoupper($value);
-            },
+            'reverseArgument' => fn(string $value) => strrev($value),
+            'allCaps' => fn(string $value) => strtoupper($value),
         ];
 
         $this->resolver = new EntryMutationResolver($testData, $valueNormalizers);
@@ -88,9 +84,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertSame($this->resolver->getResolutionData($testKey), $testString);
         self::assertNull($this->resolver->getResolutionData(uniqid('test', true)));
 
-        $normalizer = function($value) {
-            return strlen($value);
-        };
+        $normalizer = fn($value) => strlen($value);
 
         $this->resolver->setValueNormalizer($testKey, $normalizer);
         self::assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
@@ -311,9 +305,7 @@ class GeneralMutationResolverTest extends TestCase
         // Also mock our input type definitions
         $mutationResolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
-            'saveElement' => function($entry) {
-                return $entry;
-            },
+            'saveElement' => fn($entry) => $entry,
             'performStructureOperations' => true,
             'argumentTypeDefsByName' => [
                 'parentField' => $parentObjectType,

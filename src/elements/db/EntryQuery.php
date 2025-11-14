@@ -860,6 +860,14 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             'entries.expiryDate',
         ]);
 
+        // todo: update after the next breakpoint
+        if (
+            Craft::$app->getConfig()->getGeneral()->staticStatuses &&
+            Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')
+        ) {
+            $this->query->addSelect(['entries.status']);
+        }
+
         $this->_applySectionIdParam();
         $this->applyNestedElementParams('entries.fieldId', 'entries.primaryOwnerId');
 
@@ -939,46 +947,19 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function afterPopulate($elements): array
-    {
-        if (!$this->asArray && !empty($elements)) {
-            $this->loadAuthorIds($elements);
-        }
-
-        return parent::afterPopulate($elements);
-    }
-
-    private function loadAuthorIds(array $entries): void
-    {
-        /** @var Entry[][] $indexedEntries */
-        $indexedEntries = ArrayHelper::index($entries, null, [
-            fn(Entry $entry) => $entry->id,
-        ]);
-        $indexedAuthorIds = [];
-
-        $results = (new Query())
-            ->select(['entryId', 'authorId'])
-            ->from(Table::ENTRIES_AUTHORS)
-            ->where(['entryId' => array_keys($indexedEntries)])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $result) {
-            $indexedAuthorIds[$result['entryId']][] = (int)$result['authorId'];
-        }
-
-        foreach ($indexedEntries as $entryId => $entriesOfId) {
-            foreach ($entriesOfId as $entry) {
-                $entry->setAuthorIds($indexedAuthorIds[$entryId] ?? []);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function statusCondition(string $status): mixed
     {
+        if (
+            in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED]) &&
+            Craft::$app->getConfig()->getGeneral()->staticStatuses
+        ) {
+            return [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+                'entries.status' => $status,
+            ];
+        }
+
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).

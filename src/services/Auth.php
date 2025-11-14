@@ -21,6 +21,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Session as SessionHelper;
+use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
@@ -28,6 +29,7 @@ use craft\web\View;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
@@ -44,7 +46,7 @@ use yii\base\InvalidArgumentException;
 /**
  * User authentication service.
  *
- * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
+ * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->getAuth()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
@@ -204,6 +206,7 @@ class Auth extends Component
         $user = $this->getUser($sessionDuration);
 
         if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
+            $user?->handleInvalidLoginParam();
             return false;
         }
 
@@ -222,6 +225,34 @@ class Auth extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns an authentication error message based on the authentication error value.
+     * If a default message was passed and the authentication error value is for invalid credentials,
+     * that default message will be used.
+     *
+     * @param string|null $defaultMessage
+     * @return string
+     * @since 5.7.11
+     */
+    public function getAuthErrorMessage(?string $defaultMessage = null): string
+    {
+        $user = $this->getUser();
+        $authError = null;
+        if ($user) {
+            $authError = UserHelper::getAuthStatus($user);
+        }
+        if ($authError == User::AUTH_INVALID_CREDENTIALS || !$authError) {
+            if ($defaultMessage) {
+                return $defaultMessage;
+            }
+
+            return Craft::t('app', 'Invalid verification code.');
+        }
+
+        [, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        return $message;
     }
 
     /**
@@ -542,7 +573,7 @@ class Auth extends Component
             return false;
         }
 
-        $serverRequest = ServerRequest::fromGlobals();
+        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
         try {
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredential->rawId,
@@ -612,5 +643,34 @@ class Auth extends Component
             'name' => Craft::$app->getSystemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ]);
+    }
+
+    /**
+     * Builds server request using the Craft-provided data, e.g. host name.
+     *
+     *
+     * @param ServerRequestInterface $defaultServerRequest
+     * @return ServerRequestInterface
+     */
+    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
+    {
+        $uri = $defaultServerRequest->getUri();
+        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
+
+        $serverRequest = new ServerRequest(
+            $defaultServerRequest->getMethod(),
+            $uri,
+            $defaultServerRequest->getHeaders(),
+            $defaultServerRequest->getBody(),
+            $defaultServerRequest->getProtocolVersion(),
+            $_SERVER
+        );
+
+
+        return $serverRequest
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams($_GET)
+            ->withParsedBody($_POST)
+            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

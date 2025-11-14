@@ -4,6 +4,8 @@
 {% set id = id ?? "checkbox#{random()}" %}
 {% set label = checkboxLabel ?? label ?? null %}
 {% set labelId = labelId ?? "#{id}-label" %}
+{% set color = color ?? null %}
+{% set icon = icon ?? null %}
 
 {% set aria = (inputAttributes.aria ?? {})|merge(aria ?? {}) %}
 {% set inputAttributes = {
@@ -43,7 +45,28 @@
     {% if custom ?? false %}
         {{ 'Custom:'|t('app') }}
     {% else %}
-        {{ label }}
+        {% if icon or color %}
+            <div class="flex flex-nowrap gap-xs">
+                {% if icon %}
+                    {% set style = {
+                        '--icon-color': color,
+                    }|filter %}
+                    {{ tag('span', {
+                        class: 'cp-icon puny',
+                        style,
+                        html: iconSvg(icon),
+                    }) }}
+                {% else %}
+                    <div class="color small">
+                        <div class="color-preview" style="background-color: {{ color }}"></div>
+                    </div>
+                {% endif %}
+                <span>{{ label|raw }}</span>
+            </div>
+        {% else %}
+            {{ label|raw }}
+        {% endif %}
+
     {% endif %}
     {% if info ?? null %}
         <span class="info">{{ info|md|raw }}</span>

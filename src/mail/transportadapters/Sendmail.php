@@ -71,12 +71,8 @@ class Sendmail extends BaseTransportAdapter
         $rules[] = [
             ['command'],
             'in',
-            'range' => function() {
-                return $this->_allowedCommands();
-            },
-            'when' => function() {
-                return $this->getUnparsedAttribute('command') === null;
-            },
+            'range' => fn() => $this->_allowedCommands(),
+            'when' => fn() => $this->getUnparsedAttribute('command') === null,
         ];
         return $rules;
     }
@@ -107,15 +103,13 @@ class Sendmail extends BaseTransportAdapter
 
     private function settingsHtml(bool $readOnly): string
     {
-        $commandOptions = array_map(function(string $command) {
-            return [
-                'label' => $command,
-                'value' => $command,
-                'data' => [
-                    'hint' => null,
-                ],
-            ];
-        }, $this->_allowedCommands());
+        $commandOptions = array_map(fn(string $command) => [
+            'label' => $command,
+            'value' => $command,
+            'data' => [
+                'hint' => null,
+            ],
+        ], $this->_allowedCommands());
 
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings.twig', [
             'adapter' => $this,
@@ -130,7 +124,7 @@ class Sendmail extends BaseTransportAdapter
     public function defineTransport(): array|AbstractTransport
     {
         // Replace any spaces with `%20` according to https://symfony.com/doc/current/mailer.html#other-options
-        $command = Html::encodeSpaces(App::parseEnv($this->command) ?: ini_get('sendmail_path') ?: self::DEFAULT_COMMAND);
+        $command = Html::encodeSpaces((App::parseEnv($this->command) ?: ini_get('sendmail_path')) ?: self::DEFAULT_COMMAND);
 
         return [
             'dsn' => 'sendmail://default?command=' . $command,
@@ -149,7 +143,7 @@ class Sendmail extends BaseTransportAdapter
         $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
 
         return array_unique(array_filter([
-            !str_starts_with($command, '$') ? $command : null,
+            !str_starts_with($command ?? '', '$') ? $command : null,
             ini_get('sendmail_path'),
             self::DEFAULT_COMMAND,
         ]));

@@ -22,6 +22,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -116,8 +117,6 @@ class AppController extends Controller
      */
     public function actionResourceJs(string $url): Response
     {
-        $this->requireCpRequest();
-
         if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
             throw new BadRequestHttpException("$url does not appear to be a resource URL");
         }
@@ -129,6 +128,22 @@ class AppController extends Controller
         $this->response->setCacheHeaders();
         $this->response->getHeaders()->set('content-type', 'application/javascript');
         return $this->asRaw($response->getBody());
+    }
+
+    /**
+     * Returns the HTML for a control panel icon.
+     *
+     * @return Response
+     * @since 5.7.0
+     */
+    public function actionIconSvg(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        return $this->asJson([
+            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
+        ]);
     }
 
     /**
@@ -269,7 +284,7 @@ class AppController extends Controller
 
         $projectConfigService = Craft::$app->getProjectConfig();
         if ($applyProjectConfigChanges) {
-            $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+            $applyProjectConfigChanges = $projectConfigService->areChangesPending(force: true);
         }
 
         if (!$runMigrations && !$applyProjectConfigChanges) {
@@ -445,6 +460,7 @@ class AppController extends Controller
             default => 1597,
         };
 
+        $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/licensing-issues.twig', [
             'issues' => $issues,
             'hash' => $hash,
@@ -787,8 +803,8 @@ class AppController extends Controller
 
             $elements = $query->all();
 
-            // See if there are any provisional drafts we should swap these out with
-            ElementHelper::swapInProvisionalDrafts($elements);
+            // See if there are any provisional changes we should show
+            ElementHelper::loadProvisionalChanges($elements);
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
@@ -843,6 +859,9 @@ class AppController extends Controller
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
+                    if (!empty($config['overrides'])) {
+                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                    }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
 

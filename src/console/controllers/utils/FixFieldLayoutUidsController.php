@@ -50,8 +50,10 @@ class FixFieldLayoutUidsController extends Controller
         if (is_array($config['fieldLayouts'] ?? null)) {
             $modified = false;
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
-                $fieldLayoutPath = sprintf('%sfieldLayouts.%s', $path ? "$path." : '', $fieldLayoutUid);
-                $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
+                if (is_array($fieldLayoutConfig)) {
+                    $fieldLayoutPath = sprintf('%sfieldLayouts.%s', $path ? "$path." : '', $fieldLayoutUid);
+                    $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
+                }
             }
             if ($modified) {
                 Craft::$app->getProjectConfig()->set($path, $config);

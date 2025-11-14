@@ -115,7 +115,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
 
                     // Guard against CSV injection attacks
                     // https://github.com/thephpleague/csv/issues/268
-                    if ($field && $field !== '' && in_array($field[0], $suspectCharacters)) {
+                    if ($field && in_array($field[0], $suspectCharacters)) {
                         $field = "\t$field";
                     }
                 } else {

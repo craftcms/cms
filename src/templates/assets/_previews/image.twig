@@ -1,6 +1,9 @@
 {% set containerId = "asset-image-preview#{random()}" %}
 {% set toggleId = "toggle-focal#{random()}" %}
-{% set enableFocalPoint = asset.mimeType != 'image/svg+xml' %}
+{% set enableFocalPoint = (
+  asset.mimeType != 'image/svg+xml' and
+  craft.app.elements.canSave(asset)
+) %}
 
 <div id="{{ containerId }}" class="button-fade asset-image-preview">
     {% if enableFocalPoint %}

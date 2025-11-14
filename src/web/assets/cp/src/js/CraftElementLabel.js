@@ -80,6 +80,13 @@ class CraftElementLabel extends HTMLElement {
     this.tooltip.setAttribute('text', this.innerText);
     this.tooltip.setAttribute('aria-hidden', 'true');
 
+    // Make sure tooltips created show ellipses
+    Object.assign(this.tooltip.style, {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
+
     // If there's a context label, make it a little nicer
     const contextLabel = this.querySelector('.context-label');
     if (contextLabel) {
@@ -89,10 +96,17 @@ class CraftElementLabel extends HTMLElement {
       );
     }
 
-    this.labelLink.appendChild(this.tooltip);
+    this.insertBefore(this.tooltip, this.labelLink);
+    this.tooltip.appendChild(this.labelLink);
   }
 
   disconnectedCallback() {
+    // put the .label-link back into <craft-element-label>
+    // so that when connectedCallback() is called after insetBefore/insertAfter
+    // everything can get initialised as expected
+    // we can't use Element.moveBefore/Element.moveAfter as those are experimental at the moment and not available in Safari & FF
+    this.append(this.labelLink);
+
     this.tooltip?.remove();
     if (this.$tabs?.length) {
       this.$tabs.data('tabs')?.off('selectTab');

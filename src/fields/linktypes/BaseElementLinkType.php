@@ -9,10 +9,13 @@ namespace craft\fields\linktypes;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
+use craft\errors\SiteNotFoundException;
 use craft\fields\Link;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\services\ElementSources;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
@@ -45,6 +48,17 @@ abstract class BaseElementLinkType extends BaseLinkType
     public static function displayName(): string
     {
         return static::elementType()::displayName();
+    }
+
+    /**
+     * Returns the GraphQL type that elements of this type should
+     *
+     * @return Type
+     * @since 5.7.0
+     */
+    public static function elementGqlType(): Type
+    {
+        return static::elementType()::baseGqlType();
     }
 
     /**
@@ -126,10 +140,12 @@ abstract class BaseElementLinkType extends BaseLinkType
     const element = ev.elements[0];
     input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
     field.updateLabel(element.label);
+    field.updateFilename(element.\$element.data('filename'));
   });
   elementSelect.on('removeElements', () => {
     input.val('');
     field.updateLabel('');
+    field.updateFilename('');
   });
 })();
 JS, [
@@ -210,6 +226,38 @@ JS, [
     /**
      * @inheritdoc
      */
+    public function isValueEmpty(string $value): bool
+    {
+        // check if the element we're linking to still exists (e.g. it wasn't deleted)
+        // we already validated the link type, so getting the element type as string
+        // (instead of getting all element types ref handles) should be fine
+        preg_match("/^{(?P<elementType>[\w\\\\]+):(?P<elementId>\d+)(?:@(?P<siteId>\d+))?/", $value, $matches);
+
+        // if we couldn't get an element ID, treat the value as not empty
+        // as we already checked for empty string, null and empty array in base\Field::isValueEmpty()
+        if (empty($matches['elementId'])) {
+            return false;
+        }
+
+        /** @var class-string<ElementInterface>|null $elementType */
+        $elementType = Craft::$app->getElements()->getElementTypeByRefHandle($matches['elementType']);
+        if (!$elementType) {
+            return true;
+        }
+
+        return !$elementType::find()
+            ->id($matches['elementId'])
+            ->siteId($matches['siteId'] ?? null)
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->exists();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(ElementInterface|int|string $value): string
     {
         if ($value instanceof ElementInterface) {
@@ -234,13 +282,13 @@ JS, [
     }
 
     /**
-     * Returns an Element that the field is supposed to link to.
+     * Returns an element query that will fetch the element the field is supposed to link to.
      *
      * @param string|null $value
-     * @return ElementInterface|null
-     * @throws \craft\errors\SiteNotFoundException
+     * @return ElementQueryInterface|null
+     * @since 5.6.0
      */
-    public function element(?string $value): ?ElementInterface
+    public function elementQuery(?string $value): ?ElementQueryInterface
     {
         if (
             !$value ||
@@ -249,23 +297,41 @@ JS, [
             return null;
         }
 
+        $id = $match[1];
+        $siteId = $match[2] ?? null;
+
+        $query = static::elementType()::find()
+            ->id((int)$id)
+            ->status(null)
+            ->drafts(null)
+            ->revisions(null);
+
+        if ($siteId) {
+            $query->siteId((int)$siteId);
+        } else {
+            $query
+                ->site('*')
+                ->unique()
+                ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Returns an Element that the field is supposed to link to.
+     *
+     * @param string|null $value
+     * @return ElementInterface|null
+     * @throws SiteNotFoundException
+     */
+    public function element(?string $value): ?ElementInterface
+    {
         if (!isset(self::$fetchedElements[$value])) {
-            $id = $match[1];
-            $siteId = $match[2] ?? null;
+            $query = $this->elementQuery($value);
 
-            $query = static::elementType()::find()
-                ->id((int)$id)
-                ->status(null)
-                ->drafts(null)
-                ->revisions(null);
-
-            if ($siteId) {
-                $query->siteId((int)$siteId);
-            } else {
-                $query
-                    ->site('*')
-                    ->unique()
-                    ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+            if (!$query) {
+                return null;
             }
 
             self::$fetchedElements[$value] = $query->one() ?? false;

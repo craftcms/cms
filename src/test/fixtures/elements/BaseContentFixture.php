@@ -115,7 +115,6 @@ abstract class BaseContentFixture extends DbFixture
      */
     protected function findElement(array $data): ?ElementInterface
     {
-        /** @var ElementInterface $class */
         $class = $this->elementType;
         $query = $class::find();
         if (isset($data['criteria'])) {

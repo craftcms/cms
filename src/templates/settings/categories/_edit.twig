@@ -57,7 +57,7 @@
 
     {{ forms.textField({
         label: "Max Levels"|t('app'),
-        instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t('app'),
+        instructions: 'The maximum number of levels this category group can have.'|t('app'),
         id: 'maxLevels',
         name: 'maxLevels',
         value: categoryGroup.maxLevels,
@@ -143,6 +143,7 @@
 
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: categoryGroup.getFieldLayout(),
+        withGeneratedFields: true,
         withCardViewDesigner: true,
         disabled: readOnly,
     }) }}

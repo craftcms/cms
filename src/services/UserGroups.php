@@ -24,7 +24,7 @@ use yii\base\Component;
 /**
  * User Groups service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->userGroups`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->getUserGroups()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -215,6 +215,7 @@ class UserGroups extends Component
                 'g.id',
                 'g.name',
                 'g.handle',
+                'g.description',
                 'g.uid',
             ])
             ->from(['g' => Table::USERGROUPS])
@@ -374,6 +375,11 @@ class UserGroups extends Component
         $uid = $event->tokenMatches[0];
 
         $group = $this->getGroupByUid($uid);
+
+        if (!$group) {
+            // the group must already be deleted
+            return;
+        }
 
         // Fire a 'beforeApplyGroupDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {

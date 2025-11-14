@@ -1,5 +1,7 @@
+{% from '_includes/forms.twig' import button %}
+
 {% set entryType = entry.getType() %}
-{% set singleType = singleType ?? entryTypes|length == 1 %}
+{% set singleType = singleType ?? (entryTypes|length == 1) %}
 {% set entryTypeName = entryType.name|t('site') %}
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
@@ -26,60 +28,79 @@
       class: ['hidden'],
     },
   },
-  {
-    icon: 'circle-dashed',
-    label: 'Disable'|t('app'),
-    attributes: {
-      data: {action: 'disable'},
-    },
-    liAttributes: {
-      class: {
-        hidden: not entry.enabled,
-      }|filter|keys,
-    },
-  },
-  {
-    icon: 'circle',
-    label: 'Enable'|t('app'),
-    attributes: {
-      data: {action: 'enable'},
-    },
-    liAttributes: {
-      class: {
-        hidden: entry.enabled,
-      }|filter|keys,
-    },
-  },
-  {
-    icon: 'arrow-up',
-    label: 'Move up'|t('app'),
-    attributes: {
-      data: {action: 'moveUp'},
-    },
-  },
-  {
-    label: 'Move down'|t('app'),
-    attributes: {
-      data: {icon: 'arrow-down', action: 'moveDown'},
-    },
-  },
 ] %}
 
-{% if entry.id %}
+{% if not static %}
   {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
     {
-      icon: 'external',
-      label: 'Open in a new tab'|t('app'),
-      url: entry.getCpEditUrl(),
-      attributes: {target: '_blank'},
+      icon: 'circle-dashed',
+      label: 'Disable'|t('app'),
+      attributes: {
+        data: {action: 'disable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: not entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'circle',
+      label: 'Enable'|t('app'),
+      attributes: {
+        data: {action: 'enable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'arrow-up',
+      label: 'Move up'|t('app'),
+      attributes: {
+        data: {action: 'moveUp'},
+      },
+    },
+    {
+      label: 'Move down'|t('app'),
+      attributes: {
+        data: {icon: 'arrow-down', action: 'moveDown'},
+      },
     },
   ]) %}
 {% endif %}
 
+{% if entry.id or (currentUser.admin and craft.app.config.general.allowAdminChanges) %}
+  {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
+
+  {% if entry.id and not static %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'external',
+      label: 'Open in a new tab'|t('app'),
+      url: entry.getCpEditUrl(),
+      attributes: {target: '_blank'},
+    }) %}
+  {% endif %}
+
+  {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'gear',
+      label: 'Entry type settings'|t('app'),
+      attributes: {
+        data: {action: 'editEntryType'},
+      },
+    }) %}
+  {% endif %}
+{% endif %}
+
+{% set actionMenuItems = actionMenuItems|merge([
+  {hr: true},
+]) %}
+
 {% if not staticEntries %}
   {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
     {
       icon: 'trash',
       label: 'Delete'|t('app'),
@@ -89,8 +110,29 @@
       },
     },
     {hr: true},
+    {
+      icon: 'clone',
+      label: 'Duplicate'|t('app'),
+      attributes: {
+        data: {action: 'duplicate'},
+      },
+    },
   ]) %}
+{% endif %}
 
+{% set actionMenuItems = actionMenuItems|merge([
+  {
+    icon: 'clone-dashed',
+    color: 'fuchsia',
+    label: 'Copy'|t('app'),
+    attributes: {
+      data: {action: 'copy'},
+    },
+  },
+  {hr: true},
+]) %}
+
+{% if not staticEntries %}
   {% for entryType in entryTypes %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: entryType.icon ?? 'plus',
@@ -113,14 +155,22 @@
 {% tag 'div' with {
   class: [
     'matrixblock',
+    'js-deletable',
     not entry.enabled ? 'disabled-entry',
     static ? 'static',
   ]|filter,
   style: {
-    'border-color': entryType.color.cssVar(100) ?? null,
+    '--custom-bg-color': entryType.color.cssVar(50) ?? null,
+    '--custom-text-color': entryType.color.cssVar(900) ?? null,
+    '--custom-titlebar-bg-color': entryType.color.cssVar(100) ?? null,
+    '--custom-border-color': entryType.color.cssVar(200) ?? null,
   }|filter,
   data: {
     id: entry.id,
+    'draft-id': entry.isProvisionalDraft ? null : entry.draftId,
+    'revision-id': entry.revisionId,
+    'owner-id': entry.getOwnerId(),
+    'site-id': entry.siteId,
     uid: entry.uid,
     type: entryType.handle,
     'type-name': entryTypeName,
@@ -147,10 +197,6 @@
 
   {% tag 'div' with {
     class: 'titlebar',
-    style: {
-      'background-color': entryType.color.cssVar(50) ?? null,
-      '--custom-text-color': entryType.color.cssVar(900) ?? null,
-    }|filter,
   } %}
     {% tag 'div' with {
       class: {
@@ -185,31 +231,40 @@
     {% endtag %}
   {% endtag %}{# /.titlebar #}
 
-  {% if not static %}
-    <div class="actions">
-      <div class="status off" title="{{ 'Disabled'|t('app') }}">
-        {{ tag('span', {
-          class: 'visually-hidden',
-          html: 'Disabled'|t('app'),
-        }) }}
-      </div>
-
-      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
-      <div>
-        {{ disclosureMenu(actionMenuItems, {
-          hiddenLabel: 'Actions'|t('app'),
-          buttonAttributes: {
-            class: ['action-btn'],
-            title: 'Actions'|t('app'),
-            data: {
-              'disclosure-trigger': true,
-            },
-          },
-        }) }}
-      </div>
-      <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
+  <div class="actions">
+    <div class="status off" title="{{ 'Disabled'|t('app') }}">
+      {{ tag('span', {
+        class: 'visually-hidden',
+        html: 'Disabled'|t('app'),
+      }) }}
     </div>
-  {% endif %}
+
+    {% if actionMenuItems is not empty %}
+      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
+      {{ disclosureMenu(actionMenuItems, {
+        hiddenLabel: 'Actions'|t('app'),
+        buttonAttributes: {
+          class: ['action-btn', 'small'],
+          title: 'Actions'|t('app'),
+          data: {
+            'disclosure-trigger': true,
+          },
+        },
+      }) }}
+    {% endif %}
+    {% if not static %}
+      {{ button({
+        class: ['chromeless', 'small', 'move-btn'],
+        icon: 'move',
+        attributes: {
+          title: 'Reorder'|t('app'),
+          aria: {label: 'Reorder'|t('app')},
+          role: 'none',
+          tabindex: '-1',
+        },
+      }) }}
+    {% endif %}
+  </div>
   <div class="fields">
     {% namespace baseInputName %}
       {{ form.render()|raw }}

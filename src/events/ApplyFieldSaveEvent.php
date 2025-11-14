@@ -22,7 +22,7 @@ class ApplyFieldSaveEvent extends Event
      * @var FieldInterface|null The field associated with this event, as
      * configured before the changes are applied to it (if it already exists).
      */
-    public ?FieldInterface $field;
+    public ?FieldInterface $field = null;
 
     /**
      * @var array New field config data that is about to be applied.

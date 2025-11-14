@@ -134,7 +134,7 @@ class Entry extends Structure
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'The ID of the entry’s owner elementt.',
+                'description' => 'The ID of the entry’s owner element.',
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
@@ -213,9 +213,7 @@ class Entry extends Structure
                     ...$allFieldArguments,
                 ],
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'next' => [
                 'name' => 'next',
@@ -225,9 +223,7 @@ class Entry extends Structure
                     ...$allFieldArguments,
                 ],
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'enabledForSite' => [
                 'name' => 'enabledForSite',
@@ -252,7 +248,7 @@ class Entry extends Structure
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => Type::listOf(User::getType()),
+                    'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],

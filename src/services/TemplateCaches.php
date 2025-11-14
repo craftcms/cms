@@ -23,7 +23,7 @@ use yii\web\AssetBundle;
 /**
  * Template Caches service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->getTemplateCaches()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -282,9 +282,7 @@ class TemplateCaches extends Component
      */
     private function _parseSelfClosingTags(array $tags): array
     {
-        return array_map(function($tag) {
-            return Html::parseTagAttributes($tag);
-        }, $tags);
+        return array_map(fn($tag) => Html::parseTagAttributes($tag), $tags);
     }
 
     private function _parseExternalResourceTags(array $tags, string $urlAttribute): array

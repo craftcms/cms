@@ -28,7 +28,7 @@ use yii\base\Component;
 /**
  * Globals service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->getGlobals()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -149,9 +149,7 @@ class Globals extends Component
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
             $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
-                function(GlobalSet $globalSet) use ($session): bool {
-                    return $session->checkPermission("editGlobalSet:$globalSet->uid");
-                }, true, true, false);
+                fn(GlobalSet $globalSet): bool => $session->checkPermission("editGlobalSet:$globalSet->uid"), true, true, false);
         }
 
         return $this->_editableGlobalSets[$currentSiteId];

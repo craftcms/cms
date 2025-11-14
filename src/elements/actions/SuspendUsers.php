@@ -36,8 +36,7 @@ class SuspendUsers extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(function($type, $userId) {
-            return <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $userId) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
@@ -58,8 +57,7 @@ class SuspendUsers extends ElementAction
         }
     });
 })();
-JS;
-        }, [
+JS, [
             static::class,
             Craft::$app->getUser()->getId(),
         ]);

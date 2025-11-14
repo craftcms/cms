@@ -62,6 +62,8 @@ class CraftTooltip extends HTMLElement {
     this.maxWidth = this.getAttribute('max-width') || '220px';
     this.text = this.getAttribute('text') || this.innerText;
     this.showing = false;
+    this.lastShow = 0;
+    this.eventDelay = 150;
 
     this.renderTooltip();
     this.renderInner();
@@ -71,12 +73,12 @@ class CraftTooltip extends HTMLElement {
     }
 
     this.listeners = [
-      ['mouseenter', this.show, this.delay],
-      ['mouseleave', this.hide],
+      ['mouseenter', this.handleMouseEnter],
+      ['mouseleave', this.handleMouseLeave],
       ['keyup', this.handleKeyUp],
-      ['click', this.toggle],
-      ['focus', this.show],
-      ['blur', this.hide],
+      ['click', this.handleClick],
+      ['focusin', this.handleFocusIn],
+      ['focusout', this.handleFocusOut],
     ];
 
     if (!this.triggerElement) {
@@ -87,8 +89,8 @@ class CraftTooltip extends HTMLElement {
     // Make sure the trigger accepts pointer events
     this.triggerElement.style.pointerEvents = 'auto';
 
-    this.listeners.forEach(([event, handler, delay]) => {
-      this.triggerElement.addEventListener(event, () => handler(delay), {
+    this.listeners.forEach(([event, handler]) => {
+      this.triggerElement.addEventListener(event, (e) => handler(e), {
         signal: this.abortController.signal,
       });
     });
@@ -118,12 +120,6 @@ class CraftTooltip extends HTMLElement {
       this.placement = newValue;
     }
   }
-
-  handleKeyUp = (e) => {
-    if (e.key === 'Escape') {
-      this.hide();
-    }
-  };
 
   renderTooltip() {
     this.tooltip = document.createElement('span');
@@ -165,6 +161,86 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
+  handleKeyUp = (e) => {
+    if (e?.key && e.key === 'Escape') {
+      this.hide();
+    }
+  };
+
+  handleMouseEnter = () => {
+    this.isHovering = true;
+
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    // Open the tooltip after the delay
+    this.delayTimeout = setTimeout(() => {
+      // Check if the user is still over the tooltip before doing anything
+      if (!this.isHovering) {
+        return;
+      }
+
+      this.show();
+    }, this.delay);
+  };
+
+  handleMouseLeave = () => {
+    this.isHovering = false;
+
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    this.hide();
+  };
+
+  handleFocusIn = () => {
+    const currentTime = Date.now();
+    this.lastShow = currentTime;
+
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    // Only show the tooltip if it's not already open
+    if (!this.showing) {
+      // Check that no click event occurred shortly after
+      this.delayTimeout = setTimeout(() => {
+        if (currentTime === this.lastShow) {
+          this.show();
+        }
+      }, this.eventDelay);
+    }
+
+    this.show();
+  };
+
+  handleFocusOut = () => {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    this.hide();
+  };
+
+  handleClick = () => {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    const currentTime = Date.now();
+    const timeSinceLastShow = currentTime - this.lastShow;
+    this.lastShow = currentTime;
+
+    // If the click happened very soon after focus, treat it as a single action
+    if (timeSinceLastShow < this.eventDelay) {
+      this.show();
+    } else {
+      this.toggle();
+    }
+  };
+
   toggle = () => {
     if (this.showing) {
       this.hide();
@@ -173,58 +249,29 @@ class CraftTooltip extends HTMLElement {
     }
   };
 
-  show = (delay = 0) => {
-    this.isHovering = true;
-
-    if (this.delayTimeout) {
-      clearTimeout(this.delayTimeout);
+  show = () => {
+    if (!this.triggerElement || !this.tooltip) {
+      return;
     }
 
-    this.delayTimeout = setTimeout(() => {
-      // Check if the user is still over the tooltip before doing anything
-      if (!this.isHovering) {
-        return;
-      }
-
-      Object.assign(this.tooltip.style, {
-        opacity: 1,
-        transform: ['left', 'right'].includes(this.getStaticSide())
-          ? `translateX(0)`
-          : `translateY(0)`,
-        // Make sure if a user hovers over the label itself, it stays open
-        pointerEvents: 'auto',
-      });
-
-      autoUpdate(this.triggerElement, this.tooltip, this.update);
-      this.showing = true;
-    }, delay);
+    autoUpdate(this.triggerElement, this.tooltip, this.update);
+    Object.assign(this.tooltip.style, {
+      opacity: 1,
+      // Make sure if a user hovers over the label itself, it stays open
+      pointerEvents: 'auto',
+      zIndex: 101,
+    });
+    this.showing = true;
   };
 
   hide = () => {
-    this.isHovering = false;
-
-    if (this.delayTimeout) {
-      clearTimeout(this.delayTimeout);
-    }
-
     Object.assign(this.tooltip.style, {
       opacity: 0,
-      transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
 
     this.showing = false;
   };
-
-  getInitialTransform() {
-    // Make sure the bubble moves in a natural direction
-    return {
-      top: `translateY(-${this.offset}px)`,
-      right: `translateX(${this.offset}px)`,
-      bottom: `translateY(${this.offset}px)`,
-      left: `translateX(-${this.offset}px)`,
-    }[this.getStaticSide()];
-  }
 
   getStaticSide() {
     return {
@@ -240,6 +287,10 @@ class CraftTooltip extends HTMLElement {
   }
 
   update = () => {
+    if (!this.triggerElement || !this.tooltip) {
+      return;
+    }
+
     computePosition(this.triggerElement, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,

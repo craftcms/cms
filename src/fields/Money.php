@@ -313,7 +313,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             $value = MoneyHelper::toNumber($value);
         }
 
-        $decimals = $decimals ?? $this->subunits();
+        $decimals ??= $this->subunits();
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
@@ -354,7 +354,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public function subunits(?Currency $currency = null): int
     {
-        $currency = $currency ?? new Currency($this->currency);
+        $currency ??= new Currency($this->currency);
         return $this->_isoCurrencies->subunitFor($currency);
     }
 

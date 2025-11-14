@@ -155,16 +155,12 @@ class ComponentHelperTest extends TestCase
     {
         return [
             'string-to-class-conversion' => [
-                function() {
-                    return Component::createComponent(ComponentExample::class);
-                },
+                fn() => Component::createComponent(ComponentExample::class),
             ],
             'successful-basic' => [
-                function() {
-                    return Component::createComponent([
-                        'type' => ComponentExample::class,
-                    ]);
-                },
+                fn() => Component::createComponent([
+                    'type' => ComponentExample::class,
+                ]),
             ],
             'dependency-heavy' => [
                 function() {

@@ -18,12 +18,12 @@ use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\db\Schema;
 
 /**
  * Section model class.
@@ -87,10 +87,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $type = null;
 
     /**
-     * @var int Max authors
+     * @var int|null Max authors
      * @since 5.0.0
      */
-    public int $maxAuthors = 1;
+    public int|null $maxAuthors = 1;
 
     /**
      * @var int|null Max levels
@@ -119,7 +119,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
 
     /**
      * @var string Default placement
-     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
+     * @phpstan-var self::DEFAULT_PLACEMENT_*
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
@@ -200,8 +200,14 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
-        $rules[] = [['maxAuthors'], 'number', 'integerOnly' => true, 'min' => 1];
+        $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['maxLevels', 'maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -370,7 +376,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = $entryTypes;
+        $entriesService = Craft::$app->getEntries();
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -393,7 +403,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/sections/$this->id");
     }
 
     /**
@@ -416,7 +429,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
@@ -425,7 +438,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

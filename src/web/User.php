@@ -120,11 +120,10 @@ class User extends \yii\web\User
     {
         // Set the default based on the config, if it’s not specified
         if ($defaultUrl === null) {
-            // Is this a control panel request and can they access the control panel?
-            if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
+            if ($this->getIsGuest()) {
+                $defaultUrl = UrlHelper::actionUrl('users/redirect');
             } else {
-                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getPostLoginRedirect());
+                $defaultUrl = $this->getDefaultReturnUrl();
             }
         }
 
@@ -134,6 +133,22 @@ class User extends \yii\web\User
         // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
         // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
         return str_replace(['{', '}'], '', $url);
+    }
+
+    /**
+     * Returns the default return URL.
+     *
+     * @return string
+     * @since 5.6.2
+     */
+    public function getDefaultReturnUrl(): string
+    {
+        // Is this a control panel request and can they access the control panel?
+        if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
+            return UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
+        }
+
+        return UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getPostLoginRedirect());
     }
 
     /**
@@ -407,6 +422,7 @@ class User extends \yii\web\User
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
+            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
             return false;
         }
 
@@ -484,10 +500,26 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
+    public function setReturnUrl($url): void
+    {
+        parent::setReturnUrl(strip_tags($url));
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
+        if (!Craft::$app->getIsInstalled()) {
+            return;
+        }
+
+        if (!$this->_validateUserAgentAndIp()) {
+            // Only log a warning if a PHP session exists
+            if (Craft::$app->getSession()->getHasSessionId()) {
+                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
+            }
             return;
         }
 
@@ -578,12 +610,7 @@ class User extends \yii\web\User
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-            Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
-            return false;
-        }
-
-        return true;
+        return $request->getUserAgent() !== null && $request->getUserIP() !== null;
     }
 
     private function _clearOtherSessionParams(): void

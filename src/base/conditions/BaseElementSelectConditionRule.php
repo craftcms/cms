@@ -7,6 +7,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use stdClass;
 
@@ -32,6 +33,15 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      * @return class-string<ElementInterface>
      */
     abstract protected function elementType(): string;
+
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        if (isset($values['elementId'])) {
+            $values['elementIds'] = ArrayHelper::remove($values, 'elementId');
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
 
     /**
      * Returns the element source(s) that the element can be selected from.
@@ -121,6 +131,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * @param array|int|string|null $elementIds
      * @phpstan-param array<int|string>|int|string|null $elementIds
+     * @since 5.6.0
      */
     public function setElementIds(array|int|string|null $elementIds): void
     {

@@ -25,12 +25,13 @@ class m241125_122914_add_viewUsers_permission extends Migration
             ->column($this->db);
 
         $userIds = array_unique($userIds);
+        $permissionName = $this->permissionName();
 
         if (!empty($userIds)) {
             $insert = [];
 
             $this->insert(Table::USERPERMISSIONS, [
-                'name' => strtolower('viewUsers'),
+                'name' => $permissionName,
             ]);
             $newPermissionId = $this->db->getLastInsertID(Table::USERPERMISSIONS);
             foreach ($userIds as $userId) {
@@ -44,7 +45,7 @@ class m241125_122914_add_viewUsers_permission extends Migration
         foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
             $groupPermissions = array_flip($group['permissions'] ?? []);
             if (isset($groupPermissions[strtolower('editUsers')])) {
-                $groupPermissions[strtolower('viewUsers')] = true;
+                $groupPermissions[$permissionName] = true;
                 $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
             }
         }
@@ -57,7 +58,34 @@ class m241125_122914_add_viewUsers_permission extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m241125_122914_add_viewUsers_permission cannot be reverted.\n";
-        return false;
+        $permissionName = $this->permissionName();
+        $permissionId = (new Query())
+            ->select('id')
+            ->from(Table::USERPERMISSIONS)
+            ->where(['name' => $permissionName])
+            ->scalar();
+
+        if ($permissionId) {
+            $this->delete(Table::USERPERMISSIONS_USERS, [
+                'permissionId' => $permissionId,
+            ]);
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
+            $groupPermissions = array_flip($group['permissions'] ?? []);
+
+            if (isset($groupPermissions[$permissionName])) {
+                unset($groupPermissions[$permissionName]);
+                $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
+            }
+        }
+
+        return true;
+    }
+
+    private function permissionName(): string
+    {
+        return strtolower('viewUsers');
     }
 }

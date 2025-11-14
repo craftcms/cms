@@ -42,9 +42,7 @@ abstract class BaseTextLinkType extends BaseLinkType
 
     public function normalizeValue(string $value): string
     {
-        $value = str_replace(' ', '+', $value);
-
-        if ($this->supports($value)) {
+        if (str_contains($value, ':') || $this->supports($value)) {
             return $value;
         }
 
@@ -58,6 +56,9 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         foreach ((array)$this->urlPrefix() as $prefix) {
             $value = StringHelper::removeLeft($value, $prefix);
+        }
+        if (preg_match('/^[^\/]+\/$/', $value)) {
+            $value = rtrim($value, '/');
         }
         return $value;
     }
@@ -93,12 +94,13 @@ JS, [
             $linkText = $this->linkLabel($value);
             $html =
                 Html::beginTag('div', [
-                    'class' => ['chip', 'small'],
+                    'class' => ['chip', 'chromeless'],
                 ]) .
                 Html::beginTag('div', [
                     'class' => 'chip-content',
                 ]) .
-                Html::a($linkText, $value, [
+                Html::a($linkText, str_replace(' ', '+', $value), [
+                    'class' => ['truncate'],
                     'target' => '_blank',
                 ]) .
                 Html::beginTag('div', [

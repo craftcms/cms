@@ -84,6 +84,17 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
     /**
+     * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
+     *
+     * @return bool
+     * @since 5.7.0
+     */
+    public function alwaysRefresh(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns the element container HTML attributes.
      *
      * @param ElementInterface|null $element The element the form is being rendered for

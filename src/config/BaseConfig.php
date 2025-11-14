@@ -41,7 +41,7 @@ class BaseConfig extends Model
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     final public function __construct($config = [])
     {

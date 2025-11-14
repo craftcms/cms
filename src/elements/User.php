@@ -473,6 +473,7 @@ class User extends Element implements IdentityInterface
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
             'isCredentialed' => ['label' => Craft::t('app', 'Credentialed')],
+            'is2faEnabled' => ['label' => Craft::t('app', 'Two-Step Verification')],
         ]));
     }
 
@@ -559,6 +560,14 @@ class User extends Element implements IdentityInterface
                 'label' => Craft::t('app', 'Last Login'),
                 'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P14D')),
             ],
+            'is2faEnabled' => [
+                'label' => Craft::t('app', 'Two-Step Verification'),
+                'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
+                    'color' => Color::Teal,
+                    'label' => Craft::t('app', 'Two-Step Verification'),
+                    'icon' => 'check',
+                ])),
+            ],
         ]);
     }
 
@@ -583,11 +592,10 @@ class User extends Element implements IdentityInterface
             return [
                 'elementType' => Address::class,
                 'map' => $map,
-                'createElement' => function(AddressQuery $query, array $result, self $source) {
+                'createElement' => fn(AddressQuery $query, array $result, self $source) =>
                     // set the addresses' owners to the source user elements
                     // (must get set before behaviors - see https://github.com/craftcms/cms/issues/13400)
-                    return $query->createElement(['owner' => $source] + $result);
-                },
+                    $query->createElement(['owner' => $source] + $result),
             ];
         }
 
@@ -837,6 +845,10 @@ class User extends Element implements IdentityInterface
             $this->username = $this->email;
         }
 
+        if ($this->password === '') {
+            $this->password = null;
+        }
+
         $this->normalizeNames();
     }
 
@@ -981,7 +993,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => App::supportsIdn()];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
@@ -1035,7 +1047,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['fullName', 'firstName', 'lastName'], function($attribute, $params, Validator $validator) {
+            ['fullName', 'firstName', 'lastName', 'username'], function($attribute, $params, Validator $validator) {
                 if (str_contains($this->$attribute, '://')) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -1063,7 +1075,7 @@ class User extends Element implements IdentityInterface
             // make sure they have an elevated session
             $userSession = Craft::$app->getUser();
             if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                throw new BadRequestHttpException(Craft::t('app', 'An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
@@ -1111,6 +1123,40 @@ class User extends Element implements IdentityInterface
     public function getIsCredentialed(): bool
     {
         return $this->active || $this->pending;
+    }
+
+    /**
+     * Returns whether the user has a password.
+     *
+     * @return bool
+     * @since 5.6.0
+     */
+    public function getHasPassword(): bool
+    {
+        if (isset($this->password)) {
+            return true;
+        }
+
+        return (bool)(new Query())
+            ->select('password')
+            ->from(Table::USERS)
+            ->where(['id' => $this->id])
+            ->scalar();
+    }
+
+    /**
+     * Returns whether the user has an associated SSO identity.
+     *
+     * @return bool
+     * @since 5.7.8
+     */
+    public function getHasSsoIdentity(): bool
+    {
+        if (Craft::$app->edition->value < CmsEdition::Enterprise->value) {
+            return false;
+        }
+
+        return Craft::$app->getSso()->identityExists($this->id);
     }
 
     /**
@@ -1212,6 +1258,15 @@ class User extends Element implements IdentityInterface
         return $this->_addressManager;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore(): void
+    {
+        $this->getAddressManager()->restoreNestedElements($this);
+        parent::afterRestore();
+    }
+
     private function createAddressQuery(): AddressQuery
     {
         return Address::find()
@@ -1279,6 +1334,23 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Handles an invalid login for a user and sets the authError param.
+     *
+     * @return void
+     */
+    public function handleInvalidLoginParam(): void
+    {
+        Craft::$app->getUsers()->handleInvalidLogin($this);
+        // Was that one bad password/2fa code/passkey too many?
+        if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Will set the authError to either AccountCooldown or AccountLocked
+            $this->authError = $this->_getAuthError();
+        } else {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+        }
+    }
+
+    /**
      * Determines whether the user is allowed to be logged in with a given password.
      *
      * @param string $password The user’s plain text password.
@@ -1308,14 +1380,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (!$passwordValid) {
-            Craft::$app->getUsers()->handleInvalidLogin($this);
-            // Was that one bad password too many?
-            if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                // Will set the authError to either AccountCooldown or AccountLocked
-                $this->authError = $this->_getAuthError();
-            } else {
-                $this->authError = self::AUTH_INVALID_CREDENTIALS;
-            }
+            $this->handleInvalidLoginParam();
             return false;
         }
 
@@ -1366,7 +1431,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (!$keyValid) {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            $this->handleInvalidLoginParam();
             return false;
         }
 
@@ -1426,7 +1491,7 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        if (is_object($group) && $group instanceof UserGroup) {
+        if ($group instanceof UserGroup) {
             $group = $group->id;
         }
 
@@ -1435,6 +1500,36 @@ class User extends Element implements IdentityInterface
         }
 
         return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->handle === $group);
+    }
+
+    /**
+     * Returns whether the user is in any/all the given user groups.
+     *
+     * By default, `true` will be returned if the user is in *any* of the groups. To change that so `true` is only
+     * returned if the user is in *all* of the groups, pass `true` to the second argument.
+     *
+     * @param array<int|string|UserGroup> $groups The user groups, handles, or IDs
+     * @param bool $all Whether to only return `true` if the user is in *all* of the provided groups
+     * @return bool
+     * @since 5.9.0
+     */
+    public function isInGroups(array $groups, bool $all = false): bool
+    {
+        if (!$all) {
+            foreach ($groups as $group) {
+                if ($this->isInGroup($group)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        foreach ($groups as $group) {
+            if (!$this->isInGroup($group)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1637,7 +1732,7 @@ XML;
      */
     protected function thumbAlt(): ?string
     {
-        return $this->getPhoto()?->alt ?? $this->getName();
+        return $this->getPhoto()->alt ?? $this->getName();
     }
 
     /**
@@ -1769,11 +1864,17 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                if ($this->can("assignUserGroup:$group->uid")) {
-                    return true;
-                }
+        if (Craft::$app->edition->value < CmsEdition::Pro->value) {
+            return false;
+        }
+
+        if ($this->admin) {
+            return true;
+        }
+
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
             }
         }
 
@@ -1895,7 +1996,7 @@ XML;
                 case self::STATUS_PENDING:
                     // Only provide activation actions if they have an email address
                     if ($this->email) {
-                        if ($this->pending || $canAdministrateUsers) {
+                        if ($this->pending || $canModerateUsers) {
                             $statusItems[] = [
                                 'icon' => 'paperplane',
                                 'label' => Craft::t('app', 'Send activation email'),
@@ -2136,12 +2237,6 @@ JS,
         return $items;
     }
 
-//    public function prepareEditScreen(Response $response, string $containerId): void
-//    {
-//        $cpScreen = $response->getBehavior('cp-screen');
-//        $t = 1;
-//    }
-
     private function _copyPasswordResetUrlActionItem(string $label, View $view): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
@@ -2282,7 +2377,7 @@ JS, [
     }
 
     /**
-     * Sets the entry’s author.
+     * Sets the user’s photo.
      *
      * @param Asset|null $photo
      */
@@ -2305,9 +2400,7 @@ JS, [
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'groups':
-                return implode(', ', array_map(function(UserGroup $group) {
-                    return Html::encode(Craft::t('site', $group->name));
-                }, $this->getGroups()));
+                return implode(', ', array_map(fn(UserGroup $group) => Html::encode(Craft::t('site', $group->name)), $this->getGroups()));
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
@@ -2317,6 +2410,30 @@ JS, [
                 $locale = $this->getPreferredLocale();
                 return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
 
+            case 'is2faEnabled':
+                $enabled = Craft::$app->getAuth()->hasActiveMethod($this);
+                if ($this->viewMode === 'cards') {
+                    return Cp::statusLabelHtml([
+                        'color' => $enabled ? Color::Teal : Color::Gray,
+                        'label' => Craft::t('app', 'Two-Step Verification'),
+                        'icon' => $enabled ? 'check' : 'xmark',
+                    ]);
+                } else {
+                    if (!$enabled) {
+                        return '';
+                    }
+
+                    return Html::tag('span', '', [
+                        'class' => 'checkbox-icon',
+                        'role' => 'img',
+                        'title' => Craft::t('app', 'Enabled'),
+                        'aria' => [
+                            'label' => Craft::t('app', 'Enabled'),
+                        ],
+                    ]);
+                }
+
+                // no break
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();
                 if ($this->viewMode === 'cards') {

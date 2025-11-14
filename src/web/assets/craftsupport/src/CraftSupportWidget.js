@@ -19,6 +19,7 @@ import './CraftSupportWidget.scss';
       currentScreen: null,
       $helpBody: null,
       $feedbackBody: null,
+      searchQuery: null,
 
       init: function (widgetId, settings) {
         this.widgetId = widgetId;
@@ -338,6 +339,7 @@ import './CraftSupportWidget.scss';
         this.clearSearchTimeout();
 
         var text = this.$body.val();
+        this.searchQuery = text;
 
         if (text) {
           var url = this.getSearchUrl(this.$body.val());
@@ -390,6 +392,13 @@ import './CraftSupportWidget.scss';
             );
           }
 
+          // Announce the results for SR users
+          Craft.cp.announce(
+            Craft.t('app', 'Showing results for “{searchQuery}”', {
+              searchQuery: this.searchQuery,
+            })
+          );
+
           var endResultsHeight = this.$searchResultsContainer
             .height('auto')
             .height();
@@ -430,6 +439,7 @@ import './CraftSupportWidget.scss';
           );
 
         this.showingResults = false;
+        this.searchQuery = null;
         this.$screen.removeClass('with-results');
       },
 

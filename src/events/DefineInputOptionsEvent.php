@@ -26,5 +26,5 @@ class DefineInputOptionsEvent extends Event
     /**
      * @var ElementInterface|null The element that the field is generating an input for.
      */
-    public ?ElementInterface $element;
+    public ?ElementInterface $element = null;
 }

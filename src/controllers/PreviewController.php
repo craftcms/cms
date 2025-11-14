@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use craft\web\Application;
 use craft\web\Controller;
 use Exception;
@@ -118,7 +119,6 @@ class PreviewController extends Controller
         // Make sure a token was used to get here
         $this->requireToken();
 
-        /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
             ->status(null);
@@ -134,6 +134,8 @@ class PreviewController extends Controller
         } else {
             if ($userId) {
                 // First check if there's a provisional draft
+                $user = Craft::$app->getUsers()->getUserById($userId);
+                ElementHelper::setProvisionalDraftUser($user);
                 $element = (clone $query)
                     ->draftOf($canonicalId)
                     ->provisionalDrafts()

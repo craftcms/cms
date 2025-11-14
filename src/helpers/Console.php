@@ -264,9 +264,7 @@ class Console extends \yii\helpers\Console
 
         self::_tableRow($headers, $maxCellSizes, $options);
 
-        self::_tableRow(array_map(function(int $size) {
-            return str_repeat('-', $size);
-        }, $maxCellSizes), $maxCellSizes, $options);
+        self::_tableRow(array_map(fn(int $size) => str_repeat('-', $size), $maxCellSizes), $maxCellSizes, $options);
 
         foreach ($data as $row) {
             self::_tableRow($row, $maxCellSizes, $options);

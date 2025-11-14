@@ -511,7 +511,7 @@ Craft.LivePreview = Garnish.Base.extend(
     },
 
     getActive: function () {
-      for (let preview of Craft.LivePreview.instances) {
+      for (const preview of Craft.LivePreview.instances) {
         if (preview.inPreviewMode) {
           return preview;
         }

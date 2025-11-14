@@ -89,7 +89,7 @@ class MonologTarget extends PsrTarget
 
         parent::__construct($config);
 
-        $this->formatter = $this->formatter ?? new LineFormatter(
+        $this->formatter ??= new LineFormatter(
             format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,

@@ -59,7 +59,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected function elementSelectConfig(): array
     {

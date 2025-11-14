@@ -17,7 +17,7 @@ use yii\console\ExitCode;
  * Deletes empty volume folders.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.14.0
+ * @since 5.6.0
  */
 class DeleteEmptyVolumeFoldersController extends Controller
 {
@@ -48,7 +48,11 @@ class DeleteEmptyVolumeFoldersController extends Controller
             ->select(['folders.id'])
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
-            ->where(['assets.id' => null])
+            ->leftJoin(['subfolders' => Table::VOLUMEFOLDERS], '[[subfolders.parentId]] = [[folders.id]]')
+            ->where([
+                'assets.id' => null,
+                'subfolders.id' => null,
+            ])
             ->andWhere(['not', ['folders.parentId' => null]])
             ->andWhere(['not', ['folders.path' => null]]);
 

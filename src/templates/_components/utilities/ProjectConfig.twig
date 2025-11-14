@@ -188,11 +188,12 @@
                 let $p = $('<p/>', {
                     class: 'centeralign',
                 }).appendTo($diffPane);
-                let $a = $('<a/>', {
-                    class: 'largetext',
+                let $button = $('<button/>', {
+                    type: 'button',
+                    class: 'btn largetext hairline',
                     text: Craft.t('app', 'Show all changes'),
                 }).appendTo($p);
-                $a.on('click', () => {
+                $button.on('activate', () => {
                     $code.html(Prism.highlight(response.data, Prism.languages.diff, 'diff'));
                     $p.remove();
                 });

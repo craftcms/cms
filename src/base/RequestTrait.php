@@ -7,8 +7,6 @@
 
 namespace craft\base;
 
-use craft\console\Request as ConsoleRequest;
-use craft\web\Request as WebRequest;
 use yii\base\InvalidConfigException;
 
 /**
@@ -40,7 +38,6 @@ trait RequestTrait
      */
     public function getScriptFilename(): string
     {
-        /** @var WebRequest|ConsoleRequest $this */
         return basename($this->getScriptFile());
     }
 

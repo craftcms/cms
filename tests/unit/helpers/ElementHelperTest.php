@@ -30,15 +30,6 @@ class ElementHelperTest extends TestCase
      */
     protected UnitTester $tester;
 
-    public function _fixtures(): array
-    {
-        return [
-            'entries' => [
-                'class' => EntryFixture::class,
-            ],
-        ];
-    }
-
     /**
      * @dataProvider generateSlugDataProvider
      * @param string $expected
@@ -96,6 +87,12 @@ class ElementHelperTest extends TestCase
      */
     public function testSetUniqueUri(array $expected, array $config): void
     {
+        $this->tester->haveFixtures([
+            'entries' => [
+                'class' => EntryFixture::class,
+            ],
+        ]);
+
         $example = new ExampleElement($config);
         ElementHelper::setUniqueUri($example);
 

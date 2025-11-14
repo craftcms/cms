@@ -674,10 +674,6 @@ class DateTimeHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public static function simpleDateTimeFormatsDataProvider(): array
     {
         return [
@@ -821,10 +817,6 @@ class DateTimeHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public static function isIsIso8601DataProvider(): array
     {
         return [
@@ -939,10 +931,6 @@ class DateTimeHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public static function toIso8601DataProvider(): array
     {
         $amsterdamTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Europe/Amsterdam'));

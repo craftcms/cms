@@ -189,12 +189,8 @@ class UserTest extends TestCase
         Session::reset();
 
         $this->tester->mockCraftMethods('session', [
-            'getHasSessionId' => function() {
-                return true;
-            },
-            'get' => function($tokenParam) use ($returnValue) {
-                return $returnValue;
-            },
+            'getHasSessionId' => fn() => true,
+            'get' => fn($tokenParam) => $returnValue,
         ]);
     }
 

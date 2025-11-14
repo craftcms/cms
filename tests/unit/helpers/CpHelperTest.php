@@ -144,7 +144,7 @@ class CpHelperTest extends TestCase
         self::assertStringContainsString('aria-labelledby="', $fieldset);
         self::assertStringContainsString('role="group"', $fieldset);
         // translatable
-        self::assertStringContainsString('class="t9n-indicator"', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
+        self::assertStringContainsString('class="t9n-indicator prevent-autofocus"', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
         // instructions
         $withInstructions = Cp::fieldHtml('<input>', ['instructionsId' => 'inst-id', 'instructions' => '**Test**']);
         self::assertStringContainsString('id="inst-id"', $withInstructions);

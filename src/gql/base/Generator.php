@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Field;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
+use craft\models\FieldLayout;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Generator
@@ -28,7 +30,7 @@ abstract class Generator
      */
     protected static function getContentFields(mixed $context): array
     {
-        /** @var FieldLayoutBehavior $context */
+        /** @var FieldLayoutBehavior|FieldLayout $context */
         try {
             $schema = Craft::$app->getGql()->getActiveSchema();
         } catch (GqlException $e) {
@@ -37,13 +39,22 @@ abstract class Generator
             return [];
         }
 
-        $contentFields = $context->getCustomFields();
         $contentFieldGqlTypes = [];
+        $layout = $context instanceof FieldLayout ? $context : $context->getFieldLayout();
 
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            if ($contentField->includeInGqlSchema($schema)) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+        if ($layout) {
+            foreach ($layout->getCustomFields() as $contentField) {
+                /** @var Field $contentField */
+                if ($contentField->includeInGqlSchema($schema)) {
+                    $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                }
+            }
+    
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                $handle = $generatedField['handle'] ?? '';
+                if ($handle !== '' && !isset($contentFieldGqlTypes[$handle])) {
+                    $contentFieldGqlTypes[$handle] = Type::string();
+                }
             }
         }
 

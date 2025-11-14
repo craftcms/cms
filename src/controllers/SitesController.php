@@ -120,17 +120,15 @@ class SitesController extends Controller
 
         $view = Craft::$app->getView();
         $view->startJsBuffer();
-        $html = $view->namespaceInputs(function() {
-            return Cp::autosuggestFieldHtml([
-                'label' => Craft::t('app', 'Group Name'),
-                'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
-                'id' => 'name',
-                'name' => 'name',
-                'value' => $this->request->getBodyParam('name') ?? '',
-                'suggestEnvVars' => true,
-                'required' => true,
-            ]);
-        }, 'name' . StringHelper::randomString(10));
+        $html = $view->namespaceInputs(fn() => Cp::autosuggestFieldHtml([
+            'label' => Craft::t('app', 'Group Name'),
+            'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
+            'id' => 'name',
+            'name' => 'name',
+            'value' => $this->request->getBodyParam('name') ?? '',
+            'suggestEnvVars' => true,
+            'required' => true,
+        ]), 'name' . StringHelper::randomString(10));
         $js = $view->clearJsBuffer();
 
         return $this->asJson(compact('html', 'js'));

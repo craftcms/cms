@@ -16,6 +16,7 @@ use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 
 /**
@@ -193,12 +194,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
             'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
+            'disabled' => $static,
         ]);
     }
 
@@ -221,8 +233,11 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
-            $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+        if ($value !== null) {
+            $value = StringHelper::escapeShortcodes($value);
+            if (!Craft::$app->getDb()->getSupportsMb4()) {
+                $value = StringHelper::emojiToShortcodes($value);
+            }
         }
         return $value;
     }
@@ -235,6 +250,22 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
         return TextFieldConditionRule::class;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        $previewHtml = parent::getPreviewHtml($value, $element);
+
+        if (!$this->code) {
+            return $previewHtml;
+        }
+
+        return Html::tag('div', $previewHtml, [
+            'class' => 'code',
+        ]);
+    }
+    
     /**
      * @inheritdoc
      */

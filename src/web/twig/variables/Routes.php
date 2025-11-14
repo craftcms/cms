@@ -32,6 +32,9 @@ class Routes
         $results = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
 
         foreach ($results as $routeUid => $route) {
+            if (!array_key_exists('siteUid', $route)) {
+                continue;
+            }
             $uriDisplayHtml = '';
 
             if (!empty($route['uriParts'])) {

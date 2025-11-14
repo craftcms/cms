@@ -249,6 +249,20 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function provisionalDrafts(?bool $value = true): static;
 
     /**
+     * Narrows the query results to only canonical elements, including elements
+     * that reference another canonical element via `canonicalId` so long as they
+     * aren’t a draft.
+     *
+     * Unpublished drafts can be included as well if `drafts(null)` and
+     * `draftOf(false)` are also passed.
+     *
+     * @param bool $value The property value
+     * @return static self reference
+     * @since 5.7.0
+     */
+    public function canonicalsOnly(bool $value = true): static;
+
+    /**
      * Narrows the query results to only unpublished drafts which have been saved after initial creation.
      *
      * ---

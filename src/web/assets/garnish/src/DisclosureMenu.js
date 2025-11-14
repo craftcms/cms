@@ -13,6 +13,7 @@ export default Base.extend(
     $container: null,
     $alignmentElement: null,
     $nextFocusableElement: null,
+    $searchInput: null,
 
     _viewportWidth: null,
     _viewportHeight: null,
@@ -30,6 +31,8 @@ export default Base.extend(
 
     searchStr: '',
     clearSearchStrTimeout: null,
+
+    infoIconActivated: false,
 
     /**
      * Constructor
@@ -89,7 +92,84 @@ export default Base.extend(
       }
       this.addDisclosureMenuEventListeners();
 
+      // add a search input?
+      this.settings.withSearchInput =
+        this.settings.withSearchInput ||
+        Garnish.hasAttr(this.$container, 'data-with-search-input');
+      if (this.settings.withSearchInput) {
+        this.addSearchInput();
+      }
+
       Garnish.DisclosureMenu.instances.push(this);
+    },
+
+    addSearchInput: function () {
+      const $outerContainer = $('<div/>', {
+        class: 'search-container',
+      }).prependTo(this.$container);
+      const $innerContainer = $('<div/>', {
+        class: 'texticon search icon clearable',
+      }).appendTo($outerContainer);
+      this.$searchInput = $('<input/>', {
+        class: 'fullwidth text',
+        type: 'text',
+        inputmode: 'search',
+        autocomplete: 'off',
+        placeholder: Craft.t('app', 'Search'),
+      }).appendTo($innerContainer);
+      const $clearBtn = $('<div/>', {
+        class: 'clear-btn hidden',
+        title: Craft.t('app', 'Clear'),
+        'aria-label': Craft.t('app', 'Clear'),
+      }).appendTo($innerContainer);
+
+      this.$searchInput.on('input', (ev) => {
+        const val = this.$searchInput.val().toLowerCase().replace(/['"]/g, '');
+        const $options = this.$container.find('li');
+
+        if (val) {
+          $clearBtn.removeClass('hidden');
+          let $matches = $();
+          $options.each((i, option) => {
+            const $option = $(option);
+            if ($option.text().toLowerCase().includes(val)) {
+              $matches = $matches.add($option);
+            }
+          });
+          $matches.removeClass('filtered');
+          $options.not($matches).addClass('filtered');
+
+          // also match the headings
+          this.$container.find('h3').each((i, heading) => {
+            const $heading = $(heading);
+            if ($heading.text().toLowerCase().includes(val)) {
+              $heading.next('ul').find('li.filtered').removeClass('filtered');
+            }
+          });
+        } else {
+          $clearBtn.addClass('hidden');
+          $options.removeClass('filtered');
+        }
+
+        this.updateVisibility();
+        this.setContainerPosition();
+      });
+
+      this.addListener(this.$searchInput, 'keydown', (ev) => {
+        switch (ev.keyCode) {
+          case Garnish.ESC_KEY:
+            this.$searchInput.val('').trigger('input');
+            break;
+          case Garnish.RETURN_KEY:
+            // they most likely don't want to submit the form from here
+            ev.preventDefault();
+            break;
+        }
+      });
+
+      this.addListener($clearBtn, 'click', () => {
+        this.$searchInput.val('').trigger('input').focus();
+      });
     },
 
     addDisclosureMenuEventListeners: function () {
@@ -171,6 +251,18 @@ export default Base.extend(
 
     handleMousedown: function (event) {
       const newTarget = event.target;
+
+      // if the info icon was previously activated, reset the activation status,
+      // and don't count this mouse down as one in the disclosure menu
+      if (this.infoIconActivated) {
+        this.infoIconActivated = false;
+        return;
+      }
+
+      if (event.target.classList.contains('info')) {
+        this.infoIconActivated = true;
+      }
+
       const triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
       const newTargetIsInsideDisclosure =
         this.$container[0] === event.target ||
@@ -221,6 +313,7 @@ export default Base.extend(
       }
 
       if (
+        ev.target.nodeName !== 'INPUT' &&
         ev.key &&
         (ev.key.match(/^[^ ]$/) || (this.searchStr.length && ev.key === ' '))
       ) {
@@ -293,11 +386,7 @@ export default Base.extend(
       }
       this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
-      this.$container.velocity('stop');
-      this.$container.css({
-        opacity: 1,
-        display: '',
-      });
+      this.$container.velocity('stop').addClass('visible').css('opacity', 1);
 
       // In case its default display is set to none
       if (this.$container.css('display') === 'none') {
@@ -349,7 +438,12 @@ export default Base.extend(
         return;
       }
 
-      this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
+      this.$container.velocity('fadeOut', {
+        duration: Garnish.FX_DURATION,
+        complete: () => {
+          this.$container.removeClass('visible').css('display', '');
+        },
+      });
 
       this.$trigger.attr('aria-expanded', 'false');
 
@@ -360,6 +454,10 @@ export default Base.extend(
       if (this.$nextFocusableElement) {
         this.removeListener(this.$nextFocusableElement, 'keydown');
         this.$nextFocusableElement = null;
+      }
+
+      if (this.$searchInput) {
+        this.$searchInput.val('').trigger('input');
       }
 
       this.trigger('hide');
@@ -535,9 +633,29 @@ export default Base.extend(
         el.href = Craft.getUrl(item.url);
       }
       if (item.icon) {
-        el.setAttribute('data-icon', item.icon);
-        if (item.iconColor) {
-          el.classList.add(item.iconColor);
+        if (typeof item.icon === 'string') {
+          el.setAttribute('data-icon', item.icon);
+          if (item.iconColor) {
+            el.classList.add(item.iconColor);
+          }
+        } else {
+          (async () => {
+            let icon;
+            if (item.icon instanceof Element) {
+              icon = item.icon;
+            } else if (typeof item.icon === 'function') {
+              icon = await item.icon();
+            } else {
+              throw 'Unsupported icon type';
+            }
+            const span = document.createElement('span');
+            span.className = 'icon';
+            if (item.iconColor) {
+              span.classList.add(item.iconColor);
+            }
+            span.append(icon);
+            el.prepend(span);
+          })();
         }
       }
       if (item.action) {
@@ -559,7 +677,7 @@ export default Base.extend(
         el.setAttribute('data-redirect', item.redirect);
       }
       if (item.attributes) {
-        for (let name in item.attributes) {
+        for (const name in item.attributes) {
           el.setAttribute(name, item.attributes[name]);
         }
       }
@@ -597,9 +715,9 @@ export default Base.extend(
 
       this.addListener(el, 'activate', () => {
         if (item.onActivate) {
-          item.onActivate();
+          item.onActivate(el);
         } else if (item.callback) {
-          item.callback();
+          item.callback(el);
         }
         setTimeout(() => {
           this.hide();
@@ -609,18 +727,28 @@ export default Base.extend(
       return li;
     },
 
-    addItem: function (item, ul) {
+    addList: function () {
+      return $('<ul/>').appendTo(this.$container)[0];
+    },
+
+    addItem: function (item, ul, prepend = false) {
       const li = this.createItem(item);
 
       if (!ul) {
         ul = this.$container.children('ul').last().get(0) || this.addGroup();
       }
 
-      ul.append(li);
+      if (prepend) {
+        ul.prepend(li);
+      } else {
+        ul.append(li);
+      }
+
       const el = li.querySelector('a, button');
 
       // show or hide it (show, in case the UL is already hidden)
       this.toggleItem(el, !item.hidden);
+      this.updateVisibility();
 
       return el;
     },
@@ -656,9 +784,10 @@ export default Base.extend(
       const padded = this.isPadded();
 
       if (heading) {
-        const h6 = document.createElement('h6');
+        const h6 = document.createElement('h3');
+        h6.classList.add('h6');
         if (padded) {
-          h6.className = 'padded';
+          h6.classList.add('padded');
         }
         h6.textContent = heading;
 
@@ -683,7 +812,8 @@ export default Base.extend(
       if (addHrs) {
         if (
           ul.previousElementSibling &&
-          ul.previousElementSibling.nodeName !== 'HR'
+          ul.previousElementSibling.nodeName !== 'HR' &&
+          !ul.previousElementSibling.classList.contains('search-container')
         ) {
           this.addHr(ul);
         }
@@ -691,6 +821,8 @@ export default Base.extend(
           this.addHr(ul.nextElementSibling);
         }
       }
+
+      this.updateVisibility();
 
       return ul;
     },
@@ -710,19 +842,8 @@ export default Base.extend(
     showItem(el) {
       const li = el.parentNode;
       li.classList.remove('hidden');
-      const ul = li.parentNode;
-      if (ul.classList.contains('hidden')) {
-        ul.classList.remove('hidden');
-        if (
-          ul.previousElementSibling &&
-          ul.previousElementSibling.nodeName === 'HR'
-        ) {
-          ul.previousElementSibling.classList.remove('hidden');
-        }
-        if (ul.nextElementSibling && ul.nextElementSibling.nodeName === 'HR') {
-          ul.nextElementSibling.classList.remove('hidden');
-        }
-      }
+
+      this.updateVisibility();
 
       if (this.isExpanded()) {
         this.setContainerPosition();
@@ -732,25 +853,79 @@ export default Base.extend(
     hideItem(el) {
       const li = el.parentNode;
       li.classList.add('hidden');
-      const ul = li.parentNode;
-      if (ul.querySelectorAll(':scope > li:not(.hidden)').length === 0) {
-        ul.classList.add('hidden');
-        if (
-          ul.previousElementSibling &&
-          ul.previousElementSibling.nodeName === 'HR'
-        ) {
-          ul.previousElementSibling.classList.add('hidden');
-        } else if (
-          ul.nextElementSibling &&
-          ul.nextElementSibling.nodeName === 'HR'
-        ) {
-          ul.nextElementSibling.classList.add('hidden');
-        }
-      }
+
+      this.updateVisibility();
 
       if (this.isExpanded()) {
         this.setContainerPosition();
       }
+    },
+
+    toggleGroup(group) {
+      if (group.querySelectorAll('li:not(.hidden):not(.filtered)').length) {
+        group.classList.remove('hidden');
+      } else {
+        group.classList.add('hidden');
+      }
+    },
+
+    removeItem(el) {
+      const li = el.parentNode;
+      const ul = li.parentNode;
+      li.remove();
+      if (ul.querySelectorAll(':scope > li').length === 0) {
+        ul.remove();
+      }
+
+      this.updateVisibility();
+
+      if (this.isExpanded()) {
+        this.setContainerPosition();
+      }
+    },
+
+    /**
+     * @deprecated
+     */
+    updateHrVisibility() {
+      this.updateVisibility();
+    },
+
+    updateVisibility() {
+      this.$container.children('ul,.menu-group').each((i, el) => {
+        this.toggleGroup(el);
+      });
+
+      this.$container.find('hr').each((i, el) => {
+        const $el = $(el);
+        const $prevVisibleItems = $el
+          .prevUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        const $nextVisibleItems = $el
+          .nextUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if ($prevVisibleItems.length && $nextVisibleItems.length) {
+          $el.removeClass('hidden');
+        } else {
+          $el.addClass('hidden');
+        }
+      });
+
+      this.$container.find('h3').each((i, el) => {
+        const $el = $(el);
+        const $nextVisibleItems = $el
+          .nextUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if ($nextVisibleItems.length) {
+          $el.removeClass('hidden');
+        } else {
+          $el.addClass('hidden');
+        }
+      });
+    },
+
+    hasVisibleItems: function () {
+      return !!this.$container.find('li:not(.hidden)').length;
     },
 
     /**
@@ -759,9 +934,8 @@ export default Base.extend(
     destroy: function () {
       this.$trigger.removeData('trigger');
 
-      Garnish.DisclosureMenu.instances = Craft.Preview.instances.filter(
-        (o) => o !== this
-      );
+      Garnish.DisclosureMenu.instances =
+        Garnish.DisclosureMenu.instances.filter((o) => o !== this);
 
       this.base();
     },
@@ -801,6 +975,7 @@ export default Base.extend(
     defaults: {
       position: null,
       windowSpacing: 5,
+      withSearchInput: false,
     },
 
     /**

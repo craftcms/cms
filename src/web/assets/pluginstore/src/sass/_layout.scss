@@ -19,10 +19,10 @@ a {
   .ps-sidebar {
     @apply tw-px-6 tw-py-6 tw-w-full;
     background-color: var(--gray-050);
-    border-start-start-radius: var(--large-border-radius);
+    border-start-start-radius: var(--radius-lg);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
-    border-end-start-radius: var(--large-border-radius);
+    border-end-start-radius: var(--radius-lg);
     @apply lg:tw-border-b-0 lg:tw-border-r lg:tw-overflow-auto lg:tw-w-64;
 
     .categories {

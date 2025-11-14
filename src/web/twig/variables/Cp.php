@@ -10,6 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\elements\Entry;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -183,7 +184,7 @@ class Cp extends Component
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
      * - `id` – The HTML `id` attribute the nav item should have (optional)
-     * - `icon` – The path to an SVG file that should be used as the nav item icon (optional)
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
      * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      * - `badgeCount` – A number that should be displayed beside the nav item when unselected
      * - `subnav` – A sub-array of subnav items
@@ -192,6 +193,8 @@ class Cp extends Component
      *
      * - `label` – The human-facing subnav item label
      * - `url` – The URL the subnav item should link to
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
+     * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      *
      * For example:
      *
@@ -229,11 +232,25 @@ class Cp extends Component
         ];
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-                'icon' => 'newspaper',
-            ];
+            $elementSourcesService = Craft::$app->getElementSources();
+            $entryPages = $elementSourcesService->getPages(Entry::class);
+
+            if (!empty($entryPages)) {
+                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
+                foreach ($entryPages as $page) {
+                    $navItems[] = [
+                        'label' => $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                        'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
+                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
+                    ];
+                }
+            } else {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'Entries'),
+                    'url' => 'content/entries',
+                    'icon' => 'newspaper',
+                ];
+            }
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
@@ -337,7 +354,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => 'gear',
+                'icon' => Craft::$app->getConfig()->getGeneral()->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -516,7 +533,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get(App::licenseInfoCacheKey()) !== false);
+        return (Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) !== false);
     }
 
     /**
@@ -919,11 +936,11 @@ class Cp extends Component
     {
         return Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
-            ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
-                'label' => $fs->name,
+                'label' => Craft::t('site', $fs->name),
                 'value' => $fs->handle,
             ])
+            ->sortBy(fn(array $option) => $option['label'])
             ->all();
     }
 

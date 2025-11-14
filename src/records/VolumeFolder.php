@@ -53,7 +53,7 @@ class VolumeFolder extends ActiveRecord
      */
     public function getParent(): ActiveQueryInterface
     {
-        return $this->hasOne(__CLASS__, ['id' => 'parentId']);
+        return $this->hasOne(self::class, ['id' => 'parentId']);
     }
 
     /**

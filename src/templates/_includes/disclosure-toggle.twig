@@ -1,17 +1,26 @@
 {% set attributes = attributes ?? {} %}
+{% set id = id ?? null %}
 {% set controls = controls ?? null %}
 {% set expanded = expanded ?? 'true' %}
 {% set content = (content ?? block('content') ?? '')|trim %}
-{% set cookieName = cookieName ?? null %}
-{% set cookieState = cookieName ? craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':' ~ cookieName) : null %}
+{% set persist = persist ?? false %}
+{% set storageMode = storageMode ?? 'localStorage' %}
+{% set storageKey = storageKey ?? null %}
 
-{% set state = state ?? cookieState ?? 'expanded' %}
+{% set cookieState = null %}
+{% if persist and storageMode == 'cookies' and storageKey %}
+    {% set cookieState = storageKey ? craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':' ~ storageKey) : null %}
+{% endif %}
+
+{% set state = state ?? cookieState %}
 
 {% if controls %}
     <craft-disclosure
-        id="{{ id ?? null }}"
-        {% if cookieName %}cookie-name="{{ cookieName }}"{% endif %}
-        state="{{ state }}"
+        {% if id %}id="{{ id }}"{% endif %}
+        {% if persist %}persist{% endif %}
+        {% if persist and storageKey %}storage-key="{{ storageKey }}"{% endif %}
+        {% if persist and storageMode %}storage-mode="{{ storageMode }}"{% endif %}
+        {% if state %}state="{{ state }}"{% endif %}
     >
         <button
             type="button"

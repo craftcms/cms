@@ -15,13 +15,28 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }
-    if (config.html) {
-      $btn.html(config.html);
-    } else if (config.label) {
-      $btn.append($('<div class="label"/>').text(config.label));
+    let $iconContainer;
+    if (config.icon || config.label || config.html) {
+      const $labelContainer = $('<div class="inline-flex gap-xs"/>').appendTo(
+        $btn
+      );
+      if (config.icon) {
+        $iconContainer = $('<div class="cp-icon"/>').prependTo($labelContainer);
+      }
+      if (config.label || config.html) {
+        const $label = $('<div class="label"/>').appendTo($labelContainer);
+        if (config.label) {
+          $label.text(config.label);
+        } else {
+          $label.html(config.html);
+        }
+      }
     } else {
       $btn.addClass('btn-empty');
     }
@@ -44,18 +59,39 @@ Craft.ui = {
       $btn.attr('disabled', 'disabled');
     }
 
+    // todo: make this function async so we can add await here
+    if (config.icon) {
+      this.icon(config.icon).then((svg) => {
+        $iconContainer.append(svg);
+      });
+    }
+
     return $btn;
   },
 
-  createSubmitButton: function (config) {
-    const $btn = this.createButton(
+  createSubmitButton: function (config = {}) {
+    return this.createButton(
       Object.assign({}, config, {
         type: 'submit',
         label: config.label || Craft.t('app', 'Submit'),
       })
-    );
-    $btn.addClass('submit');
-    return $btn;
+    ).addClass('submit');
+  },
+
+  createPasteButton: function (config = {}) {
+    return this.createButton(
+      Object.assign({}, config, {
+        icon: 'duplicate',
+        label:
+          config.label ||
+          Craft.uppercaseFirst(
+            Craft.t('app', 'Paste {type}', {
+              type: Craft.t('app', 'elements'),
+            })
+          ),
+        spinner: true,
+      })
+    ).addClass('paste-btn');
   },
 
   createTextInput: function (config) {
@@ -166,11 +202,15 @@ Craft.ui = {
       class: 'copytext',
     });
 
-    let $input = this.createTextInput(
-      $.extend({}, config, {
-        readonly: true,
-      })
-    ).appendTo($container);
+    const inputConfig = $.extend({}, config, {
+      readonly: true,
+    });
+    if (config.textarea) {
+    }
+    const $input = config.textarea
+      ? this.createTextarea(inputConfig)
+      : this.createTextInput(inputConfig);
+    $input.appendTo($container);
 
     let $btn = $('<button/>', {
       type: 'button',
@@ -643,6 +683,69 @@ Craft.ui = {
     }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
+    );
+  },
+
+  createIconPicker: function (config) {
+    const $container = $('<div/>', {
+      id: config.id,
+      class: 'icon-picker',
+    });
+
+    const $iconContainer = $('<div/>', {
+      class: 'icon-picker--icon',
+      lang: Craft.language,
+    }).appendTo($container);
+
+    if (config.small) {
+      $container.addClass('small');
+      $iconContainer.addClass('small');
+    }
+
+    if (!config.static) {
+      const $chooseBtn = this.createButton({
+        class: 'icon-picker--choose-btn',
+        label: Craft.t('app', 'Choose'),
+      }).appendTo($container);
+
+      const $removeBtn = this.createButton({
+        class: 'icon-picker--remove-btn hidden',
+        label: Craft.t('app', 'Remove'),
+      }).appendTo($container);
+
+      if (config.small) {
+        $chooseBtn.addClass('small');
+        $removeBtn.addClass('small');
+      }
+
+      if (config.name) {
+        $('<input/>', {
+          type: 'hidden',
+          name: config.name,
+        }).appendTo($container);
+      }
+    }
+
+    const iconPicker = new Craft.IconPicker($container, {
+      freeOnly: config.freeOnly,
+    });
+
+    if (config.value) {
+      iconPicker.selectIcon(config.value);
+    }
+
+    return $container;
+  },
+
+  createIconPickerField: function (config) {
+    if (!config.id) {
+      config.id = 'iconpicker' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
+    }
+    return this.createField(this.createIconPicker(config), config).addClass(
+      'iconpicker-field'
     );
   },
 
@@ -1272,16 +1375,26 @@ Craft.ui = {
     if (label) {
       const $heading = $('<div class="heading"/>').appendTo($field);
 
-      $(config.fieldset ? '<legend/>' : '<label/>', {
+      const $label = $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
-        class: config.required ? 'required' : null,
         for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
+
+      if (config.required) {
+        $('<span/>', {
+          class: 'visually-hidden',
+          text: Craft.t('app', 'Required'),
+        }).appendTo($label);
+        $('<span/>', {
+          class: 'required',
+          'aria-hidden': 'true',
+        }).appendTo($label);
+      }
     }
 
     if (config.instructions) {
@@ -1528,5 +1641,28 @@ Craft.ui = {
     }
 
     return null;
+  },
+
+  icon: async function (icon) {
+    if (!Craft.icons) {
+      Craft.icons = {};
+    }
+
+    if (!Craft.icons[icon]) {
+      await Craft.queue.push(async () => {
+        // maybe something else loaded it by now
+        if (Craft.icons[icon]) {
+          return;
+        }
+
+        const {data} = await Craft.sendActionRequest('POST', 'app/icon-svg', {
+          data: {icon},
+        });
+
+        Craft.icons[icon] = data.iconSvg;
+      });
+    }
+
+    return $(Craft.icons[icon])[0];
   },
 };

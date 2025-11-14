@@ -68,6 +68,11 @@
     errors: volume.getErrors('transformFsHandle'),
     data: {'error-key': 'transformFsHandle'},
     disabled: readOnly,
+    selectizeOptions: {
+        extraPlugins: false,
+        allowEmptyOption: true,
+        placeholder: 'Same as asset filesystem'|t('app'),
+    },
 }) }}
 
 {{ forms.autosuggestField({
@@ -168,6 +173,7 @@
 
 {{ forms.fieldLayoutDesignerField({
     fieldLayout: volume.getFieldLayout(),
+    withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,
 }) }}

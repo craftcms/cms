@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.5.10',
-    'schemaVersion' => '5.6.0.1',
+    'version' => '5.8.19',
+    'schemaVersion' => '5.9.0.2',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -226,17 +226,11 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => function() {
-            return Craft::$app->getFormattingLocale()->getFormatter();
-        },
+        'formatter' => fn() => Craft::$app->getFormattingLocale()->getFormatter(),
 
-        'formattingLocale' => function() {
-            return craft\helpers\App::createFormattingLocale();
-        },
+        'formattingLocale' => fn() => craft\helpers\App::createFormattingLocale(),
 
-        'locale' => function() {
-            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
-        },
+        'locale' => fn() => Craft::$app->getI18n()->getLocaleById(Craft::$app->language),
 
         'mailer' => function() {
             $config = craft\helpers\App::mailerConfig();

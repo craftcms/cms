@@ -30,7 +30,7 @@ class PageRenderChecksCest
     /**
      * @var User|null
      */
-    public ?User $currentUser;
+    public ?User $currentUser = null;
 
     /**
      * @param FunctionalTester $I

@@ -160,9 +160,7 @@ class ArrayHelperTest extends TestCase
                     ['name' => 'john'],
                     ['name' => 'michael'],
                 ],
-                function($array) {
-                    return $array['name'];
-                },
+                fn($array) => $array['name'],
                 'john',
                 true
             ));
@@ -175,9 +173,7 @@ class ArrayHelperTest extends TestCase
                     'john' => ['name' => 'john'],
                     'michael' => ['name' => 'michael'],
                 ],
-                function($array) {
-                    return $array['name'];
-                },
+                fn($array) => $array['name'],
                 'john',
                 true,
                 false

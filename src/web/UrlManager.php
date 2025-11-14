@@ -438,7 +438,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute(Request $request): array|false
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /** @var YiiUrlRule $rule */
+        /** @var YiiUrlRule|object $rule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 

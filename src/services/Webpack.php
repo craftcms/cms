@@ -23,7 +23,7 @@ use yii\web\AssetBundle;
 /**
  * Webpack service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getWebpack()|`Craft::$app->webpack()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getWebpack()|`Craft::$app->getWebpack()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.22

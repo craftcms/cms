@@ -8,7 +8,6 @@
 namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use Countable;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
@@ -72,9 +71,10 @@ use IteratorAggregate;
 use Money\Money;
 use Throwable;
 use Traversable;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
-use Twig\ExpressionParser;
+use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
@@ -114,6 +114,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
+    /**
+     * Called by:
+     * - has every (operator)
+     * - has some (operator)
+     * - |filter
+     * - |find
+     * - |map
+     * - |reduce
+     * - |sort
+     */
     private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
     {
         if (
@@ -124,6 +134,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'exec',
                 'file_get_contents',
                 'file_put_contents',
+                'popen',
+                'call_user_func',
             ])
         ) {
             throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));
@@ -161,7 +173,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder(),
+            new EventTagAdder($this->view),
         ];
     }
 
@@ -242,11 +254,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
-            new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
@@ -310,63 +322,30 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getTests(): array
     {
         return [
-            new TwigTest('array', function($obj): bool {
-                return is_array($obj);
-            }),
-            new TwigTest('boolean', function($obj): bool {
-                return is_bool($obj);
-            }),
-            new TwigTest('callable', function($obj): bool {
-                return is_callable($obj);
-            }),
-            new TwigTest('countable', function($obj): bool {
-                if (!function_exists('is_countable')) {
-                    return is_array($obj) || $obj instanceof Countable;
-                }
-                return is_countable($obj);
-            }),
-            new TwigTest('float', function($obj): bool {
-                return is_float($obj);
-            }),
-            new TwigTest('instance of', function($obj, $class) {
-                return $obj instanceof $class;
-            }),
-            new TwigTest('integer', function($obj): bool {
-                return is_int($obj);
-            }),
-            new TwigTest('missing', function($obj) {
-                return $obj instanceof MissingComponentInterface;
-            }),
-            new TwigTest('numeric', function($obj): bool {
-                return is_numeric($obj);
-            }),
-            new TwigTest('object', function($obj): bool {
-                return is_object($obj);
-            }),
-            new TwigTest('resource', function($obj): bool {
-                return is_resource($obj);
-            }),
-            new TwigTest('scalar', function($obj): bool {
-                return is_scalar($obj);
-            }),
-            new TwigTest('string', function($obj): bool {
-                return is_string($obj);
-            }),
+            new TwigTest('array', fn($obj): bool => is_array($obj)),
+            new TwigTest('boolean', fn($obj): bool => is_bool($obj)),
+            new TwigTest('callable', fn($obj): bool => is_callable($obj)),
+            new TwigTest('countable', fn($obj): bool => is_countable($obj)),
+            new TwigTest('float', fn($obj): bool => is_float($obj)),
+            new TwigTest('instance of', fn($obj, $class) => $obj instanceof $class),
+            new TwigTest('integer', fn($obj): bool => is_int($obj)),
+            new TwigTest('missing', fn($obj) => $obj instanceof MissingComponentInterface),
+            new TwigTest('numeric', fn($obj): bool => is_numeric($obj)),
+            new TwigTest('object', fn($obj): bool => is_object($obj)),
+            new TwigTest('resource', fn($obj): bool => is_resource($obj)),
+            new TwigTest('scalar', fn($obj): bool => is_scalar($obj)),
+            new TwigTest('string', fn($obj): bool => is_string($obj)),
         ];
     }
 
     /**
      * @inheritdoc
      */
-    /** @phpstan-ignore-next-line */
-    public function getOperators(): array
+    public function getExpressionParsers(): array
     {
         return [
-            [],
-            [
-                'has some' => ['precedence' => 20, 'class' => HasSomeBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-                'has every' => ['precedence' => 20, 'class' => HasEveryBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-            ],
+            new BinaryOperatorExpressionParser(HasSomeBinary::class, 'has some', 20),
+            new BinaryOperatorExpressionParser(HasEveryBinary::class, 'has every', 20),
         ];
     }
 
@@ -936,9 +915,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             $oldClasses = Html::parseTagAttributes($tag)['class'] ?? [];
-            $newClasses = array_filter($oldClasses, function(string $oldClass) use ($class) {
-                return is_string($class) ? $oldClass !== $class : !in_array($oldClass, $class, true);
-            });
+            $newClasses = array_filter($oldClasses, fn(string $oldClass) => is_string($class) ? $oldClass !== $class : !in_array($oldClass, $class, true));
 
             $newTag = Html::modifyTagAttributes($tag, ['class' => false]);
             if (!empty($newClasses)) {
@@ -963,6 +940,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null, ?bool $regex = null): mixed
     {
+        if ($str === null) {
+            return '';
+        }
+
         if ($search instanceof Traversable) {
             $search = iterator_to_array($search);
         }
@@ -1222,7 +1203,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $groups = [];
 
-        if (!is_string($arrow) && is_callable($arrow)) {
+        if (is_callable($arrow)) {
             foreach ($arr as $key => $item) {
                 $groupKey = (string)$arrow($item, $key);
                 $groups[$groupKey][] = $item;
@@ -1239,6 +1220,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $groups;
     }
 
+    /**
+     * Hashes the given data
+     *
+     * @param string $data The data to be hashed
+     * @param string|null $algo The hashing algorithm to use, e.g. `md5` or `sha256`.
+     * @return string
+     * @since 5.9.0
+     */
+    public function hashFilter(string $data, ?string $algo = null): string
+    {
+        if ($algo === null) {
+            return Craft::$app->getSecurity()->hashData($data);
+        }
+
+        return hash($algo, $data);
+    }
 
     /**
      * Converts a date to the HTTP format (used by HTTP headers such as `Expires`).
@@ -1266,7 +1263,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function indexOfFilter(mixed $haystack, mixed $needle, ?int $default = -1): ?int
     {
         if (is_string($haystack)) {
-            $index = strpos($haystack, $needle);
+            $index = strpos($haystack, (string) $needle);
         } elseif (is_array($haystack)) {
             $index = array_search($needle, $haystack, false);
         } elseif (is_object($haystack) && $haystack instanceof IteratorAggregate) {
@@ -1432,12 +1429,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('randomString', [StringHelper::class, 'randomString']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('seq', [$this, 'seqFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
+            new TwigFunction('uuid', [StringHelper::class, 'UUID']),
 
             // Element authorization functions
             new TwigFunction('canCreateDrafts', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),

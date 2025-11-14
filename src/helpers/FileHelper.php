@@ -254,13 +254,9 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // Remove invisible chars from the filename
         // https://github.com/craftcms/cms/issues/12741
-        // Remove soft hyphens (00ad), no break (0083),
-        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
-        // LTR character (200e), RTL character (200f),
-        // invisible times (2062), invisible comma (2063), invisible plus (2064),
-        // zero width non-break space (feff) in the filename
-        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{200e}|\\x{200f}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+        $filename = preg_replace(StringHelper::invisibleCharsRegex(), '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
@@ -367,7 +363,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
-        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        try {
+            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        } catch (ErrorException $e) {
+            $mimeType = null;
+        }
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
         if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
@@ -462,6 +462,28 @@ class FileHelper extends \yii\helpers\FileHelper
                 static::createDirectory($dir);
             } else {
                 throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
+            }
+        }
+
+        if (!static::isWritable($file)) {
+            throw new ErrorException("The file path \"$file\" is not writable.");
+        }
+
+        if (function_exists('disk_free_space')) {
+            $freeBytes = disk_free_space($dir);
+
+            if ($freeBytes === false) {
+                Craft::warning("Could not determine the free disk space for \"$dir\".");
+            } else {
+                $bytes = StringHelper::byteLength($contents);
+                if ($bytes > $freeBytes) {
+                    throw new ErrorException(sprintf(
+                        "Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+                        $file,
+                        $freeBytes,
+                        $bytes,
+                    ));
+                }
             }
         }
 
@@ -583,7 +605,7 @@ class FileHelper extends \yii\helpers\FileHelper
                         static::removeDirectory($path, $options);
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
-                        if (strpos($e->getMessage(), 'No such file or directory') === false) {
+                        if (!str_contains($e->getMessage(), 'No such file or directory')) {
                             Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }

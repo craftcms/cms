@@ -10,6 +10,18 @@
 
 {% set formHtml %}
   <main>
+    {% if hasLogo %}
+      <h1>
+        {{ tag('img', {
+          id: 'login-logo',
+          src: logo.url,
+          alt: systemName,
+          width: logo.width,
+          height: logo.height,
+        }) }}
+      </h1>
+    {% endif %}
+
     {% include '_special/login.twig' with {
       showResetPassword: true,
       showRememberMeCheckbox: true,
@@ -36,24 +48,7 @@
 
 {% block body %}
   <header>
-    {% if hasLogo %}
-      {% tag siteUrl ? 'a' : 'div' with {
-        id: 'login-logo',
-        href: siteUrl ?? false,
-        rel: siteUrl ? 'noopener' : false,
-        target: siteUrl ? '_blank' : false,
-        title: siteUrl ? 'View site'|t('app') : false,
-      } %}
-        {{ tag('img', {
-          src: logo.url,
-          alt: systemName,
-          width: logo.width,
-          height: logo.height,
-        }) }}
-      {% endtag %}
-    {% else %}
-      {% include '_layouts/components/system-info' %}
-    {% endif %}
+    {% include '_layouts/components/system-info' %}
   </header>
 
   <script type="text/javascript">

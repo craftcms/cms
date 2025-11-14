@@ -53,7 +53,7 @@ export default Base.extend(
       }
 
       if (this.settings.triggerElement) {
-        this.$triggerElement = this.settings.triggerElement;
+        this.$triggerElement = $(this.settings.triggerElement);
       } else {
         this.$triggerElement = Garnish.getFocusedElement();
       }
@@ -166,6 +166,7 @@ export default Base.extend(
           });
         }
 
+        Garnish.$bod.addClass('no-scroll');
         this.onShow();
       }
     },
@@ -214,9 +215,29 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      this.$triggerElement.focus();
+      let $focusTarget = this.$triggerElement;
+
+      // Check for visibility of trigger
+      if ($focusTarget?.is(':hidden')) {
+        const $disclosure = $focusTarget.closest('.menu--disclosure');
+        if ($disclosure.length) {
+          const menuId = $disclosure.attr('id');
+          $focusTarget = $(`[aria-controls="${menuId}"]`);
+        } else {
+          $focusTarget = null;
+        }
+      }
+
+      if ($focusTarget?.length) {
+        $focusTarget.focus();
+      } else {
+        console.error(
+          'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+        );
+      }
 
       this.visible = false;
+      Garnish.$bod.removeClass('no-scroll');
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
       Garnish.resetModalBackgroundLayerVisibility();
@@ -385,7 +406,7 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
-      Garnish.Modal.instances = Craft.Preview.instances.filter(
+      Garnish.Modal.instances = Garnish.Modal.instances.filter(
         (o) => o !== this
       );
 

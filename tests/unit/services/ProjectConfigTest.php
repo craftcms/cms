@@ -79,13 +79,11 @@ class ProjectConfigTest extends TestCase
      */
     protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
-        $internal = $internal ?? $this->internal;
-        $external = $external ?? static::$external;
+        $internal ??= $this->internal;
+        $external ??= static::$external;
 
         $mockConfig = [
-            'getExternalConfig' => function() use ($external) {
-                return new ReadOnlyProjectConfigData($external);
-            },
+            'getExternalConfig' => fn() => new ReadOnlyProjectConfigData($external),
             'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,

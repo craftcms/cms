@@ -13,14 +13,14 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
-use craft\config\GeneralConfig;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\User as UserElement;
+use craft\errors\FieldNotFoundException;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
-use craft\web\View;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -37,6 +37,8 @@ use yii\base\NotSupportedException;
 class ElementHelper
 {
     private const URI_MAX_LENGTH = 255;
+
+    private static ?UserElement $provisionalDraftUser = null;
 
     /**
      * Generates a new temporary slug.
@@ -107,7 +109,7 @@ class ElementHelper
         $slug = StringHelper::stripHtml($slug);
 
         // Remove inner-word punctuation
-        $slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
+        $slug = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $slug);
 
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -783,7 +785,12 @@ class ElementHelper
             foreach ($fieldLayout->getTabs() as $tab) {
                 foreach ($tab->getElements() as $layoutElement) {
                     if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                        try {
+                            $field = $layoutElement->getField();
+                        } catch (FieldNotFoundException) {
+                            continue;
+                        }
+                        return $field->isValueEmpty($element->getFieldValue($attribute), $element);
                     }
                 }
             }
@@ -996,75 +1003,28 @@ class ElementHelper
      */
     public static function renderElements(array $elements, array $variables = []): Markup
     {
-        $view = Craft::$app->getView();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $output = array_map(fn(ElementInterface $element) => self::renderElement($element, $variables, $view, $generalConfig), $elements);
+        $output = array_map(fn(ElementInterface $element) => (string)$element->render($variables), $elements);
         return new Markup(implode("\n", $output), Craft::$app->charset);
-    }
-
-    private static function renderElement(ElementInterface $element, array $variables, View $view, GeneralConfig $generalConfig): string
-    {
-        $refHandle = $element::refHandle();
-        if ($refHandle === null) {
-            throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
-        }
-
-        $variables[$refHandle] = $element;
-        $templates = [
-            sprintf('%s/%s', $generalConfig->partialTemplatesPath, $refHandle),
-        ];
-
-        $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
-        if ($providerHandle !== null) {
-            array_unshift($templates, sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle));
-        }
-
-        foreach ($templates as $template) {
-            if ($view->doesTemplateExist($template, View::TEMPLATE_MODE_SITE)) {
-                return $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
-            }
-        }
-
-        // fallback to the string representation of the element
-        return Html::tag('p', Html::encode((string)$element));
     }
 
     /**
      * Swaps out any canonical elements with provisional drafts, when they exist.
      *
-     * @param ElementInterface[] $elements
+     * @template T of ElementInterface
+     * @param T[] $elements
      * @since 5.2.0
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
-        $user = Craft::$app->getUser()->getIdentity();
-        if (!$user) {
-            return;
-        }
-
-        $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
-
-        if (empty($canonicalElements)) {
-            return;
-        }
-
-        $first = reset($canonicalElements);
-
-        $drafts = $first::find()
-            ->draftOf($canonicalElements)
-            ->draftCreator($user)
-            ->provisionalDrafts()
-            ->siteId($first->siteId)
-            ->status(null)
-            ->indexBy('canonicalId')
-            ->all();
+        /** @var T[] $drafts */
+        $drafts = self::provisionalDrafts($elements);
 
         if (empty($drafts)) {
             return;
         }
 
         // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
-        foreach ($canonicalElements as $i => $element) {
+        foreach ($elements as $i => $element) {
             if (isset($drafts[$element->id])) {
                 $draft = $drafts[$element->id];
                 $draft->setCanonical($element);
@@ -1086,5 +1046,102 @@ class ElementHelper
                 $elements[$i] = $draft;
             }
         }
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @template T of ElementInterface
+     * @param T[] $elements
+     * @since 5.9.0
+     */
+    public static function loadProvisionalChanges(array $elements): void
+    {
+        $drafts = self::provisionalDrafts($elements);
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($elements as $element) {
+            if (isset($drafts[$element->id])) {
+                $draft = $drafts[$element->id];
+                $element->hasProvisionalChanges = true;
+
+                foreach ($draft->getModifiedAttributes() as $name) {
+                    $element->$name = $draft->$name;
+                }
+
+                foreach ($draft->getModifiedFields() as $handle) {
+                    $element->setFieldValue($handle, $draft->getFieldValue($handle));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param ElementInterface[] $elements
+     * @return ElementInterface[]
+     */
+    private static function provisionalDrafts(array $elements): array
+    {
+        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return [];
+        }
+
+        // filter out drafts and revisions
+        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
+        $canonicalElements = array_filter(
+            $elements,
+            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
+        );
+
+        if (empty($canonicalElements)) {
+            return [];
+        }
+
+        $first = reset($canonicalElements);
+
+        return $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
+    }
+
+    /**
+     * Returns whether the given element is a multi-site element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @throws Exception
+     * @since 5.8.0
+     */
+    public static function isMultiSite(ElementInterface $element): bool
+    {
+        // Site info
+        $supportedSites = self::supportedSitesForElement($element, true);
+        if (count($supportedSites) <= 1) {
+            return false;
+        }
+
+        $propSites = array_filter($supportedSites, fn($site) => $site['propagate']);
+        return count($propSites) > 1;
+    }
+
+    /**
+     * Sets user to be used for swapping in provisional drafts.
+     *
+     * @param UserElement|null $user
+     * @since 5.8.0
+     */
+    public static function setProvisionalDraftUser(?UserElement $user): void
+    {
+        self::$provisionalDraftUser = $user;
     }
 }

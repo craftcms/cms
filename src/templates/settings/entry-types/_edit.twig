@@ -31,6 +31,16 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: entryType.description ?? null,
+    errors: entryType.getErrors('description'),
+    disabled: readOnly,
+}) }}
+
 {{ forms.iconPickerField({
     label: 'Icon'|t('app'),
     id: 'icon',
@@ -53,6 +63,20 @@
         'error-key': 'color',
     },
     disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: 'UI Label Format'|t('app'),
+  instructions: 'How entries should be labeled within the control panel.'|t('app'),
+  id: 'uiLabelFormat',
+  name: 'uiLabelFormat',
+  class: 'code',
+  value: entryType.uiLabelFormat,
+  errors: entryType.getErrors('uiLabelFormat'),
+  data: {
+    'error-key': 'uiLabelFormat',
+  },
+  disabled: readOnly,
 }) }}
 
 <hr>
@@ -187,6 +211,7 @@
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
     fieldLayout: entryType.getFieldLayout(),
+    withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,
 }) }}

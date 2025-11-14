@@ -41,6 +41,7 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  activateEventsMuted: false,
   resizeEventsMuted: false,
 
   // Key code constants
@@ -1051,6 +1052,11 @@ $.extend($.event.special, {
           }
         },
         'click.garnish-activate': function (e) {
+          // Ignore if activate events are muted
+          if (Garnish.activateEventsMuted) {
+            return;
+          }
+
           const disabled = $elem.hasClass('disabled');
 
           // Don't interfere if this is a link and it was a Ctrl-click
@@ -1072,12 +1078,16 @@ $.extend($.event.special, {
           }
 
           if (!disabled) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
         'keydown.garnish-activate': function (e) {
-          // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
+          // Ignore if activate events are muted, or the event was bubbled up, or if it wasn't the Space/Return key
           if (
+            Garnish.activateEventsMuted ||
             this !== $elem[0] ||
             ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
           ) {
@@ -1092,15 +1102,24 @@ $.extend($.event.special, {
           }
 
           if (!$elem.hasClass('disabled')) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
       });
 
       if (!$elem.hasClass('disabled')) {
-        $elem.attr('tabindex', '0');
+        // Make it focusable, unless the event is bubbling up to the body element
+        if ($elem[0] !== Garnish.$bod[0]) {
+          $elem.attr('tabindex', '0');
+        }
       } else {
-        $elem.removeAttr('tabindex');
+        // allow setting of tabindex attr if the element has a "read-only" class
+        if (!$elem.hasClass('read-only')) {
+          $elem.removeAttr('tabindex');
+        }
       }
     },
     teardown: function () {

@@ -13,9 +13,9 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -28,6 +28,7 @@ use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -163,6 +164,44 @@ class ElementIndexesController extends BaseElementsController
         ]);
     }
 
+    /**
+     * Returns attribute info for the current source.
+     *
+     * @since 5.9.0
+     */
+    public function actionSourceAttributeInfo(): Response
+    {
+        $elementSources = Craft::$app->getElementSources();
+
+        $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+            ->map(fn(array $option) => [
+                'label' => $option['label'],
+                'attr' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
+
+        $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+            ->map(fn(array $attribute, string $key) => [
+                ...$attribute,
+                'attr' => $key,
+            ])
+            ->values()
+            ->all();
+
+        $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
+            ->map(fn(array $attribute) => $attribute[0])
+            ->filter(fn(string $attribute) => $attribute !== 'title')
+            ->values()
+            ->all();
+
+        return $this->asJson(compact(
+            'sortOptions',
+            'tableColumns',
+            'defaultTableColumns',
+        ));
+    }
 
     /**
      * Renders and returns an element index container, plus its first batch of elements.
@@ -372,7 +411,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $this->elementType::pluralLowerDisplayName();
+                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = StringHelper::toCamelCase($this->elementType::pluralLowerDisplayName());
                     break;
             }
         } elseif (
@@ -635,35 +674,6 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
-     * Returns the condition that should be applied to the element query.
-     *
-     * @return ElementConditionInterface|null
-     * @since 4.0.0
-     */
-    protected function condition(): ?ElementConditionInterface
-    {
-        /** @var array|null $conditionConfig */
-        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->request->getBodyParam('condition');
-
-        if (!$conditionConfig) {
-            return null;
-        }
-
-        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
-
-        if ($condition instanceof ElementCondition) {
-            $referenceElementId = $this->request->getBodyParam('referenceElementId');
-            if ($referenceElementId) {
-                $siteId = $this->request->getBodyParam('referenceElementSiteId');
-                $condition->referenceElement = Craft::$app->getElements()->getElementById((int)$referenceElementId, siteId: $siteId);
-            }
-        }
-
-        return $condition;
-    }
-
-    /**
      * Returns the current view state.
      *
      * @return array
@@ -791,7 +801,8 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if (!empty($descendantIds)) {
-                    $query->andWhere(['not', ['elements.id' => $descendantIds]]);
+                    /** @phpstan-ignore-next-line */
+                    $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
                     $hasFilters = true;
                 }
             }

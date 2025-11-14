@@ -36,6 +36,7 @@ class CustomFieldBehaviorTest extends TestCase
         }
 
         $cBehavior = new CustomFieldBehavior();
+        /** @phpstan-ignore function.impossibleType */
         self::assertFalse(property_exists($cBehavior, 'testRetrofittingDontWork1'));
         self::assertArrayHasKey('testRetrofittingDontWork1', CustomFieldBehavior::$fieldHandles);
 

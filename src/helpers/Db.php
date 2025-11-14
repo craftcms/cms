@@ -42,7 +42,7 @@ class Db
     public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     /**
-     * @var array
+     * @var string[]
      */
     private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
@@ -673,7 +673,12 @@ class Db
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';
                     }
-                    $condition[] = [$operator, $column, static::escapeForLike($val), false];
+
+                    if ($caseInsensitive && $isMysql) {
+                        $condition[] = [$operator, $caseColumn, static::escapeForLike($val), false];
+                    } else {
+                        $condition[] = [$operator, $column, static::escapeForLike($val), false];
+                    }
                     continue;
                 }
 
@@ -818,7 +823,7 @@ class Db
      * `null` values as well.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|bool $value The param value
+     * @param string|bool|null|array<string|bool|null> $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @param string $columnType The database column type the param is targeting
      * @return array
@@ -830,17 +835,31 @@ class Db
         ?bool $defaultValue = null,
         string $columnType = Schema::TYPE_BOOLEAN,
     ): array {
-        self::_normalizeEmptyValue($value);
-        $operator = self::_parseParamOperator($value, '=');
-        $value = $value && $value !== ':empty:';
-        if ($operator === '!=') {
+        if (is_array($value)) {
+            return [
+                'or',
+                ...array_map(fn($val) => static::parseBooleanParam($column, $val, $defaultValue, $columnType), $value),
+            ];
+        }
+
+        if ($value !== null) {
+            self::_normalizeEmptyValue($value);
+            $operator = self::_parseParamOperator($value, '=');
+            $value = $value && $value !== ':empty:';
+        } else {
+            $operator = self::_parseParamOperator($value, '=');
+        }
+
+        if ($operator === '!=' && is_bool($value)) {
             $value = !$value;
         }
 
         if ($columnType === Schema::TYPE_JSON) {
+            /** @phpstan-ignore-next-line */
             $value = match ($value) {
                 true => 'true',
                 false => 'false',
+                null => null,
             };
             $defaultValue = match ($defaultValue) {
                 true => 'true',
@@ -850,7 +869,7 @@ class Db
         }
 
         $condition = [$column => $value];
-        if ($defaultValue === $value) {
+        if ($defaultValue === $value && $value !== null) {
             $condition = ['or', $condition, [$column => null]];
         }
 
@@ -1581,7 +1600,7 @@ class Db
     }
 
     /**
-     * @var Connection|null;
+     * @var Connection|null
      */
     private static ?Connection $_db = null;
 

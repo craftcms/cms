@@ -183,9 +183,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
         $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
         $rules[] = [
-            ['previewCurrency'], 'required', 'when' => function(): bool {
-                return $this->previewFormat === self::FORMAT_CURRENCY;
-            },
+            ['previewCurrency'], 'required', 'when' => fn(): bool => $this->previewFormat === self::FORMAT_CURRENCY,
         ];
         $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
 
@@ -233,27 +231,37 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
     /**
      * @param mixed $value
-     * @return int|float|string|null
+     * @return int|float|null
      */
-    private function _normalizeNumber(mixed $value): float|int|string|null
+    private function _normalizeNumber(mixed $value): float|int|null
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        if ($value === '') {
+        if (is_int($value) || is_float($value) || (is_string($value) && $value !== '')) {
+            $float = (float)$value;
+            $int = (int)$float;
+            return $int == $float ? $int : $float;
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        if ($value === null) {
             return null;
         }
 
-        if (is_numeric($value)) {
-            // ensure we only store the selected number of decimals and that the result is the same as in v4
-            // https://github.com/craftcms/cms/issues/16181
-            $value = round((float)$value, $this->decimals);
-            return $this->decimals === 0 ? (int)$value : $value;
-        }
-
-        return $value;
+        // ensure we only store the selected number of decimals and that the result is the same as in v4
+        // https://github.com/craftcms/cms/issues/16181
+        $value = round((float)$value, $this->decimals);
+        return $this->decimals === 0 ? (int)$value : $value;
     }
 
     /**
@@ -368,11 +376,21 @@ JS;
             return '';
         }
 
-        return match ($this->previewFormat) {
+        $formatted = match ($this->previewFormat) {
             self::FORMAT_DECIMAL => Craft::$app->getFormatter()->asDecimal($value, $this->decimals),
             self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
             default => $value,
         };
+
+        if ($this->prefix) {
+            $formatted = $this->prefix . $formatted;
+        }
+
+        if ($this->suffix) {
+            $formatted = $formatted . $this->suffix;
+        }
+
+        return $formatted;
     }
 
     /**
@@ -381,7 +399,19 @@ JS;
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $value = 1234;
+            if (isset($this->min, $this->max)) {
+                $min = $this->min * (10 ^ $this->decimals);
+                $max = $this->max * (10 ^ $this->decimals);
+                if ($this->step) {
+                    $step = $this->step * (10 ^ $this->decimals);
+                    $value = mt_rand($min / $step, $max / $step) * $step;
+                } else {
+                    $value = mt_rand($min, $max);
+                }
+                $value /= 10 ^ $this->decimals;
+            } else {
+                $value = 1234;
+            }
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());

@@ -26,6 +26,7 @@ use Illuminate\Support\Collection;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -46,14 +47,10 @@ class ExtensionTest extends TestCase
      */
     protected View $view;
 
-    public function _fixtures(): array
-    {
-        return [
-            'globals' => [
-                'class' => GlobalSetFixture::class,
-            ],
-        ];
-    }
+    /**
+     * @var UnitTester
+     */
+    protected UnitTester $tester;
 
     /**
      * @throws LoaderError
@@ -129,7 +126,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -137,10 +134,16 @@ class ExtensionTest extends TestCase
     /**
      * @throws LoaderError
      * @throws SyntaxError
-     * @throws Exception
+     * @throws \Throwable
      */
     public function testElementGlobals(): void
     {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
         $this->testRenderResult(
             'A global set | A different global set',
             '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
@@ -729,6 +732,27 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testHashFilter(): void
+    {
+        $this->testRenderResult(
+            Craft::$app->getSecurity()->hashData('test'),
+            '{{ "test"|hash }}'
+        );
+
+        $this->testRenderResult(
+            '098f6bcd4621d373cade4e832627b4f6',
+            '{{ "test"|hash("md5") }}'
+        );
+
+        $this->testRenderResult(
+            '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+            '{{ "test"|hash("sha256") }}'
+        );
+    }
+
+    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
@@ -1002,6 +1026,12 @@ class ExtensionTest extends TestCase
 
     public function testFieldValueSqlFunction(): void
     {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
         $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
         $valueSql = $field->getValueSql();
@@ -1212,7 +1242,7 @@ class ExtensionTest extends TestCase
     public function testCollectFunction(string $expectedClass, array $items): void
     {
         $this->testRenderResult(
-            Collection::class,
+            $expectedClass,
             "{{ className(collect(items)) }}",
             ['items' => $items],
         );
@@ -1220,12 +1250,13 @@ class ExtensionTest extends TestCase
 
     public static function collectFunctionDataProvider(): array
     {
-        $users = User::find()->all();
+        $entry = new Entry();
+
         return [
             [Collection::class, []],
             [Collection::class, ['foo']],
-            [Collection::class, array_merge($users, ['foo'])],
-            [ElementCollection::class, $users],
+            [Collection::class, [$entry, 'foo']],
+            [ElementCollection::class, [$entry]],
         ];
     }
 

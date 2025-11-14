@@ -136,9 +136,10 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $code = $this->request->getRequiredBodyParam('code');
+        $authService = Craft::$app->getAuth();
 
-        if (!Craft::$app->getAuth()->verify(TOTP::class, $code)) {
-            return $this->asFailure(Craft::t('app', 'Invalid verification code.'));
+        if (!$authService->verify(TOTP::class, $code)) {
+            return $this->asFailure($authService->getAuthErrorMessage());
         }
 
         return $this->asSuccess(Craft::t('app', 'Verification successful.'));
@@ -155,9 +156,10 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $code = $this->request->getRequiredBodyParam('code');
+        $authService = Craft::$app->getAuth();
 
-        if (!Craft::$app->getAuth()->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure(Craft::t('app', 'Invalid recovery code.'));
+        if (!$authService->verify(RecoveryCodes::class, $code)) {
+            return $this->asFailure($authService->getAuthErrorMessage(Craft::t('app', 'Invalid recovery code.')));
         }
 
         return $this->asSuccess(Craft::t('app', 'Verification successful.'));

@@ -303,14 +303,22 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     selectTag: function (option) {
-      var $option = $(option);
+      const $option = $(option);
 
       if ($option.hasClass('disabled')) {
         return;
       }
 
-      var id = $option.data('id');
-      var title = $option.text();
+      const $li = $('<li/>');
+
+      if (this.settings.defaultPlacement === 'beginning') {
+        $li.prependTo(this.$elementsContainer);
+      } else {
+        $li.appendTo(this.$elementsContainer);
+      }
+
+      const id = $option.data('id');
+      const title = $option.text();
 
       const $element = $('<div/>', {
         class: 'chip element small removable',
@@ -318,33 +326,26 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         'data-site-id': this.settings.targetSiteId,
         'data-label': title,
         'data-editable': '1',
-      });
+      }).appendTo($li);
 
-      const $li = $('<li/>').appendTo(this.$elementsContainer);
-      $element.appendTo($li);
-
-      var $chipContent = $('<div/>', {
+      const $chipContent = $('<div/>', {
         class: 'chip-content',
       }).appendTo($element);
 
-      var $titleContainer = $('<div/>', {
+      const $titleContainer = $('<craft-element-label/>', {
         class: 'label',
       }).appendTo($chipContent);
 
-      var $labelLinkContainer = $('<a/>', {
+      $('<span/>', {
         class: 'label-link',
+        text: title,
       }).appendTo($titleContainer);
 
-      $('<span/>', {
-        class: 'title',
-        text: title,
-      }).appendTo($labelLinkContainer);
-
-      var $chipActions = $('<div/>', {
+      $('<div/>', {
         class: 'chip-actions',
       }).appendTo($chipContent);
 
-      var $input = $('<input/>', {
+      const $input = $('<input/>', {
         type: 'hidden',
         name: this.settings.name + '[]',
         value: id,

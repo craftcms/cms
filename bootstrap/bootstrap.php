@@ -192,7 +192,6 @@ $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
 $iconsPath = $srcPath . DIRECTORY_SEPARATOR . 'icons';
 $brandIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'brands';
 $customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
-$regularIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'regular';
 $solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
@@ -211,50 +210,15 @@ Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
 
-// Custom icons
+// Icons
 Craft::setAlias('@appicons/c-debug.svg', "$customIconsPath/c-debug.svg");
 Craft::setAlias('@appicons/c-outline.svg', "$customIconsPath/c-outline.svg");
 Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
 Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
 Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
 Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
-Craft::setAlias('@appicons/element-card.svg', "$customIconsPath/element-card.svg");
-Craft::setAlias('@appicons/graphql.svg', "$customIconsPath/graphql.svg");
 Craft::setAlias('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
-Craft::setAlias('@appicons/list-flip.svg', "$customIconsPath/list-flip.svg");
-Craft::setAlias('@appicons/list-tree-flip.svg', "$customIconsPath/list-tree-flip.svg");
-Craft::setAlias('@appicons/share-flip.svg', "$customIconsPath/share-flip.svg");
-
-// Brands
-Craft::setAlias('@appicons/amazon.svg', "$brandIconsPath/amazon.svg");
-Craft::setAlias('@appicons/codepen.svg', "$brandIconsPath/codepen.svg");
-Craft::setAlias('@appicons/discord.svg', "$brandIconsPath/discord.svg");
-Craft::setAlias('@appicons/dribbble.svg', "$brandIconsPath/dribbble.svg");
-Craft::setAlias('@appicons/facebook.svg', "$brandIconsPath/facebook.svg");
-Craft::setAlias('@appicons/github.svg', "$brandIconsPath/github.svg");
-Craft::setAlias('@appicons/google.svg', "$brandIconsPath/google.svg");
-Craft::setAlias('@appicons/instagram.svg', "$brandIconsPath/instagram.svg");
-Craft::setAlias('@appicons/kickstarter.svg', "$brandIconsPath/kickstarter.svg");
-Craft::setAlias('@appicons/linkedin.svg', "$brandIconsPath/linkedin.svg");
-Craft::setAlias('@appicons/markdown.svg', "$brandIconsPath/markdown.svg");
-Craft::setAlias('@appicons/pinterest.svg', "$brandIconsPath/pinterest.svg");
-Craft::setAlias('@appicons/product-hunt.svg', "$brandIconsPath/product-hunt.svg");
-Craft::setAlias('@appicons/rebel.svg', "$brandIconsPath/rebel.svg");
-Craft::setAlias('@appicons/reddit.svg', "$brandIconsPath/reddit.svg");
-Craft::setAlias('@appicons/shopify.svg', "$brandIconsPath/shopify.svg");
-Craft::setAlias('@appicons/spotify.svg', "$brandIconsPath/spotify.svg");
-Craft::setAlias('@appicons/threads.svg', "$brandIconsPath/threads.svg");
-Craft::setAlias('@appicons/tiktok.svg', "$brandIconsPath/tiktok.svg");
-Craft::setAlias('@appicons/twitch.svg', "$brandIconsPath/twitch.svg");
-Craft::setAlias('@appicons/vimeo.svg', "$brandIconsPath/vimeo.svg");
-Craft::setAlias('@appicons/whatsapp.svg', "$brandIconsPath/whatsapp.svg");
-Craft::setAlias('@appicons/wordpress.svg', "$brandIconsPath/wordpress.svg");
-Craft::setAlias('@appicons/x-twitter.svg', "$brandIconsPath/x-twitter.svg");
-Craft::setAlias('@appicons/xing.svg', "$brandIconsPath/xing.svg");
-Craft::setAlias('@appicons/youtube.svg', "$brandIconsPath/youtube.svg");
-
-// Other
-Craft::setAlias('@appicons/globe.svg', "$regularIconsPath/globe.svg");
+require $iconsPath . DIRECTORY_SEPARATOR . 'aliases.php';
 
 // Renamed icon aliases
 Craft::setAlias('@appicons/alert.svg', "$solidIconsPath/triangle-exclamation.svg");
@@ -285,6 +249,13 @@ Craft::setAlias('@appicons/upgrade.svg', "$solidIconsPath/square-arrow-up.svg");
 Craft::setAlias('@appicons/wand.svg', "$solidIconsPath/wand-magic-sparkles.svg");
 Craft::setAlias('@appicons/world.svg', "$solidIconsPath/earth-americas.svg");
 
+// Set any custom aliases
+foreach ($generalConfig->aliases as $name => $value) {
+    if (is_string($value)) {
+        Craft::setAlias($name, $value);
+    }
+}
+
 $webUrl = App::env('CRAFT_WEB_URL');
 if ($webUrl) {
     Craft::setAlias('@web', $webUrl);
@@ -293,13 +264,6 @@ if ($webUrl) {
 $webRoot = App::env('CRAFT_WEB_ROOT');
 if ($webRoot) {
     Craft::setAlias('@webroot', $webRoot);
-}
-
-// Set any custom aliases
-foreach ($generalConfig->aliases as $name => $value) {
-    if (is_string($value)) {
-        Craft::setAlias($name, $value);
-    }
 }
 
 // Load the config

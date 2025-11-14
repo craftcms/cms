@@ -59,6 +59,12 @@ trait ElementTrait
     public bool $isProvisionalDraft = false;
 
     /**
+     * @var bool Whether provisional changes have been loaded onto this element.
+     * @since 5.9.0
+     */
+    public bool $hasProvisionalChanges = false;
+
+    /**
      * @var string|null The element’s UID
      */
     public ?string $uid = null;
@@ -191,6 +197,13 @@ trait ElementTrait
     public bool $propagateAll = false;
 
     /**
+     * @var bool Whether all required element attributes should be propagated across all its supported sites, but only if otherwise
+     * they wouldn’t validate.
+     * @since 5.9.0
+     */
+    public bool $propagateRequired = false;
+
+    /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
      * @since 3.2.9
      */
@@ -201,6 +214,12 @@ trait ElementTrait
      * @since 3.7.15
      */
     public bool $isNewForSite = false;
+
+    /**
+     * @var bool Whether this is for a newly-created site.
+     * @since 5.6.10
+     */
+    public bool $isNewSite = false;
 
     /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
@@ -218,6 +237,12 @@ trait ElementTrait
      * @since 3.7.5
      */
     public bool $firstSave = false;
+
+    /**
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     * @since 5.9.0
+     */
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
@@ -258,4 +283,13 @@ trait ElementTrait
      * @since 3.2.0
      */
     public bool $hardDelete = false;
+
+    /**
+     * @var bool Whether the element’s search keywords should be indexed immediately.
+     *
+     * If `null`, the search index will only be updated immediately for console requests.
+     *
+     * @since 5.8.0
+     */
+    public ?bool $updateSearchIndexImmediately = null;
 }

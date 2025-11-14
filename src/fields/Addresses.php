@@ -40,6 +40,7 @@ use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use craft\web\assets\cp\CpAsset;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -47,6 +48,7 @@ use yii\db\Expression;
 /**
  * Addresses field type.
  *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
@@ -135,9 +137,7 @@ class Addresses extends Field implements
                 $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
             }
 
-            $ids = array_map(function($id) {
-                return $id instanceof Address ? $id->id : (int)$id;
-            }, $ids);
+            $ids = array_map(fn($id) => $id instanceof Address ? $id->id : (int)$id, $ids);
 
             $existsQuery->andWhere(["addresses_$ns.id" => $ids]);
         }
@@ -366,9 +366,12 @@ class Addresses extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
         ]);
     }
 
@@ -664,9 +667,7 @@ class Addresses extends Field implements
             $config += [
                 'sortable' => true,
                 'canCreate' => true,
-                'createAttributes' => [
-                    'fieldId' => $this->id,
-                ],
+                'canPaste' => true,
                 'minElements' => $this->minAddresses,
                 'maxElements' => $this->maxAddresses,
             ];
@@ -789,6 +790,7 @@ class Addresses extends Field implements
 
     /**
      * @inheritdoc
+     * @return EagerLoadingMap|null|false
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {

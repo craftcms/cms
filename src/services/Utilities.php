@@ -29,7 +29,7 @@ use yii\base\Component;
 /**
  * The Utilities service provides APIs for managing utilities.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->getUtilities()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -106,10 +106,9 @@ class Utilities extends Component
 
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
-        return array_values(array_filter($utilityTypes, function(string $class) use ($disabledUtilities) {
+        return array_values(array_filter($utilityTypes, fn(string $class) =>
             /** @var class-string<UtilityInterface> $class */
-            return !isset($disabledUtilities[$class::id()]) && $class::isSelectable();
-        }));
+            !isset($disabledUtilities[$class::id()]) && $class::isSelectable()));
     }
 
     /**

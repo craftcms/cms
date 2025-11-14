@@ -12,6 +12,7 @@
 {% macro screen(widget, showBackupOption, bundleUrl, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
     {% import "_includes/forms" as forms %}
     {% set idPrefix = 'cs-'~screen~random() %}
+    {% set buttonWrapperId = "form-container-" ~ screen %}
 
     <div id="cs-screen-{{ screen }}" class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
         {{ tag('h2', {
@@ -25,14 +26,22 @@
             rows: 5
         }) }}
         <div class="cs-search-results-container hidden">
+            {{ tag('a', {
+                class: 'skip-link btn',
+                href: '#' ~ buttonWrapperId,
+                text: 'Skip to {name}'|t('app', { name: 'Submit'|t('app') }),
+            }) }}
             <div class="cs-search-icon">{{ svg(resultsIcon, sanitize=false) }}</div>
-            <h2>{{ resultsHeading }}</h2>
+            <h3 class="h2 centeralign">{{ resultsHeading }}</h3>
             <ul class="cs-search-results"></ul>
         </div>
-        <div class="cs-forms">
+        <div class="cs-forms" tabindex="-1">
             <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
                 <div class="cs-search-params"></div>
-                {% tag 'div' with { class: 'cs-button-wrapper' }%}
+                {% tag 'div' with {
+                    class: 'cs-button-wrapper',
+                    id: buttonWrapperId
+                } %}
                     <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
                     {% if CraftEdition >= CraftPro %}
                         <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>

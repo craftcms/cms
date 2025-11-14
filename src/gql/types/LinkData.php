@@ -30,6 +30,7 @@ class LinkData extends ObjectType
             'type' => $source->getType(),
             'value' => $source->getValue(),
             'label' => $source->getLabel(true),
+            'defaultLabel' => $source->getLabel(false),
             'url' => $source->getUrl(),
             'link' => $source->getLink(),
             'elementType' => $source->getElement() ? $source->getElement()::class : null,

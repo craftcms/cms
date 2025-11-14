@@ -14,8 +14,10 @@ use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -127,6 +129,13 @@ class EntryTypesController extends Controller
                     'shortcut' => true,
                     'retainScroll' => true,
                 ]);
+
+            if ($entryType->id) {
+                $response->addAltAction(Craft::t('app', 'Save as a new entry type'), [
+                    'params' => ['saveAsNew' => true],
+                    'redirect' => 'settings/entry-types/{id}',
+                ]);
+            }
         } else {
             $response->noticeHtml(Cp::readOnlyNoticeHtml());
         }
@@ -186,24 +195,34 @@ class EntryTypesController extends Controller
     {
         $this->requirePostRequest();
 
-        $sectionsService = Craft::$app->getEntries();
+        $entriesService = Craft::$app->getEntries();
         $entryTypeId = $this->request->getBodyParam('entryTypeId');
 
         if ($entryTypeId) {
-            $entryType = $sectionsService->getEntryTypeById($entryTypeId);
+            $entryType = $entriesService->getEntryTypeById($entryTypeId);
             if (!$entryType) {
                 throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
             }
+
+            $saveAsNew = $this->request->getBodyParam('saveAsNew');
+            if ($saveAsNew) {
+                $originalEntryType = $entryType;
+                $entryType = clone $entryType;
+                $entryType->id = $entryType->uid = null;
+            }
         } else {
             $entryType = new EntryType();
+            $saveAsNew = false;
         }
 
         // Set the simple stuff
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->description = $this->request->getBodyParam('description', $entryType->description);
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $this->request->getBodyParam('uiLabelFormat', $entryType->uiLabelFormat);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
@@ -212,16 +231,44 @@ class EntryTypesController extends Controller
         $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
 
+        // If we're duplicating the entry type and the handle hasn't changed, find a unique one
+        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+            if (preg_match('/^(.*?)(\d+)$/', $entryType->handle, $match)) {
+                $baseHandle = $match[1];
+                $i = (int)$match[2];
+            } else {
+                $baseHandle = $entryType->handle;
+                $i = 1;
+            }
+            do {
+                $testHandle = sprintf('%s%s', $baseHandle, ++$i);
+                if (!$entriesService->getEntryTypeByHandle($testHandle)) {
+                    $entryType->handle = $testHandle;
+                    break;
+                }
+            } while (true);
+        }
+
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Entry::class;
         $entryType->setFieldLayout($fieldLayout);
 
-        // Save it
-        if (!$sectionsService->saveEntryType($entryType)) {
+        if (!$entryType->validate()) {
+            if (isset($originalEntryType)) {
+                $entryType->id = $originalEntryType->id;
+                $entryType->uid = $originalEntryType->uid;
+            }
+
             return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t save entry type.'), 'entryType');
         }
 
+        if ($saveAsNew) {
+            $fieldLayout->resetUids();
+        }
+
+        // Save it
+        $entriesService->saveEntryType($entryType, false);
         return $this->asModelSuccess($entryType, Craft::t('app', 'Entry type saved.'), 'entryType');
     }
 
@@ -284,5 +331,86 @@ class EntryTypesController extends Controller
             'pagination' => $pagination,
             'data' => $tableData,
         ]);
+    }
+
+    /**
+     * Renders an entry type’s override settings for an entry type select input.
+     *
+     * @return Response
+     * @since 5.6.0
+     */
+    public function actionRenderOverrideSettings(): Response
+    {
+        $entryType = $this->_entryTypeForSelectInput();
+        $entryType->name = $this->request->getBodyParam('name') ?? $entryType->name;
+        $entryType->handle = $this->request->getBodyParam('handle') ?? $entryType->handle;
+        $entryType->description = $this->request->getBodyParam('description') ?? $entryType->description;
+
+        $namespace = StringHelper::randomString(10);
+        $view = Craft::$app->getView();
+
+        $html = $view->namespaceInputs(
+            fn() => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
+                'entryType' => $entryType,
+            ]),
+            $namespace,
+        );
+
+        return $this->asJson([
+            'settingsHtml' => $html,
+            'namespace' => $namespace,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
+     * Validates and returns an entry type’s override settings for an entry type select input.
+     *
+     * @return Response
+     * @since 5.6.0
+     */
+    public function actionApplyOverrideSettings(): Response
+    {
+        $entryType = $this->_entryTypeForSelectInput();
+
+        $settingsStr = $this->request->getBodyParam('settings');
+        parse_str($settingsStr, $postedSettings);
+        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+        $settings = array_filter(ArrayHelper::getValue($postedSettings, $settingsNamespace, []));
+
+        if (!empty($settings)) {
+            Craft::configure($entryType, $settings);
+            $entryType->validateHandleUniqueness = false;
+
+            if (!$entryType->validate(array_keys($settings))) {
+                return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t apply changes.'), 'entryType');
+            }
+        }
+
+        $chipHtml = Cp::chipHtml($entryType, [
+            'showHandle' => true,
+            'showIndicators' => true,
+            'showDescription' => true,
+        ]);
+
+        return $this->asJson([
+            'config' => $entryType->toArray(['id', 'name', 'handle', 'description']),
+            'chipHtml' => $chipHtml,
+        ]);
+    }
+
+    private function _entryTypeForSelectInput(): EntryType
+    {
+        $id = $this->request->getRequiredBodyParam('id');
+        $original = Craft::$app->getEntries()->getEntryTypeById($id);
+
+        if (!$original) {
+            throw new BadRequestHttpException("Invalid entry type ID: $id");
+        }
+
+        $entryType = clone $original;
+        $entryType->original = $original;
+        return $entryType;
     }
 }

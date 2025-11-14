@@ -22,8 +22,8 @@ div.user-photo .current-photo::after {
   font-size: 0;
   width: 100%;
   height: 100%;
-  border-radius: var(--large-border-radius);
-  box-shadow: inset 0 0 0 1px var(--hairline-color);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 1px var(--border-hairline);
 }
 
 div.user-photo .current-photo {
@@ -32,7 +32,7 @@ div.user-photo .current-photo {
     max-width: 100px;
     max-height: 100px;
     display: block;
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
   }
 }
 

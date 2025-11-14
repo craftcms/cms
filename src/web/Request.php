@@ -17,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use craft\services\Tokens;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
@@ -151,11 +152,13 @@ class Request extends \yii\web\Request
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileOrTabletBrowser = null;
 
@@ -184,6 +187,12 @@ class Request extends \yii\web\Request
      * @var bool
      */
     private bool $_setBodyParams = false;
+
+    /**
+     * @var bool Whether the request has an invalid token.
+     * @see getHasInvalidToken())
+     */
+    private bool $_hasInvalidToken;
 
     /**
      * @var bool|null Whether the request initially had a token
@@ -264,7 +273,7 @@ class Request extends \yii\web\Request
                     }
                     $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->cpTrigger}";
                 }
-                $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
+                $siteScore ??= isset($site) ? $this->_scoreSite($site) : 0;
                 foreach ($testBaseCpUrls as $testUrl) {
                     $cpScore = $this->_scoreUrl($testUrl);
                     if ($cpScore > $siteScore) {
@@ -430,11 +439,7 @@ class Request extends \yii\web\Request
      */
     public function getSegments(): array
     {
-        if (isset($this->_segments)) {
-            return $this->_segments;
-        }
-
-        return $this->_segments = $this->_segments($this->_path);
+        return $this->_segments ?? ($this->_segments = $this->_segments($this->_path));
     }
 
     /**
@@ -494,7 +499,6 @@ class Request extends \yii\web\Request
      * Returns whether the request initially had a token.
      *
      * @return bool
-     * @throws BadRequestHttpException
      * @since 3.6.0
      */
     public function getHadToken(): bool
@@ -510,8 +514,7 @@ class Request extends \yii\web\Request
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
-     * @throws BadRequestHttpException if an invalid token is supplied
-     * @see \craft\services\Tokens::createToken()
+     * @see Tokens::createToken()
      * @see Controller::requireToken()
      */
     public function getToken(): ?string
@@ -529,34 +532,39 @@ class Request extends \yii\web\Request
     public function setToken(?string $token): void
     {
         // Make sure $this->_hadToken has been set
-        try {
-            $this->_findToken();
-        } catch (BadRequestHttpException) {
-        }
+        $this->_findToken();
 
         $this->_token = $token;
     }
 
     /**
-     * Looks for a token on the request.
+     * Returns whether there is an invalid token on the request.
      *
-     * @throws BadRequestHttpException
+     * @return bool
+     * @since 5.9.0
+     */
+    public function getHasInvalidToken(): bool
+    {
+        $this->_findToken();
+        return $this->_hasInvalidToken;
+    }
+
+    /**
+     * Looks for a token on the request.
      */
     private function _findToken(): void
     {
-        if (isset($this->_hadToken)) {
+        if (isset($this->_hasInvalidToken)) {
             return;
         }
 
-        $this->_token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $this->_hasInvalidToken = $token && !preg_match('/^[A-Za-z0-9_-]+$/', $token);
 
-        if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
-            $this->_token = null;
-            $this->_hadToken = false;
-            throw new BadRequestHttpException('Invalid token');
+        if (!$this->_hasInvalidToken) {
+            $this->_token = $token;
+            $this->_hadToken = $token !== null;
         }
-
-        $this->_hadToken = isset($this->_token);
     }
 
     /**
@@ -583,7 +591,7 @@ class Request extends \yii\web\Request
     {
         try {
             return $this->_validateSiteToken() !== null;
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException) {
             return false;
         }
     }
@@ -1072,6 +1080,32 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Validates and returns the named request query parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
+     *
+     * @param string $name The parameter name.
+     * @return string|null The parameter value
+     * @throws BadRequestHttpException if the param value doesn’t pass validation
+     * @see getQueryParam()
+     * @since 5.8.0
+     */
+    public function getValidatedQueryParam(string $name): ?string
+    {
+        $value = $this->getQueryParam($name);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = Craft::$app->getSecurity()->validateData($value);
+
+        if ($value === false) {
+            throw new BadRequestHttpException('Request contained an invalid query param');
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns the named parameter value from either GET or the request body.
      *
      * If the parameter does not exist, the second parameter to this method will be returned.
@@ -1342,24 +1376,35 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the request will accept a given content type3
+     * Returns whether the request will accept a given content type.
      *
-     * @param string $contentType
+     * @param string $contentType The MIME type. Can include `*` as a wildcard character,
+     * to check for a range of MIME types, e.g. `application/*+json`.
      * @return bool
      */
     public function accepts(string $contentType): bool
     {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
-        // then check if the actual key exists
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
 
         // check for cases where acceptable content type contains mimeType/*
-        foreach (array_keys($acceptableContentTypes) as $mime) {
+        $acceptableContentTypes = array_keys($acceptableContentTypes);
+        foreach ($acceptableContentTypes as $mime) {
             if (str_ends_with($mime, '/*') && str_starts_with($contentType, substr($mime, 0, -1))) {
                 return true;
+            }
+        }
+
+        if (str_contains($contentType, '*')) {
+            $parts = explode('*', $contentType);
+            $pattern = sprintf('/^%s$/', implode('.*', array_map(fn(string $part) => preg_quote($part, '/'), $parts)));
+            foreach ($acceptableContentTypes as $mime) {
+                if (preg_match($pattern, $mime)) {
+                    return true;
+                }
             }
         }
 
@@ -1373,7 +1418,7 @@ class Request extends \yii\web\Request
      */
     public function getAcceptsJson(): bool
     {
-        return $this->accepts('application/json');
+        return $this->accepts('application/json') || $this->accepts('application/*+json');
     }
 
     /**

@@ -61,9 +61,7 @@ class User extends ElementResolver
             $userGroupsService = Craft::$app->getUserGroups();
             if (Craft::$app->edition < CmsEdition::Pro) {
                 $availableGroupUids = array_map(fn($group) => $group->uid, $userGroupsService->getAllGroups());
-                $pairs['usergroups'] = array_filter($pairs['usergroups'], function($uid) use ($availableGroupUids) {
-                    return in_array($uid, $availableGroupUids);
-                });
+                $pairs['usergroups'] = array_filter($pairs['usergroups'], fn($uid) => in_array($uid, $availableGroupUids));
             }
             $allowedGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
                 $userGroupsService = $userGroupsService->getGroupByUid($uid);

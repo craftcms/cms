@@ -274,9 +274,7 @@ class ElementQueryConditionBuilder extends Component
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 
         if (isset($nodeList[$nodeName])) {
-            if (!isset($nodeList[$nodeName]['canBeAliased']) || $nodeList[$nodeName]['canBeAliased']) {
-                return true;
-            }
+            return $nodeList[$nodeName]['canBeAliased'] ?? true;
         }
 
         return false;
@@ -514,9 +512,7 @@ class ElementQueryConditionBuilder extends Component
                     if (!$transformableAssetProperty) {
                         /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
-                            $plan->when = function(Element $element) use ($wrappingFragment) {
-                                return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
-                            };
+                            $plan->when = fn(Element $element) => $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                         }
                         $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
                     }
@@ -613,7 +609,7 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
-        return array_values($plans);
+        return $plans;
     }
 
     /**

@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\errors\FieldNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
@@ -28,7 +29,7 @@ use yii\base\Component;
 /**
  * The Element Sources service provides APIs for managing element indexes.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->elementSources`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->getElementSources()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -62,13 +63,14 @@ class ElementSources extends Component
      */
     public static function filterExtraHeadings(array $sources): array
     {
-        return array_values(array_filter($sources, function($source, $i) use ($sources) {
-            return (
-                $source['type'] !== self::TYPE_HEADING ||
-                (isset($sources[$i + 1]) && $sources[$i + 1]['type'] !== self::TYPE_HEADING)
-            );
-        }, ARRAY_FILTER_USE_BOTH));
+        return array_values(array_filter($sources, fn($source, $i) => $source['type'] !== self::TYPE_HEADING ||
+        (isset($sources[$i + 1]) && $sources[$i + 1]['type'] !== self::TYPE_HEADING), ARRAY_FILTER_USE_BOTH));
     }
+
+    /**
+     * @see defineSources()
+     */
+    private array $sources = [];
 
     /**
      * Returns the element index sources in the custom groupings/order.
@@ -76,9 +78,52 @@ class ElementSources extends Component
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $context The context
      * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
      * @return array[]
      */
-    public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
+    public function getSources(
+        string $elementType,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): array {
+        $sources = $this->sources($elementType, $context);
+
+        if (!$withDisabled) {
+            $sources = array_filter($sources, fn(array $source) => !($source['disabled'] ?? false));
+        }
+
+        if ($page && isset($sources[0]['page'])) {
+            $pageNameId = $this->pageNameId($page);
+            $sources = array_filter($sources, fn(array $source) => (
+                isset($source['page']) &&
+                $this->pageNameId($source['page']) === $pageNameId
+            ));
+        }
+
+        return array_values($sources);
+    }
+
+    /**
+     * @param class-string<ElementInterface> $elementType
+     * @param string $context
+     * @return array[]
+     */
+    private function sources(string $elementType, string $context): array
+    {
+        if (!isset($this->sources[$elementType][$context])) {
+            $this->sources[$elementType][$context] = $this->defineSources($elementType, $context);
+        }
+
+        return $this->sources[$elementType][$context];
+    }
+
+    /**
+     * @param class-string<ElementInterface> $elementType
+     * @param string $context
+     * @return array[]
+     */
+    private function defineSources(string $elementType, string $context): array
     {
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
@@ -88,25 +133,21 @@ class ElementSources extends Component
             $sources = [];
             $indexedNativeSources = ArrayHelper::index(array_filter($nativeSources, fn($s) => $s['type'] === self::TYPE_NATIVE), 'key');
             $nativeSourceKeys = [];
+
+            $firstPage = $sourceConfigs[0]['page'] ?? null;
+
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
                     if (isset($indexedNativeSources[$source['key']])) {
-                        if ($withDisabled || !($source['disabled'] ?? false)) {
-                            $sources[] = $source + $indexedNativeSources[$source['key']];
-                            $nativeSourceKeys[$source['key']] = true;
-                        } else {
-                            unset($indexedNativeSources[$source['key']]);
-                        }
+                        $sources[] = $source + $indexedNativeSources[$source['key']];
+                        $nativeSourceKeys[$source['key']] = true;
                     }
                 } else {
                     if ($source['type'] === self::TYPE_CUSTOM) {
-                        if (!$this->_showCustomSource($source)) {
+                        if ($context === self::CONTEXT_INDEX && !$this->_showCustomSource($source)) {
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
-                        if (!$withDisabled && ($source['disabled'] ?? false)) {
-                            continue;
-                        }
                     }
                     $sources[] = $source;
                 }
@@ -120,13 +161,19 @@ class ElementSources extends Component
             ));
 
             if (!empty($missingSources)) {
-                if (!empty($sources)) {
+                // If there are any headings, add a blank heading
+                if (ArrayHelper::contains($sources, fn(array $source) => $source['type'] === self::TYPE_HEADING)) {
                     $sources[] = [
                         'type' => self::TYPE_HEADING,
                         'heading' => '',
+                        'page' => $firstPage,
                     ];
                 }
-                array_push($sources, ...$missingSources);
+
+                array_push($sources, ...array_map(fn(array $source) => [
+                    ...$source,
+                    'page' => $firstPage,
+                ], $missingSources));
             }
         } else {
             $sources = $nativeSources;
@@ -151,6 +198,104 @@ class ElementSources extends Component
         }
 
         return $sources;
+    }
+
+    /**
+     * Returns whether the given source exists.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $sourceKey The source key
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
+     * @return bool
+     * @since 5.7.11
+     */
+    public function sourceExists(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): bool {
+        foreach ($this->getSources($elementType, $context, $withDisabled, $page) as $source) {
+            if (($source['key'] ?? null) === $sourceKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the unique pages found for the given element type’s sources.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return string[]
+     * @since 5.9.0
+     */
+    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
+    {
+        $pages = [];
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page'])) {
+                $pages[$source['page']] = true;
+            }
+        }
+        return array_keys($pages);
+    }
+
+    /**
+     * Returns the first page found for the given element type’s sources.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getFirstPage(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): ?string
+    {
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page'])) {
+                return $source['page'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the given page exists for an element type.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return bool
+     * @since 5.9.0
+     */
+    public function pageExists(string $elementType, string $page, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
+    {
+        $nameId = $this->pageNameId($page);
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page']) && $nameId === $this->pageNameId($source['page'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a normalized ID for a given page name.
+     *
+     * @param string $page
+     * @return string
+     * @since 5.9.0
+     */
+    public function pageNameId(string $page): string
+    {
+        return mb_strtolower(preg_replace('/[^\p{L}\p{N}\p{M}]/u', '', $page));
     }
 
     /**
@@ -276,21 +421,21 @@ class ElementSources extends Component
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
-        // Don't bother the element type for custom sources
-        if (str_starts_with($sourceKey, 'custom:')) {
-            $source = $this->_sourceConfig($elementType, $sourceKey);
-            if (empty($source['condition'])) {
-                return Craft::$app->getFields()->getLayoutsByType($elementType);
-            }
-            /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $query = $elementType::find();
-            $condition->modifyQuery($query);
-            return $query->getFieldLayouts();
-        }
-
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            // Don't bother the element type for custom sources
+            if (str_starts_with($sourceKey, 'custom:')) {
+                $source = $this->_sourceConfig($elementType, $sourceKey);
+                if (empty($source['condition'])) {
+                    return Craft::$app->getFields()->getLayoutsByType($elementType);
+                }
+                /** @var ElementConditionInterface $condition */
+                $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+                $query = $elementType::find();
+                $condition->modifyQuery($query);
+                $this->_fieldLayouts[$elementType][$sourceKey] = $query->getFieldLayouts();
+            } else {
+                $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            }
         }
 
         return $this->_fieldLayouts[$elementType][$sourceKey];
@@ -427,7 +572,12 @@ class ElementSources extends Component
                         continue;
                     }
 
-                    $field = $layoutElement->getField();
+                    try {
+                        $field = $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+
                     if (
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
@@ -439,7 +589,7 @@ class ElementSources extends Component
                         } else {
                             // The handle was overridden, so it gets its own table attribute
                             $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $field->name),
+                                'label' => Craft::t('site', $layoutElement->label()),
                             ];
                         }
                     }
@@ -526,5 +676,19 @@ class ElementSources extends Component
             return null;
         }
         return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
+    }
+
+    /**
+     * Returns the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @return array
+     * @since 5.9.0
+     */
+    public function getPageSettings(string $elementType): array
+    {
+        return Craft::$app->getProjectConfig()->get(
+            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
+        ) ?? [];
     }
 }

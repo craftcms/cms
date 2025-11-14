@@ -109,7 +109,9 @@ class UpdateElementSlugsAndUris extends BaseJob
 
         foreach (Db::each($query) as $element) {
             /** @var ElementInterface $element */
-            $this->setProgress($queue, $this->_totalProcessed++ / $this->_totalToProcess);
+            // _totalToProcess can be 0 somehow (https://github.com/craftcms/cms/issues/16787)
+            $this->setProgress($queue, $this->_totalProcessed / max($this->_totalToProcess, $this->_totalProcessed + 1));
+            $this->_totalProcessed++;
 
             $oldSlug = $element->slug;
             $oldUri = $element->uri;

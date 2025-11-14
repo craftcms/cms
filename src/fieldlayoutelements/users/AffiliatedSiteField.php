@@ -83,7 +83,7 @@ class AffiliatedSiteField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && !$element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
         
         if (!Craft::$app->getIsMultiSite()) {

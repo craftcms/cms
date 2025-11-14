@@ -82,6 +82,15 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // we need it for the card view designer
+        return Craft::t('app', 'Address');
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorLabel(): ?string
     {
         return Craft::t('app', 'Address');
@@ -93,7 +102,7 @@ class AddressField extends BaseField
     public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
         $view = Craft::$app->getView();
@@ -121,7 +130,7 @@ class AddressField extends BaseField
             ];
             for (let name of fieldNames) {
                 fields[name] = $('#' + Craft.namespaceId(name, $namespace));
-                if (values) {
+                if (values && values[name] !== null) {
                     fields[name].val(values[name]);
                 }
             }
@@ -154,7 +163,21 @@ class AddressField extends BaseField
                             Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
                             Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
                         );
-                        const activeElementId = document.activeElement ? document.activeElement.id : null;
+                        let newField = null;
+                        hotFieldNames.forEach((name) => {
+                          // if value for any hotFieldNames is null, but we have one in fields
+                          if (values[name] == null && fields[name]?.val().trim() !== '') {
+                            // and the old and new field for that name is not a select - use the fields value
+                            newField = $(response.data.fieldsHtml).find('#' + Craft.namespaceId(name, $namespace));
+                            if (
+                              newField.length > 0 && 
+                              fields[name].prop('nodeName') !== 'SELECT' && 
+                              newField.prop('nodeName') !== 'SELECT'
+                            ) {
+                              values[name] = fields[name].val();
+                            }
+                          }
+                        });
                         const \$addressFields = $(
                             Object.entries(fields)
                                 .filter(([name]) => name !== 'countryCode')
@@ -165,9 +188,6 @@ class AddressField extends BaseField
                         await Craft.appendHeadHtml(response.data.headHtml);
                         await Craft.appendBodyHtml(response.data.bodyHtml);
                         initFields(values);
-                        if (activeElementId) {
-                            $('#' + activeElementId).focus();                        
-                        }
                     }).catch(e => {
                         Craft.cp.displayError();
                         throw e;
@@ -195,5 +215,26 @@ class AddressField extends BaseField
     {
         // Not actually needed since we're overriding formHtml()
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if ($element instanceof Address) {
+            return $this->previewHtml($element);
+        } else {
+            $address = new Address([
+                'countryCode' => 'US',
+                'administrativeArea' => 'AK',
+                'addressLine1' => 'Address Line 1',
+                'locality' => 'Some City',
+                'postalCode' => '12345',
+            ]);
+            return Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
+                'class' => 'no-truncate',
+            ]);
+        }
     }
 }

@@ -34,7 +34,7 @@ use yii\base\Exception;
 /**
  * Dashboard service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->dashboard`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->getDashboard()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

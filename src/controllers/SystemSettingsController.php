@@ -51,8 +51,13 @@ class SystemSettingsController extends Controller
             return false;
         }
 
-        $viewActions = ['general-settings', 'edit-email-settings', 'global-set-index', 'edit-global-set'];
-        if (in_array($action->id, $viewActions)) {
+        if (in_array($action->id, [
+            'edit-email-settings',
+            'edit-global-set',
+            'general-settings',
+            'global-set-index',
+            'test-email-settings',
+        ])) {
             // Some actions require admin but not allowAdminChanges
             $this->requireAdmin(false);
         } else {
@@ -215,22 +220,30 @@ class SystemSettingsController extends Controller
      */
     public function actionTestEmailSettings(): void
     {
-        $this->requirePostRequest();
+        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $this->requirePostRequest();
 
-        $settings = $this->_createMailSettingsFromPost();
-        $settingsIsValid = $settings->validate();
+            $settings = $this->_createMailSettingsFromPost();
+            $settingsIsValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
-        $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        $adapterIsValid = $adapter->validate();
+            /** @var BaseTransportAdapter $adapter */
+            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+            $adapterIsValid = $adapter->validate();
 
-        if ($settingsIsValid && $adapterIsValid) {
-            // Try to send the test email
-            /** @var Mailer $mailer */
-            $mailer = Craft::createObject(App::mailerConfig($settings));
+            if ($settingsIsValid && $adapterIsValid) {
+                $mailer = Craft::createObject(App::mailerConfig($settings));
+            } else {
+                $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
+            }
+        } else {
+            $mailer = Craft::$app->getMailer();
+        }
+
+        // Try to send the test email
+        if (isset($mailer)) {
             $message = $mailer
                 ->composeFromKey('test_email', [
-                    'settings' => MailerHelper::settingsReport($mailer, $adapter),
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter ?? null),
                 ])
                 ->setTo(static::currentUser());
 
@@ -239,14 +252,12 @@ class SystemSettingsController extends Controller
             } else {
                 $this->setFailFlash(Craft::t('app', 'There was an error testing your email settings.'));
             }
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
         }
 
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
-            'settings' => $settings,
-            'adapter' => $adapter,
+            'settings' => $settings ?? null,
+            'adapter' => $adapter ?? null,
         ]);
     }
 

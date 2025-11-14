@@ -43,7 +43,7 @@ use yii\db\Exception as DbException;
 /**
  * Sites service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->getSites()`]].
  *
  * @property-read Site[] $allSites all of the sites
  * @property int[] $allSiteIds all of the site IDs
@@ -460,17 +460,17 @@ class Sites extends Component
     /**
      * Returns the current site.
      *
+     * > [!NOTE]
+     * > This will always return the primary site for control panel requests. To fetch the site the control panel
+     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     *
      * @return Site the current site
      * @throws SiteNotFoundException if no sites exist
      */
     public function getCurrentSite(): Site
     {
-        if (isset($this->_currentSite)) {
-            return $this->_currentSite;
-        }
-
         // Default to the primary site
-        return $this->_currentSite = $this->getPrimarySite();
+        return $this->_currentSite ?? ($this->_currentSite = $this->getPrimarySite());
     }
 
     /**
@@ -510,6 +510,14 @@ class Sites extends Component
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
+        }
+
+        // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
+        if (isset($this->_currentSite->handle)) {
+            $_SERVER['CRAFT_SITE'] = $this->_currentSite->handle;
+            $_SERVER['CRAFT_SITE_UPPER'] = strtoupper(StringHelper::toSnakeCase($this->_currentSite->handle));
+        } else {
+            unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
     }
 
@@ -862,6 +870,7 @@ class Sites extends Component
                         'siteId' => $oldPrimarySiteId,
                     ],
                     'siteId' => $site->id,
+                    'isNewSite' => true,
                 ]));
             }
         }

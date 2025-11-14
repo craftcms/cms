@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
 /**
  * The Conditions service provides APIs for managing conditions.
  *
- * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
+ * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->getConditions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -94,6 +94,11 @@ class Conditions extends Component
                     $newConfig = [];
                 } else {
                     $newClass = ArrayHelper::remove($newConfig, 'class');
+                }
+
+                // Make sure the condition is being passed to the condition rule when it's being constructed
+                if (isset($config['condition'])) {
+                    $newConfig['condition'] = $config['condition'];
                 }
 
                 // Is the type changing?

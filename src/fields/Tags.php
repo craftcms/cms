@@ -21,7 +21,9 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use DOMElement;
 use GraphQL\Type\Definition\Type;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Tags represents a Tags field.
@@ -90,6 +92,22 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public function getSettingsHtml(): ?string
+    {
+        $html = parent::getSettingsHtml();
+
+        // Remove the “Show the search input” field
+        $crawler = new Crawler("<html><body>$html</body></html>");
+        /** @var DOMElement $node */
+        $node = $crawler->filter('#show-search-input-field')->getNode(0);
+        $node->remove();
+
+        return $crawler->filter('body')->first()->html();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
@@ -120,6 +138,7 @@ class Tags extends BaseRelationField
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                     'allowSelfRelations' => (bool)$this->allowSelfRelations,
+                    'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }
 

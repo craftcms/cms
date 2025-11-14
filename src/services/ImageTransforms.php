@@ -39,7 +39,7 @@ use yii\di\Instance;
 /**
  * Image Transforms service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
  * @property-read ImageTransform[] $allTransforms
  * @property-read array $pendingTransformIndexIds
@@ -234,7 +234,6 @@ class ImageTransforms extends Component
         $data = $event->newValue;
 
         $transaction = $this->db->beginTransaction();
-        $deleteTransformIndexes = false;
 
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
@@ -248,11 +247,10 @@ class ImageTransforms extends Component
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
             $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = $transformRecord->upscale !== ($data['upscale'] ?? null);
+            $upscaleChanged = ($transformRecord->upscale !== null ? (bool)$transformRecord->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
-                $deleteTransformIndexes = true;
             }
 
             $transformRecord->mode = $data['mode'];
@@ -272,12 +270,6 @@ class ImageTransforms extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
-        }
-
-        if ($deleteTransformIndexes) {
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'transformString' => '_' . $transformRecord->handle,
-            ], [], $this->db);
         }
 
         // Clear caches
@@ -427,6 +419,8 @@ class ImageTransforms extends Component
                     'class' => ImageTransform::class,
                         ...$refTransform->toArray(),
                 ]);
+
+                unset($transform->name, $transform->handle);
 
                 if ($sizeUnit === 'w') {
                     $transform->width = (int)$sizeValue;

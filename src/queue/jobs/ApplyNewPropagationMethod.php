@@ -95,11 +95,12 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
         $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
 
         if (empty($otherSiteIds)) {
+            $this->resaveItem($item);
             return;
         }
 
         // Load the element in any sites that it's about to be deleted for
-        $otherSiteElements = $item::find()
+        $query = $item::find()
             ->id($item->id)
             ->siteId($otherSiteIds)
             ->structureId($item->structureId)
@@ -107,10 +108,16 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
             ->drafts(null)
             ->provisionalDrafts(null)
             ->orderBy([])
-            ->indexBy('siteId')
-            ->all();
+            ->indexBy('siteId');
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $otherSiteElements = $query->all();
 
         if (empty($otherSiteElements)) {
+            $this->resaveItem($item);
             return;
         }
 
@@ -187,15 +194,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
             }
         }
 
-        // Now resave the original element
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->resaving = true;
-
-        try {
-            $elementsService->saveElement($item, updateSearchIndex: false, saveContent: true);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        $this->resaveItem($item);
     }
 
     /**
@@ -204,5 +203,24 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
     protected function defaultDescription(): ?string
     {
         return Translation::prep('app', 'Applying new propagation method to elements');
+    }
+
+    /**
+     * Resave item that's being processed.
+     *
+     * @param mixed $item
+     * @return void
+     */
+    private function resaveItem(mixed $item): void
+    {
+        // Now resave the original element
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        try {
+            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+        }
     }
 }

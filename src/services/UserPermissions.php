@@ -16,6 +16,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\enums\PropagationMethod;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
@@ -34,7 +35,7 @@ use yii\db\Exception;
 /**
  * User Permissions service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->getUserPermissions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -57,6 +58,18 @@ class UserPermissions extends Component
      * @since 4.3.0
      */
     public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
+
+    /**
+     * @var array|null
+     * @see getAllPermissions()
+     */
+    private array|null $_allPermissions = null;
+
+    /**
+     * @var string[]|null
+     * @see validatePermission()
+     */
+    private array|null $_allPermissionNames = null;
 
     /**
      * @var string[][]
@@ -89,25 +102,29 @@ class UserPermissions extends Component
      */
     public function getAllPermissions(): array
     {
-        $permissions = [];
+        if (!isset($this->_allPermissions)) {
+            $this->_allPermissions = [];
 
-        $this->_generalPermissions($permissions);
-        $this->_userPermissions($permissions);
-        $this->_sitePermissions($permissions);
-        $this->_entryPermissions($permissions);
-        $this->_globalSetPermissions($permissions);
-        $this->_categoryPermissions($permissions);
-        $this->_volumePermissions($permissions);
-        $this->_utilityPermissions($permissions);
+            $this->_generalPermissions($this->_allPermissions);
+            $this->_userPermissions($this->_allPermissions);
+            $this->_sitePermissions($this->_allPermissions);
+            $this->_entryPermissions($this->_allPermissions);
+            $this->_globalSetPermissions($this->_allPermissions);
+            $this->_categoryPermissions($this->_allPermissions);
+            $this->_volumePermissions($this->_allPermissions);
+            $this->_utilityPermissions($this->_allPermissions);
 
-        // Fire a 'registerPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
-            $event = new RegisterUserPermissionsEvent(['permissions' => $permissions]);
-            $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
-            return $event->permissions;
+            // Fire a 'registerPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
+                $event = new RegisterUserPermissionsEvent([
+                    'permissions' => $this->_allPermissions,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
+                $this->_allPermissions = $event->permissions;
+            }
         }
 
-        return $permissions;
+        return $this->_allPermissions;
     }
 
     /**
@@ -150,13 +167,10 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
-            /** @var string[] $groupPermissions */
-            $groupPermissions = $this->_createUserPermissionsQuery()
+            $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
-
-            $this->_permissionsByGroupId[$groupId] = $groupPermissions;
         }
 
         return $this->_permissionsByGroupId[$groupId];
@@ -259,6 +273,34 @@ class UserPermissions extends Component
         }
 
         return $this->_permissionsByUserId[$userId];
+    }
+
+    /**
+     * @param string $permission
+     * @return bool
+     * @since 5.8.13.2
+     */
+    public function validatePermission(string $permission): bool
+    {
+        if (!isset($this->_allPermissionNames)) {
+            $this->_allPermissionNames = [];
+            foreach ($this->getAllPermissions() as $group) {
+                $this->collectPermissionNames($group['permissions']);
+            }
+        }
+
+        return isset($this->_allPermissionNames[strtolower($permission)]);
+    }
+
+    private function collectPermissionNames(array &$permissions): void
+    {
+        foreach ($permissions as $name => $permission) {
+            $this->_allPermissionNames[strtolower($name)] = true;
+
+            if (isset($permission['nested'])) {
+                $this->collectPermissionNames($permission['nested']);
+            }
+        }
     }
 
     /**
@@ -541,13 +583,18 @@ class UserPermissions extends Component
                     ],
                 ];
             } else {
+                $hasCustomPropagation = (
+                    $section->propagationMethod === PropagationMethod::Custom &&
+                    Craft::$app->getIsMultiSite()
+                );
+
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
                         'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $pluralType])),
                         'info' => Craft::t('app', 'Allows viewing existing {type} and creating drafts for them.', [
                             'type' => $pluralType,
                         ]),
-                        'nested' => [
+                        'nested' => array_filter([
                             "createEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', ['type' => $pluralType])),
                                 'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
@@ -558,19 +605,37 @@ class UserPermissions extends Component
                                     'type' => $pluralType,
                                 ]),
                             ],
+                            "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for individual sites, provided the user has access to them.', [
+                                    'type' => $pluralType,
+                                ]),
+                            ] : null,
                             "deleteEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for all sites.', [
+                                    'type' => $pluralType,
+                                ]),
                             ],
                             "viewPeerEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', ['type' => $pluralType])),
-                                'nested' => [
+                                'nested' => array_filter([
                                     "savePeerEntries:$section->uid" => [
                                         'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType])),
                                     ],
+                                    "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                        'label' => Craft::t('app', 'Delete other users’ {type} for site', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for individual sites, provided the user has access to them.', [
+                                            'type' => $pluralType,
+                                        ]),
+                                    ] : null,
                                     "deletePeerEntries:$section->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for all sites.', [
+                                            'type' => $pluralType,
+                                        ]),
                                     ],
-                                ],
+                                ]),
                             ],
                             "viewPeerEntryDrafts:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', [
@@ -589,7 +654,7 @@ class UserPermissions extends Component
                                     ],
                                 ],
                             ],
-                        ],
+                        ]),
                     ],
                 ];
             }
@@ -873,5 +938,18 @@ class UserPermissions extends Component
         return (new Query())
             ->select(['p.name'])
             ->from(['p' => Table::USERPERMISSIONS]);
+    }
+
+    /**
+     * Resets the internal state
+     *
+     * @since 5.8.13
+     */
+    public function reset(): void
+    {
+        $this->_allPermissions = null;
+        $this->_allPermissionNames = null;
+        $this->_permissionsByGroupId = [];
+        $this->_permissionsByUserId = [];
     }
 }

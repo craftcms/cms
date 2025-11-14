@@ -63,18 +63,14 @@ class ResaveController extends Controller
     {
         // empty
         if ($to === ':empty:') {
-            return function() {
-                return '';
-            };
+            return fn() => '';
         }
 
         // object template
         if (str_starts_with($to, '=')) {
             $template = substr($to, 1);
             $view = Craft::$app->getView();
-            return function(ElementInterface $element) use ($template, $view) {
-                return $view->renderObjectTemplate($template, $element);
-            };
+            return fn(ElementInterface $element) => $view->renderObjectTemplate($template, $element);
         }
 
         // PHP arrow function
@@ -83,16 +79,14 @@ class ResaveController extends Controller
             $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
                 if ($var) {
-                    $$var = $element;
+                    ${$var} = $element;
                 }
                 return eval($php);
             };
         }
 
         // attribute name
-        return static function(ElementInterface $element) use ($to) {
-            return $element->$to;
-        };
+        return static fn(ElementInterface $element) => $element->$to;
     }
 
     /**
@@ -100,6 +94,12 @@ class ResaveController extends Controller
      * @since 3.7.0
      */
     public bool $queue = false;
+
+    /**
+     * @var int The number of entries that should be resaved per queue job, if --queue is passed.
+     * @since 5.7.0
+     */
+    public int $batchSize = 100;
 
     /**
      * @var bool Whether to resave element drafts.
@@ -267,6 +267,7 @@ class ResaveController extends Controller
     {
         $options = parent::options($actionID);
         $options[] = 'queue';
+        $options[] = 'batchSize';
         $options[] = 'elementId';
         $options[] = 'uid';
         $options[] = 'site';
@@ -660,6 +661,7 @@ class ResaveController extends Controller
                 'ifInvalid' => $this->ifInvalid,
                 'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
+                'batchSize' => $this->batchSize,
             ]));
             $this->output($elementType::pluralDisplayName() . ' queued to be resaved.');
             return ExitCode::OK;
@@ -737,7 +739,7 @@ class ResaveController extends Controller
     private function _resaveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $query->elementType;
         $count = (int)$query->count();
 

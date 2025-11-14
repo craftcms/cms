@@ -85,7 +85,7 @@ class GqlSchema extends Model
      */
     public function has(string $name): bool
     {
-        return is_array($this->scope) && in_array($name, $this->scope, true);
+        return in_array($name, $this->scope, true);
     }
 
     /**

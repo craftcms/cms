@@ -41,7 +41,7 @@
     "craftcms/server-check": "~5.0.1",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "~4.3.0",
-    "enshrined/svg-sanitize": "~0.19.0",
+    "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^v10.42.0",
     "league/uri": "^7.0",
@@ -57,46 +57,44 @@
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
     "symfony/filesystem": "^6.3",
-    "symfony/http-client": "^6.0.3",
+    "symfony/http-client": "^6.0.3|^7.0",
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
     "symfony/serializer": "^6.4",
-    "symfony/var-dumper": "^5.0|^6.0",
-    "symfony/yaml": "^5.2.3",
+    "symfony/var-dumper": "^5.0|^6.0|^7.0",
+    "symfony/yaml": "^5.2.3|^6.0|^7.0",
     "theiconic/name-parser": "^1.2",
-    "twig/twig": "~3.15.0",
+    "twig/twig": "~3.21.1",
     "voku/stringy": "^6.4.0",
     "web-auth/webauthn-lib": "~4.9.0",
-    "webonyx/graphql-php": "~14.11.5",
-    "yiisoft/yii2": "~2.0.51.0",
-    "yiisoft/yii2-debug": "~2.1.25.0",
+    "webonyx/graphql-php": "~14.11.10",
+    "yiisoft/yii2": "~2.0.52.0",
+    "yiisoft/yii2-debug": "~2.1.27.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^4.0.0"
   },
   "require-dev": {
-    "codeception/codeception": "^5.0.11",
+    "codeception/codeception": "^5.2.0",
+    "codeception/lib-innerbrowser": "4.0.1",
     "codeception/module-asserts": "^3.0.0",
     "codeception/module-datafactory": "^3.0.0",
     "codeception/module-phpbrowser": "^3.0.0",
     "codeception/module-rest": "^3.3.2",
     "codeception/module-yii2": "^1.1.9",
-    "codeception/lib-innerbrowser": "4.0.1",
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
-    "phpstan/phpstan": "^1.10.56",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
     "yiisoft/yii2-redis": "^2.0"
   },
   "provide": {
     "bower-asset/inputmask": "5.0.9",
     "bower-asset/jquery": "3.6.1",
-    "bower-asset/punycode": "2.3.1",
-    "bower-asset/yii2-pjax": "2.0.8",
+    "bower-asset/punycode": "^1.4",
+    "bower-asset/yii2-pjax": "~2.0.1",
     "yii2tech/ar-softdelete": "1.0.4"
-  },
-  "conflict": {
-    "webonyx/graphql-php": "14.11.7"
   },
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
@@ -115,11 +113,12 @@
     }
   },
   "scripts": {
-    "copy-icons": "php ./scripts/copyicons.php && ecs check src/icons/index.php --fix",
+    "copy-icons": "php ./scripts/copyicons.php",
     "check-cs": "ecs check --ansi",
     "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
-    "phpstan": "phpstan --memory-limit=1G"
+    "phpstan": "phpstan --memory-limit=1G",
+    "rector": "rector"
   },
   "config": {
     "sort-packages": true,

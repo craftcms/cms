@@ -83,6 +83,8 @@
       }) }}
     {% endtag %}
 
+    <div class="login-errors hidden"></div>
+
     {% if showResetPassword %}
       <form class="login-reset-password hidden">
         {{ forms.textField({
@@ -105,6 +107,8 @@
           spinner: true,
         }) }}
 
+        <div class="login-errors hidden"></div>
+
         <hr>
 
         <div class="login-alt-container">
@@ -117,8 +121,6 @@
         </div>
       </form>
     {% endif %}
-
-    <div class="login-errors hidden"></div>
   </div>
 
   <div class="flex alternative-login-methods hidden">
@@ -138,5 +140,7 @@
         {{ provider.getCpLoginHtml()|raw }}
       {% endfor %}
     {% endif %}
+
+    {% hook 'cp.login.alternative-login-methods' %}
   </div>
 </div>

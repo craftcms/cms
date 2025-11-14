@@ -3,6 +3,8 @@
 {% set id = id ?? "radio#{random()}" %}
 {% set label = radioLabel ?? label ?? null %}
 {% set labelId = labelId ?? "#{id}-label" %}
+{% set color = color ?? null %}
+{% set icon = icon ?? null %}
 
 {% set containerAttributes = {
     for: id,
@@ -33,7 +35,27 @@
     {% if custom ?? false %}
         {{ 'Other:'|t('app') }}
     {% else %}
-        {{ label|raw }}
+        <div class="flex flex-nowrap gap-xs">
+            {% if icon or color %}
+                {% if icon %}
+                    {% set style = {
+                        '--icon-color': color,
+                    }|filter %}
+                    {{ tag('span', {
+                        class: 'cp-icon puny',
+                        style,
+                        html: iconSvg(icon),
+                    }) }}
+                {% else %}
+                    <div class="color small">
+                        <div class="color-preview" style="background-color: {{ color }}"></div>
+                    </div>
+                {% endif %}
+                <span>{{ label|raw }}</span>
+            {% else %}
+                {{ label|raw }}
+            {% endif %}
+        </div>
     {% endif %}
 {% endtag %}
 

@@ -7,6 +7,9 @@
 
 namespace craft\gql\base;
 
+use craft\base\Event;
+use craft\events\DefineGqlArgumentsEvent;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\EntryRelation;
@@ -14,6 +17,7 @@ use craft\gql\types\input\criteria\TagRelation;
 use craft\gql\types\input\criteria\UserRelation;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -25,11 +29,17 @@ use GraphQL\Type\Definition\Type;
 abstract class ElementArguments extends Arguments
 {
     /**
+     * @event DefineGqlArgumentsEvent The event that is triggered when arguments are being defined.
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ARGUMENTS = 'defineArguments';
+
+    /**
      * @inheritdoc
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
+        $arguments = array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
@@ -70,6 +80,31 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::string(),
                 'description' => 'Narrows the query results to only elements that match a search query.',
             ],
+            'searchTermOptions' => [
+                'name' => 'searchTermOptions',
+                'type' => GqlEntityRegistry::getOrCreate('SearchTermOptions', fn() => new InputObjectType([
+                    'name' => 'SearchTermOptions',
+                    'fields' => fn() => [
+                        'subLeft' => [
+                            'name' => 'subLeft',
+                            'type' => Type::boolean(),
+                        ],
+                        'subRight' => [
+                            'name' => 'subRight',
+                            'type' => Type::boolean(),
+                        ],
+                        'exclude' => [
+                            'name' => 'exclude',
+                            'type' => Type::boolean(),
+                        ],
+                        'exact' => [
+                            'name' => 'exact',
+                            'type' => Type::boolean(),
+                        ],
+                    ],
+                ])),
+                'description' => 'Defines the default options that should be applied terms within the `search` argument.',
+            ],
             'relatedTo' => [
                 'name' => 'relatedTo',
                 'type' => Type::listOf(QueryArgument::getType()),
@@ -82,27 +117,32 @@ abstract class ElementArguments extends Arguments
             ],
             'relatedToAssets' => [
                 'name' => 'relatedToAssets',
-                'type' => fn() => Type::listOf(AssetRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(AssetRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an asset list defined with this argument.',
             ],
             'relatedToEntries' => [
                 'name' => 'relatedToEntries',
-                'type' => fn() => Type::listOf(EntryRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(EntryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an entry list defined with this argument.',
             ],
             'relatedToUsers' => [
                 'name' => 'relatedToUsers',
-                'type' => fn() => Type::listOf(UserRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(UserRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.',
             ],
             'relatedToCategories' => [
                 'name' => 'relatedToCategories',
-                'type' => fn() => Type::listOf(CategoryRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(CategoryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
             ],
             'relatedToTags' => [
                 'name' => 'relatedToTags',
-                'type' => fn() => Type::listOf(TagRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(TagRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
             ],
             'relatedToAll' => [
@@ -161,6 +201,14 @@ abstract class ElementArguments extends Arguments
                 'description' => 'Narrows the query results based on the unique identifier for an element-site relation.',
             ],
         ]);
+
+        if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ARGUMENTS)) {
+            $event = new DefineGqlArgumentsEvent(compact('arguments'));
+            Event::trigger(self::class, self::EVENT_DEFINE_ARGUMENTS, $event);
+            return $event->arguments;
+        }
+
+        return $arguments;
     }
 
     /**
@@ -230,6 +278,11 @@ abstract class ElementArguments extends Arguments
                 'name' => 'provisionalDrafts',
                 'type' => Type::boolean(),
                 'description' => 'Whether provisional drafts should be returned.',
+            ],
+            'withProvisionalDrafts' => [
+                'name' => 'withProvisionalDrafts',
+                'type' => Type::boolean(),
+                'description' => 'Whether canonical elements should be replaced with provisional drafts if those exist.',
             ],
         ];
     }

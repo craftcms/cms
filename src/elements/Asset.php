@@ -46,6 +46,7 @@ use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -72,6 +73,7 @@ use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use DateTime;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Throwable;
 use Twig\Markup;
@@ -344,6 +346,14 @@ class Asset extends Element
     public static function gqlTypeName(Volume $volume): string
     {
         return sprintf('%s_Asset', $volume->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function baseGqlType(): Type
+    {
+        return AssetInterface::getType();
     }
 
     /**
@@ -694,7 +704,6 @@ class Asset extends Element
             ],
             'link' => [
                 'label' => Craft::t('app', 'Link'),
-                'icon' => 'world',
                 'placeholder' => fn() => ElementHelper::linkAttributeHtml(null),
             ],
             'dateModified' => [
@@ -753,13 +762,9 @@ class Asset extends Element
                     ->offset($elementQuery->offset)
                     ->limit($elementQuery->limit);
 
-                $folders = array_map(function(array $result) {
-                    return new VolumeFolder($result);
-                }, $folderQuery->all());
+                $folders = array_map(fn(array $result) => new VolumeFolder($result), $folderQuery->all());
 
-                $foldersByPath = ArrayHelper::index($folders, function(VolumeFolder $folder) {
-                    return rtrim($folder->path, '/');
-                });
+                $foldersByPath = ArrayHelper::index($folders, fn(VolumeFolder $folder) => rtrim($folder->path, '/'));
 
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
@@ -1158,6 +1163,11 @@ class Asset extends Element
     private string $_filename;
 
     /**
+     * @var string|null
+     */
+    private ?string $_mimeType = null;
+
+    /**
      * @var int|null Width
      */
     private int|null $_width = null;
@@ -1236,7 +1246,7 @@ class Asset extends Element
     {
         return (
             parent::__isset($name) ||
-            strncmp($name, 'transform:', 10) === 0 ||
+            str_starts_with($name, 'transform:') ||
             Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
@@ -1255,7 +1265,7 @@ class Asset extends Element
      */
     public function __get($name)
     {
-        if (strncmp($name, 'transform:', 10) === 0) {
+        if (str_starts_with($name, 'transform:')) {
             return $this->copyWithTransform(substr($name, 10));
         }
 
@@ -1281,9 +1291,6 @@ class Asset extends Element
 
         if (isset($this->alt)) {
             $this->alt = trim($this->alt);
-            if ($this->alt === '') {
-                $this->alt = null;
-            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;
@@ -1730,6 +1737,11 @@ $('#' + $id).on('activate', () => {
           alert(result.error);
         } else {
           Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
+          // update the View menu item link
+          let viewBtn = $('#action-menu .menu-item[data-view]');
+          if (viewBtn && result.resultingUrl) {
+            viewBtn.attr('href', result.resultingUrl)
+          }
         }
       },
       fileuploadfail: (event, data) => {
@@ -1875,7 +1887,7 @@ JS,[
      */
     public function getSrcset(array $sizes, mixed $transform = null): string|false
     {
-        $urls = $this->getUrlsBySize($sizes, $transform);
+        $urls = array_filter($this->getUrlsBySize($sizes, $transform));
 
         if (empty($urls)) {
             return false;
@@ -1957,6 +1969,8 @@ JS,[
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
             $sizeTransform = $transform ? $transform->toArray() : [];
+
+            unset($sizeTransform['name'], $sizeTransform['handle']);
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
@@ -2139,6 +2153,8 @@ JS,[
             return null;
         }
 
+        $transform ??= $this->_transform;
+
         // Fire a 'beforeDefineUrl' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
             $event = new DefineAssetUrlEvent([
@@ -2180,7 +2196,6 @@ JS,[
         }
 
         $volume = $this->getVolume();
-        $transform = $transform ?? $this->_transform;
 
         if (
             $transform && (
@@ -2344,6 +2359,9 @@ JS,[
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
             'alt' => $this->thumbAlt(),
+            'data' => [
+                'animated' => $this->couldHaveAnimatedThumb(),
+            ],
         ]);
     }
 
@@ -2401,7 +2419,18 @@ JS,[
     }
 
     /**
-     * Returns the file’s MIME type, if it can be determined.
+     * @inheritdoc
+     */
+    protected function couldHaveAnimatedThumb(): bool
+    {
+        return $this->getExtension() === 'gif' || $this->getExtension() === 'webp';
+    }
+
+    /**
+     * Returns the file’s MIME type based, if it can be determined.
+     *
+     * If a transform is applied (either via the `$transform` argument or [[setTransform()]]),
+     * the MIME type will be based on the transform’s format.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
@@ -2409,17 +2438,26 @@ JS,[
      */
     public function getMimeType(mixed $transform = null): ?string
     {
-        $transform = $transform ?? $this->_transform;
+        $transform ??= $this->_transform;
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
-            // todo: maybe we should be passing this off to the filesystem
-            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
-            return FileHelper::getMimeTypeByExtension($this->_filename);
+        if ($transform?->format) {
+            // Prepend with '.' to let pathinfo() work
+            return FileHelper::getMimeTypeByExtension('.' . $transform->format);
         }
 
-        // Prepend with '.' to let pathinfo() work
-        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
+        return $this->_mimeType ?? FileHelper::getMimeTypeByExtension($this->_filename);
+    }
+
+    /**
+     * Sets the file’s MIME type.
+     *
+     * @param string|null $mimeType
+     * @since 5.8.0
+     */
+    public function setMimeType(?string $mimeType): void
+    {
+        $this->_mimeType = $mimeType;
     }
 
     /**
@@ -2437,8 +2475,8 @@ JS,[
             return $ext;
         }
 
-        $transform = $transform ?? $this->_transform;
-        return ImageTransforms::normalizeTransform($transform)?->format ?? $ext;
+        $transform ??= $this->_transform;
+        return ImageTransforms::normalizeTransform($transform)->format ?? $ext;
     }
 
     /**
@@ -2511,6 +2549,9 @@ JS,[
      */
     public function getFormattedSizeInBytes(bool $short = true): ?string
     {
+        if (!isset($this->size)) {
+            return null;
+        }
         $params = [
             'n' => $this->size,
             'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
@@ -3256,6 +3297,10 @@ JS;
             $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
+            if (isset($this->_mimeType)) {
+                $record->mimeType = $this->_mimeType;
+            }
+
             if ($record->alt === null) {
                 $record->alt = $this->alt;
             }
@@ -3383,6 +3428,7 @@ JS;
                 'kind' => $this->kind,
                 'alt' => $this->alt,
                 'filename' => $this->filename,
+                'animated' => $this->couldHaveAnimatedThumb(),
             ],
         ];
 
@@ -3466,7 +3512,7 @@ JS;
             return [null, null];
         }
 
-        $transform = $transform ?? $this->_transform;
+        $transform ??= $this->_transform;
 
         if ($transform === null || !Image::canManipulateAsImage($this->getExtension())) {
             return [$this->_width, $this->_height];
@@ -3541,17 +3587,12 @@ JS;
                 throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
-            if ($this->folderId) {
-                // Delete the old file
-                $oldVolume->deleteFile($oldPath);
-            }
-
             // Upload the file to the new location
             try {
                 $newVolume->writeFileFromStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
-            } catch (VolumeException $exception) {
+            } catch (VolumeException|FsException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 throw $exception;
             } finally {
@@ -3559,6 +3600,15 @@ JS;
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
+            }
+
+            // if we got this far without an exception, it's okay to delete the file from the old volume
+            if (
+                $oldFolder &&
+                ($oldFolder->id !== $newFolder->id || $oldPath !== $newPath)
+            ) {
+                // Delete the old file
+                $oldVolume->deleteFile($oldPath);
             }
         }
 
@@ -3642,9 +3692,7 @@ JS;
         // Make sure it's *not* within a system directory though
         $systemDirs = $pathService->getSystemPaths();
         $systemDirs = array_map([$this, '_normalizeTempPath'], $systemDirs);
-        $systemDirs = array_filter($systemDirs, function($value) {
-            return ($value !== false);
-        });
+        $systemDirs = array_filter($systemDirs, fn($value) => $value !== false);
 
         foreach ($systemDirs as $dir) {
             if (str_starts_with($tempFilePath, $dir)) {

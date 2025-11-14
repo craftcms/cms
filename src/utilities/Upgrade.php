@@ -67,11 +67,9 @@ class Upgrade extends Utility
         }
 
         $version = (int)Craft::$app->version + 1;
-        $view->registerJsWithVars(function($args) {
-            return <<<JS
+        $view->registerJsWithVars(fn($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args);
-JS;
-        }, [
+JS, [
             [$version, $allPlugins],
         ]);
 

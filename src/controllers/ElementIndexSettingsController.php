@@ -68,8 +68,17 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
         $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+        $multiPage = $elementType::multiPageSources();
 
         foreach ($sources as &$source) {
+            if ($multiPage) {
+                // ensure we're using the EN translation here
+                $language = Craft::$app->language;
+                Craft::$app->language = Craft::$app->sourceLanguage;
+                $source['page'] ??= $elementType::pluralDisplayName();
+                Craft::$app->language = $language;
+            }
+
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
@@ -215,8 +224,12 @@ class ElementIndexSettingsController extends BaseElementsController
             ])
             ->all();
 
+        $pageSettings = $sourcesService->getPageSettings($elementType);
+
         return $this->asJson([
+            'multiPage' => $multiPage,
             'sources' => $sources,
+            'pageSettings' => $pageSettings,
             'viewModes' => $viewModes,
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
@@ -239,11 +252,12 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $elementType = $this->elementType();
+        $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+        $oldSourceConfigs = ArrayHelper::index($oldSourceConfigs, 'key');
 
         $conditionsService = Craft::$app->getConditions();
 
@@ -252,24 +266,37 @@ class ElementIndexSettingsController extends BaseElementsController
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
 
+        if ($multiPage) {
+            $sourcePages = $this->request->getBodyParam('sourcePages', []);
+            $pageSettings = $this->request->getBodyParam('pageSettings', []);
+        }
+
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $source) {
-            if (isset($source['heading'])) {
-                $newSourceConfigs[] = [
-                    'type' => ElementSources::TYPE_HEADING,
-                    'heading' => $source['heading'],
-                ];
-            } elseif (isset($source['key'])) {
-                $isCustom = str_starts_with($source['key'], 'custom:');
+            if (isset($source['key'])) {
+                $type = match (true) {
+                    str_starts_with($source['key'], 'custom:') => ElementSources::TYPE_CUSTOM,
+                    str_starts_with($source['key'], 'heading:') => ElementSources::TYPE_HEADING,
+                    default => ElementSources::TYPE_NATIVE,
+                };
+
+                $isCustom = $type === ElementSources::TYPE_CUSTOM;
                 $sourceConfig = [
-                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
+                    'type' => $type,
                     'key' => $source['key'],
                 ];
+
+                if (isset($sourcePages[$source['key']])) {
+                    $sourceConfig['page'] = $sourcePages[$source['key']];
+                }
 
                 // Were new settings posted?
                 if (isset($sourceSettings[$source['key']])) {
                     $postedSettings = $sourceSettings[$source['key']];
-                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+
+                    if ($type !== ElementSources::TYPE_HEADING) {
+                        $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+                    }
 
                     if (isset($postedSettings['defaultSort'])) {
                         $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
@@ -292,6 +319,8 @@ class ElementIndexSettingsController extends BaseElementsController
                         if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
+                    } elseif ($type === ElementSources::TYPE_HEADING) {
+                        $sourceConfig['heading'] = $postedSettings['heading'];
                     } elseif (isset($postedSettings['enabled'])) {
                         $sourceConfig['disabled'] = !$postedSettings['enabled'];
                         if ($sourceConfig['disabled']) {
@@ -312,7 +341,14 @@ class ElementIndexSettingsController extends BaseElementsController
             }
         }
 
-        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);
+
+        if ($multiPage) {
+            $projectConfig->set(
+                sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
+                array_map('array_filter', $pageSettings),
+            );
+        }
 
         Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));
 

@@ -219,13 +219,6 @@ $menuBorderRadius: $mediumBorderRadius;
 
 // Other
 
-@mixin focus-styles {
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
-    @content;
-  }
-}
-
 @mixin svg-mask($color) {
   rect,
   circle,
@@ -335,20 +328,18 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin light-focus-ring() {
-  --focus-ring: 0 0 0 1px
-      hsl(
-        #{color.hue($blue200)},
-        #{color.saturation($blue200)},
-        #{color.lightness($blue200)}
-      ),
-    0 0 0 3px hsla(var(--light-focus-hsl), 1);
+  @warn "light-focus-ring mixin is deprecated. Use CSS variables instead.";
+  --focus-ring: var(--focus-ring-light);
 }
 
 @mixin dark-btn-light-bg-focus-ring() {
+  @warn "dark-btn-light-bg-focus-ring is deprecated. Use CSS variables instead.";
   --focus-ring: var(--focus-ring-outset);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
+  @warn "custom-color-focus-ring mixin is deprecated. Use CSS variables instead.";
+
   @if $secondary != null {
     --focus-ring: 0 0 0 1px #{$primary}, 0 0 0 3px #{$secondary};
   } @else {
@@ -515,6 +506,7 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin header-btn {
   width: calc(30rem / 16);
   height: calc(30rem / 16);
+  min-height: auto;
   padding-left: 0;
   padding-right: 0;
 
@@ -570,9 +562,9 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin menu-item-active-styles {
   color: var(--white) !important;
-  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --fg-subtle: rgba(255, 255, 255, 0.8);
   --light-text-color: rgba(255, 255, 255, 0.8);
-  background-color: var(--dark-sel-color);
+  background-color: var(--bg-selection-dark);
 
   svg {
     @include svg-mask(var(--white));
@@ -662,7 +654,7 @@ $menuBorderRadius: $mediumBorderRadius;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
-  background-color: hsl(212, 25%, 90%);
+  background-color: var(--button-bg);
   appearance: none;
   // from https://stackoverflow.com/a/15933790/1688568
   &::-ms-expand {
@@ -674,9 +666,13 @@ $menuBorderRadius: $mediumBorderRadius;
   min-width: 100%;
 }
 
+@mixin select-input-hovered-styles {
+  outline-color: transparent;
+  background-color: var(--button-bg--hover);
+}
+
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: hsl(212, 25%, 85%);
   box-shadow: var(--focus-ring);
 }
 

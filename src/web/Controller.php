@@ -391,7 +391,7 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         array $routeParams = [],
     ): ?YiiResponse {
-        $modelName = $modelName ?? 'model';
+        $modelName ??= 'model';
         $routeParams += [$modelName => $model];
         $data += [
             'modelName' => $modelName,

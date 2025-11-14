@@ -96,14 +96,14 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
 
     this.actionDisclosure = new Garnish.DisclosureMenu(this.$actionMenuBtn);
     this.moveUpBtn = this.actionDisclosure.addItem({
-      icon: 'arrow-up',
+      icon: async () => await Craft.ui.icon('arrow-up'),
       label: Craft.t('app', 'Move up'),
       onActivate: () => {
         this.moveUp();
       },
     });
     this.moveDownBtn = this.actionDisclosure.addItem({
-      icon: 'arrow-down',
+      icon: async () => await Craft.ui.icon('arrow-down'),
       label: Craft.t('app', 'Move down'),
       onActivate: () => {
         this.moveDown();

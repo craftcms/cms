@@ -22,7 +22,7 @@ class Session
     /**
      * @see session()
      */
-    private static YiiSession|false|null $_session;
+    private static YiiSession|false|null $_session = null;
 
     /**
      * @see exists()

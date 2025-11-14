@@ -349,9 +349,8 @@ class Assets
      */
     public static function sortFolderTree(array &$tree): void
     {
-        ArrayHelper::multisort($tree, function($folder) {
-            return $folder->getVolume()->sortOrder;
-        });
+        /** @phpstan-ignore parameterByRef.type */
+        ArrayHelper::multisort($tree, fn($folder) => $folder->getVolume()->sortOrder);
     }
 
     /**

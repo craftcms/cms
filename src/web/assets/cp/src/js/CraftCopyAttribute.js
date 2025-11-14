@@ -31,7 +31,7 @@ class CraftCopyAttribute extends HTMLElement {
     input.value = this.value;
     input.classList.add('visually-hidden');
     input.readOnly = true;
-    input.size = this.value.length;
+    input.size = Math.max(this.value.length, 1);
     input.tabIndex = -1;
     input.ariaHidden = 'true';
 
@@ -64,12 +64,22 @@ class CraftCopyAttribute extends HTMLElement {
   }
 
   connectedCallback() {
-    this.value = this.innerText.trim();
+    this.value =
+      (this.getAttribute('value') || this.innerText).trim() ||
+      this.innerText.trim();
     this.innerHTML = '';
 
     this.renderButton();
     this.renderInput();
     this.renderIcon();
+  }
+
+  disconnectedCallback() {
+    // put the "value" attribute back into <craft-copy-attribute>
+    // so that when connectedCallback() is called after insetBefore/insertAfter
+    // everything can get initialised as expected
+    // we can't use Element.moveBefore/Element.moveAfter as those are experimental at the moment and not available in Safari & FF
+    this.setAttribute('value', this.value);
   }
 }
 

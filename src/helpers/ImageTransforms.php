@@ -367,6 +367,7 @@ class ImageTransforms
      * @param ImageTransform $transform The image transform
      * @param callable|null $heartbeat A callback that should be called while the transform is being generated
      * @param BaseImage|null $image The image object loaded for the transform
+     * @param-out BaseImage $image The image object loaded for the transform
      * @return string The temp path that the transform was saved to
      * @throws ImageTransformException if the transform couldn’t be generated.
      */

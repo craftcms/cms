@@ -30,7 +30,7 @@ use yii\di\Instance;
 /**
  * Drafts service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->getDrafts()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
@@ -275,7 +275,7 @@ SQL,
      */
     public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
-        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var ElementInterface&DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
@@ -399,7 +399,7 @@ SQL,
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
             Db::delete(Table::DRAFTS, [

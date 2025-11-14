@@ -21,13 +21,16 @@
         {% endif %}
     {% endif %}
 
+    {% set docTitle = "#{title} - #{selectedSite.uiLabel}" %}
+    {% set siteMenuItems = siteMenuItems(selectableSites, selectedSite) %}
+
     {% set crumbs = (crumbs ?? [])|unshift({
         id: 'site-crumb',
         icon: 'world',
         iconAltText: 'Site'|t('app'),
         label: selectedSite.name|t('site'),
         menu: {
-            items: siteMenuItems(selectableSites, selectedSite),
+            items: siteMenuItems|length > 1 ? siteMenuItems : null,
             label: 'Select site'|t('app')
         }
     }) %}
@@ -38,7 +41,9 @@
         {{ tag('a', {
             class: 'btn skip-link',
             href: '#elements',
-            html: 'Skip to {title}'|t('app', {title: title}),
+            html: 'Skip to {name}'|t('app', {
+                name: elementPluralDisplayName|lower,
+            })|capitalize,
         }) }}
 
         <nav aria-labelledby="source-heading">
@@ -61,7 +66,7 @@
 {% block content %}
     <div class="main element-index">
         <span class="visually-hidden" role="status" data-status-message></span>
-        <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
+        <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
         <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>
@@ -76,15 +81,16 @@
 
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
-        elementTypeName: '{{ elementDisplayName|e("js") }}',
-        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
         context: '{{ context }}',
-        storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
-        toolbarSelector: '#toolbar',
         defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
+        elementTypeName: '{{ elementDisplayName|e("js") }}',
+        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        page: {{ (page ?? null)|json_encode|raw }},
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        toolbarSelector: '#toolbar',
     });
 {% endblock %}
 

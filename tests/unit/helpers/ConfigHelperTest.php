@@ -101,9 +101,7 @@ class ConfigHelperTest extends TestCase
 
             // If variable is callable.  Ensure the handle gets passed into the callable.
             [
-                'imahandle', function($handle) {
-                    return $handle;
-                }, 'imahandle',
+                'imahandle', fn($handle) => $handle, 'imahandle',
             ],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],

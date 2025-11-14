@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\events\DefineFieldActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -24,6 +25,13 @@ use craft\helpers\StringHelper;
  */
 abstract class BaseField extends FieldLayoutElement
 {
+    /**
+     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
+     * @see actionMenuItems()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
     /**
      * @var string|null The field’s label
      */
@@ -178,10 +186,9 @@ abstract class BaseField extends FieldLayoutElement
         $label = $this->selectorLabel();
         $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon'], altText: $indicator['label']), [
             'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
-            'aria' => ['label' => $indicator['label']],
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -258,7 +265,7 @@ abstract class BaseField extends FieldLayoutElement
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `src/icons/solid/.`
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
      * @since 5.0.0
@@ -367,7 +374,8 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $statusClass = $this->statusClass($element, $static);
+        $showStatus = $this->showStatus();
+        $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
         $label = $this->showLabel() ? $this->label() : null;
         $instructions = $this->instructions($element, $static);
         $tip = $this->tip($element, $static);
@@ -396,7 +404,7 @@ abstract class BaseField extends FieldLayoutElement
                             'element-id' => $element->id,
                             'layout-element' => $this->uid,
                             'label' => $label,
-                            'namespace' => ($namespace && $namespace !== 'field')
+                            'namespace' => ($namespace && $namespace !== 'fields')
                                 ? StringHelper::removeRight($namespace, '[fields]')
                                 : null,
                         ],
@@ -408,6 +416,9 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         return Cp::fieldHtml($inputHtml, [
+            'fieldClass' => array_keys(array_filter([
+                'no-status' => !$showStatus,
+            ])),
             'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
             'labelId' => $this->labelId(),
@@ -415,7 +426,7 @@ abstract class BaseField extends FieldLayoutElement
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
             'errorsId' => $this->errorsId(),
-            'statusId' => $this->statusId(),
+            'statusId' => $showStatus ? $this->statusId() : null,
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
@@ -431,7 +442,8 @@ abstract class BaseField extends FieldLayoutElement
             'translatable' => $translatable,
             'translationDescription' => $this->translationDescription($element, $static),
             'actionMenuItems' => $actionMenuItems,
-            'errors' => !$static ? $this->errors($element) : [],
+            // show errors regardless of whether the field is static
+            'errors' => $this->errors($element),
         ]);
     }
 
@@ -678,6 +690,17 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns whether the field should show a status indicator when modified.
+     *
+     * @return bool
+     * @since 5.8.0
+     */
+    protected function showStatus(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns the field’s status class.
      *
      * @param ElementInterface|null $element The element the form is being rendered for
@@ -836,7 +859,19 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
-        return [];
+        $items = [];
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $items,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            return $event->items;
+        }
+
+        return $items;
     }
 
     /**

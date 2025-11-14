@@ -22,7 +22,7 @@ use yii\db\Expression;
 /**
  * The Tokens service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getTokens()|`Craft::$app->tokens`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getTokens()|`Craft::$app->getTokens()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

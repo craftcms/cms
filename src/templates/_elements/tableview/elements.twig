@@ -6,10 +6,14 @@
 {% set elementsService = craft.app.elements %}
 {% set hasStatusCol = attributes|contains(0, 'status') %}
 {% set showHeaderColumn = showHeaderColumn ?? false %}
+{% set context = context ?? 'index' %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
-        ? (element.getDescendants()
+        ? (clone(elementQuery)
+            .structureId(element.structureId)
+            .descendantOf(element)
+            .siteId(element.siteId)
             .status(null)
             .drafts(null)
             .draftOf(false)
@@ -31,6 +35,7 @@
       }|filter|keys,
     } %}
         {% if selectable %}
+            {% set checkboxLabelId = "checkbox-label-#{random()}" %}
             <td class="checkbox-cell">
                 {{ tag('div', {
                     class: 'checkbox',
@@ -38,8 +43,16 @@
                     tabindex: '0',
                     aria: {
                         checked: 'false',
-                        label: elementTitle,
+                        labelledby: checkboxLabelId,
                     },
+                }) }}
+                {{ tag('span', {
+                    id: checkboxLabelId,
+                    class: 'visually-hidden',
+                    text: element.getUiLabel(),
+                    aria: {
+                        hidden: 'true',
+                    }
                 }) }}
             </td>
         {% endif %}
@@ -58,7 +71,7 @@
                         }|filter,
                     } %}
                         {%- if (sortable or structureEditable) and not inlineEditing %}
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}">&nbsp;</a>
                         {% endif %}
                         {%- if structure and totalDescendants %}
                             {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
@@ -67,11 +80,15 @@
                             aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                         {% endif %}
                         {% set chip = elementChip(element, {
-                            context: context ?? 'index',
+                            context,
                             showThumb: showHeaderColumn,
                             showLabel: showHeaderColumn,
                             showProvisionalDraftLabel: true,
                             showStatus: showHeaderColumn and not hasStatusCol,
+                            attributes: {
+                                class: ['chromeless'],
+                            },
+                            hyperlink: hyperlink ?? (context == 'index'),
                         }) %}
                         {% if not showHeaderColumn %}
                             {% set chip = chip|attr({class: 'hide-label'}) %}

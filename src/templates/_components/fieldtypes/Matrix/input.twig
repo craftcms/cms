@@ -1,7 +1,5 @@
 {% set singleType = entryTypes|length == 1 %}
 
-{% import '_includes/forms.twig' as forms %}
-
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
@@ -13,40 +11,7 @@
   </div>
   {% if not static and not staticEntries %}
     <div class="buttons">
-      {% if singleType %}
-        {{ forms.button({
-          label: createButtonLabel,
-          class: ['dashed', 'add', 'icon'],
-          spinner: true,
-          attributes: {
-            data: {
-              type: entryTypes|first.handle,
-            },
-            aria: {
-              label: entryTypes|first.name|t('site'),
-              describedby: labelId,
-            },
-          },
-        }) }}
-      {% else %}
-        {{ disclosureMenu(entryTypes|map(entryType => {
-          icon: entryType.icon,
-          color: entryType.color,
-          label: entryType.name|t('site'),
-          value: entryType.handle,
-          attributes: {
-            data: {
-              type: entryType.handle,
-            },
-          },
-        }), {
-          buttonLabel: createButtonLabel,
-          buttonSpinner: true,
-          buttonAttributes: {
-            class: ['dashed', 'add', 'icon'],
-          },
-        }) }}
-      {% endif %}
+      {% include '_components/fieldtypes/Matrix/create-button.twig' %}
     </div>
   {% endif %}
 </div>

@@ -1,0 +1,32 @@
+{% extends '_components/fieldtypes/elementfieldsettings.twig' %}
+{% import '_includes/forms.twig' as forms %}
+
+{% block fieldSettings %}
+    {{ block('sourcesField') }}
+    {{ block('selectionConditionField') }}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted sections'|t('app'),
+        instructions: 'Whether to show sections that the user doesn’t have permission to view.'|t('app'),
+        id: 'showUnpermittedSections',
+        name: 'showUnpermittedSections',
+        on: field.showUnpermittedSections,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted entries'|t('app'),
+        instructions: 'Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'|t('app'),
+        id: 'showUnpermittedEntries',
+        name: 'showUnpermittedEntries',
+        on: field.showUnpermittedEntries,
+    }) }}
+
+    {{ block('maintainHierarchy') }}
+    {{ block('limitFields') }}
+    {{ block('defaultPlacementField') }}
+    {{ block('viewModeField') }}
+    {{ block('selectionLabelField') }}
+    {{ block('showSearchInputField') }}
+    {{ block('validateRelatedElementsField') }}
+    {{ block('advancedSettings') }}
+{% endblock %}

@@ -24,6 +24,9 @@
                 class: 'crumb-link',
                 id: crumb.id ?? null,
                 href: crumb.url is defined ? url(crumb.url) : null,
+                aria: {
+                  label: crumb.ariaLabel ?? false,
+                },
               } %}
                 {% if crumb.icon is defined %}
                   {% set iconAltText = crumb.iconAltText ?? null %}

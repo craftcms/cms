@@ -21,6 +21,8 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -30,6 +32,7 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use GraphQL\Type\Definition\Type;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -156,6 +159,14 @@ class Category extends Element
     public static function gqlTypeName(CategoryGroup $categoryGroup): string
     {
         return sprintf('%s_Category', $categoryGroup->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function baseGqlType(): Type
+    {
+        return CategoryInterface::getType();
     }
 
     /**
@@ -482,9 +493,16 @@ class Category extends Element
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        foreach ($this->getAncestors()->all() as $ancestor) {
+        $ancestors = $this->getAncestors();
+        if ($ancestors instanceof ElementQueryInterface) {
+            $ancestors->status(null);
+        }
+
+        foreach ($ancestors->all() as $ancestor) {
             if ($elementsService->canView($ancestor, $user)) {
-                $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+                $crumbs[] = [
+                    'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                ];
             }
         }
 
@@ -528,7 +546,10 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("viewPeerCategoryDrafts:$group->uid")
@@ -550,7 +571,10 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("savePeerCategoryDrafts:$group->uid")
@@ -585,7 +609,10 @@ class Category extends Element
         }
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("deletePeerCategoryDrafts:$group->uid")
@@ -841,7 +868,7 @@ class Category extends Element
             $record->groupId = (int)$this->groupId;
             $record->save(false);
 
-            if (!$this->duplicateOf) {
+            if (!$this->duplicateOf || $this->updatingFromDerivative) {
                 // Has the parent changed?
                 if ($this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $group);
@@ -911,7 +938,8 @@ class Category extends Element
 
         if ($this->structureId) {
             // Remember the parent ID, in case the category needs to be restored later
-            $parentId = $this->getAncestors(1)
+            $parentId = $this->ancestors()
+                ->ancestorDist(1)
                 ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
@@ -964,7 +992,7 @@ class Category extends Element
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
 
-            $ancestorIds = $this->getAncestors()
+            $ancestorIds = $this->ancestors()
                 ->status(null)
                 ->ids();
 

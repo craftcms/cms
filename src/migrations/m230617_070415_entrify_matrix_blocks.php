@@ -59,20 +59,16 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldsService = Craft::$app->getFields();
 
-        // index entry type names and handles
-        $entryTypeNames = [];
+        // index entry handles
         $entryTypeHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
-            $entryTypeNames[$entryTypeConfig['name']] = true;
-            $entryTypeHandles[$entryTypeConfig['handle']] = true;
+            $entryTypeHandles[strtolower($entryTypeConfig['handle'])] = true;
         }
 
-        // index global field names and handles
-        $fieldNames = [];
+        // index global field handles
         $fieldHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
-            $fieldNames[$fieldConfig['name']] = true;
-            $fieldHandles[$fieldConfig['handle']] = true;
+            $fieldHandles[strtolower($fieldConfig['handle'])] = true;
         }
 
         // get all the block type configs, grouped by field
@@ -100,7 +96,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             foreach ($blockTypeConfigsByField[$fieldUid] as $blockTypeUid => $blockTypeConfig) {
                 $entryType = $newEntryTypes[] = $fieldEntryTypes[] = new EntryType([
                     'uid' => $blockTypeUid,
-                    'name' => $this->uniqueName($blockTypeConfig['name'], $entryTypeNames),
+                    'name' => $blockTypeConfig['name'],
                     'handle' => $this->uniqueHandle($blockTypeConfig['handle'], $entryTypeHandles),
                     'hasTitleField' => false,
                     'titleFormat' => null,
@@ -118,14 +114,14 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                 foreach ($fieldLayout?->getCustomFieldElements() ?? [] as $layoutElement) {
                     $subField = $layoutElement->getField();
 
-                    // Set a unique name & label, and preserve the originals if needed
+                    // Set a name and unique handle, and preserve the originals if needed
                     $layoutElement->label = $subField->name;
-                    $subField->name = $this->uniqueName(sprintf(
+                    $subField->name = sprintf(
                         '%s - %s - %s',
                         $fieldConfig['name'],
                         $blockTypeConfig['name'],
                         $subField->name !== '__blank__' ? $subField->name : Inflector::camel2words($subField->handle),
-                    ), $fieldNames);
+                    );
 
                     $originalHandle = $subField->handle;
                     $subField->handle = $this->uniqueHandle($subField->handle, $fieldHandles);
@@ -167,7 +163,14 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             $fieldConfig['settings'] += [
                 'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
                 'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
-                'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes),
+                'entryTypes' => array_map(function(EntryType $entryType) use ($fieldUid, $blockTypeConfigsByField) {
+                    $config = ['uid' => $entryType->uid];
+                    $blockTypeConfig = $blockTypeConfigsByField[$fieldUid][$entryType->uid];
+                    if ($blockTypeConfig['handle'] !== $entryType->handle) {
+                        $config['handle'] = $blockTypeConfig['handle'];
+                    }
+                    return $config;
+                }, $fieldEntryTypes),
                 'viewMode' => Matrix::VIEW_MODE_BLOCKS,
             ];
             unset($fieldConfig['settings']['contentTable']);
@@ -211,7 +214,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                 // the DB user probably didn't have permission
                 // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
                 $disabledFkChecks = false;
-            };
+            }
 
             // entrify the Matrix blocks
             $typeIdSql = 'CASE';
@@ -292,26 +295,14 @@ SQL,
         return true;
     }
 
-    private function uniqueName(string $name, array &$names): string
-    {
-        $i = 1;
-        do {
-            $test = $name . ($i !== 1 ? " $i" : '');
-            if (!isset($names[$test])) {
-                $names[$test] = true;
-                return $test;
-            }
-            $i++;
-        } while (true);
-    }
-
     private function uniqueHandle(string $handle, array &$handles): string
     {
         $i = 1;
         do {
             $test = $handle . ($i !== 1 ? $i : '');
-            if (!isset($handles[$test])) {
-                $handles[$test] = true;
+            $lower = strtolower($test);
+            if (!isset($handles[$lower])) {
+                $handles[$lower] = true;
                 return $test;
             }
             $i++;

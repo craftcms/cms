@@ -350,27 +350,31 @@ class Gql
      */
     public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
     {
-        if (isset($resolveInfo->fieldNodes[0]->directives)) {
-            foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive|false $directiveEntity */
-                $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-
-                // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
-                if (!$directiveEntity) {
-                    continue;
-                }
-
-                $arguments = [];
-
-                if (isset($directive->arguments[0])) {
-                    foreach ($directive->arguments as $argument) {
-                        $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
-                    }
-                }
-
-                $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
-            }
+        /** @phpstan-ignore-next-line */
+        if (!isset($resolveInfo->fieldNodes[0]->directives)) {
+            return $value;
         }
+        
+        foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
+            /** @var Directive|false $directiveEntity */
+            $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
+
+            // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
+            if (!$directiveEntity) {
+                continue;
+            }
+
+            $arguments = [];
+
+            if (isset($directive->arguments[0])) {
+                foreach ($directive->arguments as $argument) {
+                    $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
+                }
+            }
+
+            $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
+        }
+
         return $value;
     }
 
@@ -446,9 +450,7 @@ class Gql
 
         $sites = Craft::$app->getSites()->getAllSites(true);
 
-        return array_filter($sites, static function(Site $site) use ($allowedSiteUids) {
-            return in_array($site->uid, $allowedSiteUids, true);
-        });
+        return array_filter($sites, static fn(Site $site) => in_array($site->uid, $allowedSiteUids, true));
     }
 
     /**
@@ -463,9 +465,7 @@ class Gql
         }
 
         if ($value instanceof ListValueNode) {
-            return array_map(function($node) {
-                return self::_convertArgumentValue($node);
-            }, iterator_to_array($value->values));
+            return array_map(fn($node) => self::_convertArgumentValue($node), iterator_to_array($value->values));
         }
 
         return $value->value;
@@ -507,9 +507,7 @@ class Gql
      */
     public static function eagerLoadComplexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
     }
 
     /**
@@ -520,9 +518,7 @@ class Gql
      */
     public static function singleQueryComplexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
     }
 
     /**
@@ -563,9 +559,7 @@ class Gql
      */
     public static function nPlus1Complexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
     }
 
     /**
@@ -656,7 +650,6 @@ class Gql
     public static function isIntrospectionQuery(string $query): bool
     {
         // strtok() won’t find a token if the string starts with it
-        /** @var string|false $tok */
         $tok = strtok(" $query", '{');
         if ($tok === false) {
             return false;

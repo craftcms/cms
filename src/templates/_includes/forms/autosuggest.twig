@@ -13,6 +13,7 @@
 {%- set previewInputId = "#{id}-preview" %}
 {%- set containerId = "#{id}-container" %}
 {%- set autosuggestId = "#{id}-autosuggest" %}
+{%- set describedBy = describedBy ?? null -%}
 {%- set labelledBy = labelledBy ?? null -%}
 
 {%- set class = (class ?? [])|explodeClass|merge([
@@ -20,7 +21,7 @@
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
-<div id="{{ containerId }}" class="autosuggest-container">
+<div id="{{ containerId }}" class="autosuggest-container" tabindex="-1">
     {{ forms.text({
         id: previewInputId,
         class: class|join(' '),
@@ -80,8 +81,8 @@ new Vue({
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',
-                'aria-describedby': describedBy ?? false,
-                'aria-labelledby': labelledBy ?? false,
+                'aria-describedby': describedBy ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
+                'aria-labelledby': labelledBy ? labelledBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
             }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
@@ -162,8 +163,17 @@ new Vue({
             return suggestion.item.name || suggestion.item;
         },
         onBlur(e) {
-            // Clear out the autosuggestions if the focus has shifted to a new element
-            if (e.relatedTarget) {
+            // Related target - element clicked or that focused moved to.
+            // Current target - the input element that is losing focus.
+            const { currentTarget, relatedTarget } = e;
+
+            // Click event bubbles from listbox to the .autosuggest-container (requires tabindex="-1")
+            // We only want to clear the filteredOptions if the focus moved outside the autosuggest container
+            // (i.e. not to the listbox or one of its children)
+
+            const targetIsOutsideAutosuggestContainer = relatedTarget && !relatedTarget.contains(currentTarget);
+
+            if (targetIsOutsideAutosuggestContainer) {
                 this.filteredOptions = [];
             }
         },

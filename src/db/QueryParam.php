@@ -116,7 +116,7 @@ final class QueryParam
     }
 
     /**
-     * @var string[] The param values.
+     * @var array The param values.
      */
     public array $values = [];
 

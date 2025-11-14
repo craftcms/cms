@@ -148,9 +148,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         switch ($this->operator) {
             case self::OPERATOR_EMPTY:
-                return !$value;
+                return $this->isEmpty($value);
             case self::OPERATOR_NOT_EMPTY:
-                return (bool)$value;
+                return !$this->isEmpty($value);
         }
 
         if ($this->value === '') {
@@ -169,5 +169,17 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_CONTAINS => is_string($value) && StringHelper::contains($value, $this->value),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
+    }
+
+    /**
+     * Returns whether the given value should be considered empty.
+     *
+     * @param mixed $value
+     * @return bool
+     * @since 5.6.11
+     */
+    protected function isEmpty(mixed $value): bool
+    {
+        return !$value;
     }
 }

@@ -12,39 +12,40 @@
   margin-block: 14px;
   margin-inline: 0;
   padding: 0;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   background-color: var(--gray-050);
   cursor: pointer;
-
-  &:hover:not(.inactive)::after {
-    position: absolute;
-    inset-block-start: 9px;
-    @include right(5px);
-    @include icon;
-    content: 'edit';
-    color: var(--link-color);
-  }
+  display: flex;
 
   &.inactive:hover {
     cursor: not-allowed;
   }
 
   .uri-container,
-  .template {
-    padding-block: 7px;
+  .template,
+  .actions {
     padding-inline: 14px;
     line-height: 18px;
     min-height: 18px;
+  }
+
+  .uri-container,
+  .template {
+    padding-block: 7px;
+  }
+
+  .actions {
+    padding-block: 4px;
   }
 
   .uri-container {
     position: relative;
     margin-inline-end: 20px;
     padding-inline-end: 10px;
-    border-start-start-radius: var(--large-border-radius);
+    border-start-start-radius: var(--radius-lg);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
-    border-end-start-radius: var(--large-border-radius);
+    border-end-start-radius: var(--radius-lg);
     float: inline-start;
     color: var(--link-color);
     background: var(--white);
@@ -73,13 +74,13 @@
     .site {
       display: inline-block;
       margin-inline: 0 8px;
-      margin-block: -1px -1px;
-      border-radius: var(--small-border-radius);
+      margin-block: -1px;
+      border-radius: var(--radius-sm);
       padding-block: 1px;
       padding-inline: 5px;
       background: var(--gray-050);
-      box-shadow: inset 0 0 0 1px var(--hairline-color);
-      color: var(--medium-text-color);
+      box-shadow: inset 0 0 0 1px var(--border-hairline);
+      color: var(--fg-subtle);
     }
 
     .uri .token {
@@ -89,12 +90,13 @@
   }
 
   .template {
-    color: var(--medium-text-color);
+    margin-inline-end: auto;
+    color: var(--fg-subtle);
 
     &::before {
       @include icon;
       margin-inline: 0 5px;
-      margin-block: 0 0;
+      margin-block: 0;
       content: 'template';
     }
   }
@@ -137,7 +139,7 @@
 
   .uri-tokens {
     margin-block-start: 10px;
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     padding-block: 15px;
     padding-inline: 25px;
     box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
@@ -155,9 +157,8 @@
   }
 
   .delete {
-    display: block;
     float: inline-start;
-    color: var(--disabled-color);
+    color: var(--bg-disabled) !important;
   }
 }
 

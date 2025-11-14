@@ -442,9 +442,7 @@ class UserQuery extends ElementQuery
             $value = $group;
         }
 
-        if (Db::normalizeParam($value, function($item) {
-            return $item instanceof UserGroup ? $item->id : null;
-        })) {
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
             $this->groupId = $value;
         } else {
             $operator = QueryParam::extractOperator($value);

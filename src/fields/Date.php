@@ -432,7 +432,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (!$value) {
             return null;

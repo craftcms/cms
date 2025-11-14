@@ -94,7 +94,7 @@ JS, [
         ]);
 
         return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', [
-            'secret' => $secret,
+            'secret' => rtrim(chunk_split($secret, 4, ' ')),
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
@@ -161,8 +161,8 @@ JS, [
     }
 
     /**
-     * Gets User's 2FA secret from the database
-     * and returns as a string formatted into a 4 character chunks.
+     * Returns User's 2FA secret from the database
+     * or generates a new one.
      *
      * @return string
      */
@@ -180,7 +180,7 @@ JS, [
             }
         }
 
-        return rtrim(chunk_split($secret, 4, ' '));
+        return $secret;
     }
 
     /**

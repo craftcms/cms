@@ -186,13 +186,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
             // Override the status code and error message if this is a Guzzle client exception
             if ($exception instanceof ClientException) {
                 $response->setStatusCode($exception->getCode());
-                if (($guzzleResponse = $exception->getResponse()) !== null) {
+                $guzzleResponse = $exception->getResponse();
 
-                    // TODO: review for v5
-                    $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
-                    if (isset($body['message'])) {
-                        $response->data['error'] = $body['message'];
-                    }
+                // TODO: review for v5
+                $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
+                if (isset($body['message'])) {
+                    $response->data['error'] = $body['message'];
                 }
             } else {
                 $response->setStatusCodeByException($exception);

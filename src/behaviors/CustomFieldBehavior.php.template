@@ -35,6 +35,13 @@ class CustomFieldBehavior extends Behavior
 /* HANDLES */
     ];
 
+    /**
+     * @var array<string,bool> List of generated field handles.
+     */
+    public static $generatedFieldHandles = [
+/* GENERATED HANDLES */
+    ];
+
 /* PROPERTIES */
 
     /**
@@ -47,7 +54,11 @@ class CustomFieldBehavior extends Behavior
      */
     public function __call($name, $params)
     {
-        if ($this->hasMethods && isset(self::$fieldHandles[$name]) && count($params) === 1) {
+        if (
+            $this->hasMethods &&
+            (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) &&
+            count($params) === 1
+        ) {
             $this->$name = $params[0];
             return $this->owner;
         }
@@ -59,7 +70,7 @@ class CustomFieldBehavior extends Behavior
      */
     public function hasMethod($name): bool
     {
-        if ($this->hasMethods && isset(self::$fieldHandles[$name])) {
+        if ($this->hasMethods && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
         return parent::hasMethod($name);
@@ -70,7 +81,7 @@ class CustomFieldBehavior extends Behavior
      */
     public function __isset($name): bool
     {
-        if (isset(self::$fieldHandles[$name])) {
+        if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
             return true;
         }
         return parent::__isset($name);
@@ -81,7 +92,7 @@ class CustomFieldBehavior extends Behavior
      */
     public function __get($name)
     {
-        if (isset(self::$fieldHandles[$name])) {
+        if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
             return $this->_customFieldValues[$name] ?? null;
         }
         return parent::__get($name);
@@ -92,7 +103,7 @@ class CustomFieldBehavior extends Behavior
      */
     public function __set($name, $value)
     {
-        if (isset(self::$fieldHandles[$name])) {
+        if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
             $this->_customFieldValues[$name] = $value;
             return;
         }
@@ -104,7 +115,7 @@ class CustomFieldBehavior extends Behavior
      */
     public function canGetProperty($name, $checkVars = true): bool
     {
-        if ($checkVars && isset(self::$fieldHandles[$name])) {
+        if ($checkVars && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
         return parent::canGetProperty($name, $checkVars);
@@ -118,7 +129,7 @@ class CustomFieldBehavior extends Behavior
         if (!$this->canSetProperties) {
             return false;
         }
-        if ($checkVars && isset(self::$fieldHandles[$name])) {
+        if ($checkVars && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
         return parent::canSetProperty($name, $checkVars);

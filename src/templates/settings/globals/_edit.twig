@@ -59,6 +59,7 @@
 
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: globalSet.getFieldLayout(),
+        withGeneratedFields: true,
         disabled: readOnly,
     }) }}
 {% endblock %}

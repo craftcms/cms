@@ -23,6 +23,7 @@
           class: 'slide-picker',
           role: 'slider',
           tabindex: this.settings.readOnly ? -1 : 0,
+          'aria-label': Craft.t('app', 'Number of columns'),
         });
 
         this.refresh();
