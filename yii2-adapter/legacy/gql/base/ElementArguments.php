@@ -27,7 +27,7 @@ use yii\base\Event;
 abstract class ElementArguments extends Arguments
 {
     /**
-     * @event RegisterGqlArgumentsEvent The event that is triggered when arguments are being defined.
+     * @event DefineGqlArgumentsEvent The event that is triggered when arguments are being defined.
      * @since 6.0.0
      */
     public const EVENT_DEFINE_ARGUMENTS = 'defineArguments';
