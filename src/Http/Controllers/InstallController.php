@@ -16,6 +16,7 @@ use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -70,9 +71,8 @@ final readonly class InstallController
         $defaultSystemName = $this->defaultSiteName();
         $defaultSiteUrl = $this->defaultSiteUrl();
         $defaultSiteLanguage = $this->defaultSiteLanguage();
-        $locales = Craft::$app->getI18n()->getAllLocales();
-        $connection = config('database.default');
-        $dbConfig = config("database.connections.{$connection}");
+        $locales = I18N::getAllLocales();
+        $dbConfig = DB::getConfig();
         $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
 
         $localeOptions = collect($locales)
@@ -95,18 +95,16 @@ final readonly class InstallController
             )));
         }
 
-        return Inertia::render('Install', compact(
-            'showDbScreen',
-            'license',
-            'licenseHtml',
-            'localeOptions',
-            'postCpLoginRedirect',
-            'defaultSystemName',
-            'defaultSiteUrl',
-            'defaultSiteLanguage',
-            'dbConfig',
-            'locales'
-        ));
+        return Inertia::render('Install', [
+            'showDbScreen' => $showDbScreen,
+            'postCpLoginRedirect' => $postCpLoginRedirect,
+            'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
+            'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'defaultSystemName' => $defaultSystemName,
+            'defaultSiteUrl' => $defaultSiteUrl,
+            'defaultSiteLanguage' => $defaultSiteLanguage,
+            'dbConfig' => $dbConfig,
+        ]);
     }
 
     public function validateDb(Request $request): Response

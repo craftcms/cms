@@ -44,6 +44,7 @@ export const useInstall = () => {
       label: 'Site',
       action: '/admin/actions/install/validate-site',
       heading: t('app', 'Set up your site'),
+      submitLabel: t('app', 'Finish up'),
     },
     installing: {
       label: 'Installing',

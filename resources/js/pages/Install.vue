@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {Head, usePage} from '@inertiajs/vue3';
+  import {Deferred, Head} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import backgroundUrl from '../../images/install/installer-bg.png';
   import {computed, reactive, ref} from 'vue';
@@ -12,19 +12,11 @@
   import DbFields from '@/components/install/DbFields.vue';
   import axios from 'axios';
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
-
-  type InstallScreens =
-    | 'start'
-    | 'license'
-    | 'db'
-    | 'account'
-    | 'site'
-    | 'installing';
+  import Pane from '@/components/Pane.vue';
+  import Modal from '@/components/Modal.vue';
 
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
   const {
-    steps,
-    index,
     dotSteps,
     current,
     currentId,
@@ -34,7 +26,7 @@
     isCurrent,
   } = useInstall();
 
-  const {props} = usePage<{
+  const props = defineProps<{
     dbConfig: {
       driver: 'mysql' | 'pgsql';
       url: string | null;
@@ -45,6 +37,11 @@
       password: string | null;
       prefix: string | null;
     };
+    localeOptions: Array<any>;
+    licenseHtml?: string;
+    defaultSystemName: string;
+    defaultSiteUrl: string;
+    defaultSiteLanguage: string;
   }>();
   const state = ref<'idle' | 'loading' | 'error'>('idle');
 
@@ -87,6 +84,8 @@
       return;
     }
 
+    errors[currentId.value!] = null;
+
     const form = e.currentTarget as HTMLFormElement;
     try {
       state.value = 'loading';
@@ -99,6 +98,17 @@
       console.log('error', e);
     }
   }
+
+  const illustrationSrc = computed(() => {
+    switch (currentId.value) {
+      case 'account':
+        return accountBg;
+      case 'db':
+        return dbBg;
+      case 'site':
+        return siteBg;
+    }
+  });
 </script>
 
 <template>
@@ -117,85 +127,86 @@
       </craft-button>
     </template>
 
-    <div class="modal" v-if="modalActive">
-      <div class="screen">
-        <template v-if="isCurrent('license')">
-          <div class="license tw:p-8 tw:pb-0" v-html="props.licenseHtml"></div>
-
-          <div
-            class="tw:mt-4 tw:flex tw:justify-center tw:border-t tw:border-t-gray-300 tw:py-3 tw:px-4"
-          >
-            <craft-button
-              type="button"
-              variant="primary"
-              @click="goTo('account')"
-            >
-              {{ t('app', 'Got it') }}
-            </craft-button>
-          </div>
-        </template>
-
-        <template v-else-if="isCurrent('installing')">
-          <InstallingScreen :data="formData" @success="goToNext()" />
-        </template>
-        <template v-else-if="isCurrent('complete')">
-          <div
-            class="tw:p-8 tw:grid tw:justify-center tw:content-center tw:gap-4"
-          >
-            <h2>{{ t('app', 'Craft is installed! 🎉') }}</h2>
-          </div>
-          <InstallingScreen :data="formData" @success="goToNext()" />
-        </template>
-
-        <template v-else>
-          <form :action="current.action" @submit.prevent="handleSubmit">
-            <div
-              class="tw:grid tw:grid-cols-2 tw:gap-4 tw:items-center tw:py-4 tw:px-10"
-            >
-              <div class="illustration">
-                <img
-                  :src="accountBg"
-                  alt=""
-                  width="368"
-                  v-if="isCurrent('account')"
-                />
-                <img :src="dbBg" alt="" width="368" v-if="isCurrent('db')" />
-                <img
-                  :src="siteBg"
-                  alt=""
-                  width="368"
-                  v-if="isCurrent('site')"
-                />
+    <Modal :is-active="modalActive">
+      <template v-if="isCurrent('license')">
+        <Pane class="tw:max-w-[80ch] tw:mx-auto">
+          <Deferred data="licenseHtml">
+            <template #fallback>
+              <div class="tw:flex tw:justify-center">
+                <craft-spinner></craft-spinner>
               </div>
-              <div>
-                <h2 class="tw:mb-4">{{ current.heading }}</h2>
-                <div class="tw:grid tw:gap-3">
-                  <AccountFields
-                    v-if="isCurrent('account')"
-                    v-model="formData.account"
-                    :errors="errors.account"
-                  />
-                  <DbFields v-if="isCurrent('db')" v-model="formData.db" />
+            </template>
+
+            <div class="license" v-html="licenseHtml"></div>
+          </Deferred>
+
+          <template #actions>
+            <div class="tw:flex tw:justify-center tw:w-full">
+              <craft-button
+                type="button"
+                variant="primary"
+                @click="goTo('account')"
+              >
+                {{ t('app', 'Got it') }}
+              </craft-button>
+            </div>
+          </template>
+        </Pane>
+      </template>
+
+      <template v-else-if="isCurrent('installing')">
+        <InstallingScreen :data="formData" @success="goToNext()" />
+      </template>
+      <template v-else-if="isCurrent('complete')">
+        <div
+          class="tw:p-8 tw:grid tw:justify-center tw:content-center tw:gap-4"
+        >
+          <h2>{{ t('app', 'Craft is installed! 🎉') }}</h2>
+        </div>
+        <InstallingScreen :data="formData" @success="goToNext()" />
+      </template>
+
+      <template v-else>
+        <Pane as="form" :action="current.action" @submit.prevent="handleSubmit">
+          <div class="tw:grid tw:md:grid-cols-2 tw:gap-4 tw:items-center">
+            <div class="tw:aspect-[352/455] tw:w-1/2 tw:md:w-3/4 tw:mx-auto">
+              <img loading="lazy" :src="illustrationSrc" alt="" width="368" />
+            </div>
+            <div>
+              <h2 class="tw:mb-4">{{ current.heading }}</h2>
+              <div class="tw:grid tw:gap-3 tw:md:max-w-xs">
+                <AccountFields
+                  v-if="isCurrent('account')"
+                  v-model="formData.account"
+                  :errors="errors.account"
+                />
+                <DbFields v-if="isCurrent('db')" v-model="formData.db" />
+                <Deferred data="localeOptions">
+                  <template #fallback>
+                    <craft-spinner></craft-spinner>
+                  </template>
+
                   <SiteFields
                     v-if="isCurrent('site')"
                     v-model="formData.site"
+                    :localeOptions="localeOptions"
                     :errors="errors.site"
                   />
-                </div>
+                </Deferred>
               </div>
             </div>
+          </div>
 
-            <div
-              class="tw:flex tw:justify-between tw:items-center tw:border-t tw:border-t-gray-300 tw:py-3 tw:px-4"
+          <template #actions>
+            <craft-button
+              type="button"
+              @click="goToPrevious"
+              appearance="plain"
             >
-              <craft-button
-                type="button"
-                @click="goToPrevious"
-                appearance="plain"
-              >
-                {{ t('app', 'Back') }}
-                <craft-icon name="arrow-left" slot="prefix"></craft-icon>
-              </craft-button>
+              {{ t('app', 'Back') }}
+              <craft-icon name="arrow-left" slot="prefix"></craft-icon>
+            </craft-button>
+            <nav>
               <ul class="tw:flex tw:gap-2">
                 <li v-for="(step, id) in dotSteps" :key="id">
                   <button
@@ -212,19 +223,19 @@
                   </button>
                 </li>
               </ul>
-              <craft-button
-                type="submit"
-                variant="primary"
-                :loading="state === 'loading'"
-              >
-                {{ t('app', 'Next') }}
-                <craft-icon name="arrow-right" slot="suffix"></craft-icon>
-              </craft-button>
-            </div>
-          </form>
-        </template>
-      </div>
-    </div>
+            </nav>
+            <craft-button
+              type="submit"
+              variant="primary"
+              :loading="state === 'loading'"
+            >
+              {{ current.submitLabel ?? t('app', 'Next') }}
+              <craft-icon name="arrow-right" slot="suffix"></craft-icon>
+            </craft-button>
+          </template>
+        </Pane>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -255,36 +266,6 @@
       0 10px 20px -10px #213770;
   }
 
-  .illustration {
-    aspect-ratio: 352 / 455;
-  }
-
-  .modal {
-    position: fixed;
-    inset: 0;
-    display: grid;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-  }
-
-  .screen {
-    background-color: var(--c-bg-overlay);
-    place-self: center;
-    //padding: var(--c-spacing-lg) var(--c-spacing-xl);
-    overflow-y: scroll;
-    min-height: 30vh;
-    width: calc(800rem / 16);
-    max-width: calc(100vw - (var(--c-spacing-lg) * 2));
-    max-height: calc(100vh - (var(--c-spacing-lg) * 2));
-    border-radius: var(--c-radius-xl);
-    box-shadow: var(--c-modal-shadow);
-    display: grid;
-    align-content: center;
-    justify-content: center;
-    transition: height 0.2s ease-in-out;
-  }
-
   .dot {
     appearance: none;
     border: 1px solid var(--c-color-neutral-border-subtle);
@@ -303,6 +284,7 @@
   .license {
     font-size: calc(13rem / 16);
     font-family: var(--c-font-mono);
+    padding: var(--c-spacing-lg);
 
     :deep(* + *) {
       margin-block: 1em;

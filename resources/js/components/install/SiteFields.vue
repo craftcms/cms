@@ -1,11 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {usePage} from '@inertiajs/vue3';
   import {computed} from 'vue';
-
-  const {props: pageProps} = usePage<{
-    localeOptions: Array<{id: string; name: string; selected: boolean}>;
-  }>();
 
   const emit = defineEmits<{
     (e: 'update:modelValue', data: any): void;
@@ -13,6 +8,7 @@
   const props = withDefaults(
     defineProps<{
       modelValue?: any;
+      localeOptions?: Array<{id: string; name: string; selected: boolean}>;
       errors?: Record<string, string[]>;
     }>(),
     {modelValue: () => ({}), errors: () => ({})}
@@ -65,7 +61,7 @@
     @model-value-changed="handleUpdate"
   >
     <craft-option
-      v-for="locale in pageProps.localeOptions"
+      v-for="locale in localeOptions"
       :key="locale.id"
       :selected="locale.id === model.language"
       .choiceValue="locale.id"
