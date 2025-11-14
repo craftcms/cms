@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Data;
 
+use Craft;
 use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
@@ -48,6 +49,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public ?string $icon = null,
         #[WithCastable(Color::class)]
         public ?Color $color = null,
+        public string $uiLabelFormat = '{title}',
         public bool $hasTitleField = true,
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
@@ -183,7 +185,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
             'label' => t('Entry type settings'),
         ]];
 
-        $view = \Craft::$app->getView();
+        $view = Craft::$app->getView();
         $view->registerJsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
 new Craft.CpScreenSlideout('entry-types/edit', {
@@ -298,6 +300,7 @@ JS, [
             'description' => $this->description ?: null,
             'icon' => $this->icon || $this->icon === '0' ? $this->icon : null,
             'color' => $this->color?->value,
+            'uiLabelFormat' => $this->uiLabelFormat,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,

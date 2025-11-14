@@ -100,6 +100,12 @@ class EntryType extends Model implements
     public ?Color $color = null;
 
     /**
+     * @var string UI label format
+     * @since 5.9.0
+     */
+    public string $uiLabelFormat = '{title}';
+
+    /**
      * @var bool Has title field
      */
     public bool $hasTitleField = true;
@@ -456,6 +462,7 @@ JS, [
             'description' => $this->description ?: null,
             'icon' => $this->icon || $this->icon === '0' ? $this->icon : null,
             'color' => $this->color?->value,
+            'uiLabelFormat' => $this->uiLabelFormat,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,

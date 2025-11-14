@@ -52,7 +52,7 @@ class ArgumentManager extends Component
     public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
     /**
-     * @var array<string,class-string<ArgumentHandlerInterface>>
+     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface>
      */
     private array $_argumentHandlers = [];
 

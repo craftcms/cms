@@ -6503,6 +6503,7 @@ $min2ColWidth: 400px;
     inset-inline-start: 0;
     transition: inset-block-start linear 250ms;
     will-change: inset-block-start;
+    box-shadow: none !important;
   }
 
   &.so-mobile {

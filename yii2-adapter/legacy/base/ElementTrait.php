@@ -179,6 +179,13 @@ trait ElementTrait
     public bool $propagateAll = false;
 
     /**
+     * @var bool Whether all required element attributes should be propagated across all its supported sites, but only if otherwise
+     * they wouldn’t validate.
+     * @since 5.9.0
+     */
+    public bool $propagateRequired = false;
+
+    /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
      * @since 3.2.9
      */

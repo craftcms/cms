@@ -25,6 +25,7 @@ use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
@@ -815,7 +816,7 @@ JS, [
             $revisionsPageUrl = $element->getCpRevisionsUrl();
 
             if ($revisionsPageUrl) {
-                $hasMoreRevisions = ($revisionsQuery->count() - 1) > count($revisions);
+                $hasMoreRevisions = ($revisionsQuery->count() - 1) > 0;
             }
         } else {
             $revisions = [];
@@ -885,17 +886,20 @@ JS, [
                     /** @var ElementInterface $draft */
                     $creator = $draft->getDraftCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
+                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT);
 
                     return [
                         'label' => $draft->draftName,
                         'description' => $creator
-                            ? t('Saved {timestamp} by {creator}', [
+                            ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
-                            ])
-                            : t('Last saved {timestamp}', [
+                            ]))
+                            : Template::raw(t('Last saved <time title="{timestampWithDate}">{timestamp}</time>', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                            ]),
+                            ])),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'draftId' => $draft->draftId,
                         ])),
@@ -913,17 +917,20 @@ JS, [
                     /** @var ElementInterface $revision */
                     $creator = $revision->getRevisionCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
+                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT);
 
                     return [
                         'label' => $revision->getRevisionLabel(),
                         'description' => $creator
-                            ? t('Saved {timestamp} by {creator}', [
+                            ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
-                            ])
-                            : t('Saved {timestamp}', [
+                            ]))
+                            : Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time>', [
+                                'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                            ]),
+                            ])),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'revisionId' => $revision->revisionId,
                         ])),
@@ -2128,6 +2135,11 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
+        // if we're about to apply an unpublished draft, set propagateRequired to true
+        if ($isUnpublishedDraft) {
+            $element->propagateRequired = true;
+        }
+
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
@@ -2146,6 +2158,7 @@ JS, [
         }
 
         try {
+            $element->propagateRequired = false;
             $canonical = app(Drafts::class)->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);

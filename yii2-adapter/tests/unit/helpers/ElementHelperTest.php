@@ -30,8 +30,6 @@ class ElementHelperTest extends TestCase
      */
     protected UnitTester $tester;
 
-
-
     /**
      * @dataProvider generateSlugDataProvider
      * @param string $expected

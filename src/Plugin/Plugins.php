@@ -1118,6 +1118,12 @@ final class Plugins
     {
         $licenseKey = Env::parse($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
 
+        // also check if pc has the license key
+        if ($licenseKey === null) {
+            $pcPlugins = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS);
+            $licenseKey = Env::parse($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
         return $this->normalizePluginLicenseKey($licenseKey);
     }
 
