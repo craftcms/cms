@@ -269,6 +269,7 @@ class ElementIndexSettingsController extends BaseElementsController
         if ($multiPage) {
             $sourcePages = $this->request->getBodyParam('sourcePages', []);
             $pageSettings = $this->request->getBodyParam('pageSettings', []);
+            $sourcePageIndexes = [];
         }
 
         // Normalize to the way it's stored in the DB
@@ -338,7 +339,16 @@ class ElementIndexSettingsController extends BaseElementsController
                 }
 
                 $newSourceConfigs[] = $sourceConfig;
+
+                if ($multiPage) {
+                    $sourcePageIndexes[] = array_search($sourceConfig['page'], array_keys($pageSettings));
+                }
             }
+        }
+
+        if ($multiPage) {
+            /** @phpstan-ignore-next-line */
+            array_multisort($sourcePageIndexes, SORT_NUMERIC, $newSourceConfigs);
         }
 
         $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);
