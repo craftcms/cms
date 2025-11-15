@@ -19,7 +19,7 @@ class ThemeAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/theme/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
