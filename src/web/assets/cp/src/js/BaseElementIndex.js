@@ -1493,8 +1493,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (
         Craft.userIsAdmin &&
-        Craft.allowAdminChanges &&
-        !Garnish.isMobileBrowser(true)
+        Craft.allowAdminChanges
       ) {
         actions.push({
           label: Craft.t('app', 'Customize sources'),
