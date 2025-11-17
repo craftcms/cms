@@ -29,15 +29,12 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
       $sortItems = this.$container.children('.checkbox-select-item:not(.all)');
     }
 
-    if (!Craft.hasMousePointerEvents()) {
-      $('.checkbox-select-item .move').hide();
-    } else {
-      if ($sortItems.length) {
-        this.dragSort = new Garnish.DragSort($sortItems, {
-          axis: Garnish.Y_AXIS,
-          handle: '.draggable-handle',
-        });
-      }
+    if (Craft.hasMousePointerEvents() && $sortItems.length) {
+      console.log('init drag sort');
+      this.dragSort = new Garnish.DragSort($sortItems, {
+        axis: Garnish.Y_AXIS,
+        handle: '.draggable-handle',
+      });
     }
   },
 
@@ -62,6 +59,11 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     this.select = select;
     this.$item = $(item);
     this.$moveHandle = this.$item.children('.move');
+
+    if (!Craft.hasMousePointerEvents()) {
+      this.$moveHandle.hide();
+    }
+
     this.$checkbox = this.$item.children('input[type=checkbox]');
     this.$checkboxLabel = this.$item.children('label');
 
