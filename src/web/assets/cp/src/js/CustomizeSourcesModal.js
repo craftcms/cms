@@ -202,7 +202,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         handle: '.move',
       });
     } else {
-        this.$sourcesSidebar.find('.cs-item .move').hide();
+      this.$sourcesSidebar.find('.cs-item .move').hide();
     }
 
     // Create the sources

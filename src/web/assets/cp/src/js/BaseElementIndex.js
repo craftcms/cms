@@ -1491,10 +1491,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getSourceActions: function () {
       let actions = [];
 
-      if (
-        Craft.userIsAdmin &&
-        Craft.allowAdminChanges
-      ) {
+      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
         actions.push({
           label: Craft.t('app', 'Customize sources'),
           administrative: true,
