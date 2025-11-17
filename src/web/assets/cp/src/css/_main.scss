@@ -4335,6 +4335,11 @@ table {
     box-shadow: none;
     border-radius: var(--border-radius, var(--radius-sm));
 
+    // adjust the margin-block
+    @media only screen and (width <= 767px) {
+      margin-block: calc(var(--s) * -1 + 2px) var(--s);
+    }
+
     &::after {
       content: '';
     }
