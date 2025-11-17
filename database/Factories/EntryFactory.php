@@ -9,12 +9,13 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
 final class EntryFactory extends Factory
 {
     protected $model = Entry::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -28,13 +29,13 @@ final class EntryFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         $this->afterCreating(function (Entry $entry) {
             $entry->element->update([
-                'dateCreated' => $entry->dateCreated,
-                'dateUpdated' => $entry->dateUpdated,
+                'dateCreated' => $entry->postDate,
+                'dateUpdated' => $entry->postDate,
             ]);
         });
 
