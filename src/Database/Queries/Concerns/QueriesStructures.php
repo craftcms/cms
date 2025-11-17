@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
@@ -129,6 +130,8 @@ trait QueriesStructures
             if ($this->structureId) {
                 return $collection->map(function ($element) {
                     $element->structureId = $this->structureId;
+
+                    return $element;
                 });
             }
 
@@ -148,6 +151,8 @@ trait QueriesStructures
 
     /**
      * Determines which structure data should be joined into the query.
+     *
+     * @internal
      */
     public function structureId(?int $value = null): static
     {
@@ -588,18 +593,18 @@ trait QueriesStructures
 
         if ($elementQuery->structureId) {
             $elementQuery->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                ->whereColumn('structureelements.elementId', 'subquery.elementsId')
+                ->on('structureelements.elementId', '=', 'subquery.elementsId')
                 ->where('structureelements.structureId', $elementQuery->structureId));
 
             $elementQuery->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                ->whereColumn('structureelements.elementId', 'elements.id')
+                ->on('structureelements.elementId', '=', 'elements.id')
                 ->where('structureelements.structureId', $elementQuery->structureId));
         } else {
             $elementQuery->query
                 ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                    ->whereColumn('structureelements.elementId', 'subquery.elementsId')
-                    ->whereColumn('structureelements.structureId', 'subquery.structureId'));
+                    ->on('structureelements.elementId', '=', 'subquery.elementsId')
+                    ->where('structureelements.structureId', '=', 'subquery.structureId'));
 
             $existsQuery = DB::table(Table::STRUCTURES)
                 // Use index hints to specify index so Mysql does not select the less
@@ -614,7 +619,7 @@ trait QueriesStructures
             $elementQuery->subQuery
                 ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                    ->whereColumn('structureelements.elementId', 'elements.id')
+                    ->on('structureelements.elementId', '=', 'elements.id')
                     ->whereExists($existsQuery)
                 );
         }
@@ -633,7 +638,7 @@ trait QueriesStructures
             $elementQuery->subQuery
                 ->where('structureelements.lft', '<', $ancestorOf->lft)
                 ->where('structureelements.rgt', '>', $ancestorOf->rgt)
-                ->where('structureelements.root', '>', $ancestorOf->root)
+                ->where('structureelements.root', $ancestorOf->root)
                 ->when(
                     $elementQuery->ancestorDist,
                     fn (Builder $q) => $q->where('structureelements.level', '>=', $ancestorOf->level - $elementQuery->ancestorDist)
@@ -711,16 +716,16 @@ trait QueriesStructures
                 ->where('structureelements.root', $positionedAfter->root);
         }
 
-        if ($elementQuery->level) {
+        if (isset($elementQuery->level)) {
             $allowNull = is_array($elementQuery->level) && in_array(null, $elementQuery->level, true);
 
             $elementQuery->subQuery->when(
-                $allowNull,
-                fn (Builder $q) => $q->where(function (Builder $q) use ($elementQuery) {
-                    $q->where(Db::parseNumericParam('structureelements.level', array_filter($elementQuery->level, fn ($v) => $v !== null)))
+                value: $allowNull,
+                callback: fn (Builder $q) => $q->where(function (Builder $q) use ($elementQuery) {
+                    $q->whereNumericParam('structureelements.level', array_filter($elementQuery->level, fn ($v) => $v !== null))
                         ->orWhereNull('structureelements.level');
                 }),
-                fn (Builder $q) => Db::parseNumericParam('structureelements.level', $elementQuery->level),
+                default: fn (Builder $q) => $q->whereNumericParam('structureelements.level', $elementQuery->level),
             );
         }
 
@@ -755,7 +760,7 @@ trait QueriesStructures
         }
 
         if (! $element instanceof ElementInterface) {
-            $element = \Craft::$app->getElements()->getElementById($element, $this->elementType, $this->siteId, [
+            $element = Craft::$app->getElements()->getElementById($element, $this->elementType, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 

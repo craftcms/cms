@@ -98,7 +98,7 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ! is_null($element = \Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
+            ! is_null($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
         ) {
             return $element;
         }
@@ -107,10 +107,6 @@ trait HydratesElements
         $class = $this->elementType;
 
         // Instantiate the element
-        if ($this->structureId) {
-            $row['structureId'] = $this->structureId;
-        }
-
         if ($class::hasTitles()) {
             // Ensure the title is a string
             $row['title'] = (string) ($row['title'] ?? '');
