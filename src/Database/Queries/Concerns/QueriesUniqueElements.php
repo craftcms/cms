@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -36,61 +35,48 @@ trait QueriesUniqueElements
      */
     public ?array $preferSites = null;
 
-    protected function initQueriesUniqueElements(): void
+    protected function applyUniqueParams(ElementQuery $elementQuery): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            if (
-                ! $elementQuery->unique ||
-                ! Sites::isMultiSite(false, true) ||
-                (
-                    $elementQuery->siteId &&
-                    (! is_array($elementQuery->siteId) || count($elementQuery->siteId) === 1)
-                )
-            ) {
-                return;
-            }
+        if (! $elementQuery->unique) {
+            return;
+        }
 
-            if (! $elementQuery->preferSites) {
-                $preferSites = [Sites::getCurrentSite()->id];
-            } else {
-                $preferSites = [];
-                foreach ($elementQuery->preferSites as $preferSite) {
-                    if (is_numeric($preferSite)) {
-                        $preferSites[] = $preferSite;
-                    } elseif ($site = Sites::getSiteByHandle($preferSite)) {
-                        $preferSites[] = $site->id;
-                    }
-                }
-            }
+        if (! Sites::isMultiSite(false, true)) {
+            return;
+        }
 
-            $cases = [];
+        if ($elementQuery->siteId &&
+            (! is_array($elementQuery->siteId) || count($elementQuery->siteId) === 1)
+        ) {
+            return;
+        }
 
-            foreach ($preferSites as $index => $siteId) {
-                $cases[] = new CaseRule(new Value($index), new Equal('elements_sites.siteId', new Value($siteId)));
-            }
+        $preferSites = collect($elementQuery->preferSites ?? Sites::getCurrentSite()->id)
+            ->map(fn (string|int $preferSite) => match (true) {
+                is_numeric($preferSite) => $preferSite,
+                ! is_null($site = Sites::getSiteByHandle($preferSite)) => $site->id,
+                default => null,
+            })
+            ->filter();
 
-            $caseGroup = new CaseGroup($cases, new Value(count($preferSites)));
+        $cases = [];
 
-            $subSelectSql = $elementQuery->subQuery->clone()
-                ->select(['elements_sites.id'])
-                ->whereColumn('subElements.id', 'tmpElements.id')
-                ->orderBy($caseGroup)
-                ->orderBy('elements_sites.id')
-                ->offset(0)
-                ->limit(1)
-                ->toRawSql();
+        foreach ($preferSites as $index => $siteId) {
+            $cases[] = new CaseRule(new Value($index), new Equal('elements_sites.siteId', new Value($siteId)));
+        }
 
-            // `elements` => `subElements`
-            $qElements = DB::getTablePrefix().'Concerns'.Table::ELEMENTS;
-            $qSubElements = DB::getTablePrefix().'.subElements';
-            $qTmpElements = DB::getTablePrefix().'.tmpElements';
-            $q = $qElements[0];
-            $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
-            $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
-            $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+        $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
 
-            $elementQuery->subQuery->where(DB::raw("elements_sites.id = ($subSelectSql)"));
-        });
+        $subSelect = $elementQuery->subQuery->clone()
+            ->select(['elements_sites.id'])
+            ->from(Table::ELEMENTS, 'subElements')
+            ->whereColumn('subElements.id', 'elements.id')
+            ->orderBy($caseGroup)
+            ->orderBy('elements_sites.id')
+            ->offset(0)
+            ->limit(1);
+
+        $elementQuery->subQuery->where('elements_sites.id', $subSelect);
     }
 
     /**

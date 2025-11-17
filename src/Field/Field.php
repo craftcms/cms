@@ -57,12 +57,13 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use RuntimeException;
+use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterface, Iconic
+abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
     use HasComponentEvents;
@@ -1027,7 +1028,7 @@ JS, [
         return $this->_valueSql[$cacheKey] ?: null;
     }
 
-    private function _valueSql(?string $key): ?\Illuminate\Contracts\Database\Query\Expression
+    private function _valueSql(?string $key): ?Expression
     {
         $dbType = $this->dbTypeForValueSql();
 
@@ -1039,7 +1040,7 @@ JS, [
             throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', self::class, $key));
         }
 
-        $sql = new JsonExtract('elements_sites.content', "$.\"{$this->layoutElement->uid}\"");
+        $sql = new JsonExtract('elements_sites.content', $this->layoutElement->uid);
 
         if (is_array($dbType)) {
             // Get the primary value by default

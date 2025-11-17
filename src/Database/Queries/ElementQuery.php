@@ -28,6 +28,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionProperty;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 use Twig\Markup;
@@ -608,7 +609,7 @@ class ElementQuery implements ElementQueryInterface
         $names = [];
 
         // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        foreach (Utils::getPublicProperties($this, fn (\ReflectionProperty $property) => ! in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)) as $name => $value) {
+        foreach (Utils::getPublicProperties($this, fn (ReflectionProperty $property) => ! in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)) as $name => $value) {
             $names[] = $name;
         }
 
@@ -875,6 +876,7 @@ class ElementQuery implements ElementQueryInterface
         }
 
         $this->applyOrderByParams($this);
+        $this->applyUniqueParams($this);
 
         $this->query->fromSub($this->subQuery, 'subquery');
     }

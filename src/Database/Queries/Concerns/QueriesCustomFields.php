@@ -162,7 +162,7 @@ trait QueriesCustomFields
 
             $this->addToColumnMap(
                 $field['handle'],
-                new JsonExtract(Table::ELEMENTS_SITES.'.content', '$.'.$field['uid']),
+                new JsonExtract(Table::ELEMENTS_SITES.'.content', $field['uid']),
             );
         }
     }
@@ -246,7 +246,7 @@ trait QueriesCustomFields
         foreach ($elementQuery->generatedFields as $field) {
             $handle = $field['handle'] ?? '';
             if ($handle !== '' && isset($elementQuery->customFieldValues[$handle]) && ! isset($fieldsByHandle[$handle])) {
-                $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', '$.'.$field['uid']);
+                $generatedFieldColumns[$handle][] = new JsonExtract('elements_sites.content', $field['uid']);
             }
         }
 

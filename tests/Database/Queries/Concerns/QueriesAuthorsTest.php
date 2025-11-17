@@ -20,15 +20,15 @@ it('can query entries by authors', function () {
     expect(entryQuery()->count())->toBe(2);
 
     // Does nothing when edition is solo
-    expect(entryQuery()->authorId($userGroup1->id)->count())->toBe(2);
+    expect(entryQuery()->authorId($author1->id)->count())->toBe(2);
 
     Edition::set(Edition::Pro);
 
-    expect(entryQuery()->authorId($userGroup1->id)->count())->toBe(1);
-    expect(entryQuery()->authorId($userGroup2->id)->count())->toBe(1);
-    expect(entryQuery()->authorId([$userGroup1->id, $userGroup2->id])->count())->toBe(2);
-    expect(entryQuery()->authorId(implode(', ', [$userGroup1->id, $userGroup2->id]))->count())->toBe(2);
-    expect(entryQuery()->authorId('not '.$userGroup1->id)->count())->toBe(1);
+    expect(entryQuery()->authorId($author1->id)->count())->toBe(1);
+    expect(entryQuery()->authorId($author2->id)->count())->toBe(1);
+    expect(entryQuery()->authorId([$author1->id, $author2->id])->count())->toBe(2);
+    expect(entryQuery()->authorId(implode(', ', [$author1->id, $author2->id]))->count())->toBe(2);
+    expect(entryQuery()->authorId('not '.$author1->id)->count())->toBe(1);
 });
 
 it('can query entries by author groups', function () {
