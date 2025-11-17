@@ -17,8 +17,6 @@ use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesSites
@@ -53,7 +51,7 @@ trait QueriesSites
             }
 
             if (Sites::isMultiSite(false, true)) {
-                $elementQuery->subQuery->where('elements_sites.siteId', $elementQuery->siteId);
+                $elementQuery->subQuery->whereIn('elements_sites.siteId', Arr::wrap($elementQuery->siteId));
             }
         });
     }
@@ -103,7 +101,12 @@ trait QueriesSites
         } elseif ($value instanceof Site || $value instanceof SiteModel) {
             $this->siteId = $value->id;
         } elseif (is_string($value)) {
-            $this->siteId = Sites::getSiteByHandle($value)?->id ?? throw new InvalidArgumentException('Invalid site handle: '.$value);
+            $handles = str($value)->explode(',')->map(fn ($handle) => trim($handle))->all();
+
+            $this->siteId = array_map(
+                fn (string $handle) => Sites::getSiteByHandle($handle)->id ?? throw new InvalidArgumentException('Invalid site handle: '.$value),
+                $handles,
+            );
         } else {
             if ($not = (strtolower((string) reset($value)) === 'not')) {
                 array_shift($value);
@@ -163,7 +166,7 @@ trait QueriesSites
 
             $this->siteId = [];
 
-            foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Sites::getAllSites() as $site) {
                 if (! in_array($site->id, $value)) {
                     $this->siteId[] = $site->id;
                 }
@@ -212,7 +215,7 @@ trait QueriesSites
     public function language($value): self
     {
         if (is_string($value)) {
-            $sites = \Craft::$app->getSites()->getSitesByLanguage($value);
+            $sites = Sites::getSitesByLanguage($value);
 
             if (empty($sites)) {
                 throw new InvalidArgumentException("Invalid language: $value");
@@ -229,7 +232,7 @@ trait QueriesSites
 
         $this->siteId = [];
 
-        foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+        foreach (Sites::getAllSites() as $site) {
             if (in_array($site->language, $value, true) === ! $not) {
                 $this->siteId[] = $site->id;
             }
@@ -259,6 +262,13 @@ trait QueriesSites
 
         if ($query->siteId instanceof Collection) {
             $query->siteId = $query->siteId->all();
+        }
+
+        if (is_string($query->siteId)) {
+            $query->siteId = str($query->siteId)
+                ->explode(',')
+                ->map(fn ($id) => trim($id))
+                ->all();
         }
 
         if (is_numeric($query->siteId) || Arr::isNumeric($query->siteId)) {
