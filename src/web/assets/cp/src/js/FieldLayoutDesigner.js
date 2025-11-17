@@ -2124,7 +2124,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     }
 
     const $draggable = $('<div class="checkbox-select-item"/>');
-    if (Craft.hasMouseEvents()) {
+    if (Craft.hasMousePointerEvents()) {
       $('<a class="move icon draggable-handle disabled"/>').appendTo(
         $draggable
       );

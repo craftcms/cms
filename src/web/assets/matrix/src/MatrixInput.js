@@ -65,7 +65,7 @@
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
         // only initialise drag-sort if the device has mouse events
-        if (Craft.hasMouseEvents()) {
+        if (Craft.hasMousePointerEvents()) {
           this.entrySort = new Garnish.DragSort($entries, {
             handle: '> .actions > .move-btn',
             ignoreHandleSelector: null,
@@ -375,7 +375,7 @@
 
           const $entry = $(data.blockHtml);
           // hide the diamond icon (for drag-sort) if the device doesn't have mouse events
-          if (!Craft.hasMouseEvents()) {
+          if (!Craft.hasMousePointerEvents()) {
             $entry.find('.actions > .move-btn').hide();
           }
 

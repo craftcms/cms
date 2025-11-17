@@ -22,7 +22,7 @@ import './routes.scss';
         this.routes.push(route);
       }
 
-      if (Craft.hasMouseEvents()) {
+      if (Craft.hasMousePointerEvents()) {
         this.sorter = new Garnish.DragSort($routes, {
           handle: '.move',
           axis: Garnish.Y_AXIS,

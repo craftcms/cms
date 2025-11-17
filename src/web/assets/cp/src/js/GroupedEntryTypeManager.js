@@ -28,7 +28,7 @@
           })
           .appendTo(this.$container);
 
-        if (Craft.hasMouseEvents()) {
+        if (Craft.hasMousePointerEvents()) {
           this.groupSort = new Garnish.DragSort({
             container: this.$groupsContainer,
             handle:
@@ -262,7 +262,7 @@
         this.manager.updateDefaultColumns();
       });
 
-      if (Craft.hasMouseEvents()) {
+      if (Craft.hasMousePointerEvents()) {
         this.$dragHandle = $('<button/>', {
           type: 'button',
           class: 'icon move',

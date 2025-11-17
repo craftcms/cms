@@ -183,14 +183,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     initElementSort: function () {
       // hide the diamond icon (for drag sorting) if the device doesn't have mouse events
-      if (!Craft.hasMouseEvents()) {
+      if (!Craft.hasMousePointerEvents()) {
         $(
           '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
         ).hide();
       }
 
       // init drag-sorting if device has mouse events
-      if (this.settings.sortable && Craft.hasMouseEvents()) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elementsContainer,
           filter: this.settings.selectable
@@ -405,7 +405,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
 
         // only add the diamond icon (for drag-sorting) if device has mouse events
-        if (this.settings.sortable && Craft.hasMouseEvents()) {
+        if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
             .createButton({
               class: 'chromeless small move-btn',

@@ -248,7 +248,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       // only initialise drag-sorting if the device has mouse events
-      if (this.settings.sortable && Craft.hasMouseEvents()) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elements,
           handle:

@@ -295,7 +295,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     );
 
     // Create the page item sorter
-    if (Craft.hasMouseEvents()) {
+    if (Craft.hasMousePointerEvents()) {
       this.pageDrag = new Garnish.DragSort({
         handle: '.move',
         axis: 'y',

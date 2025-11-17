@@ -29,7 +29,7 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
       $sortItems = this.$container.children('.checkbox-select-item:not(.all)');
     }
 
-    if (!Craft.hasMouseEvents()) {
+    if (!Craft.hasMousePointerEvents()) {
       $('.checkbox-select-item .move').hide();
     } else {
       if ($sortItems.length) {

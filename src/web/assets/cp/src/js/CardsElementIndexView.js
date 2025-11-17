@@ -8,7 +8,7 @@ Craft.CardsElementIndexView = Craft.BaseElementIndexView.extend({
 
   afterInit: function () {
     // Create the table sorter, but only if the device has mouse events
-    if (this.settings.sortable && Craft.hasMouseEvents()) {
+    if (this.settings.sortable && Craft.hasMousePointerEvents()) {
       this.cardSort = new Garnish.DragSort(this.getAllElements(), {
         container: this.$elementContainer,
         filter: this.settings.selectable

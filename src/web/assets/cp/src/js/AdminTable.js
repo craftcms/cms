@@ -26,7 +26,7 @@ Craft.AdminTable = Garnish.Base.extend(
       this.$tbody = this.$table.children('tbody');
       this.totalItems = this.$tbody.children().length;
 
-      if (this.settings.sortable && Craft.hasMouseEvents()) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.sorter = new Craft.DataTableSorter(this.$table, {
           onSortChange: this.reorderItems.bind(this),
         });
@@ -64,7 +64,7 @@ Craft.AdminTable = Garnish.Base.extend(
       var $row = $(row).appendTo(this.$tbody),
         $deleteBtn = $row.find('.delete');
 
-      if (this.settings.sortable && Craft.hasMouseEvents()) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.sorter?.addItems($row);
       }
 
@@ -207,7 +207,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
       // Disable the sort buttons if there's only one row
       if (this.settings.sortable) {
-        if (!Craft.hasMouseEvents()) {
+        if (!Craft.hasMousePointerEvents()) {
           this.$table.find('.move').hide();
         } else {
           var $moveButtons = this.$table.find('.move');

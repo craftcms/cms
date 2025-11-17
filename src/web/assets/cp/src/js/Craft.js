@@ -2945,7 +2945,7 @@ $.extend(Craft, {
     });
   },
 
-  hasMouseEvents: function () {
+  hasMousePointerEvents: function () {
     return matchMedia('(pointer:fine)').matches;
   },
 });
