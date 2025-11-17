@@ -22,11 +22,15 @@ import './routes.scss';
         this.routes.push(route);
       }
 
-      this.sorter = new Garnish.DragSort($routes, {
-        handle: '.move',
-        axis: Garnish.Y_AXIS,
-        onSortChange: this.updateRouteOrder.bind(this),
-      });
+      if (Craft.hasMouseEvents()) {
+        this.sorter = new Garnish.DragSort($routes, {
+          handle: '.move',
+          axis: Garnish.Y_AXIS,
+          onSortChange: this.updateRouteOrder.bind(this),
+        });
+      } else {
+        $('#routes .move').hide();
+      }
 
       this.$addRouteBtn = $('#add-route-btn');
 
@@ -561,10 +565,10 @@ import './routes.scss';
             this.route = new Route($route);
             this.route.modal = this;
 
-            Craft.routes.sorter.addItems($route);
+            Craft.routes.sorter?.addItems($route);
 
             // Was this the first one?
-            if (Craft.routes.sorter.$items.length === 1) {
+            if (Craft.routes.sorter?.$items.length === 1) {
               $('#noroutes').addClass('hidden');
             }
           }
@@ -680,12 +684,12 @@ import './routes.scss';
           Craft.cp.displaySuccess(Craft.t('app', 'Route deleted.'));
         });
 
-        Craft.routes.sorter.removeItems(this.route.$container);
+        Craft.routes.sorter?.removeItems(this.route.$container);
         this.route.$container.remove();
         this.hide();
 
         // Was this the last one?
-        if (Craft.routes.sorter.$items.length === 0) {
+        if (Craft.routes.sorter?.$items.length === 0) {
           $('#noroutes').removeClass('hidden');
         }
       }
