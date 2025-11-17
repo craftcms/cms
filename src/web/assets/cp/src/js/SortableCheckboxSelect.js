@@ -51,6 +51,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
   $item: null,
   $moveHandle: null,
   $checkbox: null,
+  $checkboxLabel: null,
   $actionMenuBtn: null,
   $actionMenu: null,
   actionDisclosure: null,
@@ -62,6 +63,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     this.$item = $(item);
     this.$moveHandle = this.$item.children('.move');
     this.$checkbox = this.$item.children('input[type=checkbox]');
+    this.$checkboxLabel = this.$item.children('label');
 
     this.addListener(this.$checkbox, 'change', () => {
       this.handleCheckboxChange();
@@ -86,10 +88,18 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     this.$moveHandle?.removeClass('disabled');
 
     const menuId = 'menu-' + Math.floor(Math.random() * 1000000000);
+    let labelId = this.$checkboxLabel.attr('id');
+
+    if (!labelId) {
+      labelId = `label-${Math.floor(Math.random() * 1000000000)}`;
+      this.$checkboxLabel.attr('id', labelId);
+    }
+
     this.$actionMenuBtn = $('<button/>', {
       class: 'btn action-btn',
       'aria-controls': menuId,
       'aria-label': Craft.t('app', 'Actions'),
+      'aria-describedby': labelId,
       'data-disclosure-trigger': '',
       'data-icon': 'ellipsis',
     }).appendTo(this.$item);
