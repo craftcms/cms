@@ -30,7 +30,7 @@
         iconAltText: 'Site'|t('app'),
         label: selectedSite.name|t('site'),
         menu: {
-            items: siteMenuItems|length > 1 ? siteMenuItems : null,
+            items: showSiteMenuItems(siteMenuItems) ? siteMenuItems : null,
             label: 'Select site'|t('app')
         }
     }) %}

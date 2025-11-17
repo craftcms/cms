@@ -3709,6 +3709,50 @@ JS, [
     }
 
     /**
+     * Checks whether the sites menu should be shown, by checking how many visible items are in the site menu array.
+     * If there's only one visible item in the menu - don't show it.
+     *
+     * @param array $siteMenuItems
+     * @return bool
+     */
+    public static function showSiteMenuItems(array $siteMenuItems): bool
+    {
+        // if there's only one item in the sites menu
+        if (count($siteMenuItems) == 1) {
+            $firstItem = $siteMenuItems[array_key_first($siteMenuItems)];
+            // and the sites menu doesn't seem grouped - don't show the sites menu
+            if (!isset($firstItem['items'])) {
+                return false;
+            }
+
+            // the sites menu looks grouped and there's only one item
+            if (count($firstItem['items']) == 1) {
+                return false;
+            }
+
+            // site sites menu looks grouped and there's more than one item that's not hidden
+            if (
+                Collection::make($firstItem['items'])
+                ->filter(fn($item) => $item['hidden'] === false)
+                ->count() <= 1
+            ) {
+                return false;
+            }
+        }
+
+        // if there's up to one visible item in the sites menu
+        if (
+            Collection::make($siteMenuItems)
+                ->filter(fn($item) => $item['hidden'] === false)
+                ->count() <= 1
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Returns an SVG icon’s contents for the control panel.
      *
      * The icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`), the
