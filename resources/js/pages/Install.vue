@@ -126,7 +126,7 @@
       </craft-button>
     </template>
 
-    <Modal :is-active="modalActive">
+    <Modal :is-active="modalActive" :overlay="false">
       <template v-if="isCurrent('license')">
         <Pane class="tw:max-w-[80ch] tw:mx-auto">
           <Deferred data="licenseHtml">
