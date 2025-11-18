@@ -151,7 +151,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'label' => Craft::t('site', $behavior->site->name),
                 'menu' => [
                     'label' => Craft::t('app', 'Select site'),
-                    'items' => count($siteMenuItems) > 1 ? $siteMenuItems : null,
+                    'items' => $siteMenuItems,
                 ],
             ]);
         }
