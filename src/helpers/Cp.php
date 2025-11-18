@@ -3634,6 +3634,8 @@ JS, [
     /**
      * Returns a menu item array for the given sites, possibly grouping them by site group.
      *
+     * If only one site is meant to be shown, an empty array will be returned.
+     *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
      * @param Site|null $selectedSite
      * @param array $config
@@ -3671,6 +3673,8 @@ JS, [
         $params = $request->getQueryParamsWithoutPath();
         unset($params['fresh']);
 
+        $totalSites = 0;
+
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
             if (!$config['includeOmittedSites']) {
@@ -3680,6 +3684,8 @@ JS, [
             if (empty($groupSites)) {
                 continue;
             }
+
+            $totalSites += count($groupSites);
 
             $groupSiteItems = array_map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
@@ -3705,7 +3711,7 @@ JS, [
             }
         }
 
-        return $items;
+        return $totalSites > 1 ? $items : [];
     }
 
     /**

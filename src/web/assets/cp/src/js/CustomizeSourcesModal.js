@@ -476,7 +476,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $itemInput = $('<input/>', {
       type: 'hidden',
-      name: 'sourceOrder[][key]',
+      name: 'sourceOrder[]',
       value: sourceData.key,
     }).appendTo($item);
     if (Craft.hasMousePointerEvents()) {
@@ -1096,9 +1096,13 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       const $sourceContainer = this.getSourceContainer(false);
       if ($sourceContainer) {
         if (closestPage) {
-          $sourceContainer
-            .children()
-            .appendTo(closestPage.getSourceContainer());
+          const $newSourceContainer = closestPage.getSourceContainer();
+          const $sources = $sourceContainer.children();
+          for (let i = 0; i < $sources.length; i++) {
+            const $source = $sources.eq(i).appendTo($newSourceContainer);
+            const source = $source.data('source');
+            source.$pageInput.val(closestPage.name);
+          }
         }
         $sourceContainer.remove();
       }
