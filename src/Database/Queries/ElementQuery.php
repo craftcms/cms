@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Database\Queries;
 use Closure;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
-use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -36,7 +36,7 @@ use Twig\Markup;
 /**
  * @template TElement of ElementInterface
  *
- * @mixin \Illuminate\Database\Query\Builder<TElement>
+ * @mixin \Illuminate\Database\Query\Builder
  */
 class ElementQuery
 {
@@ -48,7 +48,10 @@ class ElementQuery
 
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
+
+    /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
+
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -159,7 +162,7 @@ class ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var array<string,array<string|\Illuminate\Contracts\Database\Query\Expression>> Column alias => name mapping
+     * @var array<string,string> Column alias => name mapping
      *
      * @see joinElementTable()
      * @see applyOrderByParams()
@@ -250,42 +253,42 @@ class ElementQuery
     /**
      * Find a model by its primary key.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \Illuminate\Database\Eloquent\Collection<int, TElement> : TElement|null)
+     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \craft\elements\ElementCollection<int, TElement> : TElement|null)
      */
-    public function find(mixed $id, array|string $columns = ['*']): ElementInterface|Collection|null
+    public function find(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection|null
     {
         if (is_array($id) || $id instanceof Arrayable) {
             return $this->findMany($id, $columns);
         }
 
-        return $this->where('elements.id', $id)->first($columns);
+        return $this->id($id)->first($columns);
     }
 
     /**
      * Find multiple elements by their primary keys.
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
+     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
      */
-    public function findMany(mixed $ids, array|string $columns = ['*']): Collection|array
+    public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|array
     {
         $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
 
         if (empty($ids)) {
-            return new Collection;
+            return new ElementCollection;
         }
 
-        return $this->whereIn('elements.id', $ids)->get($columns);
+        return $this->id($ids)->get($columns);
     }
 
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \Illuminate\Database\Eloquent\Collection<int, TElement> : TElement)
+     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \craft\elements\ElementCollection<int, TElement> : TElement)
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|Collection
+    public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection
     {
         $result = $this->find($id, $columns);
 
@@ -294,7 +297,7 @@ class ElementQuery
         if (is_array($id)) {
             if (count($result) !== count(array_unique($id))) {
                 throw (new ElementNotFoundException)->setElement(
-                    $this->elementType, array_diff($id, $result->modelKeys())
+                    $this->elementType, array_diff($id, $result->pluck('id')->all())
                 );
             }
 
@@ -319,7 +322,7 @@ class ElementQuery
      * @param  (\Closure(): TValue)|null  $callback
      * @return (
      *     $id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>)
-     *     ? \Illuminate\Database\Eloquent\Collection<int, TElement>
+     *     ? \craft\elements\ElementCollection<int, TElement>
      *     : TElement|TValue
      * )
      */
@@ -410,14 +413,14 @@ class ElementQuery
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
+     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
      */
-    public function get(array|string $columns = ['*']): Collection|array
+    public function get(array|string $columns = ['*']): ElementCollection|array
     {
         $models = $this->getModels($columns);
 
-        return $this->applyAfterQueryCallbacks(new Collection($models))
-            ->when($this->asArray, fn (Collection $collection) => $collection->all());
+        return $this->applyAfterQueryCallbacks(new ElementCollection($models))
+            ->when($this->asArray, fn (ElementCollection $collection) => $collection->all());
     }
 
     /**
@@ -437,9 +440,9 @@ class ElementQuery
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>|array<int, TElement>
+     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
      */
-    public function all(array|string $columns = ['*']): Collection|array
+    public function all(array|string $columns = ['*']): ElementCollection|array
     {
         return $this->get($columns);
     }
@@ -447,9 +450,9 @@ class ElementQuery
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, TElement>
+     * @return \craft\elements\ElementCollection<int, TElement>
      */
-    public function collect(array|string $columns = ['*']): Collection
+    public function collect(array|string $columns = ['*']): ElementCollection
     {
         $this->asArray = false;
 
@@ -535,7 +538,7 @@ class ElementQuery
         return $this->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
 
-            return $this->applyAfterQueryCallbacks(new Collection([$model]))->first();
+            return $this->applyAfterQueryCallbacks(new ElementCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
     }
 

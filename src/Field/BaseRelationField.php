@@ -749,7 +749,7 @@ JS, [
                                     $join->whereNull("$relationsAlias.sourceSiteId")
                                         ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
                                 });
-                        }
+                        },
                     );
 
                     if (
@@ -1191,6 +1191,7 @@ JS, [
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
+            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
             Arr::isNumeric($where['values'])
         ) {

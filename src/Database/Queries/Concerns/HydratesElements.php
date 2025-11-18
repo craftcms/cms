@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Database\Queries\Events\ElementsHydrated;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Event;
 use stdClass;
 
 /**
+ * @template TValue
+ *
  * @internal
  */
 trait HydratesElements
@@ -25,13 +28,13 @@ trait HydratesElements
     /**
      * Create a collection of elements from plain arrays.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, ElementInterface>
+     * @return \craft\elements\ElementCollection<TValue>
      */
-    public function hydrate(array $items): Collection
+    public function hydrate(array $items): ElementCollection
     {
         $items = array_map(fn (stdClass $row) => (array) $row, $items);
 
-        $elements = new Collection($items)
+        $elements = collect($items)
             ->when($this->searchResults, fn (Collection $collection) => $collection->map(function (array $row) {
                 if (! isset($row['id'], $row['siteId'])) {
                     return $row;
@@ -75,7 +78,7 @@ trait HydratesElements
                 }
 
                 return $elements;
-            });
+            })->all();
 
         if ($this->withProvisionalDrafts) {
             ElementHelper::swapInProvisionalDrafts($elements);
@@ -84,10 +87,10 @@ trait HydratesElements
         if (Event::hasListeners(ElementsHydrated::class)) {
             Event::dispatch($event = new ElementsHydrated($elements, $items));
 
-            return $event->elements;
+            return new ElementCollection($event->elements);
         }
 
-        return $elements;
+        return new ElementCollection($elements);
     }
 
     protected function createElement(array $row): ElementInterface
@@ -160,7 +163,7 @@ trait HydratesElements
                 unset(
                     $row['draftCreatorId'],
                     $row['draftName'],
-                    $row['draftNotes']
+                    $row['draftNotes'],
                 );
             }
         }
