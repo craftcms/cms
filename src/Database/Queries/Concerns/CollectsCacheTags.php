@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use Craft;
 use CraftCms\Cms\Database\Queries\Events\DefineCacheTags;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Event;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait CollectsCacheTags
@@ -33,7 +32,7 @@ trait CollectsCacheTags
                 return;
             }
 
-            $elementsService = \Craft::$app->getElements();
+            $elementsService = Craft::$app->getElements();
 
             if ($elementsService->getIsCollectingCacheInfo()) {
                 $elementsService->collectCacheTags($cacheTags);

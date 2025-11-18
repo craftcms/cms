@@ -33,7 +33,7 @@ final class ElementNotFoundException extends RecordsNotFoundException
      * @param  array<int, int|string>|int|string  $ids
      * @return $this
      */
-    public function setElement(string $element, array $ids = []): self
+    public function setElement(string $element, array|int|string $ids = []): self
     {
         $this->element = $element;
         $this->ids = Arr::wrap($ids);

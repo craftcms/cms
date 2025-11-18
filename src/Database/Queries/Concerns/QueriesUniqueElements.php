@@ -13,8 +13,6 @@ use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesUniqueElements

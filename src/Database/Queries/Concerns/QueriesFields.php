@@ -10,8 +10,6 @@ use CraftCms\Cms\Support\Query;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesFields

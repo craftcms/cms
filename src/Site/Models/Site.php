@@ -40,7 +40,7 @@ final class Site extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Element\Models\Element, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Element\Models\Element, $this, ElementSiteSettings>
      */
     public function elements(): BelongsToMany
     {

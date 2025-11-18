@@ -25,6 +25,8 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
@@ -45,6 +47,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
@@ -107,7 +110,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class,
@@ -117,7 +120,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): array|string|null
     {
         return Schema::TYPE_JSON;
@@ -126,7 +129,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
@@ -405,7 +408,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -532,7 +535,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         $rules = [
@@ -656,7 +659,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
@@ -670,7 +673,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If we're propagating a value, and we don't show the site menu,
@@ -703,7 +706,7 @@ JS, [
             $value = array_values(array_filter($value));
             $query->whereIn('elements.id', $value);
             if (! empty($value)) {
-                $query->orderBy(new \CraftCms\Cms\Database\Expressions\FixedOrderExpression('elements.id', $value));
+                $query->orderBy(new FixedOrderExpression('elements.id', $value));
             }
         } elseif ($value === null && $element?->id && $this->fetchRelationsFromDbTable($element)) {
             // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
@@ -752,8 +755,8 @@ JS, [
                     if (
                         $this->sortable &&
                         ! $this->maintainHierarchy &&
-                        count($query->orderBy ?? []) === 1 &&
-                        ($query->orderBy[0]['column'] ?? null) instanceof \CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression
+                        count($q->orderBy ?? []) === 1 &&
+                        ($q->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
                     ) {
                         $q->orderBy("$relationsAlias.sortOrder");
                     }
@@ -813,7 +816,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($this->maintainHierarchy) {
@@ -842,7 +845,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
@@ -865,7 +868,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->localizeRelations;
@@ -874,7 +877,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -883,7 +886,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, false, true);
@@ -952,7 +955,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQuery|ElementCollection $value */
@@ -974,7 +977,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQueryInterface|ElementCollection $value */
@@ -995,7 +998,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new (static::elementType());
@@ -1099,7 +1102,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [
@@ -1139,7 +1142,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the elements
@@ -1232,7 +1235,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
@@ -1413,7 +1416,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
@@ -1735,7 +1738,7 @@ JS, [
     /**
      * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      */
-    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
+    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery|ElementQueryInterface $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
     {
         $clone = (clone $query)
             ->drafts(null)

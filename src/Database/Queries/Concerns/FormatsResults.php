@@ -17,8 +17,6 @@ use Tpetry\QueryExpressions\Value\Value;
 use yii\base\InvalidValueException;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait FormatsResults

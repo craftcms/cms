@@ -90,6 +90,6 @@ final class Entry extends BaseModel
 
     public static function elementQuery(): EntryQuery
     {
-        return new EntryQuery(\craft\elements\Entry::class);
+        return new EntryQuery;
     }
 }

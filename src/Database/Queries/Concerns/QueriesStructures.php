@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesStructures
@@ -738,7 +736,6 @@ trait QueriesStructures
      * Normalizes a structure param value to either an Element object or false.
      *
      * @param  string  $property  The parameter’s property name.
-     * @param  class-string<ElementInterface>  $class  The element class
      * @return ElementInterface The normalized element
      *
      * @throws QueryAbortedException if the element can't be found

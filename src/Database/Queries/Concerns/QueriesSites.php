@@ -217,11 +217,11 @@ trait QueriesSites
         if (is_string($value)) {
             $sites = Sites::getSitesByLanguage($value);
 
-            if (empty($sites)) {
+            if ($sites->isEmpty()) {
                 throw new InvalidArgumentException("Invalid language: $value");
             }
 
-            $this->siteId = array_map(fn (Site $site) => $site->id, $sites);
+            $this->siteId = $sites->pluck('id')->all();
 
             return $this;
         }

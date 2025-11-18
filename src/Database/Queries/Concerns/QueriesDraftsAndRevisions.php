@@ -15,8 +15,6 @@ use InvalidArgumentException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesDraftsAndRevisions
@@ -130,7 +128,7 @@ trait QueriesDraftsAndRevisions
             $elementQuery->subQuery->whereNotNull('elements.canonicalId');
         } elseif (isset($elementQuery->draftOf)) {
             if ($elementQuery->draftOf === false) {
-                $elementQuery->subQuery->whereNull('elements.canonicalId', null);
+                $elementQuery->subQuery->whereNull('elements.canonicalId');
             } else {
                 $elementQuery->subQuery->whereIn('elements.canonicalId', Arr::wrap($elementQuery->draftOf));
             }

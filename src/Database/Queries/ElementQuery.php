@@ -36,9 +36,9 @@ use Twig\Markup;
 /**
  * @template TElement of ElementInterface
  *
- * @mixin \Illuminate\Database\Query\Builder
+ * @mixin \Illuminate\Database\Query\Builder<TElement>
  */
-class ElementQuery implements ElementQueryInterface
+class ElementQuery
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
     use BuildsQueries {
@@ -530,10 +530,10 @@ class ElementQuery implements ElementQueryInterface
     {
         $this->applyBeforeQueryCallbacks();
 
-        return $this->applyScopes()->query->cursor()->map(function ($record) {
+        return $this->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
 
-            return $this->applyAfterQueryCallbacks($this->newModelInstance()->newCollection([$model]))->first();
+            return $this->applyAfterQueryCallbacks(new Collection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
     }
 
@@ -767,7 +767,9 @@ class ElementQuery implements ElementQueryInterface
         }
 
         if ($method === 'mixin') {
-            return static::registerMixin($parameters[0], $parameters[1] ?? true);
+            static::registerMixin($parameters[0], $parameters[1] ?? true);
+
+            return null;
         }
 
         if (! static::hasGlobalMacro($method)) {
@@ -786,7 +788,7 @@ class ElementQuery implements ElementQueryInterface
     /**
      * Register the given mixin with the builder.
      */
-    protected static function registerMixin(string $mixin, bool $replace = true): void
+    protected static function registerMixin(object $mixin, bool $replace = true): void
     {
         $methods = new ReflectionClass($mixin)->getMethods(
             ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED

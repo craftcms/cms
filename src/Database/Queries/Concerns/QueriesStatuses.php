@@ -11,8 +11,6 @@ use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesStatuses

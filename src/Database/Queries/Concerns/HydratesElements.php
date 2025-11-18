@@ -18,8 +18,6 @@ use Illuminate\Support\Facades\Event;
 use stdClass;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait HydratesElements

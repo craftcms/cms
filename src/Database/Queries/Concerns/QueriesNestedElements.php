@@ -305,7 +305,7 @@ trait QueriesNestedElements
      */
     private function normalizeNestedElementParams(ElementQuery $query): void
     {
-        /** @var ElementQuery&QueriesNestedElements $query */
+        /** @var \CraftCms\Cms\Database\Queries\EntryQuery $query */
         $this->normalizeFieldId($query);
         $this->primaryOwnerId = $this->normalizeOwnerId($query->primaryOwnerId);
         $this->ownerId = $this->normalizeOwnerId($query->ownerId);
@@ -316,7 +316,7 @@ trait QueriesNestedElements
      */
     private function normalizeFieldId(ElementQuery $query): void
     {
-        /** @var ElementQuery&QueriesNestedElements $query */
+        /** @var \CraftCms\Cms\Database\Queries\EntryQuery $query */
         if ($query->fieldId === false) {
             return;
         }

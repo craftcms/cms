@@ -20,8 +20,6 @@ use Illuminate\Support\Collection;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesCustomFields
@@ -143,7 +141,9 @@ trait QueriesCustomFields
 
                 // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                 // see https://github.com/craftcms/cms/issues/15609
-                if ($this->query->getConnection()->getDriverName() === 'mysql' && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+                /** @var \Illuminate\Database\Connection $connection */
+                $connection = $this->query->getConnection();
+                if ($connection->getDriverName() === 'mysql' && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
                     $this->columnsToCast[$alias] = 'CHAR(255)';
                 }
             }

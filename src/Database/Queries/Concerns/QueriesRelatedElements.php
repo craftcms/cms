@@ -12,8 +12,6 @@ use CraftCms\Cms\Support\Arr;
 use RuntimeException;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesRelatedElements

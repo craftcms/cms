@@ -102,7 +102,7 @@ final readonly class Query
      *
      * @param  Builder  $query  The query builder to apply the param to.
      * @param  string|Expression  $column  The database column that the param is targeting.
-     * @param  string|int|array  $value  The param value(s).
+     * @param  string|int|array  $param  The param value(s).
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param  bool  $caseInsensitive  Whether the resulting condition should be case-insensitive
@@ -127,7 +127,9 @@ final readonly class Query
             ? self::parseColumnType($columnType)
             : null;
 
-        $isMysql = $query->getConnection()->getDriverName() === 'mysql';
+        /** @var \Illuminate\Database\Connection $connection */
+        $connection = $query->getConnection();
+        $isMysql = $connection->getDriverName() === 'mysql';
 
         // Only PostgreSQL supports case-sensitive strings on non-JSON column values
         if ($isMysql && $columnType !== self::TYPE_JSON) {
@@ -546,6 +548,7 @@ final readonly class Query
             $op === '<' => '>=',
             $op === '>' => '<=',
             $op === '=' => '!=',
+            default => throw new InvalidArgumentException("Invalid operator: $op"),
         };
     }
 

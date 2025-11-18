@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\EagerLoadPlan;
 use Illuminate\Support\Collection;
 
 /**
- * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
- *
  * @internal
  */
 trait QueriesEagerly
@@ -55,7 +54,7 @@ trait QueriesEagerly
                 return $elements;
             }
 
-            $elementsService = \Craft::$app->getElements();
+            $elementsService = Craft::$app->getElements();
             $elementsService->eagerLoadElements($this->elementType, $elements->all(), $this->with);
 
             return $elements;
@@ -210,7 +209,7 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
-            \Craft::$app->getElements()->eagerLoadElements(
+            Craft::$app->getElements()->eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [

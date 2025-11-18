@@ -21,7 +21,7 @@ final class Element extends BaseModel
     use SoftDeletes;
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, ElementSiteSettings>
      */
     public function sites(): BelongsToMany
     {

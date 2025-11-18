@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Models;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\BasePivot;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class ElementSiteSettings extends BaseModel
+final class ElementSiteSettings extends BasePivot
 {
     protected $table = Table::ELEMENTS_SITES;
 
