@@ -8,12 +8,14 @@ export default css`
     width: 100%;
   }
 
-  ::slotted(select) {
+  ::slotted(.form-control) {
     width: 100%;
     height: 100%;
     appearance: none;
     border: 0;
-    padding-inline: var(--c-input-spacing-inline);
+    min-height: none;
+    padding-inline: var(--c-input-spacing-inline)
+      calc(var(--c-input-spacing-inline) * 1.5 + 1em);
     border-radius: var(--c-input-radius);
   }
 
@@ -21,6 +23,7 @@ export default css`
     ${baseInputStyles}
     padding-inline: 0;
     position: relative;
+    min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
   }
 
   .indicator {
@@ -28,5 +31,7 @@ export default css`
     inset-block-start: 50%;
     inset-inline-end: var(--c-input-spacing-inline);
     transform: translateY(-50%);
+    width: 1em;
+    height: 1em;
   }
 `;

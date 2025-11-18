@@ -15,7 +15,7 @@
     </div>
     <div>
       <h2 class="tw:mb-4">{{ heading }}</h2>
-      <div class="tw:grid tw:gap-3 tw:md:max-w-xs">
+      <div class="tw:grid tw:gap-3 tw:pr-6">
         <slot></slot>
       </div>
     </div>

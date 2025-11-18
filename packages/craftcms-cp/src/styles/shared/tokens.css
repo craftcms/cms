@@ -69,13 +69,13 @@
   --c-color-warning-on-subtle: var(--color-yellow-800);
 
   --c-color-danger-bg-emphasis: var(--color-red-600);
-  --c-color-danger-bg-normal: var(--color-red-200);
-  --c-color-danger-bg-subtle: var(--color-red-100);
+  --c-color-danger-bg-normal: var(--color-red-100);
+  --c-color-danger-bg-subtle: var(--color-red-50);
   --c-color-danger-border-emphasis: var(--color-red-600);
   --c-color-danger-border-normal: var(--color-red-400);
   --c-color-danger-border-subtle: var(--color-red-600);
   --c-color-danger-on-emphasis: var(--color-red-50);
-  --c-color-danger-on-normal: var(--color-red-800);
+  --c-color-danger-on-normal: var(--color-red-700);
   --c-color-danger-on-subtle: var(--color-red-800);
 
   --c-font-body:

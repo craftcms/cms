@@ -109,7 +109,7 @@ final readonly class InstallController
 
     public function validateDb(Request $request): Response
     {
-        $data = $this->validateDbData($request);
+        $data = $this->validateDbData($request->input());
 
         Config::set("database.connections.{$data['driver']}", array_merge(
             Config::get("database.connections.{$data['driver']}"),
@@ -173,8 +173,8 @@ final readonly class InstallController
         $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
-        if ($request->has('db-driver')) {
-            $data = $this->validateDbData($request, 'db.');
+        if ($request->has('db.driver')) {
+            $data = $this->validateDbData($request->input('db'));
 
             // Set and save the new DB config values
             // If there's a DB_DSN environment variable, go with that
@@ -276,27 +276,27 @@ final readonly class InstallController
         return true;
     }
 
-    public function validateDbData(Request $request, $prefix = ''): array
+    public function validateDbData($data): array
     {
-        $data = $request->validate([
-            $prefix.'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
-            $prefix.'host' => ['nullable', 'string'],
-            $prefix.'database' => ['required', 'string'],
-            $prefix.'port' => ['nullable', 'integer'],
-            $prefix.'username' => ['nullable', 'string'],
-            $prefix.'password' => ['nullable', 'string'],
-            $prefix.'prefix' => ['nullable', 'string', 'max:5'],
-            $prefix.'schema' => ['nullable', 'string'],
+        $data = Validator::validate($data, [
+            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
+            'host' => ['nullable', 'string'],
+            'database' => ['required', 'string'],
+            'port' => ['nullable', 'integer'],
+            'username' => ['nullable', 'string'],
+            'password' => ['nullable', 'string'],
+            'prefix' => ['nullable', 'string', 'max:5'],
+            'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = $data[$prefix.'driver'] === 'mysql' ? 3306 : 5432;
+        $defaultPort = $data['driver'] === 'mysql' ? 3306 : 5432;
 
-        $data[$prefix.'host'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.host") ?: '127.0.0.1';
-        $data[$prefix.'port'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.port") ?: $defaultPort;
-        $data[$prefix.'username'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.username") ?: 'root';
-        $data[$prefix.'password'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.password");
-        $data[$prefix.'prefix'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.prefix");
+        $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
+        $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;
+        $data['username'] ??= Config::get("database.connections.{$data['driver']}.username") ?: 'root';
+        $data['password'] ??= Config::get("database.connections.{$data['driver']}.password");
+        $data['prefix'] ??= Config::get("database.connections.{$data['driver']}.prefix");
 
-        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [Str::after($key, $prefix) => $value])->all();
+        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
     }
 }

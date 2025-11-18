@@ -1,25 +1,8 @@
 import {computed, ref} from 'vue';
 import {useStepper} from '@vueuse/core';
-import {usePage} from '@inertiajs/vue3';
 import {t} from '@craftcms/cp';
 
-type InstallScreens =
-  | 'start'
-  | 'license'
-  | 'db'
-  | 'account'
-  | 'site'
-  | 'installing'
-  | 'complete';
-
 export const useInstall = () => {
-  const {props} = usePage<{
-    screen: InstallScreens;
-    showDbScreen: boolean;
-    licenseHtml: string;
-    useEmailAsUsername: boolean;
-  }>();
-
   const possibleSteps = ref<Record<string, any>>({
     start: {},
     license: {
@@ -37,7 +20,6 @@ export const useInstall = () => {
       label: 'Database',
       action: '/admin/actions/install/validate-db',
       heading: t('app', 'Connect to your database'),
-      hidden: !props.showDbScreen,
     },
     site: {
       id: 'site',
@@ -86,6 +68,7 @@ export const useInstall = () => {
 
   return {
     ...stepper,
+    possibleSteps,
     currentId,
     dotSteps,
   };

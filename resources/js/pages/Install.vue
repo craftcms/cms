@@ -2,7 +2,7 @@
   import {Deferred, Head} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import backgroundUrl from '../../images/install/installer-bg.png';
-  import {computed, reactive, ref} from 'vue';
+  import {computed, reactive, ref, watchEffect} from 'vue';
   import AccountFields from '@/components/install/AccountFields.vue';
   import SiteFields from '@/components/install/SiteFields.vue';
   import {useInstall} from '@/composables/useInstall';
@@ -17,16 +17,6 @@
   import StepScreen from '@/components/install/StepScreen.vue';
 
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
-  const {
-    dotSteps,
-    current,
-    currentId,
-    goTo,
-    goToNext,
-    goToPrevious,
-    isCurrent,
-  } = useInstall();
-
   const props = defineProps<{
     dbConfig: {
       driver: 'mysql' | 'pgsql';
@@ -43,8 +33,25 @@
     defaultSystemName: string;
     defaultSiteUrl: string;
     defaultSiteLanguage: string;
+    showDbScreen: boolean;
   }>();
+
+  const {
+    dotSteps,
+    current,
+    currentId,
+    goTo,
+    goToNext,
+    goToPrevious,
+    isCurrent,
+    possibleSteps,
+  } = useInstall();
+
   const state = ref<'idle' | 'loading' | 'error'>('idle');
+
+  watchEffect(() => {
+    possibleSteps.value.db.hidden = props.showDbScreen;
+  });
 
   function beginInstall() {
     goTo('license');
@@ -67,7 +74,7 @@
       host: props.dbConfig.host,
       port: props.dbConfig.port,
       database: props.dbConfig.database,
-      user: props.dbConfig.username,
+      username: props.dbConfig.username,
       password: props.dbConfig.password,
       prefix: props.dbConfig.prefix,
     },
@@ -151,8 +158,12 @@
 
       <!-- Form screens -->
       <template v-else>
-        <Pane as="form" :action="current.action" @submit.prevent="handleSubmit">
-          <div class="tw:flex">
+        <div class="tw:max-w-[80ch]">
+          <Pane
+            as="form"
+            :action="current.action"
+            @submit.prevent="handleSubmit"
+          >
             <StepScreen
               :illustration-src="accountBg"
               :heading="current.heading"
@@ -171,7 +182,7 @@
               v-if="isCurrent('db')"
               class="screen"
             >
-              <DbFields v-model="formData.db" />
+              <DbFields v-model="formData.db" :errors="errors.db" />
             </StepScreen>
 
             <StepScreen
@@ -192,45 +203,45 @@
                 />
               </Deferred>
             </StepScreen>
-          </div>
 
-          <template #actions>
-            <div class="tw:grid tw:grid-cols-3 tw:items-center tw:gap-2">
-              <craft-button
-                type="button"
-                @click="goToPrevious"
-                appearance="plain"
-                class="tw:justify-self-start"
-              >
-                {{ t('app', 'Back') }}
-                <craft-icon name="arrow-left" slot="prefix"></craft-icon>
-              </craft-button>
-              <ul class="tw:flex tw:gap-2 tw:justify-center">
-                <li v-for="(step, id) in dotSteps" :key="id">
-                  <span
-                    class="dot"
-                    :class="{
-                      'dot--active': isCurrent(id),
-                    }"
-                  >
-                    <span class="tw:sr-only">
-                      {{ step.label }}
+            <template #actions>
+              <div class="tw:grid tw:grid-cols-3 tw:items-center tw:gap-2">
+                <craft-button
+                  type="button"
+                  @click="goToPrevious"
+                  appearance="plain"
+                  class="tw:justify-self-start"
+                >
+                  {{ t('app', 'Back') }}
+                  <craft-icon name="arrow-left" slot="prefix"></craft-icon>
+                </craft-button>
+                <ul class="tw:flex tw:gap-2 tw:justify-center">
+                  <li v-for="(step, id) in dotSteps" :key="id">
+                    <span
+                      class="dot"
+                      :class="{
+                        'dot--active': isCurrent(id),
+                      }"
+                    >
+                      <span class="tw:sr-only">
+                        {{ step.label }}
+                      </span>
                     </span>
-                  </span>
-                </li>
-              </ul>
-              <craft-button
-                class="tw:justify-self-end"
-                type="submit"
-                variant="primary"
-                :loading="state === 'loading'"
-              >
-                {{ current.submitLabel ?? t('app', 'Next') }}
-                <craft-icon name="arrow-right" slot="suffix"></craft-icon>
-              </craft-button>
-            </div>
-          </template>
-        </Pane>
+                  </li>
+                </ul>
+                <craft-button
+                  class="tw:justify-self-end"
+                  type="submit"
+                  variant="primary"
+                  :loading="state === 'loading'"
+                >
+                  {{ current.submitLabel ?? t('app', 'Next') }}
+                  <craft-icon name="arrow-right" slot="suffix"></craft-icon>
+                </craft-button>
+              </div>
+            </template>
+          </Pane>
+        </div>
       </template>
     </Modal>
   </div>
