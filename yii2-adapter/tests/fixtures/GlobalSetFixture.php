@@ -15,6 +15,7 @@ use craft\test\fixtures\elements\GlobalSetFixture as BaseGlobalSetFixture;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
+ * @deprecated in 6.0.0
  */
 class GlobalSetFixture extends BaseGlobalSetFixture
 {

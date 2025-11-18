@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
-use craft\helpers\App;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
@@ -174,6 +173,12 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * @var bool
      */
     private bool $_encodedQueryParams = false;
+
+    /**
+     * @var bool Whether the request has an invalid token.
+     * @see getHasInvalidToken())
+     */
+    private bool $_hasInvalidToken;
 
     /**
      * @var bool|null Whether the request initially had a token
@@ -476,7 +481,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * Returns whether the request initially had a token.
      *
      * @return bool
-     * @throws BadRequestHttpException
      * @since 3.6.0
      */
     public function getHadToken(): bool
@@ -492,8 +496,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
-     * @throws BadRequestHttpException if an invalid token is supplied
-     * @see \craft\services\Tokens::createToken()
+     * @see Tokens::createToken()
      * @see Controller::requireToken()
      */
     public function getToken(): ?string
@@ -511,34 +514,39 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     public function setToken(?string $token): void
     {
         // Make sure $this->_hadToken has been set
-        try {
-            $this->_findToken();
-        } catch (BadRequestHttpException) {
-        }
+        $this->_findToken();
 
         $this->_token = $token;
     }
 
     /**
-     * Looks for a token on the request.
+     * Returns whether there is an invalid token on the request.
      *
-     * @throws BadRequestHttpException
+     * @return bool
+     * @since 5.9.0
+     */
+    public function getHasInvalidToken(): bool
+    {
+        $this->_findToken();
+        return $this->_hasInvalidToken;
+    }
+
+    /**
+     * Looks for a token on the request.
      */
     private function _findToken(): void
     {
-        if (isset($this->_hadToken)) {
+        if (isset($this->_hasInvalidToken)) {
             return;
         }
 
-        $this->_token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $this->_hasInvalidToken = $token && !preg_match('/^[A-Za-z0-9_-]+$/', $token);
 
-        if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
-            $this->_token = null;
-            $this->_hadToken = false;
-            throw new BadRequestHttpException('Invalid token');
+        if (!$this->_hasInvalidToken) {
+            $this->_token = $token;
+            $this->_hadToken = $token !== null;
         }
-
-        $this->_hadToken = isset($this->_token);
     }
 
     /**
@@ -565,7 +573,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     {
         try {
             return $this->_validateSiteToken() !== null;
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException) {
             return false;
         }
     }

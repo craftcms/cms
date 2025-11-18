@@ -148,6 +148,7 @@ class Gql
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
+     * @deprecated in 6.0.0
      */
     public static function canMutateTags(?GqlSchema $schema = null): bool
     {
@@ -161,6 +162,7 @@ class Gql
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
+     * @deprecated in 6.0.0
      */
     public static function canMutateGlobalSets(?GqlSchema $schema = null): bool
     {
@@ -174,6 +176,7 @@ class Gql
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
+     * @deprecated in 6.0.0
      */
     public static function canMutateCategories(?GqlSchema $schema = null): bool
     {
@@ -226,6 +229,7 @@ class Gql
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
+     * @deprecated in 6.0.0
      */
     public static function canQueryCategories(?GqlSchema $schema = null): bool
     {
@@ -238,6 +242,7 @@ class Gql
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
+     * @deprecated in 6.0.0
      */
     public static function canQueryTags(?GqlSchema $schema = null): bool
     {
@@ -250,6 +255,7 @@ class Gql
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
+     * @deprecated in 6.0.0
      */
     public static function canQueryGlobalSets(?GqlSchema $schema = null): bool
     {
@@ -536,19 +542,11 @@ class Gql
     {
         return static function($childComplexity, $args) use ($baseComplexity) {
             $complexityScore = $childComplexity + $baseComplexity;
-            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
 
-            foreach ($relatedArguments as $argumentName) {
-                if (!empty($args[$argumentName])) {
-                    $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY * count((array)$args[$argumentName]);
+            foreach (array_keys($args) as $argumentName) {
+                if (str_starts_with($argumentName, 'relatedTo')) {
+                    $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
                 }
-            }
-
-            if (!empty($args['relatedTo'])) {
-                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
-            }
-            if (!empty($args['relatedToAll'])) {
-                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
             }
 
             return $complexityScore;

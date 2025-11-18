@@ -28,6 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class GlobalsController extends Controller
 {
@@ -179,7 +180,7 @@ class GlobalsController extends Controller
         ]);
 
         // Render the template!
-        return $this->renderTemplate('globals/_edit.twig', [
+        return $this->renderTemplate('yii2-adapter/globals/_edit.twig', [
             'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,

@@ -29,6 +29,7 @@ use craft\helpers\Db;
  * @replace {twig-method} craft.globalSets()
  * @replace {myElement} myGlobalSet
  * @replace {element-class} \craft\elements\GlobalSet
+ * @deprecated in 6.0.0
  */
 class GlobalSetQuery extends ElementQuery
 {

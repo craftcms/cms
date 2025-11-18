@@ -61,11 +61,11 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
         // Entry types
         \Illuminate\Support\Facades\Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        \Illuminate\Support\Facades\Route::get('settings/entry-types/{entryTypeId}', [EntryTypesController::class, 'edit']);
+        \Illuminate\Support\Facades\Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
 
         // Fields
         \Illuminate\Support\Facades\Route::get('settings/fields', [FieldsController::class, 'index']);
-        \Illuminate\Support\Facades\Route::get('settings/fields/new', [FieldsController::class, 'edit']);
+        \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
         \Illuminate\Support\Facades\Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
 
         // General

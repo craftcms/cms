@@ -15,6 +15,7 @@ use craft\elements\GlobalSet;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class GlobalSetEvent extends Event
 {

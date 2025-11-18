@@ -27,7 +27,7 @@ final class SiteGroup extends Dto
         public ?string $uid = null,
 
         #[Required]
-        #[Unique(Table::SITEGROUPS, 'name', ignore: new RouteParameterReference('id', nullable: true))]
+        #[Unique(Table::SITEGROUPS, 'name', ignore: new RouteParameterReference('id', nullable: true), withoutTrashed: true, deletedAtColumn: 'dateDeleted')]
         public string $name = '',
     ) {}
 

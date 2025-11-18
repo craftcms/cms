@@ -33,6 +33,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class Tags extends Component
 {
@@ -225,15 +226,15 @@ class Tags extends Component
                 $tagGroup->uid = Str::uuid()->toString();
             }
         } elseif (!$tagGroup->uid) {
-            $tagGroup->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->uidById($tagGroup->id);
+            $tagGroup->uid = \Illuminate\Support\Facades\DB::table('taggroups')->uidById($tagGroup->id);
         }
 
-        $configPath = ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
+        $configPath = \craft\services\ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
         $configData = $tagGroup->getConfig();
         app(ProjectConfig::class)->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
-            $tagGroup->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->idByUid($tagGroup->uid);
+            $tagGroup->id = \Illuminate\Support\Facades\DB::table('taggroups')->idByUid($tagGroup->uid);
         }
 
         return true;
@@ -353,7 +354,7 @@ class Tags extends Component
             ]));
         }
 
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
+        app(ProjectConfig::class)->remove(\craft\services\ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 
@@ -426,7 +427,7 @@ SQL)->execute();
             }
 
             // Delete the tag group
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->softDelete($tagGroupRecord->id);
+            \Illuminate\Support\Facades\DB::table('taggroups')->softDelete($tagGroupRecord->id);
 
             \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {

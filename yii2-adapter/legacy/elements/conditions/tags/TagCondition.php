@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementCondition;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated in 6.0.0
  */
 class TagCondition extends ElementCondition
 {

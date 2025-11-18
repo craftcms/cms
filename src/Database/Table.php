@@ -27,12 +27,6 @@ final readonly class Table
 
     public const string CACHE = 'cache';
 
-    public const string CATEGORIES = 'categories';
-
-    public const string CATEGORYGROUPS = 'categorygroups';
-
-    public const string CATEGORYGROUPS_SITES = 'categorygroups_sites';
-
     public const string CHANGEDATTRIBUTES = 'changedattributes';
 
     public const string CHANGEDFIELDS = 'changedfields';
@@ -63,8 +57,6 @@ final readonly class Table
 
     public const string FIELDS = 'fields';
 
-    public const string GLOBALSETS = 'globalsets';
-
     public const string GQLSCHEMAS = 'gqlschemas';
 
     public const string GQLTOKENS = 'gqltokens';
@@ -92,6 +84,8 @@ final readonly class Table
     public const string RESOURCEPATHS = 'resourcepaths';
 
     public const string REVISIONS = 'revisions';
+
+    public const string ROUTETOKENS = 'routetokens';
 
     public const string SEARCHINDEX = 'searchindex';
 
@@ -122,12 +116,6 @@ final readonly class Table
     public const string STRUCTURES = 'structures';
 
     public const string SYSTEMMESSAGES = 'systemmessages';
-
-    public const string TAGGROUPS = 'taggroups';
-
-    public const string TAGS = 'tags';
-
-    public const string TOKENS = 'tokens';
 
     public const string USERGROUPS = 'usergroups';
 

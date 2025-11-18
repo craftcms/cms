@@ -16,6 +16,8 @@ use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\SectionEvent;
+use craft\fields\Categories;
+use craft\fields\Tags;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\TagGroup;
@@ -25,9 +27,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Categories;
 use CraftCms\Cms\Field\Entries;
-use CraftCms\Cms\Field\Tags;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -47,6 +47,7 @@ use yii\helpers\Console;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
+ * @deprecated in 6.0.0
  */
 class EntrifyController extends Controller
 {
@@ -224,7 +225,7 @@ class EntrifyController extends Controller
                             'dateDeleted' => null,
                         ]);
 
-                    DbFacade::table(Table::CATEGORIES)
+                    DbFacade::table('categories')
                         ->delete($category->id);
 
                     DbFacade::table(Table::STRUCTUREELEMENTS)
@@ -448,7 +449,7 @@ class EntrifyController extends Controller
                             'dateDeleted' => null,
                         ]);
 
-                    DbFacade::table(Table::TAGS)->delete($tag->id);
+                    DbFacade::table('tags')->delete($tag->id);
 
                     $authorData[] = [
                         'entryId' => $tag->id,
@@ -619,7 +620,7 @@ class EntrifyController extends Controller
                     'title' => $globalSet->name,
                 ]);
 
-            DbFacade::table(Table::GLOBALSETS)->delete($globalSet->id);
+            DbFacade::table('globalsets')->delete($globalSet->id);
         });
 
         $this->success('Global set converted.');

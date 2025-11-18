@@ -6,9 +6,6 @@ namespace CraftCms\Cms\Site;
 
 use craft\base\ElementInterface;
 use craft\elements\Asset;
-use craft\elements\Category;
-use craft\elements\GlobalSet;
-use craft\elements\Tag;
 use craft\helpers\Queue;
 use craft\queue\jobs\PropagateElements;
 use CraftCms\Cms\Database\Table;
@@ -508,27 +505,11 @@ final class Sites
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            $oldPrimarySiteUid = DB::table(Table::SITES)->uidById($oldPrimarySiteId);
-            $existingCategorySettings = $this->projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
-
-            if (! $this->projectConfig->isApplyingExternalChanges && is_array($existingCategorySettings)) {
-                foreach ($existingCategorySettings as $categoryUid => $settings) {
-                    $this->projectConfig->set(
-                        path: ProjectConfig::PATH_CATEGORY_GROUPS.'.'.$categoryUid.'.siteSettings.'.$site->uid,
-                        value: $settings['siteSettings'][$oldPrimarySiteUid],
-                        message: 'Copy site settings for category groups',
-                    );
-                }
-            }
-
             // Re-save most localizable element types
             // (skip entries because they only support specific sites)
             // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
             $elementTypes = [
-                GlobalSet::class,
                 Asset::class,
-                Category::class,
-                Tag::class,
             ];
 
             foreach ($elementTypes as $elementType) {

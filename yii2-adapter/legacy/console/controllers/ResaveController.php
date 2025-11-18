@@ -501,6 +501,7 @@ class ResaveController extends Controller
      * Re-saves categories.
      *
      * @return int
+     * @deprecated in 6.0.0
      */
     public function actionCategories(): int
     {
@@ -574,6 +575,7 @@ class ResaveController extends Controller
      * Re-saves tags.
      *
      * @return int
+     * @deprecated in 6.0.0
      */
     public function actionTags(): int
     {

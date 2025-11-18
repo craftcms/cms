@@ -97,12 +97,14 @@ class ProjectConfig extends Component
 
     public const PATH_ADDRESSES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ADDRESSES;
     public const PATH_ADDRESS_FIELD_LAYOUTS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS;
-    public const PATH_CATEGORY_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_CATEGORY_GROUPS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_DATE_MODIFIED;
     public const PATH_ELEMENT_SOURCES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ELEMENT_SOURCES;
     public const PATH_ENTRY_TYPES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ENTRY_TYPES;
     public const PATH_FIELDS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FIELDS;
-    public const PATH_GLOBAL_SETS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GLOBAL_SETS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_GLOBAL_SETS = 'globalSets';
     public const PATH_FS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FS;
     public const PATH_GRAPHQL = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL;
     public const PATH_GRAPHQL_PUBLIC_TOKEN = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN;
@@ -118,7 +120,8 @@ class ProjectConfig extends Component
     public const PATH_SITES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SITES;
     public const PATH_SITE_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SITE_GROUPS;
     public const PATH_SYSTEM = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SYSTEM;
-    public const PATH_TAG_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_TAG_GROUPS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_TAG_GROUPS = 'tagGroups';
     public const PATH_USERS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USERS;
     public const PATH_USER_FIELD_LAYOUTS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USER_FIELD_LAYOUTS;
     public const PATH_USER_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USER_GROUPS;

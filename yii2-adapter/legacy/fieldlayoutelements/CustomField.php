@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
+use craft\events\DefineFieldActionsEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -224,6 +225,26 @@ class CustomField extends BaseField
         }
 
         return $field->getPreviewHtml($element->getFieldValue($field->handle), $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function keywords(): array
+    {
+        $fieldTypeKeyword = [];
+
+        try {
+            $field = $this->getField();
+            // include field type display name in the field layout designer's keywords
+            $fieldTypeKeyword = [$field->displayName()];
+        } catch (\Throwable $e) {
+            // fail silently
+        }
+
+        return array_filter(
+            array_merge(parent::keywords(), $fieldTypeKeyword)
+        );
     }
 
     /**
@@ -735,14 +756,26 @@ class CustomField extends BaseField
         try {
             $field = $this->getField();
         } catch (FieldNotFoundException) {
-            return [];
+            $field = null;
         }
 
-        if (!$field instanceof Actionable) {
-            return [];
+        if ($field instanceof Actionable) {
+            $field->static = $static;
+            $items = $field->getActionMenuItems();
+        } else {
+            $items = [];
         }
 
-        $field->static = $static;
-        return $field->getActionMenuItems();
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $items,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            return $event->items;
+        }
+
+        return $items;
     }
 }

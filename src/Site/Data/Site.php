@@ -31,6 +31,22 @@ use function CraftCms\Cms\t;
 
 final class Site extends Dto implements Chippable, Stringable
 {
+    /**
+     * @var string|null Base URL
+     *
+     * @see getBaseUrl()
+     * @see setBaseUrl()
+     */
+    private ?string $baseUrl;
+
+    /**
+     * @var bool|string Enabled
+     *
+     * @see getEnabled()
+     * @see setEnabled()
+     */
+    private bool|string $enabled;
+
     public function __construct(
         public private(set) string $name,
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
@@ -40,7 +56,7 @@ final class Site extends Dto implements Chippable, Stringable
         public ?int $id = null,
         #[MapInputName('group')]
         public ?int $groupId = null,
-        #[Url] private ?string $baseUrl = null,
+        ?string $baseUrl = null,
         public ?bool $primary = false {
             get => (bool) $this->primary;
         },
@@ -51,8 +67,10 @@ final class Site extends Dto implements Chippable, Stringable
         public ?DateTimeInterface $dateCreated = null,
         #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
         public ?DateTimeInterface $dateUpdated = null,
-        private bool|string $enabled = true
+        bool|string $enabled = true
     ) {
+        $this->setBaseUrl($this->hasUrls ? $baseUrl : null);
+        $this->setEnabled($this->primary ? true : $enabled);
     }
 
     public static function get(int|string $id): ?static
@@ -71,12 +89,12 @@ final class Site extends Dto implements Chippable, Stringable
                 'required',
                 'string',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null) : null,
+                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
             'name' => array_filter([
                 'required',
                 'string',
-                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null) : null,
+                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
         ];
     }

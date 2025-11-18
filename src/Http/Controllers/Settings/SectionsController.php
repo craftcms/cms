@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
@@ -72,24 +73,21 @@ final readonly class SectionsController
             ]);
     }
 
-    public function edit(Request $request, Sections $sections, ?int $sectionId = null): CpScreenResponse
+    public function edit(Sections $sections, SectionModel $section): CpScreenResponse
     {
-        $sectionId ??= $request->input('sectionId');
-
         \Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
-        $section = $sections->getSectionById($sectionId);
-
-        abort_if(is_null($section), 404, "Invalid section ID: $sectionId");
+        $sectionData = $sections->getSectionById($section->id);
+        abort_if(is_null($sectionData), 404, 'Section not found');
 
         return new CpScreenResponse()
-            ->title(trim($section->name) ?: t('Edit Section'))
+            ->title(trim($sectionData->name) ?: t('Edit Section'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
             ->contentTemplate('settings/sections/_edit.twig', [
                 'brandNewSection' => false,
-                'sectionId' => $section->id,
-                'section' => $section,
+                'sectionId' => $sectionData->id,
+                'section' => $sectionData,
                 'typeOptions' => [
                     SectionType::Single->value => SectionType::Single->label(),
                     SectionType::Channel->value => SectionType::Channel->label(),
@@ -121,13 +119,16 @@ final readonly class SectionsController
         Sections $sections,
         Section $section,
     ): Response {
-        $sectionId = $request->input('sectionId');
+        $sectionId = $request->integer('sectionId');
 
         if ($sectionId) {
-            abort_if(is_null($sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
+            $sectionId = (int) $sectionId;
+            abort_if(is_null($sectionData = $sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
+
+            $section->id = $sectionData->id;
+            $section->uid = $sectionData->uid;
         }
 
-        $section->id = $sectionId;
         $section->setEntryTypes($request->array('entryTypes'));
 
         // Site-specific settings

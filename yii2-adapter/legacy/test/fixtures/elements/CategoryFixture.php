@@ -18,6 +18,7 @@ use craft\elements\Category;
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
+ * @deprecated in 6.0.0
  */
 abstract class CategoryFixture extends BaseElementFixture
 {

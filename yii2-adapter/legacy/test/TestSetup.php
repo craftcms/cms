@@ -57,12 +57,15 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config as ConfigFacade;
+use Illuminate\Support\Facades\Event as LaravelEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use yii\base\ErrorException;
@@ -417,6 +420,18 @@ class TestSetup
         }
 
         $site = new Site(...$siteConfig);
+
+        LaravelEvent::listen(PostCreateTables::class, function() {
+            Artisan::call('craft:add-categories-support', [
+                '--force' => true,
+            ]);
+            Artisan::call('craft:add-global-sets-support', [
+                '--force' => true,
+            ]);
+            Artisan::call('craft:add-tags-support', [
+                '--force' => true,
+            ]);
+        });
 
         $migration = new Install(
             username: self::USERNAME,

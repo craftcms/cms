@@ -21,6 +21,7 @@ use craft\helpers\Gql as GqlHelper;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated in 6.0.0
  */
 class GlobalSet extends Mutation
 {

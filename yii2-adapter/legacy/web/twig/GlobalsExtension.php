@@ -16,6 +16,7 @@ use Twig\Extension\GlobalsInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.8
+ * @deprecated in 6.0.0
  */
 class GlobalsExtension extends AbstractExtension implements GlobalsInterface
 {

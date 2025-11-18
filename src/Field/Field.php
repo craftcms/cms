@@ -239,6 +239,7 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
 
     public const array RESERVED_HANDLES = [
         'ancestors',
+        'applyingDraft',
         'archived',
         'attributeLabel',
         'attributes',
@@ -288,12 +289,11 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
         'prevSibling',
         'previewing',
         'propagateAll',
+        'propagateRequired',
         'propagating',
         'ref',
         'relatedToAssets',
-        'relatedToCategories',
         'relatedToEntries',
-        'relatedToTags',
         'relatedToUsers',
         'resaving',
         'revisionId',
@@ -1353,5 +1353,13 @@ JS, [
     public function toArray(): array
     {
         return $this->attributes();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
 }

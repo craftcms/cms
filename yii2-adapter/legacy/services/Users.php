@@ -175,13 +175,13 @@ class Users extends Component
     public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
-     * @event UserSavePhotoEvent The event that is triggered before a user photo is saved.
+     * @event UserPhotoEvent The event that is triggered before a user photo is saved.
      * @since 4.4.0
      */
     public const EVENT_BEFORE_SAVE_USER_PHOTO = 'beforeSaveUserPhoto';
 
     /**
-     * @event UserSavePhotoEvent The event that is triggered after a user photo is saved.
+     * @event UserPhotoEvent The event that is triggered after a user photo is saved.
      * @since 4.4.0
      */
     public const EVENT_AFTER_SAVE_USER_PHOTO = 'afterSaveUserPhoto';

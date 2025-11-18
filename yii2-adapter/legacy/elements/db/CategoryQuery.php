@@ -38,6 +38,7 @@ use CraftCms\Cms\Support\Arr;
  * @replace {twig-method} craft.categories()
  * @replace {myElement} myCategory
  * @replace {element-class} \craft\elements\Category
+ * @deprecated in 6.0.0
  */
 class CategoryQuery extends ElementQuery
 {

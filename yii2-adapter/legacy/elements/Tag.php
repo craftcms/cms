@@ -17,7 +17,6 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
-use CraftCms\Cms\Database\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
@@ -29,6 +28,7 @@ use function CraftCms\Cms\t;
  * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class Tag extends Element
 {
@@ -37,7 +37,7 @@ class Tag extends Element
      */
     public static function displayName(): string
     {
-        return t('Tag');
+        return t('Tag', category: 'yii2-adapter');
     }
 
     /**
@@ -45,7 +45,7 @@ class Tag extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return t('tag');
+        return t('tag', category: 'yii2-adapter');
     }
 
     /**
@@ -53,7 +53,7 @@ class Tag extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return t('Tags');
+        return t('Tags', category: 'yii2-adapter');
     }
 
     /**
@@ -61,7 +61,7 @@ class Tag extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return t('tags');
+        return t('tags', category: 'yii2-adapter');
     }
 
     /**
@@ -363,7 +363,7 @@ class Tag extends Element
         }
 
         // Update the tag record
-        \Illuminate\Support\Facades\DB::table(Table::TAGS)
+        \Illuminate\Support\Facades\DB::table('tags')
             ->where('id', $this->id)
             ->update([
                 'deletedWithGroup' => $this->deletedWithGroup,

@@ -79,12 +79,12 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
                   type: Craft.elementTypeNames['craft\\elements\\Category'][2],
                 })
               )
-            : Craft.t('app', 'New {group} category', {
+            : Craft.t('yii2-adapter', 'New {group} category', {
                 group: selectedGroup.name,
               });
         const ariaLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New category in the {group} category group', {
+            ? Craft.t('yii2-adapter', 'New category in the {group} category group', {
                 group: selectedGroup.name,
               })
             : visibleLabel;
@@ -121,7 +121,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
             'aria-label': Craft.t(
-              'app',
+              'yii2-adapter',
               'New category, choose a category group'
             ),
           }).appendTo(this.$newCategoryBtnGroup);
@@ -134,7 +134,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
                 type: Craft.elementTypeNames['craft\\elements\\Category'][2],
               })
             ),
-            ariaLabel: Craft.t('app', 'New category, choose a category group'),
+            ariaLabel: Craft.t('yii2-adapter', 'New category, choose a category group'),
             spinner: true,
           })
           .addClass('submit add icon menubtn btngroup-btn-last')
@@ -161,7 +161,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
               role: anchorRole === 'button' ? 'button' : null,
               href: '#', // Allows for click listener and tab order
               type: anchorRole === 'button' ? 'button' : null,
-              text: Craft.t('app', 'New {group} category', {
+              text: Craft.t('yii2-adapter', 'New {group} category', {
                 group: group.name,
               }),
             }).appendTo($li);

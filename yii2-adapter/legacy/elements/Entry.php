@@ -1391,6 +1391,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function uiLabel(): ?string
     {
+        if ($this->getType()->uiLabelFormat !== '{title}') {
+            $uiLabel = Craft::$app->getView()->renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+            if ($uiLabel !== '') {
+                return $uiLabel;
+            }
+        }
+
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
             $section = $this->getSection();
             if ($section?->type === SectionType::Single) {

@@ -13,7 +13,6 @@ return new class extends Migration
         \craft\fields\Addresses::class => \CraftCms\Cms\Field\Addresses::class,
         \craft\fields\Assets::class => \CraftCms\Cms\Field\Assets::class,
         \craft\fields\ButtonGroup::class => \CraftCms\Cms\Field\ButtonGroup::class,
-        \craft\fields\Categories::class => \CraftCms\Cms\Field\Categories::class,
         \craft\fields\Checkboxes::class => \CraftCms\Cms\Field\Checkboxes::class,
         \craft\fields\Color::class => \CraftCms\Cms\Field\Color::class,
         \craft\fields\ContentBlock::class => \CraftCms\Cms\Field\ContentBlock::class,
@@ -35,7 +34,6 @@ return new class extends Migration
         \craft\fields\RadioButtons::class => \CraftCms\Cms\Field\RadioButtons::class,
         \craft\fields\Range::class => \CraftCms\Cms\Field\Range::class,
         \craft\fields\Table::class => \CraftCms\Cms\Field\Table::class,
-        \craft\fields\Tags::class => \CraftCms\Cms\Field\Tags::class,
         \craft\fields\Time::class => \CraftCms\Cms\Field\Time::class,
         \craft\fields\Users::class => \CraftCms\Cms\Field\Users::class,
     ];

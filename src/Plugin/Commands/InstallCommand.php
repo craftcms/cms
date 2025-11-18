@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Api;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -26,11 +27,14 @@ final class InstallCommand extends Command
 
     protected Plugins $plugins;
 
-    public function handle(Plugins $plugins): int
+    private Api $api;
+
+    public function handle(Plugins $plugins, Api $api): int
     {
         $this->ensureProjectConfigFileExists();
 
         $this->plugins = $plugins;
+        $this->api = $api;
 
         if ($this->option('all')) {
             return $this->installAll();
@@ -68,6 +72,8 @@ final class InstallCommand extends Command
 
         $this->installPluginByHandle($handle, $edition);
 
+        $this->refreshPluginLicenseInfo();
+
         return self::SUCCESS;
     }
 
@@ -88,6 +94,8 @@ final class InstallCommand extends Command
             $this->installPluginByHandle($handle);
             $this->newLine();
         });
+
+        $this->refreshPluginLicenseInfo();
 
         return self::SUCCESS;
     }
@@ -123,5 +131,18 @@ final class InstallCommand extends Command
     private function installPluginByHandle(string $handle, ?string $edition = null): void
     {
         $this->components->task("Installing $handle", fn () => $this->plugins->installPlugin($handle, $edition));
+    }
+
+    private function refreshPluginLicenseInfo(): void
+    {
+        $this->components->task('Updating license info', function () {
+            try {
+                $this->api->request('GET', 'cms-licenses', [
+                    'query' => ['include' => 'plugins'],
+                ]);
+            } catch (Throwable) {
+                // do nothing
+            }
+        });
     }
 }

@@ -29,6 +29,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0
  */
 class TagsController extends Controller
 {
@@ -43,7 +44,7 @@ class TagsController extends Controller
 
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
-        return $this->renderTemplate('settings/tags/index.twig', [
+        return $this->renderTemplate('yii2-adapter/settings/tags/index.twig', [
             'tagGroups' => $tagGroups,
             'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
@@ -77,13 +78,13 @@ class TagsController extends Controller
                 }
             }
 
-            $title = trim($tagGroup->name) ?: t('Edit Tag Group');
+            $title = trim($tagGroup->name) ?: t('Edit Tag Group', category: 'yii2-adapter');
         } else {
             if ($tagGroup === null) {
                 $tagGroup = new TagGroup();
             }
 
-            $title = t('Create a new tag group');
+            $title = t('Create a new tag group', category: 'yii2-adapter');
         }
 
         // Breadcrumbs
@@ -93,12 +94,12 @@ class TagsController extends Controller
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => t('Tags'),
+                'label' => t('Tags', category: 'yii2-adapter'),
                 'url' => UrlHelper::url('settings/tags'),
             ],
         ];
 
-        return $this->renderTemplate('settings/tags/_edit.twig', [
+        return $this->renderTemplate('yii2-adapter/settings/tags/_edit.twig', [
             'tagGroupId' => $tagGroupId,
             'tagGroup' => $tagGroup,
             'title' => $title,
@@ -141,7 +142,7 @@ class TagsController extends Controller
 
         // Save it
         if (!Craft::$app->getTags()->saveTagGroup($group)) {
-            $this->setFailFlash(t('Couldn’t save the tag group.'));
+            $this->setFailFlash(t('Couldn’t save the tag group.', category: 'yii2-adapter'));
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -151,7 +152,7 @@ class TagsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(t('Tag group saved.'));
+        $this->setSuccessFlash(t('Tag group saved.', category: 'yii2-adapter'));
         return $this->redirectToPostedUrl($group);
     }
 

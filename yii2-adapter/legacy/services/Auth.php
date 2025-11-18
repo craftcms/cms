@@ -31,6 +31,7 @@ use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
@@ -574,7 +575,7 @@ class Auth extends Component
             return false;
         }
 
-        $serverRequest = ServerRequest::fromGlobals();
+        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
         try {
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredential->rawId,
@@ -644,5 +645,34 @@ class Auth extends Component
             'name' => Cms::systemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ]);
+    }
+
+    /**
+     * Builds server request using the Craft-provided data, e.g. host name.
+     *
+     *
+     * @param ServerRequestInterface $defaultServerRequest
+     * @return ServerRequestInterface
+     */
+    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
+    {
+        $uri = $defaultServerRequest->getUri();
+        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
+
+        $serverRequest = new ServerRequest(
+            $defaultServerRequest->getMethod(),
+            $uri,
+            $defaultServerRequest->getHeaders(),
+            $defaultServerRequest->getBody(),
+            $defaultServerRequest->getProtocolVersion(),
+            $_SERVER
+        );
+
+
+        return $serverRequest
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams($_GET)
+            ->withParsedBody($_POST)
+            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

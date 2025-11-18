@@ -19,6 +19,7 @@ use GraphQL\Type\Definition\Type;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated in 6.0.0
  */
 class Category extends Query
 {

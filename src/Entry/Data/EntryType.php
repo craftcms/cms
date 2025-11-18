@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Data;
 
+use Craft;
 use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
@@ -48,20 +49,23 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public ?string $icon = null,
         #[WithCastable(Color::class)]
         public ?Color $color = null,
+        public string $uiLabelFormat = '{title}',
         public bool $hasTitleField = true,
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
         public ?string $titleFormat = null,
-        public bool $showSlugField = true,
+        public ?bool $showSlugField = true,
         public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
         public ?string $slugTranslationKeyFormat = null,
-        public bool $showStatusField = true,
+        public ?bool $showStatusField = true,
         public ?string $uid = null,
         public bool $validateHandleUniqueness = true,
         public ?string $group = null,
         public ?self $original = null,
     ) {
         $this->fieldLayoutId = $fieldLayoutId;
+        $this->showSlugField = (bool) $showSlugField;
+        $this->showStatusField = (bool) $showStatusField;
 
         if ($this->titleFormat === '') {
             $this->titleFormat = null;
@@ -181,7 +185,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
             'label' => t('Entry type settings'),
         ]];
 
-        $view = \Craft::$app->getView();
+        $view = Craft::$app->getView();
         $view->registerJsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
 new Craft.CpScreenSlideout('entry-types/edit', {
@@ -235,7 +239,7 @@ JS, [
         ];
 
         if ($validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null);
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null)->withoutTrashed('dateDeleted');
         }
 
         return $rules;
@@ -296,6 +300,7 @@ JS, [
             'description' => $this->description ?: null,
             'icon' => $this->icon || $this->icon === '0' ? $this->icon : null,
             'color' => $this->color?->value,
+            'uiLabelFormat' => $this->uiLabelFormat,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,

@@ -2,52 +2,124 @@
 
 namespace CraftCms\Yii2Adapter;
 
+use Craft;
 use craft\console\controllers\HelpController;
+use craft\elements\Category;
+use craft\elements\GlobalSet;
+use craft\elements\Tag;
+use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\DefineGqlArgumentsEvent;
 use craft\events\EditionChangeEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterCpNavItemsEvent;
+use craft\events\RegisterCpSettingsEvent;
+use craft\events\RegisterGqlArgumentHandlersEvent;
+use craft\events\RegisterGqlEagerLoadableFields;
+use craft\events\RegisterGqlMutationsEvent;
+use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlSchemaComponentsEvent;
+use craft\events\RegisterGqlTypesEvent;
+use craft\events\RegisterTemplateRootsEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\fieldlayoutelements\TitleField;
+use craft\fields\Categories as CategoriesField;
+use craft\fields\linktypes\Category as CategoryLinkType;
+use craft\fields\Tags as TagsField;
+use craft\gql\ArgumentManager;
+use craft\gql\base\ElementArguments;
+use craft\gql\ElementQueryConditionBuilder;
+use craft\gql\handlers\RelatedCategories;
+use craft\gql\handlers\RelatedTags;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
+use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
+use craft\gql\interfaces\elements\Tag as TagInterface;
+use craft\gql\mutations\Category as CategoryMutation;
+use craft\gql\mutations\GlobalSet as GlobalSetMutation;
+use craft\gql\mutations\Tag as TagMutation;
+use craft\gql\queries\Category as CategoryQuery;
+use craft\gql\queries\GlobalSet as GlobalSetQuery;
+use craft\gql\queries\Tag as TagQuery;
+use craft\gql\types\input\criteria\CategoryRelation;
+use craft\gql\types\input\criteria\TagRelation;
+use craft\helpers\Queue;
+use craft\models\CategoryGroup;
+use craft\models\FieldLayout;
+use craft\models\TagGroup;
+use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
 use craft\services\Dashboard;
 use craft\services\Drafts;
+use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Gc;
+use craft\services\Gql;
 use craft\services\Plugins as LegacyPlugins;
-use craft\services\ProjectConfig;
+use craft\services\ProjectConfig as LegacyProjectConfig;
 use craft\services\Revisions;
 use craft\services\Routes;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
+use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
+use craft\web\twig\GlobalsExtension;
+use craft\web\twig\variables\Cp as CpVariable;
+use craft\web\UrlManager;
+use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
+use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
+use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
+use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
+use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
+use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
+use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropCategoriesSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
+use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
+use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
+use yii\base\Event as YiiEvent;
 use yii\BaseYii;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 use Yiisoft\Translator\Translator;
+use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -129,9 +201,9 @@ class Yii2ServiceProvider extends ServiceProvider
         Field::macro('trigger', function($name, mixed $event = null): void {
             Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
 
-            $event ??= new \yii\base\Event();
+            $event ??= new YiiEvent();
 
-            \yii\base\Event::trigger($this, $name, $event);
+            YiiEvent::trigger($this, $name, $event);
 
             $this->dispatchComponentEvent($name, $event);
         });
@@ -177,6 +249,7 @@ class Yii2ServiceProvider extends ServiceProvider
             \Craft::$app = $app;
 
             $this->bootEvents();
+            self::bootYiiEvents();
 
             return $app;
         });
@@ -208,7 +281,14 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->commands([
+            AddCategoriesSupportCommand::class,
+            AddGlobalSetsSupportCommand::class,
+            AddTagsSupportCommand::class,
+            DropCategoriesSupportCommand::class,
+            DropGlobalSetsSupportCommand::class,
+            DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
+            RepairCategoryGroupStructureCommand::class,
         ]);
 
         /**
@@ -232,6 +312,16 @@ class Yii2ServiceProvider extends ServiceProvider
                 new IntlMessageFormatter(),
             ));
         }
+
+        /**
+         * Load legacy translations
+         */
+        $translator = app(Translator::class);
+        $translator->addCategorySources(new CategorySource(
+            'yii2-adapter',
+            new MessageSource(dirname(__DIR__) . '/resources/translations'),
+            new IntlMessageFormatter(),
+        ));
 
         /**
          * Load Craft
@@ -360,7 +450,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
-        ProjectConfig::registerEvents();
+        LegacyProjectConfig::registerEvents();
         Revisions::registerEvents();
         Routes::registerEvents();
         Sites::registerEvents();
@@ -397,6 +487,647 @@ class Yii2ServiceProvider extends ServiceProvider
         Event::listen(Logout::class, function() {
             app('Craft')->getUser()->setIdentity(null);
         });
+
+        /**
+         * Deprecated concepts
+         */
+
+        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
+            if (self::supportsCategories()) {
+                $event->types->add(CategoriesField::class);
+            }
+            if (self::supportsTags()) {
+                $event->types->add(TagsField::class);
+            }
+        });
+
+        Event::listen(RegisterLinkTypes::class, function(RegisterLinkTypes $event) {
+            if (self::supportsCategories()) {
+                $event->types[] = CategoryLinkType::class;
+            }
+        });
+
+        Event::listen(RunningGarbageCollection::class, function(RunningGarbageCollection $event) {
+            $gc = app(GarbageCollection::class);
+            $gc->runActions([
+                [HardDelete::class, [
+                    'tables' => [
+                        'categorygroups',
+                        'taggroups',
+                    ],
+                ]],
+                [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']],
+                [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
+                [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
+                [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']],
+            ]);
+        });
+
+        Event::listen(SiteSaved::class, function(SiteSaved $event) {
+            if (!$event->isNew || !$event->oldPrimarySiteId) {
+                return;
+            }
+
+            if (self::supportsCategories()) {
+                $projectConfig = app(ProjectConfig::class);
+                $oldPrimarySiteUid = DB::table(Table::SITES)->uidById($event->oldPrimarySiteId);
+                $existingCategorySettings = $projectConfig->get(LegacyProjectConfig::PATH_CATEGORY_GROUPS);
+
+                if (!$projectConfig->isApplyingExternalChanges && is_array($existingCategorySettings)) {
+                    foreach ($existingCategorySettings as $categoryUid => $settings) {
+                        $projectConfig->set(
+                            path: LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $event->site->uid,
+                            value: $settings['siteSettings'][$oldPrimarySiteUid],
+                            message: 'Copy site settings for category groups',
+                        );
+                    }
+                }
+            }
+
+            $elementTypes = array_keys(array_filter([
+                Category::class => self::supportsCategories(),
+                GlobalSet::class => self::supportsGlobalSets(),
+                Tag::class => self::supportsTags(),
+            ]));
+
+            foreach ($elementTypes as $elementType) {
+                Queue::push(new PropagateElements([
+                    'elementType' => $elementType,
+                    'criteria' => [
+                        'siteId' => $event->oldPrimarySiteId,
+                    ],
+                    'siteId' => $event->site->id,
+                    'isNewSite' => true,
+                ]));
+            }
+        });
+
+        Event::listen(RebuildConfig::class, function(RebuildConfig $event) {
+            if (self::supportsCategories()) {
+                $event->config[LegacyProjectConfig::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
+            }
+            if (self::supportsGlobalSets()) {
+                $event->config[LegacyProjectConfig::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
+            }
+            if (self::supportsTags()) {
+                $event->config[LegacyProjectConfig::PATH_TAG_GROUPS] = $this->_getTagGroupData();
+            }
+        });
+    }
+
+    /**
+     * Return category group data config array.
+     */
+    private function _getCategoryGroupData(): array
+    {
+        return collect(Craft::$app->getCategories()->getAllGroups())
+            ->mapWithKeys(fn(CategoryGroup $group) => [$group->uid => $group->getConfig()])
+            ->all();
+    }
+
+    /**
+     * Return tag group data config array.
+     */
+    private function _getTagGroupData(): array
+    {
+        return collect(Craft::$app->getTags()->getAllTagGroups())
+            ->mapWithKeys(fn(TagGroup $group) => [$group->uid => $group->getConfig()])
+            ->all();
+    }
+
+    /**
+     * Return global set data config array.
+     */
+    private function _getGlobalSetData(): array
+    {
+        return collect(Craft::$app->getGlobals()->getAllSets())
+            ->mapWithKeys(fn(GlobalSet $globalSet) => [$globalSet->uid => $globalSet->getConfig()])
+            ->all();
+    }
+
+    public static function bootYiiEvents(): void
+    {
+        YiiEvent::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->types[] = Category::class;
+                }
+                if (self::supportsGlobalSets()) {
+                    $event->types[] = GlobalSet::class;
+                }
+                if (self::supportsTags()) {
+                    $event->types[] = Tag::class;
+                }
+            },
+        );
+
+        YiiEvent::on(
+            ArgumentManager::class,
+            ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS,
+            function(RegisterGqlArgumentHandlersEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->handlers['relatedToCategories'] = RelatedCategories::class;
+                }
+                if (self::supportsTags()) {
+                    $event->handlers['relatedToTags'] = RelatedTags::class;
+                }
+            },
+        );
+
+        YiiEvent::on(
+            /** @phpstan-ignore-next-line */
+            ElementArguments::class,
+            ElementArguments::EVENT_DEFINE_ARGUMENTS,
+            function(DefineGqlArgumentsEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->arguments['relatedToCategories'] = [
+                        'name' => 'relatedToCategories',
+                        // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                        'type' => Type::listOf(CategoryRelation::getType()),
+                        'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
+                    ];
+                }
+                if (self::supportsTags()) {
+                    $event->arguments['relatedToTags'] = [
+                        'name' => 'relatedToTags',
+                        // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                        'type' => Type::listOf(TagRelation::getType()),
+                        'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
+                    ];
+                }
+            },
+        );
+
+        YiiEvent::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
+            function(RegisterGqlSchemaComponentsEvent $event) {
+                if (self::supportsCategories()) {
+                    $label = t('Categories');
+                    [$event->queries[$label], $event->mutations[$label]] = self::categorySchemaComponents();
+                }
+
+                if (self::supportsGlobalSets()) {
+                    $label = t('Global Sets', category: 'yii2-adapter');
+                    [$event->queries[$label], $event->mutations[$label]] = self::globalSetSchemaComponents();
+                }
+
+                if (self::supportsTags()) {
+                    $label = t('Tags', category: 'yii2-adapter');
+                    [$event->queries[$label], $event->mutations[$label]] = self::tagSchemaComponents();
+                }
+            },
+        );
+
+        YiiEvent::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_QUERIES,
+            function(RegisterGqlQueriesEvent $event) {
+                if (self::supportsCategories()) {
+                    array_push($event->queries, ...CategoryQuery::getQueries());
+                }
+                if (self::supportsGlobalSets()) {
+                    array_push($event->queries, ...GlobalSetQuery::getQueries());
+                }
+                if (self::supportsTags()) {
+                    array_push($event->queries, ...TagQuery::getQueries());
+                }
+            },
+        );
+
+        YiiEvent::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_MUTATIONS,
+            function(RegisterGqlMutationsEvent $event) {
+                if (self::supportsCategories()) {
+                    array_push($event->mutations, ...CategoryMutation::getMutations());
+                }
+                if (self::supportsGlobalSets()) {
+                    array_push($event->mutations, ...GlobalSetMutation::getMutations());
+                }
+                if (self::supportsTags()) {
+                    array_push($event->mutations, ...TagMutation::getMutations());
+                }
+            },
+        );
+
+        YiiEvent::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_TYPES,
+            function(RegisterGqlTypesEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->types[] = CategoryInterface::class;
+                }
+                if (self::supportsGlobalSets()) {
+                    $event->types[] = GlobalSetInterface::class;
+                }
+                if (self::supportsTags()) {
+                    $event->types[] = TagInterface::class;
+                }
+            },
+        );
+
+        YiiEvent::on(
+            ElementQueryConditionBuilder::class,
+            ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS,
+            function(RegisterGqlEagerLoadableFields $event) {
+                if (self::supportsCategories()) {
+                    $event->fieldList[ElementQueryConditionBuilder::LOCALIZED_NODENAME][] = CategoriesField::class;
+                }
+            },
+        );
+
+        YiiEvent::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function(RegisterUserPermissionsEvent $event) {
+                if (self::supportsCategories()) {
+                    self::categoryPermissions($event->permissions);
+                }
+                if (self::supportsGlobalSets()) {
+                    self::globalSetPermissions($event->permissions);
+                }
+            },
+        );
+
+        YiiEvent::on(
+            CpVariable::class,
+            CpVariable::EVENT_REGISTER_CP_NAV_ITEMS,
+            function(RegisterCpNavItemsEvent $event) {
+                $newItems = [];
+
+                if (
+                    self::supportsGlobalSets() &&
+                    !empty(Craft::$app->getGlobals()->getEditableSets())
+                ) {
+                    $newItems[] = [
+                        'label' => t('Globals', category: 'yii2-adapter'),
+                        'url' => 'globals',
+                        'icon' => 'globe',
+                    ];
+                }
+                if (
+                    self::supportsCategories() &&
+                    Craft::$app->getCategories()->getEditableGroupIds()
+                ) {
+                    $newItems[] = [
+                        'label' => t('Categories'),
+                        'url' => 'categories',
+                        'icon' => 'sitemap',
+                    ];
+                }
+
+                if (!empty($newItems)) {
+                    // Find the last item with a "content/" URL
+                    $lastContentKey = array_find_key($event->navItems, fn(array $item, int $key) => (
+                        str_starts_with($item['url'], 'content/') &&
+                        (!isset($event->navItems[$key + 1]) || !str_starts_with($event->navItems[$key + 1]['url'], 'content/'))
+                    ));
+
+                    if ($lastContentKey !== null) {
+                        array_splice($event->navItems, $lastContentKey + 1, 0, $newItems);
+                    } else {
+                        array_push($event->navItems, ...$newItems);
+                    }
+                }
+            },
+        );
+
+        YiiEvent::on(
+            CpVariable::class,
+            Cms::config()->allowAdminChanges ? CpVariable::EVENT_REGISTER_CP_SETTINGS : CpVariable::EVENT_REGISTER_READ_ONLY_CP_SETTINGS,
+            function(RegisterCpSettingsEvent $event) {
+                $label = t('Content');
+                if (self::supportsGlobalSets()) {
+                    $event->settings[$label]['globals'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/globe.svg',
+                        'label' => t('Globals', category: 'yii2-adapter'),
+                    ];
+                }
+                if (self::supportsCategories()) {
+                    $event->settings[$label]['categories'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
+                        'label' => t('Categories'),
+                    ];
+                }
+                if (self::supportsTags()) {
+                    $event->settings[$label]['tags'] = [
+                        'iconMask' => '@craftcms/resources/icons/light/tags.svg',
+                        'label' => t('Tags', category: 'yii2-adapter'),
+                    ];
+                }
+            },
+        );
+
+        YiiEvent::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function(RegisterUrlRulesEvent $event) {
+                if (self::supportsCategories()) {
+                    $event->rules += [
+                        'categories' => 'categories/category-index',
+                        'categories/<groupHandle:{handle}>' => 'categories/category-index',
+                        'categories/<groupHandle:{handle}>/new' => 'categories/create',
+                        'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+                        'settings/categories' => 'categories/group-index',
+                        'settings/categories/new' => 'categories/edit-category-group',
+                        'settings/categories/<groupId:\d+>' => 'categories/edit-category-group',
+                    ];
+                }
+
+                if (self::supportsGlobalSets()) {
+                    $event->rules += [
+                        'globals' => 'globals',
+                        'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
+                        'settings/globals' => 'system-settings/global-set-index',
+                        'settings/globals/new' => 'system-settings/edit-global-set',
+                        'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
+                    ];
+                }
+
+                if (self::supportsTags()) {
+                    $event->rules += [
+                        'settings/tags' => 'tags/index',
+                        'settings/tags/new' => 'tags/edit-tag-group',
+                        'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
+                    ];
+                }
+            },
+        );
+
+        YiiEvent::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) {
+            $event->roots['yii2-adapter'] = dirname(__DIR__) . '/resources/templates';
+        });
+
+        if (self::supportsCategories()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleChangedCategoryGroup($event))
+                ->onUpdate(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleChangedCategoryGroup($event))
+                ->onRemove(LegacyProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', fn($event) => Craft::$app->getCategories()->handleDeletedCategoryGroup($event));
+        }
+
+        if (self::supportsGlobalSets()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleChangedGlobalSet($event))
+                ->onUpdate(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleChangedGlobalSet($event))
+                ->onRemove(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleDeletedGlobalSet($event));
+
+            Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+        }
+
+        YiiEvent::on(
+            FieldLayout::class,
+            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
+            function(DefineFieldLayoutFieldsEvent $event) {
+                /** @var FieldLayout $fieldLayout */
+                $fieldLayout = $event->sender;
+                switch ($fieldLayout->type) {
+                    case Category::class:
+                    case Tag::class:
+                        $event->fields[] = TitleField::class;
+                        break;
+                }
+            },
+        );
+
+        if (self::supportsTags()) {
+            app(ProjectConfig::class)
+                ->onAdd(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleChangedTagGroup($event))
+                ->onUpdate(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleChangedTagGroup($event))
+                ->onRemove(LegacyProjectConfig::PATH_TAG_GROUPS . '.{uid}', fn($event) => Craft::$app->getTags()->handleDeletedTagGroup($event));
+        }
+    }
+
+    private static ?bool $supportsCategories = null;
+    private static ?bool $supportsGlobalSets = null;
+    private static ?bool $supportsTags = null;
+
+    public static function supportsCategories(): bool
+    {
+        return self::$supportsCategories ??= self::supports('categories');
+    }
+
+    public static function supportsGlobalSets(): bool
+    {
+        return self::$supportsGlobalSets ??= self::supports('globalsets');
+    }
+
+    public static function supportsTags(): bool
+    {
+        return self::$supportsTags ??= self::supports('tags');
+    }
+
+    private static function supports(string $table): bool
+    {
+        try {
+            return Schema::hasTable($table);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public static function resetSupport(): void
+    {
+        self::$supportsCategories = null;
+        self::$supportsGlobalSets = null;
+        self::$supportsTags = null;
+    }
+
+    /**
+     * Return category group permissions.
+     *
+     * @return array
+     */
+    private static function categorySchemaComponents(): array
+    {
+        $queryComponents = [];
+        $mutationComponents = [];
+
+        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
+
+        if (!empty($categoryGroups)) {
+            foreach ($categoryGroups as $categoryGroup) {
+                $name = t($categoryGroup->name, category: 'site');
+                $prefix = "categorygroups.$categoryGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => t('Query for categories in the “{name}” category group', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => t('Edit categories in the “{categoryGroup}” category group', [
+                        'categoryGroup' => $name,
+                    ], 'yii2-adapter'),
+                    'nested' => [
+                        "$prefix:save" => [
+                            'label' => t('Save categories in the “{categoryGroup}” category group', [
+                                'categoryGroup' => $name,
+                            ], 'yii2-adapter'),
+                        ],
+                        "$prefix:delete" => [
+                            'label' => t('Delete categories from the “{categoryGroup}” category group', [
+                                'categoryGroup' => $name,
+                            ], 'yii2-adapter'),
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        return [$queryComponents, $mutationComponents];
+    }
+
+    /**
+     * Return global set permissions.
+     *
+     * @return array
+     */
+    private static function globalSetSchemaComponents(): array
+    {
+        $queryComponents = [];
+        $mutationComponents = [];
+
+        $globalSets = Craft::$app->getGlobals()->getAllSets();
+
+        if (!empty($globalSets)) {
+            foreach ($globalSets as $globalSet) {
+                $name = t($globalSet->name, category: 'site');
+                $prefix = "globalsets.$globalSet->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => t('Query for the “{name}” global set', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => t('Edit the “{globalSet}” global set.', [
+                        'globalSet' => $name,
+                    ], 'yii2-adapter'),
+                ];
+            }
+        }
+
+        return [$queryComponents, $mutationComponents];
+    }
+
+    /**
+     * Return tag group permissions.
+     *
+     * @return array
+     */
+    private static function tagSchemaComponents(): array
+    {
+        $queryComponents = [];
+        $mutationComponents = [];
+
+        $tagGroups = Craft::$app->getTags()->getAllTagGroups();
+
+        if (!empty($tagGroups)) {
+            foreach ($tagGroups as $tagGroup) {
+                $name = t($tagGroup->name, category: 'site');
+                $prefix = "taggroups.$tagGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => t('Query for tags in the “{name}” tag group', [
+                        'name' => $name,
+                    ], 'yii2-adapter'),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => t('Edit tags in the “{tagGroup}” tag group', [
+                        'tagGroup' => $name,
+                    ], 'yii2-adapter'),
+                    'nested' => [
+                        "$prefix:save" => [
+                            'label' => t('Save tags in the “{tagGroup}” tag group', [
+                                'tagGroup' => $name,
+                            ], 'yii2-adapter'),
+                        ],
+                        "$prefix:delete" => [
+                            'label' => t('Delete tags from the “{tagGroup}” tag group', [
+                                'tagGroup' => $name,
+                            ], 'yii2-adapter'),
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        return [$queryComponents, $mutationComponents];
+    }
+
+    private static function categoryPermissions(array &$permissions): void
+    {
+        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
+
+        if (!$categoryGroups) {
+            return;
+        }
+
+        $type = Category::pluralLowerDisplayName();
+
+        foreach ($categoryGroups as $group) {
+            $permissions[] = [
+                'heading' => t('Category Group - {name}', [
+                    'name' => t($group->name, category: 'site'),
+                ], 'yii2-adapter'),
+                'permissions' => [
+                    "viewCategories:$group->uid" => [
+                        'label' => mb_ucfirst(t('View {type}', ['type' => $type])),
+                        'nested' => [
+                            "saveCategories:$group->uid" => [
+                                'label' => mb_ucfirst(t('Save {type}', ['type' => $type])),
+                            ],
+                            "deleteCategories:$group->uid" => [
+                                'label' => mb_ucfirst(t('Delete {type}', ['type' => $type])),
+                            ],
+                            "viewPeerCategoryDrafts:$group->uid" => [
+                                'label' => mb_ucfirst(t('View other users’ {type}', [
+                                    'type' => t('drafts'),
+                                ])),
+                                'nested' => [
+                                    "savePeerCategoryDrafts:$group->uid" => [
+                                        'label' => mb_ucfirst(t('Save other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ])),
+                                    ],
+                                    "deletePeerCategoryDrafts:$group->uid" => [
+                                        'label' => t('Delete other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ]),
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ];
+        }
+    }
+
+    private static function globalSetPermissions(array &$permissions): void
+    {
+        $globalSets = Craft::$app->getGlobals()->getAllSets();
+
+        if (!$globalSets) {
+            return;
+        }
+
+        $globalSetPermissions = [];
+
+        foreach ($globalSets as $globalSet) {
+            $globalSetPermissions["editGlobalSet:$globalSet->uid"] = [
+                'label' => t('Edit “{title}”', [
+                    'title' => t($globalSet->name, category: 'site'),
+                ]),
+            ];
+        }
+
+        $permissions[] = [
+            'heading' => t('Global Sets', category: 'yii2-adapter'),
+            'permissions' => $globalSetPermissions,
+        ];
     }
 
     /**
