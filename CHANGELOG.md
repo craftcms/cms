@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.20 - 2025-11-18
 
 - Plugin licenses are now assigned immediately when installed via the `plugin/install` command. ([#17871](https://github.com/craftcms/cms/issues/17871))
 - Improved drag-n-drop performance. ([#18019](https://github.com/craftcms/cms/pull/18019))
