@@ -37,10 +37,6 @@
 
 <style scoped>
   .modal {
-    display: grid;
-    overflow: hidden;
-    align-content: center;
-    justify-content: center;
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     box-shadow: var(--c-modal-shadow);
@@ -49,6 +45,7 @@
     border: var(--c-modal-border);
     position: relative;
     z-index: 1;
+    overflow-y: scroll;
   }
 
   .overlay {
