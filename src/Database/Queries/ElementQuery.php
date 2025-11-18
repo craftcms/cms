@@ -856,9 +856,6 @@ class ElementQuery
 
     protected function elementQueryBeforeQuery(): void
     {
-        // Is the query already doomed?
-        throw_if(isset($this->id) && empty($this->id), QueryAbortedException::class);
-
         // Give other classes a chance to make changes up front
         /*if (!$this->beforePrepare()) {
             throw new QueryAbortedException();

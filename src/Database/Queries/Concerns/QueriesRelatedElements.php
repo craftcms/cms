@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
-use craft\db\QueryAbortedException;
-use craft\elements\db\ElementRelationParamParser;
+use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 /**
@@ -47,20 +47,18 @@ trait QueriesRelatedElements
                 return;
             }
 
-            $parser = new ElementRelationParamParser([
-                'fields' => $elementQuery->customFields ? Arr::keyBy(
-                    $elementQuery->customFields,
-                    fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
-                ) : [],
-            ]);
-
-            $condition = $parser->parse($elementQuery->relatedTo, $elementQuery->siteId !== '*' ? $elementQuery->siteId : null);
-
-            if ($condition === false) {
-                throw new QueryAbortedException;
-            }
-
-            $elementQuery->subQuery->where($condition);
+            new ElementRelationParamFilter(
+                fields: $elementQuery->customFields
+                    ? Arr::keyBy(
+                        $elementQuery->customFields,
+                        fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+                    )
+                    : []
+            )->apply(
+                query: $elementQuery->subQuery,
+                relatedToParam: $elementQuery->relatedTo,
+                siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
+            );
         });
     }
 
@@ -73,21 +71,20 @@ trait QueriesRelatedElements
 
             $notRelatedToParam = $elementQuery->notRelatedTo;
 
-            $parser = new ElementRelationParamParser([
-                'fields' => $elementQuery->customFields ? Arr::keyBy(
-                    $elementQuery->customFields,
-                    fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
-                ) : [],
-            ]);
-
-            $condition = $parser->parse($notRelatedToParam, $elementQuery->siteId !== '*' ? $elementQuery->siteId : null);
-
-            if ($condition === false) {
-                // just don't modify the query
-                return;
-            }
-
-            $elementQuery->subQuery->whereNot($condition);
+            $elementQuery->subQuery->whereNot(function (Builder $query) use ($notRelatedToParam, $elementQuery) {
+                new ElementRelationParamFilter(
+                    fields: $elementQuery->customFields
+                        ? Arr::keyBy(
+                            $elementQuery->customFields,
+                            fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+                        )
+                        : []
+                )->apply(
+                    query: $query,
+                    relatedToParam: $notRelatedToParam,
+                    siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
+                );
+            });
         });
     }
 
@@ -226,7 +223,7 @@ trait QueriesRelatedElements
         }
 
         // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
-        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($currentValue);
+        $relatedTo = ElementRelationParamFilter::normalizeRelatedToParam($currentValue);
         $criteriaCount = count($relatedTo) - 1;
 
         // Not possible to switch from `or` to `and` if there are multiple criteria
@@ -235,7 +232,7 @@ trait QueriesRelatedElements
         }
 
         $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
-        $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
+        $relatedTo[] = ElementRelationParamFilter::normalizeRelatedToCriteria($value);
 
         return $relatedTo;
     }
