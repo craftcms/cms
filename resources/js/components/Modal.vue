@@ -10,6 +10,7 @@
   );
 
   const overlayActive = ref(false);
+  const contentDelay = props.overlay ? 200 : 0;
 
   watch(
     () => props.isActive,
@@ -17,7 +18,7 @@
       if (newValue) {
         setTimeout(() => {
           overlayActive.value = newValue;
-        }, 200);
+        }, contentDelay);
       }
     }
   );
@@ -54,8 +55,8 @@
     background-color: rgba(0, 0, 0, 0.5);
   }
 
-  /* Tone down the animation to avoid vestibular motion triggers. */
-  @media (prefers-reduced-motion: reduce) {
+  /* Only animate when the user is cool with it */
+  @media (prefers-reduced-motion: no-preference) {
     .body-enter-active {
       animation: body-in 200ms;
     }
@@ -66,7 +67,7 @@
     @keyframes body-in {
       0% {
         opacity: 0;
-        transform: scale(0.9) translateY(3rem);
+        transform: scale(0.9) translateY(2rem);
       }
       100% {
         opacity: 1;
