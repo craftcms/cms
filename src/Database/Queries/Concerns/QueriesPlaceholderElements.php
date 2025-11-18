@@ -81,6 +81,6 @@ trait QueriesPlaceholderElements
             return $condition;
         }
 
-        return fn (Builder $q) => $q->where($condition($q))->orWhere($this->placeholderCondition);
+        return fn (Builder $q) => $q->where($condition)->orWhere($this->placeholderCondition);
     }
 }
