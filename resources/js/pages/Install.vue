@@ -281,8 +281,9 @@
     background-color: var(--c-color-neutral-bg-subtle);
     border-radius: var(--c-radius-full);
     padding: 0;
-    width: 0.6rem;
-    height: 0.6rem;
+    width: calc(10rem / 16);
+    height: calc(10rem / 16);
+    flex-shrink: 0;
   }
 
   .dot--active {

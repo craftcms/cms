@@ -2,6 +2,7 @@
   import {t} from '@craftcms/cp';
   import {computed, defineEmits, defineProps} from 'vue';
   import Callout from '@/components/Callout.vue';
+  import {useFocusField} from '@/composables/useFocusField';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: any): void;
@@ -34,6 +35,8 @@
     {value: 'mysql', label: 'MySQL'},
     {value: 'pgsql', label: 'PostgreSQL'},
   ];
+
+  useFocusField('db-driver');
 </script>
 
 <template>
@@ -53,6 +56,7 @@
         id="db-driver"
         .modelValue="model.driver"
         @model-value-changed="handleUpdate"
+        ref="db-driver"
       >
         <select slot="input">
           <option

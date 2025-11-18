@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\helpers\App;
-use craft\web\assets\installer\InstallerAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -81,19 +80,6 @@ final readonly class InstallController
                 'name' => $locale->getDisplayName(Craft::$app->language),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ]);
-
-        if (request()->has('legacy')) {
-            // @TODO remove
-            Craft::$app->getView()->registerAssetBundle(InstallerAsset::class);
-
-            return response(Craft::$app->getView()->renderPageTemplate('_special/install/index.twig', compact(
-                'showDbScreen',
-                'license',
-                'defaultSystemName',
-                'defaultSiteUrl',
-                'defaultSiteLanguage',
-            )));
-        }
 
         return Inertia::render('Install', [
             'showDbScreen' => $showDbScreen,
