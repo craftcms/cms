@@ -41,9 +41,4 @@ final readonly class Cms
 
         return $name ?: config('app.name', 'Craft');
     }
-
-    public static function cpLocale(): string
-    {
-        return config('app.locale', 'en-US');
-    }
 }
