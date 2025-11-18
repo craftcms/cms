@@ -49,7 +49,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 
     public function isAdmin(): bool
     {
-        return $this->admin;
+        return (bool) $this->admin;
     }
 
     /**

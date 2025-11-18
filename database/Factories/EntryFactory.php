@@ -69,4 +69,22 @@ final class EntryFactory extends Factory
             'id' => $attributes['id']->set('enabled', ! $disabled),
         ]);
     }
+
+    public function pending(bool $pending = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'postDate' => $pending
+                ? fake()->dateTimeBetween('+1 day', '+1 year')
+                : fake()->dateTime(),
+        ]);
+    }
+
+    public function expired(bool $expired = true): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'expiryDate' => $expired
+                ? fake()->dateTime()
+                : fake()->dateTimeBetween('+1 day', '+1 year'),
+        ]);
+    }
 }
