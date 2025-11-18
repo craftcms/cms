@@ -48,7 +48,7 @@ final readonly class InstallController
         }
     }
 
-    public function index(): Response|\Inertia\Response
+    public function index(): \Inertia\Response
     {
         try {
             DB::reconnect()->getPdo();
