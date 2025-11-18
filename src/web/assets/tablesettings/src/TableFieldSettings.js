@@ -228,8 +228,10 @@
       }
 
       this.fieldSettings.initColumnSettingInputs(this.$tbody);
-      this.sorter.settings.onSortChange =
-        this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      if (this.sorter) {
+        this.sorter.settings.onSortChange =
+          this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      }
       return true;
     },
 
