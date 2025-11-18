@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {css, html} from 'lit';
 import {state} from 'lit/decorators.js';
 import {LionInput} from '@lion/ui/input.js';
 import {inputStyles} from '../../styles/form.styles.js';
@@ -41,6 +41,7 @@ export default class CraftInputPassword extends LionInput {
   renderSuffix = () => {
     return html`
       <craft-button
+        type="button"
         icon
         size="small"
         variant="plain"

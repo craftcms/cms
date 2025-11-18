@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\helpers\App;
-use craft\web\assets\installer\InstallerAsset;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
@@ -15,6 +15,7 @@ use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -47,7 +48,7 @@ final readonly class InstallController
         }
     }
 
-    public function index(): Response
+    public function index(): \Inertia\Response
     {
         try {
             DB::reconnect()->getPdo();
@@ -60,38 +61,41 @@ final readonly class InstallController
             }
         }
 
-        Craft::$app->getView()->registerAssetBundle(InstallerAsset::class);
-
         // Grab the license text
         $licensePath = Aliases::get('@craftcms/LICENSE.md');
         $license = file_get_contents($licensePath);
+        $licenseHtml = Str::markdown($license);
 
         // Guess the site name based on the server name
         $defaultSystemName = $this->defaultSiteName();
         $defaultSiteUrl = $this->defaultSiteUrl();
         $defaultSiteLanguage = $this->defaultSiteLanguage();
+        $locales = I18N::getAllLocales();
+        $dbConfig = DB::getConfig();
+        $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
 
-        return response(Craft::$app->getView()->renderPageTemplate('_special/install/index.twig', compact(
-            'showDbScreen',
-            'license',
-            'defaultSystemName',
-            'defaultSiteUrl',
-            'defaultSiteLanguage',
-        )));
+        $localeOptions = collect($locales)
+            ->map(fn ($locale) => [
+                'id' => $locale->id,
+                'name' => $locale->getDisplayName(Craft::$app->language),
+                'selected' => $locale->id === $defaultSiteLanguage,
+            ]);
+
+        return Inertia::render('Install', [
+            'showDbScreen' => $showDbScreen,
+            'postCpLoginRedirect' => $postCpLoginRedirect,
+            'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
+            'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'defaultSystemName' => $defaultSystemName,
+            'defaultSiteUrl' => $defaultSiteUrl,
+            'defaultSiteLanguage' => $defaultSiteLanguage,
+            'dbConfig' => $dbConfig,
+        ]);
     }
 
     public function validateDb(Request $request): Response
     {
-        try {
-            $data = $this->validateDbData($request);
-        } catch (ValidationException $e) {
-            /**
-             * @TODO: Laravel uses status code 422, the frontend should be adjusted to handle this
-             */
-            return new JsonResponse([
-                'errors' => $e->errors(),
-            ], 400);
-        }
+        $data = $this->validateDbData($request->input());
 
         Config::set("database.connections.{$data['driver']}", array_merge(
             Config::get("database.connections.{$data['driver']}"),
@@ -119,44 +123,33 @@ final readonly class InstallController
         return $validates ?
             new JsonResponse :
             new JsonResponse([
+                'message' => 'Could not connect to the database.',
                 'errors' => $errors,
-            ], 400); // TODO: adjust frontend for 422
+            ], 422);
     }
 
-    public function validateAccount(Request $request, GeneralConfig $generalConfig): Response
+    public function validateAccount(Request $request, GeneralConfig $generalConfig)
     {
-        try {
-            $request->validate([
-                'email' => ['required', 'email:strict'],
-                'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
-                'password' => Password::required(),
-            ]);
-        } catch (ValidationException $e) {
-            return new JsonResponse([
-                'errors' => $e->errors(),
-            ], 400); // @todo, support 422 on frontend
-        }
+        $request->validate([
+            'email' => ['required', 'email:strict'],
+            'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
+            'password' => Password::required(),
+        ]);
 
         return new JsonResponse;
     }
 
     public function validateSite(Request $request): Response
     {
-        try {
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'baseUrl' => ['nullable', 'string', 'max:255'],
-                'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
-            ]);
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'baseUrl' => ['nullable', 'string', 'max:255'],
+            'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
+        ]);
 
-            $baseUrl = Env::parse($request->input('baseUrl'));
+        $baseUrl = Env::parse($request->input('baseUrl'));
 
-            Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
-        } catch (ValidationException $e) {
-            return new JsonResponse([
-                'errors' => $e->errors(),
-            ], 400); // @todo support 422
-        }
+        Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
 
         return new JsonResponse;
     }
@@ -166,8 +159,8 @@ final readonly class InstallController
         $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
-        if ($request->has('db-driver')) {
-            $data = $this->validateDbData($request, 'db-');
+        if ($request->has('db.driver')) {
+            $data = $this->validateDbData($request->input('db'));
 
             // Set and save the new DB config values
             // If there's a DB_DSN environment variable, go with that
@@ -196,9 +189,9 @@ final readonly class InstallController
             DB::reconnect('db2');
         }
 
-        $email = $request->input('account-email');
-        $username = $request->input('account-username', $email);
-        $siteUrl = $request->input('site-baseUrl');
+        $email = $request->input('account.email');
+        $username = $request->input('account.username', $email);
+        $siteUrl = $request->input('site.baseUrl');
 
         // Don't save @web even if they chose it
         if ($siteUrl === '@web') {
@@ -217,16 +210,16 @@ final readonly class InstallController
         }
 
         $site = new Site(
-            name: $request->input('site-name'),
+            name: $request->input('site.name'),
             handle: 'default',
-            language: $request->input('site-language'),
+            language: $request->input('site.language'),
             baseUrl: $siteUrl,
             hasUrls: true,
         );
 
         $migration = new Install(
             username: $username,
-            password: $request->input('account-password'),
+            password: $request->input('account.password'),
             email: $email,
             site: $site,
         );
@@ -248,7 +241,9 @@ final readonly class InstallController
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
-        return new JsonResponse;
+        $redirect = Cms::config()->postCpLoginRedirect;
+
+        return new JsonResponse(['redirect' => $redirect]);
     }
 
     private function canControlDbConfig(): bool
@@ -267,27 +262,27 @@ final readonly class InstallController
         return true;
     }
 
-    public function validateDbData(Request $request, $prefix = ''): array
+    public function validateDbData($data): array
     {
-        $data = $request->validate([
-            $prefix.'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
-            $prefix.'host' => ['nullable', 'string'],
-            $prefix.'database' => ['required', 'string'],
-            $prefix.'port' => ['nullable', 'integer'],
-            $prefix.'username' => ['nullable', 'string'],
-            $prefix.'password' => ['nullable', 'string'],
-            $prefix.'prefix' => ['nullable', 'string', 'max:5'],
-            $prefix.'schema' => ['nullable', 'string'],
+        $data = Validator::validate($data, [
+            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
+            'host' => ['nullable', 'string'],
+            'database' => ['required', 'string'],
+            'port' => ['nullable', 'integer'],
+            'username' => ['nullable', 'string'],
+            'password' => ['nullable', 'string'],
+            'prefix' => ['nullable', 'string', 'max:5'],
+            'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = $data[$prefix.'driver'] === 'mysql' ? 3306 : 5432;
+        $defaultPort = $data['driver'] === 'mysql' ? 3306 : 5432;
 
-        $data[$prefix.'host'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.host") ?: '127.0.0.1';
-        $data[$prefix.'port'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.port") ?: $defaultPort;
-        $data[$prefix.'username'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.username") ?: 'root';
-        $data[$prefix.'password'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.password");
-        $data[$prefix.'prefix'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.prefix");
+        $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
+        $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;
+        $data['username'] ??= Config::get("database.connections.{$data['driver']}.username") ?: 'root';
+        $data['password'] ??= Config::get("database.connections.{$data['driver']}.password");
+        $data['prefix'] ??= Config::get("database.connections.{$data['driver']}.prefix");
 
-        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [Str::after($key, $prefix) => $value])->all();
+        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
     }
 }
