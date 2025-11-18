@@ -14,6 +14,7 @@
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
   import Pane from '@/components/Pane.vue';
   import Modal from '@/components/Modal.vue';
+  import StepScreen from '@/components/install/StepScreen.vue';
 
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
   const {
@@ -97,17 +98,6 @@
       state.value = 'error';
     }
   }
-
-  const illustrationSrc = computed(() => {
-    switch (currentId.value) {
-      case 'account':
-        return accountBg;
-      case 'db':
-        return dbBg;
-      case 'site':
-        return siteBg;
-    }
-  });
 </script>
 
 <template>
@@ -127,6 +117,7 @@
     </template>
 
     <Modal :is-active="modalActive" :overlay="false">
+      <!-- License screen -->
       <template v-if="isCurrent('license')">
         <Pane class="tw:max-w-[80ch] tw:mx-auto">
           <Deferred data="licenseHtml">
@@ -153,47 +144,54 @@
         </Pane>
       </template>
 
+      <!-- Installing -->
       <template v-else-if="isCurrent('installing')">
         <InstallingScreen :data="formData" @success="goToNext()" />
       </template>
-      <template v-else-if="isCurrent('complete')">
-        <div
-          class="tw:p-8 tw:grid tw:justify-center tw:content-center tw:gap-4"
-        >
-          <h2>{{ t('app', 'Craft is installed! 🎉') }}</h2>
-        </div>
-        <InstallingScreen :data="formData" @success="goToNext()" />
-      </template>
 
+      <!-- Form screens -->
       <template v-else>
         <Pane as="form" :action="current.action" @submit.prevent="handleSubmit">
-          <div class="tw:grid tw:md:grid-cols-2 tw:gap-4 tw:items-center">
-            <div class="tw:aspect-[352/455] tw:w-1/2 tw:md:w-3/4 tw:mx-auto">
-              <img loading="lazy" :src="illustrationSrc" alt="" width="368" />
-            </div>
-            <div>
-              <h2 class="tw:mb-4">{{ current.heading }}</h2>
-              <div class="tw:grid tw:gap-3 tw:md:max-w-xs">
-                <AccountFields
-                  v-if="isCurrent('account')"
-                  v-model="formData.account"
-                  :errors="errors.account"
-                />
-                <DbFields v-if="isCurrent('db')" v-model="formData.db" />
-                <Deferred data="localeOptions">
-                  <template #fallback>
-                    <craft-spinner></craft-spinner>
-                  </template>
+          <div class="tw:flex">
+            <StepScreen
+              :illustration-src="accountBg"
+              :heading="current.heading"
+              v-if="isCurrent('account')"
+              class="screen"
+            >
+              <AccountFields
+                v-if="isCurrent('account')"
+                v-model="formData.account"
+                :errors="errors.account"
+              />
+            </StepScreen>
+            <StepScreen
+              :illustration-src="dbBg"
+              :heading="current.heading"
+              v-if="isCurrent('db')"
+              class="screen"
+            >
+              <DbFields v-model="formData.db" />
+            </StepScreen>
 
-                  <SiteFields
-                    v-if="isCurrent('site')"
-                    v-model="formData.site"
-                    :localeOptions="localeOptions"
-                    :errors="errors.site"
-                  />
-                </Deferred>
-              </div>
-            </div>
+            <StepScreen
+              :illustration-src="siteBg"
+              :heading="current.heading"
+              v-if="isCurrent('site')"
+              class="screen"
+            >
+              <Deferred data="localeOptions">
+                <template #fallback>
+                  <craft-spinner></craft-spinner>
+                </template>
+
+                <SiteFields
+                  v-model="formData.site"
+                  :localeOptions="localeOptions"
+                  :errors="errors.site"
+                />
+              </Deferred>
+            </StepScreen>
           </div>
 
           <template #actions>
@@ -207,24 +205,20 @@
                 {{ t('app', 'Back') }}
                 <craft-icon name="arrow-left" slot="prefix"></craft-icon>
               </craft-button>
-              <nav class="tw:justify-self-center">
-                <ul class="tw:flex tw:gap-2">
-                  <li v-for="(step, id) in dotSteps" :key="id">
-                    <button
-                      class="dot"
-                      type="button"
-                      @click="goTo(id)"
-                      :class="{
-                        'dot--active': isCurrent(id),
-                      }"
-                    >
-                      <span class="tw:sr-only">
-                        {{ step.label }}
-                      </span>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+              <ul class="tw:flex tw:gap-2 tw:justify-center">
+                <li v-for="(step, id) in dotSteps" :key="id">
+                  <span
+                    class="dot"
+                    :class="{
+                      'dot--active': isCurrent(id),
+                    }"
+                  >
+                    <span class="tw:sr-only">
+                      {{ step.label }}
+                    </span>
+                  </span>
+                </li>
+              </ul>
               <craft-button
                 class="tw:justify-self-end"
                 type="submit"
@@ -270,6 +264,7 @@
   }
 
   .dot {
+    display: inline-block;
     appearance: none;
     border: 1px solid var(--c-color-neutral-border-subtle);
     background-color: var(--c-color-neutral-bg-subtle);
@@ -277,7 +272,6 @@
     padding: 0;
     width: 0.6rem;
     height: 0.6rem;
-    cursor: pointer;
   }
 
   .dot--active {

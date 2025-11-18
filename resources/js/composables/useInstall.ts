@@ -50,7 +50,6 @@ export const useInstall = () => {
       label: 'Installing',
       id: 'installing',
     },
-    complete: {},
   });
 
   const steps = computed(() => {
