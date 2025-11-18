@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.16 - 2025-11-18
 
 - Fixed a bug where assets with disallowed file extensions could still be uploaded to the system’s temp directory. ([#18015](https://github.com/craftcms/cms/issues/18015))
 - Fixed an error that could occur when an array was passed to an asset query’s `folderPath` param. ([#18056](https://github.com/craftcms/cms/issues/18056))
