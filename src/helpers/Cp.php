@@ -3634,6 +3634,8 @@ JS, [
     /**
      * Returns a menu item array for the given sites, possibly grouping them by site group.
      *
+     * If only one site is meant to be shown, an empty array will be returned.
+     *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
      * @param Site|null $selectedSite
      * @param array $config
@@ -3671,6 +3673,8 @@ JS, [
         $params = $request->getQueryParamsWithoutPath();
         unset($params['fresh']);
 
+        $totalSites = 0;
+
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
             if (!$config['includeOmittedSites']) {
@@ -3680,6 +3684,8 @@ JS, [
             if (empty($groupSites)) {
                 continue;
             }
+
+            $totalSites += count($groupSites);
 
             $groupSiteItems = array_map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
@@ -3705,51 +3711,7 @@ JS, [
             }
         }
 
-        return $items;
-    }
-
-    /**
-     * Checks whether the sites menu should be shown, by checking how many visible items are in the site menu array.
-     * If there's only one visible item in the menu - don't show it.
-     *
-     * @param array $siteMenuItems
-     * @return bool
-     */
-    public static function showSiteMenuItems(array $siteMenuItems): bool
-    {
-        // if there's only one item in the sites menu
-        if (count($siteMenuItems) == 1) {
-            $firstItem = $siteMenuItems[array_key_first($siteMenuItems)];
-            // and the sites menu doesn't seem grouped - don't show the sites menu
-            if (!isset($firstItem['items'])) {
-                return false;
-            }
-
-            // the sites menu looks grouped and there's only one item
-            if (count($firstItem['items']) == 1) {
-                return false;
-            }
-
-            // site sites menu looks grouped and there's more than one item that's not hidden
-            if (
-                Collection::make($firstItem['items'])
-                ->filter(fn($item) => $item['hidden'] === false)
-                ->count() <= 1
-            ) {
-                return false;
-            }
-        }
-
-        // if there's up to one visible item in the sites menu
-        if (
-            Collection::make($siteMenuItems)
-                ->filter(fn($item) => $item['hidden'] === false)
-                ->count() <= 1
-        ) {
-            return false;
-        }
-
-        return true;
+        return $totalSites > 1 ? $items : [];
     }
 
     /**
