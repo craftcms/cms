@@ -124,16 +124,20 @@ trait QueriesStructures
             $this->applyStructureParams($elementQuery);
         });
 
-        $this->afterQuery(function (Collection $collection) {
+        $this->afterQuery(function (mixed $result) {
+            if (! $result instanceof Collection) {
+                return $result;
+            }
+
             if ($this->structureId) {
-                return $collection->map(function ($element) {
+                return $result->map(function ($element) {
                     $element->structureId = $this->structureId;
 
                     return $element;
                 });
             }
 
-            return $collection;
+            return $result;
         });
     }
 

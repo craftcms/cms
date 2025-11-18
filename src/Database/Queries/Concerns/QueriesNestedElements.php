@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use craft\base\ElementInterface;
-use craft\helpers\Db;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
 trait QueriesNestedElements
@@ -46,7 +47,7 @@ trait QueriesNestedElements
      *
      * @used-by owner()
      */
-    private ?ElementInterface $_owner = null;
+    private ?ElementInterface $owner = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -69,7 +70,7 @@ trait QueriesNestedElements
     protected function initQueriesNestedElements(): void
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
-            /** @var ElementQuery&QueriesNestedElements $elementQuery */
+            /** @var \CraftCms\Cms\Database\Queries\EntryQuery $elementQuery */
             $this->normalizeNestedElementParams($elementQuery);
 
             if ($elementQuery->fieldId === false || $elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false) {
@@ -81,8 +82,8 @@ trait QueriesNestedElements
             }
 
             $elementQuery->query->addSelect([
-                'elements_owners.ownerId',
-                'elements_owners.sortOrder',
+                'elements_owners.ownerId as ownerId',
+                'elements_owners.sortOrder as sortOrder',
             ]);
 
             $joinClause = function (JoinClause $join) use ($elementQuery) {
@@ -138,13 +139,35 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on the field the {elements} are contained by.
      *
-     * @uses $fieldId
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | in a field with a handle of `foo`.
+     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
+     * | a [[craft\fields\Matrix]] object | in a field represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} in the Foo field #}
+     * {% set {elements-var} = {twig-method}
+     *   .field('foo')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} in the Foo field
+     * ${elements-var} = {php-method}
+     *     ->field('foo')
+     *     ->all();
+     * ```
      */
     public function field(mixed $value): static
     {
-        if (Db::normalizeParam($value, function ($item) {
+        if (Query::normalizeParam($value, function ($item) {
             if (is_string($item)) {
                 $item = Fields::getFieldByHandle($item);
             }
@@ -160,9 +183,32 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on the field the {elements} are contained by, per the fields’ IDs.
      *
-     * @uses $fieldId
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | in a field with an ID of 1.
+     * | `'not 1'` | not in a field with an ID of 1.
+     * | `[1, 2]` | in a field with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not in a field with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} in the field with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .fieldId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} in the field with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->fieldId(1)
+     *     ->all();
+     * ```
      */
     public function fieldId(mixed $value): static
     {
@@ -172,9 +218,30 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on the primary owner element of the {elements}, per the owners’ IDs.
      *
-     * @uses $primaryOwnerId
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwnerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->primaryOwnerId(1)
+     *     ->all();
+     * ```
      */
     public function primaryOwnerId(mixed $value): static
     {
@@ -184,9 +251,23 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Sets the [[primaryOwnerId()]] and [[siteId()]] parameters based on a given element.
      *
-     * @uses $primaryOwnerId
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} created for this entry #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwner(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} created for this entry
+     * ${elements-var} = {php-method}
+     *     ->primaryOwner($myEntry)
+     *     ->all();
+     * ```
      */
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
@@ -197,36 +278,76 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on the owner element of the {elements}, per the owners’ IDs.
      *
-     * @uses $ownerId
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .ownerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->ownerId(1)
+     *     ->all();
+     * ```
      */
     public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
-        $this->_owner = null;
+        $this->owner = null;
 
         return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * Sets the [[ownerId()]] and [[siteId()]] parameters based on a given element.
      *
-     * @uses $ownerId
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} created for this entry #}
+     * {% set {elements-var} = {twig-method}
+     *   .owner(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} created for this entry
+     * ${elements-var} = {php-method}
+     *     ->owner($myEntry)
+     *     ->all();
+     * ```
      */
     public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
-        $this->_owner = $owner;
+        $this->owner = $owner;
 
         return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on whether the {elements}’ owners are drafts.
      *
-     * @uses $allowOwnerDrafts
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a draft.
+     * | `false` | which cannot belong to a draft.
      */
     public function allowOwnerDrafts(?bool $value = true): static
     {
@@ -236,9 +357,14 @@ trait QueriesNestedElements
     }
 
     /**
-     * {@inheritdoc}
+     * Narrows the query results based on whether the {elements}’ owners are revisions.
      *
-     * @uses $allowOwnerRevisions
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a revision.
+     * | `false` | which cannot belong to a revision.
      */
     public function allowOwnerRevisions(?bool $value = true): static
     {
@@ -286,7 +412,7 @@ trait QueriesNestedElements
             $fieldLayouts = [];
 
             foreach ($this->fieldId as $fieldId) {
-                $field = app(Fields::class)->getFieldById($fieldId);
+                $field = Fields::getFieldById($fieldId);
                 if ($field instanceof ElementContainerFieldInterface) {
                     foreach ($field->getFieldLayoutProviders() as $provider) {
                         $fieldLayouts[] = $provider->getFieldLayout();
@@ -323,10 +449,18 @@ trait QueriesNestedElements
 
         if (empty($query->fieldId)) {
             $query->fieldId = is_array($query->fieldId) ? [] : null;
-        } elseif (is_numeric($query->fieldId)) {
+
+            return;
+        }
+
+        if (is_numeric($query->fieldId)) {
             $query->fieldId = [$query->fieldId];
-        } elseif (! is_array($query->fieldId) || ! Arr::isNumeric($query->fieldId)) {
-            $query->fieldId = \Illuminate\Support\Facades\DB::table(Table::FIELDS)
+
+            return;
+        }
+
+        if (! is_array($query->fieldId) || ! Arr::isNumeric($query->fieldId)) {
+            $query->fieldId = DB::table(Table::FIELDS)
                 ->whereNumericParam('id', $query->fieldId)
                 ->pluck('id')
                 ->all();
@@ -343,9 +477,11 @@ trait QueriesNestedElements
         if (empty($value)) {
             return null;
         }
+
         if (is_numeric($value)) {
             return [$value];
         }
+
         if (! is_array($value) || ! Arr::isNumeric($value)) {
             return false;
         }

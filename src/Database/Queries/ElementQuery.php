@@ -481,7 +481,9 @@ class ElementQuery
             return $eagerLoadedCount;
         }
 
-        return $this->query->count($columns);
+        $result = $this->query->count($columns);
+
+        return $this->applyAfterQueryCallbacks($result);
     }
 
     public function nth(int $n, array|string $columns = ['*']): ?ElementInterface

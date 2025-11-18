@@ -481,6 +481,60 @@ final readonly class Query
     }
 
     /**
+     * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
+     * an empty value.
+     *
+     * If the original param value began with `and`, `or`, or `not`, that will be preserved.
+     *
+     * @param  mixed  $value  The param value to be normalized
+     * @param  callable  $resolver  Method to resolve non-model values to models
+     * @return bool Whether the value was normalized
+     */
+    public static function normalizeParam(mixed &$value, callable $resolver): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (! is_array($value)) {
+            $testValue = [$value];
+            if (self::normalizeParam($testValue, $resolver)) {
+                $value = $testValue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        $normalized = [];
+
+        foreach ($value as $item) {
+            if (
+                empty($normalized) &&
+                is_string($item) &&
+                in_array(strtolower($item), [QueryParam::OR, QueryParam::AND, QueryParam::NOT], true)
+            ) {
+                $normalized[] = strtolower($item);
+
+                continue;
+            }
+
+            $item = $resolver($item);
+            if (! $item) {
+                // The value couldn't be normalized in full, so bail
+                return false;
+            }
+
+            $normalized[] = $item;
+        }
+
+        $value = $normalized;
+
+        return true;
+    }
+
+    /**
      * Normalizes “empty” values.
      *
      * @param  mixed  $value  The param value.

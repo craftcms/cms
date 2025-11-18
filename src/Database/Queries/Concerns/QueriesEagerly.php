@@ -49,15 +49,19 @@ trait QueriesEagerly
 
     protected function initQueriesEagerly(): void
     {
-        $this->afterQuery(function (Collection $elements) {
+        $this->afterQuery(function (mixed $result) {
+            if (! $result instanceof Collection) {
+                return $result;
+            }
+
             if (! $this->with) {
-                return $elements;
+                return $result;
             }
 
             $elementsService = Craft::$app->getElements();
-            $elementsService->eagerLoadElements($this->elementType, $elements->all(), $this->with);
+            $elementsService->eagerLoadElements($this->elementType, $result->all(), $this->with);
 
-            return $elements;
+            return $result;
         });
     }
 

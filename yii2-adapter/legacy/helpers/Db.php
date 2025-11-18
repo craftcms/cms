@@ -950,42 +950,7 @@ class Db
      */
     public static function normalizeParam(&$value, callable $resolver): bool
     {
-        if ($value === null) {
-            return true;
-        }
-
-        if (!is_array($value)) {
-            $testValue = [$value];
-            if (static::normalizeParam($testValue, $resolver)) {
-                $value = $testValue;
-                return true;
-            }
-            return false;
-        }
-
-        $normalized = [];
-
-        foreach ($value as $item) {
-            if (
-                empty($normalized) &&
-                is_string($item) &&
-                in_array(strtolower($item), [QueryParam::OR, QueryParam::AND, QueryParam::NOT], true)
-            ) {
-                $normalized[] = strtolower($item);
-                continue;
-            }
-
-            $item = $resolver($item);
-            if (!$item) {
-                // The value couldn't be normalized in full, so bail
-                return false;
-            }
-
-            $normalized[] = $item;
-        }
-
-        $value = $normalized;
-        return true;
+        return \CraftCms\Cms\Support\Query::normalizeParam($value, $resolver);
     }
 
     /**
