@@ -1,6 +1,6 @@
 {% import "_includes/links" as links %}
 
-{% macro action(item, isSelected, showIcon) %}
+{% macro action(item, isSubnav, isSelected, showIcon) %}
     {% set showIcon = showIcon ?? true %}
     {% set selected = item.sel ?? isSelected ?? false %}
     {% set badgeCount = item.badgeCount ?? false %}
@@ -55,7 +55,7 @@
                     }) }}
                 </span>
             {%- endif -%}
-            {% if item.subnav ?? [] %}
+            {% if not isSubnav and (item.subnav ?? false) %}
                 <craft-disclosure
                     class="nav-item__trigger"
                     state="{{ item.sel ? 'expanded' : 'collapsed' }}"
@@ -94,7 +94,7 @@
                         } %}
                         <li {{ attr(itemAttributes) }}>
                             <div class="nav-item {% if item.sel %}sel{% endif %}">
-                                {{ _self.action(item) }}
+                                {{ _self.action(item, false) }}
                             </div>
 
                             {% if item.subnav %}
@@ -115,7 +115,7 @@
                                                             current: itemIsSelected ? 'page' : false,
                                                         },
                                                     }
-                                                }, recursive=true), itemIsSelected, false) }}
+                                                }, recursive=true), true, itemIsSelected, false) }}
                                             </div>
                                         </li>
                                     {% endfor %}
