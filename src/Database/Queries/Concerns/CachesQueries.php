@@ -35,7 +35,7 @@ trait CachesQueries
         $sql = $elementQuery->query->toRawSql();
         $config = Json::encode($elementQuery->query->getConnection()->getConfig());
 
-        return md5($sql.$config.Json::encode($columns));
+        return md5($sql.$method.$config.Json::encode($columns));
     }
 
     public function cache(int $duration = 3600, ?Dependency $dependency = null): static
