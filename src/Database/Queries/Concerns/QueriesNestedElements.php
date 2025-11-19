@@ -116,12 +116,12 @@ trait QueriesNestedElements
             $allowOwnerRevisions = $elementQuery->allowOwnerRevisions ?? ($elementQuery->id || $elementQuery->primaryOwnerId || $elementQuery->ownerId);
 
             if (! $allowOwnerDrafts || ! $allowOwnerRevisions) {
-                $this->subQuery->join(
+                $elementQuery->subQuery->join(
                     new Alias(Table::ELEMENTS, 'owners'),
                     fn (JoinClause $join) => $join->when(
                         $elementQuery->ownerId,
                         fn (JoinClause $join) => $join->on('owners.id', '=', 'elements_owners.ownerId'),
-                        fn (JoinClause $join) => $join->on('owners.id', '=', $this->getPrimaryOwnerIdColumn()),
+                        fn (JoinClause $join) => $join->on('owners.id', '=', $elementQuery->getPrimaryOwnerIdColumn()),
                     )
                 );
 
@@ -134,7 +134,7 @@ trait QueriesNestedElements
                 }
             }
 
-            $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
+            $elementQuery->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
         });
     }
 
@@ -381,19 +381,19 @@ trait QueriesNestedElements
         $tags = [];
 
         if ($this->fieldId) {
-            foreach ($this->fieldId as $fieldId) {
+            foreach (Arr::wrap($this->fieldId) as $fieldId) {
                 $tags[] = "field:$fieldId";
             }
         }
 
         if ($this->primaryOwnerId) {
-            foreach ($this->primaryOwnerId as $ownerId) {
+            foreach (Arr::wrap($this->primaryOwnerId) as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
 
         if ($this->ownerId) {
-            foreach ($this->ownerId as $ownerId) {
+            foreach (Arr::wrap($this->ownerId) as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
