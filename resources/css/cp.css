@@ -4,7 +4,7 @@ CP Styles
 @layer theme, base, components, cp, utilities;
 @import 'tailwindcss/theme.css' layer(theme) prefix(tw);
 @import 'tailwindcss/utilities.css' layer(utilities) prefix(tw);
-@import '@craftcms/cp' layer(cp);
+@import '@craftcms/cp/styles/cp.css' layer(cp);
 
 @import './global-sidebar.css';
 

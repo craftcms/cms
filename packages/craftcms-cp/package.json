@@ -21,7 +21,7 @@
     "dev": "vite build -w",
     "prebuild": "npm run format",
     "build": "vite build",
-    "postbuild": "npm run build:manifest && npm run test",
+    "postbuild": "npm run build:manifest",
     "format": "npx prettier --write .",
     "check:format": "prettier --check .",
     "check:exports": "attw --pack .",
@@ -34,11 +34,10 @@
     "./package.json": "./package.json",
     ".": {
       "types": "./dist/index.d.ts",
-      "style": "./dist/cp.css",
       "import": "./dist/cp.js",
       "require": "./dist/cp.cjs"
     },
-    "./cp.css": "./dist/cp.css",
+    "./styles/cp.css": "./dist/cp.css",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
     "./custom-elements.json": "./dist/custom-elements.json"
