@@ -14,6 +14,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
@@ -46,6 +47,7 @@ class ElementQuery
         BuildsQueries::first as baseFirst;
     }
 
+    use Concerns\CachesQueries;
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
 
@@ -432,9 +434,18 @@ class ElementQuery
     {
         $this->applyBeforeQueryCallbacks();
 
-        return $this->eagerLoad()?->all() ?? $this->hydrate(
-            $this->query->get($columns)->all()
-        )->all();
+        if ((int) $this->queryCacheDuration >= 0) {
+            $result = DependencyCache::remember(
+                key: $this->queryCacheKey($this, 'all', $columns),
+                ttl: $this->queryCacheDuration,
+                callback: fn () => $this->query->get($columns)->all(),
+                dependency: $this->getCacheDependency(),
+            );
+        } else {
+            $result = $this->query->get($columns)->all();
+        }
+
+        return $this->eagerLoad()?->all() ?? $this->hydrate($result)->all();
     }
 
     /**
@@ -470,8 +481,18 @@ class ElementQuery
 
         $column = $this->columnMap[$column] ?? $column;
 
-        return $this->query->pluck($column, $key)
-            ->when($this->asArray, fn (Collection $collection) => $collection->all());
+        if ((int) $this->queryCacheDuration >= 0) {
+            $result = DependencyCache::remember(
+                key: $this->queryCacheKey($this, 'pluck', [$column, $key]),
+                ttl: $this->queryCacheDuration,
+                callback: fn () => $this->query->pluck($column, $key),
+                dependency: $this->getCacheDependency(),
+            );
+        } else {
+            $result = $this->query->pluck($column, $key);
+        }
+
+        return $result->when($this->asArray, fn (Collection $collection) => $collection->all());
     }
 
     public function count($columns = '*'): int
@@ -484,7 +505,16 @@ class ElementQuery
             return $eagerLoadedCount;
         }
 
-        $result = $this->query->count($columns);
+        if ((int) $this->queryCacheDuration >= 0) {
+            $result = DependencyCache::remember(
+                key: $this->queryCacheKey($this, 'count', $columns),
+                ttl: $this->queryCacheDuration,
+                callback: fn () => $this->query->count($columns),
+                dependency: $this->getCacheDependency(),
+            );
+        } else {
+            $result = $this->query->count($columns);
+        }
 
         return $this->applyAfterQueryCallbacks($result);
     }
@@ -740,6 +770,15 @@ class ElementQuery
 
         if (in_array(strtolower($method), $this->passthru)) {
             $this->applyBeforeQueryCallbacks();
+
+            if ((int) $this->queryCacheDuration >= 0) {
+                return DependencyCache::remember(
+                    key: $this->queryCacheKey($this, strtolower($method), $parameters),
+                    ttl: $this->queryCacheDuration,
+                    callback: fn () => $this->getQuery()->{$method}(...$parameters),
+                    dependency: $this->getCacheDependency(),
+                );
+            }
 
             return $this->getQuery()->{$method}(...$parameters);
         }
