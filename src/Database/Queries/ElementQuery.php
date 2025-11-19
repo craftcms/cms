@@ -897,7 +897,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         }
     }
 
-    public function clone(): self
+    public function clone(): static
     {
         return clone $this;
     }
