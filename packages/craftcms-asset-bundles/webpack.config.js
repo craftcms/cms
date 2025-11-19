@@ -4,7 +4,7 @@ const pkgDir = require('pkg-dir');
 const configs = getConfigs('bundles/**/*/webpack.config.js');
 
 const root = pkgDir.sync();
-const outBase = `${root}/../../resources/build/legacy`;
+const outBase = `${root}/../../resources/legacy-bundles`;
 
 const modifiedConfigs = configs.map((config) => {
   return {
