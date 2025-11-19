@@ -33,7 +33,9 @@ trait CachesQueries
     protected function queryCacheKey(ElementQuery $elementQuery, string $method, array|string $parameters = []): string
     {
         $sql = $elementQuery->query->toRawSql();
-        $config = Json::encode($elementQuery->query->getConnection()->getConfig());
+        /** @var \Illuminate\Database\Connection $connection */
+        $connection = $elementQuery->query->getConnection();
+        $config = Json::encode($connection->getConfig());
 
         return md5($sql.$method.$config.Json::encode($parameters));
     }
