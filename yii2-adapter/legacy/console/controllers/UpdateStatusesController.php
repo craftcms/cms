@@ -9,12 +9,13 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\elements\Entry;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
+use CraftCms\Cms\Element\Elements\Entry;
+use Illuminate\Database\Query\Builder;
 use yii\console\ExitCode;
 
 /**
@@ -41,21 +42,20 @@ class UpdateStatusesController extends Controller
         $elementsService = Craft::$app->getElements();
 
         $conditions = [
-            Entry::STATUS_LIVE => [
-                'and',
-                ['<=', 'entries.postDate', $now],
-                [
-                    'or',
-                    ['entries.expiryDate' => null],
-                    ['>', 'entries.expiryDate', $now],
-                ],
-            ],
-            Entry::STATUS_PENDING => ['>', 'entries.postDate', $now],
-            Entry::STATUS_EXPIRED => [
-                'and',
-                ['not', ['entries.expiryDate' => null]],
-                ['<=', 'entries.expiryDate', $now],
-            ],
+            Entry::STATUS_LIVE => function(Builder $query) use ($now) {
+                $query->where('entries.postDate', '<=', $now)
+                    ->where(function(Builder $query) use ($now) {
+                        $query->whereNull('expiryDate')
+                            ->orWhere('expiryDate', '>', $now);
+                    });
+            },
+            Entry::STATUS_PENDING => function(Builder $query) use ($now) {
+                $query->where('entries.postDate', '>', $now);
+            },
+            Entry::STATUS_EXPIRED => function(Builder $query) use ($now) {
+                $query->whereNotNull('entries.expiryDate')
+                    ->where('entries.expiryDate', '<=', $now);
+            },
         ];
 
         foreach ($conditions as $status => $condition) {
@@ -63,11 +63,11 @@ class UpdateStatusesController extends Controller
                 ->site('*')
                 ->unique()
                 ->status(null)
-                ->andWhere(['not', ['status' => $status]])
-                ->andWhere($condition);
+                ->where('status', '!=', $status)
+                ->where($condition);
 
             $this->do("Updating $status entries", function() use ($elementsService, $query) {
-                $count = (int)$query->count();
+                $count = $query->count();
 
                 $beforeCallback = function(MultiElementActionEvent $e) use ($query, $count) {
                     if ($e->query === $query) {

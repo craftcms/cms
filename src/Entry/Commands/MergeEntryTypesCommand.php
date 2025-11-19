@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Commands;
 
 use craft\base\FieldLayoutElement;
-use craft\elements\Entry;
 use craft\models\FieldLayoutTab;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;

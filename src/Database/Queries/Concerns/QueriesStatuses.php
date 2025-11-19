@@ -87,7 +87,6 @@ trait QueriesStatuses
      * ```
      *
      * @param  string|string[]|null  $value  The property value
-     * @return static self reference
      */
     public function status(array|string|null $value): static
     {

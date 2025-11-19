@@ -88,8 +88,6 @@ trait QueriesEntryTypes
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $typeId
      */
@@ -141,8 +139,6 @@ trait QueriesEntryTypes
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $typeId
      */

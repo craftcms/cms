@@ -75,7 +75,7 @@ class NestedElementManager extends Component
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
-     * @param Closure(ElementInterface $owner): ElementQueryInterface $queryFactory A factory method which returns a
+     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery) $queryFactory A factory method which returns a
      * query for fetching nested elements
      * @param array $config name-value pairs that will be used to initialize the object properties.
      */

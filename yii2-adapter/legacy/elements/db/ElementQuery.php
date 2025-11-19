@@ -2853,19 +2853,17 @@ class ElementQuery extends Query implements ElementQueryInterface
                             continue;
                         }
 
-                        if ($condition !== null) {
-                            $conditions[] = $condition;
+                        $conditions[] = $condition;
 
-                            // if we have a generated field with the same handle, we need to add it into the condition
-                            if (isset($generatedFieldsByHandle[$handle])) {
-                                $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
-                                    $generatedFieldsByHandle,
-                                    $fieldAttributes,
-                                    $fieldsByHandle,
-                                    false
-                                );
-                                $conditions = array_merge($conditions, $generatedFieldsConditions);
-                            }
+                        // if we have a generated field with the same handle, we need to add it into the condition
+                        if (isset($generatedFieldsByHandle[$handle])) {
+                            $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
+                                $generatedFieldsByHandle,
+                                $fieldAttributes,
+                                $fieldsByHandle,
+                                false
+                            );
+                            $conditions = array_merge($conditions, $generatedFieldsConditions);
                         }
                     }
 

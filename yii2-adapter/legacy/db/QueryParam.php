@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+/** @phpstan-ignore-next-line */
 if (false) {
     /**
      * Class QueryParam

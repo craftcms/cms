@@ -171,9 +171,6 @@ trait QueriesFields
      * ::: tip
      * This can be combined with [[fixedOrder()]] if you want the results to be returned in a specific order.
      * :::
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function id(mixed $value): static
     {
@@ -200,9 +197,6 @@ trait QueriesFields
      *     ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
      *     ->one();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function uid(mixed $value): static
     {
@@ -238,9 +232,6 @@ trait QueriesFields
      *     ->siteSettingsId(1)
      *     ->one();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function siteSettingsId(mixed $value): static
     {
@@ -269,7 +260,6 @@ trait QueriesFields
      * ```
      *
      * @param  bool|null  $value  The property value (defaults to true)
-     * @return static self reference
      */
     public function trashed(?bool $value = true): static
     {
@@ -311,9 +301,6 @@ trait QueriesFields
      *     ->dateCreated(['and', ">= {$start}", "< {$end}"])
      *     ->all();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function dateCreated(mixed $value): static
     {
@@ -353,9 +340,6 @@ trait QueriesFields
      *     ->dateUpdated(">= {$lastWeek}")
      *     ->all();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function dateUpdated(mixed $value): static
     {
@@ -394,9 +378,6 @@ trait QueriesFields
      *     ->title('*Foo*')
      *     ->all();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function title(mixed $value): static
     {
@@ -441,9 +422,6 @@ trait QueriesFields
      *     ->slug(\craft\helpers\Db::escapeParam($requestedSlug))
      *     ->one();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function slug(mixed $value): static
     {
@@ -488,9 +466,6 @@ trait QueriesFields
      *     ->uri(\craft\helpers\Db::escapeParam($requestedUri))
      *     ->one();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      */
     public function uri(mixed $value): static
     {
@@ -503,7 +478,6 @@ trait QueriesFields
      * Narrows the query results to only {elements} that were involved in a bulk element operation.
      *
      * @param  string|null  $value  The property value
-     * @return static self reference
      */
     public function inBulkOp(?string $value): static
     {

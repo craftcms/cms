@@ -930,7 +930,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @return ElementQueryInterface
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
         return new ElementQuery(static::class);
     }

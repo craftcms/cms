@@ -77,8 +77,6 @@ trait QueriesSections
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $sectionId
      */
@@ -145,8 +143,6 @@ trait QueriesSections
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $sectionId
      */

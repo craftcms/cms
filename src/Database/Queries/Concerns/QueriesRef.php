@@ -68,7 +68,7 @@ trait QueriesRef
     /**
      * Narrows the query results based on a reference string.
      */
-    public function ref(mixed $value): self
+    public function ref(mixed $value): static
     {
         $this->ref = $value;
 

@@ -221,7 +221,14 @@ trait FieldConditionRuleTrait
         if ($value !== null) {
             $instances = $this->fieldInstances();
             $firstInstance = $instances[0];
+
             $params = [];
+
+            if (!method_exists($firstInstance, 'queryCondition')) {
+                return;
+            }
+
+            /** @phpstan-ignore-next-line */
             $condition = $firstInstance::queryCondition($instances, $value, $params);
 
             if ($condition === false) {

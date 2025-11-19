@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use Craft;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -22,13 +23,13 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
         $params = [];
 
-        $condition = self::queryCondition($instances, $value, $params);
+        $condition = static::queryCondition($instances, $value, $params);
 
         if ($condition === null || $condition === false) {
             return $query;
         }
 
-        $db = \Craft::$app->getDb();
+        $db = Craft::$app->getDb();
         $sql = $db->getQueryBuilder()->buildCondition($condition, $params);
 
         // Yii uses named parameters, Laravel uses positional

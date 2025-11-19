@@ -39,8 +39,14 @@ use Twig\Markup;
  * @template TElement of ElementInterface
  *
  * @mixin \Illuminate\Database\Query\Builder
+ *
+ * @method self orderByDesc($column)
+ * @method self where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereNot($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereNotNull($columns, $boolean = 'and')
+ * @method self whereNotExists($callback, $boolean = 'and')
  */
-class ElementQuery
+class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
     use BuildsQueries {
@@ -189,7 +195,7 @@ class ElementQuery
      */
     public function __construct(
         /** @var class-string<TElement> */
-        protected string $elementType = Element::class,
+        public string $elementType = Element::class,
         protected array $config = [],
     ) {
         Typecast::properties(static::class, $config);
@@ -956,7 +962,7 @@ class ElementQuery
      *
      * @param  string  $table  The table name, e.g. `entries` or `{{%entries}}`
      */
-    protected function joinElementTable(string $table, ?string $alias = null): void
+    public function joinElementTable(string $table, ?string $alias = null): void
     {
         $alias ??= $table;
 

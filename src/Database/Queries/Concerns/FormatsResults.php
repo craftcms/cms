@@ -71,7 +71,6 @@ trait FormatsResults
      * ```
      *
      * @param  bool  $value  The property value
-     * @return static self reference
      */
     public function inReverse(bool $value = true): static
     {
@@ -100,7 +99,6 @@ trait FormatsResults
      * ```
      *
      * @param  bool  $value  The property value (defaults to true)
-     * @return static self reference
      */
     public function asArray(bool $value = true): static
     {
@@ -135,7 +133,6 @@ trait FormatsResults
      * ```
      *
      * @param  bool  $value  The property value (defaults to true)
-     * @return static self reference
      */
     public function fixedOrder(bool $value = true): static
     {

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Entry;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
@@ -14,6 +13,7 @@ use craft\helpers\Queue;
 use craft\models\FieldLayout;
 use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
@@ -381,7 +381,6 @@ final class EntryTypes
             // Restore the entries at the end of the request in case the section isn't restored yet
             // (see https://github.com/craftcms/cms/issues/15787)
             Event::listen(RequestHandled::class, function () use ($entryTypeModel) {
-                /** @var Entry[] $entries */
                 $entries = Entry::find()
                     ->typeId($entryTypeModel->id)
                     ->drafts(null)
@@ -390,11 +389,11 @@ final class EntryTypes
                     ->trashed()
                     ->site('*')
                     ->unique()
-                    ->andWhere(['entries.deletedWithEntryType' => true])
-                    ->all();
+                    ->where('entries.deletedWithEntryType', true)
+                    ->get();
 
                 /** @var Entry[][] $entriesBySection */
-                $entriesBySection = collect($entries)->groupBy('sectionId')->all();
+                $entriesBySection = $entries->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
                     try {
                         Craft::$app->getElements()->restoreElements($sectionEntries);

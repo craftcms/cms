@@ -212,7 +212,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
-    public function language($value): self
+    public function language($value): static
     {
         if (is_string($value)) {
             $sites = Sites::getSitesByLanguage($value);

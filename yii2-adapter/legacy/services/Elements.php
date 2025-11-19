@@ -1593,7 +1593,7 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface $query The element query to fetch elements with
+     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
@@ -1604,7 +1604,7 @@ class Elements extends Component
      * @since 3.2.0
      */
     public function resaveElements(
-        ElementQueryInterface $query,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query,
         bool $continueOnError = false,
         bool $skipRevisions = true,
         ?bool $updateSearchIndex = null,

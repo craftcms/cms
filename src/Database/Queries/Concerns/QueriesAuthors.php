@@ -144,9 +144,6 @@ trait QueriesAuthors
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
-     *
      * @uses $authorId
      */
     public function authorId(mixed $value): static
@@ -186,8 +183,6 @@ trait QueriesAuthors
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $authorGroupId
      */
@@ -248,8 +243,6 @@ trait QueriesAuthors
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $authorGroupId
      */

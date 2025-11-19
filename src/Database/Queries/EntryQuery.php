@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
-use craft\elements\Entry;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesAuthors;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesEntryDates;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Database\Queries\Concerns\QueriesRef;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesSections;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @extends ElementQuery<Entry>
+ */
 final class EntryQuery extends ElementQuery
 {
     use QueriesAuthors;
@@ -144,7 +147,6 @@ final class EntryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param  bool|null  $value  The property value (defaults to true)
-     * @return static self reference
      *
      * @uses $editable
      */

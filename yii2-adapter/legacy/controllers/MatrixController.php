@@ -11,11 +11,11 @@ use Craft;
 use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -122,6 +122,7 @@ class MatrixController extends Controller
         // duplicate an existing entry?
         $sourceId = $this->request->getBodyParam('duplicate');
         if ($sourceId) {
+            /** @var ?Entry $source */
             $source = Entry::find()
                 ->id($sourceId)
                 ->siteId($siteId)

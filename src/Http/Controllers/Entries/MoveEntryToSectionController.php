@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use craft\elements\Entry;
 use craft\helpers\Cp;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Section\Data\Section;
@@ -127,7 +127,7 @@ final readonly class MoveEntryToSectionController
             ->drafts(null)
             ->site('*')
             ->unique()
-            ->all();
+            ->get();
 
         abort_if(empty($entries), 400, 'Cannot find the entries to move to the new section.');
 

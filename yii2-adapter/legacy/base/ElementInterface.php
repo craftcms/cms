@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Site\Data\Site;
 use GraphQL\Type\Definition\Type;
@@ -188,7 +189,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
      */
-    public static function find(): ElementQueryInterface;
+    public static function find(): ElementQueryInterface|ElementQuery;
 
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.
