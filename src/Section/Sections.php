@@ -684,7 +684,7 @@ final class Sections
                         'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                        'elementType' => Entry::class,
+                        'elementType' => \craft\elements\Entry::class,
                         'criteria' => [
                             'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
