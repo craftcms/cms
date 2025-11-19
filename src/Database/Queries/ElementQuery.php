@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
+use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\ElementCollection;
@@ -54,6 +55,7 @@ class ElementQuery
     /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
 
+    use Concerns\OverridesResults;
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -432,6 +434,14 @@ class ElementQuery
      */
     public function getModels(array|string $columns = ['*']): array
     {
+        if (! is_null($result = $this->getResultOverride())) {
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $result, $this->with);
+            }
+
+            return $result;
+        }
+
         $this->applyBeforeQueryCallbacks();
 
         if ((int) $this->queryCacheDuration >= 0) {
@@ -477,6 +487,12 @@ class ElementQuery
 
     public function pluck($column, $key = null): Collection|array
     {
+        $column = $this->columnMap[$column] ?? $column;
+
+        if (! is_null($result = $this->getResultOverride())) {
+            return collect($result)->pluck($column, $key);
+        }
+
         $this->applyBeforeQueryCallbacks();
 
         $column = $this->columnMap[$column] ?? $column;
@@ -497,6 +513,10 @@ class ElementQuery
 
     public function count($columns = '*'): int
     {
+        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
+            return count($result);
+        }
+
         $this->applyBeforeQueryCallbacks();
 
         $eagerLoadedCount = $this->eagerLoad(count: true);
@@ -521,6 +541,10 @@ class ElementQuery
 
     public function nth(int $n, array|string $columns = ['*']): ?ElementInterface
     {
+        if (! is_null($result = $this->getResultOverride())) {
+            return $result[$n] ?? null;
+        }
+
         // Eagerly?
         $eagerResult = $this->eagerLoad(criteria: [
             'offset' => ($this->offset ?: 0) + $n,
