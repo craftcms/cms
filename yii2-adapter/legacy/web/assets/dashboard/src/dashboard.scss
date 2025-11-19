@@ -150,18 +150,18 @@ body ol.widget__list {
   padding-block: 7px;
   padding-inline: 0;
 
-  .craft\\widgets\\mydrafts & {
+  [class*='mydrafts'] & {
     padding: 0;
   }
 }
 
 /* Recent Entries widget */
-.craft\\widgets\\recententries .body .table {
+[class*='recententries'] .body .table {
   table-layout: fixed;
 }
 
 /* New Users Widget */
-.craft\\widgets\\newusers .chart {
+[class*='newusers'] .chart {
   height: 200px;
   margin: 0;
 }
