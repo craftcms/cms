@@ -20,91 +20,92 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Admin requests that do not require a login
  */
-\Illuminate\Support\Facades\Route::get('install', [InstallController::class, 'index'])
+Route::get('install', [InstallController::class, 'index'])
     ->middleware([HandleInertiaRequests::class]);
 
 /**
  * Admin requests that require a login
  */
-\Illuminate\Support\Facades\Route::middleware('auth')->group(function () {
-    \Illuminate\Support\Facades\Route::get('dashboard', DashboardController::class);
+Route::middleware('auth')->group(function () {
+    Route::get('dashboard', DashboardController::class);
 
-    \Illuminate\Support\Facades\Route::get('utilities', [UtilitiesController::class, 'index']);
-    \Illuminate\Support\Facades\Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
+    Route::get('utilities', [UtilitiesController::class, 'index']);
+    Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
 
-    \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->group(function () {
-        \Illuminate\Support\Facades\Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
+    Route::middleware(RequireAdminChanges::class)->group(function () {
+        Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
     });
 
     /**
      * Entries & Content
      */
-    \Illuminate\Support\Facades\Route::get('entries', EntriesIndexController::class);
-    \Illuminate\Support\Facades\Route::view('entries/{sectionHandle}', 'craftcms::entries.index');
-    \Illuminate\Support\Facades\Route::get('entries/{section}/new', CreateEntryController::class);
+    Route::get('entries', EntriesIndexController::class);
+    Route::view('entries/{sectionHandle}', 'craftcms::entries.index');
+    Route::get('entries/{section}/new', CreateEntryController::class);
 
-    \Illuminate\Support\Facades\Route::get('content', EntriesIndexController::class);
-    \Illuminate\Support\Facades\Route::view('content/{page}', 'craftcms::entries.index')->where('page', '[^\/]+');
-    \Illuminate\Support\Facades\Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index')->where('page', '[^\/]+');
-    \Illuminate\Support\Facades\Route::get('content/{section}/new', CreateEntryController::class);
+    Route::get('content', EntriesIndexController::class);
+    Route::view('content/{page}', 'craftcms::entries.index')->where('page', '[^\/]+');
+    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index')->where('page', '[^\/]+');
+    Route::get('content/{section}/new', CreateEntryController::class);
 
     /**
      * Routes that require admin, but do not require admin changes
      */
-    \Illuminate\Support\Facades\Route::middleware([
+    Route::middleware([
         RequireAdmin::class,
     ])->group(function () {
         // Entry types
-        \Illuminate\Support\Facades\Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
-        \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        \Illuminate\Support\Facades\Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
+        Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
+        Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
 
         // Fields
-        \Illuminate\Support\Facades\Route::get('settings/fields', [FieldsController::class, 'index']);
-        \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
-        \Illuminate\Support\Facades\Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
+        Route::get('settings/fields', [FieldsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
+        Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
 
         // General
-        \Illuminate\Support\Facades\Route::get('settings/general', [GeneralSettingsController::class, 'index']);
+        Route::get('settings/general', [GeneralSettingsController::class, 'index']);
 
         // Plugins
-        \Illuminate\Support\Facades\Route::get('settings/plugins', [PluginsController::class, 'index']);
-        \Illuminate\Support\Facades\Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
-        \Illuminate\Support\Facades\Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::get('settings/plugins', [PluginsController::class, 'index']);
+        Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
+        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
 
         // Routes
-        \Illuminate\Support\Facades\Route::get('settings/routes', [RoutesController::class, 'index']);
+        Route::get('settings/routes', [RoutesController::class, 'index']);
 
         // Sections
-        \Illuminate\Support\Facades\Route::get('settings/sections', [SectionsController::class, 'index']);
-        \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
-        \Illuminate\Support\Facades\Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::get('settings/sections', [SectionsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
+        Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
 
         // Sites
-        \Illuminate\Support\Facades\Route::get('settings/sites', [SitesController::class, 'index']);
-        \Illuminate\Support\Facades\Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
-        \Illuminate\Support\Facades\Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
+        Route::get('settings/sites', [SitesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
+        Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
     });
 
-    \Illuminate\Support\Facades\Route::prefix('settings/filesystems')->group(function () {
-        \Illuminate\Support\Facades\Route::middleware([
+    Route::prefix('settings/filesystems')->group(function () {
+        Route::middleware([
             RequireAdmin::class,
         ])->group(function () {
-            \Illuminate\Support\Facades\Route::get('/', [FilesystemsController::class, 'index']);
-            \Illuminate\Support\Facades\Route::get('new', [FilesystemsController::class, 'create']);
-            \Illuminate\Support\Facades\Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
+            Route::get('/', [FilesystemsController::class, 'index']);
+            Route::get('new', [FilesystemsController::class, 'create']);
+            Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
         });
 
-        \Illuminate\Support\Facades\Route::middleware([
+        Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            \Illuminate\Support\Facades\Route::post('{handle}', [FilesystemsController::class, 'save']);
+            Route::post('{handle}', [FilesystemsController::class, 'save']);
         });
     });
 
-    \Illuminate\Support\Facades\Route::post('updates', [UpdaterController::class, 'index']);
+    Route::post('updates', [UpdaterController::class, 'index']);
 });

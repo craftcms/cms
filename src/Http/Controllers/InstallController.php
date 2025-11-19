@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
@@ -43,7 +43,7 @@ final readonly class InstallController
     public function __construct()
     {
         // Return a 404 if Craft is already installed
-        if (! app()->hasDebugModeEnabled() && Craft::$app->getIsInstalled()) {
+        if (! app()->hasDebugModeEnabled() && Info::isInstalled()) {
             abort(404, 'Craft is already installed');
         }
     }
@@ -77,7 +77,7 @@ final readonly class InstallController
         $localeOptions = collect($locales)
             ->map(fn ($locale) => [
                 'id' => $locale->id,
-                'name' => $locale->getDisplayName(Craft::$app->language),
+                'name' => $locale->getDisplayName(app()->getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ]);
 
@@ -128,7 +128,7 @@ final readonly class InstallController
             ], 422);
     }
 
-    public function validateAccount(Request $request, GeneralConfig $generalConfig)
+    public function validateAccount(Request $request, GeneralConfig $generalConfig): Response
     {
         $request->validate([
             'email' => ['required', 'email:strict'],
@@ -195,7 +195,7 @@ final readonly class InstallController
 
         // Don't save @web even if they chose it
         if ($siteUrl === '@web') {
-            $siteUrl = Craft::getAlias($siteUrl);
+            $siteUrl = Aliases::get($siteUrl);
         }
 
         // Try to save the site URL to a APP_URL environment variable
