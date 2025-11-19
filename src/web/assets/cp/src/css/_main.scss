@@ -574,7 +574,7 @@ table.editable textarea {
 }
 
 [data-icon]::before {
-  content: attr(data-icon);
+  content: attr(data-icon) / '';
 }
 
 [data-icon-after]::after {
@@ -657,7 +657,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .preview-btn::before {
-  content: 'view';
+  content: 'view' / '';
 }
 
 .view-btn::before {
