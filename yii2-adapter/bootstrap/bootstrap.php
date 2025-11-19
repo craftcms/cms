@@ -102,9 +102,9 @@ Craft::setAlias('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langP
 Craft::setAlias('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
 Craft::setAlias('@assetBundles', Arr::join([
     dirname(__DIR__, 2),
+    'cms',
     'resources',
-    'build',
-    'legacy',
+    'legacy-bundles',
 ], DIRECTORY_SEPARATOR));
 
 // Load the config

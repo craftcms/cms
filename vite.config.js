@@ -2,7 +2,6 @@ import {defineConfig, loadEnv} from 'vite';
 import laravel from 'laravel-vite-plugin';
 import fs from 'fs';
 import vue from '@vitejs/plugin-vue';
-import * as path from 'node:path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -34,13 +33,12 @@ export default defineConfig(({mode}) => {
     },
 
     build: {
-      assetsDir: '',
       emptyOutDir: true,
       rollupOptions: {
         output: {
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
-          assetFileNames: '[name].[ext]',
+          assetFileNames: 'assets/[name].[ext]',
         },
       },
     },
@@ -60,7 +58,11 @@ export default defineConfig(({mode}) => {
         },
       }),
       laravel({
-        input: ['resources/js/cp.js', 'resources/css/cp.css'],
+        input: [
+          'resources/js/cp.js',
+          'resources/js/legacy.js',
+          'resources/css/cp.css',
+        ],
         publicDirectory: 'resources',
         hotFile: 'resources/hot',
         refresh: [
