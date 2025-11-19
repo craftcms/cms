@@ -391,7 +391,7 @@ class Cp extends Component
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', StringHelper::toAscii(str_replace('/', '-', $item['url'])));
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
             }
 
             $item['url'] = UrlHelper::url($item['url']);
