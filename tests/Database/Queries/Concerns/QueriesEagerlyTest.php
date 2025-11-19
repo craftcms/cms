@@ -2,9 +2,9 @@
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Element\Models\EntryType;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;

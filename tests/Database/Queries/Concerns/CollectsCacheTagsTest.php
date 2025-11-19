@@ -1,7 +1,7 @@
 <?php
 
-use craft\elements\Entry as EntryElement;
 use CraftCms\Cms\Database\Queries\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Support\Facades\Event;
 

@@ -50,6 +50,6 @@ test('nested element query', function () {
     /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
-    expect($dependency->tags)->toContain('element::craft\elements\Entry::field:'.$field->id);
+    expect($dependency->tags)->toContain('element::CraftCms\Cms\Element\Elements\Entry::field:'.$field->id);
     expect($dependency->tags)->toContain('element::'.$entry->id);
 });

@@ -53,7 +53,7 @@ trait QueriesEntryTypes
                 return;
             }
 
-            $entryQuery->subQuery->whereIn('entries.typeId', $this->typeId);
+            $entryQuery->subQuery->whereIn('entries.typeId', $entryQuery->typeId);
         });
     }
 

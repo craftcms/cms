@@ -23,13 +23,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
 
 class TestCase extends Orchestra
 {
     use LazilyRefreshDatabase;
     use WithWorkbench;
 
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,7 +52,7 @@ class TestCase extends Orchestra
         $this->withoutVite();
     }
 
-    #[\Override]
+    #[Override]
     protected function tearDown(): void
     {
         app(ProjectConfig::class)->reset();
@@ -105,7 +106,7 @@ class TestCase extends Orchestra
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function getEnvironmentSetUp($app)
     {
         File::cleanDirectory(config_path('craft/project'));

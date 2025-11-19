@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -31,6 +32,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionProperty;
+use RuntimeException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 use Twig\Markup;
@@ -448,7 +450,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return $result;
         }
 
-        $this->applyBeforeQueryCallbacks();
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return [];
+        }
 
         if ((int) $this->queryCacheDuration >= 0) {
             $result = DependencyCache::remember(
@@ -499,7 +505,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return collect($result)->pluck($column, $key);
         }
 
-        $this->applyBeforeQueryCallbacks();
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return $this->asArray ? [] : new Collection;
+        }
 
         $column = $this->columnMap[$column] ?? $column;
 
@@ -523,7 +533,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return count($result);
         }
 
-        $this->applyBeforeQueryCallbacks();
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return 0;
+        }
 
         $eagerLoadedCount = $this->eagerLoad(count: true);
 
@@ -593,7 +607,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
      */
     public function cursor(): LazyCollection
     {
-        $this->applyBeforeQueryCallbacks();
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return new LazyCollection;
+        }
 
         return $this->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
@@ -799,7 +817,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         }
 
         if (in_array(strtolower($method), $this->passthru)) {
-            $this->applyBeforeQueryCallbacks();
+            try {
+                $this->applyBeforeQueryCallbacks();
+            } catch (QueryAbortedException) {
+                return null;
+            }
 
             if ((int) $this->queryCacheDuration >= 0) {
                 return DependencyCache::remember(
@@ -928,11 +950,6 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
 
     protected function elementQueryBeforeQuery(): void
     {
-        // Give other classes a chance to make changes up front
-        /*if (!$this->beforePrepare()) {
-            throw new QueryAbortedException();
-        }*/
-
         $this->applySelectParams();
 
         // If an element table was never joined in, explicitly filter based on the element type
@@ -1070,5 +1087,19 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         }
 
         return $this->columnMap[$key];
+    }
+
+    /**
+     * Throw an exception if the query doesn't have an orderBy clause.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException
+     */
+    protected function enforceOrderBy()
+    {
+        if (empty($this->query->orders) && empty($this->query->unionOrders)) {
+            throw new RuntimeException('You must specify an orderBy clause when using this function.');
+        }
     }
 }

@@ -96,7 +96,13 @@ test('whereDateParam', function (string $param, array $expected) {
 
     $query = DB::table(Table::SESSIONS)->whereDateParam('dateCreated', $param);
 
-    expect($query->pluck('token')->all())->toEqual($expected);
+    expect(
+        $query
+            ->pluck('token')
+            // Trim because on pgsql these are fixed length
+            ->map(fn ($token) => trim((string) $token))
+            ->all()
+    )->toEqual($expected);
 })->with([
     ['today', ['test-today']],
     ['tomorrow', ['test-tomorrow']],

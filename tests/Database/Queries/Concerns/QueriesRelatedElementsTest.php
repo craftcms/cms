@@ -1,8 +1,8 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;

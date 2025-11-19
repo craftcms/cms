@@ -835,6 +835,7 @@ final class Sections
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
         $entry = $baseEntryQuery
+            ->clone()
             ->typeId($entryTypeIds)
             ->first();
 
@@ -843,6 +844,7 @@ final class Sections
         if ($entry === null) {
             /** @var Entry|null $entry */
             $entry = $baseEntryQuery
+                ->clone()
                 ->typeId(null)
                 ->trashed(null)
                 ->first();

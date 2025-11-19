@@ -19,7 +19,7 @@ it('caches queries', function () {
     expect(entryQuery()->count())->toBe(2);
     expect(entryQuery()->all()->count())->toBe(2);
 
-    Craft::$app->getElements()->invalidateCachesForElementType(\craft\elements\Entry::class);
+    Craft::$app->getElements()->invalidateCachesForElementType(\CraftCms\Cms\Element\Elements\Entry::class);
 
     expect(entryQuery()->cache()->count())->toBe(2);
     expect(entryQuery()->cache()->all()->count())->toBe(2);

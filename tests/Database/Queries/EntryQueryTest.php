@@ -1,21 +1,14 @@
 <?php
 
-use craft\elements\Entry;
-use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
 
-test('editable requires authentication', function () {
-    $this->expectException(QueryAbortedException::class);
-
-    entryQuery()->editable()->count();
-});
-
-test('editable/savable throws when having no access', function (string $method) {
+test('editable/savable returns 0 when having no access', function (string $method) {
     Edition::set(Edition::Pro);
 
     actingAs(User::first());
@@ -29,19 +22,11 @@ test('editable/savable throws when having no access', function (string $method) 
     actingAs(User::factory()->create());
 
     // Access to nothing
-    $this->expectException(QueryAbortedException::class);
-
-    entryQuery()->$method()->count();
+    expect(entryQuery()->$method()->count())->toBe(0);
 })->with([
     'editable',
     'savable',
 ]);
-
-test('savable requires authentication', function () {
-    $this->expectException(QueryAbortedException::class);
-
-    entryQuery()->savable()->count();
-});
 
 test('savable', function () {
     actingAs(User::first());
