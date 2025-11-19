@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where font icons weren’t hidden from screen readers. ([#18078](https://github.com/craftcms/cms/pull/18078))
+
 ## 5.8.20 - 2025-11-18
 
 - Plugin licenses are now assigned immediately when installed via the `plugin/install` command. ([#17871](https://github.com/craftcms/cms/issues/17871))
