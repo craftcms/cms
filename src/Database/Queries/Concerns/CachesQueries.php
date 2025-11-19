@@ -30,12 +30,12 @@ trait CachesQueries
      */
     public ?Dependency $queryCacheDependency = null;
 
-    protected function queryCacheKey(ElementQuery $elementQuery, string $method, array|string $columns = ['*']): string
+    protected function queryCacheKey(ElementQuery $elementQuery, string $method, array|string $parameters = []): string
     {
         $sql = $elementQuery->query->toRawSql();
         $config = Json::encode($elementQuery->query->getConnection()->getConfig());
 
-        return md5($sql.$method.$config.Json::encode($columns));
+        return md5($sql.$method.$config.Json::encode($parameters));
     }
 
     public function cache(int $duration = 3600, ?Dependency $dependency = null): static
