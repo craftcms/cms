@@ -17,7 +17,7 @@ class JqueryTouchEventsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/jquerytouchevents/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

@@ -18,7 +18,7 @@ class FindReplaceAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/findreplace/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

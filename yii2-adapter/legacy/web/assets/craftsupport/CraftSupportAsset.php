@@ -19,7 +19,7 @@ class CraftSupportAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/craftsupport/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

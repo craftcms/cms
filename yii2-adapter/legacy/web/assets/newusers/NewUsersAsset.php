@@ -18,7 +18,7 @@ class NewUsersAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/newusers/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

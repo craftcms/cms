@@ -32,7 +32,7 @@ class AdminTableAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@assetBundles/admintable/dist';
+        $this->sourcePath = __DIR__ . '/dist/';
 
         $this->depends = [
             CpAsset::class,

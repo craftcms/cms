@@ -17,7 +17,7 @@ class AnimationBlockerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/animationblocker/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

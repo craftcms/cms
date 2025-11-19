@@ -19,7 +19,7 @@ class UpdatesWidgetAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/updateswidget/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

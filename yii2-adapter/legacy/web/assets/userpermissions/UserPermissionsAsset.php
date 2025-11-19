@@ -18,7 +18,7 @@ class UserPermissionsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/userpermissions/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

@@ -18,7 +18,7 @@ class TotpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/totp/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

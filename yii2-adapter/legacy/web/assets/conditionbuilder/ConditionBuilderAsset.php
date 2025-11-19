@@ -18,7 +18,7 @@ class ConditionBuilderAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/conditionbuilder/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

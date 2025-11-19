@@ -21,7 +21,7 @@ class PasskeySetupAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/passkeysetup/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

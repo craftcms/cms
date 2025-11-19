@@ -8,6 +8,7 @@
 namespace craft\web\assets\garnish;
 
 use craft\web\AssetBundle;
+use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use yii\web\JqueryAsset;
@@ -22,8 +23,9 @@ class GarnishAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@assetBundles/garnish/dist';
+        $this->sourcePath = __DIR__ . '/dist';
         $this->depends = [
+            ElementResizeDetectorAsset::class,
             JqueryAsset::class,
             JqueryTouchEventsAsset::class,
             VelocityAsset::class,

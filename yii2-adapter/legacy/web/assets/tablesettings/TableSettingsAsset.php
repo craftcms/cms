@@ -18,7 +18,7 @@ class TableSettingsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/tablesettings/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

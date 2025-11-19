@@ -18,7 +18,7 @@ class ClearCachesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/clearcaches/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

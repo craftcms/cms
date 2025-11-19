@@ -286,10 +286,10 @@ trait ApplicationTrait
         }
 
         // Override where Yii should find its asset deps
-        Craft::setAlias('@bower/jquery/dist', '@assetBundles/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist','@assetBundles/inputmask/dist');
-        Craft::setAlias('@bower/punycode', '@assetBundles/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', '@assetBundles/yii2pjax/dist');
+        Craft::setAlias('@bower/jquery/dist', '@app/web/assets/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
+        Craft::setAlias('@bower/punycode', '@app/web/assets/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
     }
 
     /**

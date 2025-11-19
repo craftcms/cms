@@ -18,7 +18,7 @@ class EditSectionAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/editsection/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

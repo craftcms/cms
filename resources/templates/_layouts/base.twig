@@ -18,7 +18,7 @@
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
-{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@assetBundles/cp/dist', true) -%}
+{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
 
 {% hook "cp.layouts.base" -%}
 

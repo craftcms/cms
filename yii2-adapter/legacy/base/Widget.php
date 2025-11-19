@@ -108,7 +108,7 @@ abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboar
      */
     public function getBodyHtml(): ?string
     {
-        $url = Craft::$app->getAssetManager()->getPublishedUrl('@assetBundles/cp/dist', true, 'images/prg.jpg');
+        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">

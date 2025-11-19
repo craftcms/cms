@@ -18,7 +18,7 @@ class FocalPointAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/focalpoint/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
