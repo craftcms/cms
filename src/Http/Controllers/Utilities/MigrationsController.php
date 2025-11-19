@@ -9,7 +9,6 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Migrations;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 use function CraftCms\Cms\cp_redirect;
@@ -30,7 +29,7 @@ final readonly class MigrationsController
             $migrator->track('content')->run();
             Flash::success(t('Applied new migrations successfully.'));
         } catch (Throwable $e) {
-            Log::error($e);
+            report($e);
 
             Flash::fail(t('Couldn’t apply new migrations.'));
         }

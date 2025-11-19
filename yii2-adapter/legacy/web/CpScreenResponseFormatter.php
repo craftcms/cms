@@ -154,7 +154,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'label' => t($behavior->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
-                    'items' => count($siteMenuItems) > 1 ? $siteMenuItems : null,
+                    'items' => $siteMenuItems,
                 ],
             ]);
         }

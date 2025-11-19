@@ -500,7 +500,7 @@ final class FieldsController
         if (! $this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl('settings/fields')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,

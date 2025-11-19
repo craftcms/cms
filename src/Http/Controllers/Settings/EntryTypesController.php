@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use Craft;
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -125,7 +127,7 @@ final class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl('settings/entry-types')
+                        ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,
@@ -293,7 +295,7 @@ final class EntryTypesController
         $entryType->description = $request->input('description', $entryType->description);
 
         $namespace = Str::random(10);
-        $view = \Craft::$app->getView();
+        $view = Craft::$app->getView();
 
         $html = $view->namespaceInputs(
             fn () => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [

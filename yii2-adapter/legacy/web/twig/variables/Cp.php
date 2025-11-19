@@ -378,22 +378,20 @@ class Cp extends Component
         foreach ($navItems as &$item) {
             if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
                 $foundSelectedItem = true;
 
                 // Modify aria-current value for exact page vs. subpages
                 $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
             } else {
                 $item['sel'] = false;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
+            }
+
+            if (!isset($item['subnav'])) {
+                $item['subnav'] = false;
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', StringHelper::toAscii(str_replace('/', '-', $item['url'])));
             }
 
             $item['url'] = UrlHelper::url($item['url']);
