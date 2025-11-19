@@ -200,7 +200,11 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && $query->getCachedResult() === null) {
+        $result = method_exists($query, 'getCachedResult')
+            ? $query->getCachedResult()
+            : $query->getResultOverride();
+
+        if ($fetchAll && $result === null) {
             $query
                 ->drafts(null)
                 ->canonicalsOnly()
@@ -772,7 +776,9 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
-            $elements = $value->getCachedResult();
+            $elements = method_exists($value, 'getCachedResult')
+                ? $value->getCachedResult()
+                : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);
             } else {
