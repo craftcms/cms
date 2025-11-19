@@ -621,7 +621,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .icon.add::before {
-  content: 'plus';
+  content: 'plus' / '';
 }
 
 .icon.edit::before {
@@ -860,11 +860,11 @@ li.sel > a {
   padding-inline-start: 4px;
 
   body.ltr & {
-    content: 'circlerarr';
+    content: 'circlerarr' / '';
   }
 
   body.rtl & {
-    content: 'circlelarr';
+    content: 'circlelarr' / '';
   }
 }
 
@@ -6059,7 +6059,7 @@ $min2ColWidth: 400px;
           width: 48px;
           text-align: end;
           @include mixins.icon;
-          content: 'plus';
+          content: 'plus' / '';
           color: var(--light-text-color);
         }
 
