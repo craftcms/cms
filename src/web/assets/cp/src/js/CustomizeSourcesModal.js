@@ -1624,7 +1624,7 @@ Craft.CustomizeSourcesModal.Source =
       }).appendTo($container);
 
       Craft.ui
-        .createCheckboxSelectField({
+        .createSortableCheckboxSelectField({
           label: Craft.t('app', 'Default Table Columns'),
           instructions: Craft.t(
             'app',
@@ -1636,8 +1636,6 @@ Craft.CustomizeSourcesModal.Source =
             value: key,
           })),
           values: this.sourceData.tableAttributes.map(([key]) => key),
-          sortable: true,
-          includeSortActions: true,
         })
         .appendTo($container);
     },

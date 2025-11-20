@@ -586,6 +586,8 @@ Craft.ui = {
         disabled: allChecked || config.disabled,
       }).appendTo($option);
     }
+
+    // todo: just check config.sortable when BC isn't a concern
     if (config.includeSortActions) {
       new Craft.SortableCheckboxSelect($container);
     } else {
@@ -611,10 +613,23 @@ Craft.ui = {
     if (!config.id) {
       config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
     }
-    if (typeof config.includeSortActions == 'undefined') {
-      config.includeSortActions = false;
-    }
     return this.createField(this.createCheckboxSelect(config), config);
+  },
+
+  createSortableCheckboxSelect: function (config) {
+    return this.createCheckboxSelect({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
+  },
+
+  createSortableCheckboxSelectField: function (config) {
+    return this.createCheckboxSelectField({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
   },
 
   createLightswitch: function (config) {

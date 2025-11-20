@@ -124,14 +124,13 @@
           },
         }).then(({data}) => {
           this.settings.$defaultColumnsContainer.empty().append(
-            Craft.ui.createCheckboxSelect({
+            Craft.ui.createSortableCheckboxSelect({
               name: Craft.namespaceInputName(
                 'defaultTableColumns',
                 this.settings.namespace
               ),
               options: data.options,
               values: values,
-              sortable: true,
             })
           );
         });

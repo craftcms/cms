@@ -34,6 +34,9 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
         axis: Garnish.Y_AXIS,
         handle: '.draggable-handle',
       });
+      this.dragSort.on('sortChange', () => {
+        this.trigger('sortChange');
+      });
     }
   },
 
@@ -191,6 +194,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     if ($prev) {
       this.$item.insertBefore($prev);
       this.$item.trigger('movedUp');
+      this.select.trigger('sortChange');
     }
   },
 
@@ -199,6 +203,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     if ($next) {
       this.$item.insertAfter($next);
       this.$item.trigger('movedDown');
+      this.select.trigger('sortChange');
     }
   },
 });
