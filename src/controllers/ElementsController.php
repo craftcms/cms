@@ -978,9 +978,6 @@ JS, [
                     ? Html::beginTag('button', [
                         'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
-                        'aria' => [
-                            'label' => Craft::t('app', 'Preview'),
-                        ],
                     ]) .
                     Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
                     Html::endTag('button')
