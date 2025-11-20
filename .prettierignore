@@ -4,6 +4,7 @@ composer.lock
 **/dist/*
 vendor/*
 .ddev/*
+resources/build/*
 yii2-adapter/cpresources/*
 yii2-adapter/lib/*
 yii2-adapter/legacy/web/assets/**/dist/*
