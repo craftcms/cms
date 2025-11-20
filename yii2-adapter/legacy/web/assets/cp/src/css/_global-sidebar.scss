@@ -93,10 +93,9 @@
 
 .nav-item--sub {
   padding-block: 0;
-  grid-template-columns: calc(var(--nav-item-gutter-width) * 3) minmax(
-      0,
-      1fr
-    ) var(--nav-item-gutter-width);
+  grid-template-columns:
+    calc(var(--nav-item-gutter-width) * 3) minmax(0, 1fr)
+    var(--nav-item-gutter-width);
 }
 
 .nav-item__trigger {
