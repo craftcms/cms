@@ -1,18 +1,8 @@
 import {html, LitElement} from 'lit';
-import {
-  customElement,
-  property,
-  query,
-  state,
-  queryAssignedElements,
-} from 'lit/decorators.js';
+import {property, query, queryAssignedElements, state,} from 'lit/decorators.js';
 import '../icon/icon.js';
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
-// @ts-ignore
-import styles from './breadcrumbs.css?inline';
-
-const stylesheet = new CSSStyleSheet();
-stylesheet.replaceSync(styles);
+import styles from './breadcrumbs.styles.js';
 
 type BreadcrumbItem = {
   label?: string;
@@ -23,7 +13,7 @@ type BreadcrumbItem = {
 };
 
 export default class CraftBreadcrumbs extends LitElement {
-  static override styles = [stylesheet];
+  static override styles = [styles];
   @query('slot') defaultSlot: HTMLSlotElement;
   @query('slot[name="separator"]') separatorSlot: HTMLSlotElement;
 
