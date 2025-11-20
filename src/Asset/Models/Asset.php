@@ -12,6 +12,7 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 final class Asset extends BaseModel
 {
@@ -32,7 +33,7 @@ final class Asset extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function element(): BelongsTo
     {
@@ -40,7 +41,7 @@ final class Asset extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     * @return BelongsToMany<Site, $this, Pivot>
      */
     public function sites(): BelongsToMany
     {
@@ -49,7 +50,7 @@ final class Asset extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\Volume, $this>
+     * @return BelongsTo<Volume, $this>
      */
     public function volume(): BelongsTo
     {
@@ -57,7 +58,7 @@ final class Asset extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\VolumeFolder, $this>
+     * @return BelongsTo<VolumeFolder, $this>
      */
     public function folder(): BelongsTo
     {
@@ -65,7 +66,7 @@ final class Asset extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\User\Models\User, $this>
+     * @return BelongsTo<User, $this>
      */
     public function uploader(): BelongsTo
     {

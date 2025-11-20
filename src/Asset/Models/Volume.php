@@ -28,7 +28,7 @@ final class Volume extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\FieldLayout\Models\FieldLayout, $this>
+     * @return BelongsTo<FieldLayout, $this>
      */
     public function fieldLayout(): BelongsTo
     {

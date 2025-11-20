@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,6 +20,7 @@ final class AssetFactory extends Factory
     {
         return [
             'id' => Element::factory()->set('type', \CraftCms\Cms\Element\Elements\Asset::class),
+            'volumeId' => Volume::factory(),
             'folderId' => VolumeFolder::factory(),
             'filename' => fake()->word().'.jpg',
             'kind' => 'image',
@@ -29,12 +31,16 @@ final class AssetFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function (Asset $asset) {
-            $asset->element->update([
-                'dateCreated' => $asset->dateCreated,
-                'dateUpdated' => $asset->dateCreated,
-            ]);
-
-            $asset->update(['volumeId' => $asset->folder->volume?->id]);
+            // For some reason the element factory doesn't get saved properly
+            if ($asset->id === 0) {
+                $asset->update([
+                    'id' => Element::query()
+                        ->where('type', \CraftCms\Cms\Element\Elements\Asset::class)
+                        ->latest('id')
+                        ->first()
+                        ->id,
+                ]);
+            }
         });
     }
 }

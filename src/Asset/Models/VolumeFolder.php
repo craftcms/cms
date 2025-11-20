@@ -19,7 +19,7 @@ final class VolumeFolder extends BaseModel
     protected $table = Table::VOLUMEFOLDERS;
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\VolumeFolder, $this>
+     * @return BelongsTo<VolumeFolder, $this>
      */
     public function parent(): BelongsTo
     {
@@ -27,7 +27,7 @@ final class VolumeFolder extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\CraftCms\Cms\Asset\Models\VolumeFolder, $this>
+     * @return HasMany<VolumeFolder, $this>
      */
     public function children(): HasMany
     {
@@ -35,7 +35,7 @@ final class VolumeFolder extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\Volume, $this>
+     * @return BelongsTo<Volume, $this>
      */
     public function volume(): BelongsTo
     {
