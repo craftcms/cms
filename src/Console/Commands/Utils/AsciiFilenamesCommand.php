@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands\Utils;
 
 use Craft;
-use craft\elements\Asset;
 use craft\errors\InvalidElementException;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Elements\Asset;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-use yii\db\Expression;
 
 use function Laravel\Prompts\confirm;
 
@@ -42,15 +42,15 @@ final class AsciiFilenamesCommand extends Command
 
         match (DB::connection()->getDriverName()) {
             // h/t https://stackoverflow.com/a/11741314/1688568
-            'mysql' => $query->andWhere(new Expression('[[filename]] <> CONVERT([[filename]] USING ASCII)')),
+            'mysql' => $query->whereRaw('filename <> CONVERT(filename USING ASCII)'),
             // h/t https://dba.stackexchange.com/a/167571/205387
-            'pgsql' => $query->andWhere(new Expression("[[filename]] ~ '[^[:ascii:]]'")),
-            default => throw new \Exception('Invalid driver name: '.DB::connection()->getDriverName().'.')
+            'pgsql' => $query->whereRaw("filename ~ '[^[:ascii:]]'"),
+            default => throw new Exception('Invalid driver name: '.DB::connection()->getDriverName().'.')
         };
 
-        /** @var Asset[] $assets */
-        $assets = $query->all();
-        $total = count($assets);
+        /** @var \Illuminate\Support\Collection<Asset> $assets */
+        $assets = $query->get();
+        $total = $assets->count();
 
         if ($total === 0) {
             $this->components->success('No assets found with non-ASCII filenames.');
@@ -60,10 +60,9 @@ final class AsciiFilenamesCommand extends Command
 
         $this->components->info("$total assets found with non-ASCII filenames:");
 
-        $this->components->bulletList(array_map(
+        $this->components->bulletList($assets->map(
             fn (Asset $asset) => $asset->getFilename(),
-            $assets,
-        ));
+        )->all());
 
         if (! confirm('Ready to rename these filenames as ASCII?')) {
             return self::SUCCESS;
