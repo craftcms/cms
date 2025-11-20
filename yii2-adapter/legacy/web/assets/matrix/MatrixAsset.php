@@ -19,7 +19,7 @@ class MatrixAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/matrix/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

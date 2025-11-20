@@ -157,12 +157,6 @@
     "isDynamicEntry": true,
     "imports": ["packages/craftcms-cp/dist/pl-BsbBHKbu.js"]
   },
-  "packages/craftcms-cp/dist/popper-DBeoc0HL.js": {
-    "file": "popper-DBeoc0HL.js",
-    "name": "popper-DBeoc0HL",
-    "src": "packages/craftcms-cp/dist/popper-DBeoc0HL.js",
-    "isDynamicEntry": true
-  },
   "packages/craftcms-cp/dist/ro-BWWeoMIS.js": {
     "file": "ro-BWWeoMIS.js",
     "name": "ro-BWWeoMIS",
@@ -235,15 +229,40 @@
     "isDynamicEntry": true
   },
   "resources/css/cp.css": {
-    "file": "cp.css",
+    "file": "assets/cp.css",
     "src": "resources/css/cp.css",
     "isEntry": true,
+    "name": "cp",
     "names": ["cp.css"]
   },
+  "resources/images/install/account.png": {
+    "file": "assets/account.png",
+    "src": "resources/images/install/account.png"
+  },
+  "resources/images/install/db.png": {
+    "file": "assets/db.png",
+    "src": "resources/images/install/db.png"
+  },
+  "resources/images/install/installer-bg.png": {
+    "file": "assets/installer-bg.png",
+    "src": "resources/images/install/installer-bg.png"
+  },
+  "resources/images/install/site.png": {
+    "file": "assets/site.png",
+    "src": "resources/images/install/site.png"
+  },
   "resources/js/cp.ts": {
-    "file": "cp.js",
+    "file": "cp2.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
+    "isEntry": true,
+    "imports": ["resources/js/legacy.ts"],
+    "dynamicImports": ["resources/js/pages/Install.vue"]
+  },
+  "resources/js/legacy.ts": {
+    "file": "legacy.js",
+    "name": "legacy",
+    "src": "resources/js/legacy.ts",
     "isEntry": true,
     "dynamicImports": [
       "packages/craftcms-cp/dist/bg-BG-BqLSXSgK.js",
@@ -281,8 +300,21 @@
       "packages/craftcms-cp/dist/uk-UA-BP_5Rplg.js",
       "packages/craftcms-cp/dist/uk-CGlal3kJ.js",
       "packages/craftcms-cp/dist/zh-CZafHN1K.js",
-      "packages/craftcms-cp/dist/en-QBEFuq4A.js",
-      "packages/craftcms-cp/dist/popper-DBeoc0HL.js"
+      "packages/craftcms-cp/dist/en-QBEFuq4A.js"
+    ]
+  },
+  "resources/js/pages/Install.vue": {
+    "file": "Install.js",
+    "name": "Install",
+    "src": "resources/js/pages/Install.vue",
+    "isDynamicEntry": true,
+    "imports": ["resources/js/cp.ts", "resources/js/legacy.ts"],
+    "css": ["assets/Install.css"],
+    "assets": [
+      "assets/installer-bg.png",
+      "assets/account.png",
+      "assets/site.png",
+      "assets/db.png"
     ]
   }
 }

@@ -18,7 +18,7 @@ class AssetIndexesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/assetindexes/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

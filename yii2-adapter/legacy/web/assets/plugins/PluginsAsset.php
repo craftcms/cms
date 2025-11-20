@@ -19,7 +19,7 @@ class PluginsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/plugins/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

@@ -19,7 +19,7 @@ class InputmaskAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/inputmask/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

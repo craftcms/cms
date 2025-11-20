@@ -7,5 +7,5 @@
     "./vendor/bin/pint --parallel"
   ],
   "*.scss": ["stylelint --fix --allow-empty-input"],
-  "*.{html,json,css,scss}": "prettier --ignore-unknown --write"
+  "!(yii2-adapter)/**/*.{html,json,css,scss}": "prettier --ignore-unknown --write"
 }

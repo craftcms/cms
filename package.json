@@ -10,8 +10,9 @@
     "prebuild": "npm run fix-prettier",
     "build": "vite build",
     "dev": "vite",
-    "build:bundles": "npm run build -w @craftcms/asset-bundles",
-    "dev:bundles": "npm run dev -w @craftcms/asset-bundles",
+    "build:bundles": "cd yii2-adapter && npm run build",
+    "dev:bundles": "cd yii2-adapter && npm run dev",
+    "serve:bundles": "cd yii2-adapter && npm run serve",
     "dev:cp": "npm run dev -w @craftcms/cp",
     "build:cp": "npm run build -w @craftcms/cp",
     "test:cp": "npm run test -w @craftcms/cp",
@@ -27,7 +28,7 @@
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.52.0",
-    "@tailwindcss/vite": "^4.1.14",
+    "@tailwindcss/vite": "^4.1.16",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.1",
     "husky": "^9.1.7",
@@ -50,9 +51,11 @@
   "dependencies": {
     "@craftcms/cp": "file:packages/craftcms-cp",
     "@inertiajs/vue3": "^2.2.7",
+    "@vueuse/core": "^14.0.0",
+    "axios": "^1.13.2",
     "laravel-vite-plugin": "^2.0.1",
     "lit": "^3.3.1",
-    "tailwindcss": "^4.1.14",
+    "tailwindcss": "^4.1.16",
     "vue": "^3.5.22"
   }
 }

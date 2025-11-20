@@ -19,7 +19,7 @@ class SitesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/sites/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

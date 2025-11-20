@@ -68,6 +68,16 @@
   --c-color-warning-on-emphasis: var(--color-yellow-50);
   --c-color-warning-on-subtle: var(--color-yellow-800);
 
+  --c-color-danger-bg-emphasis: var(--color-red-600);
+  --c-color-danger-bg-normal: var(--color-red-100);
+  --c-color-danger-bg-subtle: var(--color-red-50);
+  --c-color-danger-border-emphasis: var(--color-red-600);
+  --c-color-danger-border-normal: var(--color-red-400);
+  --c-color-danger-border-subtle: var(--color-red-600);
+  --c-color-danger-on-emphasis: var(--color-red-50);
+  --c-color-danger-on-normal: var(--color-red-700);
+  --c-color-danger-on-subtle: var(--color-red-800);
+
   --c-font-body:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -87,16 +97,21 @@
   --c-radius-sm: 3px;
   --c-radius-md: 4px;
   --c-radius-lg: 6px;
+  --c-radius-xl: 12px;
   --c-radius-full: calc(Infinity * 1px);
 
-  --c-spacing: 0.25rem;
+  --c-spacing: 0.125rem;
   --c-spacing-1px: 1px;
-  --c-spacing-xs: calc(var(--spacing) * 0.5);
-  --c-spacing-sm: calc(var(--spacing) * 1);
-  --c-spacing-md: calc(var(--spacing) * 2);
-  --c-spacing-lg: calc(var(--spacing) * 4);
-  --c-spacing-xl: calc(var(--spacing) * 8);
-  --c-spacing-2xl: calc(var(--spacing) * 16);
+  --c-spacing-xs: calc(var(--c-spacing) * 0.5);
+  --c-spacing-sm: calc(var(--c-spacing) * 1);
+  --c-spacing-md: calc(var(--c-spacing) * 2);
+  --c-spacing-lg: calc(var(--c-spacing) * 4);
+  --c-spacing-xl: calc(var(--c-spacing) * 8);
+  --c-spacing-2xl: calc(var(--c-spacing) * 16);
+
+  @media screen and (min-width: 1024px) {
+    --c-spacing: 0.25rem;
+  }
 
   --c-size-touch-target: calc(34rem / 16);
 
@@ -223,6 +238,24 @@
   --c-button-danger-fg-hover: var(--c-button-danger-fg);
 
   /** Appearances **/
+  /* Generic Panes */
+  --c-pane-bg: var(--c-bg-overlay);
+  --c-pane-fg: var(--c-fg-text);
+  --c-pane-border: 1px solid transparent;
+  --c-pane-radius: var(--c-radius-md);
+
+  /* Callouts */
+  --c-callout-radius: var(--c-pane-radius);
+
+  /* Modals */
+  --c-modal-bg: var(--c-pane-bg);
+  --c-modal-fg: var(--c-pane-fg);
+  --c-modal-radius: var(--c-radius-lg);
+  --c-modal-border: var(--c-pane-border);
+  --c-modal-shadow:
+    0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
+    0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+
   /* Plain */
 
   /* Chip */
@@ -303,6 +336,16 @@
   --c-color-warning-border-subtle: var(--color-yellow-400);
   --c-color-warning-on-emphasis: var(--color-yellow-950);
   --c-color-warning-on-subtle: var(--color-yellow-100);
+
+  --c-color-danger-bg-emphasis: var(--color-red-500);
+  --c-color-danger-bg-normal: var(--color-red-800);
+  --c-color-danger-bg-subtle: var(--color-red-900);
+  --c-color-danger-border-emphasis: var(--color-red-600);
+  --c-color-danger-border-normal: var(--color-red-900);
+  --c-color-danger-border-subtle: var(--color-red-900);
+  --c-color-danger-on-emphasis: var(--color-red-100);
+  --c-color-danger-on-normal: var(--color-red-200);
+  --c-color-danger-on-subtle: var(--color-red-400);
 
   /* Tooltip */
 

@@ -19,7 +19,7 @@ class SelectizeAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@assetBundles/selectize/dist';
+        $this->sourcePath = __dir__ . '/dist';
 
         $this->css = [
             'css/selectize.css',

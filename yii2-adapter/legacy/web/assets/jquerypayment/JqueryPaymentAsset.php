@@ -19,7 +19,7 @@ class JqueryPaymentAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@assetBundles/jquerypayment/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->js = [
             'jquery.payment.js',

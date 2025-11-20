@@ -273,76 +273,84 @@ class ElementIndexSettingsController extends BaseElementsController
         if ($multiPage) {
             $sourcePages = $this->request->getBodyParam('sourcePages', []);
             $pageSettings = $this->request->getBodyParam('pageSettings', []);
+            $sourcePageIndexes = [];
         }
 
         // Normalize to the way it's stored in the DB
-        foreach ($sourceOrder as $source) {
-            if (isset($source['key'])) {
-                $type = match (true) {
-                    str_starts_with($source['key'], 'custom:') => ElementSources::TYPE_CUSTOM,
-                    str_starts_with($source['key'], 'heading:') => ElementSources::TYPE_HEADING,
-                    default => ElementSources::TYPE_NATIVE,
-                };
+        foreach ($sourceOrder as $key) {
+            $type = match (true) {
+                str_starts_with($key, 'custom:') => ElementSources::TYPE_CUSTOM,
+                str_starts_with($key, 'heading:') => ElementSources::TYPE_HEADING,
+                default => ElementSources::TYPE_NATIVE,
+            };
 
-                $isCustom = $type === ElementSources::TYPE_CUSTOM;
-                $sourceConfig = [
-                    'type' => $type,
-                    'key' => $source['key'],
-                ];
+            $isCustom = $type === ElementSources::TYPE_CUSTOM;
+            $sourceConfig = [
+                'type' => $type,
+                'key' => $key,
+            ];
 
-                if (isset($sourcePages[$source['key']])) {
-                    $sourceConfig['page'] = $sourcePages[$source['key']];
-                }
-
-                // Were new settings posted?
-                if (isset($sourceSettings[$source['key']])) {
-                    $postedSettings = $sourceSettings[$source['key']];
-
-                    if ($type !== ElementSources::TYPE_HEADING) {
-                        $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
-                    }
-
-                    if (isset($postedSettings['defaultSort'])) {
-                        $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
-                    }
-
-                    if (isset($postedSettings['defaultViewMode'])) {
-                        $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
-                    }
-
-                    if ($isCustom) {
-                        $sourceConfig += [
-                            'label' => $postedSettings['label'],
-                            'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
-                        ];
-
-                        if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
-                            $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
-                        }
-
-                        if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
-                            $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
-                        }
-                    } elseif ($type === ElementSources::TYPE_HEADING) {
-                        $sourceConfig['heading'] = $postedSettings['heading'];
-                    } elseif (isset($postedSettings['enabled'])) {
-                        $sourceConfig['disabled'] = !$postedSettings['enabled'];
-                        if ($sourceConfig['disabled']) {
-                            $disabledSourceKeys[] = $source['key'];
-                        }
-                    }
-                } elseif (isset($oldSourceConfigs[$source['key']])) {
-                    $sourceConfig += $oldSourceConfigs[$source['key']];
-                    if (!empty($sourceConfig['disabled'])) {
-                        $disabledSourceKeys[] = $source['key'];
-                    }
-                } elseif ($isCustom) {
-                    // Ignore it
-                    continue;
-                }
-
-                $newSourceConfigs[] = $sourceConfig;
+            if (isset($sourcePages[$key])) {
+                $sourceConfig['page'] = $sourcePages[$key];
             }
+
+            // Were new settings posted?
+            if (isset($sourceSettings[$key])) {
+                $postedSettings = $sourceSettings[$key];
+
+                if ($type !== ElementSources::TYPE_HEADING) {
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+                }
+
+                if (isset($postedSettings['defaultSort'])) {
+                    $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
+                }
+
+                if (isset($postedSettings['defaultViewMode'])) {
+                    $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
+                }
+
+                if ($isCustom) {
+                    $sourceConfig += [
+                        'label' => $postedSettings['label'],
+                        'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                    ];
+
+                    if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
+                        $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
+                    }
+
+                    if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                        $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                    }
+                } elseif ($type === ElementSources::TYPE_HEADING) {
+                    $sourceConfig['heading'] = $postedSettings['heading'];
+                } elseif (isset($postedSettings['enabled'])) {
+                    $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                    if ($sourceConfig['disabled']) {
+                        $disabledSourceKeys[] = $key;
+                    }
+                }
+            } elseif (isset($oldSourceConfigs[$key])) {
+                $sourceConfig += $oldSourceConfigs[$key];
+                if (!empty($sourceConfig['disabled'])) {
+                    $disabledSourceKeys[] = $key;
+                }
+            } elseif ($isCustom) {
+                // Ignore it
+                continue;
+            }
+
+            $newSourceConfigs[] = $sourceConfig;
+
+            if ($multiPage) {
+                $sourcePageIndexes[] = array_search($sourceConfig['page'], array_keys($pageSettings));
+            }
+        }
+
+        if ($multiPage) {
+            /** @phpstan-ignore-next-line */
+            array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
         $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);

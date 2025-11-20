@@ -7,11 +7,12 @@
 
 namespace craft\web\assets\d3;
 
+use Craft;
 use craft\helpers\ChartHelper;
+use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\View;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 
 /**
@@ -22,7 +23,7 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/d3/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @var array The default language format files to use
@@ -44,7 +45,7 @@ class D3Asset extends AssetBundle
 
         // Add locale definition JS variables
         $locale = I18N::getFormattingLocale();
-        $formatter = I18N::getFormatter();
+        $formatter = Craft::$app->getFormatter();
 
         // https://github.com/d3/d3-format#formatLocale
         $localeDef = [

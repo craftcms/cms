@@ -205,10 +205,11 @@ export function formatMessage(pattern: string, params: object): string {
 export function t(
   category: string,
   message: string,
-  params: Record<any, any>,
-  store: Record<string, any> = {}
+  params?: Record<any, any>,
+  store?: Record<string, any>
 ): string {
   if (
+    store &&
     typeof store[category] !== 'undefined' &&
     typeof store[category][message] !== 'undefined'
   ) {

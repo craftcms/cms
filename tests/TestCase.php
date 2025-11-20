@@ -109,6 +109,8 @@ class TestCase extends Orchestra
     #[Override]
     protected function getEnvironmentSetUp($app)
     {
+        $app->make(\Illuminate\Contracts\Config\Repository::class)->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
 

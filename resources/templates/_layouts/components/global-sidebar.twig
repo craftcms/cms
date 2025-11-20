@@ -1,4 +1,4 @@
-{% macro action(item, isSelected, showIcon) %}
+{% macro action(item, isSubnav, isSelected, showIcon) %}
   {% set showIcon = showIcon ?? true %}
   {% set selected = item.sel ?? isSelected ?? false %}
   {% set badgeCount = item.badgeCount ?? false %}
@@ -29,11 +29,11 @@
 
     {{ item.label }}
 
-    {% if subnav %}
+    {% if not isSubnav and subnav %}
       <craft-navigation slot="subnav">
         {% for subItem in subnav %}
           {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
-          {{ _self.action(subItem, isSelected) }}
+          {{ _self.action(subItem, true, isSelected) }}
         {% endfor %}
       </craft-navigation>
     {% endif %}
@@ -48,7 +48,7 @@
 
     <craft-navigation class="global-sidebar__nav" label="{{ 'Primary' | t('app') }}">
       {% for item in craft.cp.nav() %}
-        {{ _self.action(item) }}
+        {{ _self.action(item, false) }}
       {% endfor %}
     </craft-navigation>
 

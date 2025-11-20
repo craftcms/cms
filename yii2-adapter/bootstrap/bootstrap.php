@@ -100,12 +100,6 @@ Craft::setAlias('@storage', defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH :
 Craft::setAlias('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
 Craft::setAlias('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
 Craft::setAlias('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
-Craft::setAlias('@assetBundles', Arr::join([
-    dirname(__DIR__, 2),
-    'resources',
-    'build',
-    'legacy',
-], DIRECTORY_SEPARATOR));
 
 // Load the config
 $config = Arr::merge(

@@ -19,7 +19,7 @@ class RecentEntriesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/recententries/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

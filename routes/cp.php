@@ -17,6 +17,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +25,8 @@ use Illuminate\Support\Facades\Route;
 /**
  * Admin requests that do not require a login
  */
-Route::get('install', [InstallController::class, 'index']);
+Route::get('install', [InstallController::class, 'index'])
+    ->middleware([HandleInertiaRequests::class]);
 
 /**
  * Admin requests that require a login

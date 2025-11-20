@@ -18,7 +18,7 @@ class HtmxAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/htmx/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

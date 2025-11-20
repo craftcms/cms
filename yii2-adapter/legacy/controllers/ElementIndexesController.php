@@ -849,10 +849,6 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableActions(): ?array
     {
-        if ($this->request->isMobileBrowser()) {
-            return null;
-        }
-
         $actions = $this->elementType::actions($this->sourceKey);
 
         foreach ($actions as $i => $action) {

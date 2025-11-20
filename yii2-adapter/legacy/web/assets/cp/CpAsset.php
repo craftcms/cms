@@ -62,7 +62,7 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/cp/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
