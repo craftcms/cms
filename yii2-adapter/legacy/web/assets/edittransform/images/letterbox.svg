@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>letterbox</title>
+    <defs>
+        <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
+        <path d="M0,0 L56,0 L56,56 L0,56 L0,0 Z" id="path-2"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-3"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-4"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-5"></path>
+        <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-6"></path>
+    </defs>
+    <g id="letterbox" stroke="none" fill="none" transform="translate(0, 0)" xlink:href="#path-1" fill-rule="evenodd">
+        <use fill="#FFFFFF" xlink:href="#path-1"></use>
+        <g id="image" stroke-width="1" transform="translate(14, 4)">
+            <rect id="letterbox-bg" fill="#CDD8E4" x="0" y="0" width="52" height="52"></rect>
+            <rect id="pane" fill="#F3F7FD" x="0" y="9" width="52" height="34"></rect>
+            <path d="M29.7467389,19 C28.9967855,19 28.2937042,19.3541667 27.8718554,19.9473958 L22.6221816,27.3848958 L21.0004073,25.4635417 C20.5691841,24.9588542 19.9317237,24.6666667 19.2473912,24.6666667 C18.5630587,24.6666667 17.9162239,24.9588542 17.4943751,25.4635417 L11.4947479,32.546875 C10.9510317,33.184375 10.8479131,34.0609375 11.2228898,34.7958333 C11.5978665,35.5307292 12.3853176,36 13.247764,36 L20.747298,36 L25.2470185,36 L38.7461798,36 C39.5805029,36 40.3398307,35.5661458 40.7335563,34.8755208 C41.1272818,34.1848958 41.0804097,33.34375 40.6210633,32.6973958 L31.6216224,19.9473958 C31.1997736,19.3541667 30.4966923,19 29.7467389,19 Z" id="Path" fill="#CDD8E4"></path>
+            <path d="M14,22 C15.6568542,22 17,20.6568542 17,19 C17,17.3431458 15.6568542,16 14,16 C12.3431458,16 11,17.3431458 11,19 C11,20.6568542 12.3431458,22 14,22 Z" id="Path" fill="#CDD8E4"></path>
+            <g id="crop" transform="translate(-2, -2)" xlink:href="#path-2">
+                <path d="M2,2 L54,2 L54,54 L2,54 Z" id="crop-border" stroke="#5A6572" stroke-width="1" stroke-dasharray="1"></path>
+                <g id="corner" xlink:href="#path-3" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy" transform="translate(4, 52) rotate(-90) translate(-4, -52)translate(0, 48)" xlink:href="#path-4" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy-3" transform="translate(52, 4) scale(-1, 1) translate(-52, -4)translate(48, 0)" xlink:href="#path-5" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+                <g id="corner-copy-2" transform="translate(52, 52) scale(-1, 1) rotate(-90) translate(-52, -52)translate(48, 48)" xlink:href="#path-6" fill="#5A6572" fill-rule="evenodd">
+                    <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

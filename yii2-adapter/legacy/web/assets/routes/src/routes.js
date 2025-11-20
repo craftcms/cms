@@ -22,10 +22,15 @@ import './routes.scss';
         this.routes.push(route);
       }
 
-      this.sorter = new Garnish.DragSort($routes, {
-        axis: Garnish.Y_AXIS,
-        onSortChange: this.updateRouteOrder.bind(this),
-      });
+      if (Craft.hasMousePointerEvents()) {
+        this.sorter = new Garnish.DragSort($routes, {
+          handle: '.move',
+          axis: Garnish.Y_AXIS,
+          onSortChange: this.updateRouteOrder.bind(this),
+        });
+      } else {
+        $('#routes .move').hide();
+      }
 
       this.$addRouteBtn = $('#add-route-btn');
 
@@ -70,6 +75,9 @@ import './routes.scss';
     $uri: null,
     $template: null,
     modal: null,
+    $actionMenu: null,
+    actionDisclosure: null,
+    $actionMenuOptions: null,
 
     init: function (container) {
       this.$container = $(container);
@@ -82,6 +90,54 @@ import './routes.scss';
       if (Craft.allowAdminChanges) {
         this.addListener(this.$container, 'click', 'edit');
       }
+
+      const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
+      const actionDisclosure =
+        $actionMenuBtn.data('disclosureMenu') ||
+        new Garnish.DisclosureMenu($actionMenuBtn);
+
+      this.$actionMenu = actionDisclosure.$container;
+      this.actionDisclosure = actionDisclosure;
+
+      actionDisclosure.on('show', () => {
+        this.$container.addClass('active');
+        const hideActions = [];
+
+        if (!this.$container.prev('.route').length) {
+          hideActions.push('moveUp');
+        }
+
+        if (!this.$container.next('.route').length) {
+          hideActions.push('moveDown');
+        }
+
+        const $buttons = this.$actionMenu.find('button[data-action]');
+        const $hideButtons = hideActions.length
+          ? $buttons.filter(
+              hideActions.map((a) => `[data-action=${a}]`).join(',')
+            )
+          : $();
+
+        const disclosureMenu = this.$actionMenu.data('disclosureMenu');
+        $hideButtons.each((i, button) => {
+          disclosureMenu.hideItem(button);
+        });
+        $buttons.not($hideButtons).each((i, button) => {
+          disclosureMenu.showItem(button);
+        });
+      });
+
+      actionDisclosure.on('hide', () => {
+        this.$container.removeClass('active');
+      });
+
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
+
+      this.addListener(
+        this.$actionMenuOptions,
+        'activate',
+        this.handleActionClick
+      );
     },
 
     edit: function () {
@@ -89,6 +145,22 @@ import './routes.scss';
         this.modal = new RouteSettingsModal(this);
       } else {
         this.modal.show();
+      }
+    },
+
+    moveUp: function () {
+      let $prev = this.$container.prev('.route');
+      if ($prev.length) {
+        this.$container.insertBefore($prev);
+        Craft.routes.updateRouteOrder();
+      }
+    },
+
+    moveDown: function () {
+      let $next = this.$container.next('.route');
+      if ($next.length) {
+        this.$container.insertAfter($next);
+        Craft.routes.updateRouteOrder();
       }
     },
 
@@ -122,6 +194,29 @@ import './routes.scss';
 
       this.$uri.html(uriHtml);
       this.$template.text(this.modal.$templateInput.val());
+    },
+
+    handleActionClick: function (event) {
+      event.preventDefault();
+      this.onActionSelect(event.target);
+    },
+
+    onActionSelect: function (option) {
+      const $option = $(option);
+
+      switch ($option.data('action')) {
+        case 'moveUp': {
+          this.moveUp();
+          break;
+        }
+
+        case 'moveDown': {
+          this.moveDown();
+          break;
+        }
+      }
+
+      this.actionDisclosure?.hide();
     },
   });
 
@@ -465,13 +560,15 @@ import './routes.scss';
 
             $route.appendTo('#routes');
 
+            this.addNewRouteActions($route);
+
             this.route = new Route($route);
             this.route.modal = this;
 
-            Craft.routes.sorter.addItems($route);
+            Craft.routes.sorter?.addItems($route);
 
             // Was this the first one?
-            if (Craft.routes.sorter.$items.length === 1) {
+            if (Craft.routes.sorter?.$items.length === 1) {
               $('#noroutes').addClass('hidden');
             }
           }
@@ -490,6 +587,73 @@ import './routes.scss';
           this.$spinner.hide();
           this.loading = false;
         });
+    },
+
+    addNewRouteActions: function ($route) {
+      let $actionsContainer = $route.find('.actions');
+
+      Craft.ui
+        .createButton({
+          class: 'chromeless small edit-btn',
+          icon: 'edit',
+        })
+        .attr({
+          title: Craft.t('app', 'Edit'),
+          'aria-label': Craft.t('app', 'Edit'),
+          role: 'none',
+        })
+        .appendTo($actionsContainer);
+      $(' ').appendTo($actionsContainer);
+
+      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
+      const $menuButton = Craft.ui
+        .createButton({
+          class: 'menubtn action-btn small',
+          controls: menuId,
+          ariaLabel: Craft.t('app', 'Actions'),
+        })
+        .attr({
+          'data-disclosure-trigger': 'true',
+          title: Craft.t('app', 'Actions'),
+        })
+        .appendTo($actionsContainer);
+      $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).appendTo($actionsContainer);
+
+      const disclosureMenu = $menuButton
+        .disclosureMenu()
+        .data('disclosureMenu');
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-up'),
+        label: Craft.t('app', 'Move up'),
+        onActivate: () => {
+          this.route.moveUp();
+        },
+        attributes: {
+          'data-action': 'moveUp',
+        },
+      });
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-down'),
+        label: Craft.t('app', 'Move down'),
+        onActivate: () => {
+          this.route.moveDown();
+        },
+        attributes: {
+          'data-action': 'moveDown',
+        },
+      });
+
+      $('<a />', {
+        class: 'move icon',
+        title: Craft.t('app', 'Reorder'),
+        'aria-label': Craft.t('app', 'Reorder'),
+        tabindex: '-1',
+      }).appendTo($actionsContainer);
     },
 
     addUriError: function (error) {
@@ -520,12 +684,12 @@ import './routes.scss';
           Craft.cp.displaySuccess(Craft.t('app', 'Route deleted.'));
         });
 
-        Craft.routes.sorter.removeItems(this.route.$container);
+        Craft.routes.sorter?.removeItems(this.route.$container);
         this.route.$container.remove();
         this.hide();
 
         // Was this the last one?
-        if (Craft.routes.sorter.$items.length === 0) {
+        if (Craft.routes.sorter?.$items.length === 0) {
           $('#noroutes').removeClass('hidden');
         }
       }

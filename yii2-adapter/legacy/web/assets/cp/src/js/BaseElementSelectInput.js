@@ -182,7 +182,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     initElementSort: function () {
-      if (this.settings.sortable) {
+      // hide the diamond icon (for drag sorting) if the device doesn't have mouse events
+      if (!Craft.hasMousePointerEvents()) {
+        $(
+          '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
+        ).hide();
+      }
+
+      // init drag-sorting if device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elementsContainer,
           filter: this.settings.selectable
@@ -203,6 +211,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           handle: (() => {
             switch (this.settings.viewMode) {
               case 'list':
+              case 'list-inline':
+              case 'thumbs':
               case 'large':
                 return '> .element > .chip-content > .chip-actions > .move-btn';
               case 'cards':
@@ -241,7 +251,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getElementSortAxis: function () {
       if (
-        ['list'].includes(this.settings.viewMode) &&
+        this.settings.viewMode === 'list' &&
         !this.getElementsContainer().hasClass('inline-chips')
       ) {
         return 'y';
@@ -394,7 +404,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           });
         }
 
-        if (this.settings.sortable) {
+        // only add the diamond icon (for drag-sorting) if device has mouse events
+        if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
             .createButton({
               class: 'chromeless small move-btn',
@@ -420,7 +431,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.addItems($elements.parent('li'));
+        this.elementSort?.addItems($elements.parent('li'));
       }
 
       if (this.settings.editable) {
@@ -578,11 +589,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 instances: [
                   {
                     context: 'field',
-                    ui: ['list', 'large'].includes(this.settings.viewMode)
+                    ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
+                      this.settings.viewMode
+                    )
                       ? 'chip'
                       : 'card',
-                    size:
-                      this.settings.viewMode === 'large' ? 'large' : 'small',
+                    size: ['thumbs', 'large'].includes(this.settings.viewMode)
+                      ? 'large'
+                      : 'small',
                     showActionMenu: this.settings.showActionMenu,
                   },
                 ],
@@ -863,6 +877,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // re-render the elements even if the view modes match, to be sure we have all the correct settings
       const [inputUiType, inputUiSize] = (() => {
         switch (this.settings.viewMode) {
+          case 'thumbs':
           case 'large':
             return ['chip', 'large'];
           case 'cards':
@@ -1039,7 +1054,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // Make a couple tweaks
       Craft.setElementSize(
         $element,
-        this.settings.viewMode === 'large' ? 'large' : 'small'
+        ['thumbs', 'large'].includes(this.settings.viewMode) ? 'large' : 'small'
       );
       $element.addClass('removable').append(
         $('<input/>', {

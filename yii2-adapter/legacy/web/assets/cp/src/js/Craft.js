@@ -1758,6 +1758,17 @@ $.extend(Craft, {
   },
 
   /**
+   * Reduces an array to only unique items.
+   *
+   * @param {Array} arr
+   * @returns {Array}
+   */
+  uniqueArray: function (arr) {
+    // h/t https://stackoverflow.com/a/33121880/1688568
+    return [...new Set(arr)];
+  },
+
+  /**
    * Makes the first character of a string uppercase.
    *
    * @param {string} str
@@ -2112,6 +2123,7 @@ $.extend(Craft, {
     // menus last, since they can mess with the DOM
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
+    $('.expandable-button--collapsed', $container).expandableButton();
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
@@ -2932,6 +2944,10 @@ $.extend(Craft, {
       });
     });
   },
+
+  hasMousePointerEvents: function () {
+    return matchMedia('(pointer:fine)').matches;
+  },
 });
 
 // -------------------------------------------
@@ -3225,6 +3241,67 @@ $.extend($.fn, {
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
         new Garnish.DisclosureMenu($trigger, settings);
       }
+    });
+  },
+
+  expandableButton: function () {
+    return this.each(function () {
+      const $collapsed = $(this);
+      let $expanded = $collapsed.next('.expandable-button--expanded');
+      if (!$expanded.length) {
+        $expanded = $collapsed.prev('.expandable-button--collapsed');
+      }
+      const $container = $collapsed.parent();
+      let containerWidth;
+      let isVisible = false;
+      let isExpanded = false;
+
+      const adjust = () => {
+        if (!containerWidth) {
+          return;
+        }
+
+        if (!isExpanded) {
+          $collapsed.addClass('hidden');
+          $expanded.removeClass('hidden');
+        }
+
+        isExpanded = $container[0].scrollWidth <= containerWidth;
+
+        if (!isExpanded) {
+          $collapsed.removeClass('hidden');
+          $expanded.addClass('hidden');
+        }
+      };
+
+      const intersectionObserver = new IntersectionObserver((entries) => {
+        // was the container just made visible?
+        if (
+          isVisible !== (isVisible = entries[0].intersectionRatio !== 0) &&
+          isVisible
+        ) {
+          adjust();
+        }
+      });
+      intersectionObserver.observe($container[0]);
+
+      const checkContainerWidth = () => {
+        if (
+          containerWidth !==
+            (containerWidth = $container[0].getBoundingClientRect().width) &&
+          containerWidth
+        ) {
+          adjust();
+        }
+      };
+      checkContainerWidth();
+
+      const resizeObserver = new ResizeObserver(() => {
+        Garnish.requestAnimationFrame(() => {
+          checkContainerWidth();
+        });
+      });
+      resizeObserver.observe($container[0]);
     });
   },
 

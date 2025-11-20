@@ -67,7 +67,18 @@ Craft.FieldToggle = Garnish.Base.extend({
         );
         break;
       default:
-        this.addListener(this.$toggle, 'change', 'onToggleChange');
+        this.addListener(this.$toggle, 'change', () => {
+          this.onToggleChange();
+
+          // if this is a radio button, trigger onToggleChange() for the other radio buttons with the same name
+          if (this.$toggle.attr('type') === 'radio') {
+            $(`input[type="radio"][name="${this.$toggle.attr('name')}"]`)
+              .not(this.$toggle)
+              .each((i, radio) => {
+                $(radio).data('fieldtoggle')?.onToggleChange();
+              });
+          }
+        });
         this.onToggleChange();
     }
   },
@@ -83,7 +94,8 @@ Craft.FieldToggle = Garnish.Base.extend({
   getType: function () {
     let nodeName = this._toggleNodeName();
     if (
-      (nodeName === 'INPUT' && this.$toggle.attr('type') === 'checkbox') ||
+      (nodeName === 'INPUT' &&
+        ['checkbox', 'radio'].includes(this.$toggle.attr('type'))) ||
       this.$toggle.attr('role') === 'checkbox' ||
       this.$toggle.attr('role') === 'switch'
     ) {

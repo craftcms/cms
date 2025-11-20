@@ -12,10 +12,6 @@
       inputNamePrefix: null,
       inputIdPrefix: null,
 
-      showingAddEntryMenu: false,
-      addEntryBtnGroupWidth: null,
-      addEntryBtnContainerWidth: null,
-
       $container: null,
       $form: null,
       $entriesContainer: null,
@@ -52,8 +48,8 @@
         this.$entriesContainer = this.$container.children('.blocks');
         this.$addEntryBtnContainer = this.$container.children('.buttons');
         this.$addEntryBtn =
-          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
-        this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
+          this.$addEntryBtnContainer.find('.btn:not(.menubtn)');
+        this.$addEntryMenuBtn = this.$addEntryBtnContainer.find('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
@@ -68,29 +64,35 @@
         const $entries = this.$entriesContainer.children('.matrixblock');
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
-        this.entrySort = new Garnish.DragSort($entries, {
-          handle: '> .actions > .move-btn',
-          ignoreHandleSelector: null,
-          axis: 'y',
-          filter: () => {
-            // Only return all the selected items if the target item is selected
-            if (this.entrySort.$targetItem.hasClass('sel')) {
-              return this.entrySelect.getSelectedItems();
-            } else {
-              return this.entrySort.$targetItem;
-            }
-          },
-          collapseDraggees: true,
-          magnetStrength: 4,
-          helperLagBase: 1.5,
-          helperOpacity: 0.9,
-          onDragStop: () => {
-            this.trigger('entrySortDragStop');
-          },
-          onSortChange: () => {
-            this.entrySelect.resetItemOrder();
-          },
-        });
+        // only initialise drag-sort if the device has mouse events
+        if (Craft.hasMousePointerEvents()) {
+          this.entrySort = new Garnish.DragSort($entries, {
+            handle: '> .actions > .move-btn',
+            ignoreHandleSelector: null,
+            axis: 'y',
+            filter: () => {
+              // Only return all the selected items if the target item is selected
+              if (this.entrySort.$targetItem.hasClass('sel')) {
+                return this.entrySelect.getSelectedItems();
+              } else {
+                return this.entrySort.$targetItem;
+              }
+            },
+            collapseDraggees: true,
+            magnetStrength: 4,
+            helperLagBase: 1.5,
+            helperOpacity: 0.9,
+            onDragStop: () => {
+              this.trigger('entrySortDragStop');
+            },
+            onSortChange: () => {
+              this.entrySelect.resetItemOrder();
+            },
+          });
+        } else {
+          // hide the diamond icon (for drag-sort) if the device is touch-capable
+          $('.actions > .move-btn').hide();
+        }
 
         this.entrySelect = new Garnish.Select(
           this.$entriesContainer,
@@ -128,21 +130,22 @@
           }
         });
 
-        if (this.$addEntryMenuBtn.length) {
-          this.$addEntryMenuBtn
+        this.$addEntryMenuBtn.each((i, btn) => {
+          const $btn = $(btn);
+          $btn
             .disclosureMenu()
             .data('disclosureMenu')
             .$container.find('button')
             .on('activate', async (ev) => {
-              this.$addEntryMenuBtn.addClass('loading');
+              $btn.addClass('loading');
               Craft.cp.announce(Craft.t('app', 'Loading'));
               try {
                 await this.addEntry($(ev.currentTarget).data('type'));
               } finally {
-                this.$addEntryMenuBtn.removeClass('loading');
+                $btn.removeClass('loading');
               }
             });
-        }
+        });
 
         this.updateAddEntryBtn();
 
@@ -271,7 +274,7 @@
             });
           });
 
-          this.entrySort.addItems($newEntries);
+          this.entrySort?.addItems($newEntries);
           this.entrySelect.addItems($newEntries);
           this.updateAddEntryBtn();
           Garnish.firstFocusableElement($newEntries).focus();
@@ -371,6 +374,10 @@
           );
 
           const $entry = $(data.blockHtml);
+          // hide the diamond icon (for drag-sort) if the device doesn't have mouse events
+          if (!Craft.hasMousePointerEvents()) {
+            $entry.find('.actions > .move-btn').hide();
+          }
 
           // Pause the element editor
           await this.elementEditor?.pause();
@@ -400,7 +407,7 @@
               await Craft.appendBodyHtml(data.bodyHtml);
               Craft.initUiElements($entry.children('.fields'));
               new Craft.MatrixInput.Entry(this, $entry);
-              this.entrySort.addItems($entry);
+              this.entrySort?.addItems($entry);
               this.entrySelect.addItems($entry);
               this.updateAddEntryBtn();
 

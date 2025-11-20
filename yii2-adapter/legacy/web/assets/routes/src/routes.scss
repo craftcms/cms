@@ -15,26 +15,27 @@
   border-radius: var(--radius-lg);
   background-color: var(--gray-050);
   cursor: pointer;
-
-  &:hover:not(.inactive)::after {
-    position: absolute;
-    inset-block-start: 9px;
-    @include right(5px);
-    @include icon;
-    content: 'edit';
-    color: var(--link-color);
-  }
+  display: flex;
 
   &.inactive:hover {
     cursor: not-allowed;
   }
 
   .uri-container,
-  .template {
-    padding-block: 7px;
+  .template,
+  .actions {
     padding-inline: 14px;
     line-height: 18px;
     min-height: 18px;
+  }
+
+  .uri-container,
+  .template {
+    padding-block: 7px;
+  }
+
+  .actions {
+    padding-block: 4px;
   }
 
   .uri-container {
@@ -89,6 +90,7 @@
   }
 
   .template {
+    margin-inline-end: auto;
     color: var(--fg-subtle);
 
     &::before {
