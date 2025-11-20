@@ -46,13 +46,17 @@ Craft.EditableTable = Garnish.Base.extend(
 
       this.$table.data('editable-table', this);
 
-      this.sorter = new Craft.DataTableSorter(this.$table, {
-        helperClass: 'editabletablesorthelper',
-        copyDraggeeInputValuesToHelper: true,
-        onSortChange: () => {
-          this.updateAllRows();
-        },
-      });
+      if (Craft.hasMousePointerEvents()) {
+        this.sorter = new Craft.DataTableSorter(this.$table, {
+          helperClass: 'editabletablesorthelper',
+          copyDraggeeInputValuesToHelper: true,
+          onSortChange: () => {
+            this.updateAllRows();
+          },
+        });
+      } else {
+        $rows.find('.move').hide();
+      }
 
       for (let i = 0; i < $rows.length; i++) {
         const $row = $rows.eq(i);
@@ -247,7 +251,7 @@ Craft.EditableTable = Garnish.Base.extend(
         return;
       }
 
-      this.sorter.removeItems(row.$tr);
+      this.sorter?.removeItems(row.$tr);
       row.$tr.remove();
 
       this.rowCount--;
@@ -301,7 +305,7 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       const row = this.createRowObj($tr);
-      this.sorter.addItems($tr);
+      this.sorter?.addItems($tr);
 
       // Focus the first input in the row
       if (focus !== false) {
@@ -651,18 +655,20 @@ Craft.EditableTable = Garnish.Base.extend(
           class: 'thin action',
         }).appendTo($tr);
 
-        $('<div/>', {
+        let $div = $('<div/>', {
           class: 'flex flex-nowrap',
-        })
-          .append(
+        });
+
+        if (Craft.hasMousePointerEvents()) {
+          $div.append(
             $('<a/>', {
               class: 'move icon',
               title: Craft.t('app', 'Reorder'),
             })
-          )
-          .append($actionsBtn)
-          .append($menuContainer)
-          .appendTo($td);
+          );
+        }
+
+        $div.append($actionsBtn).append($menuContainer).appendTo($td);
 
         const menu = $actionsBtn.disclosureMenu().data('disclosureMenu');
 
@@ -738,6 +744,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       this.id = this.$tr.attr('data-id');
 
       this.$tr.data('editable-table-row', this);
+
+      if (!Craft.hasMousePointerEvents()) {
+        this.$tr.find('.move').hide();
+      }
 
       // Get the row ID, sans prefix
       const id = parseInt(

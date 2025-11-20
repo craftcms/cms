@@ -46,7 +46,7 @@
 
     addComponents: function ($components) {
       this.base($components);
-      this.manager?.entryTypeSort.addItems($components.parent('li'));
+      this.manager?.entryTypeSort?.addItems($components.parent('li'));
     },
 
     addComponentInternal: function ($component) {

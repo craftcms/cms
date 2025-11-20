@@ -1491,11 +1491,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getSourceActions: function () {
       let actions = [];
 
-      if (
-        Craft.userIsAdmin &&
-        Craft.allowAdminChanges &&
-        !Garnish.isMobileBrowser(true)
-      ) {
+      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
         actions.push({
           label: Craft.t('app', 'Customize sources'),
           administrative: true,
@@ -4457,7 +4453,7 @@ const ViewMenu = Garnish.Base.extend({
         `input[value="${attribute}"]`
       );
       if (!$checkbox.prop('checked')) {
-        $checkbox.prop('checked', true);
+        $checkbox.prop('checked', true).trigger('change');
       }
       const $container = $checkbox.parent();
 
@@ -4723,20 +4719,21 @@ const ViewMenu = Garnish.Base.extend({
       return $();
     }
 
-    this.$tableColumnsContainer = Craft.ui.createCheckboxSelect({
+    this.$tableColumnsContainer = Craft.ui.createSortableCheckboxSelect({
       options: columns.map((c) => ({
         label: c.label,
         value: c.attr,
       })),
-      sortable: true,
     });
 
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
-    this.$tableColumnsContainer.data('dragSort').on('sortChange', () => {
-      this._onTableColumnChange();
-    });
+    this.$tableColumnsContainer
+      .data('sortableCheckboxSelect')
+      .on('sortChange', () => {
+        this._onTableColumnChange();
+      });
 
     this._getTableColumnCheckboxes().on('change', (ev) => {
       this._onTableColumnChange();

@@ -346,10 +346,8 @@
 
     {% if readOnly %}
       config['disabled'] = true;
-    {% else %}
-      config['sortable'] = true;
     {% endif %}
 
-    Craft.ui.createCheckboxSelect(config).appendTo($defaultColumnsContainer);
+    Craft.ui.createSortableCheckboxSelect(config).appendTo($defaultColumnsContainer);
   })();
 {% endjs %}

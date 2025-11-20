@@ -575,7 +575,7 @@ Craft.ui = {
       }).appendTo($container);
 
       if (config.sortable) {
-        $('<div/>', {class: 'icon move'}).appendTo($option);
+        $('<div/>', {class: 'icon move draggable-handle'}).appendTo($option);
       }
 
       this.createCheckbox({
@@ -587,14 +587,22 @@ Craft.ui = {
       }).appendTo($option);
     }
 
-    new Garnish.CheckboxSelect($container);
+    // todo: just check config.sortable when BC isn't a concern
+    if (config.includeSortActions) {
+      new Craft.SortableCheckboxSelect($container);
+    } else {
+      new Garnish.CheckboxSelect($container);
 
-    if (config.sortable) {
-      const dragSort = new Garnish.DragSort($container.children(':not(.all)'), {
-        handle: '.move',
-        axis: 'y',
-      });
-      $container.data('dragSort', dragSort);
+      if (config.sortable) {
+        const dragSort = new Garnish.DragSort(
+          $container.children(':not(.all)'),
+          {
+            handle: '.move',
+            axis: 'y',
+          }
+        );
+        $container.data('dragSort', dragSort);
+      }
     }
 
     return $container;
@@ -606,6 +614,22 @@ Craft.ui = {
       config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
     }
     return this.createField(this.createCheckboxSelect(config), config);
+  },
+
+  createSortableCheckboxSelect: function (config) {
+    return this.createCheckboxSelect({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
+  },
+
+  createSortableCheckboxSelectField: function (config) {
+    return this.createCheckboxSelectField({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
   },
 
   createLightswitch: function (config) {

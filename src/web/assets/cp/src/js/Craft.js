@@ -2944,6 +2944,10 @@ $.extend(Craft, {
       });
     });
   },
+
+  hasMousePointerEvents: function () {
+    return matchMedia('(pointer:fine)').matches;
+  },
 });
 
 // -------------------------------------------

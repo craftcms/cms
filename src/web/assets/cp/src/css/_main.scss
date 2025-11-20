@@ -672,7 +672,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .action-btn::before {
-  content: 'ellipsis';
+  content: 'ellipsis' / '';
 }
 
 /* headings */
@@ -4334,6 +4334,11 @@ table {
     background-color: var(--gray-050);
     box-shadow: none;
     border-radius: var(--border-radius, var(--radius-sm));
+
+    // adjust the margin-block
+    @media only screen and (width <= 767px) {
+      margin-block: calc(var(--s) * -1 + 2px) var(--s);
+    }
 
     &::after {
       content: '';
@@ -8482,7 +8487,7 @@ div.checkbox.checked:not(.indeterminate)::before,
   .elements
   .disabled
   .checkbox::before {
-  content: 'check';
+  content: 'check' / '';
   font-size: calc(var(--checkbox-size) * 0.8);
 }
 

@@ -182,7 +182,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     initElementSort: function () {
-      if (this.settings.sortable) {
+      // hide the diamond icon (for drag sorting) if the device doesn't have mouse events
+      if (!Craft.hasMousePointerEvents()) {
+        $(
+          '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
+        ).hide();
+      }
+
+      // init drag-sorting if device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elementsContainer,
           filter: this.settings.selectable
@@ -396,7 +404,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           });
         }
 
-        if (this.settings.sortable) {
+        // only add the diamond icon (for drag-sorting) if device has mouse events
+        if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
             .createButton({
               class: 'chromeless small move-btn',
@@ -422,7 +431,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.addItems($elements.parent('li'));
+        this.elementSort?.addItems($elements.parent('li'));
       }
 
       if (this.settings.editable) {

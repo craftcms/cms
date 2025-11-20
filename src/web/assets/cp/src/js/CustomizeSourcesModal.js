@@ -197,9 +197,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
 
     // Create the source item sorter
-    this.sourceDrag = new Craft.CustomizeSourcesModal.SourceDrag(this, {
-      handle: '.move',
-    });
+    if (Craft.hasMousePointerEvents()) {
+      this.sourceDrag = new Craft.CustomizeSourcesModal.SourceDrag(this, {
+        handle: '.move',
+      });
+    } else {
+      this.$sourcesSidebar.find('.cs-item .move').hide();
+    }
 
     // Create the sources
     this.sources = [];
@@ -295,10 +299,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     );
 
     // Create the page item sorter
-    this.pageDrag = new Garnish.DragSort({
-      handle: '.move',
-      axis: 'y',
-    });
+    if (Craft.hasMousePointerEvents()) {
+      this.pageDrag = new Garnish.DragSort({
+        handle: '.move',
+        axis: 'y',
+      });
+    } else {
+      this.$pagesSidebar.find('.cs-item .move').hide();
+    }
 
     // create the pages
     this.pages = [];
@@ -367,12 +375,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       )
       .appendTo($item);
 
-    $(
-      `<a class="move icon cs-item__move" title="${Craft.t(
-        'app',
-        'Reorder'
-      )}" role="button"></a>`
-    ).appendTo($item);
+    if (Craft.hasMousePointerEvents()) {
+      $(
+        `<a class="move icon cs-item__move" title="${Craft.t(
+          'app',
+          'Reorder'
+        )}" role="button"></a>`
+      ).appendTo($item);
+    }
 
     $('<input/>', {
       type: 'hidden',
@@ -389,7 +399,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       icon,
       isNew
     );
-    this.pageDrag.addItems($item);
+    this.pageDrag?.addItems($item);
 
     // Select this by default?
     if (
@@ -469,12 +479,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       name: 'sourceOrder[]',
       value: sourceData.key,
     }).appendTo($item);
-    $(
-      `<a class="move icon cs-item__move" title="${Craft.t(
-        'app',
-        'Reorder'
-      )}" role="button"></a>`
-    ).appendTo($item);
+    if (Craft.hasMousePointerEvents()) {
+      $(
+        `<a class="move icon cs-item__move" title="${Craft.t(
+          'app',
+          'Reorder'
+        )}" role="button"></a>`
+      ).appendTo($item);
+    }
 
     let source;
 
@@ -533,7 +545,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       }
     }
 
-    this.sourceDrag.addItems($item);
+    this.sourceDrag?.addItems($item);
 
     this.sources.push(source);
     this.updateSourceActionButtons();
@@ -859,7 +871,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
         'aria-describedby': this.$item.find('.label').attr('id'),
         'aria-controls': 'cs-source-actions',
         'data-disclosure-trigger': 'true',
-      }).insertBefore(this.$item.find('.move'));
+      }).insertAfter(this.$item.find('.cs-item__btn'));
 
       this.$actionMenu = $('<div/>', {
         id: 'cs-source-actions',
@@ -1064,7 +1076,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     },
 
     destroy: function () {
-      this.modal.pageDrag.removeItems(this.$item);
+      this.modal.pageDrag?.removeItems(this.$item);
       this.modal.pages = this.modal.pages.filter((p) => p !== this);
 
       let $closestItem = this.$item.prev('.cs-item');
@@ -1079,7 +1091,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
         closestPage?.select();
       }
 
-      closestPage.$actionBtn.focus();
+      closestPage?.$actionBtn.focus();
 
       const $sourceContainer = this.getSourceContainer(false);
       if ($sourceContainer) {
@@ -1161,7 +1173,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
       'aria-describedby': this.$item.find('.label').attr('id'),
       'aria-controls': 'cs-source-actions',
       'data-disclosure-trigger': 'true',
-    }).insertBefore(this.$item.find('.move'));
+    }).insertAfter(this.$item.find('.cs-item__btn'));
 
     this.$actionMenu = $('<div/>', {
       id: 'cs-source-actions',
@@ -1347,7 +1359,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   },
 
   destroy: function () {
-    this.modal.sourceDrag.removeItems(this.$item);
+    this.modal.sourceDrag?.removeItems(this.$item);
     this.modal.sources = this.modal.sources.filter((s) => s !== this);
 
     if (this.isSelected()) {
@@ -1612,7 +1624,7 @@ Craft.CustomizeSourcesModal.Source =
       }).appendTo($container);
 
       Craft.ui
-        .createCheckboxSelectField({
+        .createSortableCheckboxSelectField({
           label: Craft.t('app', 'Default Table Columns'),
           instructions: Craft.t(
             'app',
@@ -1624,7 +1636,6 @@ Craft.CustomizeSourcesModal.Source =
             value: key,
           })),
           values: this.sourceData.tableAttributes.map(([key]) => key),
-          sortable: true,
         })
         .appendTo($container);
     },
