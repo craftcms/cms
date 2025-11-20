@@ -1,5 +1,5 @@
 import {html, LitElement} from 'lit';
-import {property, query, queryAssignedElements, state,} from 'lit/decorators.js';
+import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
 import '../icon/icon.js';
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
 import styles from './breadcrumbs.styles.js';
