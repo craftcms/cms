@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Asset\Models;
+
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+final class Asset extends BaseModel
+{
+    use HasFactory;
+
+    protected $table = Table::ASSETS;
+
+    protected function casts(): array
+    {
+        return [
+            'width' => 'int',
+            'height' => 'int',
+            'size' => 'int',
+            'deletedWithVolume' => 'bool',
+            'keptFile' => 'bool',
+            'dateModified' => 'datetime',
+        ];
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     */
+    public function element(): BelongsTo
+    {
+        return $this->belongsTo(Element::class, 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     */
+    public function sites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class, 'assets_sites', 'assetId', 'siteId')
+            ->withPivot('alt');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\Volume, $this>
+     */
+    public function volume(): BelongsTo
+    {
+        return $this->belongsTo(Volume::class, 'volumeId');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Asset\Models\VolumeFolder, $this>
+     */
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(VolumeFolder::class, 'folderId');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\User\Models\User, $this>
+     */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaderId');
+    }
+}

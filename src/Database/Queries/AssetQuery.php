@@ -63,14 +63,14 @@ final class AssetQuery extends ElementQuery
             'assets.keptFile as keptFile',
             'assets.dateModified as dateModified',
             'assets.mimeType as mimeType',
-            'siteAlt' => 'assets_sites.alt as siteAlt',
-            'folderPath' => 'volumeFolders.path as folderPath',
+            'assets_sites.alt as siteAlt',
+            'volumeFolders.path as folderPath',
         ]);
 
         $this->beforeQuery(function (self $elementQuery) {
             $elementQuery->query->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {
                 $join->on('assets_sites.assetId', '=', 'assets.id')
-                    ->where('assets_sites.siteId', '=', 'elements_sites.siteId');
+                    ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');
             });
 
             $elementQuery->applyAuthParam($elementQuery->editable, 'viewAssets', 'viewPeerAssets');
@@ -170,10 +170,7 @@ final class AssetQuery extends ElementQuery
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function createElement(array $row): ElementInterface
+    protected function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
         $siteAlt = Arr::pull($row, 'siteAlt');
@@ -217,7 +214,7 @@ final class AssetQuery extends ElementQuery
         $fieldLayouts = [];
         $volumesService = Craft::$app->getVolumes();
 
-        foreach ($this->volumeId as $volumeId) {
+        foreach (Arr::wrap($this->volumeId) as $volumeId) {
             if ($volume = $volumesService->getVolumeById($volumeId)) {
                 $fieldLayouts[] = $volume->getFieldLayout();
             }

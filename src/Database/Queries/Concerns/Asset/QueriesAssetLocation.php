@@ -105,7 +105,8 @@ trait QueriesAssetLocation
             }
 
             if ($assetQuery->folderPath) {
-                $folderPath = (array) $assetQuery->folderPath;
+                $folderPath = Arr::wrap($assetQuery->folderPath);
+
                 foreach ($folderPath as &$path) {
                     if (
                         is_string($path) &&
@@ -150,9 +151,6 @@ trait QueriesAssetLocation
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
-     *
      * @uses $volumeId
      */
     public function volume(mixed $value): static
@@ -160,6 +158,10 @@ trait QueriesAssetLocation
         if (Query::normalizeParam($value, function ($item) {
             if (is_string($item)) {
                 $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+            }
+
+            if (is_numeric($item)) {
+                return (int) $item;
             }
 
             return $item instanceof Volume ? $item->id : null;
@@ -207,9 +209,6 @@ trait QueriesAssetLocation
      *     ->all();
      * ```
      *
-     * @param  mixed  $value  The property value
-     * @return static self reference
-     *
      * @uses $volumeId
      */
     public function volumeId(mixed $value): static
@@ -252,9 +251,6 @@ trait QueriesAssetLocation
      * ::: tip
      * This can be combined with [[includeSubfolders()]] if you want to include assets in all the subfolders of a certain folder.
      * :::
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $folderId
      */
@@ -332,9 +328,6 @@ trait QueriesAssetLocation
      *     ->folderPath('foo/*')
      *     ->all();
      * ```
-     *
-     * @param  mixed  $value  The property value
-     * @return static self reference
      *
      * @uses $folderPath
      */
