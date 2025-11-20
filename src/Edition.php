@@ -9,6 +9,7 @@ use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
@@ -19,7 +20,7 @@ use InvalidArgumentException;
 /**
  * Edition defines all available Craft CMS editions
  */
-enum Edition: int
+enum Edition: int implements Arrayable
 {
     case Solo = 0;
     case Team = 1;
@@ -160,5 +161,14 @@ enum Edition: int
         }) {
             throw new WrongEditionException("Craft $edition->name is required for this.");
         }
+    }
+
+    public function toArray()
+    {
+        return [
+            'name' => $this->name,
+            'value' => $this->value,
+            'handle' => $this->handle(),
+        ];
     }
 }

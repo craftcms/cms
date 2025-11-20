@@ -70,7 +70,12 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
 
         // General
-        Route::get('settings/general', [GeneralSettingsController::class, 'index']);
+        Route::get('settings/general', [GeneralSettingsController::class, 'index'])
+            ->middleware([HandleInertiaRequests::class])
+            ->name('settings.general.index');
+        Route::post('settings/general', [GeneralSettingsController::class, 'store'])
+            ->middleware([RequireAdminChanges::class])
+            ->name('settings.general.store');
 
         // Plugins
         Route::get('settings/plugins', [PluginsController::class, 'index']);

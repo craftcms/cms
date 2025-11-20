@@ -16,6 +16,8 @@ export default class CraftCallout extends LitElement {
   @property() appearance: 'filled' | 'outline-filled' | 'outline' | 'plain' =
     'outline-filled';
 
+  @property({type: Boolean, reflect: true}) flash: boolean = false;
+
   protected override render(): unknown {
     return html`<slot></slot>`;
   }

@@ -6,13 +6,12 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\DateTime;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-
-use function CraftCms\Cms\t;
+use Inertia\Inertia;
 
 final readonly class GeneralSettingsController
 {
@@ -22,17 +21,26 @@ final readonly class GeneralSettingsController
         private ProjectConfig $projectConfig,
     ) {}
 
-    public function index(GeneralConfig $generalConfig): View
+    public function index(GeneralConfig $generalConfig): \Inertia\Response|View
     {
-        \Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
+        if (request()->has('legacy')) {
+            \Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
-        return view('craftcms::settings/general/_index', [
+            return view('craftcms::settings/general/_index', [
+                'system' => $this->projectConfig->get('system') ?? [],
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+            ]);
+        }
+
+        return Inertia::render('Settings/General/Index', [
             'system' => $this->projectConfig->get('system') ?? [],
+            'timezones' => DateTime::getTimeZoneOptions(),
             'readOnly' => ! $generalConfig->allowAdminChanges,
+            'save_url' => route('craft.cp.settings.general.store'),
         ]);
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request)
     {
         $systemSettings = $this->projectConfig->get('system');
         $systemSettings['name'] = $request->input('name');
@@ -46,6 +54,9 @@ final readonly class GeneralSettingsController
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
 
-        return $this->asSuccess(t('General settings saved.'));
+        $request->session()->flash('message', 'System settings saved.');
+
+        return to_route('craft.cp.settings.general.index')
+            ->with('success', 'System settings saved.');
     }
 }

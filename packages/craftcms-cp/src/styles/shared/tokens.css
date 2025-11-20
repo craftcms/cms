@@ -55,10 +55,13 @@
   --c-color-info-on-subtle: var(--color-blue-800);
 
   --c-color-success-bg-emphasis: var(--color-emerald-600);
-  --c-color-success-bg-subtle: var(--color-emerald-100);
+  --c-color-success-bg-normal: var(--color-emerald-100);
+  --c-color-success-bg-subtle: var(--color-emerald-50);
   --c-color-success-border-emphasis: var(--color-emerald-800);
+  --c-color-success-border-normal: var(--color-emerald-400);
   --c-color-success-border-subtle: var(--color-emerald-600);
   --c-color-success-on-emphasis: var(--color-emerald-50);
+  --c-color-success-on-normal: var(--color-emerald-800);
   --c-color-success-on-subtle: var(--color-emerald-800);
 
   --c-color-warning-bg-emphasis: var(--color-yellow-600);
@@ -324,11 +327,14 @@
   --c-color-info-on-subtle: var(--color-blue-200);
 
   --c-color-success-bg-emphasis: var(--color-emerald-400);
+  --c-color-success-bg-normal: var(--color-emerald-800);
   --c-color-success-bg-subtle: var(--color-emerald-900);
   --c-color-success-border-emphasis: var(--color-emerald-400);
+  --c-color-success-border-normal: var(--color-emerald-900);
   --c-color-success-border-subtle: var(--color-emerald-400);
   --c-color-success-on-emphasis: var(--color-emerald-950);
-  --c-color-success-on-subtle: var(--color-emerald-200);
+  --c-color-success-on-normal: var(--color-emerald-200);
+  --c-color-success-on-subtle: var(--color-emerald-400);
 
   --c-color-warning-bg-emphasis: var(--color-yellow-400);
   --c-color-warning-bg-subtle: var(--color-yellow-900);
