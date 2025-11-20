@@ -33,7 +33,7 @@ class ElementCollectionTest extends TestCase
 
     public function testFind(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $first = $collection->first();
         self::assertInstanceOf(Entry::class, $first);
@@ -47,7 +47,7 @@ class ElementCollectionTest extends TestCase
 
     public function testContains(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         self::assertTrue($collection->contains('title', 'Theories of life'));
         self::assertTrue($collection->contains(fn(Entry $entry) => $entry->title === 'Theories of life'));
@@ -63,7 +63,7 @@ class ElementCollectionTest extends TestCase
 
     public function testIds(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $ids = $collection->map(fn(Entry $entry) => $entry->id)->all();
         self::assertSame($ids, $collection->ids()->all());
@@ -72,7 +72,7 @@ class ElementCollectionTest extends TestCase
     public function testMerge(): void
     {
         /** @var ElementCollection<Entry|User> $collection */
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $first = $collection->first();
         self::assertInstanceOf(Entry::class, $first);
@@ -86,7 +86,7 @@ class ElementCollectionTest extends TestCase
 
     public function testMap(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $mapped = $collection->map(fn(Entry $entry) => new Entry());
         self::assertInstanceOf(ElementCollection::class, $mapped);
@@ -96,7 +96,7 @@ class ElementCollectionTest extends TestCase
 
     public function testMapWithKeys(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $mapped = $collection->mapWithKeys(fn(Entry $entry, int|string $key) => [$entry->id => new Entry()]);
         self::assertInstanceOf(ElementCollection::class, $mapped);
@@ -107,7 +107,7 @@ class ElementCollectionTest extends TestCase
 
     public function testFresh(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $collection->each(function(Entry $entry) {
             $entry->title .= 'edit';
@@ -120,10 +120,10 @@ class ElementCollectionTest extends TestCase
 
     public function testDiff(): void
     {
-        $collection1 = Entry::find()->limit(4)->get();
+        $collection1 = Entry::find()->limit(4)->collect();
         self::assertInstanceOf(ElementCollection::class, $collection1);
         self::assertSame(4, $collection1->count());
-        $collection2 = Entry::find()->offset(3)->get();
+        $collection2 = Entry::find()->offset(3)->collect();
         self::assertInstanceOf(ElementCollection::class, $collection2);
         self::assertTrue($collection2->isNotEmpty());
         $diff = $collection1->diff($collection2->all());
@@ -132,10 +132,10 @@ class ElementCollectionTest extends TestCase
 
     public function testIntersect(): void
     {
-        $collection1 = Entry::find()->limit(4)->get();
+        $collection1 = Entry::find()->limit(4)->collect();
         self::assertInstanceOf(ElementCollection::class, $collection1);
         self::assertSame(4, $collection1->count());
-        $collection2 = Entry::find()->offset(3)->get();
+        $collection2 = Entry::find()->offset(3)->collect();
         self::assertInstanceOf(ElementCollection::class, $collection2);
         self::assertTrue($collection2->isNotEmpty());
         $intersect = $collection1->intersect($collection2->all());
@@ -144,7 +144,7 @@ class ElementCollectionTest extends TestCase
 
     public function testUnique(): void
     {
-        $collection = Entry::find()->limit(4)->get();
+        $collection = Entry::find()->limit(4)->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $count = $collection->count();
         $collection->push(...$collection->all());
@@ -155,7 +155,7 @@ class ElementCollectionTest extends TestCase
 
     public function testOnly(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         self::assertNotEquals(1, $collection->count());
         $first = $collection->first();
@@ -166,7 +166,7 @@ class ElementCollectionTest extends TestCase
 
     public function testExcept(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         $count = $collection->count();
         $first = $collection->first();
@@ -177,7 +177,7 @@ class ElementCollectionTest extends TestCase
 
     public function testBaseMethods(): void
     {
-        $collection = Entry::find()->get();
+        $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
         self::assertSame(Collection::class, get_class($collection->countBy(fn(Entry $entry) => $entry->sectionId)));
         self::assertSame(Collection::class, get_class($collection->collapse()));
