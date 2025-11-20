@@ -1,4 +1,3 @@
-import './styles/cp.css';
 import '@github/relative-time-element';
 
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
