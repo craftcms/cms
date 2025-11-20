@@ -791,7 +791,7 @@ JS, [
                 ->status(null)
                 ->orderBy(['dateUpdated' => SORT_DESC])
                 ->with(['draftCreator'])
-                ->collect()
+                ->get()
                 ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
                 ->all();
         } else {

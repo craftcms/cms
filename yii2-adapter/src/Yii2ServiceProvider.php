@@ -66,6 +66,7 @@ use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
+use craft\web\Application;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
@@ -73,6 +74,7 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
@@ -207,6 +209,33 @@ class Yii2ServiceProvider extends ServiceProvider
 
             $this->dispatchComponentEvent($name, $event);
         });
+
+        ElementQuery::macro('getCachedResult', function() {
+            Deprecator::log('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
+
+            /** @var ElementQuery $this */
+            return $this->getResultOverride();
+        });
+
+        ElementQuery::macro('setCachedResult', function(array $elements) {
+            Deprecator::log('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
+
+            /** @var ElementQuery $this */
+            $this->setResultOverride($elements);
+        });
+
+        ElementQuery::macro('clearCachedResult', function() {
+            Deprecator::log('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
+
+            /** @var ElementQuery $this */
+            $this->clearResultOverride();
+        });
+
+        ElementQuery::macro('collect', function() {
+            Deprecator::log('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
+
+            return $this->get();
+        });
     }
 
     protected function registerLegacyApp(): void
@@ -246,7 +275,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $app->setTimeZone(app()->getTimezone());
             $app->language = app()->getLocale();
 
-            \Craft::$app = $app;
+            Craft::$app = $app;
 
             $this->bootEvents();
             self::bootYiiEvents();
@@ -468,11 +497,11 @@ class Yii2ServiceProvider extends ServiceProvider
             $craft = app('Craft');
 
             // Fire an 'afterEditionChange' event
-            if (!$craft->hasEventHandlers(\craft\web\Application::EVENT_AFTER_EDITION_CHANGE)) {
+            if (!$craft->hasEventHandlers(Application::EVENT_AFTER_EDITION_CHANGE)) {
                 return;
             }
 
-            $craft->trigger(\craft\web\Application::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
+            $craft->trigger(Application::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $event->oldEdition->value,
                 'newEdition' => $event->newEdition->value,
             ]));
@@ -1152,7 +1181,7 @@ class Yii2ServiceProvider extends ServiceProvider
             Artisan::call('craft:migrate:migration-table', [
                 '--force' => true,
             ]);
-        } catch (\PDOException) {
+        } catch (PDOException) {
             // No database connection
         }
     }

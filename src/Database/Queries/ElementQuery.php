@@ -480,18 +480,6 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         return $this->get($columns);
     }
 
-    /**
-     * Execute the query as a "select" statement.
-     *
-     * @return \craft\elements\ElementCollection<int, TElement>
-     */
-    public function collect(array|string $columns = ['*']): ElementCollection
-    {
-        $this->asArray = false;
-
-        return $this->get($columns);
-    }
-
     public function one(array|string $columns = ['*']): ?ElementInterface
     {
         return $this->first($columns);

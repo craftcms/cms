@@ -982,7 +982,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->collect();
+            $value = $this->_all($value, $element)->get();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
@@ -1200,7 +1200,7 @@ JS, [
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->collect()
+                ->get()
                 ->map(fn (ElementInterface $element) => $element->id)
                 ->all();
         }

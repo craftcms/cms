@@ -70,7 +70,7 @@ trait OverridesResults
      * @see getResultOverride()
      * @see setResultOverride()
      */
-    public function clearOverride(): void
+    public function clearResultOverride(): void
     {
         $this->override = $this->overrideCriteria = null;
     }
