@@ -5,8 +5,5 @@ composer.lock
 vendor/*
 .ddev/*
 resources/build/*
-yii2-adapter/cpresources/*
-yii2-adapter/lib/*
-yii2-adapter/legacy/web/assets/**/dist/*
-yii2-adapter/legacy-tests/_craft/*
+yii2-adapter/*
 tests-playwright/.authentication.json
