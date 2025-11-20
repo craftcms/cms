@@ -6,12 +6,12 @@ namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\Concerns\QueriesAuthors;
-use CraftCms\Cms\Database\Queries\Concerns\QueriesEntryDates;
-use CraftCms\Cms\Database\Queries\Concerns\QueriesEntryTypes;
+use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesAuthors;
+use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesEntryDates;
+use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesEntryTypes;
+use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesRef;
+use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesSections;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesNestedElements;
-use CraftCms\Cms\Database\Queries\Concerns\QueriesRef;
-use CraftCms\Cms\Database\Queries\Concerns\QueriesSections;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements\Entry;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Database\Queries\Concerns;
+namespace CraftCms\Cms\Database\Queries\Concerns\Entry;
 
 use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Database\Queries\EntryQuery;
