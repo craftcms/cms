@@ -194,6 +194,9 @@
         },
         onChange: onChange,
         onInitialize: function () {
+            {% if multi %}
+                this.$control.off('mousedown');
+            {% endif %}
             // Copy all ARIA attributes from initial select to selectize
             [...$select[0].attributes]
                 .filter(attr => /^aria-/.test(attr.name))
