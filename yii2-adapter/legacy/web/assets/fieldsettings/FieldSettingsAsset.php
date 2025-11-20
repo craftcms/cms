@@ -20,7 +20,7 @@ class FieldSettingsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/fieldsettings/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

@@ -1,4 +1,5 @@
 providers:
+  - Inertia\ServiceProvider
   - Spatie\LaravelData\LaravelDataServiceProvider
   - Laravel\Tinker\TinkerServiceProvider
   - CraftCms\Aliases\AliasesServiceProvider

@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -25,8 +26,14 @@ it('shows the install page', function () {
     Info::setIsInstalled(false);
 
     get(action([InstallController::class, 'index']))
-        ->assertSee('Copyright © Pixel & Tonic, Inc.') // License
-        ->assertSee('Create your account')
+        ->assertInertia(function (AssertableInertia $page) {
+            $page->component('Install')
+                ->missing('licenseHtml')
+                ->loadDeferredProps(function (AssertableInertia $reload) {
+                    $reload->has('licenseHtml')
+                        ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'));
+                });
+        })
         ->assertOk();
 });
 

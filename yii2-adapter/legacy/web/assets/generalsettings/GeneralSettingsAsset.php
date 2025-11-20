@@ -18,7 +18,7 @@ class GeneralSettingsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/generalsettings/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

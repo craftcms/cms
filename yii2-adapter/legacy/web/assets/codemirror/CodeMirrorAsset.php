@@ -15,7 +15,7 @@ use craft\web\AssetBundle;
 class CodeMirrorAsset extends AssetBundle
 {
     /** @inheritdoc */
-    public $sourcePath = '@assetBundles/codemirror/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /** @inheritdoc */
     public $js = [

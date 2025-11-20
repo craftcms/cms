@@ -7,6 +7,7 @@
 
 namespace craft\web\assets\datepickeri18n;
 
+use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -25,7 +26,7 @@ class DatepickerI18nAsset extends AssetBundle
         $languageId = I18N::getLocale()->getLanguageID();
 
         $languages = [
-            app()->getLocale(),
+            Craft::$app->language,
             $languageId,
         ];
 
@@ -38,7 +39,7 @@ class DatepickerI18nAsset extends AssetBundle
             $languages[] = $fallbacks[$languageId];
         }
 
-        $sourcePath = '@assetBundles/datepickeri18n/dist';
+        $sourcePath = __DIR__ . '/dist';
 
         foreach ($languages as $language) {
             $filename = "datepicker-$language.js";

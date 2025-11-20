@@ -21,7 +21,7 @@ class UpgradeAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/upgrade/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

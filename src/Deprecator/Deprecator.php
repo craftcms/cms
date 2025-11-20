@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Deprecator;
 
+use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Template;
@@ -203,7 +204,7 @@ final class Deprecator
 
             if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
-                $file = \Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
                 $line = $this->findTemplateLine($template, $templateCodeLine);
 
                 return [$file, $line];
@@ -255,7 +256,11 @@ final class Deprecator
         foreach ($traces as $trace) {
             $file = $trace['file'] ?? null;
             $line = $trace['line'] ?? null;
-            $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+            try {
+                $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+            } catch (Throwable) {
+                $templateInfo = false;
+            }
 
             if ($templateInfo !== false) {
                 [$file, $line] = $templateInfo;

@@ -18,7 +18,7 @@ class DbBackupAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/dbbackup/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

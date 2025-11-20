@@ -18,7 +18,7 @@ class RecoveryCodesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/recoverycodes/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

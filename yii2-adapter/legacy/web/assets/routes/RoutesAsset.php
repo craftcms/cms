@@ -18,7 +18,7 @@ class RoutesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/routes/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

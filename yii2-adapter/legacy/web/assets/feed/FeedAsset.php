@@ -18,7 +18,7 @@ class FeedAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/feed/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

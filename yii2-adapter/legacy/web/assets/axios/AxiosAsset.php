@@ -15,7 +15,7 @@ use craft\web\AssetBundle;
 class AxiosAsset extends AssetBundle
 {
     /** @inheritdoc */
-    public $sourcePath = '@assetBundles/axios/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /** @inheritdoc */
     public $js = [

@@ -38,7 +38,7 @@ class CpGlobalSidebar extends LitElement {
     this.state = 'expanded';
   }
 
-  itemHasTooltip(item) {
+  itemHasTooltip(item: HTMLElement) {
     return item.querySelector('craft-tooltip');
   }
 

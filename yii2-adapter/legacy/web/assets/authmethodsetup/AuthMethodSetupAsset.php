@@ -21,7 +21,7 @@ class AuthMethodSetupAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@assetBundles/authmethodsetup/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
