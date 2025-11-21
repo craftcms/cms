@@ -10,7 +10,6 @@ use craft\elements\Entry;
 use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\validators\MoneyValidator;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Exception\ParserException;
@@ -178,11 +178,11 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
 
-        return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
+        return $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
     }
 
     /**

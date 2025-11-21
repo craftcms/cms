@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\db\ExpressionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\types\QueryArgument;
@@ -24,6 +23,8 @@ use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
+use CraftCms\Cms\Database\Expressions\Cast;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -40,11 +41,14 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -53,11 +57,13 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use RuntimeException;
+use Stringable;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterface, Iconic
+abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
     use HasComponentEvents;
@@ -426,17 +432,12 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
         return Schema::TYPE_TEXT;
     }
 
-    /**
-     * {@inheritdoc} */
-    public static function queryCondition(
-        array $instances,
-        mixed $value,
-        array &$params,
-    ): array|string|ExpressionInterface|false|null {
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    {
         $valueSql = static::valueSql($instances);
 
         if ($valueSql === null) {
-            return false;
+            return $query;
         }
 
         $caseInsensitive = false;
@@ -446,11 +447,11 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
             $value = $value['value'];
         }
 
-        return DbHelper::parseParam(
+        return $query->whereParam(
             column: $valueSql,
-            value: $value,
+            param: $value,
             caseInsensitive: $caseInsensitive,
-            columnType: Schema::TYPE_JSON,
+            columnType: Query::TYPE_JSON,
         );
     }
 
@@ -460,11 +461,11 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
      * @param  static[]  $instances
      * @param  string|null  $key  The data key to fetch, if this field stores multiple values
      */
-    protected static function valueSql(array $instances, ?string $key = null): ?string
+    protected static function valueSql(array $instances, ?string $key = null): string|Expression|null
     {
         $valuesSql = array_filter(
             array_map(fn (self $field) => $field->getValueSql($key), $instances),
-            fn (?string $valueSql) => $valueSql !== null,
+            fn (string|Expression|null $valueSql) => $valueSql !== null,
         );
 
         if (empty($valuesSql)) {
@@ -475,7 +476,7 @@ abstract class Field implements \Stringable, Actionable, Arrayable, FieldInterfa
             return reset($valuesSql);
         }
 
-        return sprintf('COALESCE(%s)', implode(',', $valuesSql));
+        return new Coalesce($valuesSql);
     }
 
     /**
@@ -1015,7 +1016,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    public function getValueSql(?string $key = null): ?string
+    public function getValueSql(?string $key = null): string|Expression|null
     {
         if (! isset($this->layoutElement)) {
             return null;
@@ -1027,7 +1028,7 @@ JS, [
         return $this->_valueSql[$cacheKey] ?: null;
     }
 
-    private function _valueSql(?string $key): ?string
+    private function _valueSql(?string $key): ?Expression
     {
         $dbType = $this->dbTypeForValueSql();
 
@@ -1039,22 +1040,23 @@ JS, [
             throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', self::class, $key));
         }
 
-        $db = Craft::$app->getDb();
-        $qb = $db->getQueryBuilder();
-        $sql = $qb->jsonExtract('elements_sites.content', [$this->layoutElement->uid]);
+        $sql = new JsonExtract('elements_sites.content', $this->layoutElement->uid);
 
         if (is_array($dbType)) {
             // Get the primary value by default
             $key ??= array_key_first($dbType);
             $dbType = $dbType[$key];
-            $sql = sprintf('COALESCE(%s, %s)', $qb->jsonExtract(
-                'elements_sites.content',
-                [$this->layoutElement->uid, $key],
-            ), $sql);
+            $sql = new Coalesce([
+                new JsonExtract(
+                    'elements_sites.content',
+                    "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                ),
+                $sql,
+            ]);
         }
 
         $castType = null;
-        if ($db->getIsMysql()) {
+        if (DB::getDriverName() === 'mysql') {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (DbHelper::parseColumnType($dbType)) {
@@ -1079,7 +1081,7 @@ JS, [
 
         // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
-        if ($db->getIsPgsql()) {
+        if (DB::getDriverName() === 'pgsql') {
             $castType = match (DbHelper::parseColumnType($dbType)) {
                 Schema::TYPE_DECIMAL => 'DECIMAL',
                 Schema::TYPE_INTEGER => 'INTEGER',
@@ -1099,7 +1101,7 @@ JS, [
                 }
             }
 
-            $sql = "CAST($sql AS $castType)";
+            $sql = new Cast($sql, $castType);
         }
 
         return $sql;

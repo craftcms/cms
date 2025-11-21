@@ -9,11 +9,11 @@ namespace craft\console\controllers\utils;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
-use craft\elements\Entry;
 use craft\helpers\Console;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
 
 /**
@@ -33,7 +33,7 @@ class PruneOrphanedEntriesController extends Controller
     {
         if (!Sites::isMultiSite()) {
             $this->stdout("This command should only be run for multi-site installs.\n", Console::FG_YELLOW);
-            return ExitCode::OK;
+            //return ExitCode::OK;
         }
 
         $elementsService = Craft::$app->getElements();
@@ -45,19 +45,15 @@ class PruneOrphanedEntriesController extends Controller
         foreach ($sites as $site) {
             $this->stdout(sprintf('Finding orphaned entries for site "%s" ... ', $site->getName()));
 
-            $esSubQuery = (new Query())
-                ->from(['es' => Table::ELEMENTS_SITES])
-                ->where([
-                    'and',
-                    '[[es.elementId]] = [[entries.primaryOwnerId]]',
-                    ['es.siteId' => $site->id],
-                ]);
+            $esSubQuery = DB::table(Table::ELEMENTS_SITES, 'es')
+                ->whereColumn('es.elementId', 'entries.primaryOwnerId')
+                ->where('es.siteId', $site->id);
 
             $entries = Entry::find()
                 ->status(null)
                 ->siteId($site->id)
-                ->where(['not', ['entries.primaryOwnerId' => null]])
-                ->andWhere(['not exists', $esSubQuery])
+                ->whereNotNull('entries.primaryOwnerId')
+                ->whereNotExists($esSubQuery)
                 ->all();
 
             if (empty($entries)) {

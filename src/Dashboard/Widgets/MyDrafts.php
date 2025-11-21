@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\elements\Entry;
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -17,7 +18,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('My Drafts');
@@ -26,7 +27,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
@@ -40,13 +41,13 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'scribble';
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return [
@@ -57,7 +58,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return Cp::textFieldHtml([
@@ -73,22 +74,22 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): string
     {
-        /** @var Entry[] $drafts */
+        /** @var \craft\elements\ElementCollection<Entry> $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)
-            ->draftCreator(Craft::$app->getUser()->getId())
+            ->draftCreator(Auth::user()->id)
             ->section('*')
             ->site('*')
             ->unique()
-            ->orderBy(['dateUpdated' => SORT_DESC])
+            ->orderByDesc('dateUpdated')
             ->limit($this->limit)
-            ->all();
+            ->get();
 
-        if (empty($drafts)) {
+        if ($drafts->isEmpty()) {
             return Html::tag('div', t('You don’t have any active drafts.'), [
                 'class' => ['zilch', 'small'],
             ]);

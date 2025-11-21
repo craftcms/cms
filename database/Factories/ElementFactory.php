@@ -11,12 +11,13 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 final class ElementFactory extends Factory
 {
     protected $model = Element::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -27,13 +28,16 @@ final class ElementFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Element $element) {
             DB::table(Table::ELEMENTS_SITES)
                 ->insert([
                     'elementId' => $element->id,
+                    'title' => fake()->words(asText: true),
+                    'slug' => fake()->slug(),
+                    'uri' => fake()->slug(),
                     'enabled' => true,
                     'siteId' => Site::first()->id,
                     'dateCreated' => $element->dateCreated,

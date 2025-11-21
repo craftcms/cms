@@ -176,11 +176,18 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $this->traitModifyQuery($query);
         } else {
+            // @TODO: Fix when ElementQuerInterface is replaced with new ElementQuery
+            if (!method_exists($field, 'existsQueryCondition')) {
+                return;
+            }
+
             // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
             // so conditions reflect what authors see in the UI
             $query->andWhere(
                 $this->operator === self::OPERATOR_NOT_EMPTY
+                    /** @phpstan-ignore-next-line */
                     ? $field::existsQueryCondition($field, false, false)
+                    /** @phpstan-ignore-next-line */
                     : ['not', $field::existsQueryCondition($field, false, false)]
             );
         }

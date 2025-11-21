@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Site\Data\Site;
 use GraphQL\Type\Definition\Type;
@@ -165,7 +166,7 @@ interface ElementInterface extends
      * ```php
      * class Product extends Element
      * {
-     *     public static function find(): ElementQueryInterface
+     *     public static function find(): ElementQueryInterface|ElementQuery
      *     {
      *         // use ProductQuery instead of the default ElementQuery
      *         return new ProductQuery(get_called_class());
@@ -179,7 +180,7 @@ interface ElementInterface extends
      * ```php
      * class Customer extends ActiveRecord
      * {
-     *     public static function find(): ElementQueryInterface
+     *     public static function find(): ElementQueryInterface|ElementQuery
      *     {
      *         return parent::find()->limit(50);
      *     }
@@ -188,7 +189,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
      */
-    public static function find(): ElementQueryInterface;
+    public static function find(): ElementQueryInterface|ElementQuery;
 
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.
@@ -1129,7 +1130,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
-    public function getLocalized(): ElementQueryInterface|ElementCollection;
+    public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
@@ -1190,7 +1191,7 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection;
 
     /**
      * Returns the element’s descendants.
@@ -1198,21 +1199,21 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection;
 
     /**
      * Returns the element’s children.
      *
      * @return ElementQueryInterface|ElementCollection
      */
-    public function getChildren(): ElementQueryInterface|ElementCollection;
+    public function getChildren(): ElementQueryInterface|ElementQuery|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      *
      * @return ElementQueryInterface|ElementCollection
      */
-    public function getSiblings(): ElementQueryInterface|ElementCollection;
+    public function getSiblings(): ElementQueryInterface|ElementQuery|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.

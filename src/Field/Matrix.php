@@ -10,19 +10,12 @@ use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\db\Query;
-use craft\db\Table as DbTable;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
-use craft\events\CancelableEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -39,8 +32,10 @@ use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -59,15 +54,16 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 use function CraftCms\Cms\t;
 
@@ -94,7 +90,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Matrix');
@@ -103,7 +99,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'binary';
@@ -112,7 +108,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -124,7 +120,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
@@ -133,7 +129,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -142,30 +138,27 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    #[Override]
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
         $field = reset($instances);
         $ns = $field->handle.'_'.Str::random(5);
 
-        $existsQuery = (new Query)
-            ->from(["entries_$ns" => DbTable::ENTRIES])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[entries_$ns.id]]")
-            ->innerJoin(["elements_owners_$ns" => DbTable::ELEMENTS_OWNERS], "[[elements_owners_$ns.elementId]] = [[elements_$ns.id]]")
-            ->andWhere([
-                "entries_$ns.fieldId" => $field->id,
-                "elements_$ns.enabled" => true,
-                "elements_$ns.dateDeleted" => null,
-                "[[elements_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
-            ]);
+        $exists = DB::table(Table::ENTRIES, "entries_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->where("entries_$ns.fieldId", $field->id)
+            ->where("elements_$ns.enabled", true)
+            ->whereNull("elements_$ns.dateDeleted")
+            ->whereColumn("elements_owners_$ns.ownerId", 'elements.id');
 
         if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
         if ($value === ':empty:') {
-            return ['not exists', $existsQuery];
+            return $query->whereNotExists($exists);
         }
 
         if ($value !== ':notempty:') {
@@ -176,10 +169,10 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
             $ids = array_map(fn ($id) => $id instanceof Entry ? $id->id : (int) $id, $ids);
 
-            $existsQuery->andWhere(["entries_$ns.id" => $ids]);
+            $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return ['exists', $existsQuery];
+        return $query->whereExists($exists);
     }
 
     /**
@@ -359,7 +352,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $settings;
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -697,7 +690,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
@@ -706,7 +699,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -723,13 +716,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if ($value === '') {
-            $query->setCachedResult([]);
+            $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
             $query->drafts(null)->savedDraftsOnly()->status(null)->limit(null);
-            $query->setCachedResult($query->all());
+            $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
-            $query->setCachedResult($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
+            $query->setResultOverride($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
         } elseif (Craft::$app->getRequest()->getIsPreview()) {
             $query->withProvisionalDrafts();
         }
@@ -743,26 +736,21 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function (
-                    CancelableEvent $event,
-                    EntryQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
+            $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
+                $entryQuery->ownerId = $owner->id;
 
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
+                // Clear out id=false if this query was populated previously
+                if ($entryQuery->id === false) {
+                    $entryQuery->id = null;
+                }
 
-                    // If the owner is a revision, allow revision entries to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
+                // If the owner is a revision, allow revision entries to be returned as well
+                if ($owner->getIsRevision()) {
+                    $entryQuery
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -780,7 +768,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -806,7 +794,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -832,7 +820,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
@@ -849,7 +837,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->entryManager()->getIsTranslatable($element);
@@ -858,7 +846,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionMenuItems(): array
     {
         $items = match ($this->viewMode) {
@@ -992,7 +980,7 @@ JS, [
             revisionId: element.data('revisionId'),
             ownerId: element.data('ownerId'),
             siteId: element.data('siteId'),
-          }, $baseInfo));
+          }, $baseInfo))
       });
       Craft.cp.copyElements(elementInfo);
     });
@@ -1010,11 +998,11 @@ JS, [
       if (blocks.is('.sel')) {
         copyLabel = Craft.t('app', 'Copy selected {type}', {
           type: $type,
-        });
+        })
       } else {
         copyLabel = Craft.t('app', 'Copy all {type}', {
           type: $type,
-        });
+        })
       }
       copyBtn.find('.menu-item-label').text(copyLabel);
       disclosureMenu.toggleItem(copyBtn[0], !!blocks.length);
@@ -1075,7 +1063,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
         return $this->entryManager()->getTranslationDescription($element);
@@ -1086,7 +1074,7 @@ JS, [
      *
      * @throws InvalidConfigException
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($value, $element, false);
@@ -1095,7 +1083,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -1127,7 +1115,7 @@ JS, [
         }
 
         if ($value instanceof EntryQuery) {
-            $value = $value->getCachedResult() ?? (clone $value)
+            $value = $value->getResultOverride() ?? (clone $value)
                 ->drafts(null)
                 ->canonicalsOnly()
                 ->status(null)
@@ -1136,7 +1124,7 @@ JS, [
         }
 
         if ($static && empty($value)) {
-            return '<p class="light">'.Craft::t('app', 'No entries.').'</p>';
+            return '<p class="light">'.t('No entries.').'</p>';
         }
 
         $view = Craft::$app->getView();
@@ -1323,7 +1311,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -1338,7 +1326,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var EntryQuery|ElementCollection $value */
@@ -1353,7 +1341,7 @@ JS,
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
-            $entries = $value->getCachedResult() ?? (clone $value)
+            $entries = $value->getResultOverride() ?? (clone $value)
                 ->drafts(null)
                 ->savedDraftsOnly()
                 ->status(null)
@@ -1386,7 +1374,7 @@ JS,
 
             if (! empty($invalidEntryIds)) {
                 // Just in case the entries weren't already cached
-                $value->setCachedResult($entries);
+                $value->setResultOverride($entries);
                 $element->addInvalidNestedElementIds($invalidEntryIds);
 
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
@@ -1429,7 +1417,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->entryManager()->getSearchKeywords($element);
@@ -1483,7 +1471,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         if (! $outgoingField instanceof self) {
@@ -1508,7 +1496,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         DB::table(Table::ENTRIES)
@@ -1524,7 +1512,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         $typeArray = EntryTypeGenerator::generateTypes($this);
@@ -1549,7 +1537,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return MatrixInputType::getType($this);
@@ -1579,7 +1567,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         // If the propagation method or an entry URI format just changed, resave all the entries
@@ -1634,7 +1622,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->entryManager()->maintainNestedElements($element, $isNew);
@@ -1671,7 +1659,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -1687,7 +1675,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         $elementsService = Craft::$app->getElements();
@@ -1709,7 +1697,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element
@@ -1757,7 +1745,8 @@ JS,
                 ->siteId($element->siteId)
                 ->drafts(null)
                 ->status(null)
-                ->indexBy($uids ? 'uid' : 'id')
+                ->get()
+                ->keyBy($uids ? 'uid' : 'id')
                 ->all();
         } else {
             $oldEntriesById = [];

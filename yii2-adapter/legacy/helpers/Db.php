@@ -13,8 +13,8 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
-use craft\db\QueryParam;
 use craft\db\Table;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Money as MoneyHelper;
@@ -950,42 +950,7 @@ class Db
      */
     public static function normalizeParam(&$value, callable $resolver): bool
     {
-        if ($value === null) {
-            return true;
-        }
-
-        if (!is_array($value)) {
-            $testValue = [$value];
-            if (static::normalizeParam($testValue, $resolver)) {
-                $value = $testValue;
-                return true;
-            }
-            return false;
-        }
-
-        $normalized = [];
-
-        foreach ($value as $item) {
-            if (
-                empty($normalized) &&
-                is_string($item) &&
-                in_array(strtolower($item), [QueryParam::OR, QueryParam::AND, QueryParam::NOT], true)
-            ) {
-                $normalized[] = strtolower($item);
-                continue;
-            }
-
-            $item = $resolver($item);
-            if (!$item) {
-                // The value couldn't be normalized in full, so bail
-                return false;
-            }
-
-            $normalized[] = $item;
-        }
-
-        $value = $normalized;
-        return true;
+        return \CraftCms\Cms\Support\Query::normalizeParam($value, $resolver);
     }
 
     /**

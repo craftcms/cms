@@ -20,6 +20,7 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -75,7 +76,7 @@ class NestedElementManager extends Component
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
-     * @param Closure(ElementInterface $owner): ElementQueryInterface $queryFactory A factory method which returns a
+     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery) $queryFactory A factory method which returns a
      * query for fetching nested elements
      * @param array $config name-value pairs that will be used to initialize the object properties.
      */
@@ -174,12 +175,12 @@ class NestedElementManager extends Component
         return $this->propagationMethod !== PropagationMethod::All;
     }
 
-    private function nestedElementQuery(ElementInterface $owner): ElementQueryInterface
+    private function nestedElementQuery(ElementInterface $owner): ElementQueryInterface|ElementQuery
     {
         return call_user_func($this->queryFactory, $owner);
     }
 
-    private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
+    private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementQuery|ElementCollection
     {
         if (isset($this->valueGetter)) {
             return call_user_func($this->valueGetter, $owner, $fetchAll);
@@ -199,7 +200,11 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && $query->getCachedResult() === null) {
+        $result = method_exists($query, 'getCachedResult')
+            ? $query->getCachedResult()
+            : $query->getResultOverride();
+
+        if ($fetchAll && $result === null) {
             $query
                 ->drafts(null)
                 ->canonicalsOnly()
@@ -211,7 +216,7 @@ class NestedElementManager extends Component
         return $query;
     }
 
-    private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
+    private function setValue(ElementInterface $owner, ElementQueryInterface|ElementQuery|ElementCollection $value): void
     {
         if ($this->valueSetter === false) {
             return;
@@ -771,7 +776,9 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
-            $elements = $value->getCachedResult();
+            $elements = method_exists($value, 'getCachedResult')
+                ? $value->getCachedResult()
+                : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);
             } else {

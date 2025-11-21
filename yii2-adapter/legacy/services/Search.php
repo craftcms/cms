@@ -390,7 +390,7 @@ class Search extends Component
      * @return bool
      * @since 4.8.0
      */
-    public function shouldCallSearchElements(ElementQuery $elementQuery): bool
+    public function shouldCallSearchElements(ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): bool
     {
         return false;
     }
@@ -402,7 +402,7 @@ class Search extends Component
      * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
      * @since 3.7.14
      */
-    public function searchElements(ElementQuery $elementQuery): array
+    public function searchElements(ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): array
     {
         $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
 
@@ -428,8 +428,18 @@ class Search extends Component
             return [];
         }
 
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $elementQuery->reorder();
+            $elementQuery->select('elements.id as id');
+            $elementQuery->getSubQuery()->offset = null;
+            $elementQuery->getSubQuery()->limit = null;
+            $ids = $elementQuery->pluck('id')->all();
+        } else {
+            $ids = $elementQuery;
+        }
+
         $results = $query
-            ->andWhere(['elementId' => $elementQuery])
+            ->andWhere(['elementId' => $ids])
             ->cache()
             ->all();
 
@@ -468,7 +478,7 @@ class Search extends Component
      * @return Query|false
      * @since 4.6.0
      */
-    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQuery $elementQuery): Query|false
+    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): Query|false
     {
         $searchQuery = $this->normalizeSearchQuery($searchQuery);
 
@@ -509,7 +519,7 @@ class Search extends Component
         return $query;
     }
 
-    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQuery $elementQuery): array
+    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): array
     {
         // Fire a 'beforeScoreResults' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {

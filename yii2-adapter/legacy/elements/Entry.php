@@ -237,7 +237,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @inheritdoc
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find(): EntryQuery
+    public static function find(): EntryQuery|\CraftCms\Cms\Database\Queries\ElementQuery
     {
         return new EntryQuery(static::class);
     }

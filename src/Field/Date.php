@@ -24,6 +24,7 @@ use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Database\Query\Builder;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -76,11 +77,11 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
 
-        return Db::parseDateParam($valueSql, $value);
+        return $query->whereDateParam($valueSql, $value);
     }
 
     /**

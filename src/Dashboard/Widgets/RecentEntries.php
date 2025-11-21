@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\elements\Entry;
-use craft\models\Section;
+use craft\elements\ElementCollection;
 use craft\web\assets\recententries\RecentEntriesAsset;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -20,7 +21,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Recent Entries');
@@ -29,7 +30,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'clock';
@@ -57,7 +58,7 @@ final class RecentEntries extends Widget
         $this->siteId ??= Sites::getCurrentSite()->id;
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return [
@@ -69,7 +70,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
@@ -81,7 +82,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         if (is_numeric($this->section) && $section = Sections::getSectionById((int) $this->section)) {
@@ -98,7 +99,7 @@ final class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->getTargetSiteId();
 
-        if ($targetSiteId !== null && $targetSiteId != Sites::getCurrentSite()->id) {
+        if ($targetSiteId !== null && $targetSiteId !== Sites::getCurrentSite()->id) {
             $site = Sites::getSiteById($targetSiteId);
 
             if ($site) {
@@ -115,7 +116,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): string
     {
         $params = [];
@@ -134,22 +135,20 @@ final class RecentEntries extends Widget
 
         return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
             [
-                'entries' => $entries,
+                'entries' => $entries->all(),
             ]);
     }
 
     /**
      * Returns the recent entries, based on the widget settings and user permissions.
-     *
-     * @return Entry[]
      */
-    private function getEntries(): array
+    private function getEntries(): ElementCollection
     {
         $targetSiteId = $this->getTargetSiteId();
 
         if ($targetSiteId === null) {
             // Hopeless
-            return [];
+            return new ElementCollection;
         }
 
         // Normalize the target section ID value.
@@ -161,7 +160,7 @@ final class RecentEntries extends Widget
         }
 
         if (! $targetSectionId) {
-            return [];
+            return new ElementCollection;
         }
 
         return Entry::find()
@@ -171,8 +170,8 @@ final class RecentEntries extends Widget
             ->siteId($targetSiteId)
             ->limit($this->limit ?: 100)
             ->with(['author'])
-            ->orderBy(['dateCreated' => SORT_DESC])
-            ->all();
+            ->orderByDesc('dateCreated')
+            ->get();
     }
 
     /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Commands;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;

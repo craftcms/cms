@@ -575,7 +575,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface
+    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -1593,7 +1593,7 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface $query The element query to fetch elements with
+     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
@@ -1604,7 +1604,7 @@ class Elements extends Component
      * @since 3.2.0
      */
     public function resaveElements(
-        ElementQueryInterface $query,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query,
         bool $continueOnError = false,
         bool $skipRevisions = true,
         ?bool $updateSearchIndex = null,
@@ -3344,14 +3344,16 @@ class Elements extends Component
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array<string|array>|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
-    public function eagerLoadElements(string $elementType, array $elements, array|string $with): void
+    public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {
+        $elements = collect($elements);
+
         // Bail if there aren't even any elements
-        if (empty($elements)) {
+        if ($elements->isEmpty()) {
             return;
         }
 
-        $elementsBySite = Collection::make($elements)
+        $elementsBySite = $elements
             ->groupBy(fn(ElementInterface $element) => $element->siteId)
             ->map(fn(Collection $elements) => $elements->all())
             ->all();

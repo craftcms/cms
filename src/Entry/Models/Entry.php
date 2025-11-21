@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Models;
 
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 final class Entry extends BaseModel
 {
@@ -73,5 +77,19 @@ final class Entry extends BaseModel
     public function entryType(): BelongsTo
     {
         return $this->belongsTo(EntryType::class, 'typeId');
+    }
+
+    /**
+     * @return BelongsToMany<User, $this, Pivot>
+     */
+    public function authors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, Table::ENTRIES_AUTHORS, 'entryId', 'authorId')
+            ->withPivot('sortOrder');
+    }
+
+    public static function elementQuery(): EntryQuery
+    {
+        return new EntryQuery;
     }
 }

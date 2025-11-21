@@ -17,7 +17,8 @@ use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use DateTime;
 use GraphQL\Type\Definition\Type;
-use yii\db\ExpressionInterface;
+use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -155,19 +156,19 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public static function dbType(): array|string|null;
 
     /**
-     * Returns a query builder-compatible condition for the given field instances, for a user-provided param value.
+     * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
      * If `false` is returned, an always-false condition will be used.
      *
+     * @param  Builder  $query  The query instance to modify
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
-     * @param  array  $params  Additional parameters that should be bound to the query via [[\yii\db\Query::addParams()]]
      */
-    public static function queryCondition(
+    public static function modifyQuery(
+        Builder $query,
         array $instances,
         mixed $value,
-        array &$params,
-    ): array|string|ExpressionInterface|false|null;
+    ): Builder;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -478,7 +479,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      *
      * @param  string|null  $key  The data key to fetch, if this field stores multiple values
      */
-    public function getValueSql(?string $key = null): ?string;
+    public function getValueSql(?string $key = null): string|Expression|null;
 
     /**
      * Modifies an element index query.
