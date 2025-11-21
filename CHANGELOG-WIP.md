@@ -76,6 +76,8 @@
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\helpers\UrlHelper::cpReferralUrl()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
+- Added `craft\models\Section::getCpIndexUri()`.
+- Added `craft\models\Section::getPage()`.
 - Added `craft\services\ElementSources::getFirstPage()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::getPageSettings()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::getPages()`. ([#17779](https://github.com/craftcms/cms/pull/17779))

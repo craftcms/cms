@@ -448,6 +448,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $user->can('createEntries:' . $section->uid)
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
+                //$newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
 
                 if (Craft::$app->getIsMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
@@ -941,11 +942,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     private ?EntryType $_type = null;
 
     /**
-     * @see page()
-     */
-    private string|false $page;
-
-    /**
      * @inheritdoc
      * @since 3.5.0
      */
@@ -1287,7 +1283,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
-        $page = $this->page();
+        $page = $section->getPage();
 
         $crumbs = [
             [
@@ -1322,13 +1318,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ->map(fn(Section $s) => [
                     'label' => Craft::t('site', $s->name),
                     'url' => "entries/$s->handle",
+                    //'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
-            if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
+            /** @var Section|null $firstSingle */
+            $firstSingle = $sections->first(fn(Section $s) => $s->type === Section::TYPE_SINGLE);
+            if ($firstSingle) {
                 $sectionOptions->prepend([
                     'label' => Craft::t('app', 'Singles'),
-                    'url' => 'entries/singles',
+                    'url' => $firstSingle->getCpIndexUri(),
                     'selected' => $section->type === Section::TYPE_SINGLE,
                 ]);
             }
@@ -2167,13 +2166,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $page = $this->page();
-        $path = sprintf(
-            'content/%s/%s/%s',
-            $page ? StringHelper::toKebabCase($page) : 'entries',
-            $section->handle,
-            $this->getCanonicalId(),
-        );
+        $path = sprintf('%s/%s', $section->getCpIndexUri(), $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
@@ -3250,21 +3243,5 @@ JS;
         }
 
         return $templates;
-    }
-
-    private function page(): ?string
-    {
-        if (!isset($this->page)) {
-            $section = $this->getSection();
-            if ($section) {
-                $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
-                $source = ElementHelper::findSource(Entry::class, $sourceKey);
-                $this->page = $source['page'] ?? false;
-            } else {
-                $this->page = false;
-            }
-        }
-
-        return $this->page ?: null;
     }
 }
