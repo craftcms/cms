@@ -1,0 +1,39 @@
+<?php
+
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Elements\Asset;
+use CraftCms\Cms\User\Models\User;
+
+use function Pest\Laravel\actingAs;
+
+test('editable/savable returns 0 when having no access', function (string $method) {
+    actingAs(User::first());
+
+    Edition::set(Edition::Pro);
+
+    AssetModel::factory()->create();
+
+    expect(assetQuery()->$method()->count())->toBe(1);
+
+    actingAs(User::factory()->create());
+
+    // Access to nothing
+    expect(assetQuery()->$method()->count())->toBe(0);
+})->with([
+    'editable',
+    'savable',
+]);
+
+test('it adds the volume as a cache tag', function () {
+    Craft::$app->getElements()->startCollectingCacheInfo();
+
+    $asset = AssetModel::factory()->create();
+
+    assetQuery()->volumeId($asset->volumeId)->all();
+
+    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
+
+    expect($dependency->tags)->toContain('element::'.Asset::class.'::volume:'.$asset->volumeId);
+});

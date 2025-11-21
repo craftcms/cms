@@ -289,7 +289,7 @@ class Asset extends Element
      * @inheritdoc
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
-    public static function find(): AssetQuery
+    public static function find(): AssetQuery|\CraftCms\Cms\Database\Queries\AssetQuery
     {
         return new AssetQuery(static::class);
     }
@@ -1595,7 +1595,7 @@ class Asset extends Element
 
             $view->registerJsWithVars(fn($id, $assetId, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
-  new Craft.PreviewFileModal($assetId, $settings);
+  new Craft.PreviewFileModal($assetId, $settings)
 });
 JS, [
                 $view->namespaceInputId($previewId),
@@ -1678,7 +1678,7 @@ $('#' + $id).on('activate', () => {
         const result = event instanceof CustomEvent ? event.detail : data.result;
 
         // Update the filename input and serialized param value
-        const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace));
+        const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace))
         const oldFilenameValue = encodeURIComponent(filenameInput.val());
         filenameInput.val(result.filename);
 
@@ -1705,7 +1705,7 @@ $('#' + $id).on('activate', () => {
           .attr('title', result.formattedSizeInBytes);
 
         // Update the dimensions value
-        let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
+        let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace))
         if (result.dimensions) {
           if (!dimensionsVal.length) {
             $(
@@ -1713,8 +1713,8 @@ $('#' + $id).on('activate', () => {
               '<dt class="heading">' + $dimensionsLabel + '</div>' +
               '<dd id="dimensions-value" class="value"></div>' +
               '</div>'
-            ).appendTo($('#' + Craft.namespaceId('details', $namespace) + ' > .meta.read-only'));
-            dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
+            ).appendTo($('#' + Craft.namespaceId('details', $namespace) + ' > .meta.read-only'))
+            dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace))
           }
           dimensionsVal.text(result.dimensions);
         } else if (dimensionsVal.length) {
@@ -1734,7 +1734,7 @@ $('#' + $id).on('activate', () => {
           Craft.broadcaster.postMessage({
             event: 'saveElement',
             id: $assetId,
-          });
+          })
         }
 
         if (result.error) {
@@ -1774,11 +1774,11 @@ $('#' + $id).on('activate', () => {
         $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
       },
     }
-  });
+  })
 
   uploader.setParams({
     assetId: $assetId,
-  });
+  })
 
   fileInput.click();
 });
@@ -1814,7 +1814,7 @@ $('#' + $id).on('activate', () => {
         $updatePreviewThumbJs
       }
     },
-  });
+  })
 });
 JS,[
                 $view->namespaceInputId($editImageId),
@@ -2925,7 +2925,7 @@ JS,[
                     $jsSettings = Json::encode($settings);
                     $js = <<<JS
 $('#$previewBtnId').on('activate', () => {
-    new Craft.PreviewFileModal($this->id, null, $jsSettings);
+    new Craft.PreviewFileModal($this->id, null, $jsSettings)
 });
 JS;
                     $view->registerJs($js);
@@ -2956,7 +2956,7 @@ $('#$editBtnId').on('activate', () => {
 
             $updatePreviewThumbJs
         },
-    });
+    })
 });
 JS;
                     $view->registerJs($js);

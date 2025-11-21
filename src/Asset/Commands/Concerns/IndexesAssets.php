@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
 use craft\console\Application;
-use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\MissingAssetException;
@@ -15,6 +14,7 @@ use craft\models\FsListing;
 use craft\models\Volume;
 use craft\services\AssetIndexer;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Asset;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -109,8 +109,8 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($craft, $assetIds) {
-                    /** @var Asset[] $assets */
-                    $assets = Asset::find()->id($assetIds)->all();
+                    /** @var \craft\elements\ElementCollection<Asset> $assets */
+                    $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
                         $craft->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
