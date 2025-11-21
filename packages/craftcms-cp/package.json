@@ -18,10 +18,9 @@
     "test": "vitest run",
     "test:dev": "vitest",
     "test:coverage": "vitest run --coverage",
-    "dev": "vite build -w",
+    "dev": "node ./scripts/build.js --develop",
     "prebuild": "npm run format",
-    "build": "vite build",
-    "postbuild": "npm run build:manifest",
+    "build": "node ./scripts/build.js",
     "format": "npx prettier --write .",
     "check:format": "prettier --check .",
     "check:exports": "attw --pack .",
@@ -33,11 +32,11 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/cp.js",
+      "types": "./dist/cp.d.mts",
+      "import": "./dist/cp.mjs",
       "require": "./dist/cp.cjs"
     },
-    "./styles/cp.css": "./dist/cp.css",
+    "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
     "./custom-elements.json": "./dist/custom-elements.json"
@@ -49,11 +48,13 @@
   },
   "homepage": "https://github.com/craftcms/npm-packages#readme",
   "peerDependencies": {
+    "@awesome.me/webawesome": "^3.0.0",
+    "@lion/ui": "0.x",
     "lit": "3.x"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@awesome.me/webawesome": "^3.0.0-beta.4",
+    "@awesome.me/webawesome": "^3.0.0",
     "@chromatic-com/storybook": "^4.0.1",
     "@custom-elements-manifest/analyzer": "^0.10.10",
     "@lion/ui": "^0.14.2",
@@ -69,15 +70,19 @@
     "@vitest/browser": "^3.2.4",
     "@vitest/coverage-v8": "^3.2.4",
     "@wc-toolkit/storybook-helpers": "^9.0.1",
+    "del": "^8.0.1",
     "globby": "^14.1.0",
     "happy-dom": "^18.0.1",
+    "lit": "^3.3.1",
+    "ora": "^9.0.0",
     "playwright": "^1.53.2",
     "plop": "^4.0.1",
+    "recursive-copy": "^2.0.14",
     "rimraf": "^6.0.1",
     "storybook": "^9.1.5",
+    "tsdown": "^0.16.6",
     "typescript": "^5.8.3",
     "unplugin-dts": "^1.0.0-beta.0",
-    "vite": "^7.1.5",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   },
