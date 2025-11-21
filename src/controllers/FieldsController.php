@@ -409,10 +409,11 @@ JS, [
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            $oldField = Craft::$app->getFields()->getFieldById($fieldId);
             if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $oldField = clone $oldField;
             $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
