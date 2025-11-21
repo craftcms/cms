@@ -1300,10 +1300,22 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
         if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
             $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
+
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
                 $sections = $sections->filter(fn(Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
+
+            if ($page) {
+                // Filter out any sections that don’t belong in this page
+                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
+                $pageSourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $pageSources)));
+                $sections = $sections->filter(function(Section $s) use ($pageSourceKeys) {
+                    $key = $s->type === Section::TYPE_SINGLE ? 'singles' : "section:$s->uid";
+                    return isset($pageSourceKeys[$key]);
+                });
+            }
+
             /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
