@@ -980,9 +980,6 @@ JS, [
                     ? Html::beginTag('button', [
                         'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
-                        'aria' => [
-                            'label' => t('Preview'),
-                        ],
                     ]) .
                     Html::tag('span', t('Preview'), ['class' => 'label']) .
                     Html::endTag('button')
