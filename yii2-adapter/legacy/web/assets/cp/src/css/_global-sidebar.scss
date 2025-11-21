@@ -78,10 +78,10 @@
 
 .nav-item {
   display: grid;
-  grid-template-columns:
-    var(--nav-item-gutter-width) minmax(0, 1fr) var(--nav-item-prefix-width)
-    var(--nav-item-gutter-width);
-  grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
+  grid-template-columns: var(--nav-item-gutter-width) minmax(0, 1fr) var(
+      --nav-item-gutter-width
+    );
+  grid-template-areas: '. action .' 'subnav subnav subnav';
   align-items: center;
   width: 100%;
   padding-block: var(--xs);
@@ -89,39 +89,37 @@
   > .sidebar-action {
     grid-area: action;
   }
-
-  &.sel {
-    color: var(--nav-item-fg-active);
-    background-color: var(--nav-item-bg-active);
-  }
 }
 
 .nav-item--sub {
   padding-block: 0;
+  grid-template-columns:
+    calc(var(--nav-item-gutter-width) * 3) minmax(0, 1fr)
+    var(--nav-item-gutter-width);
 }
 
 .nav-item__trigger {
   --icon-size: 10px;
   width: var(--nav-item-trigger-size);
-  grid-area: trigger;
-  display: flex;
-  justify-content: center;
+  height: var(--nav-item-trigger-size);
+  display: inline-block;
   z-index: 1;
 
-  .menubtn {
+  .menubtn.btn.hairline {
     padding: 0;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: var(--nav-item-trigger-size);
     height: var(--nav-item-trigger-size);
-    border: transparent;
+    min-height: 0;
+    border-color: transparent;
 
-    &:hover {
+    &:hover:not(:has(.sel)) {
       background-color: var(--nav-item-bg-hover);
     }
 
-    &[aria-expanded='true']:not(:hover) {
+    &[aria-expanded='true'] {
       background-color: transparent;
     }
 
@@ -145,6 +143,30 @@
 
   &[data-state='expanded'] {
     display: flex;
+  }
+
+  [data-sidebar='expanded'] & {
+    .sidebar-action {
+      position: relative;
+    }
+
+    .sidebar-action::before {
+      content: '';
+      display: inline-block;
+      position: absolute;
+      inset-inline-start: calc(-6rem / 16);
+      inset-block-start: -1px; // Account for gap
+      height: calc(100% + 1px);
+      width: 1px;
+      background-color: color-mix(in srgb, currentcolor, transparent 75%);
+      border-radius: 0;
+    }
+
+    .sidebar-action.sel::before {
+      background-color: currentcolor;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+    }
   }
 }
 
@@ -179,6 +201,14 @@
   }
 }
 
+// Active indicator
+.nav-indicator {
+  width: var(--nav-item-indicator-size);
+  border-radius: var(--radius-sm);
+  aspect-ratio: 1;
+  background-color: currentcolor;
+}
+
 .sidebar-action {
   --thumb-size: 0.75rem;
   display: grid;
@@ -193,25 +223,20 @@
   min-height: 30px;
   font-weight: 500;
 
-  // Active indicator
   &::before {
     content: '';
     position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 50%;
-    transform: translateY(-50%) translateX(-150%);
-    height: 95%;
-    width: var(--nav-item-indicator-size);
-    border-radius: var(--radius-sm);
-
-    // No logical properties for transforms
-    .rtl & {
-      transform: translateY(-50%) translateX(150%);
-    }
+    width: 4px;
+    inset-block-start: 0;
+    inset-inline-start: calc(var(--nav-item-gutter-width) / -2 - 3px);
+    height: 100%;
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    z-index: -1;
   }
 
   &:focus-visible,
-  &:hover {
+  &:hover:not(:has(.btn:hover)) {
     color: var(--nav-item-fg-hover);
     background-color: var(--nav-item-bg-hover);
   }
@@ -234,23 +259,6 @@
 
   .sidebar-action__prefix {
     position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset-inline-start: 50%;
-      width: var(--nav-item-indicator-size);
-      height: var(--nav-item-indicator-size);
-      border-radius: 100%;
-      inset-block-start: 50%;
-      background-color: currentcolor;
-      transform: translateY(-50%) translateX(-50%);
-
-      // No logical properties for transforms
-      .rtl & {
-        transform: translateY(-50%) translateX(50%);
-      }
-    }
   }
 
   &[aria-current='page'],
@@ -318,7 +326,7 @@
   line-height: 0;
 }
 
-.sidebar-action__label {
+.sidebar-action__suffix {
   display: flex;
   gap: var(--s);
   align-items: center;
@@ -340,7 +348,7 @@
   flex-direction: column;
   justify-content: center;
   padding-block: 0;
-  padding-inline: var(--s);
+  padding-inline: var(--xs);
   margin-inline-start: auto;
 }
 
@@ -368,6 +376,7 @@ States
     .sidebar-action {
       width: var(--nav-item-prefix-width);
       min-height: var(--nav-item-prefix-width);
+      grid-template-columns: none;
     }
 
     .nav-item__trigger {
@@ -380,6 +389,13 @@ States
 
     .sidebar-action__label {
       display: none;
+    }
+
+    .sidebar-action__suffix {
+      display: flex;
+      justify-content: center;
+      margin-inline: 0;
+      padding-inline: 0;
     }
 
     .sidebar-action__badge {

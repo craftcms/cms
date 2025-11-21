@@ -191,7 +191,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
       cvd.$libraryContainer
         .data('sortableCheckboxSelect')
-        ?.dragSort.on('dragStop', function () {
+        ?.dragSort?.on('dragStop', function () {
           cvd.updatePreview();
         });
 
@@ -2012,7 +2012,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
 
     // trigger preview update when items are dragged into new position
     let cvd = this.$container.data('cvd');
-    this.sortableCheckboxSelect.dragSort.on('dragStop', function () {
+    this.sortableCheckboxSelect.dragSort?.on('dragStop', function () {
       cvd.updatePreview();
     });
 
@@ -2124,7 +2124,11 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     }
 
     const $draggable = $('<div class="checkbox-select-item"/>');
-    $('<a class="move icon draggable-handle disabled"/>').appendTo($draggable);
+    if (Craft.hasMousePointerEvents()) {
+      $('<a class="move icon draggable-handle disabled"/>').appendTo(
+        $draggable
+      );
+    }
     Craft.ui
       .createCheckbox(
         Object.assign(
