@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use InvalidArgumentException;
 
@@ -32,7 +33,7 @@ trait QueriesAffiliatedSite
                 return;
             }
 
-            $userQuery->subQuery->whereIn('users.affiliatedSiteId', $this->affiliatedSiteId);
+            $userQuery->subQuery->whereIn('users.affiliatedSiteId', Arr::wrap($this->affiliatedSiteId));
         });
     }
 

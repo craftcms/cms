@@ -91,7 +91,7 @@ final class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status(array|string|null $value): self
+    public function status(array|string|null $value): static
     {
         /** @var static */
         return parent::status($value);

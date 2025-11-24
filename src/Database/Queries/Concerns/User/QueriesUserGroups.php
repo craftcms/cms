@@ -63,39 +63,41 @@ trait QueriesUserGroups
     protected function initQueriesUserGroups(): void
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
-            if ($userQuery->groupId) {
-                // Checking multiple groups?
+            if (! $userQuery->groupId) {
+                return;
+            }
+
+            // Checking multiple groups?
+            if (
+                is_array($userQuery->groupId) &&
+                is_string(reset($userQuery->groupId)) &&
+                strtolower(reset($userQuery->groupId)) === 'and'
+            ) {
+                $groupIdChecks = array_slice($userQuery->groupId, 1);
+            } else {
+                $groupIdChecks = [$userQuery->groupId];
+            }
+
+            foreach ($groupIdChecks as $i => $groupIdCheck) {
                 if (
-                    is_array($userQuery->groupId) &&
-                    is_string(reset($userQuery->groupId)) &&
-                    strtolower(reset($userQuery->groupId)) === 'and'
+                    is_array($groupIdCheck) &&
+                    is_string(reset($groupIdCheck)) &&
+                    strtolower(reset($groupIdCheck)) === 'not'
                 ) {
-                    $groupIdChecks = array_slice($userQuery->groupId, 1);
-                } else {
-                    $groupIdChecks = [$userQuery->groupId];
-                }
-
-                foreach ($groupIdChecks as $i => $groupIdCheck) {
-                    if (
-                        is_array($groupIdCheck) &&
-                        is_string(reset($groupIdCheck)) &&
-                        strtolower(reset($groupIdCheck)) === 'not'
-                    ) {
-                        $groupIdOperator = 'whereNotExists';
-                        array_shift($groupIdCheck);
-                        if (empty($groupIdCheck)) {
-                            continue;
-                        }
-                    } else {
-                        $groupIdOperator = 'whereExists';
+                    $groupIdOperator = 'whereNotExists';
+                    array_shift($groupIdCheck);
+                    if (empty($groupIdCheck)) {
+                        continue;
                     }
-
-                    $userQuery->subQuery->$groupIdOperator(
-                        DB::table(Table::USERGROUPS_USERS, "ugu$i")
-                            ->whereColumn('elements.id', "ugu$i.userId")
-                            ->whereNumericParam('groupId', $groupIdCheck),
-                    );
+                } else {
+                    $groupIdOperator = 'whereExists';
                 }
+
+                $userQuery->subQuery->$groupIdOperator(
+                    DB::table(Table::USERGROUPS_USERS, "ugu$i")
+                        ->whereColumn('elements.id', "ugu$i.userId")
+                        ->whereNumericParam('groupId', $groupIdCheck),
+                );
             }
         });
 

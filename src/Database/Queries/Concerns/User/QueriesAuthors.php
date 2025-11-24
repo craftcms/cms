@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns\User;
 
+use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,11 +36,11 @@ trait QueriesAuthors
     public ?bool $authors = null;
 
     /**
-     * @var Entry|null The entry that the resulting users must be the author of.
+     * @var ElementInterface|null The entry that the resulting users must be the author of.
      *
      * @used-by authorOf()
      */
-    public ?Entry $authorOf = null;
+    public ?ElementInterface $authorOf = null;
 
     protected function initQueriesAuthors(): void
     {
@@ -100,7 +100,7 @@ trait QueriesAuthors
      *
      * @uses $authorOf
      */
-    public function authorOf(?Entry $value): self
+    public function authorOf(?ElementInterface $value): self
     {
         $this->authorOf = $value;
 

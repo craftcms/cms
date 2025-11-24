@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -161,14 +162,14 @@ trait QueriesRolesAndPermissions
         if ($this->can !== false) {
             // Get the users that have that permission directly
             $permittedUserIds = DB::table(Table::USERPERMISSIONS_USERS)
-                ->whereIn('permissionId', $this->can)
+                ->whereIn('permissionId', Arr::wrap($this->can))
                 ->pluck('userId');
 
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = DB::table(Table::USERGROUPS_USERS, 'g_u')
                 ->select('g_u.userId')
                 ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.groupId', '=', 'g_u.groupId')
-                ->whereIn('p_g.permissionId', $this->can)
+                ->whereIn('p_g.permissionId', Arr::wrap($this->can))
                 ->pluck('userId');
 
             $permittedUserIds = $permittedUserIds->merge($permittedUserIdsViaGroups)->unique();
