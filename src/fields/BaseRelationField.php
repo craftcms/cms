@@ -184,6 +184,11 @@ abstract class BaseRelationField extends Field implements
     public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
     {
         $ns = sprintf('%s_%s', $field->handle, StringHelper::randomString(5));
+        $instanceQuery = [
+            'and',
+            ['not', [$field->getValueSql() => null]],
+            ['not', [$field->getValueSql() => '[]']],
+        ];
 
         $query = (new Query())
             ->from(["relations_$ns" => DbTable::RELATIONS])
@@ -195,11 +200,7 @@ abstract class BaseRelationField extends Field implements
                 [
                     'and',
                     ["relations_$ns.fieldId" => $field->id],
-                    [
-                        'and',
-                        ['not', [$field->getValueSql() => null]],
-                        ['not', [$field->getValueSql() => '[]']],
-                    ],
+                    $instanceQuery,
                     ["elements_$ns.dateDeleted" => null],
                 ],
                 [
