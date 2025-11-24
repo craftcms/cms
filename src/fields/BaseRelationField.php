@@ -142,9 +142,9 @@ abstract class BaseRelationField extends Field implements
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
             $emptyCondition = array_shift($value);
             if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
-                $conditions[] = static::existsQueryCondition($field);
+                $conditions[] = static::existsQueryCondition($field, instances: $instances);
             } else {
-                $conditions[] = ['not', static::existsQueryCondition($field)];
+                $conditions[] = ['not', static::existsQueryCondition($field, instances: $instances)];
             }
         }
 
@@ -181,9 +181,27 @@ abstract class BaseRelationField extends Field implements
      * @return array
      * @since 5.2.0
      */
-    public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
+    public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true, array $instances = []): array
     {
         $ns = sprintf('%s_%s', $field->handle, StringHelper::randomString(5));
+
+        if (count($instances) > 1) {
+            $instanceQuery = [];
+            foreach ($instances as $instance) {
+                $instanceQuery[] = [
+                    'and',
+                    ['not', [$instance->getValueSql() => null]],
+                    ['not', [$instance->getValueSql() => '[]']],
+                ];
+            }
+            array_unshift($instanceQuery, 'or');
+        } else {
+            $instanceQuery = [
+                'and',
+                ['not', [$field->getValueSql() => null]],
+                ['not', [$field->getValueSql() => '[]']],
+            ];
+        }
 
         $query = (new Query())
             ->from(["relations_$ns" => DbTable::RELATIONS])
@@ -193,8 +211,10 @@ abstract class BaseRelationField extends Field implements
                 'and',
                 "[[relations_$ns.sourceId]] = [[elements.id]]",
                 [
-                    "relations_$ns.fieldId" => $field->id,
-                    "elements_$ns.dateDeleted" => null,
+                    'and',
+                    ["relations_$ns.fieldId" => $field->id],
+                    $instanceQuery,
+                    ["elements_$ns.dateDeleted" => null],
                 ],
                 [
                     'or',
