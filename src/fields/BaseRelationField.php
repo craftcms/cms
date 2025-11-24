@@ -193,8 +193,14 @@ abstract class BaseRelationField extends Field implements
                 'and',
                 "[[relations_$ns.sourceId]] = [[elements.id]]",
                 [
-                    "relations_$ns.fieldId" => $field->id,
-                    "elements_$ns.dateDeleted" => null,
+                    'and',
+                    ["relations_$ns.fieldId" => $field->id],
+                    [
+                        'and',
+                        ['not', [$field->getValueSql() => null]],
+                        ['not', [$field->getValueSql() => '[]']],
+                    ],
+                    ["elements_$ns.dateDeleted" => null],
                 ],
                 [
                     'or',
