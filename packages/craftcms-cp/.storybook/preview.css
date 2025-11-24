@@ -23,3 +23,14 @@
   width: auto;
   height: 1em;
 }
+
+.stack {
+  display: grid;
+  gap: 1em;
+}
+
+.list {
+  list-style: disc;
+  padding-inline-start: 1.5em;
+  margin: 0;
+}

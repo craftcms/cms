@@ -38,3 +38,19 @@ ul {
   padding: 0;
   list-style: none;
 }
+
+code {
+  font-size: 0.9em;
+  display: inline-flex;
+  padding: 0 var(--c-spacing-sm);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: var(--c-radius-sm);
+}
+
+hr {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--c-color-neutral-border-subtle);
+}

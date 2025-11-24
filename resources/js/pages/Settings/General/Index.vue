@@ -7,25 +7,63 @@
     type SystemData,
     type TimezoneOption,
   } from '@/types/settings';
-  import {Form} from '@inertiajs/vue3';
+  import {Form, usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
+  import TransitionFade from '@/components/TransitionFade.vue';
+  import {computed} from 'vue';
 
   defineProps<{
     readOnly?: boolean;
     system: SystemData;
     timezones: Array<TimezoneOption>;
     save_url: string;
-    flash: Record<any, any>
+    flash: Record<any, any>;
   }>();
+
+  const page = usePage<{
+    flash: {
+      success?: string;
+      error?: string;
+    };
+  }>();
+  const flash = computed(() => page.props.flash);
 
   const {app} = useCraftData();
 </script>
 
 <template>
-  <AppLayout :title="t('app', 'General Settings')">
-    <div class="tw:px-4">
-      <Form id="settings-form" :action="save_url" method="post">
-        <div class="tw:grid tw:gap-3">
+  <Form
+    :action="save_url"
+    method="post"
+    #default="{processing, recentlySuccessful}"
+  >
+    <AppLayout :title="t('app', 'General Settings')">
+      <template #actions>
+        <TransitionFade>
+          <template v-if="recentlySuccessful && flash?.success">
+            <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
+              <craft-icon
+                name="circle-check"
+                style="color: var(--c-color-success-bg-emphasis)"
+              ></craft-icon>
+              {{ flash.success }}
+            </div>
+          </template>
+        </TransitionFade>
+
+        <craft-button-group v-if="!readOnly">
+          <craft-button type="submit" variant="primary" :loading="processing">
+            {{ t('app', 'Save') }}
+          </craft-button>
+          <craft-button variant="primary" type="button" icon>
+            <craft-icon name="chevron-down"></craft-icon>
+          </craft-button>
+        </craft-button-group>
+      </template>
+      <div
+        class="tw:bg-white tw:border tw:border-border-subtle tw:mx-4 tw:rounded-sm tw:shadow-sm"
+      >
+        <div class="tw:grid tw:gap-3 tw:p-4">
           <!-- @TODO autosuggest -->
           <craft-input
             :label="t('app', 'System Name')"
@@ -33,7 +71,22 @@
             name="name"
             :value="system.name"
             :disabled="readOnly"
-          ></craft-input>
+          >
+            <div slot="after">
+              <craft-callout
+                variant="info"
+                appearance="plain"
+                class="tw:p-0"
+                icon="lightbulb"
+              >
+                This can begin with an environment variable.
+                <a
+                  href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+                  >Learn more</a
+                >
+              </craft-callout>
+            </div>
+          </craft-input>
 
           <craft-select
             :label="t('app', 'System Status')"
@@ -46,16 +99,21 @@
               <option value="1">Online</option>
               <option value="0">Offline</option>
             </select>
+
+            <craft-callout
+              slot="after"
+              variant="info"
+              appearance="plain"
+              class="tw:p-0"
+              icon="lightbulb"
+            >
+              This can be set to an environment variable with a boolean value
+              (<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>).
+            </craft-callout>
           </craft-select>
 
           <craft-input
             :label="t('app', 'Retry Duration')"
-            :help-text="
-              t(
-                'app',
-                'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'
-              )
-            "
             id="retry-duration"
             name="retryDuration"
             :value="system.retryDuration"
@@ -63,6 +121,12 @@
             size="4"
             :disabled="readOnly"
           >
+            <div slot="help-text">
+              The number of seconds that the <code>Retry-After</code> HTTP
+              header should be set to for 503 responses when the system is
+              offline.
+              <!--              {{ t('app', `The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.`) }}-->
+            </div>
           </craft-input>
 
           <craft-select
@@ -81,9 +145,27 @@
                 {{ timezone.label }} – {{ timezone.data?.hint }}
               </option>
             </select>
+            <craft-callout
+              slot="after"
+              variant="info"
+              appearance="plain"
+              class="tw:p-0"
+              icon="lightbulb"
+            >
+              This can be set to an environment variable with a value of a
+              <a
+                href="https://www.php.net/manual/en/timezones.php"
+                rel="noopener"
+                target="_blank"
+                >supported time zone</a
+              >.
+            </craft-callout>
           </craft-select>
+        </div>
 
-          <template v-if="app.edition.value >= Edition.Pro">
+        <template v-if="app.edition.value >= Edition.Pro">
+          <hr />
+          <div class="tw:p-4 tw:grid tw:gap-3">
             <craft-input
               :label="t('app', 'Site Icon')"
               :help-text="
@@ -123,20 +205,11 @@
                 }}</craft-button>
               </div>
             </craft-input>
-          </template>
-        </div>
-
-        <craft-button-group v-if="!readOnly">
-          <craft-button type="submit" variant="primary" form="settings-form">
-            {{ t('app', 'Save') }}
-          </craft-button>
-          <craft-button variant="primary" type="button" icon>
-            <craft-icon name="chevron-down"></craft-icon>
-          </craft-button>
-        </craft-button-group>
-      </Form>
-    </div>
-  </AppLayout>
+          </div>
+        </template>
+      </div>
+    </AppLayout>
+  </Form>
 </template>
 
 <style scoped lang="scss">

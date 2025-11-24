@@ -1,23 +1,13 @@
 <script setup lang="ts">
-  import MainNav from '@/components/MainNav.vue';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, ref, watch} from 'vue';
+  import {computed, reactive, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
-  import VarDump from '@/components/VarDump.vue';
   import {useMediaQuery} from '@vueuse/core';
-  import {Head, usePage} from '@inertiajs/vue3';
+  import {Head} from '@inertiajs/vue3';
 
   defineProps<{
     title: string;
   }>();
-
-  const page = usePage<{
-    flash: {
-      success: string | null;
-      error: string | null;
-    };
-  }>();
-  const flash = computed(() => page.props.flash);
 
   const state = reactive<{
     sidebar: {
@@ -90,14 +80,6 @@
         </craft-button>
       </div>
     </div>
-    <div class="cp__flash">
-      <craft-callout variant="success" v-if="flash.success" flash>{{
-        flash.success
-      }}</craft-callout>
-      <craft-callout variant="danger" v-if="flash.error" flash>{{
-        flash.error
-      }}</craft-callout>
-    </div>
     <div class="cp__sidebar">
       <CpSidebar
         :mode="state.sidebar.mode"
@@ -106,20 +88,24 @@
       />
     </div>
     <div class="cp__main">
-      <main>
-        <div
-          class="tw:pb-2 tw:pt-4 tw:px-4 tw:flex tw:justify-between tw:items-center"
-        >
-          <slot name="title">
-            <h1 class="tw:text-xl">{{ title }}</h1>
-          </slot>
+      <slot name="main">
+        <main>
+          <slot name="header">
+            <div
+              class="tw:pb-2 tw:pt-4 tw:px-4 tw:flex tw:justify-between tw:items-center"
+            >
+              <slot name="title">
+                <h1 class="tw:text-xl">{{ title }}</h1>
+              </slot>
 
-          <div class="tw:flex tw:gap-2">
-            <slot name="actions"></slot>
-          </div>
-        </div>
-        <slot></slot>
-      </main>
+              <div class="tw:flex tw:gap-2 tw:items-center">
+                <slot name="actions"></slot>
+              </div>
+            </div>
+          </slot>
+          <slot></slot>
+        </main>
+      </slot>
     </div>
     <div class="cp__footer">
       <footer>
@@ -145,14 +131,6 @@
       grid-template-areas: 'header header' 'sidebar main';
       grid-template-rows: auto 1fr;
       min-height: 100vh;
-    }
-
-    .cp__flash {
-      position: absolute;
-      inset-inline-start: 50%;
-      transform: translateX(-50%);
-      width: auto;
-      z-index: 10;
     }
 
     .cp__header {
