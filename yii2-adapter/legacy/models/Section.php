@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\elements\Entry;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -147,6 +148,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      * @var EntryType[]|null
      */
     private ?array $_entryTypes = null;
+
+    /**
+     * @see page()
+     */
+    private string|false $page;
 
     public function __construct($config = [])
     {
@@ -420,6 +426,39 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             return null;
         }
         return UrlHelper::cpUrl("settings/sections/$this->id");
+    }
+
+    /**
+     * Returns the section’s control panel index page URI.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+        return sprintf(
+            'content/%s/%s',
+            $page ? Str::slug($page) : 'entries',
+            $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     *
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getPage(): ?string
+    {
+        if (!isset($this->page)) {
+            $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
     }
 
     /**

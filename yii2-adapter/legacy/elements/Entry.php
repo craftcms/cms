@@ -461,6 +461,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $user->can('createEntries:' . $section->uid)
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
+                //$newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
 
                 if (Sites::isMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
@@ -958,11 +959,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     private ?EntryType $_type = null;
 
     /**
-     * @see page()
-     */
-    private string|false $page;
-
-    /**
      * @inheritdoc
      * @since 3.5.0
      */
@@ -1304,7 +1300,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
-        $page = $this->page();
+        $page = $section->getPage();
 
         $crumbs = [
             [
@@ -1317,23 +1313,38 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
         if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
+
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
                 $sections = $sections->filter(fn(Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
+
+            if ($page) {
+                // Filter out any sections that don’t belong in this page
+                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
+                $pageSourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $pageSources)));
+                $sections = $sections->filter(function(Section $s) use ($pageSourceKeys) {
+                    $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
+                    return isset($pageSourceKeys[$key]);
+                });
+            }
+
             /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn(Section $s) => $s->type !== SectionType::Single)
                 ->map(fn(Section $s) => [
                     'label' => t($s->name, category: 'site'),
                     'url' => "entries/$s->handle",
+                    //'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
-            if ($sections->contains(fn(Section $s) => $s->type === SectionType::Single)) {
+            /** @var Section|null $firstSingle */
+            $firstSingle = $sections->first(fn(Section $s) => $s->type === SectionType::Single);
+            if ($firstSingle) {
                 $sectionOptions->prepend([
                     'label' => t('Singles'),
-                    'url' => 'entries/singles',
+                    'url' => $firstSingle->getCpIndexUri(),
                     'selected' => $section->type === SectionType::Single,
                 ]);
             }
@@ -2154,13 +2165,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $page = $this->page();
-        $path = sprintf(
-            'content/%s/%s/%s',
-            $page ? Str::slug($page) : 'entries',
-            $section->handle,
-            $this->getCanonicalId(),
-        );
+        $path = sprintf('%s/%s', $section->getCpIndexUri(), $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
@@ -3236,21 +3241,5 @@ JS;
         }
 
         return $templates;
-    }
-
-    private function page(): ?string
-    {
-        if (!isset($this->page)) {
-            $section = $this->getSection();
-            if ($section) {
-                $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-                $source = ElementHelper::findSource(Entry::class, $sourceKey);
-                $this->page = $source['page'] ?? false;
-            } else {
-                $this->page = false;
-            }
-        }
-
-        return $this->page ?: null;
     }
 }

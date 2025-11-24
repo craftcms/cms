@@ -151,8 +151,9 @@ final class FieldsController
 
         if ($fieldId) {
             $fieldId = (int) $fieldId;
-            $oldField = clone $this->fieldsService->getFieldById($fieldId);
-            abort_unless((bool) $oldField, 400, 'Invalid field ID: '.$fieldId);
+            $oldField = $this->fieldsService->getFieldById($fieldId);
+            abort_if(is_null($oldField), 400, 'Invalid field ID: '.$fieldId);
+            $oldField = clone $oldField;
             $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;

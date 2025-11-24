@@ -4452,7 +4452,7 @@ class Elements extends Component
                             (
                                 $element->propagateRequired &&
                                 $field->layoutElement->required &&
-                                !$siteElement->validate("field:$field->handle")
+                                $field->isValueEmpty($siteElement->getFieldValue($field->handle), $siteElement)
                             ) ||
                             // Has this field changed, and does it produce the same translation key as it did for the initial element?
                             (

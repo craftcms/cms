@@ -685,7 +685,11 @@ JS, [
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
-        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds) || $owner->propagateRequired) {
+        } elseif (
+            $this->isDirty($owner) ||
+            $this->propagateRequired($owner) ||
+            !empty($owner->newSiteIds)
+        ) {
             $this->saveNestedElements($owner);
         } elseif ($owner->mergingCanonicalChanges) {
             $this->mergeCanonicalChanges($owner);
@@ -765,6 +769,23 @@ JS, [
                 yield $field;
             }
         }
+    }
+
+    private function propagateRequired(ElementInterface $owner, ?ElementInterface $localizedOwner = null): bool
+    {
+        foreach ($this->fieldInstances($owner) as $instance) {
+            if (
+                $instance->layoutElement->required &&
+                (
+                    !$localizedOwner ||
+                    $instance->isValueEmpty($localizedOwner->getFieldValue($instance->handle), $localizedOwner)
+                )
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function saveNestedElements(ElementInterface $owner): void
@@ -863,11 +884,12 @@ JS, [
 
             // Should we duplicate the elements to other sites?
             if (
+                $this->propagationMethod !== PropagationMethod::All &&
                 (
-                    $this->propagationMethod !== PropagationMethod::All &&
-                    ($owner->propagateAll || !empty($owner->newSiteIds))
-                ) ||
-                ($owner->propagateRequired && $this->field?->layoutElement->required)
+                    $owner->propagateAll ||
+                    $this->propagateRequired($owner) ||
+                    !empty($owner->newSiteIds)
+                )
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
                 $ownerSiteIds = array_map(
@@ -877,8 +899,8 @@ JS, [
                 $fieldSiteIds = $this->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
-                // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll && !$owner->propagateRequired) {
+                // If propagateAll & propagateRequired aren't set, only deal with sites that the element was just propagated to for the first time
+                if (!$owner->propagateAll && !$this->propagateRequired($owner)) {
                     $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
                 } else {
@@ -932,15 +954,8 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
-                            } elseif ($owner->propagateRequired && $this->field?->layoutElement->required) {
-                                // if we're propagating required and the field is required, and it doesn't validate because of this field,
-                                // duplicate like above
-                                $localizedOwner->setScenario(Element::SCENARIO_LIVE);
-                                if (!$localizedOwner->validate() && !empty($localizedOwner->getErrors($this->field->handle))) {
-                                    $this->duplicateNestedElements($owner, $localizedOwner, force: true);
-                                }
                             }
                         }
 
