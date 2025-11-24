@@ -15,6 +15,9 @@ use CraftCms\Cms\Database\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @extends ElementQuery<User>
+ */
 final class UserQuery extends ElementQuery
 {
     use QueriesAffiliatedSite;
