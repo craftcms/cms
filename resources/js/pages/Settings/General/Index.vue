@@ -1,12 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
-  import VarDump from '@/components/VarDump.vue';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController.js';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
   import {Form, usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
@@ -33,7 +29,7 @@
 
 <template>
   <Form
-    :action="saveUrl"
+    :action="store['/admin/settings/general']()"
     method="post"
     #default="{processing, recentlySuccessful}"
   >
