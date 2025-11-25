@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
+use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 
@@ -19,7 +19,7 @@ class Navigation
 {
     public static function getItems(): array
     {
-        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $isAdmin = Auth::user()->isAdmin();
         $generalConfig = app(GeneralConfig::class);
 
         $navItems = [
