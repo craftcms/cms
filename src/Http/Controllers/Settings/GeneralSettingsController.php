@@ -50,7 +50,7 @@ final readonly class GeneralSettingsController
         $systemSettings['timeZone'] = $request->input('timeZone');
 
         if (! str_starts_with((string) $systemSettings['live'], '$')) {
-            $systemSettings['live'] = (bool) $systemSettings['live'];
+            $systemSettings['live'] = $request->boolean('live');
         }
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');

@@ -2,14 +2,19 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
+  import {
+    Edition,
+    type SystemData,
+    type TimezoneOption,
+  } from '@/types/settings';
   import {useForm, usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
+  import VarDump from '@/components/VarDump.vue';
 
-  defineProps<{
+  const props = defineProps<{
     readOnly?: boolean;
     system: SystemData;
     timezones: Array<TimezoneOption>;
@@ -27,11 +32,18 @@
   const {app} = useCraftData();
 
   const form = useForm({
-    name: null,
-    live: false,
-    retryDuration: null,
-    timeZone: null,
+    name: props.system.name,
+    live: props.system.live,
+    retryDuration: props.system.retryDuration,
+    timeZone: props.system.timeZone,
   });
+
+  function handleUpdate(event: CustomEvent) {
+    const target = event.target as HTMLSelectElement & {modelValue: string};
+    if (target) {
+      form[target.name] = target.modelValue;
+    }
+  }
 
   useEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -41,13 +53,12 @@
   });
 
   function save() {
-    form.post(store().url, {
-      preserveScroll: true,
-    });
+    form.submit(store());
   }
 </script>
 
 <template>
+  <VarDump :data="system" />
   <form @submit.prevent="save">
     <AppLayout :title="t('app', 'General Settings')">
       <template #actions>
@@ -85,7 +96,7 @@
             :label="t('app', 'System Name')"
             id="name"
             name="name"
-            :value="system.name"
+            v-model="form.name"
             :disabled="readOnly"
           >
             <div slot="after">
@@ -108,12 +119,13 @@
             :label="t('app', 'System Status')"
             id="live"
             name="live"
-            .modelValue="system.live ? '0' : '1'"
+            .modelValue="system.live"
+            @model-value-changed="handleUpdate"
             :disabled="readOnly"
           >
             <select slot="input">
-              <option value="1">Online</option>
-              <option value="0">Offline</option>
+              <option :value="true">Online</option>
+              <option :value="false">Offline</option>
             </select>
 
             <craft-callout
@@ -132,7 +144,7 @@
             :label="t('app', 'Retry Duration')"
             id="retry-duration"
             name="retryDuration"
-            :value="system.retryDuration"
+            v-model="form.retryDuration"
             inputmode="numeric"
             size="4"
             :disabled="readOnly"
@@ -149,7 +161,8 @@
             :label="t('app', 'Time Zone')"
             id="time-zone"
             name="timeZone"
-            .modelValue="system.timeZone"
+            .modelValue="form.timeZone"
+            @model-value-changed="handleUpdate"
             :disabled="readOnly"
           >
             <select slot="input">
