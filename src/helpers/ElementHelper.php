@@ -669,12 +669,19 @@ class ElementHelper
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The source key/path
      * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
-    {
+    public static function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = ElementSources::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
         $path = explode('/', $sourceKey);
-        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
+        $sources = Craft::$app->getElementSources()->getSources($elementType, $context, $withDisabled, $page);
         $rootSource = null;
 
         while ($path) {

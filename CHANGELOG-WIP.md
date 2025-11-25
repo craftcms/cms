@@ -99,6 +99,7 @@
 - `craft\base\ElementInterface::beforeMoveInStructure()` is no longer deprecated.
 - `craft\base\ElementInterface::cardAttributes()` now has a `$fieldLayout` argument. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - `craft\events\ElementStructureEvent` is no longer deprecated.
+- `craft\helpers\ElementHelper::findSource()` now has `$withDisabled` and `$page` arguments.
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
 - `craft\services\ElementSources::getSources()` now has a `$page` argument. ([#17779](https://github.com/craftcms/cms/pull/17779))
