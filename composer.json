@@ -47,6 +47,7 @@
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/framework": "^12.21.0",
+    "laravel/wayfinder": "^0.1.12",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpdocumentor/reflection-docblock": "^5.3",
