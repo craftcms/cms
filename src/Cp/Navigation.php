@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
@@ -20,7 +21,7 @@ class Navigation
     public static function getItems(): array
     {
         $isAdmin = Auth::user()->isAdmin();
-        $generalConfig = app(GeneralConfig::class);
+        $generalConfig = Cms::config();
 
         $navItems = [
             [
