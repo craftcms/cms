@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
@@ -55,6 +56,12 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\AddressQuery;
+use CraftCms\Cms\Database\Queries\AssetQuery;
+use CraftCms\Cms\Database\Queries\ContentBlockQuery;
+use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Database\Queries\EntryQuery;
+use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -1448,6 +1455,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('url', [UrlHelper::class, 'url']),
             new TwigFunction('uuid', [Str::class, 'uuid']),
             new TwigFunction('uuid7', [Str::class, 'uuid7']),
+
+            // Element Queries
+            new TwigFunction('addresses', fn(array $config = []) => new AddressQuery($config)),
+            new TwigFunction('assets', fn(array $config = []) => new AssetQuery($config)),
+            new TwigFunction('contentBlocks', fn(array $config = []) => new ContentBlockQuery($config)),
+            new TwigFunction('elements', fn(string $elementType = Element::class, array $config = []) => new ElementQuery($elementType, $config)),
+            new TwigFunction('entries', fn(array $config = []) => new EntryQuery($config)),
+            new TwigFunction('users', fn(array $config = []) => new UserQuery($config)),
 
             // Element authorization functions
             new TwigFunction('canCreateDrafts', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),
