@@ -50,7 +50,6 @@ export default defineConfig(({mode}) => {
       wayfinder({
         path: 'resources/js',
         command: './vendor/bin/testbench wayfinder:generate',
-        actions: false,
       }),
       vue({
         template: {

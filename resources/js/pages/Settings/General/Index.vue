@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
-  import {store} from '@/routes/craft/cp/settings/general';
+  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController'
   import {
     Edition,
     type SystemData,
@@ -33,7 +33,7 @@
 
 <template>
   <Form
-    :action="store.url()"
+    :action="store()"
     method="post"
     #default="{processing, recentlySuccessful}"
   >

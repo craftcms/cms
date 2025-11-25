@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../../wayfinder'
 /**
 * @see \CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController::index
 * @see Users/brianhanson/Development/craft6/src/Http/Controllers/Settings/GeneralSettingsController.php:25
@@ -77,9 +77,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-const general = {
-    index: Object.assign(index, index),
-    store: Object.assign(store, store),
-}
+const GeneralSettingsController = { index, store }
 
-export default general
+export default GeneralSettingsController

@@ -12,6 +12,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 final readonly class GeneralSettingsController
 {
@@ -21,7 +22,7 @@ final readonly class GeneralSettingsController
         private ProjectConfig $projectConfig,
     ) {}
 
-    public function index(GeneralConfig $generalConfig): \Inertia\Response|View
+    public function index(GeneralConfig $generalConfig): Response|View
     {
         if (request()->has('legacy')) {
             \Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
