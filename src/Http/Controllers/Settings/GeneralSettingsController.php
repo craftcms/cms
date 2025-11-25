@@ -56,7 +56,7 @@ final readonly class GeneralSettingsController
 
         $request->session()->flash('message', 'System settings saved.');
 
-        return to_route('craft.cp.settings.general.index')
+        return back()
             ->with('success', 'System settings saved.');
     }
 }
