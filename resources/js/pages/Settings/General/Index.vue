@@ -1,16 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
-  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController'
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
-  import {Form, usePage} from '@inertiajs/vue3';
+  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
+  import {useForm, usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
+  import {useEventListener} from '@vueuse/core';
 
   defineProps<{
     readOnly?: boolean;
@@ -27,20 +24,35 @@
     };
   }>();
   const flash = computed(() => page.props.flash);
-
   const {app} = useCraftData();
+
+  const form = useForm({
+    name: null,
+    live: false,
+    retryDuration: null,
+    timeZone: null,
+  });
+
+  useEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+      event.preventDefault();
+      save();
+    }
+  });
+
+  function save() {
+    form.post(store().url, {
+      preserveScroll: true,
+    });
+  }
 </script>
 
 <template>
-  <Form
-    :action="store()"
-    method="post"
-    #default="{processing, recentlySuccessful}"
-  >
+  <form @submit.prevent="save">
     <AppLayout :title="t('app', 'General Settings')">
       <template #actions>
         <TransitionFade>
-          <template v-if="recentlySuccessful && flash?.success">
+          <template v-if="form.recentlySuccessful && flash?.success">
             <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
               <craft-icon
                 name="circle-check"
@@ -52,7 +64,11 @@
         </TransitionFade>
 
         <craft-button-group v-if="!readOnly">
-          <craft-button type="submit" variant="primary" :loading="processing">
+          <craft-button
+            type="submit"
+            variant="primary"
+            :loading="form.processing"
+          >
             {{ t('app', 'Save') }}
           </craft-button>
           <craft-button variant="primary" type="button" icon>
@@ -209,7 +225,7 @@
         </template>
       </div>
     </AppLayout>
-  </Form>
+  </form>
 </template>
 
 <style scoped lang="scss">
