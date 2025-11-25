@@ -194,6 +194,12 @@
         },
         onChange: onChange,
         onInitialize: function () {
+            // this is needed so that you can delete selected item when the field is not fully in viewport
+            // see https://github.com/craftcms/cms/issues/18079 for details
+            {% if multi %}
+                this.isFocused = true;
+            {% endif %}
+
             // Copy all ARIA attributes from initial select to selectize
             [...$select[0].attributes]
                 .filter(attr => /^aria-/.test(attr.name))
