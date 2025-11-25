@@ -10,6 +10,7 @@ use craft\helpers\UrlHelper;
 use craft\web\twig\variables\Rebrand;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $currentSite = Sites::getCurrentSite();
-        $isInstalled = Craft::$app->getIsInstalled();
+        $isInstalled = Info::isInstalled();
         $updates = app(Updates::class);
 
         if ($isInstalled && ! $updates->isCraftUpdatePending()) {
