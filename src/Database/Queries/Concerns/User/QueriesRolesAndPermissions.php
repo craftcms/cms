@@ -32,12 +32,12 @@ trait QueriesRolesAndPermissions
      * ```
      * ```twig
      * {# fetch all the admins #}
-     * {% set admins = craft.users()
+     * {% set admins = users()
      *   .admin()
      *   .all()%}
      *
      * {# fetch all the non-admins #}
-     * {% set nonAdmins = craft.users()
+     * {% set nonAdmins = users()
      *     .admin(false)
      *     .all() %}
      * ```
@@ -57,7 +57,7 @@ trait QueriesRolesAndPermissions
      *            ```
      *            ```twig
      *            {# fetch users who can access the front end when the system is offline #}
-     *            {% set admins = craft.users()
+     *            {% set admins = users()
      *            .can('accessSiteWhenSystemIsOff')
      *            .all() %}
      *            ```

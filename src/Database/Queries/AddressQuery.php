@@ -27,7 +27,7 @@ final class AddressQuery extends ElementQuery
      *            ```
      *            ```twig
      *            {# fetch addresses that are located in AU #}
-     *            {% set addresses = craft.addresses()
+     *            {% set addresses = addresses()()
      *            .countryCode('AU')
      *            .all() %}
      *            ```
@@ -47,7 +47,7 @@ final class AddressQuery extends ElementQuery
      *            ```
      *            ```twig
      *            {# fetch addresses that are located in Western Australia #}
-     *            {% set addresses = craft.addresses()
+     *            {% set addresses = addresses()()
      *            .administrativeArea('WA')
      *            .all() %}
      *            ```
@@ -67,7 +67,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by locality #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .locality('Perth')
      *                  .all() %}
      *                  ```
@@ -87,7 +87,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by dependent locality #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .dependentLocality('Darlington')
      *                  .all() %}
      *                  ```
@@ -107,7 +107,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by postal code #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .postalCode('10001')
      *                  .all() %}
      *                  ```
@@ -127,7 +127,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by sorting code #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .sortingCode('ABCD')
      *                  .all() %}
      *                  ```
@@ -147,7 +147,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by organization #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .organization('Pixel & Tonic')
      *                  .all() %}
      *                  ```
@@ -167,7 +167,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by organization tax ID #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .organizationTaxId('123-456-789')
      *                  .all() %}
      *                  ```
@@ -187,7 +187,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by address line 1 #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .addressLine1('23 Craft st')
      *                  .all() %}
      *                  ```
@@ -207,7 +207,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by address line 2 #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .addressLine2('Apt 5B')
      *                  .all() %}
      *                  ```
@@ -227,7 +227,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by address line 3 #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .addressLine3('Suite 212')
      *                  .all() %}
      *                  ```
@@ -247,7 +247,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by full name #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .fullName('John Doe')
      *                  .all() %}
      *                  ```
@@ -267,7 +267,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by first name #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .firstName('Doe')
      *                  .all() %}
      *                  ```
@@ -287,7 +287,7 @@ final class AddressQuery extends ElementQuery
      *                  ```
      *                  ```twig
      *                  {# fetch addresses by last name #}
-     *                  {% set addresses = craft.addresses()
+     *                  {% set addresses = addresses()()
      *                  .lastName('Doe')
      *                  .all() %}
      *                  ```

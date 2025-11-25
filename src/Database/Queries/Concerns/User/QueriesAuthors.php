@@ -26,7 +26,7 @@ trait QueriesAuthors
      *                ```
      *                ```twig
      *                {# fetch all authors #}
-     *                {% set authors = craft.users()
+     *                {% set authors = users()
      *                .authors()
      *                .all()%}
      *                ```

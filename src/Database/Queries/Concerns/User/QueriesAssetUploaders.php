@@ -25,7 +25,7 @@ trait QueriesAssetUploaders
      *                ```
      *                ```twig
      *                {# fetch all users who have uploaded an asset #}
-     *                {% set uploaders = craft.users()
+     *                {% set uploaders = users()
      *                .assetUploaders()
      *                .all()%}
      *                ```

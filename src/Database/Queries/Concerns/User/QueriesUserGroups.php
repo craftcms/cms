@@ -30,7 +30,7 @@ trait QueriesUserGroups
      *            ```
      *            ```twig
      *            {# fetch the authors #}
-     *            {% set admins = craft.users()
+     *            {% set admins = users()
      *            .group('authors')
      *            .all() %}
      *            ```
@@ -51,7 +51,7 @@ trait QueriesUserGroups
      *           ```
      *           ```twig
      *           {# fetch users with their user groups #}
-     *           {% set users = craft.users()
+     *           {% set users = users()
      *           .withGroups()
      *           .all() %}
      *           ```
@@ -246,7 +246,7 @@ trait QueriesUserGroups
      *
      * ```twig
      * {# fetch users with their user groups #}
-     * {% set users = craft.users()
+     * {% set users = users()
      *   .withGroups()
      *   .all() %}
      * ```

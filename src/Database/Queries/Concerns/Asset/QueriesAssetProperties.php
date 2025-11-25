@@ -65,7 +65,7 @@ trait QueriesAssetProperties
      * ```
      * ```twig
      * {# fetch only images #}
-     * {% set logos = craft.assets()
+     * {% set logos = assets()
      *   .kind('image')
      *   .all() %}
      * ```

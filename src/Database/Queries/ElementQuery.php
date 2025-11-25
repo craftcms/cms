@@ -473,11 +473,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
+     * @return array<int, TElement>
      */
-    public function all(array|string $columns = ['*']): ElementCollection|array
+    public function all(array|string $columns = ['*']): array
     {
-        return $this->get($columns);
+        return collect($this->get($columns))->all();
     }
 
     /**

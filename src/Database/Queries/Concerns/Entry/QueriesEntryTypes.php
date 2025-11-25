@@ -29,7 +29,7 @@ trait QueriesEntryTypes
      *            ```
      *            ```twig{4}
      *            {# fetch entries in the News section #}
-     *            {% set entries = craft.entries()
+     *            {% set entries = entries()
      *            .section('news')
      *            .type('article')
      *            .all() %}
