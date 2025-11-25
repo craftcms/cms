@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Database\Queries\ContentBlockQuery;
 use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -63,14 +65,14 @@ trait QueriesNestedElements
      */
     public ?bool $allowOwnerRevisions = null;
 
-    abstract protected function getFieldIdColumn(): string;
+    abstract public function getFieldIdColumn(): string;
 
-    abstract protected function getPrimaryOwnerIdColumn(): string;
+    abstract public function getPrimaryOwnerIdColumn(): string;
 
     protected function initQueriesNestedElements(): void
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
-            /** @var \CraftCms\Cms\Database\Queries\EntryQuery $elementQuery */
+            /** @var EntryQuery|ContentBlockQuery $elementQuery */
             $this->normalizeNestedElementParams($elementQuery);
 
             if ($elementQuery->fieldId === false || $elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false) {

@@ -40,6 +40,7 @@ use yii\db\Expression;
  * @replace {twig-method} craft.users()
  * @replace {myElement} myUser
  * @replace {element-class} \craft\elements\User
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\UserQuery} instead.
  */
 class UserQuery extends ElementQuery
 {

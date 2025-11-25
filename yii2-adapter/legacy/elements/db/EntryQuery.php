@@ -53,6 +53,7 @@ use yii\base\InvalidConfigException;
  * @replace {twig-method} craft.entries()
  * @replace {myElement} myEntry
  * @replace {element-class} \craft\elements\Entry
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\EntryQuery} instead.
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
@@ -320,7 +321,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $value = $section;
         }
 
-        if ($value instanceof \CraftCms\Cms\Section\Data\Section) {
+        if ($value instanceof Section) {
             // Special case for a single section, since we also want to capture the structure ID
             $this->sectionId = [$value->id];
             if ($value->structureId) {
@@ -334,7 +335,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             if (is_string($item)) {
                 $item = Sections::getSectionByHandle($item);
             }
-            return $item instanceof \CraftCms\Cms\Section\Data\Section ? $item->id : null;
+            return $item instanceof Section ? $item->id : null;
         })) {
             $this->sectionId = $value;
         } else {
