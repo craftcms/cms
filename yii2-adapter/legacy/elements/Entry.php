@@ -1311,7 +1311,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
+        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey, withDisabled: true)) {
             $sections = Sections::getEditableSections();
 
             $requestedSite = Cp::requestedSite();
