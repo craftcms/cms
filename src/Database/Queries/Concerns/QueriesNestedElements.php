@@ -69,6 +69,11 @@ trait QueriesNestedElements
 
     abstract public function getPrimaryOwnerIdColumn(): string;
 
+    public function shouldJoinElementsOwners(): bool
+    {
+        return true;
+    }
+
     protected function initQueriesNestedElements(): void
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
@@ -80,6 +85,10 @@ trait QueriesNestedElements
             }
 
             if (empty($elementQuery->fieldId) && empty($elementQuery->ownerId) && empty($elementQuery->primaryOwnerId)) {
+                return;
+            }
+
+            if (! $elementQuery->shouldJoinElementsOwners()) {
                 return;
             }
 
