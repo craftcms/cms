@@ -19,6 +19,7 @@ use craft\elements\ContentBlock;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.8.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ContentBlockQuery} instead.
  */
 class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface
 {
