@@ -84,7 +84,6 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
-use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
@@ -541,8 +540,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Event::listen(RunningGarbageCollection::class, function(RunningGarbageCollection $event) {
-            $gc = app(GarbageCollection::class);
-            $gc->runActions(array_filter([
+            $event->garbageCollection->runActions(array_filter([
                 [HardDelete::class, [
                     'tables' => array_filter([
                         'categorygroups',
