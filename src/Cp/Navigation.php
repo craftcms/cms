@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,7 @@ class Navigation
             ],
         ];
 
-        if (Craft::$app->getEntries()->getTotalEditableSections()) {
+        if (Sections::getTotalEditableSections()) {
             $navItems[] = [
                 'label' => t('Entries'),
                 'url' => 'entries',
