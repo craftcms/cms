@@ -185,8 +185,8 @@ abstract class BaseRelationField extends Field implements
     {
         $ns = sprintf('%s_%s', $field->handle, StringHelper::randomString(5));
         $instanceQuery = [
-            'and',
-            ['not', [$field->getValueSql() => null]],
+            'or',
+            [$field->getValueSql() => null],
             ['not', [$field->getValueSql() => '[]']],
         ];
 
