@@ -36,7 +36,7 @@ final readonly class GeneralSettingsController
             'system' => $this->projectConfig->get('system') ?? [],
             'timezones' => DateTime::getTimeZoneOptions(),
             'readOnly' => ! $generalConfig->allowAdminChanges,
-            'save_url' => route('craft.cp.settings.general.store'),
+            'saveUrl' => route('craft.cp.settings.general.store'),
         ]);
     }
 

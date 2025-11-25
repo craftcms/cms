@@ -16,7 +16,7 @@
     readOnly?: boolean;
     system: SystemData;
     timezones: Array<TimezoneOption>;
-    save_url: string;
+    saveUrl: string;
     flash: Record<any, any>;
   }>();
 
@@ -33,7 +33,7 @@
 
 <template>
   <Form
-    :action="save_url"
+    :action="saveUrl"
     method="post"
     #default="{processing, recentlySuccessful}"
   >
