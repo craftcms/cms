@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
         $currentSite = Sites::getCurrentSite();
         $isInstalled = Info::isInstalled();
         $updates = app(Updates::class);
+        $nav = app(Navigation::class);
 
         if ($isInstalled && ! $updates->isCraftUpdatePending()) {
             $currentUser = Craft::$app->getUser()->getIdentity();
@@ -95,7 +96,7 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'cpUrl' => UrlHelper::cpUrl(),
                 'actionUrl' => UrlHelper::actionUrl(),
-                'nav' => Navigation::getItems(),
+                'nav' => $nav->getItems(),
             ],
         ];
     }

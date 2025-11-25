@@ -19,7 +19,13 @@ use function CraftCms\Cms\t;
 
 class Navigation
 {
-    public static function getItems(): array
+    public function __construct(
+        private readonly Plugins $plugins,
+        private readonly Utilities $utilities,
+        private readonly GeneralConfig $generalConfig
+    ) {}
+
+    public function getItems(): array
     {
         $isAdmin = Auth::user()->isAdmin();
         $generalConfig = Cms::config();
@@ -40,6 +46,11 @@ class Navigation
             ];
         }
 
+        /**
+         * @TODO currently throwing a SQL error
+         *
+         * Base table or view not found: 1146 Table 'db.globalsets' doesn't exist
+         */
         // if (! empty(Craft::$app->getGlobals()->getEditableSets())) {
         //     $navItems[] = [
         //         'label' => t('Globals'),
@@ -48,6 +59,10 @@ class Navigation
         //     ];
         // }
 
+        /**
+         * @TODO throwing a SQL error
+         * Base table or view not found: 1146 Table 'db.categorygroups' doesn't exist
+         */
         // if (Craft::$app->getCategories()->getEditableGroupIds()) {
         //     $navItems[] = [
         //         'label' => t('Categories'),
@@ -66,7 +81,7 @@ class Navigation
 
         if (
             Edition::get() !== Edition::Solo &&
-            Craft::$app->getUser()->checkPermission('viewUsers')
+            Auth::user()->can('viewUsers')
         ) {
             $navItems[] = [
                 'label' => t('Users'),
@@ -76,7 +91,7 @@ class Navigation
         }
 
         // Add any Plugin nav items
-        $plugins = app(Plugins::class)->getAllPlugins();
+        $plugins = $this->plugins->getAllPlugins();
 
         foreach ($plugins as $plugin) {
             if (
@@ -119,29 +134,24 @@ class Navigation
             }
         }
 
-        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
-
-        if (! empty($utilities)) {
-            $badgeCount = 0;
-
-            foreach ($utilities as $class) {
-                /** @var Utility $class */
-                $badgeCount += $class::badgeCount();
-            }
-
-            $navItems[] = [
-                'url' => 'utilities',
-                'label' => t('Utilities'),
-                'icon' => 'wrench',
-                'badgeCount' => $badgeCount,
-            ];
+        $utilities = $this->utilities->getAuthorizedUtilityTypes();
+        $badgeCount = 0;
+        foreach ($utilities as $class) {
+            /** @var Utility $class */
+            $badgeCount += $class::badgeCount();
         }
+        $navItems[] = [
+            'url' => 'utilities',
+            'label' => t('Utilities'),
+            'icon' => 'wrench',
+            'badgeCount' => $badgeCount,
+        ];
 
         if ($isAdmin) {
             $navItems[] = [
                 'url' => 'settings',
                 'label' => t('Settings'),
-                'icon' => app(GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => $this->generalConfig->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
