@@ -27,7 +27,7 @@ trait HydratesElements
     /**
      * Create a collection of elements from plain arrays.
      *
-     * @return TValue[]|array
+     * @return TValue[]|array<array>
      */
     public function hydrate(array $items): array
     {
