@@ -469,7 +469,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             $result = $this->query->get($columns)->all();
         }
 
-        return $this->eagerLoad()?->all() ?? $this->hydrate($result)->all();
+        return $this->eagerLoad()?->all() ?? $this->hydrate($result);
     }
 
     /**

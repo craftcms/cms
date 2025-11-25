@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Database\Queries\Events\ElementsHydrated;
@@ -28,11 +27,15 @@ trait HydratesElements
     /**
      * Create a collection of elements from plain arrays.
      *
-     * @return \craft\elements\ElementCollection<TValue>
+     * @return TValue[]|array
      */
-    public function hydrate(array $items): ElementCollection
+    public function hydrate(array $items): array
     {
         $items = array_map(fn (stdClass $row) => (array) $row, $items);
+
+        if ($this->asArray) {
+            return $items;
+        }
 
         $elements = collect($items)
             ->when($this->searchResults, fn (Collection $collection) => $collection->map(function (array $row) {
@@ -87,10 +90,10 @@ trait HydratesElements
         if (Event::hasListeners(ElementsHydrated::class)) {
             Event::dispatch($event = new ElementsHydrated($elements, $items));
 
-            return new ElementCollection($event->elements);
+            return $event->elements;
         }
 
-        return new ElementCollection($elements);
+        return $elements;
     }
 
     protected function createElement(array $row): ElementInterface
