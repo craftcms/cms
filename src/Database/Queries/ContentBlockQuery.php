@@ -27,12 +27,12 @@ final class ContentBlockQuery extends ElementQuery
         ]);
     }
 
-    protected function getFieldIdColumn(): string
+    public function getFieldIdColumn(): string
     {
         return 'contentblocks.fieldId';
     }
 
-    protected function getPrimaryOwnerIdColumn(): string
+    public function getPrimaryOwnerIdColumn(): string
     {
         return 'contentblocks.primaryOwnerId';
     }
