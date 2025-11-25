@@ -44,7 +44,9 @@ use Twig\Markup;
  *
  * @method self orderByDesc($column)
  * @method self where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereIn($column, $values, $boolean = 'and', $not = false)
  * @method self whereNot($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereNotIn($column, $values, $boolean = 'and')
  * @method self whereNotNull($columns, $boolean = 'and')
  * @method self whereNotExists($callback, $boolean = 'and')
  */

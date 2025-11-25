@@ -993,7 +993,6 @@ JS, [
      */
     private function deleteOtherNestedElements(ElementInterface $owner, array $except): void
     {
-        /** @var NestedElementInterface[] $elements */
         $query = $this->nestedElementQuery($owner)
             ->drafts(null)
             ->canonicalsOnly()
@@ -1010,6 +1009,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
+        /** @var NestedElementInterface[] $elements */
         foreach ($elements as $element) {
             if ($element->getPrimaryOwnerId() === $owner->id) {
                 $hardDelete = $element->getIsUnpublishedDraft();
