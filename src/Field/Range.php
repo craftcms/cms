@@ -10,14 +10,13 @@ use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Cp;
-use craft\helpers\Db;
-use craft\helpers\Localization;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
-use yii\db\Schema;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -59,18 +58,18 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     #[\Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_INTEGER;
+        return Query::TYPE_INTEGER;
     }
 
     /**
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
 
-        return Db::parseNumericParam($valueSql, $value, columnType: self::dbType());
+        return $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
     }
 
     /**
@@ -180,7 +179,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'])) {
-            $value = Localization::normalizeNumber($value['value'] ?? 0, $value['locale']);
+            $value = I18N::normalizeNumber($value['value'] ?? 0, $value['locale']);
         }
 
         if ($value === '') {

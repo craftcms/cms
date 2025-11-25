@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
+use Craft;
 use craft\base\Element;
 use craft\base\MemoizableArray;
-use craft\elements\Entry;
 use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -684,7 +684,7 @@ final class Sections
                         'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                        'elementType' => Entry::class,
+                        'elementType' => \craft\elements\Entry::class,
                         'criteria' => [
                             'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
@@ -710,7 +710,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var Entry[] $entries */
+            /** @var \craft\elements\ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)
@@ -719,16 +719,17 @@ final class Sections
                 ->trashed()
                 ->site('*')
                 ->unique()
-                ->andWhere(['entries.deletedWithSection' => true])
-                ->all();
+                ->where('entries.deletedWithSection', true)
+                ->get();
+
             /** @var Entry[][] $entriesByType */
-            $entriesByType = Collection::make($entries)->groupBy('typeId')->all();
+            $entriesByType = $entries->groupBy('typeId')->all();
             foreach ($entriesByType as $typeEntries) {
                 try {
                     array_walk($typeEntries, function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
-                    \Craft::$app->getElements()->restoreElements($typeEntries);
+                    Craft::$app->getElements()->restoreElements($typeEntries);
                 } catch (InvalidConfigException) {
                     // the entry type probably wasn't restored
                 }
@@ -748,7 +749,7 @@ final class Sections
         }
 
         // Invalidate entry caches
-        \Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     public function refreshSections(): void
@@ -768,20 +769,18 @@ final class Sections
     private function populateNewStructure(SectionModel $sectionModel): void
     {
         // Add all of the entries to the structure
-        $query = Entry::find()
+        Entry::find()
             ->sectionId($sectionModel->id)
             ->drafts(null)
             ->draftOf(false)
             ->site('*')
             ->unique()
             ->status(null)
-            ->orderBy(['id' => SORT_ASC])
-            ->withStructure(false);
-
-        foreach (DbHelper::each($query) as $entry) {
-            /** @var Entry $entry */
-            Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
-        }
+            ->withStructure(false)
+            ->orderBy('id')
+            ->each(function (Entry $entry) use ($sectionModel) {
+                Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
+            }, 100);
     }
 
     /**
@@ -836,20 +835,23 @@ final class Sections
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
         $entry = $baseEntryQuery
+            ->clone()
             ->typeId($entryTypeIds)
-            ->one();
+            ->first();
 
         // if we didn't find any, look for any entry in this section
         // regardless of type ID, and potentially even soft-deleted
         if ($entry === null) {
+            /** @var Entry|null $entry */
             $entry = $baseEntryQuery
+                ->clone()
                 ->typeId(null)
                 ->trashed(null)
-                ->one();
+                ->first();
 
             if ($entry !== null) {
                 if (isset($entry->dateDeleted)) {
-                    \Craft::$app->getElements()->restoreElement($entry);
+                    Craft::$app->getElements()->restoreElement($entry);
                 }
 
                 $entry->setTypeId($entryTypeIds[0]);
@@ -859,11 +861,12 @@ final class Sections
         // if we still don't have any,
         // try without the typeId with trashed where they were deleted with entry type
         if ($entry === null) {
+            /** @var ?Entry $entry */
             $entry = $baseEntryQuery
                 ->typeId(null)
                 ->trashed(null)
-                ->where(['entries.deletedWithEntryType' => true])
-                ->one();
+                ->where('entries.deletedWithEntryType', true)
+                ->first();
 
             if ($entry !== null) {
                 $entry->setTypeId($entryTypeIds[0]);
@@ -892,7 +895,7 @@ final class Sections
 
         if (
             $entry->hasErrors() ||
-            ! \Craft::$app->getElements()->saveElement($entry, false)
+            ! Craft::$app->getElements()->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));
@@ -901,7 +904,7 @@ final class Sections
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->drafts(null)
@@ -911,12 +914,12 @@ final class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        foreach (DbHelper::each($otherEntriesQuery) as $entryToDelete) {
+        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry, $elementsService) {
             /** @var Entry $entryToDelete */
             if (! $entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
                 $elementsService->deleteElement($entryToDelete, true);
             }
-        }
+        }, 100);
 
         return $entry;
     }
@@ -1045,7 +1048,7 @@ final class Sections
         }
 
         // Invalidate entry caches
-        \Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**

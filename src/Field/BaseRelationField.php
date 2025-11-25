@@ -10,18 +10,13 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\behaviors\EventBehavior;
-use craft\db\FixedOrderExpression;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\elements\db\OrderByPlaceholderExpression;
 use craft\elements\ElementCollection;
-use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -30,6 +25,9 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -46,11 +44,13 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Override;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 use yii\db\Schema;
 use yii\validators\NumberValidator;
 
@@ -110,7 +110,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class,
@@ -120,7 +120,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): array|string|null
     {
         return Schema::TYPE_JSON;
@@ -129,8 +129,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array|false
+    #[Override]
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         /** @var self $field */
         $field = reset($instances);
@@ -139,18 +139,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $value = [$value];
         }
 
-        $conditions = [];
-
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
             $emptyCondition = array_shift($value);
             if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
-                $conditions[] = static::existsQueryCondition($field);
+                $query->orWhereExists(static::existsQuery($field));
             } else {
-                $conditions[] = ['not', static::existsQueryCondition($field)];
+                $query->orWhereNotExists(static::existsQuery($field));
             }
         }
 
         if (! empty($value)) {
+            /** @TODO Port to Laravel */
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -161,17 +160,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'field' => $field->handle,
             ]);
             if ($condition !== false) {
-                $conditions[] = $condition;
+                $params = [];
+                $sql = Craft::$app->getDb()->getQueryBuilder()->buildCondition($condition, $params);
+
+                // Yii uses named parameters, Laravel uses positional
+                $sql = preg_replace('/:qp\d+/', '?', (string) $sql);
+
+                $query->whereRaw($sql, $params);
             }
         }
 
-        if (empty($conditions)) {
-            return false;
-        }
-
-        array_unshift($conditions, 'or');
-
-        return $conditions;
+        return $query;
     }
 
     /**
@@ -181,46 +180,34 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @param  self  $field  The relation field
      * @param  bool  $enabledOnly  Whether to only
      */
-    public static function existsQueryCondition(
+    public static function existsQuery(
         self $field,
         bool $enabledOnly = true,
         bool $inTargetSiteOnly = true,
-    ): array {
+    ): Builder {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
-        $query = (new Query)
-            ->from(["relations_$ns" => DbTable::RELATIONS])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-            ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES],
-                "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
-            ->where([
-                'and',
-                "[[relations_$ns.sourceId]] = [[elements.id]]",
-                [
-                    "relations_$ns.fieldId" => $field->id,
-                    "elements_$ns.dateDeleted" => null,
-                ],
-                [
-                    'or',
-                    ["relations_$ns.sourceSiteId" => null],
-                    ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
-                ],
-            ]);
+        $query = DB::table(\CraftCms\Cms\Database\Table::RELATIONS, "relations_$ns")
+            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+            ->whereColumn("relations_$ns.sourceId", 'elements.id')
+            ->where("relations_$ns.fieldId", $field->id)
+            ->whereNull("relations_$ns.dateDeleted")
+            ->where(function (Builder $query) use ($ns) {
+                $query->whereNull("relations_$ns.sourceSiteId")
+                    ->orWhereColumn("relations_$ns.sourceSiteId", 'elements_sites.siteId');
+            });
 
         if ($enabledOnly) {
-            $query->andWhere([
-                "elements_$ns.enabled" => true,
-                "elements_sites_$ns.enabled" => true,
-            ]);
+            $query->where("elements_$ns.enabled", true);
+            $query->where("elements_sites_$ns.enabled", true);
         }
 
         if ($inTargetSiteOnly) {
-            $query->andWhere([
-                "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
-            ]);
+            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw('elements_sites.siteId'));
         }
 
-        return ['exists', $query];
+        return $query;
     }
 
     /**
@@ -421,7 +408,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -548,7 +535,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         $rules = [
@@ -672,11 +659,11 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
-        if ($value instanceof ElementQueryInterface) {
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
             return ! $this->_all($value, $element)->exists();
         }
 
@@ -686,14 +673,14 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If we're propagating a value, and we don't show the site menu,
         // only save relations to elements in the current site.
         // (see https://github.com/craftcms/cms/issues/15459)
         if (
-            $value instanceof ElementQueryInterface &&
+            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
             $element?->propagating &&
             $element->isNewForSite &&
             ! $element->resaving &&
@@ -706,20 +693,20 @@ JS, [
                 ->ids();
         }
 
-        if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
+        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery || $value instanceof ElementCollection) {
             return $value;
         }
 
         $class = static::elementType();
-        /** @var ElementQuery $query */
-        $query = $class::find()
+        // TODO: $class::find()
+        $query = new EntryQuery()
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value)) {
             $value = array_values(array_filter($value));
-            $query->andWhere(['elements.id' => $value]);
+            $query->whereIn('elements.id', $value);
             if (! empty($value)) {
-                $query->orderBy([new FixedOrderExpression('elements.id', $value, Craft::$app->getDb())]);
+                $query->orderBy(new FixedOrderExpression('elements.id', $value));
             }
         } elseif ($value === null && $element?->id && $this->fetchRelationsFromDbTable($element)) {
             // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
@@ -739,46 +726,42 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_AFTER_PREPARE => function (
-                    CancelableEvent $event,
-                    ElementQuery $query,
-                ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
-                                [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ],
-                            );
+            $query->beforeQuery(function (\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery) use (
+                $element,
+                $relationsAlias) {
+                if ($elementQuery->id !== null) {
+                    return;
+                }
 
-                            if (
-                                $this->sortable &&
-                                ! $this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
-                        }
+                // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                // to the eager-loading query and cause a SQL error.
+                /** @var \Illuminate\Database\Query\Builder $q */
+                foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
+                    $q->join(
+                        new Alias(\CraftCms\Cms\Database\Table::RELATIONS, $relationsAlias),
+                        function (JoinClause $join) use ($element, $relationsAlias) {
+                            $join->whereColumn("$relationsAlias.targetId", 'elements.id')
+                                ->where("$relationsAlias.sourceId", $element->id)
+                                ->where("$relationsAlias.fieldId", $this->id)
+                                ->where(function (JoinClause $join) use ($element, $relationsAlias) {
+                                    $join->whereNull("$relationsAlias.sourceSiteId")
+                                        ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
+                                });
+                        },
+                    );
+
+                    if (
+                        $this->sortable &&
+                        ! $this->maintainHierarchy &&
+                        count($q->orderBy ?? []) === 1 &&
+                        ($q->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
+                    ) {
+                        $q->orderBy("$relationsAlias.sortOrder");
                     }
-                },
-            ]));
+                }
+            });
         } else {
             $query->id(false);
         }
@@ -795,7 +778,7 @@ JS, [
         return $query;
     }
 
-    private function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    protected function fetchRelationsFromDbTable(?Elementinterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;
@@ -833,7 +816,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($this->maintainHierarchy) {
@@ -862,7 +845,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
@@ -885,7 +868,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->localizeRelations;
@@ -894,7 +877,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -903,7 +886,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, false, true);
@@ -972,7 +955,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQuery|ElementCollection $value */
@@ -994,12 +977,12 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->collect();
+            $value = $this->_all($value, $element)->get();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
@@ -1015,7 +998,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new (static::elementType());
@@ -1083,7 +1066,7 @@ JS, [
                 ])
                 ->where(fn (Builder $query) => $query
                     ->where('sourceSiteId', $sourceSiteId)
-                    ->orWhereNull('sourceSiteId')
+                    ->orWhereNull('sourceSiteId'),
                 )
                 ->orderBy('sortOrder')
                 ->get()
@@ -1119,7 +1102,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [
@@ -1159,7 +1142,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the elements
@@ -1208,15 +1191,16 @@ JS, [
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
-            isset($value->where['elements.id']) &&
-            Arr::isNumeric($value->where['elements.id'])
+            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
+            ($where = $value->getWhereForColumn('elements.id')) !== null &&
+            Arr::isNumeric($where['values'])
         ) {
-            $targetIds = $value->where['elements.id'] ?: [];
+            $targetIds = $where['values'] ?? [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->collect()
+                ->get()
                 ->map(fn (ElementInterface $element) => $element->id)
                 ->all();
         }
@@ -1252,7 +1236,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
@@ -1433,7 +1417,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
@@ -1755,7 +1739,7 @@ JS, [
     /**
      * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      */
-    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
+    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery|ElementQueryInterface $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
     {
         $clone = (clone $query)
             ->drafts(null)
@@ -1764,6 +1748,7 @@ JS, [
             ->limit(null)
             ->unique()
             ->eagerly(false);
+
         if ($element !== null) {
             $clone->preferSites([$this->targetSiteId($element)]);
         }

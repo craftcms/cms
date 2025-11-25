@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Section\Data;
 
 use Closure;
 use craft\elements\Entry;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
@@ -32,6 +33,11 @@ use function CraftCms\Cms\t;
 
 final class Section extends Dto implements Chippable, CpEditable, Iconic, Stringable
 {
+    /**
+     * @see getPage()
+     */
+    private string|false $page;
+
     public static function get(int|string $id): ?static
     {
         return Sections::getSectionById($id);
@@ -258,6 +264,34 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
         }
 
         return UrlHelper::cpUrl("settings/sections/$this->id");
+    }
+
+    /**
+     * Returns the section’s control panel index page URI.
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+
+        return sprintf(
+            'content/%s/%s',
+            $page ? Str::slug($page) : 'entries',
+            $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     */
+    public function getPage(): ?string
+    {
+        if (! isset($this->page)) {
+            $sourceKey = $this->type === SectionType::Single ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
     }
 
     /**

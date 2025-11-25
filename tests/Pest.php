@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Queries\AssetQuery;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
@@ -51,4 +53,14 @@ function loadTestPlugin(): void
         ],
     ]);
     $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
+}
+
+function entryQuery(array $config = []): EntryQuery
+{
+    return new EntryQuery($config);
+}
+
+function assetQuery(array $config = []): AssetQuery
+{
+    return new AssetQuery($config);
 }

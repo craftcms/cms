@@ -11,6 +11,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -227,7 +228,7 @@ class Craft extends Yii
             return;
         }
 
-        if (!static::$app->getIsInstalled()) {
+        if (!Info::isInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], [], [], null, false, true);
             return;

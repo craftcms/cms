@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -30,6 +29,7 @@ use craft\models\VolumeFolder;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Elements\Asset;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
@@ -37,6 +37,7 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Override;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -60,7 +61,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Assets');
@@ -69,7 +70,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'image';
@@ -86,7 +87,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected static function canShowSiteMenu(): bool
     {
         return false;
@@ -95,7 +96,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an asset');
@@ -104,7 +105,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
@@ -230,7 +231,7 @@ final class Assets extends BaseRelationField
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -243,7 +244,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
@@ -277,7 +278,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         try {
@@ -298,7 +299,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
@@ -382,7 +383,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
@@ -421,7 +422,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         return parent::isValueEmpty($value, $element) && empty($this->_getUploadedFiles($element));
@@ -438,7 +439,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryAssets($schema);
@@ -447,7 +448,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -462,7 +463,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
         return Cp::elementPreviewHtml(
@@ -474,7 +475,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $asset = new Asset;
@@ -499,7 +500,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Only handle file uploads for the initial site
@@ -582,7 +583,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // No special treatment for revisions
@@ -658,7 +659,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -683,7 +684,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
         $folder = $this->_uploadFolder($element, false, false);
@@ -755,7 +756,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
@@ -798,7 +799,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
@@ -825,7 +826,7 @@ final class Assets extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function showSearchInput(?ElementInterface $element): bool
     {
         if (! $this->showSearchInput || $this->sources === '*') {

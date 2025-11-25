@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\helpers\Queue;
@@ -533,7 +534,7 @@ final class Sites
         }
 
         // Invalidate all element caches
-        \Craft::$app->getElements()->invalidateAllCaches();
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -767,7 +768,7 @@ final class Sites
         $this->refreshSites();
 
         // Invalidate all element caches
-        \Craft::$app->getElements()->invalidateAllCaches();
+        Craft::$app->getElements()->invalidateAllCaches();
 
         // Was this the current site?
         if (isset($this->currentSite) && $this->currentSite->id === $site->id) {
@@ -779,7 +780,7 @@ final class Sites
         }
 
         // Invalidate all element caches
-        \Craft::$app->getElements()->invalidateAllCaches();
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -801,6 +802,8 @@ final class Sites
         $this->allSitesById = null;
         $this->enabledSitesById = null;
         $this->editableSiteIds = null;
+        unset($this->isMultiSite);
+        unset($this->isMultiSiteWithTrashed);
         $this->loadAllSites();
         $this->isMultiSite(true);
     }
@@ -931,7 +934,7 @@ final class Sites
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];
 
-            foreach (\Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
                 /** @var class-string<ElementInterface> $elementType */
                 if (! $elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;

@@ -28,28 +28,32 @@
           })
           .appendTo(this.$container);
 
-        this.groupSort = new Garnish.DragSort({
-          container: this.$groupsContainer,
-          handle:
-            '> .entry-type-group--titlebar > .entry-type-group--actions > .move',
-          ignoreHandleSelector: null,
-          magnetStrength: 4,
-          helperLagBase: 1.5,
-        });
+        if (Craft.hasMousePointerEvents()) {
+          this.groupSort = new Garnish.DragSort({
+            container: this.$groupsContainer,
+            handle:
+              '> .entry-type-group--titlebar > .entry-type-group--actions > .move',
+            ignoreHandleSelector: null,
+            magnetStrength: 4,
+            helperLagBase: 1.5,
+          });
 
-        this.entryTypeSort = new Garnish.DragSort({
-          container: this.$groupsContainer,
-          ignoreHandleSelector: null,
-          handle: '> .chip > .chip-content > .chip-actions > .move',
-          collapseDraggees: true,
-          magnetStrength: 4,
-          helperLagBase: 1.5,
-          canInsertAfter: ($item) =>
-            !$item.hasClass('entry-type-group--caboose'),
-          onSortChange: () => {
-            this.refresh();
-          },
-        });
+          this.entryTypeSort = new Garnish.DragSort({
+            container: this.$groupsContainer,
+            ignoreHandleSelector: null,
+            handle: '> .chip > .chip-content > .chip-actions > .move',
+            collapseDraggees: true,
+            magnetStrength: 4,
+            helperLagBase: 1.5,
+            canInsertAfter: ($item) =>
+              !$item.hasClass('entry-type-group--caboose'),
+            onSortChange: () => {
+              this.refresh();
+            },
+          });
+        } else {
+          $('.entry-type-manager .move').hide();
+        }
 
         this.groups = [];
 
@@ -120,14 +124,13 @@
           },
         }).then(({data}) => {
           this.settings.$defaultColumnsContainer.empty().append(
-            Craft.ui.createCheckboxSelect({
+            Craft.ui.createSortableCheckboxSelect({
               name: Craft.namespaceInputName(
                 'defaultTableColumns',
                 this.settings.namespace
               ),
               options: data.options,
               values: values,
-              sortable: true,
             })
           );
         });
@@ -246,26 +249,28 @@
         .find('.componentselect')
         .data('componentSelect');
 
-      this.manager.entryTypeSort.addItems(
+      this.manager.entryTypeSort?.addItems(
         this.componentSelect.$components.parent('li')
       );
       const $caboose = $('<li/>', {
         class: 'entry-type-group--caboose',
       }).appendTo(this.componentSelect.$list);
-      this.manager.entryTypeSort.addItems($caboose);
+      this.manager.entryTypeSort?.addItems($caboose);
 
       this.componentSelect.on('change', () => {
         this.manager.updateDefaultColumns();
       });
 
-      this.$dragHandle = $('<button/>', {
-        type: 'button',
-        class: 'icon move',
-        title: Craft.t('app', 'Reorder'),
-        'aria-label': Craft.t('app', 'Reorder'),
-      }).appendTo($actionsContainer);
+      if (Craft.hasMousePointerEvents()) {
+        this.$dragHandle = $('<button/>', {
+          type: 'button',
+          class: 'icon move',
+          title: Craft.t('app', 'Reorder'),
+          'aria-label': Craft.t('app', 'Reorder'),
+        }).appendTo($actionsContainer);
+      }
 
-      this.manager.groupSort.addItems(this.$container);
+      this.manager.groupSort?.addItems(this.$container);
     },
 
     get name() {

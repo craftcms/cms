@@ -9,15 +9,17 @@ use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
-use craft\helpers\Db;
 use craft\helpers\Localization;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Throwable;
 use yii\base\InvalidArgumentException;
@@ -69,22 +71,22 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     #[\Override]
     public static function dbType(): string
     {
-        if (Craft::$app->getDb()->getIsMysql()) {
-            return sprintf('%s(65,16)', Schema::TYPE_DECIMAL);
+        if (DB::getDriverName() === 'mysql') {
+            return sprintf('%s(65,16)', Query::TYPE_DECIMAL);
         }
 
-        return Schema::TYPE_DECIMAL;
+        return Query::TYPE_DECIMAL;
     }
 
     /**
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
 
-        return Db::parseNumericParam($valueSql, $value, columnType: self::dbType());
+        return $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
     }
 
     /**

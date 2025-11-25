@@ -18,7 +18,6 @@ use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -30,15 +29,17 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
@@ -1609,7 +1610,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (Info::isInstalled() && !Updates::isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -2835,26 +2836,34 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
-                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
-                        // aborting?
-                        if ($condition === false) {
-                            throw new QueryAbortedException();
+                        $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
+                        $condition = $query->toSql();
+                        $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
+                            return [':lqp' . $key => $binding];
+                        })->all();
+
+                        foreach ($params as $key => $binding) {
+                            $condition = Str::replaceFirst('?', $key, $condition);
                         }
 
-                        if ($condition !== null) {
-                            $conditions[] = $condition;
+                        $condition = Str::after($condition, 'select * where ');
 
-                            // if we have a generated field with the same handle, we need to add it into the condition
-                            if (isset($generatedFieldsByHandle[$handle])) {
-                                $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
-                                    $generatedFieldsByHandle,
-                                    $fieldAttributes,
-                                    $fieldsByHandle,
-                                    false
-                                );
-                                $conditions = array_merge($conditions, $generatedFieldsConditions);
-                            }
+                        if (empty($condition)) {
+                            continue;
+                        }
+
+                        $conditions[] = $condition;
+
+                        // if we have a generated field with the same handle, we need to add it into the condition
+                        if (isset($generatedFieldsByHandle[$handle])) {
+                            $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
+                                $generatedFieldsByHandle,
+                                $fieldAttributes,
+                                $fieldsByHandle,
+                                false
+                            );
+                            $conditions = array_merge($conditions, $generatedFieldsConditions);
                         }
                     }
 

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
+use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
@@ -109,7 +111,12 @@ final class Structures
                     ->status(null);
 
                 if ($prevElement) {
-                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
+                    if ($ancestorQuery instanceof ElementQuery) {
+                        $ancestorQuery->where('structureelements.lft', '>', $prevElement->lft);
+                    } else {
+                        // @TODO: Remove when all ElementQueries are ported
+                        $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
+                    }
                 }
 
                 /** @var T $ancestor */
@@ -474,7 +481,7 @@ final class Structures
 
         // Invalidate all caches for the element type
         // (see https://github.com/craftcms/cms/issues/14846)
-        \Craft::$app->getElements()->invalidateCachesForElementType($element::class);
+        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
 
         if (Event::hasListeners($afterEvent)) {
             Event::dispatch(new $afterEvent(

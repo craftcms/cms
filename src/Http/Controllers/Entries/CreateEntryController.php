@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
+use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
 use craft\helpers\Cp;
@@ -48,7 +49,7 @@ final readonly class CreateEntryController
         $user = $this->request->user();
 
         // Create & populate the draft
-        $entry = \Craft::createObject(Entry::class);
+        $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
         $entry->setAuthorIds(
@@ -69,8 +70,8 @@ final readonly class CreateEntryController
         }
 
         // Make sure the user is allowed to create this entry
-        $craftUser = \Craft::$app->getUsers()->getUserById($user->id);
-        abort_unless(\Craft::$app->getElements()->canSave($entry, $craftUser), 403, 'User not authorized to create this entry.');
+        $craftUser = Craft::$app->getUsers()->getUserById($user->id);
+        abort_unless(Craft::$app->getElements()->canSave($entry, $craftUser), 403, 'User not authorized to create this entry.');
 
         $this->setTitleAndSlug($entry, $site);
 
@@ -154,9 +155,9 @@ final readonly class CreateEntryController
         if ($editableSiteIds->doesntContain($site->id)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if ($editableSiteIds->count() > 1 && $section->propagationMethod !== PropagationMethod::All) {
-                return response(\Craft::$app->getView()->renderTemplate('_special/sitepicker.twig', [
+                return response(Craft::$app->getView()->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds->all(),
-                    'baseUrl' => "entries/$section->handle/new",
+                    'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]));
             }
 

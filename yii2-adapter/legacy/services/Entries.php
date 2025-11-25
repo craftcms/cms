@@ -855,7 +855,14 @@ class Entries extends Component
             $section = self::sectionDataFromSection($section);
         }
 
+        $entry = self::newEntryFromEntry($entry);
+
         return EntriesFacade::moveEntryToSection($entry, $section);
+    }
+
+    private static function newEntryFromEntry(Entry $entry): \CraftCms\Cms\Element\Elements\Entry
+    {
+        return new \CraftCms\Cms\Element\Elements\Entry($entry->toArray());
     }
 
     private static function sectionFromSectionData(\CraftCms\Cms\Section\Data\Section $section): Section
@@ -881,7 +888,7 @@ class Entries extends Component
         return \CraftCms\Cms\Section\Data\Section::from($data);
     }
 
-    private static function sectionSiteSettingsFromSiteSettingsData(\CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings): Section_SiteSettings
+    private static function sectionSiteSettingsFromSiteSettingsData(SectionSiteSettings $siteSettings): Section_SiteSettings
     {
         return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
     }

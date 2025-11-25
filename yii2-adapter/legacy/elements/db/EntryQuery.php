@@ -253,18 +253,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        if (!isset($this->withStructure)) {
-            $this->withStructure = true;
-        }
-
-        parent::init();
-    }
-
-    /**
      * Sets the [[$editable]] property.
      *
      * @param bool|null $value The property value (defaults to true)

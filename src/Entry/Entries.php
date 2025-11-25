@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
+use Craft;
 use craft\base\Element;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
-use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Section\Data\Section;
@@ -62,7 +62,7 @@ final class Entries
                 ->value('sections.structureId');
         }
 
-        return \Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 
     /**
@@ -193,7 +193,7 @@ final class Entries
         // prevents revision from being created
         $entry->resaving = true;
 
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
         $elementsService->ensureBulkOp(function () use (
             $entry,
             $section,
@@ -230,19 +230,17 @@ final class Entries
                         Structures::remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
-                        foreach (DbHelper::each($draftsQuery) as $draft) {
-                            /** @var Entry $draft */
+                        $draftsQuery->each(function (Entry $draft) use ($oldSection) {
                             if ($draft->lft) {
                                 Structures::remove($oldSection->structureId, $draft);
                             }
-                        }
+                        }, 100);
 
-                        foreach (DbHelper::each($revisionsQuery) as $revision) {
-                            /** @var Entry $revision */
+                        $revisionsQuery->each(function (Entry $revision) use ($oldSection) {
                             if ($revision->lft) {
                                 Structures::remove($oldSection->structureId, $revision);
                             }
-                        }
+                        }, 100);
                     }
 
                     // if we're moving it to a Structure section, place it at the root

@@ -5,20 +5,26 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Commands;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Console\Command;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\NotIsNull;
+use Tpetry\QueryExpressions\Value\Value;
 use yii\console\ExitCode;
-use yii\db\Expression;
 
 abstract class RepairCommand extends Command
 {
-    protected function repairStructure(int $structureId, ElementQuery $query): int
+    protected function repairStructure(int $structureId, ElementQuery|Collection $query): int
     {
         $structure = Structures::getStructureById($structureId);
 
@@ -28,38 +34,41 @@ abstract class RepairCommand extends Command
             return self::FAILURE;
         }
 
-        // Get all the elements that match the query, including ones that may not be part of the structure
-        $elements = $query
-            ->site('*')
-            ->unique()
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->status(null)
-            ->withStructure(false)
-            ->addSelect([
-                'structureelements.root',
-                'structureelements.lft',
-                'structureelements.rgt',
-                'structureelements.level',
-            ])
-            ->leftJoin('{{%structureelements}} structureelements', [
-                'and',
-                '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $structureId],
-            ])
-            // Only include unpublished and provisional drafts
-            ->andWhere([
-                'or',
-                ['elements.draftId' => null],
-                ['elements.canonicalId' => null],
-                ['and', ['drafts.provisional' => true], ['not', ['structureelements.lft' => null]]],
-            ])
-            ->orderBy([
-                new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
-                'structureelements.lft' => SORT_ASC,
-                'elements.dateCreated' => SORT_ASC,
-            ])
-            ->all();
+        if (! $query instanceof Collection) {
+            // Get all the elements that match the query, including ones that may not be part of the structure
+            $elements = $query
+                ->site('*')
+                ->unique()
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->status(null)
+                ->withStructure(false)
+                ->addSelect([
+                    'structureelements.root',
+                    'structureelements.lft',
+                    'structureelements.rgt',
+                    'structureelements.level',
+                ])
+                ->leftJoin('structureelements', function (JoinClause $join) use ($structureId) {
+                    $join->on('structureelements.elementId', '=', 'elements.id')
+                        ->where('structureelements.structureId', $structureId);
+                })
+                // Only include unpublished and provisional drafts
+                ->where(function (Builder $query) {
+                    $query->whereNull('elements.draftId')
+                        ->orWhereNull('elements.canonicalId')
+                        ->orWhere(function (Builder $query) {
+                            $query->where('drafts.provisional', true)
+                                ->whereNotNull('structureelements.lft');
+                        });
+                })
+                ->orderBy(new CaseGroup(when: [
+                    new CaseRule(result: '0', condition: new NotIsNull('structureelements.lft')),
+                ], else: new Value(1)))
+                ->orderBy('structureelements.lft')
+                ->orderBy('elements.dateCreated')
+                ->get();
+        }
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $query->elementType;
@@ -205,7 +214,7 @@ abstract class RepairCommand extends Command
 
         $this->components->twoColumnDetail(
             "Finished processing $displayName",
-            $this->option('dry-run') ? ' (dry run)' : ''
+            $this->option('dry-run') ? ' (dry run)' : '',
         );
 
         return ExitCode::OK;

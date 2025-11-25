@@ -22,6 +22,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
      * @type {Craft.ElementEditor|null}
      */
     elementEditor: null,
+    creatingElement: false,
 
     init: function (container, elementType, settings) {
       this.$container = $(container);
@@ -47,7 +48,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       if (this.settings.canCreate) {
-        this.$createBtn = Craft.ui
+        let $createBtn = Craft.ui
           .createButton({
             icon: 'plus',
             label: this.settings.createButtonLabel,
@@ -56,11 +57,10 @@ Craft.NestedElementManager = Garnish.Base.extend(
           .addClass('icon disabled');
 
         if (this.settings.mode === 'cards') {
-          this.$createBtn.addClass('dashed wrap');
-          this.updateCreateBtn();
+          $createBtn.addClass('dashed wrap');
         }
 
-        this.addButton(this.$createBtn);
+        this.addButton($createBtn);
 
         if (Array.isArray(this.settings.createAttributes)) {
           const createMenuId = `menu-${Math.floor(Math.random() * 1000000)}`;
@@ -69,13 +69,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
             class: 'menu menu--disclosure',
             'data-with-search-input':
               this.settings.createAttributes.length > 5 ? 'true' : null,
-          }).insertAfter(this.$createBtn);
-          this.$createBtn
+          }).insertAfter($createBtn);
+          $createBtn
             .attr('aria-controls', createMenuId)
             .attr('data-disclosure-trigger', 'true')
             .addClass('menubtn')
             .disclosureMenu();
-          const disclosureMenu = this.$createBtn.data('disclosureMenu');
+          const disclosureMenu = $createBtn.data('disclosureMenu');
 
           // can't use Object.groupBy() here because the group order matters
           const groupedCreateAttributes = {};
@@ -88,10 +88,10 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }
             groupedCreateAttributes[group].push(attributes);
           });
-          const withHeadings = groupOrder.length > 1;
+          const multiGroup = groupOrder.length > 1;
 
           groupOrder.forEach((group) => {
-            if (withHeadings) {
+            if (multiGroup) {
               disclosureMenu.addHr();
               disclosureMenu.addGroup(group, false);
             }
@@ -101,17 +101,95 @@ Craft.NestedElementManager = Garnish.Base.extend(
                 icon: attributes.icon ? $(attributes.icon)[0] : null,
                 label: attributes.label,
                 iconColor: attributes.color,
-                onActivate: () => {
-                  this.createElement(attributes.attributes);
+                onActivate: async () => {
+                  $createBtn.addClass('loading');
+                  await this.createElement(attributes.attributes);
+                  $createBtn.removeClass('loading');
                 },
               });
             });
           });
+
+          if (multiGroup && this.settings.mode === 'cards') {
+            const $collapsedContainer = $(
+              '<div class="expandable-button--collapsed"/>'
+            ).insertAfter($createBtn);
+            $collapsedContainer.append($createBtn);
+            const $expandedContainer = $(
+              '<div class="expandable-button--expanded btngroup hidden"/>'
+            ).insertAfter($collapsedContainer);
+
+            // Add a SR-only description for each disclosure button
+            const btngroupDescriptionId = `btngroup-desc-${Math.floor(
+              Math.random() * 100000
+            )}`;
+            const $btngroupDescription = $('<span>', {
+              id: btngroupDescriptionId,
+              hidden: true,
+              html: Craft.t('app', 'Create {type}', {
+                type:
+                  Craft.elementTypeNames[this.elementType][2] ??
+                  Craft.t('app', 'element'),
+              }),
+            });
+            $expandedContainer.append($btngroupDescription);
+
+            groupOrder.forEach((group, i) => {
+              const $groupCreateBtn = Craft.ui
+                .createButton({
+                  icon: i === 0 ? 'plus' : null,
+                  label: group,
+                  ariaDescribedBy: btngroupDescriptionId,
+                  spinner: true,
+                })
+                .addClass('icon disabled dashed')
+                .appendTo($expandedContainer);
+              const groupCreateMenuId = `menu-${Math.floor(
+                Math.random() * 1000000
+              )}`;
+              $('<div/>', {
+                id: groupCreateMenuId,
+                class: 'menu menu--disclosure',
+              }).appendTo($expandedContainer);
+              $groupCreateBtn
+                .attr('aria-controls', groupCreateMenuId)
+                .attr('data-disclosure-trigger', 'true')
+                .addClass('menubtn')
+                .disclosureMenu();
+              const groupDisclosureMenu =
+                $groupCreateBtn.data('disclosureMenu');
+
+              groupedCreateAttributes[group].forEach((attributes) => {
+                groupDisclosureMenu.addItem({
+                  icon: attributes.icon ? $(attributes.icon)[0] : null,
+                  label: attributes.label,
+                  iconColor: attributes.color,
+                  onActivate: async () => {
+                    $groupCreateBtn.addClass('loading');
+                    await this.createElement(attributes.attributes);
+                    $groupCreateBtn.removeClass('loading');
+                  },
+                });
+              });
+
+              $createBtn = $createBtn.add($groupCreateBtn);
+            });
+
+            $collapsedContainer.expandableButton();
+          }
         } else {
-          this.addListener(this.$createBtn, 'activate', (ev) => {
+          this.addListener($createBtn, 'activate', async (ev) => {
             ev.preventDefault();
-            this.createElement(this.settings.createAttributes);
+            $createBtn.addClass('loading');
+            await this.createElement(this.settings.createAttributes);
+            $createBtn.removeClass('loading');
           });
+        }
+
+        this.$createBtn = $createBtn;
+
+        if (this.settings.mode === 'cards') {
+          this.updateCreateBtn();
         }
       }
 
@@ -169,7 +247,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$container.children('.zilch').addClass('hidden');
       }
 
-      if (this.settings.sortable) {
+      // only initialise drag-sorting if the device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elements,
           handle:
@@ -196,7 +275,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
       this.$elements.remove();
       this.$elements = null;
-      this.elementSort.destroy();
+      this.elementSort?.destroy();
       this.elementSort = null;
       this.$container.children('.zilch').removeClass('hidden');
     },
@@ -427,14 +506,12 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     createElement: async function (attributes) {
-      if (this.$createBtn) {
-        if (this.$createBtn.hasClass('loading')) {
-          return;
-        }
-
-        this.$createBtn.addClass('loading');
-        Craft.cp.announce(Craft.t('app', 'Loading'));
+      if (this.creatingElement) {
+        return;
       }
+      this.creatingElement = true;
+
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       try {
         await this.markAsDirty();
@@ -496,7 +573,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
         slideout.on('close', () => {
           if (this.$createBtn) {
-            this.$createBtn.focus();
+            this.$createBtn.filter(':visible:first').focus();
           }
 
           // save the element in case any conditional fields should be shown/hidden
@@ -505,9 +582,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
       } finally {
-        if (this.$createBtn) {
-          this.$createBtn.removeClass('loading');
-        }
+        this.creatingElement = false;
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
       }
     },
 
@@ -628,7 +704,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           const getNext = () => $li.next('li');
 
           if (this.settings.sortable) {
-            this.elementSort.addItems($li);
+            this.elementSort?.addItems($li);
 
             const ul = actionDisclosure.addGroup(null, true, destructiveGroup);
 
@@ -825,7 +901,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.removeItems($element);
+        this.elementSort?.removeItems($element);
       }
 
       $element.parent().remove();
@@ -838,7 +914,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       if (this.$createBtn) {
         this.updateCreateBtn();
         if (this.canCreate()) {
-          this.$createBtn.focus();
+          this.$createBtn.filter(':visible:first').focus();
         }
       }
 
@@ -848,19 +924,16 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
-    async addElementCard(element, showSpinner = true) {
-      return await this.addElementCards([element], showSpinner);
+    async addElementCard(element) {
+      return await this.addElementCards([element]);
     },
 
-    async addElementCards(elements, showSpinner = true) {
-      if (this.$createBtn?.hasClass('loading')) {
+    async addElementCards(elements) {
+      if (this.creatingElement) {
         return null;
       }
 
-      if (showSpinner && this.$createBtn) {
-        this.$createBtn.addClass('loading');
-        Craft.cp.announce(Craft.t('app', 'Loading'));
-      }
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       let data;
       try {
@@ -890,10 +963,6 @@ Craft.NestedElementManager = Garnish.Base.extend(
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
         throw e?.response?.data?.message ?? e;
-      } finally {
-        if (showSpinner && this.$createBtn) {
-          this.$createBtn.removeClass('loading');
-        }
       }
 
       if (!this.$elements) {

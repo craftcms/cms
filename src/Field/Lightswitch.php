@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -17,7 +16,9 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -76,7 +77,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
      * {@inheritdoc}
      */
     #[\Override]
-    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
         $strict = false;
@@ -88,7 +89,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
 
         $defaultValue = $strict ? null : $instances[0]->default;
 
-        return Db::parseBooleanParam($valueSql, $value, $defaultValue, Schema::TYPE_JSON);
+        return $query->whereBooleanParam($valueSql, $value, $defaultValue, Query::TYPE_JSON);
     }
 
     /**

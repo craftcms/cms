@@ -250,7 +250,7 @@ export default Base.extend(
     },
 
     handleMousedown: function (event) {
-      const newTarget = event.target;
+      const $target = $(event.target);
 
       // if the info icon was previously activated, reset the activation status,
       // and don't count this mouse down as one in the disclosure menu
@@ -263,14 +263,27 @@ export default Base.extend(
         this.infoIconActivated = true;
       }
 
-      const triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
-      const newTargetIsInsideDisclosure =
-        this.$container[0] === event.target ||
-        this.$container.has(newTarget).length > 0;
-
-      // If click target matches trigger element or disclosure child, do nothing
-      if ($(triggerButton).is(this.$trigger) || newTargetIsInsideDisclosure) {
+      // If the click target matches the disclosure trigger, do nothing
+      const $trigger = $target.closest('[data-disclosure-trigger]');
+      if ($trigger.is(this.$trigger)) {
         return;
+      }
+
+      // If the click target is inside the disclosure, do nothing
+      if (
+        this.$container[0] === event.target ||
+        this.$container.has($target).length
+      ) {
+        return;
+      }
+
+      // If the click target is in a nested disclosure menu, do nothing
+      const $disclosureContainer = $target.closest('.menu--disclosure');
+      if ($disclosureContainer.length) {
+        const disclosure = $disclosureContainer.data('disclosureMenu');
+        if (disclosure && this.$container.has(disclosure.$trigger).length) {
+          return;
+        }
       }
 
       this.hide();
@@ -386,11 +399,7 @@ export default Base.extend(
       }
       this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
-      this.$container.velocity('stop');
-      this.$container.css({
-        opacity: 1,
-        display: '',
-      });
+      this.$container.velocity('stop').addClass('visible').css('opacity', 1);
 
       // In case its default display is set to none
       if (this.$container.css('display') === 'none') {
@@ -442,7 +451,12 @@ export default Base.extend(
         return;
       }
 
-      this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
+      this.$container.velocity('fadeOut', {
+        duration: Garnish.FX_DURATION,
+        complete: () => {
+          this.$container.removeClass('visible').css('display', '');
+        },
+      });
 
       this.$trigger.attr('aria-expanded', 'false');
 
@@ -612,6 +626,10 @@ export default Base.extend(
       const li = document.createElement('li');
       const el = document.createElement(type === 'button' ? 'button' : 'a');
 
+      if (type === 'button') {
+        el.setAttribute('type', 'button');
+      }
+
       el.id = item.id || `menu-item-${Math.floor(Math.random() * 1000000)}`;
       el.className = 'menu-item';
       if (item.selected) {
@@ -724,6 +742,10 @@ export default Base.extend(
       });
 
       return li;
+    },
+
+    addList: function () {
+      return $('<ul/>').appendTo(this.$container)[0];
     },
 
     addItem: function (item, ul, prepend = false) {
@@ -917,6 +939,10 @@ export default Base.extend(
           $el.addClass('hidden');
         }
       });
+    },
+
+    hasVisibleItems: function () {
+      return !!this.$container.find('li:not(.hidden)').length;
     },
 
     /**
