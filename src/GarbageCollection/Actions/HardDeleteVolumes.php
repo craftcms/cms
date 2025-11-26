@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use craft\records\Volume;
 use craft\records\VolumeFolder;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -37,7 +37,7 @@ final class HardDeleteVolumes extends GarbageCollectionAction
                     VolumeFolder::deleteAll(['id' => $folder->id]);
                 }
 
-                Volume::deleteAll(['id' => $volumeIds]);
+                Volume::whereIn('id', $volumeIds)->delete();
             }
         );
     }
