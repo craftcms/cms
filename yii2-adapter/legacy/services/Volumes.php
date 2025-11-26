@@ -14,8 +14,8 @@ use craft\events\VolumeEvent;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -382,14 +382,12 @@ class Volumes extends Component
             ]);
 
             if ($rootFolder === null) {
-                $rootFolderRecord = new VolumeFolderRecord([
+                VolumeFolderModel::create([
                     'volumeId' => $volumeModel->id,
                     'parentId' => null,
                     'path' => '',
                     'name' => $volumeModel->name,
                 ]);
-
-                $rootFolderRecord->save();
             } else {
                 $rootFolder->name = $volumeModel->name;
                 $assetsService->storeFolderRecord($rootFolder);
