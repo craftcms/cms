@@ -34,6 +34,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -140,8 +141,34 @@ abstract class BaseRelationField extends Field implements
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
+            $emptyParam = array_shift($value);
+
+            if (self::isQueryConditionFieldMultiInstance($instances)) {
+                // look at the JSON values rather than the `relations` table data
+                // (see https://github.com/craftcms/cms/issues/17290 + https://github.com/craftcms/cms/pull/18092)
+                if (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
+                    $emptyCondition = ['or'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ];
+                    }
+                } else {
+                    $emptyCondition = ['and'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ];
+                    }
+                }
+                $conditions[] = $emptyCondition;
+            } elseif (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
                 $conditions[] = static::existsQueryCondition($field);
             } else {
                 $conditions[] = ['not', static::existsQueryCondition($field)];
@@ -169,6 +196,27 @@ abstract class BaseRelationField extends Field implements
 
         array_unshift($conditions, 'or');
         return $conditions;
+    }
+
+    /**
+     * @param self[] $instances
+     * @return bool
+     */
+    private static function isQueryConditionFieldMultiInstance(array $instances): bool
+    {
+        foreach ($instances as $instance) {
+            // See if this instance is used multiple times within its field layout
+            $allInstances = $instance->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+                $field instanceof CustomField &&
+                $field->getFieldUid() === $instance->uid
+            ));
+
+            if ($allInstances && count($allInstances) > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
