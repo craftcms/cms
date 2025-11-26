@@ -83,6 +83,14 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             ->withPivot(['dateCreated', 'dateUpdated', 'uid']);
     }
 
+    /** @return BelongsToMany<UserPermission, $this, Pivot> */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(UserPermission::class, Table::USERPERMISSIONS_USERS, 'userId', 'permissionId')
+            ->withTimestamps('dateCreated', 'dateUpdated')
+            ->withPivot('uid');
+    }
+
     /**
      * @return Collection<\craft\models\UserGroup>
      */

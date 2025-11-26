@@ -454,7 +454,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     {
         if (!isset($this->page)) {
             $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
-            $source = ElementHelper::findSource(Entry::class, $sourceKey);
+            $source = ElementHelper::findSource(Entry::class, $sourceKey, withDisabled: true);
             $this->page = $source['page'] ?? false;
         }
 

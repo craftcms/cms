@@ -39,6 +39,7 @@ use yii\db\Schema;
  * @replace {twig-method} craft.assets()
  * @replace {myElement} myAsset
  * @replace {element-class} \craft\elements\Asset
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AssetQuery} instead.
  */
 class AssetQuery extends ElementQuery
 {

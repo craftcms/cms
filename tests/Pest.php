@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Queries\AssetQuery;
 use CraftCms\Cms\Database\Queries\EntryQuery;
+use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
@@ -63,4 +64,9 @@ function entryQuery(array $config = []): EntryQuery
 function assetQuery(array $config = []): AssetQuery
 {
     return new AssetQuery($config);
+}
+
+function userQuery(array $config = []): UserQuery
+{
+    return new UserQuery($config);
 }

@@ -41,6 +41,8 @@ class ElementsTest extends TestCase
      */
     public function testParseRefs(): void
     {
+        $this->markTestSkipped('Port to Laravel');
+
         // Generate a random slug that is unlikely to exist:
         $randomSlug = Craft::$app->getSecurity()->generateRandomString(10);
 

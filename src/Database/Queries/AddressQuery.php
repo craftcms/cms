@@ -1,322 +1,380 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\elements\db;
+declare(strict_types=1);
 
-use Craft;
-use craft\db\QueryAbortedException;
-use craft\db\Table;
-use craft\elements\Address;
-use craft\helpers\Db;
+namespace CraftCms\Cms\Database\Queries;
+
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Database\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements\Address;
+use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Collection;
 
-/**
- * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
- *
- * @template TKey of array-key
- * @template TElement of Address
- * @extends ElementQuery<TKey,TElement>
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- * @doc-path addresses.md
- * @replace {element} address
- * @replace {elements} addresses
- * @replace {twig-method} craft.addresses()
- * @replace {myElement} myAddress
- * @replace {element-class} \craft\elements\Address
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AddressQuery} instead.
- */
-class AddressQuery extends ElementQuery implements NestedElementQueryInterface
+final class AddressQuery extends ElementQuery
 {
-    use NestedElementQueryTrait {
-        cacheTags as nestedTraitCacheTags;
-    }
+    use QueriesNestedElements;
 
     /**
      * @var mixed The address countryCode(s) that the resulting address must be in.
-     * ---
-     * ```php
-     * // fetch addresses that are located in AU
-     * $addresses = \craft\elements\Address::find()
-     *     ->countryCode('AU')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses that are located in AU #}
-     * {% set addresses = craft.addresses()
-     *   .countryCode('AU')
-     *   .all() %}
-     * ```
+     *            ---
+     *            ```php
+     *            // fetch addresses that are located in AU
+     *            $addresses = \craft\elements\Address::find()
+     *            ->countryCode('AU')
+     *            ->all();
+     *            ```
+     *            ```twig
+     *            {# fetch addresses that are located in AU #}
+     *            {% set addresses = addresses()()
+     *            .countryCode('AU')
+     *            .all() %}
+     *            ```
+     *
      * @used-by countryCode()
-     * @since 5.0.0
      */
     public mixed $countryCode = null;
 
     /**
      * @var mixed Narrows the query results based on the administrative areas the addresses belongs to.
-     * ---
-     * ```php
-     * // fetch addresses that are located in Western Australia
-     * $addresses = \craft\elements\Address::find()
-     *     ->administrativeArea('WA')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses that are located in Western Australia #}
-     * {% set addresses = craft.addresses()
-     *   .administrativeArea('WA')
-     *   .all() %}
-     * ```
+     *            ---
+     *            ```php
+     *            // fetch addresses that are located in Western Australia
+     *            $addresses = \craft\elements\Address::find()
+     *            ->administrativeArea('WA')
+     *            ->all();
+     *            ```
+     *            ```twig
+     *            {# fetch addresses that are located in Western Australia #}
+     *            {% set addresses = addresses()()
+     *            .administrativeArea('WA')
+     *            .all() %}
+     *            ```
+     *
      * @used-by administrativeArea()
-     * @since 5.0.0
      */
     public mixed $administrativeArea = null;
 
     /**
      * @var string|null Narrows the query results based on the locality the addresses belong to.
-     * ---
-     * ```php
-     * // fetch addresses by locality
-     * $addresses = \craft\elements\Address::find()
-     *     ->locality('Perth')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by locality #}
-     * {% set addresses = craft.addresses()
-     *   .locality('Perth')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by locality
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->locality('Perth')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by locality #}
+     *                  {% set addresses = addresses()()
+     *                  .locality('Perth')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by locality()
-     * @since 5.0.0
      */
-    public ?string $locality = null;
+    public array|string|null $locality = null;
 
     /**
      * @var string|null Narrows the query results based on the dependent locality the addresses belong to.
-     * ---
-     * ```php
-     * // fetch addresses by dependent locality
-     * $addresses = \craft\elements\Address::find()
-     *     ->dependentLocality('Darlington')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by dependent locality #}
-     * {% set addresses = craft.addresses()
-     *   .dependentLocality('Darlington')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by dependent locality
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->dependentLocality('Darlington')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by dependent locality #}
+     *                  {% set addresses = addresses()()
+     *                  .dependentLocality('Darlington')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by dependentLocality()
-     * @since 5.0.0
      */
-    public ?string $dependentLocality = null;
+    public array|string|null $dependentLocality = null;
 
     /**
      * @var string|null Narrows the query results based on the postal code the addresses belong to.
-     * ---
-     * ```php
-     * // fetch addresses by postal code
-     * $addresses = \craft\elements\Address::find()
-     *     ->postalCode('10001')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by postal code #}
-     * {% set addresses = craft.addresses()
-     *   .postalCode('10001')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by postal code
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->postalCode('10001')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by postal code #}
+     *                  {% set addresses = addresses()()
+     *                  .postalCode('10001')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by postalCode()
-     * @since 5.0.0
      */
-    public ?string $postalCode = null;
+    public array|string|null $postalCode = null;
 
     /**
      * @var string|null Narrows the query results based on the sorting code the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by sorting code
-     * $addresses = \craft\elements\Address::find()
-     *     ->sortingCode('ABCD')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by sorting code #}
-     * {% set addresses = craft.addresses()
-     *   .sortingCode('ABCD')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by sorting code
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->sortingCode('ABCD')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by sorting code #}
+     *                  {% set addresses = addresses()()
+     *                  .sortingCode('ABCD')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by sortingCode()
-     * @since 5.0.0
      */
-    public ?string $sortingCode = null;
+    public array|string|null $sortingCode = null;
 
     /**
      * @var string|null Narrows the query results based on the organization the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by organization
-     * $addresses = \craft\elements\Address::find()
-     *     ->organization('Pixel & Tonic')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by organization #}
-     * {% set addresses = craft.addresses()
-     *   .organization('Pixel & Tonic')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by organization
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->organization('Pixel & Tonic')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by organization #}
+     *                  {% set addresses = addresses()()
+     *                  .organization('Pixel & Tonic')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by organization()
-     * @since 5.0.0
      */
-    public ?string $organization = null;
+    public array|string|null $organization = null;
 
     /**
      * @var string|null Narrows the query results based on the tax ID the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by organization tax ID
-     * $addresses = \craft\elements\Address::find()
-     *     ->organizationTaxId('123-456-789')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by organization tax ID #}
-     * {% set addresses = craft.addresses()
-     *   .organizationTaxId('123-456-789')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by organization tax ID
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->organizationTaxId('123-456-789')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by organization tax ID #}
+     *                  {% set addresses = addresses()()
+     *                  .organizationTaxId('123-456-789')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by organizationTaxId()
-     * @since 5.0.0
      */
-    public ?string $organizationTaxId = null;
-
+    public array|string|null $organizationTaxId = null;
 
     /**
      * @var string|null Narrows the query results based on the first address line the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by address line 1
-     * $addresses = \craft\elements\Address::find()
-     *     ->addressLine1('23 Craft st')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by address line 1 #}
-     * {% set addresses = craft.addresses()
-     *   .addressLine1('23 Craft st')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by address line 1
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->addressLine1('23 Craft st')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by address line 1 #}
+     *                  {% set addresses = addresses()()
+     *                  .addressLine1('23 Craft st')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by addressLine1()
-     * @since 5.0.0
      */
-    public ?string $addressLine1 = null;
+    public array|string|null $addressLine1 = null;
 
     /**
      * @var string|null Narrows the query results based on the second address line the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by address line 2
-     * $addresses = \craft\elements\Address::find()
-     *     ->addressLine2('Apt 5B')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by address line 2 #}
-     * {% set addresses = craft.addresses()
-     *   .addressLine2('Apt 5B')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by address line 2
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->addressLine2('Apt 5B')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by address line 2 #}
+     *                  {% set addresses = addresses()()
+     *                  .addressLine2('Apt 5B')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by addressLine2()
-     * @since 5.0.0
      */
-    public ?string $addressLine2 = null;
+    public array|string|null $addressLine2 = null;
 
     /**
      * @var string|null Narrows the query results based on the third address line the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by address line 3
-     * $addresses = \craft\elements\Address::find()
-     *     ->addressLine3('Suite 212')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by address line 3 #}
-     * {% set addresses = craft.addresses()
-     *   .addressLine3('Suite 212')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by address line 3
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->addressLine3('Suite 212')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by address line 3 #}
+     *                  {% set addresses = addresses()()
+     *                  .addressLine3('Suite 212')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by addressLine3()
-     * @since 5.0.0
      */
-    public ?string $addressLine3 = null;
+    public array|string|null $addressLine3 = null;
 
     /**
      * @var string|null Narrows the query results based on the full name the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by full name
-     * $addresses = \craft\elements\Address::find()
-     *     ->fullName('John Doe')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by full name #}
-     * {% set addresses = craft.addresses()
-     *   .fullName('John Doe')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by full name
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->fullName('John Doe')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by full name #}
+     *                  {% set addresses = addresses()()
+     *                  .fullName('John Doe')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by fullName()
-     * @since 5.0.0
      */
-    public ?string $fullName = null;
+    public array|string|null $fullName = null;
 
     /**
      * @var string|null Narrows the query results based on the first name the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by first name
-     * $addresses = \craft\elements\Address::find()
-     *     ->firstName('Doe')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by first name #}
-     * {% set addresses = craft.addresses()
-     *   .firstName('Doe')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by first name
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->firstName('Doe')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by first name #}
+     *                  {% set addresses = addresses()()
+     *                  .firstName('Doe')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by firstName()
-     * @since 5.0.0
      */
-    public ?string $firstName = null;
+    public array|string|null $firstName = null;
 
     /**
      * @var string|null Narrows the query results based on the last name the addresses have.
-     * ---
-     * ```php
-     * // fetch addresses by last name
-     * $addresses = \craft\elements\Address::find()
-     *     ->lastName('Doe')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by last name #}
-     * {% set addresses = craft.addresses()
-     *   .lastName('Doe')
-     *   .all() %}
-     * ```
+     *                  ---
+     *                  ```php
+     *                  // fetch addresses by last name
+     *                  $addresses = \craft\elements\Address::find()
+     *                  ->lastName('Doe')
+     *                  ->all();
+     *                  ```
+     *                  ```twig
+     *                  {# fetch addresses by last name #}
+     *                  {% set addresses = addresses()()
+     *                  .lastName('Doe')
+     *                  .all() %}
+     *                  ```
+     *
      * @used-by lastName()
-     * @since 5.0.0
      */
-    public ?string $lastName = null;
+    public array|string|null $lastName = null;
+
+    public function getFieldIdColumn(): string
+    {
+        return 'addresses.fieldId';
+    }
+
+    public function getPrimaryOwnerIdColumn(): string
+    {
+        return 'addresses.primaryOwnerId';
+    }
+
+    public function shouldJoinElementsOwners(): bool
+    {
+        return ! empty($this->fieldId);
+    }
+
+    public function __construct(array $config = [])
+    {
+        parent::__construct(Address::class, $config);
+
+        $this->joinElementTable(Table::ADDRESSES);
+
+        $this->query->addSelect([
+            'addresses.id as id',
+            'addresses.fieldId as fieldId',
+            'addresses.primaryOwnerId as primaryOwnerId',
+            'addresses.countryCode as countryCode',
+            'addresses.administrativeArea as administrativeArea',
+            'addresses.locality as locality',
+            'addresses.dependentLocality as dependentLocality',
+            'addresses.postalCode as postalCode',
+            'addresses.sortingCode as sortingCode',
+            'addresses.addressLine1 as addressLine1',
+            'addresses.addressLine2 as addressLine2',
+            'addresses.addressLine3 as addressLine3',
+            'addresses.organization as organization',
+            'addresses.organizationTaxId as organizationTaxId',
+            'addresses.fullName as fullName',
+            'addresses.firstName as firstName',
+            'addresses.lastName as lastName',
+            'addresses.latitude as latitude',
+            'addresses.longitude as longitude',
+        ]);
+
+        $this->beforeQuery(function (self $addressQuery) {
+            $this->normalizeNestedElementParams($addressQuery);
+
+            if (empty($addressQuery->fieldId) && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
+                // User addresses don't get rows in the elements_owners table
+                if (! $addressQuery->primaryOwnerId && ! $addressQuery->ownerId) {
+                    throw new QueryAbortedException;
+                }
+
+                $addressQuery->subQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
+            }
+
+            foreach ([
+                'countryCode',
+                'administrativeArea',
+                'locality',
+                'dependentLocality',
+                'postalCode',
+                'sortingCode',
+                'organization',
+                'organizationTaxId',
+                'addressLine1',
+                'addressLine2',
+                'addressLine3',
+                'lastName',
+                'firstName',
+                'fullName',
+            ] as $property) {
+                if (! $addressQuery->$property) {
+                    continue;
+                }
+
+                $addressQuery->subQuery->whereParam("addresses.$property", $addressQuery->$property);
+            }
+        });
+    }
 
     /**
      * Narrows the query results based on the country the addresses belong to.
@@ -346,11 +404,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
-     * @return static self reference
      * @uses $countryCode
      */
-    public function countryCode(array|string|null $value): static
+    public function countryCode(array|string|null $value): self
     {
         $this->countryCode = $value;
 
@@ -385,12 +441,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
-     * @return static self reference
      * @uses $administrativeArea
-     * @since 5.0.0
      */
-    public function administrativeArea(array|string|null $value): static
+    public function administrativeArea(array|string|null $value): self
     {
         $this->administrativeArea = $value;
 
@@ -424,12 +477,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $locality
-     * @since 5.0.0
      */
-    public function locality(?string $value): static
+    public function locality(array|string|null $value): self
     {
         $this->locality = $value;
 
@@ -463,12 +513,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $dependentLocality
-     * @since 5.0.0
      */
-    public function dependentLocality(?string $value): static
+    public function dependentLocality(array|string|null $value): self
     {
         $this->dependentLocality = $value;
 
@@ -502,12 +549,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $postalCode
-     * @since 5.0.0
      */
-    public function postalCode(?string $value): static
+    public function postalCode(array|string|null $value): self
     {
         $this->postalCode = $value;
 
@@ -541,12 +585,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $sortingCode
-     * @since 5.0.0
      */
-    public function sortingCode(?string $value): static
+    public function sortingCode(array|string|null $value): self
     {
         $this->sortingCode = $value;
 
@@ -580,12 +621,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $organization
-     * @since 5.0.0
      */
-    public function organization(?string $value): static
+    public function organization(array|string|null $value): self
     {
         $this->organization = $value;
 
@@ -619,12 +657,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string $value The property value
-     * @return static self reference
      * @uses $organizationTaxId
-     * @since 5.0.0
      */
-    public function organizationTaxId(string $value): static
+    public function organizationTaxId(array|string|null $value): self
     {
         $this->organizationTaxId = $value;
 
@@ -658,12 +693,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $addressLine1
-     * @since 5.0.0
      */
-    public function addressLine1(?string $value): static
+    public function addressLine1(array|string|null $value): self
     {
         $this->addressLine1 = $value;
 
@@ -697,12 +729,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $addressLine2
-     * @since 5.0.0
      */
-    public function addressLine2(?string $value): static
+    public function addressLine2(array|string|null $value): self
     {
         $this->addressLine2 = $value;
 
@@ -736,12 +765,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $addressLine3
-     * @since 5.0.0
      */
-    public function addressLine3(?string $value): static
+    public function addressLine3(array|string|null $value): self
     {
         $this->addressLine3 = $value;
 
@@ -775,12 +801,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $fullName
-     * @since 5.0.0
      */
-    public function fullName(?string $value): static
+    public function fullName(array|string|null $value): self
     {
         $this->fullName = $value;
 
@@ -814,12 +837,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $firstName
-     * @since 5.0.0
      */
-    public function firstName(?string $value): static
+    public function firstName(array|string|null $value): self
     {
         $this->firstName = $value;
 
@@ -853,12 +873,9 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|null $value The property value
-     * @return static self reference
      * @uses $lastName
-     * @since 5.0.0
      */
-    public function lastName(?string $value): static
+    public function lastName(array|string|null $value): self
     {
         $this->lastName = $value;
 
@@ -866,117 +883,12 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    protected function beforePrepare(): bool
+    protected function fieldLayouts(): Collection
     {
-        if (!parent::beforePrepare()) {
-            return false;
-        }
-
-        $this->joinElementTable(Table::ADDRESSES);
-
-        $this->query->addSelect([
-            'addresses.id',
-            'addresses.fieldId',
-            'addresses.primaryOwnerId',
-            'addresses.countryCode',
-            'addresses.administrativeArea',
-            'addresses.locality',
-            'addresses.dependentLocality',
-            'addresses.postalCode',
-            'addresses.sortingCode',
-            'addresses.addressLine1',
-            'addresses.addressLine2',
-            'addresses.addressLine3',
-            'addresses.organization',
-            'addresses.organizationTaxId',
-            'addresses.fullName',
-            'addresses.firstName',
-            'addresses.lastName',
-            'addresses.latitude',
-            'addresses.longitude',
-        ]);
-
-        $this->normalizeNestedElementParams();
-
-        // Only join the elements_owners table if fieldId is specified
-        if (!empty($this->fieldId)) {
-            $this->applyNestedElementParams('addresses.fieldId', 'addresses.primaryOwnerId');
-        } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
-            // User addresses don't get rows in the elements_owners table
-            if (!$this->primaryOwnerId && !$this->ownerId) {
-                throw new QueryAbortedException();
-            }
-            $this->subQuery->andWhere(['addresses.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
-        }
-
-        if ($this->countryCode) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.countryCode', $this->countryCode));
-        }
-
-        if ($this->administrativeArea) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.administrativeArea', $this->administrativeArea));
-        }
-
-        if ($this->locality) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.locality', $this->locality));
-        }
-
-        if ($this->dependentLocality) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.dependentLocality', $this->dependentLocality));
-        }
-
-        if ($this->postalCode) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.postalCode', $this->postalCode));
-        }
-
-        if ($this->sortingCode) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.sortingCode', $this->sortingCode));
-        }
-
-        if ($this->organization) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.organization', $this->organization));
-        }
-
-        if ($this->organizationTaxId) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.organizationTaxId', $this->organizationTaxId));
-        }
-
-        if ($this->addressLine1) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.addressLine1', $this->addressLine1));
-        }
-
-        if ($this->addressLine2) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.addressLine2', $this->addressLine2));
-        }
-
-        if ($this->addressLine3) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.addressLine3', $this->addressLine3));
-        }
-
-        if ($this->lastName) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.lastName', $this->lastName));
-        }
-
-        if ($this->firstName) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.firstName', $this->firstName));
-        }
-
-        if ($this->fullName) {
-            $this->subQuery->andWhere(Db::parseParam('addresses.fullName', $this->fullName));
-        }
-
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function fieldLayouts(): array
-    {
-        return [
+        return new Collection([
             app(Addresses::class)->getFieldLayout(),
-        ];
+        ]);
     }
 }

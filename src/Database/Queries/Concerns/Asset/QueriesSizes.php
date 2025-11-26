@@ -24,7 +24,7 @@ trait QueriesSizes
      *            ```
      *            ```twig{4}
      *            {# fetch images that are at least 500 pixes wide #}
-     *            {% set logos = craft.assets()
+     *            {% set logos = assets()
      *            .kind('image')
      *            .width('>= 500')
      *            .all() %}
@@ -46,7 +46,7 @@ trait QueriesSizes
      *            ```
      *            ```twig{4}
      *            {# fetch images that are at least 500 pixes high #}
-     *            {% set logos = craft.assets()
+     *            {% set logos = assets()
      *            .kind('image')
      *            .height('>= 500')
      *            .all() %}

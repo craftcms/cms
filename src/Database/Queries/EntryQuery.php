@@ -48,12 +48,12 @@ final class EntryQuery extends ElementQuery
         'elements.id' => SORT_DESC,
     ];
 
-    protected function getFieldIdColumn(): string
+    public function getFieldIdColumn(): string
     {
         return 'entries.fieldId';
     }
 
-    protected function getPrimaryOwnerIdColumn(): string
+    public function getPrimaryOwnerIdColumn(): string
     {
         return 'entries.primaryOwnerId';
     }

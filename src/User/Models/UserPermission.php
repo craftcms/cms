@@ -11,24 +11,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-final class UserGroup extends BaseModel
+final class UserPermission extends BaseModel
 {
     use HasFactory;
     use HasUid;
 
-    protected $table = Table::USERGROUPS;
+    protected $table = Table::USERPERMISSIONS;
 
     /** @return BelongsToMany<User, $this, Pivot> */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, Table::USERGROUPS_USERS, 'groupId', 'userId')
-            ->withPivot(['dateCreated', 'dateUpdated', 'uid']);
+        return $this->belongsToMany(User::class, Table::USERPERMISSIONS_USERS, 'permissionId', 'userId')
+            ->withTimestamps('dateCreated', 'dateUpdated')
+            ->withPivot('uid');
     }
 
-    /** @return BelongsToMany<UserPermission, $this, Pivot> */
-    public function permissions(): BelongsToMany
+    /** @return BelongsToMany<UserGroup, $this, Pivot> */
+    public function userGroups(): BelongsToMany
     {
-        return $this->belongsToMany(UserPermission::class, Table::USERPERMISSIONS_USERGROUPS, 'groupId', 'permissionId')
+        return $this->belongsToMany(UserGroup::class, Table::USERPERMISSIONS_USERGROUPS, 'permissionId', 'groupId')
             ->withTimestamps('dateCreated', 'dateUpdated')
             ->withPivot('uid');
     }

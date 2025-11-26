@@ -993,19 +993,23 @@ JS, [
      */
     private function deleteOtherNestedElements(ElementInterface $owner, array $except): void
     {
-        /** @var NestedElementInterface[] $elements */
-        $elements = $this->nestedElementQuery($owner)
+        $query = $this->nestedElementQuery($owner)
             ->drafts(null)
             ->canonicalsOnly()
             ->savedDraftsOnly(false)
             ->status(null)
-            ->siteId($owner->siteId)
-            ->andWhere(['not', ['elements.id' => $except]])
-            ->all();
+            ->siteId($owner->siteId);
+
+        if ($query instanceof ElementQuery) {
+            $elements = $query->whereNotIn('elements.id', $except)->all();
+        } else {
+            $elements = $query->andWhere(['not', ['elements.id' => $except]])->all();
+        }
 
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
+        /** @var NestedElementInterface[] $elements */
         foreach ($elements as $element) {
             if ($element->getPrimaryOwnerId() === $owner->id) {
                 $hardDelete = $element->getIsUnpublishedDraft();

@@ -100,7 +100,7 @@ class ContentBlock extends Element implements NestedElementInterface
      * @inheritdoc
      * @return ContentBlockQuery The newly created [[ContentBlockQuery]] instance.
      */
-    public static function find(): ContentBlockQuery
+    public static function find(): ContentBlockQuery|\CraftCms\Cms\Database\Queries\ContentBlockQuery
     {
         return new ContentBlockQuery(static::class);
     }

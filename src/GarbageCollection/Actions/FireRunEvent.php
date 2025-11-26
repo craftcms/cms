@@ -12,7 +12,7 @@ final class FireRunEvent extends GarbageCollectionAction
     public function __invoke(): void
     {
         if (Event::hasListeners(RunningGarbageCollection::class)) {
-            Event::dispatch(new RunningGarbageCollection);
+            Event::dispatch(new RunningGarbageCollection($this->garbageCollection));
         }
     }
 }

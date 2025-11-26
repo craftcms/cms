@@ -31,7 +31,7 @@ trait QueriesAssetLocation
      *            ```
      *            ```twig
      *            {# fetch assets in the Logos volume #}
-     *            {% set logos = craft.assets()
+     *            {% set logos = assets()
      *            .volume('logos')
      *            .all() %}
      *            ```

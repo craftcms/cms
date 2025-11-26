@@ -305,7 +305,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
-    public static function find(): UserQuery
+    public static function find(): UserQuery|\CraftCms\Cms\Database\Queries\UserQuery
     {
         return new UserQuery(static::class);
     }

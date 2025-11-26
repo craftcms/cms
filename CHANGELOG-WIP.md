@@ -1,10 +1,10 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
-### Development
+## Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
 
-### Extensibility
+## Extensibility
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\Str`.
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
@@ -140,6 +140,16 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\events\DefineSourceSortOptionsEvent`. `CraftCms\Cms\Element\Events\DefineSourceSortOptions` should be used instead.
 - Deprecated `craft\events\DefineSourceTableAttributesEvent`. `CraftCms\Cms\Element\Events\DefineSourceTableAttributes` should be used instead.
 
+## Element Queries
+
+- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Database\Queries\AddressQuery` should be used instead.
+- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Database\Queries\AssetQuery` should be used instead.
+- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Database\Queries\ContentBlockQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Database\Queries\ElementQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQueryInterface`
+- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Database\Queries\EntryQuery` should be used instead.
+- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Database\Queries\UserQuery` should be used instead.
+
 ## Entries & Entry Types
 
 - Deprecated `craft\services\Entries`. `CraftCms\Cms\Entry\Entries` and `CraftCms\Cms\Entry\EntryTypes` should be used instead.
@@ -156,48 +166,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
-### Plugins
-
-#### Added
-- The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
-
-#### Deprecations
-
-- Deprecated `craft\services\Plugins`. `CraftCms\Cms\Plugin\Plugins` should be used instead.
-- Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
-- Deprecated `craft\base\PluginTrait`.
-- Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
-- Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
-
-#### Controllers
-- Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
-
-#### Commands
-- Removed `craft\console\controllers\PluginController` in favor of:
-  - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable` 
-  - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable` 
-  - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install` 
-  - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall` 
-  - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list` 
- 
-#### Events
-- Deprecated `craft\events\PluginEvent` in favor of the following new events:
-  - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
-  - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
-  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\DisablingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\EnablingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\InstallingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\LoadingPlugins`;
-  - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
-  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\UninstallingPlugin`;
-  - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
-  - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
-  - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
-  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
-  - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
-  - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
-
-### Migrations
+## Migrations
 
 Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 
@@ -214,7 +183,48 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Removed `craft\console\controllers\UpController` in favor of:
   - `CraftCms\Cms\Console\Commands\UpCommand` 
 
-### (Plugin) Updates
+## Plugins
+
+### Added
+- The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
+
+### Deprecations
+
+- Deprecated `craft\services\Plugins`. `CraftCms\Cms\Plugin\Plugins` should be used instead.
+- Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
+- Deprecated `craft\base\PluginTrait`.
+- Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
+- Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
+
+### Controllers
+- Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
+
+### Commands
+- Removed `craft\console\controllers\PluginController` in favor of:
+  - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable`
+  - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable`
+  - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install`
+  - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall`
+  - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list`
+
+### Events
+- Deprecated `craft\events\PluginEvent` in favor of the following new events:
+  - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\DisablingPlugin`;
+  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\EnablingPlugin`;
+  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\InstallingPlugin`;
+  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\LoadingPlugins`;
+  - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
+  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\UninstallingPlugin`;
+  - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
+  - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
+  - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
+  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
+  - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
+  - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
+
+## Updates
 
 The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Updates\Updates` should be used instead.
 

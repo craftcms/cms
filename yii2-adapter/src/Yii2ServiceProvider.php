@@ -84,7 +84,6 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
-use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
@@ -541,21 +540,20 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Event::listen(RunningGarbageCollection::class, function(RunningGarbageCollection $event) {
-            $gc = app(GarbageCollection::class);
-            $gc->runActions([
+            $event->garbageCollection->runActions(array_filter([
                 [HardDelete::class, [
-                    'tables' => [
+                    'tables' => array_filter([
                         'categorygroups',
                         'taggroups',
-                    ],
+                    ], fn(string $table) => Schema::hasTable($table)),
                 ]],
-                [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']],
-                [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
-                [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']],
-                [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']],
-                [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']],
-                [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']],
-            ]);
+                self::supportsCategories() ? [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']] : null,
+                self::supportsGlobalSets() ? [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
+                self::supportsTags() ? [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']] : null,
+                self::supportsCategories() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']] : null,
+                self::supportsGlobalSets() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
+                self::supportsTags() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']] : null,
+            ]));
         });
 
         Event::listen(SiteSaved::class, function(SiteSaved $event) {

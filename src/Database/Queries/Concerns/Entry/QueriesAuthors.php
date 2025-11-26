@@ -34,7 +34,7 @@ trait QueriesAuthors
      *            ```
      *            ```twig
      *            {# fetch entries authored by people in the Authors group #}
-     *            {% set entries = craft.entries()
+     *            {% set entries = entries()
      *            .authorGroup('authors')
      *            .all() %}
      *            ```
