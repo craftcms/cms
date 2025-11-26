@@ -179,7 +179,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @inheritdoc
      * @return AddressQuery The newly created [[AddressQuery]] instance.
      */
-    public static function find(): AddressQuery
+    public static function find(): AddressQuery|\CraftCms\Cms\Database\Queries\AddressQuery
     {
         return new AddressQuery(static::class);
     }

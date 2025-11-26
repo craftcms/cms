@@ -44,7 +44,9 @@ use Twig\Markup;
  *
  * @method self orderByDesc($column)
  * @method self where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereIn($column, $values, $boolean = 'and', $not = false)
  * @method self whereNot($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self whereNotIn($column, $values, $boolean = 'and')
  * @method self whereNotNull($columns, $boolean = 'and')
  * @method self whereNotExists($callback, $boolean = 'and')
  */
@@ -467,19 +469,22 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             $result = $this->query->get($columns)->all();
         }
 
-        return $this->eagerLoad()?->all() ?? $this->hydrate($result)->all();
+        return $this->eagerLoad()?->all() ?? $this->hydrate($result);
     }
 
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
+     * @return array<int, TElement>
      */
-    public function all(array|string $columns = ['*']): ElementCollection|array
+    public function all(array|string $columns = ['*']): array
     {
-        return $this->get($columns);
+        return collect($this->get($columns))->all();
     }
 
+    /**
+     * @return TElement|null
+     */
     public function one(array|string $columns = ['*']): ?ElementInterface
     {
         return $this->first($columns);
