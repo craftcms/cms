@@ -25,7 +25,6 @@ final class AssetIndexData extends BaseModel
             'isSkipped' => 'bool',
             'inProgress' => 'bool',
             'completed' => 'bool',
-
         ];
     }
 
