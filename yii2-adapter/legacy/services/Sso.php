@@ -15,8 +15,7 @@ use craft\elements\User;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
-use craft\records\SsoIdentity;
-use craft\records\SsoIdentity as AuthRecord;
+use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use yii\base\Component;
@@ -243,23 +242,13 @@ class Sso extends Component
      */
     public function linkUserToIdentity(User $user, ProviderInterface $provider, string $idpIdentifier): bool
     {
-        $authRecord = AuthRecord::find()
-            ->where([
-                'provider' => $provider->getHandle(),
-                'identityId' => $idpIdentifier,
-                'userId' => $user->getId(),
-            ])
-            ->one();
+        $ssoIdentity = SsoIdentity::firstOrNew([
+            'provider' => $provider->getHandle(),
+            'identityId' => $idpIdentifier,
+            'userId' => $user->getId(),
+        ]);
 
-        if (!$authRecord) {
-            $authRecord = new AuthRecord([
-                'provider' => $provider->getHandle(),
-                'identityId' => $idpIdentifier,
-                'userId' => $user->getId(),
-            ]);
-        }
-
-        return $authRecord->save();
+        return $ssoIdentity->save();
     }
 
     /**
@@ -310,8 +299,6 @@ class Sso extends Component
      */
     public function identityExists(int $userId): bool
     {
-        return SsoIdentity::find()
-            ->where(['userId' => $userId])
-            ->exists();
+        return SsoIdentity::where('userId', $userId)->exists();
     }
 }
