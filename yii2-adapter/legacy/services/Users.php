@@ -1248,7 +1248,7 @@ class Users extends Component
 
         // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
         $unhashedCode = str_replace('_', Str::random(1), $unhashedCode);
-        $issueDate = now();
+        $issueDate = now('UTC');
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userModel->verificationCode = $hashedCode;
