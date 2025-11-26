@@ -13,12 +13,9 @@ final class RecoveryCodes extends BaseModel
 {
     protected $table = Table::RECOVERYCODES;
 
-    protected function casts(): array
-    {
-        return [
-            'recoveryCodes' => 'array',
-        ];
-    }
+    protected $casts = [
+        'recoveryCodes' => 'array',
+    ];
 
     /**
      * @return BelongsTo<User, $this>

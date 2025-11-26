@@ -919,7 +919,7 @@ class Assets extends Component
         if (!$folder->id) {
             $model = new VolumeFolderModel();
         } else {
-            $model = VolumeFolderModel::findOrFail('id', $folder->id);
+            $model = VolumeFolderModel::findOrFail($folder->id);
         }
 
         $model->parentId = $folder->parentId;

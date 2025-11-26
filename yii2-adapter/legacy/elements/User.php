@@ -63,6 +63,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -2603,7 +2604,7 @@ JS, [
             $model->invalidLoginCount = $this->invalidLoginCount = null;
             $model->verificationCode = null;
             $model->verificationCodeIssuedDate = null;
-            $model->lastPasswordChangeDate = Db::prepareDateForDb($this->lastPasswordChangeDate);
+            $model->lastPasswordChangeDate = Date::parse($this->lastPasswordChangeDate);
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false
             if (!$isNew && $model->getOriginal('passwordResetRequired')) {

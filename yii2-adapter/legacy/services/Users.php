@@ -768,7 +768,7 @@ class Users extends Component
      */
     public function handleValidLogin(User $user): void
     {
-        $now = DateTimeHelper::currentUTCDateTime();
+        $now = now();
 
         // Update the User record
         $userModel = $this->getUserModelById($user->id);
@@ -784,7 +784,7 @@ class Users extends Component
         $userModel->save();
 
         // Update the User model too
-        $user->lastLoginDate = $now;
+        $user->lastLoginDate = $now->toDateTime();
         $user->invalidLoginCount = null;
 
         if ($indexAttributesChanged) {
@@ -1248,11 +1248,11 @@ class Users extends Component
 
         // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
         $unhashedCode = str_replace('_', Str::random(1), $unhashedCode);
-        $issueDate = DateTimeHelper::currentUTCDateTime();
+        $issueDate = now();
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userModel->verificationCode = $hashedCode;
-        $userModel->verificationCodeIssuedDate = DbHelper::prepareDateForDb($issueDate);
+        $userModel->verificationCodeIssuedDate = $issueDate;
 
         // Make sure they are set to pending, if not already active
         if (!$userModel->active) {
@@ -1267,7 +1267,7 @@ class Users extends Component
         $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userModel->pending;
         $user->verificationCode = $hashedCode;
-        $user->verificationCodeIssuedDate = $issueDate;
+        $user->verificationCodeIssuedDate = $issueDate->toDateTime();
 
         if (!$user->validate()) {
             DB::rollBack();

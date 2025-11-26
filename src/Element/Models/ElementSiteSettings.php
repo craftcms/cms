@@ -13,13 +13,10 @@ final class ElementSiteSettings extends BasePivot
 {
     protected $table = Table::ELEMENTS_SITES;
 
-    protected function casts(): array
-    {
-        return [
-            'enabled' => 'bool',
-            'content' => 'json',
-        ];
-    }
+    protected $casts = [
+        'enabled' => 'bool',
+        'content' => 'json',
+    ];
 
     /**
      * @return BelongsTo<Element, $this>

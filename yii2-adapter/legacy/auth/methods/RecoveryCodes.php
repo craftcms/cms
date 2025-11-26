@@ -157,7 +157,7 @@ JS, [$containerId]);
         }
 
         return [
-            $model->recoveryCodes,
+            $model->recoveryCodes ?? false,
             DateTimeHelper::toDateTime($model->dateCreated),
         ];
     }

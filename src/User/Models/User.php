@@ -51,32 +51,29 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 
     private ?Collection $userGroupData = null;
 
-    protected function casts(): array
-    {
-        return [
-            'active' => 'bool',
-            'pending' => 'bool',
-            'locked' => 'bool',
-            'suspended' => 'bool',
-            'admin' => 'bool',
-            'lastLoginDate' => 'datetime',
-            'invalidLoginWindowStart' => 'datetime',
-            'invalidLoginCount' => 'int',
-            'lastInvalidLoginDate' => 'datetime',
-            'lockoutDate' => 'datetime',
-            'hasDashboard' => 'bool',
-            'verificationCodeIssuedDate' => 'datetime',
-            'passwordResetRequired' => 'bool',
-            'lastPasswordChangeDate' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'active' => 'bool',
+        'pending' => 'bool',
+        'locked' => 'bool',
+        'suspended' => 'bool',
+        'admin' => 'bool',
+        'lastLoginDate' => 'datetime',
+        'invalidLoginWindowStart' => 'datetime',
+        'invalidLoginCount' => 'int',
+        'lastInvalidLoginDate' => 'datetime',
+        'lockoutDate' => 'datetime',
+        'hasDashboard' => 'bool',
+        'verificationCodeIssuedDate' => 'datetime',
+        'passwordResetRequired' => 'bool',
+        'lastPasswordChangeDate' => 'datetime',
+    ];
 
     public function isAdmin(): bool
     {
         return (bool) $this->admin;
     }
 
-    #[\Override]
+    #[Override]
     protected function newBaseQueryBuilder(): Builder
     {
         return parent::newBaseQueryBuilder()
@@ -167,7 +164,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      */
     public function haveIndexAttributesChanged(): bool
     {
-        if ($this->getIsNewRecord()) {
+        if (! $this->exists) {
             return false;
         }
 

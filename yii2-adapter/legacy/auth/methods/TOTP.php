@@ -251,7 +251,9 @@ JS, [
             ->where('userId', $userId)
             // you shouldn't be able to get here without having a record, so let's throw an exception
             ->firstOrFail()
-            ->update(['oldTimestamp', $timestamp]);
+            ->update([
+                'oldTimestamp' => $timestamp,
+            ]);
     }
 
     /**

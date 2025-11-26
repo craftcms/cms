@@ -432,7 +432,7 @@ class Auth extends Component
      * Returns info about the given user’s saved passkeys.
      *
      * @param User $user
-     * @return array{credentialName:string, dateLasteUsed:DateTime, uid:string}[]
+     * @return array{credentialName:string, dateLastUsed:DateTime|null, uid:string}[]
      */
     public function getPasskeys(User $user): array
     {
@@ -446,12 +446,12 @@ class Auth extends Component
             ->get()
             ->map(function(WebAuthn $passkey) {
                 if ($passkey->dateLastUsed) {
-                    $passkey->dateLastUsed = DateTimeHelper::toDateTime($passkey->dateLastUsed);
+                    $dateLastUsed = DateTimeHelper::toDateTime($passkey->dateLastUsed);
                 }
 
                 return [
                     'credentialName' => $passkey->credentialName,
-                    'dateLastUsed' => $passkey->dateLastUsed,
+                    'dateLastUsed' => $dateLastUsed ?? null,
                     'uid' => $passkey->uid,
                 ];
             })->all();
