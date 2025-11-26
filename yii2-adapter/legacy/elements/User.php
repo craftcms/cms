@@ -58,6 +58,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Models\User as UserModel;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -2550,76 +2551,72 @@ JS, [
 
         // Get the user record
         if (!$isNew) {
-            $record = UserRecord::findOne($this->id);
-            $isInactive = $record->active || $record->pending;
+            $model = UserModel::findOrFail($this->id);
+            $isInactive = $model->active || $model->pending;
 
-            if (!$record) {
-                throw new InvalidConfigException("Invalid user ID: $this->id");
-            }
-
-            if ($this->active != $record->active) {
+            if ($this->active !== $model->active) {
                 throw new Exception('Unable to change a user’s active state like this.');
             }
 
-            if ($this->pending != $record->pending) {
+            if ($this->pending !== $model->pending) {
                 if ($isInactive) {
                     throw new Exception('Unable to change a user’s pending state like this.');
                 }
-                $record->pending = $this->pending;
+                $model->pending = $this->pending;
             }
 
-            if ($this->locked != $record->locked) {
+            if ($this->locked !== $model->locked) {
                 throw new Exception('Unable to change a user’s locked state like this.');
             }
 
-            if ($this->suspended != $record->suspended) {
+            if ($this->suspended !== $model->suspended) {
                 throw new Exception('Unable to change a user’s suspended state like this.');
             }
         } else {
-            $record = new UserRecord();
-            $record->id = $this->id;
-            $record->active = $this->active;
-            $record->pending = $this->pending;
-            $record->locked = $this->locked;
-            $record->suspended = $this->suspended;
+            $model = new UserModel();
+            $model->id = $this->id;
+            $model->active = $this->active;
+            $model->pending = $this->pending;
+            $model->locked = $this->locked;
+            $model->suspended = $this->suspended;
         }
 
         $this->prepareNamesForSave();
 
-        $record->photoId = $this->photoId;
-        $record->affiliatedSiteId = $this->affiliatedSiteId;
-        $record->admin = $this->admin;
-        $record->username = $this->username;
-        $record->fullName = $this->fullName;
-        $record->firstName = $this->firstName;
-        $record->lastName = $this->lastName;
-        $record->email = $this->email;
-        $record->passwordResetRequired = $this->passwordResetRequired;
-        $record->unverifiedEmail = $this->unverifiedEmail;
+        $model->photoId = $this->photoId;
+        $model->affiliatedSiteId = $this->affiliatedSiteId;
+        $model->admin = $this->admin;
+        $model->username = $this->username;
+        $model->fullName = $this->fullName;
+        $model->firstName = $this->firstName;
+        $model->lastName = $this->lastName;
+        $model->email = $this->email;
+        $model->passwordResetRequired = $this->passwordResetRequired;
+        $model->unverifiedEmail = $this->unverifiedEmail;
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
             $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
-            $record->password = $this->password = $hash;
-            $record->invalidLoginWindowStart = null;
-            $record->invalidLoginCount = $this->invalidLoginCount = null;
-            $record->verificationCode = null;
-            $record->verificationCodeIssuedDate = null;
-            $record->lastPasswordChangeDate = Db::prepareDateForDb($this->lastPasswordChangeDate);
+            $model->password = $this->password = $hash;
+            $model->invalidLoginWindowStart = null;
+            $model->invalidLoginCount = $this->invalidLoginCount = null;
+            $model->verificationCode = null;
+            $model->verificationCodeIssuedDate = null;
+            $model->lastPasswordChangeDate = Db::prepareDateForDb($this->lastPasswordChangeDate);
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false
-            if (!$isNew && $record->getOldAttribute('passwordResetRequired')) {
-                $record->passwordResetRequired = $this->passwordResetRequired = false;
+            if (!$isNew && $model->getOriginal('passwordResetRequired')) {
+                $model->passwordResetRequired = $this->passwordResetRequired = false;
             }
 
             $this->newPassword = null;
         }
 
         // Capture the dirty attributes from the record
-        $dirtyAttributes = array_keys($record->getDirtyAttributes());
+        $dirtyAttributes = array_keys($model->getDirty());
 
-        $record->save(false);
+        $model->save();
 
         // Make sure that the photo is located in the right place
         if (!$isNew && $this->photoId) {
