@@ -1,72 +1,49 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\models;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\User\Data;
 
 use Craft;
-use craft\base\Model;
-use craft\records\UserGroup as UserGroupRecord;
-use craft\validators\HandleValidator;
-use craft\validators\UniqueValidator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Dto;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Stringable;
 
 use function CraftCms\Cms\t;
 
-/**
- * UserGroup model class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Data\UserGroup} instead.
- */
-class UserGroup extends Model implements Chippable, Grippable, Describable, CpEditable, Actionable
+final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
-    /**
-     * @inheritdoc
-     */
-    public static function get(int|string $id): ?static
-    {
-        /** @phpstan-ignore-next-line */
-        return Craft::$app->getUserGroups()->getGroupById($id);
-    }
-
-    /**
-     * @var int|null ID
-     */
     public ?int $id = null;
 
-    /**
-     * @var string|null Name
-     */
     public ?string $name = null;
 
-    /**
-     * @var string|null Handle
-     */
     public ?string $handle = null;
 
-    /**
-     * @var string|null Description
-     * @since 3.5.0
-     */
     public ?string $description = null;
 
-    /**
-     * @var string|null UID
-     */
     public ?string $uid = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public static function get(int|string $id): ?self
+    {
+        return UserGroups::getGroupById($id);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getUiLabel(): string
     {
@@ -74,7 +51,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getId(): ?int
     {
@@ -82,7 +59,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getHandle(): ?string
     {
@@ -90,7 +67,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDescription(): ?string
     {
@@ -98,11 +75,11 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (! $this->id || ! Auth::user()?->isAdmin()) {
             return null;
         }
 
@@ -110,7 +87,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getActionMenuItems(): array
     {
@@ -118,7 +95,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
 
         if (
             $this->id &&
-            Craft::$app->getUser()->getIsAdmin() &&
+            Auth::user()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -129,7 +106,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
             ];
 
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $params) => <<<JS
+            $view->registerJsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('user-settings/edit-group', {
     params: $params,
@@ -144,30 +121,12 @@ JS, [
         return $items;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels(): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'handle' => t('Handle'),
-            'name' => t('Name'),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['name', 'handle'], 'required'];
-        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
+            'id' => ['nullable', 'integer'],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($context?->data['id'] ?? null)],
+            'handle' => ['required', 'string', 'max:255', new HandleRule(reservedWords: [
                 'admins',
                 'all',
                 'credentialed',
@@ -178,27 +137,20 @@ JS, [
                 'new',
                 'title',
                 'uid',
-            ],
+            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($context?->data['id'] ?? null)],
         ];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserGroupRecord::class];
-        return $rules;
     }
 
     /**
      * Use the translated group name as the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
-        return t($this->name, category: 'site') ?: static::class;
+        return t($this->name, category: 'site') ?: self::class;
     }
 
     /**
      * Returns whether the group has permission to perform a given action.
-     *
-     * @param string $permission
-     * @return bool
      */
     public function can(string $permission): bool
     {
@@ -212,9 +164,7 @@ JS, [
     /**
      * Returns the user group’s config.
      *
-     * @param bool $withPermissions Whether permissions should be included
-     * @return array
-     * @since 3.5.0
+     * @param  bool  $withPermissions  Whether permissions should be included
      */
     public function getConfig(bool $withPermissions = true): array
     {

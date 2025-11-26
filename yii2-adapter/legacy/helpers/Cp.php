@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use craft\base\Describable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Edition;
@@ -3108,7 +3108,7 @@ JS, [
         $namespacedId = $view->namespaceInputId($config['id']);
 
         $js = <<<JS
-new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings);
+new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
 JS;
         $view->registerJs($js);
 
@@ -3434,7 +3434,7 @@ JS;
         $view = Craft::$app->getView();
         $view->registerJsWithVars(fn($id, $name, $cols, $settings) => <<<JS
 (() => {
-  new Craft.GeneratedFieldsTable($id, $name, $cols, $settings);
+  new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
             $view->namespaceInputId($config['id']),
