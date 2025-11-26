@@ -70,6 +70,7 @@ use function CraftCms\Cms\backTraceAsString;
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ElementQuery} instead.
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {

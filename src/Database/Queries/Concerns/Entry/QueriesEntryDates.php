@@ -22,7 +22,7 @@ trait QueriesEntryDates
      *            ```
      *            ```twig
      *            {# fetch entries written in 2018 #}
-     *            {% set entries = craft.entries()
+     *            {% set entries = entries()
      *            .postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
      *            .all() %}
      *            ```
@@ -42,7 +42,7 @@ trait QueriesEntryDates
      *            ```
      *            ```twig
      *            {# fetch entries written before 4/4/2018 #}
-     *            {% set entries = craft.entries()
+     *            {% set entries = entries()
      *            .before('2018-04-04')
      *            .all() %}
      *            ```
@@ -62,7 +62,7 @@ trait QueriesEntryDates
      *            ```
      *            ```twig
      *            {# fetch entries written in the last 7 days #}
-     *            {% set entries = craft.entries()
+     *            {% set entries = entries()
      *            .after(now|date_modify('-7 days'))
      *            .all() %}
      *            ```

@@ -24,7 +24,7 @@ trait EagerloadsTransforms
      *            ```
      *            ```twig{4}
      *            {# fetch images with their 'thumb' transforms preloaded #}
-     *            {% set logos = craft.assets()
+     *            {% set logos = assets()
      *            .kind('image')
      *            .withTransforms(['thumb'])
      *            .all() %}
