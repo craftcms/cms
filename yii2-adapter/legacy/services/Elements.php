@@ -50,11 +50,11 @@ use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
-use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
+use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -3843,15 +3843,15 @@ class Elements extends Component
 
         // Get the element's site record
         if (!$isNewElement && !$element->isNewForSite) {
-            $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
-                'elementId' => $element->id,
-                'siteId' => $element->siteId,
-            ]);
+            $siteSettingsModel = ElementSiteSettings::query()
+                ->where('elementId', $element->id)
+                ->where('siteId', $element->siteId)
+                ->first();
         } else {
-            $siteSettingsRecord = null;
+            $siteSettingsModel = null;
         }
 
-        $element->isNewForSite = empty($siteSettingsRecord);
+        $element->isNewForSite = is_null($siteSettingsModel);
 
         // Validate
         if ($runValidation) {
@@ -3899,7 +3899,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
-            $siteSettingsRecord,
+            $siteSettingsModel,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
@@ -3996,31 +3996,31 @@ class Elements extends Component
                 }
 
                 // Save the element’s site settings record
-                if ($siteSettingsRecord === null) {
+                if ($siteSettingsModel === null) {
                     // First time we've saved the element for this site
-                    $siteSettingsRecord = new Element_SiteSettingsRecord();
-                    $siteSettingsRecord->elementId = $element->id;
-                    $siteSettingsRecord->siteId = $element->siteId;
+                    $siteSettingsModel = new ElementSiteSettings();
+                    $siteSettingsModel->elementId = $element->id;
+                    $siteSettingsModel->siteId = $element->siteId;
                 }
 
                 $title = $element::hasTitles() ? $element->title : null;
-                $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
-                $siteSettingsRecord->slug = $element->slug;
-                $siteSettingsRecord->uri = $element->uri;
+                $siteSettingsModel->title = $title !== null && $title !== '' ? $title : null;
+                $siteSettingsModel->slug = $element->slug;
+                $siteSettingsModel->uri = $element->uri;
 
                 // Avoid `enabled` getting marked as dirty if it’s not really changing
                 $enabledForSite = $element->getEnabledForSite();
-                if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
-                    $siteSettingsRecord->enabled = $enabledForSite;
+                if (!$siteSettingsModel->exists || $siteSettingsModel->enabled !== $enabledForSite) {
+                    $siteSettingsModel->enabled = $enabledForSite;
                 }
 
                 // Update our list of dirty attributes
                 if ($trackChanges && !$element->isNewForSite) {
-                    array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
+                    array_push($dirtyAttributes, ...array_keys(Arr::only($siteSettingsModel->getDirty(), [
                         'slug',
                         'uri',
                     ])));
-                    if ($siteSettingsRecord->isAttributeChanged('enabled')) {
+                    if ($siteSettingsModel->isDirty('enabled')) {
                         $dirtyAttributes[] = 'enabledForSite';
                     }
                 }
@@ -4029,7 +4029,7 @@ class Elements extends Component
                 $generatedFields = $fieldLayout?->getGeneratedFields() ?? [];
 
                 if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
-                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                    $oldContent = $siteSettingsModel->content ?? []; // we'll need that if we're not saving all the content
                     if (is_string($oldContent)) {
                         $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
                     }
@@ -4088,18 +4088,18 @@ class Elements extends Component
                         }
                     }
 
-                    $siteSettingsRecord->content = $content ?: null;
+                    $siteSettingsModel->content = $content ?: null;
                 }
 
                 // Save the site settings record
-                if (!$siteSettingsRecord->save(false)) {
+                if (!$siteSettingsModel->save()) {
                     $element->firstSave = $originalFirstSave;
                     $element->isNewForSite = $originalIsNewForSite;
                     $element->propagateAll = $originalPropagateAll;
                     throw new Exception('Couldn’t save elements’ site settings record.');
                 }
 
-                $element->siteSettingsId = $siteSettingsRecord->id;
+                $element->siteSettingsId = $siteSettingsModel->id;
 
                 // Set all of the dirty attributes on the element, in case an event listener wants to know
                 if ($trackChanges) {

@@ -13,13 +13,16 @@ final class ElementSiteSettings extends BasePivot
 {
     protected $table = Table::ELEMENTS_SITES;
 
-    protected $casts = [
-        'enabled' => 'bool',
-        'content' => 'json',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'enabled' => 'bool',
+            'content' => 'json',
+        ];
+    }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function element(): BelongsTo
     {
@@ -27,7 +30,7 @@ final class ElementSiteSettings extends BasePivot
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Site\Models\Site, $this>
+     * @return BelongsTo<Site, $this>
      */
     public function site(): BelongsTo
     {
