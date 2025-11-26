@@ -28,7 +28,9 @@ use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -907,6 +909,11 @@ class ExtensionTest extends TestCase
         $entryType = EntryTypes::getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
         $valueSql = $field->getValueSql();
+
+        if ($valueSql instanceof Expression) {
+            $valueSql = $valueSql->getValue(DB::getQueryGrammar());
+        }
+
         $this->testRenderResult(
             $valueSql,
             '{{ fieldValueSql(entryType(\'test1\'), \'plainTextField\') }}'

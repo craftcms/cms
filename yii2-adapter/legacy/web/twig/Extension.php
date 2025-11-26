@@ -1643,7 +1643,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function fieldValueSqlFunction(FieldLayoutProviderInterface $provider, string $fieldHandle, ?string $key = null): ?string
     {
-        return $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
+        $valueSql = $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
+
+        if ($valueSql instanceof \Illuminate\Contracts\Database\Query\Expression) {
+            $valueSql = $valueSql->getValue(\Illuminate\Support\Facades\DB::getQueryGrammar());
+        }
+
+        return $valueSql;
     }
 
     /**
