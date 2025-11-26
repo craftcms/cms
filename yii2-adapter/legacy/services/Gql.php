@@ -59,14 +59,14 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\records\GqlSchema as GqlSchemaRecord;
-use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
+use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -948,13 +948,13 @@ class Gql extends Component
      */
     public function deleteTokenById(int $id): bool
     {
-        $record = GqlTokenRecord::findOne($id);
+        $model = GqlTokenModel::find($id);
 
-        if (!$record) {
+        if (!$model) {
             return true;
         }
 
-        return $record->delete();
+        return $model->delete();
     }
 
     /**
@@ -1008,16 +1008,16 @@ class Gql extends Component
         DB::beginTransaction();
 
         try {
-            $schemaRecord = $this->_getSchemaRecord($schemaUid);
-            $isNew = $schemaRecord->getIsNewRecord();
+            $schemaModel = $this->getSchemaModel($schemaUid);
+            $isNew = !$schemaModel->exists;
 
-            $schemaRecord->uid = $schemaUid;
-            $schemaRecord->name = $data['name'];
-            $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = ($data['scope'] ?? false) ?: [];
+            $schemaModel->uid = $schemaUid;
+            $schemaModel->name = $data['name'];
+            $schemaModel->isPublic = (bool)($data['isPublic'] ?? false);
+            $schemaModel->scope = ($data['scope'] ?? false) ?: [];
 
             // Save the schema record
-            $schemaRecord->save(false);
+            $schemaModel->save();
 
             // If we're updating to 3.4+, check if the old token info for this schema was cached
             if (
@@ -1032,7 +1032,7 @@ class Gql extends Component
                     'enabled' => $migratedSchema['enabled'],
                     'expiryDate' => $migratedSchema['expiryDate'],
                     'lastUsed' => $migratedSchema['lastUsed'],
-                    'schemaId' => $schemaRecord->id,
+                    'schemaId' => $schemaModel->id,
                 ]);
                 $this->saveToken($token);
             }
@@ -1091,9 +1091,9 @@ class Gql extends Component
     public function handleDeletedSchema(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
-        $schemaRecord = $this->_getSchemaRecord($uid);
+        $schemaModel = $this->getSchemaModel($uid);
 
-        if ($schemaRecord->getIsNewRecord()) {
+        if (!$schemaModel->exists) {
             return;
         }
 
@@ -1101,7 +1101,7 @@ class Gql extends Component
 
         try {
             // Delete the schema
-            DB::table(Table::GQLSCHEMAS)->delete($schemaRecord->id);
+            DB::table(Table::GQLSCHEMAS)->delete($schemaModel->id);
 
             DB::commit();
         } catch (Throwable $e) {
@@ -1842,14 +1842,10 @@ class Gql extends Component
 
     /**
      * Gets a schema's record by uid.
-     *
-     * @param string $uid
-     *
-     * @return GqlSchemaRecord
      */
-    private function _getSchemaRecord(string $uid): GqlSchemaRecord
+    private function getSchemaModel(string $uid): GqlSchemaModel
     {
-        return GqlSchemaRecord::findOne(['uid' => $uid]) ?? new GqlSchemaRecord();
+        return GqlSchemaModel::findByUid($uid) ?? new GqlSchemaModel();
     }
 
 
@@ -1863,23 +1859,23 @@ class Gql extends Component
         $isNewToken = !$token->id;
 
         if ($isNewToken) {
-            $tokenRecord = new GqlTokenRecord();
+            $tokenModel = new GqlTokenModel();
         } else {
-            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+            $tokenModel = GqlTokenModel::find($token->id) ?? new GqlTokenModel();
         }
 
-        $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = DbHelper::prepareDateForDb($token->expiryDate);
-        $tokenRecord->lastUsed = DbHelper::prepareDateForDb($token->lastUsed);
-        $tokenRecord->schemaId = $token->schemaId;
+        $tokenModel->name = $token->name;
+        $tokenModel->enabled = $token->enabled;
+        $tokenModel->expiryDate = DbHelper::prepareDateForDb($token->expiryDate);
+        $tokenModel->lastUsed = DbHelper::prepareDateForDb($token->lastUsed);
+        $tokenModel->schemaId = $token->schemaId;
 
         if ($token->accessToken) {
-            $tokenRecord->accessToken = $token->accessToken;
+            $tokenModel->accessToken = $token->accessToken;
         }
 
-        $tokenRecord->save();
-        $token->id = $tokenRecord->id;
-        $token->uid = $tokenRecord->uid;
+        $tokenModel->save();
+        $token->id = $tokenModel->id;
+        $token->uid = $tokenModel->uid;
     }
 }

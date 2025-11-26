@@ -22,4 +22,9 @@ trait HasUid
             }
         });
     }
+
+    public static function findByUid(string $uid): ?static
+    {
+        return static::query()->where('uid', $uid)->first();
+    }
 }

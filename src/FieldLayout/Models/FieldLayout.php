@@ -20,12 +20,9 @@ final class FieldLayout extends BaseModel
 
     protected $table = Table::FIELDLAYOUTS;
 
-    protected function casts(): array
-    {
-        return [
-            'config' => 'json',
-        ];
-    }
+    protected $casts = [
+        'config' => 'json',
+    ];
 
     /**
      * @return HasMany<EntryType, $this>
