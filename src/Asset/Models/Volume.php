@@ -10,6 +10,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Volume extends BaseModel
@@ -33,5 +34,13 @@ final class Volume extends BaseModel
     public function fieldLayout(): BelongsTo
     {
         return $this->belongsTo(FieldLayout::class, 'fieldLayoutId');
+    }
+
+    /**
+     * @return HasMany<AssetIndexData, $this>
+     */
+    public function assetIndexDataRows(): HasMany
+    {
+        return $this->hasMany(AssetIndexData::class, 'volumeId');
     }
 }
