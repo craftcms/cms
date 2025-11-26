@@ -1491,7 +1491,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets an array of user groups on the user.
      *
-     * @param  \CraftCms\Cms\User\Data\UserGroup[]  $groups  An array of UserGroup objects.
+     * @param  UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {

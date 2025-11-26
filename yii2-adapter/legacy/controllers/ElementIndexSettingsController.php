@@ -11,13 +11,14 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
-use craft\models\UserGroup;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Support\Collection;
 use yii\web\Response;
 use function CraftCms\Cms\t;
@@ -219,7 +220,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $conditionBuilderHtml = $condition->getBuilderHtml();
         $conditionBuilderJs = $view->clearJsBuffer();
 
-        $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
+        $userGroups = UserGroups::getAllGroups()
             ->map(fn(UserGroup $group) => [
                 'label' => t($group->name, category: 'site'),
                 'value' => $group->uid,

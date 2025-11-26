@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -1845,7 +1846,7 @@ final class ProjectConfig
 
         $data['groups'] = [];
 
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+        foreach (UserGroups::getAllGroups() as $group) {
             $data['groups'][$group->uid] = $group->getConfig();
         }
 

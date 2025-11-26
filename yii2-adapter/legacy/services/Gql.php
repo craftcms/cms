@@ -74,6 +74,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -1763,7 +1764,7 @@ class Gql extends Component
                 'label' => t('View {type}', ['type' => User::lowerDisplayName()]),
             ];
         } else {
-            $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+            $userGroups = UserGroups::getAllGroups();
 
             $queryComponents['usergroups.everyone:read'] = [
                 'label' => t('Query for users'),

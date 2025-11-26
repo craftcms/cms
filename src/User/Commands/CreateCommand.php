@@ -10,6 +10,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Console\Command;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -39,7 +40,7 @@ final class CreateCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): int
     {
-        if (! \Craft::$app->getUsers()->canCreateUsers()) {
+        if (! Craft::$app->getUsers()->canCreateUsers()) {
             $this->components->error('The maximum number of users has already been reached.');
 
             return self::FAILURE;
@@ -128,7 +129,7 @@ final class CreateCommand extends Command
         $groupIds = array_merge(
             $this->option('groupIds'),
             array_map(
-                fn ($handle) => Craft::$app->getUserGroups()->getGroupByHandle($handle)->id ?? null,
+                fn ($handle) => UserGroups::getGroupByHandle($handle)->id ?? null,
                 $this->option('groups')
             ),
         );
