@@ -768,7 +768,7 @@ class Users extends Component
      */
     public function handleValidLogin(User $user): void
     {
-        $now = now();
+        $now = now('UTC');
 
         // Update the User record
         $userModel = $this->getUserModelById($user->id);
@@ -800,7 +800,7 @@ class Users extends Component
     public function handleInvalidLogin(User $user): void
     {
         $userModel = $this->getUserModelById($user->id);
-        $now = now();
+        $now = now('UTC');
 
         $userModel->lastInvalidLoginDate = $now;
 
@@ -1393,7 +1393,7 @@ class Users extends Component
                     ->insert(array_map(fn(int $groupId) => [
                         'userId' => $userId,
                         'groupId' => $groupId,
-                        'dateCreated' => $now = now(),
+                        'dateCreated' => $now = now('UTC'),
                         'dateUpdated' => $now,
                         'uid' => Str::uuid(),
                     ], $newGroupIds));
