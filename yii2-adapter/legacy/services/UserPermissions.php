@@ -15,7 +15,6 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\models\UserGroup;
-use craft\records\UserPermission as UserPermissionRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
@@ -368,9 +368,9 @@ class UserPermissions extends Component
             $userPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $permissionModel = $this->getPermissionModelByName($permissionName);
                 $userPermissionVals[] = [
-                    'permissionId' => $permissionRecord->id,
+                    'permissionId' => $permissionModel->id,
                     'userId' => $userId,
                     'dateCreated' => $now = now(),
                     'dateUpdated' => $now,
@@ -425,9 +425,9 @@ class UserPermissions extends Component
             $now = now();
 
             foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $permissionModel = $this->getPermissionModelByName($permissionName);
                 $groupPermissionVals[] = [
-                    'permissionId' => $permissionRecord->id,
+                    'permissionId' => $permissionModel->id,
                     'groupId' => $userGroup->id,
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
@@ -887,25 +887,15 @@ class UserPermissions extends Component
 
     /**
      * Returns a permission record based on its name. If a record doesn't exist, it will be created.
-     *
-     * @param string $permissionName
-     *
-     * @return UserPermissionRecord
      */
-    private function _getPermissionRecordByName(string $permissionName): UserPermissionRecord
+    private function getPermissionModelByName(string $permissionName): UserPermission
     {
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);
 
-        $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
-
-        if (!$permissionRecord) {
-            $permissionRecord = new UserPermissionRecord();
-            $permissionRecord->name = $permissionName;
-            $permissionRecord->save();
-        }
-
-        return $permissionRecord;
+        return UserPermission::firstOrCreate([
+            'name' => $permissionName,
+        ]);
     }
 
     private function _createUserPermissionsQuery(): Builder
