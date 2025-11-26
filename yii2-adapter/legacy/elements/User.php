@@ -35,12 +35,12 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
-use craft\records\WebAuthn as WebAuthnRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -1436,8 +1436,8 @@ class User extends Element implements IdentityInterface
         }
 
         // make sure the passkey exists and belongs to this user
-        $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
-        if (!$credential || $credential['userId'] != $this->id) {
+        $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
+        if (!$credential || $credential->userId != $this->id) {
             $this->authError = self::AUTH_INVALID_CREDENTIALS;
 
             return false;
