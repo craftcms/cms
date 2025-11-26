@@ -22,10 +22,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Override;
 
 class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
@@ -35,7 +35,6 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     use CanResetPassword;
     use HasFactory;
     use MustVerifyEmail;
-    use SoftDeletes;
 
     public $incrementing = false;
 
@@ -77,7 +76,11 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     protected function newBaseQueryBuilder(): Builder
     {
         return parent::newBaseQueryBuilder()
-            ->join(Table::ELEMENTS, Table::ELEMENTS.'.id', '=', Table::USERS.'.id');
+            ->whereExists(
+                DB::table(Table::ELEMENTS)
+                    ->whereColumn(Table::USERS.'.id', Table::ELEMENTS.'.id')
+                    ->whereNull(Table::ELEMENTS.'.dateDeleted')
+            );
     }
 
     /**

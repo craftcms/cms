@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use CraftCms\Cms\Asset\Models\Volume;
-use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -34,10 +32,10 @@ final class HardDeleteVolumes extends GarbageCollectionAction
                 usort($folders, fn (stdClass $a, stdClass $b) => (int) (substr_count((string) $a->path, '/') < substr_count((string) $b->path, '/')));
 
                 foreach ($folders as $folder) {
-                    VolumeFolder::whereIn('id', $folder->id)->delete();
+                    DB::table(Table::VOLUMEFOLDERS)->where('id', $folder->id)->delete();
                 }
 
-                Volume::whereIn('id', $volumeIds)->delete();
+                DB::table(Table::VOLUMES)->whereIn('id', $volumeIds)->delete();
             }
         );
     }
