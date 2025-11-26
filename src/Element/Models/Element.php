@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Models;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Site\Models\Site;
@@ -20,8 +21,17 @@ final class Element extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    protected function casts(): array
+    {
+        return [
+            'enabled' => 'bool',
+            'archived' => 'bool',
+            'deletedWithOwner' => 'bool',
+        ];
+    }
+
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Site\Models\Site, $this, ElementSiteSettings>
+     * @return BelongsToMany<Site, $this, ElementSiteSettings>
      */
     public function sites(): BelongsToMany
     {
@@ -29,7 +39,7 @@ final class Element extends BaseModel
             related: Site::class,
             table: Table::ELEMENTS_SITES,
             foreignPivotKey: 'elementId',
-            relatedPivotKey: 'siteId'
+            relatedPivotKey: 'siteId',
         )->using(ElementSiteSettings::class);
     }
 
@@ -42,7 +52,15 @@ final class Element extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Draft, $this>
+     * @return BelongsTo<Element, $this>
+     */
+    public function canonical(): BelongsTo
+    {
+        return $this->belongsTo(Element::class, 'canonicalId');
+    }
+
+    /**
+     * @return BelongsTo<Draft, $this>
      */
     public function draft(): BelongsTo
     {
@@ -50,7 +68,7 @@ final class Element extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\CraftCms\Cms\Element\Models\Draft, $this>
+     * @return HasMany<Draft, $this>
      */
     public function drafts(): HasMany
     {
@@ -58,7 +76,7 @@ final class Element extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Revision, $this>
+     * @return BelongsTo<Revision, $this>
      */
     public function revision(): BelongsTo
     {
@@ -66,10 +84,18 @@ final class Element extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\CraftCms\Cms\Element\Models\Revision, $this>
+     * @return HasMany<Revision, $this>
      */
     public function revisions(): HasMany
     {
         return $this->hasMany(Revision::class, 'canonicalId');
+    }
+
+    /**
+     * @return BelongsTo<FieldLayout, $this>
+     */
+    public function fieldLayout(): BelongsTo
+    {
+        return $this->belongsTo(FieldLayout::class, 'fieldLayoutId');
     }
 }

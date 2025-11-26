@@ -50,11 +50,11 @@ use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
-use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -3915,49 +3915,46 @@ class Elements extends Component
                 if (!$element->propagating) {
                     // Get the element record
                     if (!$isNewElement) {
-                        $elementRecord = ElementRecord::findOne($element->id);
+                        $elementModel = ElementModel::find($element->id);
 
-                        if (!$elementRecord) {
+                        if (!$elementModel) {
                             $element->firstSave = $originalFirstSave;
                             $element->isNewForSite = $originalIsNewForSite;
                             $element->propagateAll = $originalPropagateAll;
                             throw new ElementNotFoundException("No element exists with the ID '$element->id'");
                         }
                     } else {
-                        $elementRecord = new ElementRecord();
-                        $elementRecord->type = get_class($element);
+                        $elementModel = new ElementModel();
+                        $elementModel->type = $element::class;
                     }
 
                     // Set the attributes
-                    $elementRecord->uid = $element->uid;
+                    $elementModel->uid = $element->uid;
                     $canonicalId = $element->getCanonicalId();
-                    $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
-                    $elementRecord->draftId = (int)$element->draftId ?: null;
-                    $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                    $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
-                    $elementRecord->enabled = (bool)$element->enabled;
-                    $elementRecord->archived = (bool)$element->archived;
-                    $elementRecord->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
-                    $elementRecord->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
+                    $elementModel->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
+                    $elementModel->draftId = (int)$element->draftId ?: null;
+                    $elementModel->revisionId = (int)$element->revisionId ?: null;
+                    $elementModel->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
+                    $elementModel->enabled = (bool)$element->enabled;
+                    $elementModel->archived = (bool)$element->archived;
+                    $elementModel->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
+                    $elementModel->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementRecord->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
+                            $elementModel->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementRecord->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
+                            $elementModel->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
                         }
-                    } elseif ($element->resaving && !$forceTouch) {
-                        // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
-                        $elementRecord->markAttributeDirty('dateUpdated');
-                    } else {
+                    } elseif (!$element->resaving || $forceTouch) {
                         // Force a new dateUpdated value
-                        $elementRecord->dateUpdated = DbHelper::prepareValueForDb(DateTimeHelper::now());
+                        $elementModel->dateUpdated = now();
                     }
 
                     // Update our list of dirty attributes
                     if ($trackChanges) {
-                        array_push($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
+                        array_push($dirtyAttributes, ...array_keys(Arr::only($elementModel->getDirty(), [
                             'fieldLayoutId',
                             'enabled',
                             'archived',
@@ -3965,9 +3962,9 @@ class Elements extends Component
                     }
 
                     // Save the element record
-                    $elementRecord->save(false);
+                    $elementModel->save();
 
-                    $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                    $dateCreated = DateTimeHelper::toDateTime($elementModel->dateCreated);
 
                     if ($dateCreated === false) {
                         $element->firstSave = $originalFirstSave;
@@ -3976,7 +3973,7 @@ class Elements extends Component
                         throw new Exception('There was a problem calculating dateCreated.');
                     }
 
-                    $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+                    $dateUpdated = DateTimeHelper::toDateTime($elementModel->dateUpdated);
 
                     if ($dateUpdated === false) {
                         throw new Exception('There was a problem calculating dateUpdated.');
@@ -3988,7 +3985,7 @@ class Elements extends Component
 
                     if ($isNewElement) {
                         // Save the element ID on the element model
-                        $element->id = $elementRecord->id;
+                        $element->id = $elementModel->id;
 
                         // If there's a temp ID, update the URI
                         if ($element->tempId && $element->uri) {
