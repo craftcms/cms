@@ -42,11 +42,14 @@
   --c-color-brand-on-subtle: var(--color-red-800);
 
   --c-color-accent-bg-emphasis: var(--color-blue-600);
-  --c-color-accent-bg-subtle: var(--color-blue-100);
-  --c-color-accent-border-emphasis: var(--color-blue-600);
-  --c-color-accent-border-subtle: var(--color-blue-600);
-  --c-color-accent-on-emphasis: var(--color-blue-100);
-  --c-color-accent-on-subtle: var(--color-blue-800);
+  --c-color-accent-bg-normal: var(--color-blue-100);
+  --c-color-accent-bg-subtle: var(--color-blue-50);
+  --c-color-accent-border-emphasis: var(--color-blue-800);
+  --c-color-accent-border-normal: var(--color-blue-600);
+  --c-color-accent-border-subtle: var(--color-blue-400);
+  --c-color-accent-on-emphasis: var(--color-blue-50);
+  --c-color-accent-on-normal: var(--color-blue-900);
+  --c-color-accent-on-subtle: var(--color-blue-900);
 
   --c-color-info-bg-emphasis: var(--color-blue-600);
   --c-color-info-bg-normal: var(--color-blue-100);

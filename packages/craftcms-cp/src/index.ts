@@ -32,6 +32,8 @@ export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
 export {default as CraftCallout} from './components/callout/callout.js';
+export {default as CraftActionItem} from './components/action-item/action-item.js';
+export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
