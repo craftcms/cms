@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
+use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -20,7 +21,7 @@ beforeEach(function () {
 });
 
 it('requires authentication', function () {
-    \Illuminate\Support\Facades\Auth::logout();
+    Auth::logout();
 
     get(action([UserGroupsController::class, 'index']))->assertRedirect();
     get(action([UserGroupsController::class, 'create']))->assertRedirect();
