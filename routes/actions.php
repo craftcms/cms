@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
@@ -28,6 +29,8 @@ use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -42,6 +45,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
@@ -270,6 +274,22 @@ Route::prefix(implode('/', [
         Route::middleware([RequireElevatedSession::class])->group(function () {
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+        });
+
+        // User groups
+        Route::middleware([
+            RequireAdminChanges::class,
+            RequireEdition::class.':'.Edition::Team->value,
+        ])->group(function () {
+            Route::post('user-settings/save-group', [UserGroupsController::class, 'store']);
+            Route::post('user-settings/delete-group', [UserGroupsController::class, 'destroy']);
+        });
+
+        // User settings
+        Route::middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('user-settings/save-user-settings', [UserSettingsController::class, 'store']);
         });
 
         // Pluginstore

@@ -16,6 +16,7 @@ use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Dto;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
@@ -24,6 +25,7 @@ use function CraftCms\Cms\t;
 
 final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
+    #[MapInputName('groupId')]
     public ?int $id = null;
 
     public ?string $name = null;
@@ -125,7 +127,7 @@ JS, [
     {
         return [
             'id' => ['nullable', 'integer'],
-            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($context?->data['id'] ?? null)],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
             'handle' => ['required', 'string', 'max:255', new HandleRule(reservedWords: [
                 'admins',
                 'all',
@@ -137,7 +139,7 @@ JS, [
                 'new',
                 'title',
                 'uid',
-            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($context?->data['id'] ?? null)],
+            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
         ];
     }
 

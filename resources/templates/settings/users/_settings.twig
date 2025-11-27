@@ -1,15 +1,8 @@
-{% requireAdmin false %}
-
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'settings' %}
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
 {% set fullPageForm = not readOnly %}
 
 {% import "_includes/forms" as forms %}
-
-{% if settings is not defined %}
-  {% set settings = craft.app.projectConfig.get('users') ?? [] %}
-{% endif %}
 
 {# set defaults #}
 {% set settings = {

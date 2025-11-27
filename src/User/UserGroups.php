@@ -137,9 +137,10 @@ final readonly class UserGroups
             $group->handle = sprintf('team%s', $i > 1 ? $i : '');
 
             try {
-                UserGroup::from(['name' => $group->name, 'handle' => $group->handle]);
-            } catch (ValidationException) {
+                UserGroup::validate(['name' => $group->name, 'handle' => $group->handle]);
                 break;
+            } catch (ValidationException) {
+                // Continue
             }
 
             $i++;
