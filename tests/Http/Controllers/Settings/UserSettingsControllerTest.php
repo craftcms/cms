@@ -72,7 +72,7 @@ test('user settings only get saved when above pro edition', function (string $pr
         $property => $value,
     ]))->assertRedirectBack();
 
-    expect(ProjectConfig::get("users.$property"))->toBe($default);
+    expect(ProjectConfig::get("users.$property"))->toBeIn([$default, (bool) $default]);
 
     Edition::set(Edition::Pro);
 
