@@ -37,6 +37,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\User\UserGroups;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -277,6 +278,11 @@ class CraftVariable extends ServiceLocator
     public function userGroups(): UserGroups
     {
         return app(UserGroups::class);
+    }
+
+    public function userPermissions(): UserPermissions
+    {
+        return app(UserPermissions::class);
     }
 
     /**

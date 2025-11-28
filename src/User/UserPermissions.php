@@ -145,9 +145,7 @@ final class UserPermissions
      */
     public function getPermissionsByGroupId(int $groupId): Collection
     {
-        if (! isset($this->permissionsByGroupId)) {
-            $this->permissionsByGroupId = new Collection;
-        }
+        $this->permissionsByGroupId ??= collect();
 
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
@@ -227,9 +225,7 @@ final class UserPermissions
      */
     public function getPermissionsByUserId(int $userId): Collection
     {
-        if (! isset($this->permissionsByUserId)) {
-            $this->permissionsByUserId = new Collection;
-        }
+        $this->permissionsByUserId ??= collect();
 
         return $this->permissionsByUserId->getOrPut(
             $userId,
@@ -329,6 +325,7 @@ final class UserPermissions
         }
 
         // Cache the new permissions
+        $this->permissionsByUserId ??= collect();
         $this->permissionsByUserId[$userId] = $groupPermissions->merge($permissions)->unique();
 
         if (Event::hasListeners(UserPermissionsSaved::class)) {
