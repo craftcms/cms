@@ -1519,7 +1519,8 @@ class User extends Element implements IdentityInterface
             return Collection::make($this->getGroups())->contains('id', $group);
         }
 
-        return Collection::make($this->getGroups())->containsStrict('handle', $group->handle);
+        /** @phpstan-ignore argument.type */
+        return Collection::make($this->getGroups())->containsStrict('handle', $group);
     }
 
     /**
