@@ -1268,6 +1268,7 @@ trait ApplicationTrait
      * Returns the user permissions service.
      *
      * @return UserPermissions The user permissions service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\UserPermissions} instead.
      */
     public function getUserPermissions(): UserPermissions
     {
