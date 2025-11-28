@@ -1516,10 +1516,10 @@ class User extends Element implements IdentityInterface
         }
 
         if (is_numeric($group)) {
-            return Collection::make($this->getGroups())->contains('id', '==', $group);
+            return Collection::make($this->getGroups())->contains('id', $group);
         }
 
-        return Collection::make($this->getGroups())->contains('handle', '===', $group);
+        return Collection::make($this->getGroups())->containsStrict('handle', $group);
     }
 
     /**
