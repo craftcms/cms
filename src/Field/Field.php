@@ -898,7 +898,7 @@ JS, [
         // see https://github.com/craftcms/cms/issues/15609
         $db = Craft::$app->getDb();
         if ($db->getIsMysql() && is_string($dbType) && DbHelper::parseColumnType($dbType) === Schema::TYPE_TEXT) {
-            $orderBy = "CAST($orderBy AS CHAR(255))";
+            $orderBy = "CAST({$orderBy->getValue(DB::getQueryGrammar())} AS CHAR(255))";
         }
 
         // The attribute name should match the table attribute name,
