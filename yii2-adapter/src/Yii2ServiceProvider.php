@@ -490,6 +490,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Structures::registerEvents();
         SystemMessages::registerEvents();
         UserGroups::registerEvents();
+        UserPermissions::registerEvents();
 
         /**
          * Utilities
