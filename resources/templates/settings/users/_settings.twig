@@ -94,7 +94,7 @@
       label: 'Require two-step verification'|t('app'),
       instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
       name: 'require2fa',
-      options: craft.app.userGroups.getAllGroups()
+      options: craft.userGroups.getAllGroups()
       |map(g => {value: g.uid, label: g.name|t('site')})
       |unshift({value: 'admins', label: 'Admins'|t('app')}),
       showAllOption: true,
@@ -145,7 +145,7 @@
       }) }}
 
       {% set groups = [{ label: "None"|t('app'), value: '' }] %}
-      {% for group in craft.app.userGroups.getAllGroups() %}
+      {% for group in craft.userGroups.getAllGroups() %}
         {% set groups = groups|merge([{ label: group.name, value: group.uid }]) %}
       {% endfor %}
 

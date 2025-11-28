@@ -17,7 +17,7 @@
       {% block input %}
         {% include '_includes/forms/componentSelect.twig' with {
           name: 'groups[]',
-          options: craft.app.userGroups.getAssignableGroups(user),
+          options: craft.userGroups.getAssignableGroups(user),
           values: user.getGroups(),
           showDescription: true,
           sortable: false,
