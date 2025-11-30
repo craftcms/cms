@@ -4,12 +4,13 @@
 {% set retainScrollOnSaveShortcut = true %}
 
 {% if craft.app.getIsMultiSite() %}
+    {% set siteMenuItems = siteMenuItems(null, requestedSite) %}
     {% set crumbs = [{
         id: 'site-crumb',
         icon: 'world',
         label: requestedSite.name|t('site'),
         menu: {
-            items: siteMenuItems(null, requestedSite),
+            items: siteMenuItems,
             label: 'Select site'|t('app')
         },
     }] %}

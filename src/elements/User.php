@@ -993,7 +993,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => App::supportsIdn()];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
@@ -1503,6 +1503,36 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Returns whether the user is in any/all the given user groups.
+     *
+     * By default, `true` will be returned if the user is in *any* of the groups. To change that so `true` is only
+     * returned if the user is in *all* of the groups, pass `true` to the second argument.
+     *
+     * @param array<int|string|UserGroup> $groups The user groups, handles, or IDs
+     * @param bool $all Whether to only return `true` if the user is in *all* of the provided groups
+     * @return bool
+     * @since 5.9.0
+     */
+    public function isInGroups(array $groups, bool $all = false): bool
+    {
+        if (!$all) {
+            foreach ($groups as $group) {
+                if ($this->isInGroup($group)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        foreach ($groups as $group) {
+            if (!$this->isInGroup($group)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the user’s full name.
      *
      * @return string|null
@@ -1834,11 +1864,17 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                if ($this->can("assignUserGroup:$group->uid")) {
-                    return true;
-                }
+        if (Craft::$app->edition->value < CmsEdition::Pro->value) {
+            return false;
+        }
+
+        if ($this->admin) {
+            return true;
+        }
+
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
             }
         }
 

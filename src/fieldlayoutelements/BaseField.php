@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\events\DefineFieldActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -24,6 +25,13 @@ use craft\helpers\StringHelper;
  */
 abstract class BaseField extends FieldLayoutElement
 {
+    /**
+     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
+     * @see actionMenuItems()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
     /**
      * @var string|null The field’s label
      */
@@ -851,7 +859,19 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
-        return [];
+        $items = [];
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $items,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            return $event->items;
+        }
+
+        return $items;
     }
 
     /**

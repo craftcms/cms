@@ -272,6 +272,20 @@ export default BaseDrag.extend(
       }
     },
 
+    /**
+     * Fade out helpers
+     */
+    fadeOutHelpers: function () {
+      this.helpers.forEach(($draggeeHelper) => {
+        $draggeeHelper.velocity('fadeOut', {
+          duration: Garnish.FX_DURATION,
+          complete: function () {
+            $draggeeHelper.remove();
+          },
+        });
+      });
+    },
+
     // Events
     // ---------------------------------------------------------------------
 

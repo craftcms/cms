@@ -26,7 +26,6 @@ return [
         '@' . str_replace('\\', '/', App::env('CODECEPTION_FIXTURES_NAMESPACE')) => '/var/www/repos/repo' . StringHelper::ensureLeft(App::env('CODECEPTION_FIXTURES_PATH'), '/'),
     ],
     'modules' => [
-        /** @phpstan-ignore-next-line */
         'db-backup' => \modules\DbBackup::class,
     ],
     'bootstrap' => ['db-backup'],

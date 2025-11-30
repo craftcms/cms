@@ -165,6 +165,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     /** @since 5.8.0 */
     public const RESERVED_HANDLES = [
         'ancestors',
+        'applyingDraft',
         'archived',
         'attributeLabel',
         'attributes',
@@ -214,6 +215,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         'prevSibling',
         'previewing',
         'propagateAll',
+        'propagateRequired',
         'propagating',
         'ref',
         'relatedToAssets',
@@ -1366,5 +1368,13 @@ JS, [
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
 }

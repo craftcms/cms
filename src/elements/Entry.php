@@ -55,6 +55,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -234,6 +235,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(EntryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function multiPageSources(): bool
+    {
+        return true;
     }
 
     /**
@@ -439,6 +448,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $user->can('createEntries:' . $section->uid)
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
+                //$newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
 
                 if (Craft::$app->getIsMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
@@ -1273,34 +1283,51 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
+        $page = $section->getPage();
+
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
+                'label' => $page && $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                'url' => sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'),
             ],
         ];
 
         // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
+        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey, withDisabled: true)) {
             $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
+
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
                 $sections = $sections->filter(fn(Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
+
+            if ($page) {
+                // Filter out any sections that don’t belong in this page
+                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
+                $pageSourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $pageSources)));
+                $sections = $sections->filter(function(Section $s) use ($pageSourceKeys) {
+                    $key = $s->type === Section::TYPE_SINGLE ? 'singles' : "section:$s->uid";
+                    return isset($pageSourceKeys[$key]);
+                });
+            }
+
             /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
                 ->map(fn(Section $s) => [
                     'label' => Craft::t('site', $s->name),
                     'url' => "entries/$s->handle",
+                    //'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
-            if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
+            /** @var Section|null $firstSingle */
+            $firstSingle = $sections->first(fn(Section $s) => $s->type === Section::TYPE_SINGLE);
+            if ($firstSingle) {
                 $sectionOptions->prepend([
                     'label' => Craft::t('app', 'Singles'),
-                    'url' => 'entries/singles',
+                    'url' => $firstSingle->getCpIndexUri(),
                     'selected' => $section->type === Section::TYPE_SINGLE,
                 ]);
             }
@@ -1358,6 +1385,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function uiLabel(): ?string
     {
+        if ($this->getType()->uiLabelFormat !== '{title}') {
+            $uiLabel = Craft::$app->getView()->renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+            if ($uiLabel !== '') {
+                return $uiLabel;
+            }
+        }
+
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
             $section = $this->getSection();
             if ($section?->type === Section::TYPE_SINGLE) {
@@ -2132,7 +2166,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
+        $path = sprintf('%s/%s', $section->getCpIndexUri(), $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {

@@ -12,27 +12,15 @@
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
             'has-structure': (source.structureId ?? null)|boolean,
             'default-sort': source.defaultSort ?? false,
-            'sort-opts': isTopLevel
-                ? sortOptions ?? (baseSortOptions
-                    |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
-                        label: option.label,
-                        attr: option.attribute ?? option.orderBy,
-                        defaultDir: option.defaultDir ?? 'asc'
-                    })|values))
+            'sort-opts': isTopLevel ? (sortOptions ?? false) : false,
+            'base-sort-opts': (isTopLevel and sortOptions is same as(null)) ? (baseSortOptions ?? false) : false,
+            'base-table-col-opts': isTopLevel and (tableColumns ?? false)
+                ? tableColumns|map((a, key) => a|merge({attr: key}))|values
+                : false,
+            'default-table-cols': isTopLevel and (defaultTableColumns ?? false)
+                ? defaultTableColumns|map(a => a[0])|filter(a => a != 'title')|values
                 : false,
             'source-item': true,
-            'table-col-opts': isTopLevel
-                ? tableColumns
-                    |merge(craft.app.elementSources.getSourceTableAttributes(elementType, key))
-                    |map((a, key) => a|merge({attr: key}))
-                    |values
-                : false,
-            'default-table-cols': isTopLevel
-                ? (defaultTableColumns ?? craft.app.elementSources.getTableAttributes(elementType, key))
-                    |map(a => a[0])
-                    |filter(a => a != 'title')
-                    |values
-                : false,
             'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             criteria: source.criteria ?? {},

@@ -1452,6 +1452,9 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
             $query->addSelect('color');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+            $query->addSelect('uiLabelFormat');
+        }
 
         return $query;
     }
@@ -1662,6 +1665,7 @@ SQL)->execute();
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->icon = $data['icon'] ?? null;
             $entryTypeRecord->color = $data['color'] ?? null;
+            $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;

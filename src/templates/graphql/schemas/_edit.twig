@@ -138,5 +138,9 @@
 {% endblock %}
 
 {% js %}
+    $('.user-permissions').each((i, wrapper) => {
+        new Craft.UserPermissions(wrapper);
+    });
+
     new Craft.ElevatedSessionForm('#main-form');
 {% endjs %}

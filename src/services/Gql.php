@@ -15,6 +15,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
@@ -1798,23 +1799,26 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
-            return [[], []];
-        }
-
         $queryComponents = [];
-        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
-        $queryComponents['usergroups.everyone:read'] = [
-            'label' => Craft::t('app', 'Query for users'),
-        ];
-
-        foreach ($userGroups as $userGroup) {
-            $name = Craft::t('site', $userGroup->name);
-            $prefix = "usergroups.$userGroup->uid";
-            $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            $queryComponents['usergroups.solo:read'] = [
+                'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
             ];
+        } else {
+            $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+            $queryComponents['usergroups.everyone:read'] = [
+                'label' => Craft::t('app', 'Query for users'),
+            ];
+
+            foreach ($userGroups as $userGroup) {
+                $name = Craft::t('site', $userGroup->name);
+                $prefix = "usergroups.$userGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                ];
+            }
         }
 
         return [$queryComponents, []];
