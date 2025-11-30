@@ -809,7 +809,6 @@ class Asset extends Element
 
             // Is there room for any normal assets as well?
             $totalAssets = count($assets);
-            /** @phpstan-ignore-next-line */
             if ($totalAssets < $elementQuery->limit) {
                 $elementQuery->offset(max($elementQuery->offset - $totalFolders, 0));
                 $elementQuery->limit($elementQuery->limit - $totalAssets);
