@@ -39,7 +39,7 @@ use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
@@ -349,7 +349,7 @@ class Assets extends Component
         }
 
         // Delete the folder records
-        VolumeFolderRecord::deleteAll(['id' => $allFolderIds]);
+        VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
     }
 
     /**
@@ -917,19 +917,19 @@ class Assets extends Component
     public function storeFolderRecord(VolumeFolder $folder): void
     {
         if (!$folder->id) {
-            $record = new VolumeFolderRecord();
+            $model = new VolumeFolderModel();
         } else {
-            $record = VolumeFolderRecord::findOne(['id' => $folder->id]);
+            $model = VolumeFolderModel::findOrFail($folder->id);
         }
 
-        $record->parentId = $folder->parentId;
-        $record->volumeId = $folder->volumeId;
-        $record->name = $folder->name;
-        $record->path = $folder->path;
-        $record->save();
+        $model->parentId = $folder->parentId;
+        $model->volumeId = $folder->volumeId;
+        $model->name = $folder->name;
+        $model->path = $folder->path;
+        $model->save();
 
-        $folder->id = $record->id;
-        $folder->uid = $record->uid;
+        $folder->id = $model->id;
+        $folder->uid = $model->uid;
     }
 
     /**

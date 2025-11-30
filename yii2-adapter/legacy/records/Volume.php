@@ -34,6 +34,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Models\Volume} instead.
  */
 class Volume extends ActiveRecord
 {

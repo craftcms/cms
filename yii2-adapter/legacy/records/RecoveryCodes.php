@@ -19,6 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $recoveryCodes Recovery codes
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Models\RecoveryCodes} instead.
  */
 class RecoveryCodes extends ActiveRecord
 {

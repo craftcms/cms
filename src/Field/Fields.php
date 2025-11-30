@@ -17,7 +17,6 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
-use craft\records\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Addresses as AddressesField;
@@ -41,6 +40,7 @@ use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -953,38 +953,31 @@ final class Fields
 
         if (! $isNewLayout) {
             // Get the current layout
-            /** @var FieldLayoutRecord|null $layoutRecord */
-            $layoutRecord = FieldLayoutRecord::findWithTrashed()
-                ->andWhere(['id' => $layout->id])
-                ->one();
-
-            if (! $layoutRecord) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
-            }
+            $layoutModel = FieldLayoutModel::withTrashed()->findOrFail($layout->id);
         } else {
-            $layoutRecord = new FieldLayoutRecord;
+            $layoutModel = new FieldLayoutModel;
         }
 
         // Save the layout
-        $layoutRecord->type = $layout->type;
-        $layoutRecord->config = $layout->getConfig();
-        $layoutRecord->uid = $layout->uid;
+        $layoutModel->type = $layout->type;
+        $layoutModel->config = $layout->getConfig();
+        $layoutModel->uid = $layout->uid;
 
         if (! $isNewLayout) {
-            $layoutRecord->id = $layout->id;
+            $layoutModel->id = $layout->id;
         }
 
-        if ($layoutRecord->dateDeleted) {
-            $layoutRecord->restore();
-        } else {
-            $layoutRecord->save(false);
+        if ($layoutModel->dateDeleted) {
+            $layoutModel->dateDeleted = null;
         }
+
+        $layoutModel->save();
 
         if ($isNewLayout) {
-            $layout->id = $layoutRecord->id;
+            $layout->id = $layoutModel->id;
         }
 
-        $layout->uid = $layoutRecord->uid;
+        $layout->uid = $layoutModel->uid;
 
         if (Event::hasListeners(FieldLayoutSaved::class)) {
             Event::dispatch(new FieldLayoutSaved($layout, $isNewLayout));

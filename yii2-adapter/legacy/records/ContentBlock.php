@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property Element $element Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.8.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Models\ContentBlock} instead.
  */
 class ContentBlock extends ActiveRecord
 {

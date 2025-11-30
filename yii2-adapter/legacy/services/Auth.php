@@ -20,9 +20,9 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
-use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -425,16 +425,14 @@ class Auth extends Component
             return false;
         }
 
-        return WebAuthnRecord::find()
-            ->where(['userId' => $user->id])
-            ->exists();
+        return WebAuthn::where('userId', $user->id)->exists();
     }
 
     /**
      * Returns info about the given user’s saved passkeys.
      *
      * @param User $user
-     * @return array{credentialName:string, dateLasteUsed:DateTime, uid:string}[]
+     * @return array{credentialName:string, dateLastUsed:DateTime|null, uid:string}[]
      */
     public function getPasskeys(User $user): array
     {
@@ -442,19 +440,21 @@ class Auth extends Component
             return [];
         }
 
-        /** @var array[] $passkeys */
-        $passkeys = WebAuthnRecord::find()
+        return WebAuthn::query()
             ->select(['credentialName', 'dateLastUsed', 'uid'])
-            ->where(['userId' => $user->id])
-            ->asArray()
-            ->all();
+            ->where('userId', $user->id)
+            ->get()
+            ->map(function(WebAuthn $passkey) {
+                if ($passkey->dateLastUsed) {
+                    $dateLastUsed = DateTimeHelper::toDateTime($passkey->dateLastUsed);
+                }
 
-        return array_map(function(array $passkey) {
-            if ($passkey['dateLastUsed']) {
-                $passkey['dateLastUsed'] = DateTimeHelper::toDateTime($passkey['dateLastUsed']);
-            }
-            return $passkey;
-        }, $passkeys);
+                return [
+                    'credentialName' => $passkey->credentialName,
+                    'dateLastUsed' => $dateLastUsed ?? null,
+                    'uid' => $passkey->uid,
+                ];
+            })->all();
     }
 
     /**
@@ -600,7 +600,7 @@ class Auth extends Component
      */
     public function deletePasskey(User $user, string $uid): void
     {
-        WebAuthnRecord::findOne(['userId' => $user->id, 'uid' => $uid])?->delete();
+        WebAuthn::where('userId', $user->id)->where('uid', $uid)->delete();
     }
 
     /**

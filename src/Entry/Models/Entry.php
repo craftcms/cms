@@ -24,12 +24,15 @@ final class Entry extends BaseModel
 
     public $incrementing = false;
 
-    protected $casts = [
-        'postDate' => 'datetime',
-        'expiryDate' => 'datetime',
-        'deletedWithEntryType' => 'boolean',
-        'deletedWithSection' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'postDate' => 'datetime',
+            'expiryDate' => 'datetime',
+            'deletedWithEntryType' => 'boolean',
+            'deletedWithSection' => 'boolean',
+        ];
+    }
 
     /**
      * @return BelongsTo<Element, $this>

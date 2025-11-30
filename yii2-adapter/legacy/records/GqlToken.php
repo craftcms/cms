@@ -24,6 +24,7 @@ use yii\db\ActiveQueryInterface;
  * @property GqlSchema $scope Scope
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Models\GqlToken} instead.
  */
 class GqlToken extends ActiveRecord
 {

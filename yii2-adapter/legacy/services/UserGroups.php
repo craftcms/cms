@@ -11,13 +11,13 @@ use Craft;
 use craft\elements\User;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
-use craft\records\UserGroup as UserGroupRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -198,14 +198,14 @@ class UserGroups extends Component
             $i++;
         } while (true);
 
-        $groupRecord = UserGroupRecord::findOne(['uid' => $group->uid]) ?? new UserGroupRecord();
-        $groupRecord->name = $group->name;
-        $groupRecord->handle = $group->handle;
-        $groupRecord->description = null;
-        $groupRecord->uid = $group->uid;
-        $groupRecord->save(false);
+        $groupModel = UserGroupModel::findByUid($group->uid) ?? new UserGroupModel();
+        $groupModel->name = $group->name;
+        $groupModel->handle = $group->handle;
+        $groupModel->description = null;
+        $groupModel->uid = $group->uid;
+        $groupModel->save();
 
-        $group->id = $groupRecord->id;
+        $group->id = $groupModel->id;
         return $group;
     }
 
@@ -340,14 +340,14 @@ class UserGroups extends Component
         $uid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
-        $isNewGroup = $groupRecord->getIsNewRecord();
+        $groupModel = UserGroupModel::findByUid($uid) ?? new UserGroupModel();
+        $isNewGroup = !$groupModel->exists;
 
-        $groupRecord->name = $data['name'];
-        $groupRecord->handle = $data['handle'];
-        $groupRecord->description = $data['description'] ?? null;
-        $groupRecord->uid = $uid;
-        $groupRecord->save(false);
+        $groupModel->name = $data['name'];
+        $groupModel->handle = $data['handle'];
+        $groupModel->description = $data['description'] ?? null;
+        $groupModel->uid = $uid;
+        $groupModel->save();
 
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
         $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
@@ -355,7 +355,7 @@ class UserGroups extends Component
         // Fire an 'afterSaveUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-                'userGroup' => $this->getGroupById($groupRecord->id),
+                'userGroup' => $this->getGroupById($groupModel->id),
                 'isNew' => $isNewGroup,
             ]));
         }

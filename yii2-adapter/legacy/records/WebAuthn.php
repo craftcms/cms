@@ -23,6 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $uid uid
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Models\WebAuthn} instead.
  */
 class WebAuthn extends ActiveRecord
 {

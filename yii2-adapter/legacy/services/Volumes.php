@@ -14,8 +14,8 @@ use craft\events\VolumeEvent;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\Volume as AssetVolumeRecord;
-use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -338,60 +338,58 @@ class Volumes extends Component
 
         DB::beginTransaction();
         try {
-            $volumeRecord = $this->_getVolumeRecord($volumeUid, true);
-            $isNewVolume = $volumeRecord->getIsNewRecord();
+            $volumeModel = $this->getVolumeModel($volumeUid, true);
+            $isNewVolume = !$volumeModel->exists;
 
-            $volumeRecord->name = $data['name'];
-            $volumeRecord->handle = $data['handle'];
-            $volumeRecord->fs = $data['fs'] ?? null;
-            $volumeRecord->subpath = $data['subpath'] ?? null;
-            $volumeRecord->transformFs = $data['transformFs'] ?? null;
-            $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
-            $volumeRecord->sortOrder = $data['sortOrder'];
-            $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
-            $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
-            $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
-            $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
-            $volumeRecord->uid = $volumeUid;
+            $volumeModel->name = $data['name'];
+            $volumeModel->handle = $data['handle'];
+            $volumeModel->fs = $data['fs'] ?? null;
+            $volumeModel->subpath = $data['subpath'] ?? null;
+            $volumeModel->transformFs = $data['transformFs'] ?? null;
+            $volumeModel->transformSubpath = $data['transformSubpath'] ?? null;
+            $volumeModel->sortOrder = $data['sortOrder'];
+            $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
+            $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
+            $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
+            $volumeModel->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
+            $volumeModel->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
                 // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                $layout->id = $volumeRecord->fieldLayoutId;
+                $layout->id = $volumeModel->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
                 app(Fields::class)->saveLayout($layout, false);
-                $volumeRecord->fieldLayoutId = $layout->id;
-            } elseif ($volumeRecord->fieldLayoutId) {
+                $volumeModel->fieldLayoutId = $layout->id;
+            } elseif ($volumeModel->fieldLayoutId) {
                 // Delete the field layout
-                app(Fields::class)->deleteLayoutById($volumeRecord->fieldLayoutId);
-                $volumeRecord->fieldLayoutId = null;
+                app(Fields::class)->deleteLayoutById($volumeModel->fieldLayoutId);
+                $volumeModel->fieldLayoutId = null;
             }
 
             // Save the volume
-            if ($wasTrashed = (bool)$volumeRecord->dateDeleted) {
-                $volumeRecord->restore();
-            } else {
-                $volumeRecord->save(false);
+            if ($wasTrashed = (bool)$volumeModel->dateDeleted) {
+                $volumeModel->dateDeleted = null;
             }
+
+            $volumeModel->save();
 
             $assetsService = Craft::$app->getAssets();
             $rootFolder = $assetsService->findFolder([
-                'volumeId' => $volumeRecord->id,
+                'volumeId' => $volumeModel->id,
                 'parentId' => ':empty:',
             ]);
 
             if ($rootFolder === null) {
-                $rootFolderRecord = new VolumeFolderRecord([
-                    'volumeId' => $volumeRecord->id,
+                VolumeFolderModel::create([
+                    'volumeId' => $volumeModel->id,
                     'parentId' => null,
                     'path' => '',
-                    'name' => $volumeRecord->name,
+                    'name' => $volumeModel->name,
                 ]);
-
-                $rootFolderRecord->save();
             } else {
-                $rootFolder->name = $volumeRecord->name;
+                $rootFolder->name = $volumeModel->name;
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
@@ -408,7 +406,7 @@ class Volumes extends Component
             // Restore the assets that were deleted with the volume
             /** @var Asset[] $assets */
             $assets = Asset::find()
-                ->volumeId($volumeRecord->id)
+                ->volumeId($volumeModel->id)
                 ->trashed()
                 ->andWhere(['assets.deletedWithVolume' => true])
                 ->all();
@@ -418,7 +416,7 @@ class Volumes extends Component
         // Fire an 'afterSaveVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
-                'volume' => $this->getVolumeById($volumeRecord->id),
+                'volume' => $this->getVolumeById($volumeModel->id),
                 'isNew' => $isNewVolume,
             ]));
         }
@@ -518,13 +516,13 @@ class Volumes extends Component
     public function handleDeletedVolume(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
-        $volumeRecord = $this->_getVolumeRecord($uid);
+        $volumeModel = $this->getVolumeModel($uid);
 
-        if ($volumeRecord->getIsNewRecord()) {
+        if (!$volumeModel->exists) {
             return;
         }
 
-        $volume = $this->getVolumeById($volumeRecord->id);
+        $volume = $this->getVolumeById($volumeModel->id);
 
         // Fire a 'beforeApplyVolumeDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_VOLUME_DELETE)) {
@@ -533,14 +531,13 @@ class Volumes extends Component
             ]));
         }
 
-        $db = Craft::$app->getDb();
         DB::beginTransaction();
 
         try {
             // Delete the assets
             /** @var Asset[] $assets */
             $assets = Asset::find()
-                ->volumeId($volumeRecord->id)
+                ->volumeId($volumeModel->id)
                 ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
@@ -552,12 +549,12 @@ class Volumes extends Component
             }
 
             // Delete the field layout
-            if ($volumeRecord->fieldLayoutId) {
-                app(Fields::class)->deleteLayoutById($volumeRecord->fieldLayoutId);
+            if ($volumeModel->fieldLayoutId) {
+                app(Fields::class)->deleteLayoutById($volumeModel->fieldLayoutId);
             }
 
             // Delete the volume
-            DB::table(Table::VOLUMES)->softDelete($volumeRecord->id);
+            $volumeModel->delete();
 
             DB::commit();
         } catch (Throwable $e) {
@@ -598,15 +595,12 @@ class Volumes extends Component
      *
      * @param string $uid
      * @param bool $withTrashed Whether to include trashed volumes in search
-     *
-     * @return AssetVolumeRecord
      */
-    private function _getVolumeRecord(string $uid, bool $withTrashed = false): AssetVolumeRecord
+    private function getVolumeModel(string $uid, bool $withTrashed = false): VolumeModel
     {
-        $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
-        $query->andWhere(['uid' => $uid]);
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var AssetVolumeRecord */
-        return $query->one() ?? new AssetVolumeRecord();
+        return VolumeModel::query()
+            ->withTrashed($withTrashed)
+            ->where('uid', $uid)
+            ->firstOrNew();
     }
 }
