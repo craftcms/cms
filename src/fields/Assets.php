@@ -937,7 +937,7 @@ class Assets extends BaseRelationField
             throw new InvalidFsException("Invalid source key: $sourceKey");
         }
 
-        [$subpath, $folder] = AssetsHelper::findFolderBySubpath($volume, $subpath, $element);
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath, $element);
 
         // Ensure that the folder exists
         if (!$folder) {

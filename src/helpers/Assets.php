@@ -980,18 +980,18 @@ class Assets
     }
 
     /**
-     * Finds a volume folder by a volume and (dynamic?) subpath.
-     * Returns the folder and rendered subpath.
+     * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
+     * matching volume folder (if one exists).
      *
      * @param Volume $volume
-     * @param string $subpath
+     * @param string|null $subpath
      * @param ElementInterface|null $element
-     * @return array
+     * @return array{0:string,1:VolumeFolder|null}
      * @throws Exception
      * @throws InvalidSubpathException
-     * @throws \Throwable
+     * @since 5.9.0
      */
-    public static function findFolderBySubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
+    public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
     {
         $assetsService = Craft::$app->getAssets();
         $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
@@ -1002,9 +1002,7 @@ class Assets
             return [$subpath, $rootFolder];
         }
 
-        $isDynamic = preg_match('/\{|\}/', $subpath);
-
-        if ($isDynamic) {
+        if (str_contains($subpath, '{')) {
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
                 if ($element?->duplicateOf) {

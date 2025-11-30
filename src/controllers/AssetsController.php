@@ -352,7 +352,7 @@ class AssetsController extends Controller
         $url = null;
         try {
             $url = $asset->getUrl();
-        } catch (Exception $e) {
+        } catch (Throwable) {
             // do nothing
         }
 
