@@ -378,7 +378,7 @@ final class UserPermissions
 
         // Update caches
         $this->permissionsByGroupId ??= collect();
-        $this->permissionsByGroupId->put($userGroup->id, $permissions);
+        $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
     }
 
     private function generalPermissions(Collection $permissions): void
