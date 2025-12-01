@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\base\Element;
+use craft\base\Event as YiiEvent;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
 use craft\elements\Address;
@@ -737,6 +738,7 @@ class UsersController extends Controller
         }
 
         // Make sure we still have a valid token.
+        /** @var User $user */
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken($user);
         }
@@ -2789,7 +2791,7 @@ JS);
     public static function registerEvents(): void
     {
         Event::listen(DefineUserEditScreens::class, function(DefineUserEditScreens $event) {
-            if (\craft\base\Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
                 $currentUser = User::find()->id($event->currentUser->id)->one();
                 $editedUser = User::find()->id($event->editedUser->id)->one();
 
@@ -2799,32 +2801,32 @@ JS);
                     'screens' => $event->screens,
                 ]);
 
-                \craft\base\Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $yiiEvent);
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $yiiEvent);
                 $event->screens = $yiiEvent->screens;
             }
         });
 
         Event::listen(AssigningGroupsAndPermissions::class, function(AssigningGroupsAndPermissions $event) {
-            if (\craft\base\Event::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $user = User::find()->id($event->user->id)->one();
 
                 $yiiEvent = new UserEvent([
                     'user' => $user,
                 ]);
 
-                \craft\base\Event::trigger(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
             }
         });
 
         Event::listen(GroupsAndPermissionsAssigned::class, function(GroupsAndPermissionsAssigned $event) {
-            if (\craft\base\Event::hasHandlers(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $user = User::find()->id($event->user->id)->one();
 
                 $yiiEvent = new UserEvent([
                     'user' => $user,
                 ]);
 
-                \craft\base\Event::trigger(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
             }
         });
     }

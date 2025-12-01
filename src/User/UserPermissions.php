@@ -61,7 +61,7 @@ final class UserPermissions
     private Collection $allPermissionNames;
 
     /**
-     * @var Collection<string, Collection<string>>
+     * @var Collection<int, Collection<string>>
      */
     private Collection $permissionsByGroupId;
 
@@ -726,7 +726,7 @@ final class UserPermissions
         $permissions->add(new PermissionGroup(
             heading: t('Utilities'),
             permissions: app(Utilities::class)->getAllUtilityTypes()->map(function (string $class) {
-                /** @var Utility $class */
+                /** @var class-string<Utility> $class */
                 // Admins only
                 if (ProjectConfigUtility::id() === $class::id()) {
                     return null;
