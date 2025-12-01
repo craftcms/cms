@@ -413,6 +413,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         }
     }
 
+    /**
+     * @return TElement|null
+     */
     public function first($columns = ['*']): ?ElementInterface
     {
         // Eagerly?
