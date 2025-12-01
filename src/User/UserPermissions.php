@@ -477,7 +477,7 @@ final class UserPermissions
                                 ),
                                 new Permission(key: 'impersonateUsers', label: t('Impersonate users')),
                                 Edition::get()->value >= Edition::Pro->value
-                                    ? new Permission(key: 'assignUserPermissions', label: t('Impersonate users'))
+                                    ? new Permission(key: 'assignUserPermissions', label: t('Assign user permissions'))
                                     : null,
                             ])->filter()->merge($assignGroupPermissions),
                         ),

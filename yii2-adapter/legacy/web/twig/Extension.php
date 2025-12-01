@@ -81,6 +81,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -1848,6 +1849,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'app' => $variable,
             'craft' => $variable,
             'sessionErrors' => Session::get('errors') ?: new ViewErrorBag(),
+            'request' => app(Request::class),
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

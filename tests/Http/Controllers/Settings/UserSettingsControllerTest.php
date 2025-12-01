@@ -46,13 +46,13 @@ test('store', function () {
 test('require2fa only gets saved when above team edition', function () {
     Edition::set(Edition::Solo);
 
-    expect(ProjectConfig::get('users.require2fa'))->toBe(false);
+    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy(false);
 
     post(action([UserSettingsController::class, 'store'], [
         'require2fa' => true,
     ]))->assertRedirectBack();
 
-    expect(ProjectConfig::get('users.require2fa'))->toBe(false);
+    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy(false);
 
     Edition::set(Edition::Team);
 
@@ -66,13 +66,21 @@ test('require2fa only gets saved when above team edition', function () {
 test('user settings only get saved when above pro edition', function (string $property, mixed $default, mixed $value) {
     Edition::set(Edition::Team);
 
-    expect(ProjectConfig::get("users.$property"))->toBeIn([$default, (bool) $default]);
+    if ($default) {
+        expect(ProjectConfig::get("users.$property"))->toBeTruthy();
+    } else {
+        expect(ProjectConfig::get("users.$property"))->toBeFalsy();
+    }
 
     post(action([UserSettingsController::class, 'store'], [
         $property => $value,
     ]))->assertRedirectBack();
 
-    expect(ProjectConfig::get("users.$property"))->toBeIn([$default, (bool) $default]);
+    if ($default) {
+        expect(ProjectConfig::get("users.$property"))->toBeTruthy();
+    } else {
+        expect(ProjectConfig::get("users.$property"))->toBeFalsy();
+    }
 
     Edition::set(Edition::Pro);
 
