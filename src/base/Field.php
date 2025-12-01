@@ -564,9 +564,8 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     protected function actionMenuItems(): array
     {
         $items = [];
-        $userSessionService = Craft::$app->getUser();
 
-        if ($this->id && $userSessionService->getIsAdmin()) {
+        if ($this->id && Craft::$app->getUser()->getIsAdmin()) {
             $view = Craft::$app->getView();
 
             if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
@@ -588,29 +587,6 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
 JS, [
                     $view->namespaceInputId($editId),
                     ['fieldId' => $this->id],
-                ]);
-            }
-
-            // Copy field handle
-            if (!$userSessionService->getIdentity()->getPreference('showFieldHandles')) {
-                $copyId = sprintf('action-copy-handle-%s', mt_rand());
-                $items[] = [
-                    'id' => $copyId,
-                    'icon' => 'clipboard',
-                    'label' => Craft::t('app', 'Copy field handle'),
-                ];
-                $view->registerJsWithVars(fn($id, $attribute) => <<<JS
-(() => {
-  $('#' + $id).on('activate', () => {
-    Craft.ui.createCopyTextPrompt({
-      label: Craft.t('app', 'Field Handle'),
-      value: $attribute,
-    });
-  });
-})();
-JS, [
-                    $view->namespaceInputId($copyId),
-                    $this->handle,
                 ]);
             }
         }
