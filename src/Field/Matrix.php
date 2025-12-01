@@ -1,0 +1,1947 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Field;
+
+use Craft;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
+use craft\base\GqlInlineFragmentInterface;
+use craft\base\NestedElementInterface;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
+use craft\elements\NestedElementManager;
+use craft\elements\User;
+use craft\errors\InvalidFieldException;
+use craft\events\BulkElementsEvent;
+use craft\fields\conditions\EmptyFieldConditionRule;
+use craft\gql\arguments\elements\Entry as EntryArguments;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\gql\types\generators\EntryType as EntryTypeGenerator;
+use craft\gql\types\input\Matrix as MatrixInputType;
+use craft\helpers\Cp;
+use craft\helpers\Gql;
+use craft\helpers\Queue;
+use craft\queue\jobs\ApplyNewPropagationMethod;
+use craft\queue\jobs\ResaveElements;
+use craft\validators\ArrayValidator;
+use craft\validators\StringValidator;
+use craft\validators\UriFormatValidator;
+use craft\web\assets\cp\CpAsset;
+use craft\web\assets\matrix\MatrixAsset;
+use craft\web\View;
+use CraftCms\Cms\Database\Queries\EntryQuery;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
+use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Override;
+use Tpetry\QueryExpressions\Language\Alias;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
+
+use function CraftCms\Cms\t;
+
+/**
+ * Matrix field type
+ *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
+ */
+final class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+{
+    /**
+     * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
+     */
+    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    public const string VIEW_MODE_CARDS = 'cards';
+
+    public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
+
+    public const string VIEW_MODE_BLOCKS = 'blocks';
+
+    public const string VIEW_MODE_INDEX = 'index';
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function displayName(): string
+    {
+        return t('Matrix');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function icon(): string
+    {
+        return 'binary';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function supportedTranslationMethods(): array
+    {
+        // Don't ever automatically propagate values to other sites.
+        return [
+            self::TRANSLATION_METHOD_SITE,
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function phpType(): string
+    {
+        return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function dbType(): array|string|null
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    {
+        /** @var self $field */
+        $field = reset($instances);
+        $ns = $field->handle.'_'.Str::random(5);
+
+        $exists = DB::table(Table::ENTRIES, "entries_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->where("entries_$ns.fieldId", $field->id)
+            ->where("elements_$ns.enabled", true)
+            ->whereNull("elements_$ns.dateDeleted")
+            ->whereColumn("elements_owners_$ns.ownerId", 'elements.id');
+
+        if ($value === 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value === ':empty:') {
+            return $query->whereNotExists($exists);
+        }
+
+        if ($value !== ':notempty:') {
+            $ids = $value;
+            if (! is_array($ids)) {
+                $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
+            }
+
+            $ids = array_map(fn ($id) => $id instanceof Entry ? $id->id : (int) $id, $ids);
+
+            $exists->whereIn("entries_$ns.id", $ids);
+        }
+
+        return $query->whereExists($exists);
+    }
+
+    /**
+     * Returns the “Default Table Columns” options for the given entry types.
+     *
+     * @param  EntryType[]  $entryTypes
+     */
+    public static function defaultTableColumnOptions(array $entryTypes): array
+    {
+        $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
+        $elementSources = app(ElementSources::class);
+        $tableColumns = array_merge(
+            $elementSources->getAvailableTableAttributes(Entry::class)->all(),
+            $elementSources->getTableAttributesForFieldLayouts($fieldLayouts)->all(),
+        );
+
+        $options = [];
+        foreach ($tableColumns as $attribute => $column) {
+            $options[] = ['label' => $column['label'], 'value' => $attribute];
+        }
+
+        return $options;
+    }
+
+    public ?int $minEntries = null;
+
+    public ?int $maxEntries = null;
+
+    public bool $enableVersioning = false;
+
+    /**
+     * @var string The view mode
+     *
+     * @phpstan-var self::VIEW_MODE_*
+     */
+    public string $viewMode = self::VIEW_MODE_CARDS;
+
+    /**
+     * @var bool Include table view in element indexes
+     */
+    public bool $includeTableView = false;
+
+    /**
+     * @var string[] The default table columns to show in table view
+     */
+    public array $defaultTableColumns = [];
+
+    /**
+     * @var string The default view mode that should be used
+     *             if the field's view mode is set to element index and has "Include Table View" turned on.
+     */
+    public string $defaultIndexViewMode = 'cards';
+
+    /**
+     * @var int|null The total entries to display per page within element indexes
+     */
+    public ?int $pageSize = null;
+
+    /**
+     * @var string|null The “New entry” button label.
+     */
+    public ?string $createButtonLabel = null;
+
+    /**
+     * @var PropagationMethod Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - [[PropagationMethod::None]] – Only save entries in the site they were created in
+     * - [[PropagationMethod::SiteGroup]] – Save entries to other sites in the same site group
+     * - [[PropagationMethod::Language]] – Save entries to other sites with the same language
+     * - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     * - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
+     */
+    public PropagationMethod $propagationMethod = PropagationMethod::All;
+
+    /**
+     * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
+     */
+    public ?string $propagationKeyFormat = null;
+
+    /**
+     * @var array{uriFormat:string|null,template?:string|null,errors?:array}[] Site settings
+     */
+    public array $siteSettings = [];
+
+    /**
+     * @var EntryType[] The field’s available entry types
+     *
+     * @see getEntryTypes()
+     * @see setEntryTypes()
+     */
+    private array $_entryTypes = [];
+
+    /**
+     * @see entryManager()
+     */
+    private NestedElementManager $_entryManager;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        unset($config['contentTable']);
+
+        if (array_key_exists('localizeBlocks', $config)) {
+            $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
+            unset($config['localizeBlocks']);
+        }
+
+        if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
+            $config['entryTypes'] = [];
+        }
+
+        if (array_key_exists('minBlocks', $config)) {
+            $config['minEntries'] = Arr::pull($config, 'minBlocks');
+        }
+        if (array_key_exists('maxBlocks', $config)) {
+            $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
+        }
+
+        if (! empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
+            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
+        }
+        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
+
+        parent::__construct($config);
+
+        foreach ($this->siteSettings as &$siteSettings) {
+            if (($siteSettings['uriFormat'] ?? null) === '') {
+                unset($siteSettings['uriFormat']);
+            }
+            if (($siteSettings['template'] ?? null) === '') {
+                unset($siteSettings['template']);
+            }
+        }
+
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            $this->includeTableView = false;
+            $this->pageSize = null;
+        }
+
+        if (! $this->includeTableView) {
+            $this->defaultTableColumns = [];
+        }
+
+        if ($this->minEntries === 0) {
+            $this->minEntries = null;
+        }
+
+        if ($this->maxEntries === 0) {
+            $this->maxEntries = null;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsAttributes(): array
+    {
+        return Arr::except(parent::settingsAttributes(), 'localizeEntries');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        $settings['entryTypes'] = array_map(
+            fn (EntryType $entryType) => $entryType->getUsageConfig(),
+            $this->_entryTypes,
+        );
+
+        return $settings;
+    }
+
+    #[Override]
+    public static function getRules(): array
+    {
+        return array_merge(parent::getRules(), [
+            'entryTypes' => ['array', 'min:1'],
+            'siteSettings' => ['array'],
+            'minEntries' => ['nullable', 'integer', 'min:0'],
+            'maxEntries' => ['nullable', 'integer', 'min:0'],
+            'viewMode' => Rule::in([
+                self::VIEW_MODE_CARDS,
+                self::VIEW_MODE_CARDS_GRID,
+                self::VIEW_MODE_INDEX,
+                self::VIEW_MODE_BLOCKS,
+            ]),
+        ]);
+    }
+
+    public function afterValidate(Validator $validator): void
+    {
+        foreach ($this->siteSettings as $uid => &$siteSettings) {
+            unset($siteSettings['errors']);
+
+            if (isset($siteSettings['uriFormat'])) {
+                // Remove any leading or trailing slashes/spaces
+                $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
+
+                if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
+                    $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
+                    $siteSettings['errors']['uriFormat'][] = $error;
+
+                    $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
+                }
+            }
+
+            if (isset($siteSettings['template'])) {
+                if (! new StringValidator(['max' => 500])->validate($siteSettings['template'], $error)) {
+                    $error = str_replace(t('the input value'), t('Template'), $error);
+                    $siteSettings['errors']['template'][] = $error;
+
+                    $validator->errors()->add("siteSettings[$uid].template", $error);
+                }
+            }
+        }
+    }
+
+    private function entryManager(): NestedElementManager
+    {
+        if (! isset($this->_entryManager)) {
+            $this->_entryManager = new NestedElementManager(
+                Entry::class,
+                fn (ElementInterface $owner) => $this->createEntryQuery($owner),
+                [
+                    'field' => $this,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
+                    'propagationMethod' => $this->propagationMethod,
+                    'propagationKeyFormat' => $this->propagationKeyFormat,
+                ],
+            );
+
+            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, $this->afterSaveEntries(...));
+        }
+
+        return $this->_entryManager;
+    }
+
+    /**
+     * Returns the available entry types.
+     *
+     * @return EntryType[]
+     */
+    public function getEntryTypes(): array
+    {
+        return $this->_entryTypes;
+    }
+
+    /**
+     * Returns the available entry types for the given owner element.
+     *
+     * @param  Entry[]  $value
+     * @return EntryType[]
+     */
+    public function getEntryTypesForField(array $value, ?ElementInterface $element): array
+    {
+        $entryTypes = $this->_entryTypes;
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+                field: $this,
+                entryTypes: $entryTypes,
+                element: $element,
+                value: $value,
+            ));
+            $entryTypes = $event->entryTypes;
+        }
+
+        if (empty($entryTypes)) {
+            throw new InvalidConfigException('At least one entry type is required.');
+        }
+
+        return array_values($entryTypes);
+    }
+
+    /**
+     * Sets the available entry types.
+     *
+     * @param  array<EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string}>  $entryTypes  The entry types
+     */
+    public function setEntryTypes(array $entryTypes): void
+    {
+        $entryTypesService = app(EntryTypes::class);
+        $this->_entryTypes = array_values(array_filter(array_map(
+            $entryTypesService->getEntryType(...),
+            $entryTypes,
+        )));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldLayoutProviders(): array
+    {
+        return $this->_entryTypes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUriFormatForElement(NestedElementInterface $element): ?string
+    {
+        $site = $element->getSite();
+
+        return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRouteForElement(NestedElementInterface $element): mixed
+    {
+        $site = $element->getSite();
+
+        return [
+            'templates/render', [
+                'template' => $this->siteSettings[$site->uid]['template'] ?? '',
+                'variables' => [
+                    'entry' => $element,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedSitesForElement(NestedElementInterface $element): array
+    {
+        try {
+            $owner = $element->getOwner();
+        } catch (InvalidConfigException) {
+            $owner = $element->duplicateOf;
+        }
+
+        if (! $owner) {
+            return [Sites::getPrimarySite()->id];
+        }
+
+        return $this->entryManager()->getSupportedSiteIds($owner);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canViewElement(NestedElementInterface $element, User $user): bool
+    {
+        $owner = $element->getOwner();
+
+        return $owner && Craft::$app->getElements()->canView($owner, $user);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canSaveElement(NestedElementInterface $element, User $user): bool
+    {
+        $owner = $element->getOwner();
+
+        if (! $owner) {
+            return false;
+        }
+
+        if (Craft::$app->getElements()->canSave($owner, $user)) {
+            return true;
+        }
+
+        // Check all the owners. Maybe the user can save one of the other ones?
+        /** @phpstan-ignore-next-line  */
+        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canDuplicateElement(NestedElementInterface $element, User $user): bool
+    {
+        $owner = $element->getOwner();
+
+        if (! $owner || ! Craft::$app->getElements()->canSave($owner, $user)) {
+            return false;
+        }
+
+        // Make sure we aren't hitting the Max Entries limit
+        return ! $this->maxEntriesReached($owner);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canDeleteElement(NestedElementInterface $element, User $user): bool
+    {
+        $owner = $element->getOwner();
+
+        if (! $owner || ! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
+    {
+        return false;
+    }
+
+    private function maxEntriesReached(ElementInterface $owner): bool
+    {
+        return
+            $this->maxEntries &&
+            $this->maxEntries <= $this->totalEntries($owner);
+    }
+
+    private function totalEntries(ElementInterface $owner): int
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $value = $owner->getFieldValue($this->handle);
+
+        if ($value instanceof EntryQuery) {
+            return (clone $value)
+                ->status(null)
+                ->siteId($owner->siteId)
+                ->limit(null)
+                ->count();
+        }
+
+        return $value->count();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSettingsHtml(): string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getReadOnlySettingsHtml(): string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        $view = Craft::$app->getView();
+
+        $entryTypes = Collection::make($this->_entryTypes);
+        $entryTypeSelectConfig = [
+            'name' => 'entryTypes[]',
+            'renderDefaultInput' => false,
+            'allowOverrides' => true,
+            'create' => true,
+            'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
+            'errors' => $this->getErrors('entryTypes'),
+            'data' => [
+                'error-key' => 'entryTypes',
+                'disabled' => $readOnly,
+            ],
+        ];
+
+        if (! $readOnly) {
+            $view->startJsBuffer();
+            $namespace = $view->getNamespace();
+            $view->setNamespace(null);
+            $entryTypeSelectHtml = $view->namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                ...$entryTypeSelectConfig,
+                'id' => 'TEMP_ID',
+            ]), $namespace);
+            $view->setNamespace($namespace);
+            $entryTypeSelectJs = $view->clearJsBuffer();
+        }
+
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
+        return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
+            'field' => $this,
+            'entryTypes' => $entryTypes,
+            'entryTypeSelectConfig' => $entryTypeSelectConfig,
+            'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
+            'entryTypeSelectJs' => $entryTypeSelectJs ?? null,
+            'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
+            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
+            'indexViewModes' => array_filter(
+                Entry::indexViewModes(),
+                fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
+            ),
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'readOnly' => $readOnly,
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
+        if ($value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
+        $query = $this->createEntryQuery($element);
+
+        // Set the initially matched elements if $value is already set, which is the case if there was a validation
+        // error or we're loading an entry revision.
+        if ($value === '') {
+            $query->setResultOverride([]);
+        } elseif ($value === '*') {
+            // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
+            $query->drafts(null)->savedDraftsOnly()->status(null)->limit(null);
+            $query->setResultOverride($query->all());
+        } elseif ($element && is_array($value)) {
+            $query->setResultOverride($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
+        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+            $query->withProvisionalDrafts();
+        }
+
+        return $query;
+    }
+
+    private function createEntryQuery(?ElementInterface $owner): EntryQuery
+    {
+        $query = Entry::find();
+
+        // Existing element?
+        if ($owner && $owner->id) {
+            $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
+                $entryQuery->ownerId = $owner->id;
+
+                // Clear out id=false if this query was populated previously
+                if ($entryQuery->id === false) {
+                    $entryQuery->id = null;
+                }
+
+                // If the owner is a revision, allow revision entries to be returned as well
+                if ($owner->getIsRevision()) {
+                    $entryQuery
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
+
+            // Prepare the query for lazy eager loading
+            $query->prepForEagerLoading($this->handle, $owner);
+        } else {
+            $query->id = false;
+        }
+
+        $query
+            ->fieldId($this->id)
+            ->siteId($owner->siteId ?? null);
+
+        return $query;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function serializeValue(mixed $value, ?ElementInterface $element): array
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $serialized = [];
+        $new = 0;
+
+        foreach ($value->all() as $entry) {
+            /** @var Entry $entry */
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
+            $serialized[$entryId] = [
+                'title' => $entry->title,
+                'slug' => $entry->slug,
+                'type' => $entry->getType()->handle,
+                'enabled' => $entry->enabled,
+                'collapsed' => $entry->collapsed,
+                'fields' => $entry->getSerializedFieldValues(),
+            ];
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function serializeValueForDb(mixed $value, ElementInterface $element): array
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $serialized = [];
+        $new = 0;
+
+        foreach ($value->all() as $entry) {
+            /** @var Entry $entry */
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
+            $serialized[$entryId] = [
+                'title' => $entry->title,
+                'slug' => $entry->slug,
+                'type' => $entry->getType()->handle,
+                'enabled' => $entry->enabled,
+                'collapsed' => $entry->collapsed,
+                'fields' => $entry->getSerializedFieldValuesForDb(),
+            ];
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getElementConditionRuleType(): string
+    {
+        return EmptyFieldConditionRule::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getIsTranslatable(?ElementInterface $element): bool
+    {
+        return $this->entryManager()->getIsTranslatable($element);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    protected function actionMenuItems(): array
+    {
+        $items = match ($this->viewMode) {
+            self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+            self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+            default => [],
+        };
+
+        $parentItems = parent::actionMenuItems();
+
+        if (! empty($items) && ! empty($parentItems)) {
+            return [
+                ...$items,
+                ['type' => 'hr'],
+                ...$parentItems,
+            ];
+        }
+
+        return [...$items, ...$parentItems];
+    }
+
+    private function blockViewActionMenuItems(): array
+    {
+        $items = [];
+        $view = Craft::$app->getView();
+
+        // Expand/Collapse all
+        $expandAllId = sprintf('expand-all-%s', mt_rand());
+        $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+        $items[] = [
+            'id' => $expandAllId,
+            'icon' => 'expand',
+            'label' => mb_ucfirst(t('Expand all blocks', [
+                'type' => Entry::pluralLowerDisplayName(),
+            ])),
+        ];
+        $items[] = [
+            'id' => $collapseAllId,
+            'icon' => 'collapse',
+            'label' => mb_ucfirst(t('Collapse all blocks', [
+                'type' => Entry::pluralLowerDisplayName(),
+            ])),
+        ];
+        $view->registerJsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
+(() => {
+  const field = $('#' + $fieldId);
+  const expandBtn = $('#' + $expandAllId);
+  const collapseBtn = $('#' + $collapseAllId);
+  const menu = expandBtn.closest('.menu');
+  const getBlocks = () => {
+    const blocks = field.find(' > .blocks > .matrixblock');
+    const selectedBlocks = blocks.filter('.sel');
+    return selectedBlocks.length ? selectedBlocks : blocks;
+  };
+
+  expandBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').expand();
+    });
+  });
+
+  collapseBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').collapse();
+    });
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
+      let blocks = getBlocks();
+      let expandLabel, collapseLabel;
+      if (blocks.is('.sel')) {
+        expandLabel = Craft.t('app', 'Expand selected blocks');
+        collapseLabel = Craft.t('app', 'Collapse selected blocks');
+      } else {
+        expandLabel = Craft.t('app', 'Expand all blocks');
+        collapseLabel = Craft.t('app', 'Collapse all blocks');
+      }
+      expandBtn.find('.menu-item-label').text(expandLabel);
+      collapseBtn.find('.menu-item-label').text(collapseLabel);
+      disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
+      disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($expandAllId),
+            $view->namespaceInputId($collapseAllId),
+            $view->namespaceInputId($this->getInputId()),
+        ]);
+
+        // Copy
+        if ($this->maxEntries !== 1) {
+            $items[] = ['type' => 'hr'];
+
+            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
+            $items[] = [
+                'id' => $copyAllId,
+                'icon' => 'clone-dashed',
+                'color' => Color::Fuchsia,
+                'label' => mb_ucfirst(t('Copy all {type}', [
+                    'type' => Entry::pluralLowerDisplayName(),
+                ])),
+            ];
+
+            $baseInfo = Json::encode([
+                'type' => Entry::class,
+                'fieldId' => $this->id,
+            ]);
+
+            $view->registerJsWithVars(fn ($copyAllId, $fieldId, $type) => <<<JS
+(() => {
+  const copyBtn = $('#' + $copyAllId);
+  const field = $('#' + $fieldId);
+  const menu = copyBtn.closest('.menu');
+  const getBlocks = () => {
+    const blocks = field.find(' > .blocks > .matrixblock');
+    const selectedBlocks = blocks.filter('.sel');
+    return selectedBlocks.length ? selectedBlocks : blocks;
+  };
+  
+  if (field.length) {
+    copyBtn.on('activate', () => {
+      const elementInfo = [];
+      getBlocks().each((i, element) => {
+        element = $(element);
+        elementInfo.push(Object.assign({
+            id: element.data('id'),
+            draftId: element.data('draftId'),
+            revisionId: element.data('revisionId'),
+            ownerId: element.data('ownerId'),
+            siteId: element.data('siteId'),
+          }, $baseInfo))
+      });
+      Craft.cp.copyElements(elementInfo);
+    });
+  } else {
+    setTimeout(() => {
+      menu.data('disclosureMenu').removeItem(copyBtn[0]);
+    }, 1);
+  }
+  
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
+      let blocks = getBlocks();
+      let copyLabel;
+      if (blocks.is('.sel')) {
+        copyLabel = Craft.t('app', 'Copy selected {type}', {
+          type: $type,
+        })
+      } else {
+        copyLabel = Craft.t('app', 'Copy all {type}', {
+          type: $type,
+        })
+      }
+      copyBtn.find('.menu-item-label').text(copyLabel);
+      disclosureMenu.toggleItem(copyBtn[0], !!blocks.length);
+    });
+  }, 1);
+})();
+JS, [
+                $view->namespaceInputId($copyAllId),
+                $view->namespaceInputId($this->getInputId()),
+                Entry::pluralLowerDisplayName(),
+            ]);
+        }
+
+        return $items;
+    }
+
+    private function cardViewActionMenuItems(): array
+    {
+        $items = [];
+        $view = Craft::$app->getView();
+
+        // Copy all
+        if ($this->maxEntries !== 1) {
+            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
+            $items[] = [
+                'id' => $copyAllId,
+                'icon' => 'clone-dashed',
+                'color' => Color::Fuchsia,
+                'label' => mb_ucfirst(t('Copy all {type}', [
+                    'type' => Entry::pluralLowerDisplayName(),
+                ])),
+            ];
+
+            $view->registerJsWithVars(fn ($copyAllId, $fieldId) => <<<JS
+(() => {
+  const copyBtn = $('#' + $copyAllId);
+  const field = $('#' + $fieldId);
+  if (field.length) {
+    copyBtn.on('activate', () => {
+      Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
+    });
+  } else {
+    setTimeout(() => {
+      const menu = copyBtn.closest('.menu').data('disclosureMenu');
+      menu.removeItem(copyBtn[0]);
+    }, 1);
+  }
+})();
+JS, [
+                $view->namespaceInputId($copyAllId),
+                $view->namespaceInputId($this->getInputId()),
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws InvalidConfigException
+     */
+    #[Override]
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
+        return match ($this->viewMode) {
+            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
+            default => Html::tag('div', $this->nestedElementManagerHtml($element, $static), [
+                'id' => $this->getInputId(),
+            ]),
+        };
+    }
+
+    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
+    {
+        if (! $element?->id) {
+            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => Entry::pluralDisplayName(),
+                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
+            ]);
+
+            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
+        }
+
+        if ($element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle)->all();
+        }
+
+        if ($value instanceof EntryQuery) {
+            $value = $value->getResultOverride() ?? (clone $value)
+                ->drafts(null)
+                ->canonicalsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
+        }
+
+        if ($static && empty($value)) {
+            return '<p class="light">'.t('No entries.').'</p>';
+        }
+
+        $view = Craft::$app->getView();
+        $id = $this->getInputId();
+        /** @var Entry[] $value */
+        $entryTypes = $this->getEntryTypesForField($value, $element);
+
+        // Get the entry types data
+        $entryTypeInfo = array_map(fn (EntryType $entryType) => [
+            'id' => $entryType->id,
+            'handle' => $entryType->handle,
+            'name' => t($entryType->name, category: 'site'),
+        ], $entryTypes);
+        $createDefaultEntries = (
+            $this->minEntries != 0 &&
+            count($entryTypeInfo) === 1 &&
+            ! $element->hasErrors($this->handle)
+        );
+        $staticEntries = (
+            $static ||
+            (
+                $createDefaultEntries &&
+                $this->minEntries === $this->maxEntries &&
+                $this->maxEntries >= count($value)
+            )
+        );
+
+        $view->registerAssetBundle(MatrixAsset::class);
+
+        $settings = [
+            'fieldId' => $this->id,
+            'maxEntries' => $this->maxEntries,
+            'namespace' => $view->getNamespace(),
+            'baseInputName' => $view->namespaceInputName($this->handle),
+            'ownerElementType' => $element::class,
+            'ownerId' => $element->id,
+            'siteId' => $element->siteId,
+            'static' => $static,
+            'staticEntries' => $staticEntries,
+        ];
+
+        $js = 'const input = new Craft.MatrixInput('.
+            '"'.$view->namespaceInputId($id).'", '.
+            Json::encode($entryTypeInfo).', '.
+            '"'.$view->namespaceInputName($this->handle).'", '.
+            Json::encode($settings).
+            ');';
+
+        // Safe to create the default entries?
+        if ($createDefaultEntries && count($value) < $this->minEntries) {
+            // @link https://github.com/craftcms/cms/issues/12973
+            // for fields with minEntries set Craft.MatrixInput.addEntry() is called before new Craft.ElementEditor(),
+            // so when we get our initialSerializedValue() for the ElementEditor,
+            // the entry is already there which means the field is reported as not changed since the init
+            // and so not passed to PHP for save
+            $view->setInitialDeltaValue($this->handle, null);
+
+            $js .= "\n".<<<'JS'
+input.on('afterInit', async () => {
+  if (input.elementEditor) {
+    await input.elementEditor.pause();
+  }
+JS."\n";
+
+            $entryTypeJs = Json::encode($entryTypes[0]->handle);
+            for ($i = count($value); $i < $this->minEntries; $i++) {
+                $js .= <<<JS
+  await input.addEntry($entryTypeJs, null, false)
+JS."\n";
+            }
+
+            $js .= <<<'JS'
+  setTimeout(() => {
+    Garnish.requestAnimationFrame(() => {
+      input.elementEditor?.resume();
+    });
+  }, 100);
+})
+JS;
+        }
+
+        $view->registerJs("(() => {\n$js\n})();");
+
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+            'id' => $id,
+            'field' => $this,
+            'name' => $this->handle,
+            'entryTypes' => $entryTypes,
+            'entries' => $value,
+            'static' => $static,
+            'staticEntries' => $staticEntries,
+            'createButtonLabel' => $this->createButtonLabel(),
+            'labelId' => $this->getLabelId(),
+        ]);
+    }
+
+    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
+    {
+        $entryTypes = $this->_entryTypes;
+        $config = [
+            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
+            'prevalidate' => false,
+        ];
+
+        if (! $static) {
+            $entryTypeIdsJs = Json::encode(array_map(fn (EntryType $entryType) => $entryType->id, $entryTypes));
+            $config += [
+                'sortable' => true,
+                'canCreate' => true,
+                'canPaste' => <<<JS
+(elementInfo) => {
+  const entryTypeIds = $entryTypeIdsJs;
+  for (const info of elementInfo) {
+    if (!entryTypeIds.includes(info.data.entryTypeId)) {
+      return false;
+    }
+  }
+  return true;
+}
+JS,
+                'createAttributes' => array_map(fn (EntryType $entryType) => [
+                    'group' => $entryType->group,
+                    'icon' => $entryType->icon,
+                    'color' => $entryType->color,
+                    'label' => t($entryType->name, category: 'site'),
+                    'attributes' => [
+                        'typeId' => $entryType->id,
+                    ],
+                ], $entryTypes),
+                'createButtonLabel' => $this->createButtonLabel(),
+                'minElements' => $this->minEntries,
+                'maxElements' => $this->maxEntries,
+            ];
+
+            if ($owner->hasErrors($this->handle)) {
+                $config['prevalidate'] = true;
+            }
+        }
+
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
+            return $this->entryManager()->getCardsHtml($owner, $config);
+        }
+
+        $config += [
+            'allowedViewModes' => array_filter([
+                ElementIndexViewMode::Cards,
+                $this->includeTableView ? ElementIndexViewMode::Table : null,
+            ]),
+            'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
+                $entryType->hasTitleField ||
+                $entryType->titleFormat
+            )),
+            'pageSize' => $this->pageSize ?? 50,
+            'storageKey' => sprintf('field:%s', $this->uid),
+            'defaultViewMode' => $this->defaultIndexViewMode,
+        ];
+
+        if (! $static) {
+            $config += [
+                'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
+                'defaultTableColumns' => array_map(fn (string $attribute) => [$attribute], $this->defaultTableColumns),
+            ];
+        }
+
+        return $this->entryManager()->getIndexHtml($owner, $config);
+    }
+
+    private function createButtonLabel(): string
+    {
+        if (isset($this->createButtonLabel)) {
+            return t($this->createButtonLabel, category: 'site');
+        }
+
+        return $this->defaultCreateButtonLabel();
+    }
+
+    private function defaultCreateButtonLabel(): string
+    {
+        return t('New {type}', [
+            'type' => Entry::lowerDisplayName(),
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getElementValidationRules(): array
+    {
+        return [
+            [
+                $this->validateEntries(...),
+                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        return $value->count() === 0;
+    }
+
+    private function validateEntries(ElementInterface $element): void
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $value = $element->getFieldValue($this->handle);
+        $new = 0;
+
+        if ($value instanceof EntryQuery) {
+            /** @var Entry[] $entries */
+            $entries = $value->getResultOverride() ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
+
+            $invalidEntryIds = [];
+            $scenario = $element->getScenario();
+
+            foreach ($entries as $entry) {
+                $entry->setOwner($element);
+
+                /** @var Entry $entry */
+                if (
+                    $scenario === Element::SCENARIO_ESSENTIALS ||
+                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
+                ) {
+                    $entry->setScenario($scenario);
+                }
+
+                if (! $entry->validate()) {
+                    // we only want to show the nested entries errors when the matrix field is in blocks view mode;
+                    if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $key = $entry->uid ?? sprintf('new%s', ++$new);
+                        $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+                    }
+                    $invalidEntryIds[] = $entry->id;
+                }
+            }
+
+            if (! empty($invalidEntryIds)) {
+                // Just in case the entries weren't already cached
+                $value->setResultOverride($entries);
+                $element->addInvalidNestedElementIds($invalidEntryIds);
+
+                if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
+                    // in card/index modes, we want to show a top level error to let users know
+                    // that there are validation errors in the nested entries
+                    $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                        'count' => count($invalidEntryIds),
+                        'fieldName' => $this->getUiLabel(),
+                    ]));
+                }
+            }
+        } else {
+            $entries = $value->all();
+        }
+
+        if (
+            $element->getScenario() === Element::SCENARIO_LIVE &&
+            ($this->minEntries || $this->maxEntries)
+        ) {
+            $arrayValidator = new ArrayValidator([
+                'min' => $this->minEntries ?: null,
+                'max' => $this->maxEntries ?: null,
+                'tooFew' => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
+                    'attribute' => t($this->name, category: 'site'),
+                    'min' => $this->minEntries, // Need to pass this in now
+                ]) : null,
+                'tooMany' => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
+                    'attribute' => t($this->name, category: 'site'),
+                    'max' => $this->maxEntries, // Need to pass this in now
+                ]) : null,
+                'skipOnEmpty' => false,
+            ]);
+
+            if (! $arrayValidator->validate($entries, $error)) {
+                $element->addError($this->handle, $error);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
+    {
+        return $this->entryManager()->getSearchKeywords($element);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return EagerLoadingMap
+     */
+    public function getEagerLoadingMap(array $sourceElements): array
+    {
+        // Get the source element IDs
+        $sourceElementIds = [];
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = DB::table(Table::ENTRIES, 'entries')
+            ->select([
+                'elements_owners.ownerId as source',
+                'entries.id as target',
+            ])
+            ->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
+                $join->whereColumn('elements_owners.elementId', 'entries.id')
+                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
+            })
+            ->where('entries.fieldId', $this->id)
+            ->orderBy('elements_owners.sortOrder')
+            ->get()
+            ->map(fn (object $row) => (array) $row)
+            ->all();
+
+        return [
+            'elementType' => Entry::class,
+            'map' => $map,
+            'criteria' => [
+                'fieldId' => $this->id,
+                'allowOwnerDrafts' => true,
+                'allowOwnerRevisions' => true,
+                // only include revisions if any of the source elements is a revision
+                // see https://github.com/craftcms/cms/issues/14448 and https://github.com/craftcms/cms/issues/17324
+                'revisions' => Collection::make($sourceElements)
+                    ->contains(fn ($sourceElement) => $sourceElement->getIsRevision()),
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        if (! $outgoingField instanceof self) {
+            $reason = 'Matrix fields can only be merged into other Matrix fields.';
+
+            return false;
+        }
+
+        // Make sure this field has all the entry types the outgoing field has
+        $outgoingEntryTypeIds = array_map(fn (EntryType $entryType) => $entryType->id, $outgoingField->getEntryTypes());
+        $persistentEntryTypeIds = array_map(fn (EntryType $entryType) => $entryType->id, $this->_entryTypes);
+        $missingEntryTypeIds = array_diff($outgoingEntryTypeIds, $persistentEntryTypeIds);
+        if (! empty($missingEntryTypeIds)) {
+            $reason = "$this->name doesn’t have all of the entry types that $outgoingField->name does.";
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function afterMergeFrom(FieldInterface $outgoingField): void
+    {
+        DB::table(Table::ENTRIES)
+            ->where('fieldId', $outgoingField->id)
+            ->update([
+                'fieldId' => $this->id,
+                'dateUpdated' => now(),
+            ]);
+
+        parent::afterMergeFrom($outgoingField);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getContentGqlType(): array
+    {
+        $typeArray = EntryTypeGenerator::generateTypes($this);
+        $typeName = $this->handle.'_MatrixField';
+
+        $arguments = EntryArguments::getArguments();
+        $gqlService = Craft::$app->getGql();
+
+        foreach ($this->_entryTypes as $entryType) {
+            $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+        }
+
+        return [
+            'name' => $this->handle,
+            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
+            'args' => $arguments,
+            'resolve' => EntryResolver::class.'::resolve',
+            'complexity' => Gql::eagerLoadComplexity(),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function getContentGqlMutationArgumentType(): Type|array
+    {
+        return MatrixInputType::getType($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
+    {
+        $entryTypeHandle = Str::between($fragmentName, $this->handle.'_', '_Entry');
+
+        $entryType = Collection::make($this->_entryTypes)->firstWhere('handle', $entryTypeHandle);
+
+        if (! $entryType) {
+            throw new InvalidArgumentException('Invalid fragment name: '.$fragmentName);
+        }
+
+        return $entryType;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function afterSave(bool $isNew): void
+    {
+        // If the propagation method or an entry URI format just changed, resave all the entries
+        if (isset($this->oldSettings)) {
+            $oldPropagationMethod = PropagationMethod::tryFrom($this->oldSettings['propagationMethod'] ?? '')
+                ?? PropagationMethod::All;
+            $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
+            if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
+                Queue::push(new ApplyNewPropagationMethod([
+                    'description' => I18N::prep('Applying new propagation method to {name} entries', [
+                        'name' => $this->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
+                ]));
+            } else {
+                $resaveSiteIds = [];
+
+                foreach (Sites::getAllSites(true) as $site) {
+                    $oldUriFormat = $this->oldSettings['siteSettings'][$site->uid]['uriFormat'] ?? null;
+                    $newUriFormat = $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+                    if ($oldUriFormat !== $newUriFormat) {
+                        $resaveSiteIds[] = $site->id;
+                    }
+                }
+
+                if (! empty($resaveSiteIds)) {
+                    Queue::push(new ResaveElements([
+                        'description' => I18N::prep('Resaving {name} entries', [
+                            'name' => $this->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'fieldId' => $this->id,
+                            'siteId' => $resaveSiteIds,
+                            'unique' => true,
+                            'status' => null,
+                            'drafts' => null,
+                            'provisionalDrafts' => null,
+                            'revisions' => null,
+                        ],
+                    ]));
+                }
+            }
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
+    {
+        $this->entryManager()->maintainNestedElements($element, $isNew);
+        parent::afterElementPropagate($element, $isNew);
+    }
+
+    /**
+     * Handles nested entry saves.
+     */
+    public function afterSaveEntries(BulkElementsEvent $event): void
+    {
+        if (
+            ! Craft::$app->getRequest()->getIsConsoleRequest() &&
+            ! Craft::$app->getResponse()->isSent
+        ) {
+            // Tell the browser to collapse any new entry IDs
+            $collapsedIds = Collection::make($event->elements)
+                /** @phpstan-ignore-next-line */
+                ->filter(fn (Entry $entry) => $entry->collapsed)
+                /** @phpstan-ignore-next-line */
+                ->map(fn (Entry $entry) => $entry->id)
+                ->all();
+
+            if (! empty($collapsedIds)) {
+                Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+
+                foreach ($collapsedIds as $id) {
+                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function beforeElementDelete(ElementInterface $element): bool
+    {
+        if (! parent::beforeElementDelete($element)) {
+            return false;
+        }
+
+        // Delete any entries that primarily belong to this element
+        $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($entries as $entry) {
+            $elementsService->deleteElementForSite($entry);
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function afterElementRestore(ElementInterface $element): void
+    {
+        // Also restore any entries for this element
+        $this->entryManager()->restoreNestedElements($element);
+
+        parent::afterElementRestore($element);
+    }
+
+    /**
+     * Creates an array of entries based on the given serialized data.
+     *
+     * @param  array  $value  The raw field value
+     * @param  ElementInterface  $element  The element the field is associated with
+     * @param  bool  $fromRequest  Whether the data came from the request post data
+     * @return Entry[]
+     */
+    private function _createEntriesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
+    {
+        // Get the possible entry types for this field
+        /** @var EntryType[] $entryTypes */
+        $entryTypes = Arr::keyBy($this->_entryTypes, 'handle');
+
+        // Were the entries posted by UUID or ID?
+        $uids = (
+            (isset($value['entries']) && str_starts_with((string) array_key_first($value['entries']), 'uid:')) ||
+            (isset($value['sortOrder']) && Str::isUuid(reset($value['sortOrder'])))
+        );
+
+        if ($uids) {
+            // strip out the `uid:` key prefixes
+            if (isset($value['entries'])) {
+                $value['entries'] = array_combine(
+                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($value['entries'])),
+                    array_values($value['entries']),
+                );
+            }
+        }
+
+        // Get the old entries
+        if ($element->id) {
+            /** @var Entry[] $oldEntriesById */
+            $oldEntriesById = Entry::find()
+                ->fieldId($this->id)
+                ->ownerId($element->id)
+                ->siteId($element->siteId)
+                ->drafts(null)
+                ->status(null)
+                ->get()
+                ->keyBy($uids ? 'uid' : 'id')
+                ->all();
+        } else {
+            $oldEntriesById = [];
+        }
+
+        if ($uids) {
+            // Get the canonical entry UUIDs in case the data was posted with them
+            $derivatives = Collection::make($oldEntriesById)
+                ->filter(fn (Entry $entry) => $entry->getIsDerivative())
+                ->keyBy(fn (Entry $entry) => $entry->getCanonicalId());
+
+            if ($derivatives->isNotEmpty()) {
+                $canonicalUids = DB::table(Table::ELEMENTS)
+                    ->select(['id', 'uid'])
+                    ->whereIn('id', $derivatives->keys())
+                    ->pluck('uid', 'id');
+
+                $derivativeUidMap = [];
+                $canonicalUidMap = [];
+                foreach ($canonicalUids as $canonicalId => $canonicalUid) {
+                    $derivativeUid = $derivatives->get($canonicalId)->uid;
+                    $derivativeUidMap[$canonicalUid] = $derivativeUid;
+                    $canonicalUidMap[$derivativeUid] = $canonicalUid;
+                }
+            }
+        }
+
+        // Should we ignore disabled entries?
+        $request = Craft::$app->getRequest();
+        $hideDisabledEntries = ! $request->getIsConsoleRequest() && (
+            $request->getToken() !== null ||
+            $request->getIsLivePreview()
+        );
+
+        $entries = [];
+        $prevEntry = null;
+
+        $fieldNamespace = $element->getFieldParamNamespace();
+        $baseEntryFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
+
+        // Was the value posted in the new (delta) format?
+        if (isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder'])) {
+            $newEntryData = $value['entries'] ?? $value['blocks'] ?? [];
+            $newSortOrder = $value['sortOrder'] ?? array_keys($oldEntriesById);
+            if ($baseEntryFieldNamespace) {
+                $baseEntryFieldNamespace .= '.entries';
+            }
+        } else {
+            $newEntryData = $value;
+            $newSortOrder = array_keys($value);
+        }
+
+        foreach ($newSortOrder as $entryId) {
+            if (isset($newEntryData[$entryId])) {
+                $entryData = $newEntryData[$entryId];
+            } elseif (
+                $uids &&
+                isset($canonicalUidMap[$entryId]) &&
+                isset($newEntryData[$canonicalUidMap[$entryId]])
+            ) {
+                // $entryId is a draft entry's UUID, but the data was sent with the canonical entry UUID
+                $entryData = $newEntryData[$canonicalUidMap[$entryId]];
+            } else {
+                $entryData = [];
+            }
+
+            // If this is a preexisting entry but we don't have a record of it,
+            // check to see if it was recently duplicated.
+            if (
+                $uids &&
+                ! isset($oldEntriesById[$entryId]) &&
+                isset($derivativeUidMap[$entryId]) &&
+                isset($oldEntriesById[$derivativeUidMap[$entryId]])
+            ) {
+                $entryId = $derivativeUidMap[$entryId];
+            }
+
+            // Existing entry?
+            if (isset($oldEntriesById[$entryId])) {
+                $entry = $oldEntriesById[$entryId];
+                $forceSave = ! empty($entryData);
+
+                // Is this a derivative element, and does the entry primarily belong to the canonical?
+                $request = Craft::$app->getRequest();
+                if (
+                    $forceSave &&
+                    $element->getIsDerivative() &&
+                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    // this is so that extra drafts don't get created for matrix in matrix scenario
+                    // where both are set to inline-editable blocks view mode
+                    (
+                        $request->getIsConsoleRequest() ||
+                        $request->getActionSegments() !== ['elements', 'update-field-layout']
+                    )
+                ) {
+                    // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
+                    $entry = app(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
+                        'canonicalId' => $entry->id,
+                        'primaryOwnerId' => $element->id,
+                        'owner' => $element,
+                        'siteId' => $element->siteId,
+                        'propagating' => false,
+                        'markAsSaved' => false,
+                    ]);
+                }
+
+                $entry->forceSave = $forceSave;
+            } else {
+                // Make sure it's a valid entry type
+                if (! isset($entryData['type'])) {
+                    continue;
+                }
+                if (! isset($entryTypes[$entryData['type']])) {
+                    continue;
+                }
+                $entry = new Entry;
+                $entry->fieldId = $this->id;
+                $entry->typeId = $entryTypes[$entryData['type']]->id;
+                $entry->setPrimaryOwner($element);
+                $entry->setOwner($element);
+                $entry->siteId = $element->siteId;
+
+                // Use the provided UUID, so the block can persist across future autosaves
+                if ($uids) {
+                    $entry->uid = $entryId;
+                }
+
+                // Preserve the collapsed state, which the browser can't remember on its own for new entries
+                $entry->collapsed = ! empty($entryData['collapsed']);
+            }
+
+            if (isset($entryData['enabled'])) {
+                $entry->enabled = (bool) $entryData['enabled'];
+            }
+
+            if (isset($entryData['fresh'])) {
+                $entry->setIsFresh();
+                $entry->propagateAll = true;
+            }
+
+            if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
+                $entry->title = $entryData['title'];
+            }
+
+            if (isset($entryData['slug']) && $entry->getType()->showSlugField) {
+                $entry->slug = $entryData['slug'];
+            }
+
+            // Allow setting the UID for the entry
+            if (isset($entryData['uid'])) {
+                $entry->uid = $entryData['uid'];
+            }
+
+            // Skip disabled entries on Live Preview requests
+            if ($hideDisabledEntries && ! $entry->enabled) {
+                continue;
+            }
+
+            $entry->setOwner($element);
+
+            // Set the content post location on the entry if we can
+            if ($baseEntryFieldNamespace) {
+                if ($uids) {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.uid:$entryId.fields");
+                } else {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                }
+            }
+
+            if (isset($entryData['fields'])) {
+                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $entry->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
+                    }
+                }
+            }
+
+            // Set the prev/next entries
+            if ($prevEntry) {
+                /** @var ElementInterface $prevEntry */
+                $prevEntry->setNext($entry);
+                /** @var ElementInterface $entry */
+                $entry->setPrev($prevEntry);
+            }
+            $prevEntry = $entry;
+
+            $entries[] = $entry;
+        }
+
+        /** @var Entry[] $entries */
+        return $entries;
+    }
+}

@@ -2,16 +2,19 @@
 <phpunit
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd"
-        bootstrap="../vendor/autoload.php"
+        bootstrap="vendor/autoload.php"
         colors="true"
-        cacheDirectory="../.phpunit.cache"
+        cacheDirectory=".phpunit.cache"
         backupStaticProperties="false"
 >
     <testsuites>
         <testsuite name="Tests">
-            <directory>./tests</directory>
+            <directory>./tests-laravel</directory>
         </testsuite>
     </testsuites>
+    <extensions>
+        <bootstrap class="DG\BypassFinals\PHPUnitExtension"/>
+    </extensions>
     <php>
         <ini name="memory_limit" value="2048M" />
 

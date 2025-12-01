@@ -97,12 +97,14 @@ class ProjectConfig extends Component
 
     public const PATH_ADDRESSES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ADDRESSES;
     public const PATH_ADDRESS_FIELD_LAYOUTS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS;
-    public const PATH_CATEGORY_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_CATEGORY_GROUPS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_DATE_MODIFIED;
     public const PATH_ELEMENT_SOURCES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ELEMENT_SOURCES;
     public const PATH_ENTRY_TYPES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ENTRY_TYPES;
     public const PATH_FIELDS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FIELDS;
-    public const PATH_GLOBAL_SETS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GLOBAL_SETS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_GLOBAL_SETS = 'globalSets';
     public const PATH_FS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FS;
     public const PATH_GRAPHQL = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL;
     public const PATH_GRAPHQL_PUBLIC_TOKEN = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN;
@@ -118,7 +120,8 @@ class ProjectConfig extends Component
     public const PATH_SITES = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SITES;
     public const PATH_SITE_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SITE_GROUPS;
     public const PATH_SYSTEM = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_SYSTEM;
-    public const PATH_TAG_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_TAG_GROUPS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_TAG_GROUPS = 'tagGroups';
     public const PATH_USERS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USERS;
     public const PATH_USER_FIELD_LAYOUTS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USER_FIELD_LAYOUTS;
     public const PATH_USER_GROUPS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_USER_GROUPS;
@@ -588,7 +591,15 @@ class ProjectConfig extends Component
      */
     public function onAdd(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onAdd($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onAdd($path, function(ItemAdded $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
 
         return $this;
     }
@@ -622,7 +633,16 @@ class ProjectConfig extends Component
      */
     public function onUpdate(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onUpdate($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onUpdate($path, function(ItemUpdated $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
+
         return $this;
     }
 
@@ -654,7 +674,16 @@ class ProjectConfig extends Component
      */
     public function onRemove(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onRemove($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onRemove($path, function(ItemRemoved $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
+
         return $this;
     }
 
@@ -679,7 +708,7 @@ class ProjectConfig extends Component
             return;
         }
 
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->defer($newEvent, $handler);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->defer($newEvent, fn() => $handler($event));
     }
 
     /**
@@ -805,8 +834,7 @@ class ProjectConfig extends Component
      * Returns the cache dependency that should be used for project config caches.
      *
      * @return CallbackDependency
-     * @since 6.0.0
-     */
+    */
     public function getCacheDependency(): CallbackDependency
     {
         return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getCacheDependency();

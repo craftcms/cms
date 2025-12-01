@@ -2,5 +2,6 @@
   "preset": "laravel",
   "rules": {
     "no_empty_statement": false
-  }
+  },
+  "exclude": ["yii2-adapter"]
 }

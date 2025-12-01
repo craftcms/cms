@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
+use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    actingAs(User::first());
+
+    $this->dashboard = app(Dashboard::class);
+});
+
+it('requires login', function () {
+    Auth::logout();
+
+    postJson(action(CraftSupportController::class))
+        ->assertUnauthorized();
+});
+
+it('requires a widget id', function () {
+    postJson(action(CraftSupportController::class))
+        ->assertJsonValidationErrorFor('widgetId');
+});
+
+it('validates data after widget id', function (array $data, array $errors) {
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(CraftSupport::class));
+
+    $response = postJson(action(CraftSupportController::class), array_merge(['widgetId' => $widget->id], $data));
+
+    if (count($errors) === 0) {
+        $response->assertOk();
+
+        return;
+    }
+
+    foreach ($errors as $error) {
+        $response->assertSee("errors: {\"$error\"", escape: false);
+    }
+})->with([
+    [
+        'data' => [
+            'fromEmail' => 'support@craftcms.com',
+            'message' => 'test',
+        ],
+        'errors' => [],
+    ],
+    [
+        'data' => [
+            'fromEmail' => 'not-an-email',
+            'message' => 'test',
+        ],
+        'errors' => ['fromEmail'],
+    ],
+    [
+        'data' => [
+            'fromEmail' => 'support@craftcms.com',
+        ],
+        'errors' => ['message'],
+    ],
+    [
+        'data' => [
+            'fromEmail' => 'support@craftcms.com',
+            'message' => 'test',
+            'attachLogs' => 'not-a-boolean',
+        ],
+        'errors' => ['attachLogs'],
+    ],
+    [
+        'data' => [
+            'fromEmail' => 'support@craftcms.com',
+            'message' => 'test',
+            'attachDbBackup' => 'not-a-boolean',
+        ],
+        'errors' => ['attachDbBackup'],
+    ],
+    [
+        'data' => [
+            'fromEmail' => 'support@craftcms.com',
+            'message' => 'test',
+            'attachTemplates' => 'not-a-boolean',
+        ],
+        'errors' => ['attachTemplates'],
+    ],
+]);

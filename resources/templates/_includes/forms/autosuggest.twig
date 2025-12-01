@@ -1,0 +1,184 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+
+{% set suggestions = (suggestions ?? [])
+    |merge((suggestTemplates ?? false) ? craft.cp.getTemplateSuggestions() : [])
+    |merge((suggestEnvVars ?? false) ? craft.cp.getEnvSuggestions(
+        suggestAliases ?? false,
+        suggestionFilter ?? null
+    ) : []) %}
+
+{%- set id = id ?? "autosuggest#{random()}" %}
+{%- set previewInputId = "#{id}-preview" %}
+{%- set containerId = "#{id}-container" %}
+{%- set autosuggestId = "#{id}-autosuggest" %}
+{%- set describedBy = describedBy ?? null -%}
+{%- set labelledBy = labelledBy ?? null -%}
+
+{%- set class = (class ?? [])|explodeClass|merge([
+    'text',
+    not (size ?? false) ? 'fullwidth' : null,
+]|filter) %}
+
+<div id="{{ containerId }}" class="autosuggest-container" tabindex="-1">
+    {{ forms.text({
+        id: previewInputId,
+        class: class|join(' '),
+        value: value ?? '',
+        style: style ?? '',
+        size: size ?? '',
+        disabled: true,
+        title: title ?? '',
+        placeholder: placeholder ?? '',
+    }) }}
+
+    {% verbatim %}
+    <vue-autosuggest
+        :suggestions="filteredOptions"
+        :get-suggestion-value="getSuggestionValue"
+        :input-props="inputProps"
+        :limit="limit"
+        :component-attr-id-autosuggest="id"
+        @selected="onSelected"
+        @focus="updateFilteredOptions"
+        @blur="onBlur"
+        @input="onInputChange"
+        v-model="inputProps.initialValue"
+    >
+        <template slot-scope="{suggestion}">
+            {{suggestion.item.name || suggestion.item}}
+            <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
+        </template>
+    </vue-autosuggest>
+    {% endverbatim %}
+</div>
+
+{% js %}
+(() => {
+$("#{{ previewInputId|namespaceInputId|e('js') }}").remove();
+
+new Vue({
+    el: "#{{ containerId|namespaceInputId|e('js') }}",
+
+    data() {
+        {% block data %}
+        var data = {{ {
+            query: (value ?? '')|lower,
+            selected: '',
+            filteredOptions: [],
+            suggestions,
+            id: autosuggestId,
+            inputProps: {
+                class: class|join(' '),
+                initialValue: value ?? '',
+                style: style ?? '',
+                id: id|namespaceInputId,
+                name: (name ?? '')|namespaceInputName,
+                size: size ?? '',
+                maxlength: maxlength ?? '',
+                autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
+                disabled: disabled ?? false,
+                title: title ?? '',
+                placeholder: placeholder ?? '',
+                'aria-describedby': describedBy ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
+                'aria-labelledby': labelledBy ? labelledBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
+            }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
+            limit: limit ?? 5
+        }|json_encode|raw }};
+        {% endblock %}
+        return data;
+    },
+
+    methods: {
+        {% block methods %}
+        onInputChange(q) {
+            this.query = (q || '').toLowerCase();
+            this.updateFilteredOptions();
+        },
+        updateFilteredOptions() {
+            if (this.query === '') {
+                this.filteredOptions = this.suggestions;
+                return;
+            }
+
+            var filtered = [];
+            var i, j, sectionFilter, item, name;
+            var that = this;
+
+            for (i = 0; i < this.suggestions.length; i++) {
+                sectionFilter = [];
+                for (j = 0; j < this.suggestions[i].data.length; j++) {
+                    item = this.suggestions[i].data[j];
+                    if (
+                        (item.name || item).toLowerCase().indexOf(this.query) !== -1 ||
+                        (item.hint && item.hint.toLowerCase().indexOf(this.query) !== -1)
+                    ) {
+                        sectionFilter.push(item.name ? item : {name: item});
+                    }
+                }
+                if (sectionFilter.length) {
+                    sectionFilter.sort(function(a, b) {
+                        var scoreA = that.scoreItem(a, this.query);
+                        var scoreB = that.scoreItem(b, this.query);
+                        if (scoreA === scoreB) {
+                            return 0;
+                        }
+                        return scoreA < scoreB ? 1 : -1;
+                    });
+                    filtered.push({
+                        label: this.suggestions[i].label || null,
+                        data: sectionFilter.slice(0, this.limit)
+                    });
+                }
+            }
+
+            this.filteredOptions = filtered;
+        },
+        scoreItem(item) {
+            var score = 0;
+            if (item.name.toLowerCase().indexOf(this.query) !== -1) {
+                score += 100 + this.query.length / item.name.length;
+            }
+            if (item.hint && item.hint.toLowerCase().indexOf(this.query) !== -1) {
+                score += this.query.length / item.hint.length;
+            }
+            return score;
+        },
+        onSelected(option) {
+            if (!option) {
+                return;
+            }
+
+            this.selected = option.item;
+
+            // Bring focus back to the input if they selected an alias
+            if (option.item.name[0] == '@') {
+                var input = this.$el.querySelector('input');
+                input.focus();
+                input.selectionStart = input.selectionEnd = input.value.length;
+            }
+        },
+        getSuggestionValue(suggestion) {
+            return suggestion.item.name || suggestion.item;
+        },
+        onBlur(e) {
+            // Related target - element clicked or that focused moved to.
+            // Current target - the input element that is losing focus.
+            const { currentTarget, relatedTarget } = e;
+
+            // Click event bubbles from listbox to the .autosuggest-container (requires tabindex="-1")
+            // We only want to clear the filteredOptions if the focus moved outside the autosuggest container
+            // (i.e. not to the listbox or one of its children)
+
+            const targetIsOutsideAutosuggestContainer = relatedTarget && !relatedTarget.contains(currentTarget);
+
+            if (targetIsOutsideAutosuggestContainer) {
+                this.filteredOptions = [];
+            }
+        },
+        {% endblock %}
+    }
+});
+})();
+{% endjs %}

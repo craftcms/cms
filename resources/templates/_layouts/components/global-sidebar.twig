@@ -1,0 +1,95 @@
+{% macro action(item, isSubnav, isSelected, showIcon) %}
+  {% set showIcon = showIcon ?? true %}
+  {% set selected = item.sel ?? isSelected ?? false %}
+  {% set badgeCount = item.badgeCount ?? false %}
+  {% set external = item.external ?? false %}
+  {% set subnav = item.subnav ?? false %}
+
+  {% set linkAttributes = {
+    id: (item.id ?? null) ? "#{item.id}-link" : null,
+    url: (item.url ?? false) ? url(item.url) : null,
+    external: external,
+    target: external ? '_blank',
+    indicator: badgeCount > 0,
+    active: selected,
+    'aria-label': item.ariaLabel ?? false
+  }|merge(item.linkAttributes ?? {}, recursive=true) | filter %}
+
+  <craft-nav-item {{ attr(linkAttributes) }}>
+
+    <span class="nav-icon" slot="icon">
+      {%- if item.icon ?? false -%}
+        {{ iconSvg(item.icon) }}
+      {%- elseif item.fontIcon ?? false -%}
+        <span data-icon="{{ item.fontIcon }}"></span>
+      {%- else -%}
+        <span class="nav-indicator"></span>
+      {%- endif -%}
+    </span>
+
+    {{ item.label }}
+
+    {% if not isSubnav and subnav %}
+      <craft-navigation slot="subnav">
+        {% for subItem in subnav %}
+          {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
+          {{ _self.action(subItem, true, isSelected) }}
+        {% endfor %}
+      </craft-navigation>
+    {% endif %}
+  </craft-nav-item>
+{% endmacro %}
+
+<cp-global-sidebar state="{{ sidebarState }}">
+  <header id="global-sidebar" class="global-sidebar">
+    <div class="global-sidebar__header">
+      {% include '_layouts/components/system-info' %}
+    </div>
+
+    <craft-navigation class="global-sidebar__nav" label="{{ 'Primary' | t('app') }}">
+      {% for item in craft.cp.nav() %}
+        {{ _self.action(item, false) }}
+      {% endfor %}
+    </craft-navigation>
+
+    <div class="global-sidebar__footer">
+      <div class="sidebar-actions">
+        {% set toggleContent %}
+          <span class="sidebar-action__prefix">
+            <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
+              {% if craft.i18n.locale.getOrientation() == 'rtl' %}
+                {{ iconSvg('angle-left') }}
+              {% else %}
+                {{ iconSvg('angle-right') }}
+              {% endif %}
+            </span>
+          </span>
+          <span class="sidebar-action__label">
+            <span class="label">{{ 'Toggle sidebar'|t('app') }}</span>
+          </span>
+        {% endset %}
+
+        {% include '_includes/disclosure-toggle' with {
+          id: 'sidebar-trigger',
+          controls: 'global-sidebar',
+          state: sidebarState,
+          content: toggleContent,
+          attributes: {
+            class: 'sidebar-action',
+          },
+        } %}
+      </div>
+
+      {% if currentUser.admin and devMode %}
+        {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
+        <div id="devmode">
+          {% tag 'span' with {
+            class: 'visually-hidden',
+          } %}
+            {{ devModeText|raw }}
+          {% endtag %}
+        </div>
+      {% endif %}
+    </div>
+  </header>
+</cp-global-sidebar>

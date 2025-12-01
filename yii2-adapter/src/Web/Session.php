@@ -12,6 +12,7 @@ namespace CraftCms\Yii2Adapter\Web;
 use ArrayIterator;
 use Illuminate\Session\Store;
 use yii\base\Component;
+use function Psy\debug;
 
 /**
  * Session allows usage of the Laravel Session for Yii one.
@@ -52,7 +53,7 @@ class Session extends \yii\web\Session
 
     public function getIlluminateSession(): Store
     {
-        if (! is_null($this->_illuminateSession)) {
+        if (!is_null($this->_illuminateSession)) {
             return $this->_illuminateSession;
         }
 
@@ -62,6 +63,8 @@ class Session extends \yii\web\Session
         if ($store->handlerNeedsRequest()) {
             $store->setRequestOnHandler(request());
         }
+
+        $this->_illuminateSession = $store;
 
         return $store;
     }

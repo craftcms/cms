@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 6.x-internal
+      - main
+      - 6.x
   pull_request:
 permissions:
   contents: read
@@ -17,8 +18,9 @@ jobs:
     with:
       php_version: '8.4'
       craft_version: '6'
-      node_version: '20'
+      node_version: '22'
       jobs: '["ecs", "prettier", "phpstan", "tests", "rector"]'
+      working_directory: 'yii2-adapter'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>
     secrets:

@@ -1,0 +1,44 @@
+name: monorepo-split
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 6.x
+      - feature/split-packages
+    tags: '*'
+
+jobs:
+  split-monorepo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # No tag
+      - name: Monorepo Split
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: danharrin/monorepo-split-github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        with:
+          package_directory: 'yii2-adapter'
+          repository_organization: 'craftcms'
+          repository_name: 'yii2-adapter'
+          branch: ${{ github.head_ref || github.ref_name }}
+          user_name: 'shinybrad'
+          user_email: 'shinybrad@pixelandtonic.com'
+
+      # With Tag
+      - name: Monorepo Split
+        if: "startsWith(github.ref, 'refs/tags/')"
+        uses: danharrin/monorepo-split-github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        with:
+          tag: ${GITHUB_REF#refs/tags/}
+          package_directory: 'yii2-adapter'
+          repository_organization: 'craftcms'
+          repository_name: 'yii2-adapter'
+          user_name: 'shinybrad'
+          user_email: 'shinybrad@pixelandtonic.com'

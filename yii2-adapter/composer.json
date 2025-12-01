@@ -1,0 +1,125 @@
+{
+  "name": "craftcms/yii2-adapter",
+  "description": "Craft CMS Yii2 adapter",
+  "keywords": [
+    "cms",
+    "craftcms",
+    "yii2"
+  ],
+  "homepage": "https://craftcms.com",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Pixel & Tonic",
+      "homepage": "https://pixelandtonic.com/"
+    }
+  ],
+  "support": {
+    "email": "support@craftcms.com",
+    "issues": "https://github.com/craftcms/cms/issues?state=open",
+    "forum": "https://craftcms.stackexchange.com/",
+    "source": "https://github.com/craftcms/cms",
+    "docs": "https://craftcms.com/docs/5.x/",
+    "rss": "https://github.com/craftcms/cms/releases.atom"
+  },
+  "require": {
+    "php": "^8.4",
+    "ext-bcmath": "*",
+    "ext-curl": "*",
+    "ext-dom": "*",
+    "ext-intl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
+    "ext-pcre": "*",
+    "ext-pdo": "*",
+    "ext-zip": "*",
+    "craftcms/cms": "self.version",
+    "creocoder/yii2-nested-sets": "~0.9.0",
+    "mikehaertl/php-shellcommand": "^1.6.3",
+    "moneyphp/money": "^4.0",
+    "samdark/yii2-psr-log-target": "^1.1.3",
+    "seld/cli-prompt": "^1.0.4",
+    "spatie/laravel-data": "^4.17",
+    "twig/twig": "~3.21.1",
+    "voku/stringy": "^6.5",
+    "yiisoft/yii2": "~2.0.52.0",
+    "yiisoft/yii2-debug": "~2.1.27.0",
+    "yiisoft/yii2-queue": "~2.3.2",
+    "yiisoft/yii2-symfonymailer": "^4.0.0"
+  },
+  "require-dev": {
+    "codeception/codeception": "^5.2.0",
+    "codeception/lib-innerbrowser": "4.0.6",
+    "codeception/module-asserts": "^3.0.0",
+    "codeception/module-datafactory": "^3.0.0",
+    "codeception/module-phpbrowser": "^3.0.0",
+    "codeception/module-rest": "^3.3.2",
+    "codeception/module-yii2": "^1.1.9",
+    "craftcms/ecs": "dev-main",
+    "dg/bypass-finals": "^1.9",
+    "larastan/larastan": "^3.7",
+    "league/factory-muffin": "^3.3.0",
+    "orchestra/testbench": "^10.6",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.0",
+    "vlucas/phpdotenv": "^5.4.1",
+    "yiisoft/yii2-redis": "^2.0"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../"
+    }
+  ],
+  "provide": {
+    "bower-asset/inputmask": "5.0.9",
+    "bower-asset/jquery": "3.6.1",
+    "bower-asset/punycode": "^1.4",
+    "bower-asset/yii2-pjax": "~2.0.1",
+    "yii2tech/ar-softdelete": "1.0.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "craft\\": "legacy/",
+      "CraftCms\\Yii2Adapter\\": "src/",
+      "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CraftCms\\Cms\\Tests\\": "../tests/",
+      "CraftCms\\Yii2Adapter\\Tests\\": "tests-laravel/",
+      "crafttests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "copy-icons": "php ./scripts/copyicons.php",
+    "check-cs": "ecs check --ansi && pint cms --test",
+    "fix-cs": "npx concurrently -c 'rector' 'ecs check --ansi --fix' --names=rector,ecs",
+    "codecept-build": "codecept build",
+    "phpstan": "phpstan --memory-limit=2G",
+    "rector": "rector",
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.4"
+    },
+    "platform-check": false,
+    "allow-plugins": {
+      "craftcms/plugin-installer": true,
+      "yiisoft/yii2-composer": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "CraftCms\\Yii2Adapter\\Yii2ServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

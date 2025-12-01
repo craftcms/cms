@@ -1,0 +1,177 @@
+import {html, LitElement} from 'lit';
+import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
+import '../icon/icon.js';
+import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
+import styles from './breadcrumbs.styles.js';
+
+type BreadcrumbItem = {
+  label?: string;
+  href?: string;
+  value: string;
+  offsetWidth: number;
+  isVisible: boolean; // false if displayed in menu overlay
+};
+
+export default class CraftBreadcrumbs extends LitElement {
+  static override styles = [styles];
+  @query('slot') defaultSlot: HTMLSlotElement;
+  @query('slot[name="separator"]') separatorSlot: HTMLSlotElement;
+
+  @queryAssignedElements({selector: 'craft-breadcrumb-item'})
+  private breadcrumbsElements!: CraftBreadcrumbItem[];
+
+  /**
+   * The label to use for the breadcrumb control. This will not be shown on the screen, but it will be announced by
+   * screen readers and other assistive devices to provide more context for users.
+   */
+  @property() label = '';
+
+  @state()
+  private items: BreadcrumbItem[] = [];
+
+  @state()
+  private visibleItems = 0;
+
+  private resizeObserver: ResizeObserver | undefined;
+  private firstRender = true;
+
+  private getSeparator() {
+    const separator = this.separatorSlot.assignedElements({
+      flatten: true,
+    })[0] as HTMLElement;
+
+    // Clone it, remove ids, and slot it
+    const clone = separator.cloneNode(true) as HTMLElement;
+    [clone, ...clone.querySelectorAll('[id]')].forEach((el) =>
+      el.removeAttribute('id')
+    );
+    clone.setAttribute('data-default', '');
+    clone.slot = 'separator';
+
+    return clone;
+  }
+
+  /**
+   * We need to understand how much space (px) each breadcrumb item occupies,
+   * in order to know if it fits the available horizontal space.
+   */
+  private calculateBreadcrumbItemsWidth(): void {
+    this.items = this.breadcrumbsElements.map((el, index) => {
+      let width = el.offsetWidth;
+
+      /**
+       * For breadcrumbs which are hidden,
+       * we need to temporarily remove the hidden attribute to calculate the width.
+       */
+      if (el.hasAttribute('hidden')) {
+        el.removeAttribute('hidden');
+        width = el.offsetWidth;
+        el.setAttribute('hidden', '');
+      }
+
+      return {
+        label: el.innerText,
+        href: el.href,
+        value: /*el.value || */ index.toString(),
+        offsetWidth: width,
+        isVisible: true,
+      };
+    });
+  }
+
+  private async handleSlotChange() {
+    const items = [
+      ...this.defaultSlot.assignedElements({flatten: true}),
+    ].filter(
+      (item) => item.tagName.toLowerCase() === 'craft-breadcrumb-item'
+    ) as CraftBreadcrumbItem[];
+
+    items.forEach((item, index) => {
+      // Append separators to each item if they don't already have one
+      const separator = item.querySelector('[slot="separator"]');
+      if (separator === null) {
+        // No separator exists, add one
+        item.append(this.getSeparator());
+      } else if (separator.hasAttribute('data-default')) {
+        // A default separator exists, replace it
+        separator.replaceWith(this.getSeparator());
+      } else {
+        // The user provided a custom separator, leave it alone
+      }
+
+      // The last breadcrumb item is the "current page"
+      if (index === items.length - 1) {
+        item.setAttribute('aria-current', 'page');
+      } else {
+        item.removeAttribute('aria-current');
+      }
+    });
+
+    if (this.breadcrumbsElements.length === 0) {
+      this.items = [];
+      this.visibleItems = 0;
+      return;
+    }
+
+    // Wait for all breadcrumb items to complete their updates
+    await Promise.all(this.breadcrumbsElements.map((el) => el.updateComplete));
+
+    // Force a recalculation of widths and overflow
+    this.calculateBreadcrumbItemsWidth();
+
+    // Reset visibleItems to 0 to force a full recalculation
+    this.visibleItems = 0;
+    this.adjustOverflow();
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'navigation');
+    }
+
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.firstRender) {
+        // Don't adjust overflow on first render, it is adjusted in slotChangeHandler
+        this.firstRender = false;
+        return;
+      }
+      this.adjustOverflow();
+    });
+
+    this.resizeObserver.observe(this);
+  }
+
+  private adjustOverflow() {
+    const availableSpace = this.getBoundingClientRect().width;
+    console.log({availableSpace});
+  }
+
+  override disconnectedCallback() {
+    this.resizeObserver?.unobserve(this);
+    super.disconnectedCallback();
+  }
+
+  override render() {
+    return html`
+      <nav class="breadcrumbs" aria-label="${this.label}">
+        <slot @slotchange="${this.handleSlotChange}"></slot>
+      </nav>
+
+      <span hidden aria-hidden="true">
+        <slot name="separator"><span class="separator">/</span></slot>
+      </span>
+    `;
+  }
+}
+
+if (!customElements.get('craft-breadcrumbs')) {
+  customElements.define('craft-breadcrumbs', CraftBreadcrumbs);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-breadcrumbs': CraftBreadcrumbs;
+  }
+}

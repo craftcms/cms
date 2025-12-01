@@ -2,78 +2,60 @@
   "name": "craftcms",
   "private": true,
   "main": "webpack.config.js",
+  "type": "module",
   "scripts": {
-    "prebuild": "npm run fix-prettier",
-    "build": "webpack --node-env=production --progress",
-    "dev": "webpack --node-env=dev --mode=development --progress",
-    "serve": "webpack-dev-server --node-env=development",
-    "check-prettier": "prettier --check .",
-    "fix-prettier": "prettier --write .",
+    "check-prettier": "prettier --check ./resources",
+    "fix-prettier": "prettier --write ./resources",
     "prepare": "husky",
-    "lint:styles": "stylelint \"src/**/*.scss\""
+    "prebuild": "npm run fix-prettier",
+    "build": "vite build",
+    "dev": "vite",
+    "build:bundles": "cd yii2-adapter && npm run build",
+    "dev:bundles": "cd yii2-adapter && npm run dev",
+    "serve:bundles": "cd yii2-adapter && npm run serve",
+    "dev:cp": "npm run dev -w @craftcms/cp",
+    "build:cp": "npm run build -w @craftcms/cp",
+    "test:cp": "npm run test -w @craftcms/cp",
+    "storybook:cp": "npm run storybook -w @craftcms/cp"
   },
   "workspaces": [
     "packages/*"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
-  "browserslist": [
-    "extends @craftcms/browserslist-config"
-  ],
   "devDependencies": {
+    "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
-    "@playwright/test": "^1.19.2",
+    "@playwright/test": "^1.52.0",
+    "@tailwindcss/vite": "^4.1.16",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@vitejs/plugin-vue": "^6.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
-    "prettier": "3.1.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "3.6.2",
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.0",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.0",
     "stylelint-use-logical-spec": "^5.0.1",
-    "tailwindcss": "^3.0.18",
-    "vue-apexcharts": "^1.6.2"
-  },
-  "dependencies": {
-    "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/graphiql": "file:packages/craftcms-graphiql",
-    "@craftcms/sass": "file:packages/craftcms-sass",
-    "@craftcms/vue": "file:packages/craftcms-vue",
-    "@floating-ui/dom": "^1.6.3",
-    "@selectize/selectize": "selectize/selectize.js#master",
-    "@simplewebauthn/browser": "^7.1.0",
-    "@types/jquery": "^3.5.7",
-    "accounting": "^0.4.1",
-    "axios": "^1.8.4",
-    "blueimp-file-upload": "^10.31.0",
-    "codemirror": "^5.65.18",
-    "d3": "^7.8.5",
-    "fabric": "^1.7.19",
-    "htmx.org": "^1.6.1",
-    "iframe-resizer": "^4.3.2",
-    "inputmask": "^5.0.9",
-    "jquery": "^3.6.0",
-    "jquery-ui": "^1.14.0",
-    "jquery.payment": "^3.0.0",
-    "picturefill": "^3.0.3",
-    "punycode": "^2.3.1",
-    "timepicker": "^1.13.18",
-    "ttf2woff2": "^5.0.0",
-    "typescript": "^5.3.3",
-    "v-tooltip": "^2.0.3",
-    "velocity-animate": "^1.5.0",
-    "vue": "^2.6.14",
-    "vue-autosuggest": "^2.2.0",
-    "vue-awesome-swiper": "^4.1.1",
-    "vue-cleave": "^1.2.2",
-    "vue-lodash": "^1.0.3",
-    "vue-router": "^3.5.4",
-    "vuex": "^3.6.2",
-    "xregexp": "^5.1.1",
-    "yii2-pjax": "~2.0.1"
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vue-tsc": "^3.1.1"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
+  },
+  "dependencies": {
+    "@craftcms/cp": "file:packages/craftcms-cp",
+    "@inertiajs/vue3": "^2.2.7",
+    "@vueuse/core": "^14.0.0",
+    "axios": "^1.13.2",
+    "laravel-vite-plugin": "^2.0.1",
+    "lit": "^3.3.1",
+    "tailwindcss": "^4.1.16",
+    "vue": "^3.5.22"
   }
 }

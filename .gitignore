@@ -18,3 +18,4 @@ vendor/
 cpresources/*
 .ddev/
 test-results/
+resources/hot

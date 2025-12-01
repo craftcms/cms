@@ -1,0 +1,320 @@
+{
+  "packages/craftcms-cp/dist/bg-BG-BqLSXSgK.js": {
+    "file": "bg-BG-BqLSXSgK.js",
+    "name": "bg-BG-BqLSXSgK",
+    "src": "packages/craftcms-cp/dist/bg-BG-BqLSXSgK.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/bg-Ch91FBqZ.js"]
+  },
+  "packages/craftcms-cp/dist/bg-Ch91FBqZ.js": {
+    "file": "bg-Ch91FBqZ.js",
+    "name": "bg-Ch91FBqZ",
+    "src": "packages/craftcms-cp/dist/bg-Ch91FBqZ.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/cs-Bco-9vYd.js": {
+    "file": "cs-Bco-9vYd.js",
+    "name": "cs-Bco-9vYd",
+    "src": "packages/craftcms-cp/dist/cs-Bco-9vYd.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/cs-CZ-BOieS6Re.js": {
+    "file": "cs-CZ-BOieS6Re.js",
+    "name": "cs-CZ-BOieS6Re",
+    "src": "packages/craftcms-cp/dist/cs-CZ-BOieS6Re.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/cs-Bco-9vYd.js"]
+  },
+  "packages/craftcms-cp/dist/de--MUj2jPW.js": {
+    "file": "de--MUj2jPW.js",
+    "name": "de--MUj2jPW",
+    "src": "packages/craftcms-cp/dist/de--MUj2jPW.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/de-DE-NiEdSbeI.js": {
+    "file": "de-DE-NiEdSbeI.js",
+    "name": "de-DE-NiEdSbeI",
+    "src": "packages/craftcms-cp/dist/de-DE-NiEdSbeI.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/de--MUj2jPW.js"]
+  },
+  "packages/craftcms-cp/dist/en-AU-5SYH9YrO.js": {
+    "file": "en-AU-5SYH9YrO.js",
+    "name": "en-AU-5SYH9YrO",
+    "src": "packages/craftcms-cp/dist/en-AU-5SYH9YrO.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/en-QBEFuq4A.js"]
+  },
+  "packages/craftcms-cp/dist/en-GB-5SYH9YrO.js": {
+    "file": "en-GB-5SYH9YrO.js",
+    "name": "en-GB-5SYH9YrO",
+    "src": "packages/craftcms-cp/dist/en-GB-5SYH9YrO.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/en-QBEFuq4A.js"]
+  },
+  "packages/craftcms-cp/dist/en-QBEFuq4A.js": {
+    "file": "en-QBEFuq4A.js",
+    "name": "en-QBEFuq4A",
+    "src": "packages/craftcms-cp/dist/en-QBEFuq4A.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/en-US-5SYH9YrO.js": {
+    "file": "en-US-5SYH9YrO.js",
+    "name": "en-US-5SYH9YrO",
+    "src": "packages/craftcms-cp/dist/en-US-5SYH9YrO.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/en-QBEFuq4A.js"]
+  },
+  "packages/craftcms-cp/dist/es-ES-BzB2G1H7.js": {
+    "file": "es-ES-BzB2G1H7.js",
+    "name": "es-ES-BzB2G1H7",
+    "src": "packages/craftcms-cp/dist/es-ES-BzB2G1H7.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/es-QUDKKOEt.js"]
+  },
+  "packages/craftcms-cp/dist/es-QUDKKOEt.js": {
+    "file": "es-QUDKKOEt.js",
+    "name": "es-QUDKKOEt",
+    "src": "packages/craftcms-cp/dist/es-QUDKKOEt.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/fr-BE-D8x_WpSN.js": {
+    "file": "fr-BE-D8x_WpSN.js",
+    "name": "fr-BE-D8x_WpSN",
+    "src": "packages/craftcms-cp/dist/fr-BE-D8x_WpSN.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/fr-Crw_WS9R.js"]
+  },
+  "packages/craftcms-cp/dist/fr-Crw_WS9R.js": {
+    "file": "fr-Crw_WS9R.js",
+    "name": "fr-Crw_WS9R",
+    "src": "packages/craftcms-cp/dist/fr-Crw_WS9R.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/fr-FR-D8x_WpSN.js": {
+    "file": "fr-FR-D8x_WpSN.js",
+    "name": "fr-FR-D8x_WpSN",
+    "src": "packages/craftcms-cp/dist/fr-FR-D8x_WpSN.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/fr-Crw_WS9R.js"]
+  },
+  "packages/craftcms-cp/dist/hu-BzLNk3Oy.js": {
+    "file": "hu-BzLNk3Oy.js",
+    "name": "hu-BzLNk3Oy",
+    "src": "packages/craftcms-cp/dist/hu-BzLNk3Oy.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/hu-HU-DzuJRq2x.js": {
+    "file": "hu-HU-DzuJRq2x.js",
+    "name": "hu-HU-DzuJRq2x",
+    "src": "packages/craftcms-cp/dist/hu-HU-DzuJRq2x.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/hu-BzLNk3Oy.js"]
+  },
+  "packages/craftcms-cp/dist/it-Dk-tLV60.js": {
+    "file": "it-Dk-tLV60.js",
+    "name": "it-Dk-tLV60",
+    "src": "packages/craftcms-cp/dist/it-Dk-tLV60.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/it-IT-BVziFtOr.js": {
+    "file": "it-IT-BVziFtOr.js",
+    "name": "it-IT-BVziFtOr",
+    "src": "packages/craftcms-cp/dist/it-IT-BVziFtOr.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/it-Dk-tLV60.js"]
+  },
+  "packages/craftcms-cp/dist/nl-BE-Cv6cOJ-k.js": {
+    "file": "nl-BE-Cv6cOJ-k.js",
+    "name": "nl-BE-Cv6cOJ-k",
+    "src": "packages/craftcms-cp/dist/nl-BE-Cv6cOJ-k.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/nl-ukLmcyhE.js"]
+  },
+  "packages/craftcms-cp/dist/nl-NL-Cv6cOJ-k.js": {
+    "file": "nl-NL-Cv6cOJ-k.js",
+    "name": "nl-NL-Cv6cOJ-k",
+    "src": "packages/craftcms-cp/dist/nl-NL-Cv6cOJ-k.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/nl-ukLmcyhE.js"]
+  },
+  "packages/craftcms-cp/dist/nl-ukLmcyhE.js": {
+    "file": "nl-ukLmcyhE.js",
+    "name": "nl-ukLmcyhE",
+    "src": "packages/craftcms-cp/dist/nl-ukLmcyhE.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/pl-BsbBHKbu.js": {
+    "file": "pl-BsbBHKbu.js",
+    "name": "pl-BsbBHKbu",
+    "src": "packages/craftcms-cp/dist/pl-BsbBHKbu.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/pl-PL-C3QXGAg0.js": {
+    "file": "pl-PL-C3QXGAg0.js",
+    "name": "pl-PL-C3QXGAg0",
+    "src": "packages/craftcms-cp/dist/pl-PL-C3QXGAg0.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/pl-BsbBHKbu.js"]
+  },
+  "packages/craftcms-cp/dist/ro-BWWeoMIS.js": {
+    "file": "ro-BWWeoMIS.js",
+    "name": "ro-BWWeoMIS",
+    "src": "packages/craftcms-cp/dist/ro-BWWeoMIS.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/ro-RO-BHOQwu0O.js": {
+    "file": "ro-RO-BHOQwu0O.js",
+    "name": "ro-RO-BHOQwu0O",
+    "src": "packages/craftcms-cp/dist/ro-RO-BHOQwu0O.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/ro-BWWeoMIS.js"]
+  },
+  "packages/craftcms-cp/dist/ru-D87QXJFw.js": {
+    "file": "ru-D87QXJFw.js",
+    "name": "ru-D87QXJFw",
+    "src": "packages/craftcms-cp/dist/ru-D87QXJFw.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/ru-RU-DCvtZjBo.js": {
+    "file": "ru-RU-DCvtZjBo.js",
+    "name": "ru-RU-DCvtZjBo",
+    "src": "packages/craftcms-cp/dist/ru-RU-DCvtZjBo.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/ru-D87QXJFw.js"]
+  },
+  "packages/craftcms-cp/dist/sk-DCOU_ZI_.js": {
+    "file": "sk-DCOU_ZI_.js",
+    "name": "sk-DCOU_ZI_",
+    "src": "packages/craftcms-cp/dist/sk-DCOU_ZI_.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/sk-SK-DaLB_sM8.js": {
+    "file": "sk-SK-DaLB_sM8.js",
+    "name": "sk-SK-DaLB_sM8",
+    "src": "packages/craftcms-cp/dist/sk-SK-DaLB_sM8.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/sk-DCOU_ZI_.js"]
+  },
+  "packages/craftcms-cp/dist/tr-92apvQxK.js": {
+    "file": "tr-92apvQxK.js",
+    "name": "tr-92apvQxK",
+    "src": "packages/craftcms-cp/dist/tr-92apvQxK.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/tr-TR-Dhk7tqKh.js": {
+    "file": "tr-TR-Dhk7tqKh.js",
+    "name": "tr-TR-Dhk7tqKh",
+    "src": "packages/craftcms-cp/dist/tr-TR-Dhk7tqKh.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/tr-92apvQxK.js"]
+  },
+  "packages/craftcms-cp/dist/uk-CGlal3kJ.js": {
+    "file": "uk-CGlal3kJ.js",
+    "name": "uk-CGlal3kJ",
+    "src": "packages/craftcms-cp/dist/uk-CGlal3kJ.js",
+    "isDynamicEntry": true
+  },
+  "packages/craftcms-cp/dist/uk-UA-BP_5Rplg.js": {
+    "file": "uk-UA-BP_5Rplg.js",
+    "name": "uk-UA-BP_5Rplg",
+    "src": "packages/craftcms-cp/dist/uk-UA-BP_5Rplg.js",
+    "isDynamicEntry": true,
+    "imports": ["packages/craftcms-cp/dist/uk-CGlal3kJ.js"]
+  },
+  "packages/craftcms-cp/dist/zh-CZafHN1K.js": {
+    "file": "zh-CZafHN1K.js",
+    "name": "zh-CZafHN1K",
+    "src": "packages/craftcms-cp/dist/zh-CZafHN1K.js",
+    "isDynamicEntry": true
+  },
+  "resources/css/cp.css": {
+    "file": "assets/cp.css",
+    "src": "resources/css/cp.css",
+    "isEntry": true,
+    "name": "cp",
+    "names": ["cp.css"]
+  },
+  "resources/images/install/account.png": {
+    "file": "assets/account.png",
+    "src": "resources/images/install/account.png"
+  },
+  "resources/images/install/db.png": {
+    "file": "assets/db.png",
+    "src": "resources/images/install/db.png"
+  },
+  "resources/images/install/installer-bg.png": {
+    "file": "assets/installer-bg.png",
+    "src": "resources/images/install/installer-bg.png"
+  },
+  "resources/images/install/site.png": {
+    "file": "assets/site.png",
+    "src": "resources/images/install/site.png"
+  },
+  "resources/js/cp.ts": {
+    "file": "cp2.js",
+    "name": "cp",
+    "src": "resources/js/cp.ts",
+    "isEntry": true,
+    "imports": ["resources/js/legacy.ts"],
+    "dynamicImports": ["resources/js/pages/Install.vue"]
+  },
+  "resources/js/legacy.ts": {
+    "file": "legacy.js",
+    "name": "legacy",
+    "src": "resources/js/legacy.ts",
+    "isEntry": true,
+    "dynamicImports": [
+      "packages/craftcms-cp/dist/bg-BG-BqLSXSgK.js",
+      "packages/craftcms-cp/dist/bg-Ch91FBqZ.js",
+      "packages/craftcms-cp/dist/cs-CZ-BOieS6Re.js",
+      "packages/craftcms-cp/dist/cs-Bco-9vYd.js",
+      "packages/craftcms-cp/dist/de-DE-NiEdSbeI.js",
+      "packages/craftcms-cp/dist/de--MUj2jPW.js",
+      "packages/craftcms-cp/dist/en-AU-5SYH9YrO.js",
+      "packages/craftcms-cp/dist/en-GB-5SYH9YrO.js",
+      "packages/craftcms-cp/dist/en-US-5SYH9YrO.js",
+      "packages/craftcms-cp/dist/en-QBEFuq4A.js",
+      "packages/craftcms-cp/dist/es-ES-BzB2G1H7.js",
+      "packages/craftcms-cp/dist/es-QUDKKOEt.js",
+      "packages/craftcms-cp/dist/fr-FR-D8x_WpSN.js",
+      "packages/craftcms-cp/dist/fr-BE-D8x_WpSN.js",
+      "packages/craftcms-cp/dist/fr-Crw_WS9R.js",
+      "packages/craftcms-cp/dist/hu-HU-DzuJRq2x.js",
+      "packages/craftcms-cp/dist/hu-BzLNk3Oy.js",
+      "packages/craftcms-cp/dist/it-IT-BVziFtOr.js",
+      "packages/craftcms-cp/dist/it-Dk-tLV60.js",
+      "packages/craftcms-cp/dist/nl-BE-Cv6cOJ-k.js",
+      "packages/craftcms-cp/dist/nl-NL-Cv6cOJ-k.js",
+      "packages/craftcms-cp/dist/nl-ukLmcyhE.js",
+      "packages/craftcms-cp/dist/pl-PL-C3QXGAg0.js",
+      "packages/craftcms-cp/dist/pl-BsbBHKbu.js",
+      "packages/craftcms-cp/dist/ro-RO-BHOQwu0O.js",
+      "packages/craftcms-cp/dist/ro-BWWeoMIS.js",
+      "packages/craftcms-cp/dist/ru-RU-DCvtZjBo.js",
+      "packages/craftcms-cp/dist/ru-D87QXJFw.js",
+      "packages/craftcms-cp/dist/sk-SK-DaLB_sM8.js",
+      "packages/craftcms-cp/dist/sk-DCOU_ZI_.js",
+      "packages/craftcms-cp/dist/tr-TR-Dhk7tqKh.js",
+      "packages/craftcms-cp/dist/tr-92apvQxK.js",
+      "packages/craftcms-cp/dist/uk-UA-BP_5Rplg.js",
+      "packages/craftcms-cp/dist/uk-CGlal3kJ.js",
+      "packages/craftcms-cp/dist/zh-CZafHN1K.js",
+      "packages/craftcms-cp/dist/en-QBEFuq4A.js"
+    ]
+  },
+  "resources/js/pages/Install.vue": {
+    "file": "Install.js",
+    "name": "Install",
+    "src": "resources/js/pages/Install.vue",
+    "isDynamicEntry": true,
+    "imports": ["resources/js/cp.ts", "resources/js/legacy.ts"],
+    "css": ["assets/Install.css"],
+    "assets": [
+      "assets/installer-bg.png",
+      "assets/account.png",
+      "assets/site.png",
+      "assets/db.png"
+    ]
+  }
+}

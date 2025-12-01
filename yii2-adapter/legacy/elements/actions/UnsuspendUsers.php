@@ -1,0 +1,97 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\elements\actions;
+
+use Craft;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
+use Throwable;
+use function CraftCms\Cms\t;
+
+/**
+ * UnsuspendUsers represents an Unsuspend Users element action.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ */
+class UnsuspendUsers extends ElementAction
+{
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel(): string
+    {
+        return t('Unsuspend');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml(): ?string
+    {
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        bulk: true,
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                const \$element = selectedItems.eq(i).find('.element');
+                if (
+                    !Garnish.hasAttr(\$element, 'data-can-suspend') ||
+                    !Garnish.hasAttr(\$element, 'data-suspended')
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    });
+})();
+JS, [
+            static::class,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function performAction(ElementQueryInterface $query): bool
+    {
+        // Get the users that are suspended
+        $query->status(User::STATUS_SUSPENDED);
+        /** @var User[] $users */
+        $users = $query->all();
+        $usersService = Craft::$app->getUsers();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
+        $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
+            if (!$usersService->canSuspend($currentUser, $user)) {
+                return false;
+            }
+            try {
+                $usersService->unsuspendUser($user);
+                return true;
+            } catch (Throwable) {
+                return false;
+            }
+        }));
+
+        if ($successCount !== count($users)) {
+            $this->setMessage(t('Couldn’t unsuspend all users.'));
+            return false;
+        }
+
+        $this->setMessage(t('Users unsuspended.'));
+        return true;
+    }
+}

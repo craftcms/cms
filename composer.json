@@ -4,7 +4,7 @@
   "keywords": [
     "cms",
     "craftcms",
-    "yii2"
+    "laravel"
   ],
   "homepage": "https://craftcms.com",
   "license": "proprietary",
@@ -41,73 +41,55 @@
     "craftcms/laravel-dependency-aware-cache": "^1.0",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.0.1",
-    "creocoder/yii2-nested-sets": "~0.9.0",
+    "craftcms/yii2-adapter": "self.version",
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
+    "inertiajs/inertia-laravel": "^2.0",
     "laravel/framework": "^12.21.0",
     "league/uri": "^7.0",
-    "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
-    "monolog/monolog": "^3.0",
     "phpdocumentor/reflection-docblock": "^5.3",
     "pixelandtonic/imagine": "~1.3.3.1",
     "pragmarx/google2fa": "^8.0",
     "pragmarx/recovery": "^0.2.1",
-    "samdark/yii2-psr-log-target": "^1.1.3",
-    "seld/cli-prompt": "^1.0.4",
     "spatie/laravel-data": "^4.17",
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
-    "symfony/filesystem": "^6.3",
+    "symfony/filesystem": "^6.3|^7.0",
     "symfony/http-client": "^6.0.3|^7.0",
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
     "symfony/serializer": "^6.4",
-    "symfony/var-dumper": "^7.2",
     "symfony/yaml": "^7.0",
     "theiconic/name-parser": "^1.2",
     "tpetry/laravel-query-expressions": "^1.5",
     "twig/twig": "~3.21.1",
-    "voku/stringy": "^6.5",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
     "yiisoft/html": "^3.11",
-    "yiisoft/yii2": "~2.0.52.0",
-    "yiisoft/yii2-debug": "~2.1.27.0",
-    "yiisoft/yii2-queue": "~2.3.2",
-    "yiisoft/yii2-symfonymailer": "^4.0.0"
+    "yiisoft/translator": "^3.2",
+    "yiisoft/translator-message-php": "^1.1"
   },
   "require-dev": {
-    "codeception/codeception": "^5.2.0",
-    "codeception/lib-innerbrowser": "4.0.6",
-    "codeception/module-asserts": "^3.0.0",
-    "codeception/module-datafactory": "^3.0.0",
-    "codeception/module-phpbrowser": "^3.0.0",
-    "codeception/module-rest": "^3.3.2",
-    "codeception/module-yii2": "^1.1.9",
-    "craftcms/ecs": "dev-main",
     "dg/bypass-finals": "^1.9",
+    "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",
-    "league/factory-muffin": "^3.3.0",
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.0",
     "phpstan/phpstan": "^2.1",
-    "rector/rector": "^2.0",
-    "vlucas/phpdotenv": "^5.4.1",
-    "yiisoft/yii2-redis": "^2.0"
+    "rector/rector": "^2.0"
   },
-  "provide": {
-    "bower-asset/inputmask": "5.0.9",
-    "bower-asset/jquery": "3.6.1",
-    "bower-asset/punycode": "^1.4",
-    "bower-asset/yii2-pjax": "~2.0.1",
-    "yii2tech/ar-softdelete": "1.0.4"
-  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "./yii2-adapter"
+    }
+  ],
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
@@ -115,35 +97,26 @@
   },
   "autoload": {
     "psr-4": {
-      "craft\\": [
-        "src/",
-        "yii2-adapter/legacy/"
-      ],
-      "CraftCms\\Cms\\": "cms/src/",
-      "CraftCms\\Yii2Adapter\\": "yii2-adapter/src/",
-      "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
+      "CraftCms\\Cms\\": "src/"
     },
     "files": [
-      "cms/src/helpers.php"
+      "src/helpers.php"
     ]
   },
   "autoload-dev": {
     "psr-4": {
-      "CraftCms\\Cms\\Tests\\": "cms/tests/",
-      "CraftCms\\Cms\\Database\\": "cms/database/",
-      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
-      "crafttests\\": "tests/"
+      "CraftCms\\Cms\\Tests\\": "tests/",
+      "CraftCms\\Cms\\Database\\": "database/",
+      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/"
     }
   },
   "scripts": {
     "copy-icons": "php ./scripts/copyicons.php",
-    "check-cs": "ecs check --ansi && pint cms --test",
-    "fix-cs": "npx concurrently -c 'rector' 'ecs check --ansi --fix' 'pint cms --parallel' --names=rector,ecs,pint",
-    "codecept-build": "codecept build",
+    "fix-cs": "npx concurrently -c 'rector' 'pint src --parallel' './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix' --names=rector,pint,ecs",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
-    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests",
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests"
+    "tests": "./vendor/bin/pest",
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
   },
   "config": {
     "sort-packages": true,
@@ -160,16 +133,8 @@
   "extra": {
     "laravel": {
       "providers": [
-        "CraftCms\\Cms\\Providers\\CraftServiceProvider",
-        "CraftCms\\Yii2Adapter\\Yii2ServiceProvider"
+        "CraftCms\\Cms\\Providers\\CraftServiceProvider"
       ]
-    }
-  },
-  "repositories": {
-    "packagist.org": false,
-    "private-packagist": {
-      "type": "composer",
-      "url": "https://repo.packagist.com/craftcms/"
     }
   },
   "minimum-stability": "dev",

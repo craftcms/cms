@@ -1,0 +1,62 @@
+{% import '_includes/forms' as forms %}
+
+{% set chipId = "chip#{random()}" %}
+<div class="pane no-border p-m">
+  {{ chip(entryType.original, {
+    id: chipId,
+    class: 'hairline',
+    showActionMenu: true,
+    showHandle: true,
+    hyperlink: false,
+  }) }}
+</div>
+
+{% js %}
+(() => {
+  const $chip = $('#{{ chipId|namespaceInputId }}');
+  $chip.on('dblclick taphold', (ev) => {
+    $chip.find('.btn').data('disclosureMenu').$container.find('[data-edit-action]').click();
+  });
+})();
+{% endjs %}
+
+{{ forms.textField({
+  label: 'Name'|t('app'),
+  id: 'name',
+  name: 'name',
+  value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
+  placeholder: entryType.original.name,
+  errors: sessionErrors.get('name'),
+  data: {
+    'error-key': 'name',
+  },
+}) }}
+
+{{ forms.textField({
+  label: 'Handle'|t('app'),
+  id: 'handle',
+  name: 'handle',
+  class: 'code',
+  autocorrect: false,
+  autocapitalize: false,
+  maxlength: 64,
+  value: old('handle', entryType.handle != entryType.original.handle ? entryType.handle : null),
+  placeholder: entryType.original.handle,
+  errors: sessionErrors.get('handle'),
+  data: {
+    'error-key': 'handle'
+  },
+}) }}
+
+{{ forms.textareaField({
+  label: 'Description'|t('app'),
+  id: 'description',
+  class: 'nicetext',
+  name: 'description',
+  value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
+  placeholder: entryType.original.description,
+  errors: sessionErrors.get('description'),
+  data: {
+    'error-key': 'description',
+  },
+}) }}

@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 6.x-internal
+      - main
+      - 6.x
   pull_request:
 
 concurrency:
@@ -25,17 +26,37 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
+          php-version: '8.4'
+          tools: composer:v2, laravel/pint
           extensions: json, dom, curl, libxml, mbstring
           coverage: none
 
-      - name: Install Pint
-        run: composer global require laravel/pint
-
       - name: Run Pint
-        run: pint cms --parallel --test --verbose
+        run: pint --parallel --test --verbose
+
+  phpstan:
+    name: 'Code Quality / Phpstan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Set version
+        run: composer config version "6.x-dev"
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan --error-format=github
 
   tests:
-    needs: [pint]
+    needs: [pint, phpstan]
     name: Tests / PHP ${{ matrix.php }} on ${{ matrix.db }}
     runs-on: ubuntu-latest
     strategy:
@@ -99,11 +120,23 @@ jobs:
           cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
+      - name: Set version
+        run: composer config version "6.x-dev"
+
       - name: Install dependencies
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: vendor/bin/pest --ci --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
+        run: vendor/bin/pest
+
+      - name: Set version
+        run: composer config version "6.x-dev"
+        working-directory: yii2-adapter
+
+      - name: Install yii2-adapter dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          working-directory: yii2-adapter
 
       - name: Execute Yii2 Adapter tests
-        run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests
+        run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel

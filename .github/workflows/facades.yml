@@ -57,10 +57,17 @@ jobs:
           php -f vendor/bin/facade.php -- \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
-            CraftCms\\Cms\\Support\\Facades\\ProjectConfig
+            CraftCms\\Cms\\Support\\Facades\\EntryTypes \
+            CraftCms\\Cms\\Support\\Facades\\Fields \
+            CraftCms\\Cms\\Support\\Facades\\I18N \
+            CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
+            CraftCms\\Cms\\Support\\Facades\\Sections \
+            CraftCms\\Cms\\Support\\Facades\\Structures \
+            CraftCms\\Cms\\Support\\Facades\\Updates \
+            CraftCms\\Cms\\Support\\Facades\\UserGroups
 
       - name: Commit facade docblocks
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update facade docblocks
-          file_pattern: cms/
+          file_pattern: src/

@@ -1,11 +1,9 @@
 *.md
 *.php
 composer.lock
-cpresources/*
-lib/*
-src/templates/*
-src/web/assets/**/dist/*
-packages/**/dist/*
-tests/_craft/*
+**/dist/*
 vendor/*
 .ddev/*
+resources/build/*
+yii2-adapter/*
+tests-playwright/.authentication.json

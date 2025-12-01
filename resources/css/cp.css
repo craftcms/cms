@@ -1,0 +1,22 @@
+/**
+CP Styles
+ */
+@layer theme, base, components, cp, utilities;
+@import 'tailwindcss/theme.css' layer(theme) prefix(tw);
+@import 'tailwindcss/utilities.css' layer(utilities) prefix(tw);
+@import '@craftcms/cp/styles/cp.css' layer(cp);
+
+@import './global-sidebar.css';
+
+:root {
+  --global-sidebar-width: calc(226rem / 16);
+  --header-height: calc(44rem / 16);
+}
+
+/**
+@TODO this should be in the @craftcms/cp package
+ */
+img {
+  max-width: 100%;
+  height: auto;
+}

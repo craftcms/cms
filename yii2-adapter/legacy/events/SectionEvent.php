@@ -1,0 +1,31 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\events;
+
+use craft\base\Event;
+use craft\models\Section;
+
+/**
+ * Section event class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ * @deprecated 6.0.0
+ */
+class SectionEvent extends Event
+{
+    /**
+     * @var Section|\CraftCms\Cms\Section\Data\Section The section model associated with the event.
+     */
+    public Section|\CraftCms\Cms\Section\Data\Section $section;
+
+    /**
+     * @var bool Whether the section is brand new
+     */
+    public bool $isNew = false;
+}

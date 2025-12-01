@@ -1,7 +1,11 @@
 {
-  "*.php": ["./vendor/bin/phpstan analyse --memory-limit=1G"],
-  "!(cms)/**/*.php": ["./vendor/bin/ecs check --ansi --fix"],
-  "cms/**/*.php": ["./vendor/bin/pint cms --parallel"],
+  "yii2-adapter/**/*.php": [
+    "./yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix"
+  ],
+  "!(yii2-adapter)/**/*.php": [
+    "./vendor/bin/rector",
+    "./vendor/bin/pint --parallel"
+  ],
   "*.scss": ["stylelint --fix --allow-empty-input"],
-  "*.{html,json,css,scss}": "prettier --ignore-unknown --write"
+  "!(yii2-adapter)/**/*.{html,json,css,scss}": "prettier --ignore-unknown --write"
 }

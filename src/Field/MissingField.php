@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Field;
+
+use craft\base\ElementInterface;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+
+/**
+ * MissingField represents a field with an invalid class.
+ *
+ * @property class-string<FieldInterface> $expectedType
+ */
+final class MissingField extends Field implements MissingComponentInterface
+{
+    use MissingComponentTrait;
+
+    /**
+     * {@inheritdoc}
+     */
+    #[\Override]
+    public static function icon(): string
+    {
+        return 'question';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[\Override]
+    public static function dbType(): array|string|null
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[\Override]
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->getPlaceholderHtml();
+    }
+}

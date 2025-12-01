@@ -88,7 +88,7 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
 
   if (!watchPaths) {
     watchPaths = [
-      path.join(rootPath, 'src/templates'),
+      path.join(rootPath, 'resources/templates'),
       path.join(context, 'dist'),
     ];
   }

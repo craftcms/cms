@@ -3,7 +3,7 @@
 namespace CraftCms\Yii2Adapter\Console;
 
 use Closure;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -31,7 +31,9 @@ final class MigrateMigrationTableCommand extends Command
             return;
         }
 
-        $this->confirmToProceed('Application In Production or allowAdminChanges is disabled.');
+        if (!$this->confirmToProceed('Application In Production or allowAdminChanges is disabled.')) {
+            return;
+        }
 
         $history = DB::table(Table::MIGRATIONS)->get();
 
@@ -62,7 +64,7 @@ final class MigrateMigrationTableCommand extends Command
     protected function getDefaultConfirmCallback(): Closure
     {
         return function() {
-            return $this->getLaravel()->environment() === 'production' || !app(GeneralConfig::class)->allowAdminChanges;
+            return $this->getLaravel()->environment() === 'production' || !Cms::config()->allowAdminChanges;
         };
     }
 }

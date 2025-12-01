@@ -1,0 +1,918 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\services;
+
+use Craft;
+use craft\elements\Asset;
+use craft\elements\Entry;
+use craft\elements\User;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\events\UserGroupPermissionsEvent;
+use craft\events\UserPermissionsEvent;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\UserPermission;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
+use CraftCms\Cms\Utility\Utility;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
+use yii\base\Component;
+use yii\db\Exception;
+use function CraftCms\Cms\t;
+
+/**
+ * User Permissions service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->getUserPermissions()`]].
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ */
+class UserPermissions extends Component
+{
+    /**
+     * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
+     */
+    public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+
+    /**
+     * @event UserPermissionsEvent The event triggered before saving user permissions.
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_SAVE_USER_PERMISSIONS = 'afterSaveUserPermissions';
+
+    /**
+     * @event UserGroupPermissionsEvent The event triggered before saving group permissions.
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
+
+    /**
+     * @var array|null
+     * @see getAllPermissions()
+     */
+    private array|null $_allPermissions = null;
+
+    /**
+     * @var string[]|null
+     * @see validatePermission()
+     */
+    private array|null $_allPermissionNames = null;
+
+    /**
+     * @var string[][]
+     */
+    private array $_permissionsByGroupId = [];
+
+    /**
+     * @var string[][]
+     */
+    private array $_permissionsByUserId = [];
+
+    /**
+     * Returns all of the known permissions, divided into groups.
+     *
+     * Each group will have two keys:
+     *
+     * - `heading` – The human-facing heading text for the group
+     * - `permissions` – An array of permissions for the group
+     *
+     * Each item of the `permissions` array will have a key set to the permission name
+     * (e.g. `accessSiteWhenSystemIsOff`), and a value set to an array with the following keys:
+     *
+     * - `label` – The human-facing permission label
+     * - `info` _(optional)_ – Informational text about the permission
+     * - `warning` _(optional)_ – Warning text about the permission
+     * - `nested` _(optional)_ – An array of nested permissions, which can only be assigned if the parent
+     *   permission is assigned.
+     *
+     * @return array
+     */
+    public function getAllPermissions(): array
+    {
+        if (!isset($this->_allPermissions)) {
+            $this->_allPermissions = [];
+
+            $this->_generalPermissions($this->_allPermissions);
+            $this->_userPermissions($this->_allPermissions);
+            $this->_sitePermissions($this->_allPermissions);
+            $this->_entryPermissions($this->_allPermissions);
+            $this->_volumePermissions($this->_allPermissions);
+            $this->_utilityPermissions($this->_allPermissions);
+
+            // Fire a 'registerPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
+                $event = new RegisterUserPermissionsEvent([
+                    'permissions' => $this->_allPermissions,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
+                $this->_allPermissions = $event->permissions;
+            }
+        }
+
+        return $this->_allPermissions;
+    }
+
+    /**
+     * Returns the permissions that the current user is allowed to assign to another user.
+     *
+     * See [[getAllPermissions()]] for an explanation of what will be returned.
+     *
+     * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array
+     */
+    public function getAssignablePermissions(?User $user = null): array
+    {
+        // If either user is an admin, all permissions are fair game
+        if (Craft::$app->getUser()->getIsAdmin() || ($user !== null && $user->admin)) {
+            return $this->getAllPermissions();
+        }
+
+        $allowedPermissions = [];
+
+        foreach ($this->getAllPermissions() as $group) {
+            $filteredPermissions = $this->_filterUnassignablePermissions($group['permissions'], $user);
+
+            if (!empty($filteredPermissions)) {
+                $allowedPermissions[] = [
+                    'heading' => $group['heading'],
+                    'permissions' => $filteredPermissions,
+                ];
+            }
+        }
+
+        return $allowedPermissions;
+    }
+
+    /**
+     * Returns all of a given user group's permissions.
+     *
+     * @param int $groupId
+     *
+     * @return string[]
+     */
+    public function getPermissionsByGroupId(int $groupId): array
+    {
+        if (!isset($this->_permissionsByGroupId[$groupId])) {
+            $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
+                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->where('p_g.groupId', $groupId)
+                ->pluck('p.name')
+                ->all();
+        }
+
+        return $this->_permissionsByGroupId[$groupId];
+    }
+
+    /**
+     * Returns all of the group permissions a given user has.
+     *
+     * @param int $userId
+     *
+     * @return string[]
+     */
+    public function getGroupPermissionsByUserId(int $userId): array
+    {
+        if (Edition::get() === Edition::Team) {
+            $group = UserGroups::getTeamGroup();
+            return $this->getPermissionsByGroupId($group->id);
+        }
+
+        return $this->_createUserPermissionsQuery()
+            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->where('g_u.userId', $userId)
+            ->pluck('p.name')
+            ->all();
+    }
+
+    /**
+     * Returns whether a given user group has a given permission.
+     *
+     * @param int $groupId
+     * @param string $checkPermission
+     *
+     * @return bool
+     */
+    public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
+    {
+        $allPermissions = $this->getPermissionsByGroupId($groupId);
+        $checkPermission = strtolower($checkPermission);
+
+        return in_array($checkPermission, $allPermissions, true);
+    }
+
+    /**
+     * Saves new permissions for a user group.
+     *
+     * @param int $groupId
+     * @param array $permissions
+     *
+     * @return bool
+     * @throws WrongEditionException if this is called from Craft Solo edition
+     */
+    public function saveGroupPermissions(int $groupId, array $permissions): bool
+    {
+        Edition::require(Edition::Team);
+
+        // Lowercase the permissions
+        $permissions = array_map('strtolower', $permissions);
+
+        // Filter out any orphaned permissions
+        $permissions = $this->_filterOrphanedPermissions($permissions);
+
+        // Sort ascending
+        sort($permissions);
+
+        $group = UserGroups::getGroupById($groupId);
+        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
+        app(ProjectConfig::class)->set($path, $permissions,
+            "Update permissions for user group “{$group->handle}”");
+
+        // Fire an 'afterSaveGroupPermissions' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, new UserGroupPermissionsEvent([
+                'groupId' => $groupId,
+                'permissions' => $permissions,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns all of a given user’s permissions.
+     *
+     * @param int $userId
+     *
+     * @return array
+     */
+    public function getPermissionsByUserId(int $userId): array
+    {
+        if (!isset($this->_permissionsByUserId[$userId])) {
+            $groupPermissions = $this->getGroupPermissionsByUserId($userId);
+
+            if (Edition::get()->value >= Edition::Pro->value) {
+                /** @var string[] $userPermissions */
+                $userPermissions = $this->_createUserPermissionsQuery()
+                    ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+                    ->where('p_u.userId', $userId)
+                    ->pluck('p.name')
+                    ->all();
+            } else {
+                $userPermissions = [];
+            }
+
+            $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $userPermissions));
+        }
+
+        return $this->_permissionsByUserId[$userId];
+    }
+
+    /**
+     * @param string $permission
+     *
+     * @return bool
+     * @since 5.8.13.2
+     */
+    public function validatePermission(string $permission): bool
+    {
+        if (!isset($this->_allPermissionNames)) {
+            $this->_allPermissionNames = [];
+            foreach ($this->getAllPermissions() as $group) {
+                $this->collectPermissionNames($group['permissions']);
+            }
+        }
+
+        return isset($this->_allPermissionNames[strtolower($permission)]);
+    }
+
+    private function collectPermissionNames(array &$permissions): void
+    {
+        foreach ($permissions as $name => $permission) {
+            $this->_allPermissionNames[strtolower($name)] = true;
+
+            if (isset($permission['nested'])) {
+                $this->collectPermissionNames($permission['nested']);
+            }
+        }
+    }
+
+    /**
+     * Returns whether a given user has a given permission.
+     *
+     * @param int $userId
+     * @param string $checkPermission
+     *
+     * @return bool
+     */
+    public function doesUserHavePermission(int $userId, string $checkPermission): bool
+    {
+        if (strcasecmp($checkPermission, 'accessCp') === 0 && Edition::get() === Edition::Team) {
+            return true;
+        }
+
+        $allPermissions = $this->getPermissionsByUserId($userId);
+        $checkPermission = strtolower($checkPermission);
+
+        return in_array($checkPermission, $allPermissions, true);
+    }
+
+    /**
+     * Saves new permissions for a user.
+     *
+     * @param int $userId
+     * @param array $permissions
+     *
+     * @return bool
+     * @throws WrongEditionException if this is called from Craft Solo edition
+     * @throws Exception
+     */
+    public function saveUserPermissions(int $userId, array $permissions): bool
+    {
+        Edition::require(Edition::Pro);
+
+        // Delete any existing user permissions
+        DB::table(Table::USERPERMISSIONS_USERS)
+            ->where('userId', $userId)
+            ->delete();
+
+        // Lowercase the permissions
+        $permissions = array_map('strtolower', $permissions);
+
+        // Filter out any orphaned permissions
+        $groupPermissions = $this->getGroupPermissionsByUserId($userId);
+        $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
+
+        if (!empty($permissions)) {
+            $userPermissionVals = [];
+
+            foreach ($permissions as $permissionName) {
+                $permissionModel = $this->getPermissionModelByName($permissionName);
+                $userPermissionVals[] = [
+                    'permissionId' => $permissionModel->id,
+                    'userId' => $userId,
+                    'dateCreated' => $now = now(),
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ];
+            }
+
+            // Add the new user permissions
+            DB::table(Table::USERPERMISSIONS_USERS)->insert($userPermissionVals);
+        }
+
+        // Cache the new permissions
+        $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
+
+        // Fire an 'afterSaveUserPermissions' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_PERMISSIONS, new UserPermissionsEvent([
+                'userId' => $userId,
+                'permissions' => $permissions,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Handle any changed group permissions.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedGroupPermissions(ConfigEvent $event): void
+    {
+        // Ensure all user groups are ready to roll
+        ProjectConfigHelper::ensureAllUserGroupsProcessed();
+        $uid = $event->tokenMatches[0];
+        $permissions = $event->newValue;
+        $userGroup = UserGroups::getGroupByUid($uid);
+
+        // No group - no permissions to change.
+        if (!$userGroup) {
+            return;
+        }
+
+        // Delete any existing group permissions
+        DB::table(Table::USERPERMISSIONS_USERGROUPS)
+            ->where('groupId', $userGroup->id)
+            ->delete();
+
+        $groupPermissionVals = [];
+
+        if ($permissions) {
+            $now = now();
+
+            foreach ($permissions as $permissionName) {
+                $permissionModel = $this->getPermissionModelByName($permissionName);
+                $groupPermissionVals[] = [
+                    'permissionId' => $permissionModel->id,
+                    'groupId' => $userGroup->id,
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ];
+            }
+
+            // Add the new group permissions
+            DB::table(Table::USERPERMISSIONS_USERGROUPS)->insert($groupPermissionVals);
+        }
+
+        // Update caches
+        $this->_permissionsByGroupId[$userGroup->id] = $permissions;
+    }
+
+    private function _generalPermissions(array &$permissions): void
+    {
+        $generalPermissions = [
+            'accessSiteWhenSystemIsOff' => [
+                'label' => t('Access the site when the system is off'),
+            ],
+        ];
+
+        $cpPermissions = [
+            'accessCpWhenSystemIsOff' => [
+                'label' => t('Access the control panel when the system is offline'),
+            ],
+            'performUpdates' => [
+                'label' => t('Perform Craft CMS and plugin updates'),
+            ],
+        ];
+
+        foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
+            if ($plugin->hasCpSection) {
+                $cpPermissions["accessPlugin-$plugin->handle"] = [
+                    'label' => t('Access {plugin}', ['plugin' => $plugin->name]),
+                ];
+            }
+        }
+
+        switch (Edition::get()) {
+            case Edition::Team:
+                $generalPermissions = array_merge($generalPermissions, $cpPermissions);
+                break;
+            case Edition::Pro:
+            case Edition::Enterprise:
+                $generalPermissions['accessCp'] = [
+                    'label' => t('Access the control panel'),
+                    'warning' => t('Includes read-only access to user data and most content, via element selector modals and other means.'),
+                    'nested' => $cpPermissions,
+                ];
+                break;
+        }
+
+        $permissions[] = [
+            'heading' => t('General'),
+            'permissions' => $generalPermissions,
+        ];
+    }
+
+    private function _userPermissions(array &$permissions): void
+    {
+        $assignGroupPermissions = [];
+
+        if (Edition::get()->value >= Edition::Pro->value) {
+            foreach (UserGroups::getAllGroups() as $group) {
+                $assignGroupPermissions["assignUserGroup:$group->uid"] = [
+                    'label' => t('Assign users to “{group}”', [
+                        'group' => t($group->name, category: 'site'),
+                    ]),
+                ];
+            }
+        }
+
+        $permissions[] = [
+            'heading' => t('Users'),
+            'permissions' => [
+                'viewUsers' => [
+                    'label' => t('View {type}', [
+                        'type' => User::pluralLowerDisplayName(),
+                    ]),
+                    'nested' => [
+                        'editUsers' => [
+                            'label' => mb_ucfirst(t('Edit {type}', [
+                                'type' => User::pluralLowerDisplayName(),
+                            ])),
+                            'nested' => array_merge(
+                                array_filter([
+                                    'registerUsers' => [
+                                        'label' => t('Register users'),
+                                    ],
+                                    'moderateUsers' => [
+                                        'label' => t('Moderate users'),
+                                        'info' => t('Includes suspending, unsuspending, and unlocking user accounts.'),
+                                    ],
+                                    'administrateUsers' => [
+                                        'label' => t('Administrate users'),
+                                        'info' => t('Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
+                                        'warning' => Edition::get()->value >= Edition::Pro->value
+                                            ? t('Accounts with this permission could use it to escalate their own permissions.')
+                                            : null,
+                                    ],
+                                    'impersonateUsers' => [
+                                        'label' => t('Impersonate users'),
+                                    ],
+                                    'assignUserPermissions' => Edition::get()->value >= Edition::Pro->value
+                                        ? [
+                                            'label' => t('Assign user permissions'),
+                                        ]
+                                        : null,
+                                ]),
+                                $assignGroupPermissions,
+                            ),
+                        ],
+                        'deleteUsers' => [
+                            'label' => t('Delete users'),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function _sitePermissions(array &$permissions): void
+    {
+        if (!Sites::isMultiSite()) {
+            return;
+        }
+
+        $sitePermissions = [];
+
+        foreach (Sites::getAllSites(true) as $site) {
+            $sitePermissions["editSite:$site->uid"] = [
+                'label' => t('Edit “{title}”', [
+                    'title' => t($site->getName(), category: 'site'),
+                ]),
+            ];
+        }
+
+        $permissions[] = [
+            'heading' => t('Sites'),
+            'permissions' => $sitePermissions,
+        ];
+    }
+
+    private function _entryPermissions(array &$permissions): void
+    {
+        $sections = Sections::getAllSections();
+
+        if ($sections->isEmpty()) {
+            return;
+        }
+
+        $type = Entry::lowerDisplayName();
+        $pluralType = Entry::pluralLowerDisplayName();
+
+        foreach ($sections as $section) {
+            if ($section->type === SectionType::Single) {
+                $sectionPermissions = [
+                    "viewEntries:$section->uid" => [
+                        'label' => mb_ucfirst(t('View {type}', ['type' => $type])),
+                        'nested' => [
+                            "saveEntries:$section->uid" => [
+                                'label' => mb_ucfirst(t('Save {type}', ['type' => $type])),
+                            ],
+                            "viewPeerEntryDrafts:$section->uid" => [
+                                'label' => mb_ucfirst(t('View other users’ {type}', [
+                                    'type' => t('drafts'),
+                                ])),
+                                'nested' => [
+                                    "savePeerEntryDrafts:$section->uid" => [
+                                        'label' => mb_ucfirst(t('Save other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ])),
+                                    ],
+                                    "deletePeerEntryDrafts:$section->uid" => [
+                                        'label' => t('Delete other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ]),
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+            } else {
+                $hasCustomPropagation = (
+                    $section->propagationMethod === PropagationMethod::Custom &&
+                    Sites::isMultiSite()
+                );
+
+                $sectionPermissions = [
+                    "viewEntries:$section->uid" => [
+                        'label' => mb_ucfirst(t('View {type}', ['type' => $pluralType])),
+                        'info' => t('Allows viewing existing {type} and creating drafts for them.', [
+                            'type' => $pluralType,
+                        ]),
+                        'nested' => array_filter([
+                            "createEntries:$section->uid" => [
+                                'label' => mb_ucfirst(t('Create {type}', ['type' => $pluralType])),
+                                'info' => t('Allows creating drafts of new {type}.',
+                                    ['type' => $pluralType]),
+                            ],
+                            "saveEntries:$section->uid" => [
+                                'label' => mb_ucfirst(t('Save {type}', ['type' => $pluralType])),
+                                'info' => t('Allows fully saving canonical {type} (directly or by applying drafts).', [
+                                        'type' => $pluralType,
+                                    ]),
+                            ],
+                            "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                'label' => mb_ucfirst(t('Delete {type} for site',
+                                    ['type' => $pluralType])),
+                                'info' => t('Allows deleting {type} for individual sites, provided the user has access to them.',
+                                    [
+                                        'type' => $pluralType,
+                                    ]),
+                            ] : null,
+                            "deleteEntries:$section->uid" => [
+                                'label' => mb_ucfirst(t('Delete {type}', ['type' => $pluralType])),
+                                'info' => t('Allows deleting {type} for all sites.', [
+                                    'type' => $pluralType,
+                                ]),
+                            ],
+                            "viewPeerEntries:$section->uid" => [
+                                'label' => mb_ucfirst(t('View other users’ {type}',
+                                    ['type' => $pluralType])),
+                                'nested' => array_filter([
+                                    "savePeerEntries:$section->uid" => [
+                                        'label' => mb_ucfirst(t('Save other users’ {type}',
+                                            ['type' => $pluralType])),
+                                    ],
+                                    "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                        'label' => t('Delete other users’ {type} for site',
+                                            ['type' => $pluralType]),
+                                        'info' => t('Allows deleting other users’ {type} for individual sites, provided the user has access to them.',
+                                            [
+                                                'type' => $pluralType,
+                                            ]),
+                                    ] : null,
+                                    "deletePeerEntries:$section->uid" => [
+                                        'label' => t('Delete other users’ {type}',
+                                            ['type' => $pluralType]),
+                                        'info' => t('Allows deleting other users’ {type} for all sites.',
+                                            [
+                                                'type' => $pluralType,
+                                            ]),
+                                    ],
+                                ]),
+                            ],
+                            "viewPeerEntryDrafts:$section->uid" => [
+                                'label' => mb_ucfirst(t('View other users’ {type}', [
+                                    'type' => t('drafts'),
+                                ])),
+                                'nested' => [
+                                    "savePeerEntryDrafts:$section->uid" => [
+                                        'label' => mb_ucfirst(t('Save other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ])),
+                                    ],
+                                    "deletePeerEntryDrafts:$section->uid" => [
+                                        'label' => t('Delete other users’ {type}', [
+                                            'type' => t('drafts'),
+                                        ]),
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ],
+                ];
+            }
+
+            $permissions[] = [
+                'heading' => t('Section - {section}', [
+                    'section' => t($section->name, category: 'site'),
+                ]),
+                'permissions' => $sectionPermissions,
+            ];
+        }
+    }
+
+    private function _volumePermissions(array &$permissions): void
+    {
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+
+        if (!$volumes) {
+            return;
+        }
+
+        $type = Asset::pluralLowerDisplayName();
+
+        foreach ($volumes as $volume) {
+            $permissions[] = [
+                'heading' => t('Volume - {volume}', [
+                    'volume' => t($volume->name, category: 'site'),
+                ]),
+                'permissions' => [
+                    "viewAssets:$volume->uid" => [
+                        'label' => mb_ucfirst(t('View {type}', ['type' => $type])),
+                        'nested' => [
+                            "saveAssets:$volume->uid" => [
+                                'label' => mb_ucfirst(t('Save {type}', ['type' => $type])),
+                            ],
+                            "deleteAssets:$volume->uid" => [
+                                'label' => mb_ucfirst(t('Delete {type}', ['type' => $type])),
+                            ],
+                            "replaceFiles:$volume->uid" => [
+                                'label' => t('Replace files'),
+                            ],
+                            "editImages:$volume->uid" => [
+                                'label' => t('Edit images'),
+                            ],
+                            "viewPeerAssets:$volume->uid" => [
+                                'label' => t('View assets uploaded by other users'),
+                                'nested' => [
+                                    "savePeerAssets:$volume->uid" => [
+                                        'label' => t('Save assets uploaded by other users'),
+                                    ],
+                                    "replacePeerFiles:$volume->uid" => [
+                                        'label' => t('Replace files uploaded by other users'),
+                                        'warning' => t('When someone replaces a file, the record of who uploaded the file will be updated as well.'),
+                                    ],
+                                    "deletePeerAssets:$volume->uid" => [
+                                        'label' => t('Remove files uploaded by other users'),
+                                    ],
+                                    "editPeerImages:$volume->uid" => [
+                                        'label' => t('Edit images uploaded by other users'),
+                                    ],
+                                ],
+                            ],
+                            "createFolders:$volume->uid" => [
+                                'label' => t('Create subfolders'),
+                            ],
+                        ],
+                    ],
+                ],
+            ];
+        }
+    }
+
+    private function _utilityPermissions(array &$permissions): void
+    {
+        $utilityPermissions = [];
+
+        foreach (app(Utilities::class)->getAllUtilityTypes() as $class) {
+            /** @var Utility $class */
+            // Admins only
+            if (ProjectConfigUtility::id() === $class::id()) {
+                continue;
+            }
+
+            $utilityPermissions[sprintf('utility:%s', $class::id())] = [
+                'label' => $class::displayName(),
+            ];
+        }
+
+        $permissions[] = [
+            'heading' => t('Utilities'),
+            'permissions' => $utilityPermissions,
+        ];
+    }
+
+    /**
+     * Filters out any permissions that aren't assignable by the current user.
+     *
+     * @param array $permissions The original permissions
+     * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array The filtered permissions
+     */
+    private function _filterUnassignablePermissions(array $permissions, ?User $user = null): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser && !$user) {
+            return [];
+        }
+
+        $assignablePermissions = [];
+
+        foreach ($permissions as $name => $data) {
+            if (($currentUser !== null && $currentUser->can($name)) || ($user !== null && $user->can($name))) {
+                if (isset($data['nested'])) {
+                    $data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
+                }
+
+                $assignablePermissions[$name] = $data;
+            }
+        }
+
+        return $assignablePermissions;
+    }
+
+    /**
+     * Filters out any orphaned permissions.
+     *
+     * @param array $postedPermissions The posted permissions.
+     * @param array $groupPermissions Permissions the user is already assigned
+     * to via their group, if we’re saving a user’s permissions.
+     *
+     * @return array The permissions we'll actually let them save.
+     */
+    private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
+    {
+        $filteredPermissions = [];
+
+        if (!empty($postedPermissions)) {
+            foreach ($this->getAllPermissions() as $group) {
+                $this->_findSelectedPermissions($group['permissions'], $postedPermissions, $groupPermissions,
+                    $filteredPermissions);
+            }
+        }
+
+        return $filteredPermissions;
+    }
+
+    /**
+     * Iterates through a group of permissions, returning the ones that were selected.
+     *
+     * @param array $permissionsGroup
+     * @param array $postedPermissions
+     * @param array $groupPermissions
+     * @param array $filteredPermissions
+     *
+     * @return bool Whether any permissions were added to $filteredPermissions
+     */
+    private function _findSelectedPermissions(
+        array $permissionsGroup,
+        array $postedPermissions,
+        array $groupPermissions,
+        array &$filteredPermissions,
+    ): bool {
+        $hasAssignedPermissions = false;
+
+        foreach ($permissionsGroup as $name => $data) {
+            $name = strtolower($name);
+            // Should the user have this permission (either directly or via their group)?
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array($name, $groupPermissions,
+                    true)) {
+                // First assign any nested permissions
+                if (!empty($data['nested'])) {
+                    $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions,
+                        $groupPermissions, $filteredPermissions);
+                } else {
+                    $hasAssignedNestedPermissions = false;
+                }
+
+                // Were they assigned this permission (or any of its nested permissions) directly?
+                if ($inPostedPermissions || $hasAssignedNestedPermissions) {
+                    // Assign the permission directly to the user
+                    $filteredPermissions[] = $name;
+                    $hasAssignedPermissions = true;
+                }
+            }
+        }
+
+        return $hasAssignedPermissions;
+    }
+
+    /**
+     * Returns a permission record based on its name. If a record doesn't exist, it will be created.
+     */
+    private function getPermissionModelByName(string $permissionName): UserPermission
+    {
+        // Permission names are always stored in lowercase
+        $permissionName = strtolower($permissionName);
+
+        return UserPermission::firstOrCreate([
+            'name' => $permissionName,
+        ]);
+    }
+
+    private function _createUserPermissionsQuery(): Builder
+    {
+        return DB::table(Table::USERPERMISSIONS, 'p')
+            ->select(['p.name']);
+    }
+
+    /**
+     * Resets the internal state
+     *
+     * @since 5.8.13
+     */
+    public function reset(): void
+    {
+        $this->_allPermissions = null;
+        $this->_allPermissionNames = null;
+        $this->_permissionsByGroupId = [];
+        $this->_permissionsByUserId = [];
+    }
+}
