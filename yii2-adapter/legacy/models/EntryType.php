@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;

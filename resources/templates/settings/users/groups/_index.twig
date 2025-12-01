@@ -13,7 +13,7 @@
     "No groups exist yet.",
 ]) %}
 
-{% set groups = craft.app.userGroups.getAllGroups() %}
+{% set groups = craft.userGroups.getAllGroups() %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

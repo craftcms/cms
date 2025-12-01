@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
@@ -15,11 +16,14 @@ use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireEdition;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -89,6 +93,21 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/sites', [SitesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
+
+        // User groups
+        Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
+            Route::get('settings/users', [UserGroupsController::class, 'index']);
+            Route::middleware([
+                RequireEdition::class.':'.Edition::Pro->value,
+                RequireAdminChanges::class,
+            ])->group(function () {
+                Route::get('settings/users/groups/new', [UserGroupsController::class, 'create']);
+            });
+            Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit']);
+        });
+
+        // User settings
+        Route::get('settings/users/settings', [UserSettingsController::class, 'index']);
     });
 
     Route::prefix('settings/filesystems')->group(function () {

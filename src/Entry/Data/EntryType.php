@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Data;
 
 use Craft;
-use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\elements\Entry;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Database\Table;

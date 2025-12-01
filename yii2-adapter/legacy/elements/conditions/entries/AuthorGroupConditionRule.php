@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\entries;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -10,7 +9,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\models\UserGroup;
-use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use function CraftCms\Cms\t;
 
 /**
@@ -42,7 +41,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
      */
     public static function isSelectable(): bool
     {
-        return !empty(Craft::$app->getUserGroups()->getAllGroups());
+        return UserGroups::getAllGroups()->isNotEmpty();
     }
 
     /**
@@ -50,8 +49,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
      */
     protected function options(): array
     {
-        $sections = Craft::$app->getUserGroups()->getAllGroups();
-        return Arr::pluck($sections, 'name', 'uid');
+        return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
     /**
@@ -60,8 +58,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $userGroups = Craft::$app->getUserGroups();
-        $query->authorGroupId($this->paramValue(fn($uid) => $userGroups->getGroupByUid($uid)->id ?? null));
+        $query->authorGroupId($this->paramValue(fn($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }
 
     /**

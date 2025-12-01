@@ -1491,7 +1491,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets an array of user groups on the user.
      *
-     * @param  UserGroup[]  $groups  An array of UserGroup objects.
+     * @param  UserGroup[]|\CraftCms\Cms\User\Data\UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {
@@ -1503,23 +1503,24 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param  int|string|UserGroup  $group  The user group model, its handle, or ID.
+     * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
      */
-    public function isInGroup(UserGroup|int|string $group): bool
+    public function isInGroup(\CraftCms\Cms\User\Data\UserGroup|int|string $group): bool
     {
         if (Edition::get() < Edition::Pro) {
             return false;
         }
 
-        if ($group instanceof UserGroup) {
+        if ($group instanceof \CraftCms\Cms\User\Data\UserGroup) {
             $group = $group->id;
         }
 
         if (is_numeric($group)) {
-            return Collection::make($this->getGroups())->contains('id', '==', $group);
+            return Collection::make($this->getGroups())->contains('id', $group);
         }
 
-        return Collection::make($this->getGroups())->contains('handle', '===', $group);
+        /** @phpstan-ignore argument.type */
+        return Collection::make($this->getGroups())->containsStrict('handle', $group);
     }
 
     /**

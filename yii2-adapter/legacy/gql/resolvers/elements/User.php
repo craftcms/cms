@@ -7,7 +7,6 @@
 
 namespace craft\gql\resolvers\elements;
 
-use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
@@ -16,6 +15,7 @@ use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use yii\base\UnknownMethodException;
 
 /**
@@ -58,14 +58,12 @@ class User extends ElementResolver
 
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
-            $userGroupsService = Craft::$app->getUserGroups();
             if (Edition::get() < Edition::Pro) {
-                $availableGroupUids = array_map(fn($group) => $group->uid, $userGroupsService->getAllGroups());
+                $availableGroupUids = UserGroups::getAllGroups()->pluck('uid')->all();
                 $pairs['usergroups'] = array_filter($pairs['usergroups'], fn($uid) => in_array($uid, $availableGroupUids));
             }
-            $allowedGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
-                $userGroupsService = $userGroupsService->getGroupByUid($uid);
-                return $userGroupsService->id ?? null;
+            $allowedGroupIds = array_filter(array_map(function(string $uid) {
+                return UserGroups::getGroupByUid($uid)->id ?? null;
             }, $pairs['usergroups']));
 
             $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, (array)$query->groupId) : $allowedGroupIds;

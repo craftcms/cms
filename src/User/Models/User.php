@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -147,7 +148,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     }
 
     /**
-     * @return Collection<\craft\models\UserGroup>
+     * @return Collection<\CraftCms\Cms\User\Data\UserGroup>
      */
     public function getGroups(): Collection
     {
@@ -159,7 +160,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             return collect();
         }
 
-        return $this->userGroupData = collect(Craft::$app->getUserGroups()->getGroupsByUserId($this->id));
+        return $this->userGroupData = UserGroups::getGroupsByUserId($this->id);
     }
 
     /**

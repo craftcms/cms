@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
@@ -16,7 +15,9 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use GraphQL\Type\Definition\Type;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -28,7 +29,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Users');
@@ -37,7 +38,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'user-group';
@@ -54,7 +55,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a user');
@@ -63,7 +64,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', UserQuery::class, ElementCollection::class, User::class);
@@ -72,7 +73,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryUsers($schema);
@@ -81,7 +82,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -96,7 +97,7 @@ final class Users extends BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -110,12 +111,7 @@ final class Users extends BaseRelationField
             return null;
         }
 
-        $userGroupsService = Craft::$app->getUserGroups();
-        $userGroupIds = array_filter(array_map(function (string $uid) use ($userGroupsService) {
-            $userGroupsService = $userGroupsService->getGroupByUid($uid);
-
-            return $userGroupsService->id ?? null;
-        }, $userGroupUids));
+        $userGroupIds = array_filter(array_map(fn (string $uid) => UserGroups::getGroupByUid($uid)->id ?? null, $userGroupUids));
 
         return [
             'groupId' => $userGroupIds,

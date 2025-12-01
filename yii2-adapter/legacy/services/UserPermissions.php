@@ -14,7 +14,6 @@ use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\models\UserGroup;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -26,6 +25,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
@@ -193,7 +193,7 @@ class UserPermissions extends Component
     public function getGroupPermissionsByUserId(int $userId): array
     {
         if (Edition::get() === Edition::Team) {
-            $group = Craft::$app->getUserGroups()->getTeamGroup();
+            $group = UserGroups::getTeamGroup();
             return $this->getPermissionsByGroupId($group->id);
         }
 
@@ -243,8 +243,7 @@ class UserPermissions extends Component
         // Sort ascending
         sort($permissions);
 
-        /** @var UserGroup $group */
-        $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+        $group = UserGroups::getGroupById($groupId);
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         app(ProjectConfig::class)->set($path, $permissions,
             "Update permissions for user group “{$group->handle}”");
@@ -407,7 +406,7 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-        $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+        $userGroup = UserGroups::getGroupByUid($uid);
 
         // No group - no permissions to change.
         if (!$userGroup) {
@@ -493,7 +492,7 @@ class UserPermissions extends Component
         $assignGroupPermissions = [];
 
         if (Edition::get()->value >= Edition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            foreach (UserGroups::getAllGroups() as $group) {
                 $assignGroupPermissions["assignUserGroup:$group->uid"] = [
                     'label' => t('Assign users to “{group}”', [
                         'group' => t($group->name, category: 'site'),

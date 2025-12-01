@@ -409,9 +409,20 @@ Moved the following controllers:
 - Deprecated `craft\i18n\Translation`. `CraftCms\Cms\Support\Facades\I18N` should be used instead.
 - Deprecated `Craft::t`. `CraftCms\Cms\t` should be used instead.
 
-
 ## Users
 
+- Removed `\craft\controllers\UserSettingsController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+- Deprecated `UserGroupEvent` in favor of:
+  - `CraftCms\Cms\User\Events\SavingUserGroup`
+  - `CraftCms\Cms\User\Events\UserGroupSaved`
+  - `CraftCms\Cms\User\Events\ApplyingUserGroupDelete`
+  - `CraftCms\Cms\User\Events\DeletingUserGroup`
+  - `CraftCms\Cms\User\Events\UserGroupDeleted`
+- Deprecated `\craft\exceptions\UserGroupNotFoundException`.
+- Deprecated `\craft\services\UserGroups`. `CraftCms\Cms\User\UserGroups` should be used instead.
+- Deprecated `\craft\models\UserGroup`. `CraftCms\Cms\User\Data\UserGroup` should be used instead.
 - Deprecated `\craft\records\User`. `\CraftCms\Cms\User\Models\User` should be used instead.
 - Deprecated `\craft\records\UserGroup`. `\CraftCms\Cms\User\Models\UserGroup` should be used instead.
 - Deprecated `\craft\records\UserPermission`. `\CraftCms\Cms\User\Models\UserPermission` should be used instead.
