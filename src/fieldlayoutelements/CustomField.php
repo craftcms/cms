@@ -762,6 +762,14 @@ class CustomField extends BaseField
             $items = [];
         }
 
+        $user = Craft::$app->getUser()->getIdentity();
+        if ($user?->admin && !$user->getPreference('showFieldHandles')) {
+            $items[] = $this->copyAttributeAction([
+                'label' => Craft::t('app', 'Copy field handle'),
+                'promptLabel' => Craft::t('app', 'Field Handle'),
+            ]);
+        }
+
         return $items;
     }
 }

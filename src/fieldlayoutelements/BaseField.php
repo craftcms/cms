@@ -873,6 +873,47 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param array $config
+     * @return array
+     * @since 5.9.0
+     */
+    protected function copyAttributeAction(array $config = []): array
+    {
+        $config += [
+            'id' => sprintf('action-copy-handle-%s', mt_rand()),
+            'icon' => 'clipboard',
+            'label' => Craft::t('app', 'Copy attribute name'),
+            'promptLabel' => Craft::t('app', 'Attribute Name'),
+            'attribute' => $this->attribute(),
+        ];
+
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($id, $promptLabel, $attribute) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    Craft.ui.createCopyTextPrompt({
+      label: $promptLabel,
+      value: $attribute,
+    });
+  });
+})();
+JS, [
+            $view->namespaceInputId($config['id']),
+            $config['promptLabel'],
+            $config['attribute'],
+        ]);
+
+        return [
+            'id' => $config['id'],
+            'icon' => $config['icon'],
+            'label' => $config['label'],
+        ];
+    }
+
+    /**
      * Return the HTML that should be shown for the native field in the card preview.
      * It can be used outside an element context, e.g. in a card view designer.
      *
