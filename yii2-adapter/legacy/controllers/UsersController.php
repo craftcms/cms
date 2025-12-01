@@ -58,7 +58,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
-use CraftCms\Cms\User\Events\DefineUserEditScreens;
+use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use Illuminate\Support\Facades\Event;
 use Throwable;
@@ -2790,7 +2790,7 @@ JS);
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineUserEditScreens::class, function(DefineUserEditScreens $event) {
+        Event::listen(DefineEditUserScreens::class, function(DefineEditUserScreens $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
                 $currentUser = User::find()->id($event->currentUser->id)->one();
                 $editedUser = User::find()->id($event->editedUser->id)->one();

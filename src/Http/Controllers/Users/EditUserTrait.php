@@ -10,7 +10,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Elements\User;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\User\Events\DefineUserEditScreens;
+use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
@@ -79,8 +79,8 @@ trait EditUserTrait
 
         $currentUser = Auth::user()->asElement();
 
-        if (Event::hasListeners(DefineUserEditScreens::class)) {
-            Event::dispatch($event = new DefineUserEditScreens($currentUser, $user, $screens));
+        if (Event::hasListeners(DefineEditUserScreens::class)) {
+            Event::dispatch($event = new DefineEditUserScreens($currentUser, $user, $screens));
             $screens = $event->screens;
         }
 
