@@ -7,10 +7,10 @@ namespace CraftCms\Cms\User;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\Element\Elements\User;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -379,6 +379,7 @@ final class UserPermissions
         // Update caches
         $this->permissionsByGroupId ??= collect();
         $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
+        unset($this->permissionsByUserId);
     }
 
     private function generalPermissions(Collection $permissions): void
