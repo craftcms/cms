@@ -383,6 +383,16 @@ abstract class BaseField extends FieldLayoutElement
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $actionMenuItems,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            $actionMenuItems = $event->items;
+        }
+
         if (
             $this->uid &&
             $element?->id &&
@@ -859,19 +869,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
-        $items = [];
-
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineFieldActionsEvent([
-                'element' => $element,
-                'static' => $static,
-                'items' => $items,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-            return $event->items;
-        }
-
-        return $items;
+        return [];
     }
 
     /**

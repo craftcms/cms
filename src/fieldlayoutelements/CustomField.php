@@ -17,7 +17,6 @@ use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
-use craft\events\DefineFieldActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -761,16 +760,6 @@ class CustomField extends BaseField
             $items = $field->getActionMenuItems();
         } else {
             $items = [];
-        }
-
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineFieldActionsEvent([
-                'element' => $element,
-                'static' => $static,
-                'items' => $items,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-            return $event->items;
         }
 
         return $items;
