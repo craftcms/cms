@@ -75,6 +75,7 @@
 - Added `craft\fields\BaseRelationField::VIEW_MODE_THUMBS`.
 - Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
 - Added `craft\gql\base\ElementArguments::EVENT_DEFINE_ARGUMENTS`. ([#18062](https://github.com/craftcms/cms/discussions/18062))
+- Added `craft\helpers\Assets::resolveSubpath()`. ([#18103](https://github.com/craftcms/cms/pull/18103))
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\helpers\UrlHelper::cpReferralUrl()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
@@ -91,7 +92,6 @@
 - Added `craft\web\Request::getHasInvalidToken()`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
-- Added `craft\helpers\Assets::resolveSubpath()`. ([#18103](https://github.com/craftcms/cms/pull/18103))
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
