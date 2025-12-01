@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
@@ -199,6 +200,6 @@ final readonly class PermissionsController
             $this->requireElevatedSession();
         }
 
-        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);
+        UserPermissions::saveUserPermissions($user->id, $permissions);
     }
 }
