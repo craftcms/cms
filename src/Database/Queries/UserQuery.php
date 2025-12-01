@@ -53,7 +53,7 @@ final class UserQuery extends ElementQuery
             'users.lastName as lastName',
             'users.email as email',
             'users.unverifiedEmail as unverifiedEmail',
-            'users.lastLoginDate as lastLo2ginDate',
+            'users.lastLoginDate as lastLoginDate',
             'users.lockoutDate as lockoutDate',
             'users.hasDashboard as hasDashboard',
             'users.affiliatedSiteId as affiliatedSiteId',

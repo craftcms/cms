@@ -63,6 +63,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
@@ -1819,9 +1820,7 @@ XML;
             return false;
         }
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        return $currentUser && $currentUser->id == $this->id;
+        return Auth::user()?->id === $this->id;
     }
 
     /**

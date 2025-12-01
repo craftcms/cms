@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use Craft;
 use craft\console\controllers\HelpController;
+use craft\controllers\UsersController;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -491,6 +492,11 @@ class Yii2ServiceProvider extends ServiceProvider
         SystemMessages::registerEvents();
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
+
+        /**
+         * Controllers
+         */
+        UsersController::registerEvents();
 
         /**
          * Utilities
