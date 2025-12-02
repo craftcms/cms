@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \CraftCms\Cms\Http\Controllers\Settings\SectionsController::tableData
 * @see Users/brianhanson/Development/craft6/src/Http/Controllers/Settings/SectionsController.php:191

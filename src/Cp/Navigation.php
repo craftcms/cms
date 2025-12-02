@@ -27,7 +27,7 @@ class Navigation
 
     public function getItems(): array
     {
-        $isAdmin = Auth::user()->isAdmin();
+        $isAdmin = Auth::user()?->isAdmin();
         $generalConfig = Cms::config();
 
         $navItems = [
