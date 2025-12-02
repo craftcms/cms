@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Describable;
 use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 
 use function CraftCms\Cms\t;
@@ -26,6 +26,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Data\UserGroup} instead.
  */
 class UserGroup extends Model implements Chippable, Grippable, Describable, CpEditable, Actionable
 {

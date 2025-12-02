@@ -13,12 +13,11 @@ use craft\base\NestedElementTrait;
 use craft\elements\db\ContentBlockQuery;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
-use craft\records\ContentBlock as ContentBlockRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Models\ContentBlock as ContentBlockModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
-use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
 /**
@@ -198,29 +197,24 @@ class ContentBlock extends Element implements NestedElementInterface
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             // Get the content block record
             if (!$isNew) {
-                $record = ContentBlockRecord::findOne($this->id);
-
-                if (!$record) {
-                    throw new InvalidConfigException("Invalid content block ID: $this->id");
-                }
+                $model = ContentBlockModel::findOrFail($this->id);
             } else {
-                $record = new ContentBlockRecord();
-                $record->id = (int)$this->id;
+                $model = new ContentBlockModel();
+                $model->id = (int)$this->id;
             }
 
-            $record->fieldId = $this->fieldId;
-            $record->primaryOwnerId = $this->getPrimaryOwnerId();
+            $model->fieldId = $this->fieldId;
+            $model->primaryOwnerId = $this->getPrimaryOwnerId();
 
             // Capture the dirty attributes from the record
-            $dirtyAttributes = array_keys($record->getDirtyAttributes());
-            $record->save(false);
+            $dirtyAttributes = array_keys($model->getDirty());
+            $model->save();
 
             $this->setDirtyAttributes($dirtyAttributes);
 

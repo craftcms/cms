@@ -2,7 +2,6 @@
 
 return [
     'myaccount/permissions' => 'users/permissions',
-    'settings/users' => 'user-settings/edit-group',
     'users' => 'users/index',
     'users/new' => 'users/create',
     'users/<userId:\d+>' => 'users/profile',

@@ -56,7 +56,6 @@ use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\Asset as AssetRecord;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -64,6 +63,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -3283,42 +3283,38 @@ JS;
 
             // Get the asset record
             if (!$isNew) {
-                $record = AssetRecord::findOne($this->id);
-
-                if (!$record) {
-                    throw new InvalidConfigException("Invalid asset ID: $this->id");
-                }
+                $model = AssetModel::findOrFail($this->id);
             } else {
-                $record = new AssetRecord();
-                $record->id = (int)$this->id;
+                $model = new AssetModel();
+                $model->id = (int)$this->id;
             }
 
-            $record->filename = $this->_filename;
-            $record->volumeId = $this->getVolumeId();
-            $record->folderId = (int)$this->folderId;
-            $record->uploaderId = (int)$this->uploaderId ?: null;
-            $record->kind = $this->kind;
-            $record->size = (int)$this->size ?: null;
-            $record->width = (int)$this->_width ?: $fallbackWidth;
-            $record->height = (int)$this->_height ?: $fallbackHeight;
-            $record->dateModified = Db::prepareDateForDb($this->dateModified);
+            $model->filename = $this->_filename;
+            $model->volumeId = $this->getVolumeId();
+            $model->folderId = (int)$this->folderId;
+            $model->uploaderId = (int)$this->uploaderId ?: null;
+            $model->kind = $this->kind;
+            $model->size = (int)$this->size ?: null;
+            $model->width = (int)$this->_width ?: $fallbackWidth;
+            $model->height = (int)$this->_height ?: $fallbackHeight;
+            $model->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if (isset($this->_mimeType)) {
-                $record->mimeType = $this->_mimeType;
+                $model->mimeType = $this->_mimeType;
             }
 
-            if ($record->alt === null) {
-                $record->alt = $this->alt;
+            if ($model->alt === null) {
+                $model->alt = $this->alt;
             }
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
-                $record->focalPoint = number_format($focal['x'], 4) . ';' . number_format($focal['y'], 4);
+                $model->focalPoint = number_format($focal['x'], 4) . ';' . number_format($focal['y'], 4);
             } else {
-                $record->focalPoint = null;
+                $model->focalPoint = null;
             }
 
-            $record->save(false);
+            $model->save();
         }
 
         if (

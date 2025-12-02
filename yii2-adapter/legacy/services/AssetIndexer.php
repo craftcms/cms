@@ -19,7 +19,6 @@ use craft\errors\MissingVolumeFolderException;
 use craft\errors\MutexException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -29,7 +28,7 @@ use craft\models\AssetIndexingSession;
 use craft\models\FsListing;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
@@ -204,7 +203,7 @@ class AssetIndexer extends Component
      */
     public function stopIndexingSession(AssetIndexingSession $session): void
     {
-        AssetIndexingSessionRecord::findOne($session->id)?->delete();
+        AssetIndexingSessionModel::find($session->id)?->delete();
     }
 
     /**
@@ -255,10 +254,10 @@ class AssetIndexer extends Component
     protected function storeIndexingSession(AssetIndexingSession $session): void
     {
         if ($session->id !== null) {
-            $record = AssetIndexingSessionRecord::findOne($session->id);
+            $record = AssetIndexingSessionModel::find($session->id);
         }
 
-        $record ??= new AssetIndexingSessionRecord();
+        $record ??= new AssetIndexingSessionModel();
 
         $record->indexedVolumes = $session->indexedVolumes;
         $record->totalEntries = $session->totalEntries;
@@ -271,8 +270,8 @@ class AssetIndexer extends Component
         $record->save();
 
         $session->id = $record->id;
-        $session->dateUpdated = DateTimeHelper::toDateTime($record->dateUpdated);
-        $session->dateCreated = DateTimeHelper::toDateTime($record->dateCreated);
+        $session->dateUpdated = $record->dateUpdated;
+        $session->dateCreated = $record->dateCreated;
     }
 
     /**
@@ -959,10 +958,8 @@ class AssetIndexer extends Component
                 sprintf('Could not acquire a lock for the indexing session "%s".', $session->id));
         }
 
-        /** @var AssetIndexingSessionRecord $record */
-        $record = AssetIndexingSessionRecord::findOne($session->id);
-        $record->processedEntries++;
-        $record->save();
+        $record = AssetIndexingSessionModel::findOrFail($session->id);
+        $record->increment('processedEntries');
         $mutex->release();
 
         $session->processedEntries = (int)$record->processedEntries;

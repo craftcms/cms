@@ -8,6 +8,7 @@
 namespace craft\fieldlayoutelements\addresses;
 
 use CommerceGuys\Addressing\Country\Country;
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
@@ -131,5 +132,19 @@ class CountryCodeField extends BaseNativeField
         }
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
     }
 }

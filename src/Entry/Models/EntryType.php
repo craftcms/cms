@@ -23,11 +23,14 @@ final class EntryType extends BaseModel
 
     protected $table = Table::ENTRYTYPES;
 
-    protected $casts = [
-        'hasTitleField' => 'boolean',
-        'showSlugField' => 'boolean',
-        'showStatusField' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'hasTitleField' => 'bool',
+            'showSlugField' => 'bool',
+            'showStatusField' => 'bool',
+        ];
+    }
 
     /**
      * @return BelongsTo<FieldLayout, $this>

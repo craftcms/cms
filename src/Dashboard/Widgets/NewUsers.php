@@ -9,7 +9,9 @@ use craft\elements\User;
 use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -18,7 +20,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('New {type}', [
@@ -29,7 +31,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
@@ -39,7 +41,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'user-group';
@@ -58,19 +60,19 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
-        if ($groupId = $this->userGroupId) {
-            $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
+        if (! $groupId = $this->userGroupId) {
+            return parent::getTitle();
+        }
 
-            if ($userGroup) {
-                return sprintf(
-                    '%s – %s',
-                    parent::getTitle(),
-                    t($userGroup->name, category: 'site'),
-                );
-            }
+        if ($userGroup = UserGroups::getGroupById($groupId)) {
+            return sprintf(
+                '%s – %s',
+                parent::getTitle(),
+                t($userGroup->name, category: 'site'),
+            );
         }
 
         return parent::getTitle();
@@ -79,7 +81,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         if (Edition::get()->value < Edition::Pro->value) {
@@ -99,7 +101,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',

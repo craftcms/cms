@@ -14,8 +14,6 @@ use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\models\UserGroup;
-use craft\records\UserPermission as UserPermissionRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -27,7 +25,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
@@ -193,7 +193,7 @@ class UserPermissions extends Component
     public function getGroupPermissionsByUserId(int $userId): array
     {
         if (Edition::get() === Edition::Team) {
-            $group = Craft::$app->getUserGroups()->getTeamGroup();
+            $group = UserGroups::getTeamGroup();
             return $this->getPermissionsByGroupId($group->id);
         }
 
@@ -243,8 +243,7 @@ class UserPermissions extends Component
         // Sort ascending
         sort($permissions);
 
-        /** @var UserGroup $group */
-        $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+        $group = UserGroups::getGroupById($groupId);
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         app(ProjectConfig::class)->set($path, $permissions,
             "Update permissions for user group “{$group->handle}”");
@@ -368,9 +367,9 @@ class UserPermissions extends Component
             $userPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $permissionModel = $this->getPermissionModelByName($permissionName);
                 $userPermissionVals[] = [
-                    'permissionId' => $permissionRecord->id,
+                    'permissionId' => $permissionModel->id,
                     'userId' => $userId,
                     'dateCreated' => $now = now(),
                     'dateUpdated' => $now,
@@ -407,7 +406,7 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-        $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+        $userGroup = UserGroups::getGroupByUid($uid);
 
         // No group - no permissions to change.
         if (!$userGroup) {
@@ -425,9 +424,9 @@ class UserPermissions extends Component
             $now = now();
 
             foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $permissionModel = $this->getPermissionModelByName($permissionName);
                 $groupPermissionVals[] = [
-                    'permissionId' => $permissionRecord->id,
+                    'permissionId' => $permissionModel->id,
                     'groupId' => $userGroup->id,
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
@@ -493,7 +492,7 @@ class UserPermissions extends Component
         $assignGroupPermissions = [];
 
         if (Edition::get()->value >= Edition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            foreach (UserGroups::getAllGroups() as $group) {
                 $assignGroupPermissions["assignUserGroup:$group->uid"] = [
                     'label' => t('Assign users to “{group}”', [
                         'group' => t($group->name, category: 'site'),
@@ -887,25 +886,15 @@ class UserPermissions extends Component
 
     /**
      * Returns a permission record based on its name. If a record doesn't exist, it will be created.
-     *
-     * @param string $permissionName
-     *
-     * @return UserPermissionRecord
      */
-    private function _getPermissionRecordByName(string $permissionName): UserPermissionRecord
+    private function getPermissionModelByName(string $permissionName): UserPermission
     {
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);
 
-        $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
-
-        if (!$permissionRecord) {
-            $permissionRecord = new UserPermissionRecord();
-            $permissionRecord->name = $permissionName;
-            $permissionRecord->save();
-        }
-
-        return $permissionRecord;
+        return UserPermission::firstOrCreate([
+            'name' => $permissionName,
+        ]);
     }
 
     private function _createUserPermissionsQuery(): Builder

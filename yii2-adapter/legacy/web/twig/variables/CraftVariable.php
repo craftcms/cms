@@ -36,6 +36,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
+use CraftCms\Cms\User\UserGroups;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -271,6 +272,11 @@ class CraftVariable extends ServiceLocator
     public function siteGroups(): SiteGroups
     {
         return app(SiteGroups::class);
+    }
+
+    public function userGroups(): UserGroups
+    {
+        return app(UserGroups::class);
     }
 
     /**

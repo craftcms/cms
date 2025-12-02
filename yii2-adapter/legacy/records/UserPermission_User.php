@@ -21,6 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property User $user User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class UserPermission_User extends ActiveRecord
 {

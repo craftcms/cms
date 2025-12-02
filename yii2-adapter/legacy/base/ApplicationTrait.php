@@ -1257,6 +1257,7 @@ trait ApplicationTrait
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\UserGroups} instead.
      */
     public function getUserGroups(): UserGroups
     {

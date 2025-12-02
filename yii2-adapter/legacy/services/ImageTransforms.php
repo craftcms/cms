@@ -23,8 +23,8 @@ use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
-use craft\records\ImageTransform as ImageTransformRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -245,35 +245,35 @@ class ImageTransforms extends Component
         DB::beginTransaction();
 
         try {
-            $transformRecord = $this->_getTransformRecord($transformUid);
-            $isNewTransform = $transformRecord->getIsNewRecord();
+            $transformModel = $this->getImageTransformModel($transformUid);
+            $isNewTransform = !$transformModel->exists;
 
-            $transformRecord->name = $data['name'];
-            $transformRecord->handle = $data['handle'];
+            $transformModel->name = $data['name'];
+            $transformModel->handle = $data['handle'];
 
-            $heightChanged = $transformRecord->width !== $data['width'] || $transformRecord->height !== $data['height'];
-            $modeChanged = $transformRecord->mode !== $data['mode'] || $transformRecord->position !== $data['position'];
-            $qualityChanged = $transformRecord->quality !== $data['quality'];
-            $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
-            $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = ($transformRecord->upscale !== null ? (bool)$transformRecord->upscale : null) !== ($data['upscale'] ?? null);
+            $heightChanged = $transformModel->width !== $data['width'] || $transformModel->height !== $data['height'];
+            $modeChanged = $transformModel->mode !== $data['mode'] || $transformModel->position !== $data['position'];
+            $qualityChanged = $transformModel->quality !== $data['quality'];
+            $interlaceChanged = $transformModel->interlace !== $data['interlace'];
+            $fillChanged = $transformModel->fill !== ($data['fill'] ?? null);
+            $upscaleChanged = ($transformModel->upscale !== null ? (bool)$transformModel->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
-                $transformRecord->parameterChangeTime = DbHelper::prepareDateForDb(new DateTime());
+                $transformModel->parameterChangeTime = DbHelper::prepareDateForDb(new DateTime());
             }
 
-            $transformRecord->mode = $data['mode'];
-            $transformRecord->position = $data['position'];
-            $transformRecord->width = $data['width'];
-            $transformRecord->height = $data['height'];
-            $transformRecord->quality = $data['quality'];
-            $transformRecord->interlace = $data['interlace'];
-            $transformRecord->format = $data['format'];
-            $transformRecord->fill = $data['fill'] ?? null;
-            $transformRecord->upscale = $data['upscale'] ?? true;
-            $transformRecord->uid = $transformUid;
+            $transformModel->mode = $data['mode'];
+            $transformModel->position = $data['position'];
+            $transformModel->width = $data['width'];
+            $transformModel->height = $data['height'];
+            $transformModel->quality = $data['quality'];
+            $transformModel->interlace = $data['interlace'];
+            $transformModel->format = $data['format'];
+            $transformModel->fill = $data['fill'] ?? null;
+            $transformModel->upscale = $data['upscale'] ?? true;
+            $transformModel->uid = $transformUid;
 
-            $transformRecord->save(false);
+            $transformModel->save();
 
             DB::commit();
         } catch (Throwable $e) {
@@ -287,7 +287,7 @@ class ImageTransforms extends Component
         // Fire an 'afterSaveImageTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'imageTransform' => $this->getTransformById($transformRecord->id),
+                'imageTransform' => $this->getTransformById($transformModel->id),
                 'isNew' => $isNewTransform,
             ]));
         }
@@ -602,13 +602,9 @@ class ImageTransforms extends Component
 
     /**
      * Gets a transform's record by uid.
-     *
-     * @param string $uid
-     *
-     * @return ImageTransformRecord
      */
-    private function _getTransformRecord(string $uid): ImageTransformRecord
+    private function getImageTransformModel(string $uid): ImageTransformModel
     {
-        return ImageTransformRecord::findOne(['uid' => $uid]) ?? new ImageTransformRecord();
+        return ImageTransformModel::findByUid($uid) ?? new ImageTransformModel();
     }
 }

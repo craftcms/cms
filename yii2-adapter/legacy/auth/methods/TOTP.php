@@ -13,14 +13,14 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
 use craft\helpers\Session as SessionHelper;
-use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use Exception;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
-use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use function CraftCms\Cms\t;
 
@@ -157,9 +157,7 @@ JS, [
      */
     public function remove(): void
     {
-        AuthenticatorRecord::deleteAll([
-            'userId' => $this->user->id,
-        ]);
+        Authenticator::where('userId', $this->user->id)->delete();
     }
 
     /**
@@ -177,7 +175,7 @@ JS, [
             try {
                 $secret = $google2fa->generateSecretKey(32);
                 SessionHelper::set($this->secretParam, $secret);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }
@@ -193,12 +191,10 @@ JS, [
      */
     private static function secretFromDb(int $userId): ?string
     {
-        $record = AuthenticatorRecord::find()
-            ->select(['auth2faSecret'])
-            ->where(['userId' => $userId])
-            ->one();
-
-        return $record ? $record['auth2faSecret'] : null;
+        return Authenticator::query()
+            ->select('auth2faSecret')
+            ->where('userId', $userId)
+            ->value('auth2faSecret');
     }
 
     /**
@@ -216,20 +212,14 @@ JS, [
             throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
         }
 
-        /** @var AuthenticatorRecord|null $record */
-        $record = AuthenticatorRecord::find()
-            ->where(['userId' => $userId])
-            ->one();
+        $model = Authenticator::firstOrNew([
+            'userId' => $userId,
+        ]);
 
-        if (!$record) {
-            $record = new AuthenticatorRecord();
-            $record->userId = $userId;
-        }
-
-        $record->auth2faSecret = $secret;
+        $model->auth2faSecret = $secret;
         // whenever we store the secret, we should ensure the oldTimestamp is accurate too
-        $record->oldTimestamp = (new Google2FA())->getTimestamp();
-        $record->save();
+        $model->oldTimestamp = (new Google2FA())->getTimestamp();
+        $model->save();
     }
 
     /**
@@ -240,18 +230,12 @@ JS, [
      */
     private function lastUsedTimestamp(int $userId): ?int
     {
-        $record = AuthenticatorRecord::find()
-            ->select(['oldTimestamp'])
-            ->where(['userId' => $userId])
-            ->one();
-
-        if (!$record) {
-            return null;
-        }
-
         // old timestamp is the current Unix Timestamp divided by the $keyRegeneration period
         // so we store it as int and don't mess with it
-        return $record['oldTimestamp'];
+        return Authenticator::query()
+            ->select('oldTimestamp')
+            ->where('userId', $userId)
+            ->value('oldTimestamp');
     }
 
     /**
@@ -263,18 +247,13 @@ JS, [
      */
     private function storeLastUsedTimestamp(int $userId, int $timestamp): void
     {
-        /** @var AuthenticatorRecord|null $record */
-        $record = AuthenticatorRecord::find()
-            ->where(['userId' => $userId])
-            ->one();
-
-        if (!$record) {
+        Authenticator::query()
+            ->where('userId', $userId)
             // you shouldn't be able to get here without having a record, so let's throw an exception
-            throw new Exception('Couldn\'t find authenticator record.');
-        }
-
-        $record->oldTimestamp = $timestamp;
-        $record->save();
+            ->firstOrFail()
+            ->update([
+                'oldTimestamp' => $timestamp,
+            ]);
     }
 
     /**

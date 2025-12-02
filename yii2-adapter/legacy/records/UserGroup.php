@@ -21,6 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property User[] $users Users
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Models\UserGroup} instead.
  */
 class UserGroup extends ActiveRecord
 {
