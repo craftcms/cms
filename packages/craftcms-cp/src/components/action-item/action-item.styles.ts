@@ -21,7 +21,7 @@ export default css`
     background-color: transparent;
     border: 1px solid transparent;
   }
-  
+
   @media (hover: hover) {
     :host(:hover) .action-item {
       background-color: var(--c-color-accent-bg-subtle);
@@ -48,9 +48,9 @@ export default css`
   }
 
   :host([variant='danger']) .action-item {
-    color: var(--c-color-on-subtle)
+    color: var(--c-color-on-subtle);
   }
-  
+
   @media (hover: hover) {
     :host(:hover[variant='danger']) .action-item {
       background-color: var(--c-color-bg-subtle);

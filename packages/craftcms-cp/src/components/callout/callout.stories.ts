@@ -137,7 +137,7 @@ export const KitchenSink: Story = {
 
 export const Variants: Story = {
   args: {
-    appearance: 'outline-fill'
+    appearance: 'outline-fill',
   },
   render({appearance}) {
     return html`

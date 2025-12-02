@@ -16,7 +16,7 @@ const meta = {
         <craft-button type="button" icon type="button" slot="invoker">
           <craft-icon name="ellipsis"></craft-icon>
         </craft-button>
-        
+
         <craft-action-item icon="up-right-from-square" href="#"
           >View in a new tab</craft-action-item
         >

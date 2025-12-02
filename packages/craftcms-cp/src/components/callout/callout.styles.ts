@@ -18,16 +18,16 @@ export default css`
     border-radius: var(--c-callout-radius, var(--c-radius-md));
     border: 1px solid transparent;
   }
-  
+
   .callout__body {
     display: grid;
     gap: var(--c-spacing-sm);
   }
-  
+
   .callout__title {
     font-weight: bold;
   }
-  
+
   .callout__icon {
     width: auto;
     height: 1lh;
@@ -36,7 +36,6 @@ export default css`
     justify-content: center;
     align-items: center;
   }
-
 
   :host([appearance~='accent']) {
     --c-fg-link: var(--c-color-on-emphasis);

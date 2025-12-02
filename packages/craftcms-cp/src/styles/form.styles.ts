@@ -47,11 +47,10 @@ export const baseFieldStyles = css`
   .form-field__group-one {
     margin-block-end: var(--c-spacing-sm);
   }
-  
+
   .input-group__after {
     margin-block-start: var(--c-spacing-sm);
   }
-  
 `;
 
 export const inputStyles = css`

@@ -31,15 +31,15 @@ export default class CraftCallout extends LitElement {
   getIcon() {
     switch (this.variant) {
       case Variant.Info:
-        return 'lightbulb'
+        return 'lightbulb';
       case Variant.Success:
-        return 'check-circle'
+        return 'check-circle';
       case Variant.Warning:
-        return 'exclamation-circle'
+        return 'exclamation-circle';
       case Variant.Danger:
-        return 'exclamation-triangle'
+        return 'exclamation-triangle';
       default:
-        return null
+        return null;
     }
   }
 
@@ -49,7 +49,10 @@ export default class CraftCallout extends LitElement {
     return html`
       ${hasIcon
         ? html`<slot name="icon" class="callout__icon">
-            <craft-icon name="${this.getIcon()}" style="font-size: 0.9em"></craft-icon>
+            <craft-icon
+              name="${this.getIcon()}"
+              style="font-size: 0.9em"
+            ></craft-icon>
           </slot>`
         : nothing}
       <div class="callout__body">
