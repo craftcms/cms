@@ -38,8 +38,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Override;
-use Twig\Error\RuntimeError;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -717,7 +715,7 @@ final class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (app(ElementSources::class)->getSources(Asset::class) as $source) {
+            foreach (resolve(ElementSources::class)->getSources(Asset::class) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }
@@ -931,52 +929,7 @@ final class Assets extends BaseRelationField
             throw new InvalidFsException("Invalid source key: $sourceKey");
         }
 
-        $assetsService = Craft::$app->getAssets();
-        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-
-        // Are we looking for the root folder?
-        $subpath = trim($subpath ?? '', '/');
-        if ($subpath === '') {
-            return $rootFolder;
-        }
-
-        $isDynamic = preg_match('/\{|\}/', $subpath);
-
-        if ($isDynamic) {
-            // Prepare the path by parsing tokens and normalizing slashes.
-            try {
-                if ($element?->duplicateOf) {
-                    $element = $element->duplicateOf->getCanonical();
-                }
-                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
-            } catch (InvalidConfigException|RuntimeError $e) {
-                throw new InvalidSubpathException($subpath, null, 0, $e);
-            }
-
-            // Did any of the tokens return null?
-            if (
-                $renderedSubpath === '' ||
-                trim((string) $renderedSubpath, '/') != $renderedSubpath ||
-                str_contains((string) $renderedSubpath, '//') ||
-                str($renderedSubpath)->explode('/')->contains(fn (string $segment) => ElementHelper::isTempSlug($segment))
-            ) {
-                throw new InvalidSubpathException($subpath);
-            }
-
-            // Sanitize the subpath
-            $subpath = str($renderedSubpath)
-                ->explode('/')
-                ->filter(fn (string $segment): bool => $segment !== ':ignore:')
-                ->map(fn (string $segment): string => FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => Cms::config()->convertFilenamesToAscii,
-                ]))
-                ->implode('/');
-        }
-
-        $folder = $assetsService->findFolder([
-            'volumeId' => $volume->id,
-            'path' => $subpath.'/',
-        ]);
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath, $element);
 
         // Ensure that the folder exists
         if (! $folder) {
@@ -984,7 +937,7 @@ final class Assets extends BaseRelationField
                 throw new InvalidSubpathException($subpath);
             }
 
-            $folder = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
         }
 
         return $folder;

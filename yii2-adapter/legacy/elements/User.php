@@ -2527,7 +2527,10 @@ JS, [
      */
     final public function beforeSave(bool $isNew): bool
     {
-        if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
+        if (
+            ($isNew || $this->applyingDraft) &&
+            !Craft::$app->getUsers()->canCreateUsers()
+        ) {
             return false;
         }
 

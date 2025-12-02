@@ -104,4 +104,20 @@ class AffiliatedSiteField extends BaseNativeField
             'value' => $element?->affiliatedSiteId,
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction([
+                'attribute' => 'affiliatedSite',
+            ]);
+        }
+
+        return $items;
+    }
 }
