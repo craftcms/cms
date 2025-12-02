@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;

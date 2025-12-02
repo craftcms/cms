@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements\users;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
