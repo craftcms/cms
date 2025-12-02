@@ -2,11 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
   import {useForm, usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
@@ -91,10 +87,12 @@
               <craft-icon name="chevron-down"></craft-icon>
             </craft-button>
 
-            <craft-action-item @click="save">
-              {{ t('app', 'Save and continue editing') }}
-              <span slot="suffix"><code>⌘</code>+<code>s</code></span>
-            </craft-action-item>
+            <div slot="content">
+              <craft-action-item @click="save">
+                {{ t('app', 'Save and continue editing') }}
+                <span slot="suffix"><code>⌘</code>+<code>s</code></span>
+              </craft-action-item>
+            </div>
           </craft-action-menu>
         </craft-button-group>
       </template>
