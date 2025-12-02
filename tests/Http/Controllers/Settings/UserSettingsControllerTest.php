@@ -46,13 +46,13 @@ test('store', function () {
 test('require2fa only gets saved when above team edition', function () {
     Edition::set(Edition::Solo);
 
-    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy(false);
+    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy();
 
     post(action([UserSettingsController::class, 'store'], [
         'require2fa' => true,
     ]))->assertRedirectBack();
 
-    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy(false);
+    expect(ProjectConfig::get('users.require2fa'))->toBeFalsy();
 
     Edition::set(Edition::Team);
 

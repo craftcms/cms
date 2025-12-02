@@ -83,8 +83,10 @@ use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use GraphQL\Utils\TypeInfo;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
@@ -395,6 +397,18 @@ class Gql extends Component
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+
+                // but we always have to add the InputObjectType mutation args
+                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                    if (isset($item['args'])) {
+                        foreach ($item['args'] as $arg) {
+                            if ($arg instanceof InputObjectType) {
+                                TypeInfo::extractTypes($arg);
+                            }
+                        }
+                    }
+                }
+
                 return $this->_schemaDef;
             }
 

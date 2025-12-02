@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
@@ -82,6 +83,7 @@ class FullNameField extends TextField
         $statusClass = $this->statusClass($element);
         $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
         $required = !$static && $this->required;
+        $isAdmin = Craft::$app->getUser()->getIsAdmin();
 
         return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]) .
             Cp::textFieldHtml([
@@ -100,6 +102,9 @@ class FullNameField extends TextField
                 'data' => [
                     'error-key' => 'firstName',
                 ],
+                'actionMenuItems' => array_filter([
+                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'firstName']) : null,
+                ]),
             ]) .
             Cp::textFieldHtml([
                 'id' => 'lastName',
@@ -117,6 +122,9 @@ class FullNameField extends TextField
                 'data' => [
                     'error-key' => 'lastName',
                 ],
+                'actionMenuItems' => array_filter([
+                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'lastName']) : null,
+                ]),
             ]) .
             HtmlHelper::endTag('div');
     }

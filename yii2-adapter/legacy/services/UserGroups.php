@@ -249,7 +249,6 @@ class UserGroups extends Component
      * @param UserGroup $group The user group
      *
      * @return bool Whether the user group was deleted successfully
-     * @throws WrongEditionException if this is called from Craft Solo edition
      * @since 3.0.12
      */
     public function deleteGroup(UserGroup $group): bool

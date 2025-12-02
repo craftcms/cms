@@ -587,8 +587,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
             return $items;
         }
 
-        $userSessionService = Craft::$app->getUser();
-        if (! $userSessionService->getIsAdmin()) {
+        if (! Craft::$app->getUser()->getIsAdmin()) {
             return $items;
         }
 
@@ -613,29 +612,6 @@ new Craft.CpScreenSlideout('fields/edit-field', {
 JS, [
                 $view->namespaceInputId($editId),
                 ['fieldId' => $this->id],
-            ]);
-        }
-
-        // Copy field handle
-        if (! $userSessionService->getIdentity()->getPreference('showFieldHandles')) {
-            $copyId = sprintf('action-copy-handle-%s', mt_rand());
-            $items[] = [
-                'id' => $copyId,
-                'icon' => 'clipboard',
-                'label' => t('Copy field handle'),
-            ];
-            $view->registerJsWithVars(fn ($id, $attribute) => <<<JS
-(() => {
-$('#' + $id).on('activate', () => {
-Craft.ui.createCopyTextPrompt({
-  label: Craft.t('app', 'Field Handle'),
-  value: $attribute,
-})
-});
-})();
-JS, [
-                $view->namespaceInputId($copyId),
-                $this->handle,
             ]);
         }
 
@@ -898,7 +874,7 @@ JS, [
         // see https://github.com/craftcms/cms/issues/15609
         $db = Craft::$app->getDb();
         if ($db->getIsMysql() && is_string($dbType) && DbHelper::parseColumnType($dbType) === Schema::TYPE_TEXT) {
-            $orderBy = "CAST($orderBy AS CHAR(255))";
+            $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 
         // The attribute name should match the table attribute name,
