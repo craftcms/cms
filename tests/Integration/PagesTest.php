@@ -34,19 +34,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/content/entries', 'title' => 'Entries'],
     ['url' => '/users', 'title' => 'Users'],
 
-    // Settings pages
-    [
-        'url' => '/settings/general',
-        'title' => 'General Settings',
-        'extraContent' => [
-            ['rendered' => 'System Name'],
-            ['rendered' => 'System Status'],
-            ['rendered' => 'Retry Duration'],
-            ['rendered' => 'Time Zone'],
-            ['rendered' => 'Login Page Logo'],
-            ['rendered' => 'Site Icon'],
-        ],
-    ],
     [
         'url' => '/settings/sections',
         'title' => 'Sections',

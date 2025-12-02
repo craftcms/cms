@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Models\User;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -28,8 +29,8 @@ it('requires authentication', function () {
 
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t('General Settings'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Settings/General/Index'))
+        ->assertOk();
 });
 
 it('shows a readonly settings screen when admin changes is disabled', function () {
