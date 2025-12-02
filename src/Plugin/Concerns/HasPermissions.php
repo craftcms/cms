@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Events\RegisterUserPermissions;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -18,32 +18,33 @@ use Illuminate\Support\Facades\Event;
 trait HasPermissions
 {
     /**
-     * @return Collection<PermissionGroup>|PermissionGroup
+     * @return Permission[]
      */
-    protected function getPermissions(): Collection|PermissionGroup
+    protected function getPermissions(): array
     {
-        return collect();
+        return [];
     }
 
     public function bootHasPermissions(): void
     {
-        $permissions = $this->getPermissions();
-
-        if (! $permissions instanceof Collection) {
-            $permissions = collect([$permissions]);
-        }
+        $permissions = collect($this->getPermissions());
 
         if ($permissions->isEmpty()) {
             return;
         }
 
         throw_if(
-            $permissions->whereInstanceOf(PermissionGroup::class)->count() !== $permissions->count(),
-            'Each item in the permissions collection needs to be an instance of PermissionGroup'
+            $permissions->whereInstanceOf(Permission::class)->count() !== $permissions->count(),
+            sprintf('Each permission returned from `getPermissions()` needs to be an instance of `%s`', Permission::class)
         );
 
         Event::listen(RegisterUserPermissions::class, function (RegisterUserPermissions $event) use ($permissions) {
-            $event->permissions = $event->permissions->merge($permissions);
+            $plugin = self::getInstance();
+
+            $event->permissions = $event->permissions->push(new PermissionGroup(
+                heading: $plugin->name ?? $plugin->handle,
+                permissions: $permissions,
+            ));
         });
     }
 }
