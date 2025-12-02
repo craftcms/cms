@@ -62,7 +62,7 @@
       <template #actions>
         <TransitionFade>
           <template v-if="form.recentlySuccessful && flash?.success">
-            <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
+            <div class="flex gap-1 items-center text-sm">
               <craft-icon
                 name="circle-check"
                 style="color: var(--c-color-success-bg-emphasis)"
@@ -92,16 +92,16 @@
             </craft-button>
 
             <craft-action-item @click="save">
-              {{t('app', 'Save and continue editing')}}
+              {{ t('app', 'Save and continue editing') }}
               <span slot="suffix"><code>⌘</code>+<code>s</code></span>
             </craft-action-item>
           </craft-action-menu>
         </craft-button-group>
       </template>
       <div
-        class="tw:bg-white tw:border tw:border-border-subtle tw:mx-4 tw:rounded-sm tw:shadow-sm"
+        class="bg-white border border-border-subtle mx-4 rounded-sm shadow-sm"
       >
-        <div class="tw:grid tw:gap-3 tw:p-4">
+        <div class="grid gap-3 p-4">
           <!-- @TODO autosuggest -->
           <craft-input
             :label="t('app', 'System Name')"
@@ -114,7 +114,7 @@
               <craft-callout
                 variant="info"
                 appearance="plain"
-                class="tw:p-0"
+                class="p-0"
                 icon="lightbulb"
               >
                 This can begin with an environment variable.
@@ -143,7 +143,7 @@
               slot="after"
               variant="info"
               appearance="plain"
-              class="tw:p-0"
+              class="p-0"
               icon="lightbulb"
             >
               This can be set to an environment variable with a boolean value
@@ -189,7 +189,7 @@
               slot="after"
               variant="info"
               appearance="plain"
-              class="tw:p-0"
+              class="p-0"
               icon="lightbulb"
             >
               This can be set to an environment variable with a value of a
@@ -205,7 +205,7 @@
 
         <template v-if="app.edition.value >= Edition.Pro">
           <hr />
-          <div class="tw:p-4 tw:grid tw:gap-3">
+          <div class="p-4 grid gap-3">
             <craft-input
               :label="t('app', 'Site Icon')"
               :help-text="
@@ -218,7 +218,7 @@
               :disabled="readOnly"
               type="hidden"
             >
-              <div slot="before" class="tw:flex tw:gap-2">
+              <div slot="before" class="flex gap-2">
                 <div class="preview preview--icon"></div>
                 <craft-button type="button">{{
                   t('app', 'Upload Icon')
@@ -238,7 +238,7 @@
               :disabled="readOnly"
               type="hidden"
             >
-              <div slot="before" class="tw:flex tw:gap-2 tw:items-center">
+              <div slot="before" class="flex gap-2 items-center">
                 <div class="preview preview--logo" style="width: 288px"></div>
                 <craft-button type="button">{{
                   t('app', 'Upload Logo')
