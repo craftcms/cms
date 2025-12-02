@@ -2240,6 +2240,11 @@ JS, [
      */
     public function getPreferences(): array
     {
+        // only CP users can save preferences
+        if (!$this->can('accessCp')) {
+            return [];
+        }
+
         return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
     }
 
