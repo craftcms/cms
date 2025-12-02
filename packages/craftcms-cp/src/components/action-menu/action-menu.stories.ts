@@ -15,27 +15,34 @@ const meta = {
       <craft-action-menu ?opened="${open}">
         <craft-button type="button" icon type="button" slot="invoker">
           <craft-icon name="ellipsis"></craft-icon>
+          <span class="sr-only">Open Menu</span>
         </craft-button>
 
-        <craft-action-item icon="up-right-from-square" href="#"
-          >View in a new tab</craft-action-item
-        >
-        <craft-action-item icon="eye" href="#">Preview File</craft-action-item>
-        <hr />
-        <craft-action-item icon="download">Download</craft-action-item>
-        <craft-action-item icon="folder-open">
-          Show in folder
-        </craft-action-item>
-        <craft-action-item icon="pen">Edit asset</craft-action-item>
-        <hr />
-        <craft-action-item icon="pen"> Open in Image Editor </craft-action-item>
-        <hr />
-        <craft-action-item variant="danger" icon="rotate">
-          Replace
-        </craft-action-item>
-        <craft-action-item variant="danger" icon="x">
-          Remove
-        </craft-action-item>
+        <div slot="content">
+          <craft-action-item icon="up-right-from-square" href="#"
+            >View in a new tab</craft-action-item
+          >
+          <craft-action-item icon="eye" href="#"
+            >Preview File</craft-action-item
+          >
+          <hr />
+          <craft-action-item icon="download">Download</craft-action-item>
+          <craft-action-item icon="folder-open">
+            Show in folder
+          </craft-action-item>
+          <craft-action-item icon="pen">Edit asset</craft-action-item>
+          <hr />
+          <craft-action-item icon="pen">
+            Open in Image Editor
+          </craft-action-item>
+          <hr />
+          <craft-action-item variant="danger" icon="rotate">
+            Replace
+          </craft-action-item>
+          <craft-action-item variant="danger" icon="x">
+            Remove
+          </craft-action-item>
+        </div>
       </craft-action-menu>
     `;
   },

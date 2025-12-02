@@ -2,17 +2,19 @@ import {css, html, LitElement} from 'lit';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@/components/action-item/action-item';
+import {uuid} from '@lion/ui/core.js';
 
 /**
  * @slot - Items to be rendered in the menu.
  * @slot invoker - Element that triggers the menu.
  * @slot backdrop - Element that covers the screen when the menu is open.
+ * @slot content - Content to be rendered inside the menu.
  */
 export default class CraftActionMenu extends OverlayMixin(LitElement) {
   static override styles = css`
-    .menu {
+    ::slotted([slot='content']) {
       display: grid;
-      gap: var(--c-spacing-sm);
+      gap: var(--c-spacing-xs);
       border: 1px solid var(--c-color-neutral-border-subtle);
       border-radius: var(--c-radius-md);
       background-color: var(--c-bg-overlay);
@@ -28,20 +30,22 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
   @queryAssignedElements({selector: 'craft-action-item'})
   actionItems!: CraftActionItem[];
 
+  @queryAssignedElements({slot: 'invoker'})
+  invokerNodes!: HTMLElement[];
+
+  @queryAssignedElements({slot: 'content'})
+  contentNodes!: HTMLElement[];
+
+  private uid: string;
+
   // @ts-ignore
   _defineOverlayConfig() {
     return {
-      placementMode: 'global',
       ...withDropdownConfig(),
     };
   }
 
-  // @ts-ignore
-  get _overlayContentNode() {
-    return this.shadowRoot?.querySelector('.menu');
-  }
-
-  override firstUpdated() {
+  private _addEventListeners() {
     // Close the menu when an item is clicked.
     // @TODO is this good or bad?
     this.actionItems.forEach((item) => {
@@ -51,13 +55,35 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     });
   }
 
+  private _setupInvoker() {
+    const firstInvoker = this.invokerNodes[0];
+    if (firstInvoker) {
+      firstInvoker.setAttribute('id', `invoker-${this.uid}`);
+      firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
+    }
+  }
+
+  private _setupContent() {
+    const firstContent = this.contentNodes[0];
+    if (firstContent) {
+      firstContent.setAttribute('id', `content-${this.uid}`);
+    }
+  }
+
+  override firstUpdated() {
+    this.uid = uuid();
+    this._addEventListeners();
+    this._setupInvoker();
+    this._setupContent();
+  }
+
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
 
-      <div class="menu">
-        <slot></slot>
+      <div id="overlay-content-node-wrapper">
+        <slot name="content"></slot>
       </div>
     `;
   }
