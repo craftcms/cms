@@ -617,7 +617,7 @@ JS, [
         if (!isset($fieldLayoutConfig['id'])) {
             $fieldLayout = Craft::createObject([
                 'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
+                ...Component::cleanseConfig($fieldLayoutConfig),
             ]);
             $fieldLayout->type = $fieldLayoutConfig['type'];
         } else {
@@ -649,7 +649,7 @@ JS, [
     {
         $uid = $this->request->getRequiredBodyParam('uid');
         $elementType = $this->request->getRequiredBodyParam('elementType');
-        $layoutConfig = $this->request->getRequiredBodyParam('layoutConfig');
+        $layoutConfig = Component::cleanseConfig($this->request->getRequiredBodyParam('layoutConfig'));
 
         if (!isset($layoutConfig['tabs'])) {
             throw new BadRequestHttpException('Layout config doesn’t have any tabs.');
@@ -657,7 +657,7 @@ JS, [
 
         $layoutConfig['type'] = $elementType;
 
-        $componentConfig = $this->request->getBodyParam('config') ?? [];
+        $componentConfig = Component::cleanseConfig($this->request->getBodyParam('config') ?? []);
         $componentConfig['elementType'] = $elementType;
         $settingsStr = $this->request->getBodyParam('settings');
 
