@@ -183,7 +183,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
-        $elementSources = app(ElementSources::class);
+        $elementSources = resolve(ElementSources::class);
         $tableColumns = array_merge(
             $elementSources->getAvailableTableAttributes(Entry::class)->all(),
             $elementSources->getTableAttributesForFieldLayouts($fieldLayouts)->all(),
@@ -464,7 +464,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $entryTypesService = app(EntryTypes::class);
+        $entryTypesService = resolve(EntryTypes::class);
         $this->_entryTypes = array_values(array_filter(array_map(
             $entryTypesService->getEntryType(...),
             $entryTypes,
@@ -1843,7 +1843,7 @@ JS,
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
+                    $entry = resolve(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

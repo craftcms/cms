@@ -888,7 +888,7 @@ final class AddressQuery extends ElementQuery
     protected function fieldLayouts(): Collection
     {
         return new Collection([
-            app(Addresses::class)->getFieldLayout(),
+            resolve(Addresses::class)->getFieldLayout(),
         ]);
     }
 }

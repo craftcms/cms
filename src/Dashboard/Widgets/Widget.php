@@ -51,7 +51,7 @@ abstract class Widget implements WidgetInterface
             return true;
         }
 
-        return ! app(Dashboard::class)->doesUserHaveWidget(static::class);
+        return ! resolve(Dashboard::class)->doesUserHaveWidget(static::class);
     }
 
     /**

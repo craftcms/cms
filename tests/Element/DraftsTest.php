@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->drafts = app(Drafts::class);
+    $this->drafts = resolve(Drafts::class);
 });
 
 it('can get editable drafts', function () {

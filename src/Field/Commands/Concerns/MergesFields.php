@@ -37,7 +37,7 @@ trait MergesFields
             $outgoingField,
             $outgoingLayouts,
         ) {
-            $projectConfigService = app(ProjectConfig::class);
+            $projectConfigService = resolve(ProjectConfig::class);
             $muteEvents = $projectConfigService->muteEvents;
             $projectConfigService->muteEvents = true;
 
@@ -104,7 +104,7 @@ trait MergesFields
         });
 
         $this->components->task(" → Running content migration for `$outgoingField->handle` …", function () {
-            app(Migrator::class)->track('content')->run();
+            resolve(Migrator::class)->track('content')->run();
         });
     }
 

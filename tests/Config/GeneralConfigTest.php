@@ -8,8 +8,8 @@ use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Support\Facades\Config;
 
 it('can get from container', function () {
-    expect(app(GeneralConfig::class))->toBe(Config::get('craft.general'));
-    expect(app(GeneralConfig::class))->toBe(Cms::config());
+    expect(resolve(GeneralConfig::class))->toBe(Config::get('craft.general'));
+    expect(resolve(GeneralConfig::class))->toBe(Cms::config());
 });
 
 it('can get renamed settings', function () {
@@ -38,7 +38,7 @@ test('env overrides get precedence over config', function () {
     putenv('CRAFT_CP_TRIGGER=adminus');
 
     // Simulate the application being loaded
-    app(ConfigServiceProvider::class, ['app' => app()])->boot();
+    resolve(ConfigServiceProvider::class, ['app' => app()])->boot();
 
     expect(Cms::config()->cpTrigger)->toBe('adminus');
 });

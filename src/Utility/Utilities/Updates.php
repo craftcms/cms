@@ -49,7 +49,7 @@ final class Updates extends Utility
     #[\Override]
     public static function badgeCount(): int
     {
-        return app(UpdatesService::class)->totalAvailableUpdates();
+        return resolve(UpdatesService::class)->totalAvailableUpdates();
     }
 
     /**

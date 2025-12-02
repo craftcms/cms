@@ -47,7 +47,7 @@ it('can return craft data', function () {
 it('can save plugin license keys', function () {
     loadTestPlugin();
 
-    expect(app(Plugins::class)->getPluginLicenseKey('test-plugin'))->not()->toBe('foobar');
+    expect(resolve(Plugins::class)->getPluginLicenseKey('test-plugin'))->not()->toBe('foobar');
 
     postJson(action([PluginStoreController::class, 'savePluginLicenseKeys']), [
         'pluginLicenseKeys' => [
@@ -58,5 +58,5 @@ it('can save plugin license keys', function () {
         ],
     ])->assertOk();
 
-    expect(app(Plugins::class)->getPluginLicenseKey('test-plugin'))->toBe(strtoupper($key));
+    expect(resolve(Plugins::class)->getPluginLicenseKey('test-plugin'))->toBe(strtoupper($key));
 });

@@ -85,7 +85,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllFilesystemsProcessed(): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedFilesystems || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -102,7 +102,7 @@ final class ProjectConfigHelper
     {
         self::ensureAllFilesystemsProcessed();
 
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedFields || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -137,7 +137,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllSitesProcessed(bool $force = false): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedSites || (! $force && ! $projectConfig->isApplyingExternalChanges)) {
             return;
@@ -164,7 +164,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllUserGroupsProcessed(): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedUserGroups || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -188,7 +188,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllEntryTypesProcessed(): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedEntryTypes || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -208,7 +208,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllSectionsProcessed(): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedSections || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -232,7 +232,7 @@ final class ProjectConfigHelper
      */
     public static function ensureAllGqlSchemasProcessed(): void
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if (self::$_processedGqlSchemas || ! $projectConfig->isApplyingExternalChanges) {
             return;
@@ -600,7 +600,7 @@ final class ProjectConfigHelper
      */
     public static function diff(bool $invert = false): string
     {
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
         $cacheKey = ProjectConfig::DIFF_CACHE_KEY.($invert ? ':reverse' : '');
 
         return DependencyCache::rememberForever($cacheKey, function () use ($projectConfig, $invert): string {
@@ -614,7 +614,7 @@ final class ProjectConfigHelper
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(fn (): string => md5(JsonHelper::encode(app(ProjectConfig::class)->get(null, true)))),
+            new CallbackDependency(fn (): string => md5(JsonHelper::encode(resolve(ProjectConfig::class)->get(null, true)))),
         ]));
     }
 

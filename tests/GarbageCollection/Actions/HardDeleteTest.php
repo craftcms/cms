@@ -36,7 +36,7 @@ it('hard deletes soft deleted elements', function () {
 
     expect(DB::table(Table::ENTRYTYPES)->count())->toBe(3);
 
-    app(HardDelete::class, [
+    resolve(HardDelete::class, [
         'tables' => Table::ENTRYTYPES,
     ])();
 

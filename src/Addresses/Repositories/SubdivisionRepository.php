@@ -30,7 +30,7 @@ class SubdivisionRepository extends BaseSubdivisionRepository
         }
 
         // trigger the event to give devs a chance to modify further, and return the list
-        return app(Addresses::class)->defineAddressSubdivisions($parents, $options);
+        return resolve(Addresses::class)->defineAddressSubdivisions($parents, $options);
     }
 
     /**

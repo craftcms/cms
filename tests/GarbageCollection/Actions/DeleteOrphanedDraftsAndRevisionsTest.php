@@ -18,7 +18,7 @@ it('deletes orphaned data', function (string $table, string $fk, array $data) {
         $fk => $tableId,
     ]);
 
-    app(DeleteOrphanedDraftsAndRevisions::class)();
+    resolve(DeleteOrphanedDraftsAndRevisions::class)();
     expect(DB::table($table)->count())->toBe(1);
 
     /**
@@ -28,7 +28,7 @@ it('deletes orphaned data', function (string $table, string $fk, array $data) {
         $fk => null,
     ]);
 
-    app(DeleteOrphanedDraftsAndRevisions::class)();
+    resolve(DeleteOrphanedDraftsAndRevisions::class)();
     expect(DB::table($table)->count())->toBe(0);
 })->with([
     [Table::DRAFTS, 'draftId', [

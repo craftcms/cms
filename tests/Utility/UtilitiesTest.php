@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->utilities = app(Utilities::class);
+    $this->utilities = resolve(Utilities::class);
 });
 
 it('can get all utility types', function () {

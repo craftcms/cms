@@ -112,14 +112,14 @@ final readonly class License
             return [];
         }
 
-        $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached();
+        $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && resolve(Updates::class)->isUpdateInfoCached();
 
         if (! $isInfoCached) {
             if (! $fetch) {
                 return [];
             }
 
-            app(Updates::class)->getUpdates(true);
+            resolve(Updates::class)->getUpdates(true);
         }
 
         $issues = [];
@@ -165,7 +165,7 @@ final readonly class License
                 currentEditionName: Edition::get()->name,
                 licenseEdition: $licenseInfo['edition'],
                 licenseEditionName: $licenseEdition->name,
-                version: app('Craft')->getVersion(),
+                version: resolve('Craft')->getVersion(),
                 status: $licenseInfo['status'],
             );
         }

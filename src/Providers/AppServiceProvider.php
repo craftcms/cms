@@ -88,7 +88,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
-                app(GarbageCollection::class)->run();
+                resolve(GarbageCollection::class)->run();
             }
         });
 
@@ -104,7 +104,7 @@ final class AppServiceProvider extends ServiceProvider
                 return $live;
             }
 
-            return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
+            return Env::parseBoolean(resolve(ProjectConfig::class)->get('system.live')) ?? false;
         });
 
         Application::macro(
@@ -221,7 +221,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function setTimezone(): void
     {
-        $timezone = app(ProjectConfig::class)->get('system.timeZone')
+        $timezone = resolve(ProjectConfig::class)->get('system.timeZone')
             ?? $this->app->make(ConfigRepository::class)->get('app.timezone')
             ?? 'UTC';
 

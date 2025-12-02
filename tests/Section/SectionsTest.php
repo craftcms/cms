@@ -24,12 +24,12 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->sections = app(Sections::class);
+    $this->sections = resolve(Sections::class);
 });
 
 it('is a singleton', function () {
-    expect(SectionsFacade::getFacadeRoot())->toBe(app(Sections::class));
-    expect($this->sections)->toBe(app(Sections::class));
+    expect(SectionsFacade::getFacadeRoot())->toBe(resolve(Sections::class));
+    expect($this->sections)->toBe(resolve(Sections::class));
 });
 
 it('can get all sections', function () {

@@ -18,7 +18,7 @@ it('hard deletes soft deleted elements', function () {
 
     $currentCount = DB::table(Table::ELEMENTS)->count();
 
-    app(HardDeleteElements::class)();
+    resolve(HardDeleteElements::class)();
 
     expect(DB::table(Table::ELEMENTS)->count())->toBe($currentCount - 1);
 });

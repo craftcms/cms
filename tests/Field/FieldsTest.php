@@ -17,11 +17,11 @@ use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->fields = app(Fields::class);
+    $this->fields = resolve(Fields::class);
 });
 
 it('is a singleton', function () {
-    expect($this->fields)->toBe(app(Fields::class));
+    expect($this->fields)->toBe(resolve(Fields::class));
     expect($this->fields)->toBe(FieldsFacade::getFacadeRoot());
 });
 

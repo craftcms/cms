@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    $this->api = app(Api::class);
-    $this->license = app(License::class);
+    $this->api = resolve(Api::class);
+    $this->license = resolve(License::class);
 });
 
 it('can get headers', function () {
@@ -51,7 +51,7 @@ it('can get license info', function () {
 
     app()->forgetInstance(Api::class);
 
-    expect(app(Api::class)->getLicenseInfo())->toBe([
+    expect(resolve(Api::class)->getLicenseInfo())->toBe([
         'id' => 1234,
     ]);
 });

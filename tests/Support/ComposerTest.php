@@ -7,7 +7,7 @@ use CraftCms\Cms\Support\Composer;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 beforeEach(function () {
-    $this->composer = app(Composer::class);
+    $this->composer = resolve(Composer::class);
 });
 
 it('can get the composer.json path', function () {

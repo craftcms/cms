@@ -55,11 +55,11 @@ final readonly class Utilities
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->unless(
-                empty(app('Craft')->getVolumes()->getAllVolumes()),
+                empty(resolve('Craft')->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->when(
-                app('Craft')->getQueue() instanceof QueueInterface,
+                resolve('Craft')->getQueue() instanceof QueueInterface,
                 fn (Collection $c) => $c->push(QueueManager::class)
             )
             ->push(

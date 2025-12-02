@@ -19,7 +19,7 @@ it('deletes stale bulk op data', function (string $table, array $attributes) {
 
     expect(DB::table($table)->count())->toBe(2);
 
-    app(DeleteStaleBulkOpData::class)();
+    resolve(DeleteStaleBulkOpData::class)();
 
     expect(DB::table($table)->count())->toBe(1);
 })->with([

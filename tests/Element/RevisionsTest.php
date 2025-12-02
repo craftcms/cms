@@ -12,7 +12,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->revisions = app(Revisions::class);
+    $this->revisions = resolve(Revisions::class);
 });
 
 it('can create a revision', function () {

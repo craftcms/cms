@@ -48,7 +48,7 @@ it('purges pending users with stale activation codes', function () {
         'verificationCodeIssuedDate' => now()->subWeek()->format('Y-m-d H:i:s'),
     ]);
 
-    app(PurgePendingUsers::class)();
+    resolve(PurgePendingUsers::class)();
 
     expect($user1Element->fresh()->dateDeleted)->toBeNull();
     expect($user2Element->fresh()->dateDeleted)->not()->toBeNull();

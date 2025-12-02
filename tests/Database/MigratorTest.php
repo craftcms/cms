@@ -7,7 +7,7 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 
 it('has tracks', function () {
-    $migrator = app(Migrator::class);
+    $migrator = resolve(Migrator::class);
 
     $migrator->track('content')->getRepository()->log('track_content', 1);
     $migrator->track('craft')->getRepository()->log('track_craft', 1);

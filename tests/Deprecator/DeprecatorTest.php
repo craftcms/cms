@@ -13,7 +13,7 @@ beforeEach(function () {
     Deprecator::$logTarget = 'db';
     Deprecator::$throwExceptions = false;
 
-    $this->deprecator = app(Deprecator::class);
+    $this->deprecator = resolve(Deprecator::class);
 });
 
 it('has a working facade', function () {

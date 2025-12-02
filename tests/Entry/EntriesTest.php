@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->entries = app(Entries::class);
+    $this->entries = resolve(Entries::class);
 });
 
 it('can get an entry by id', function () {

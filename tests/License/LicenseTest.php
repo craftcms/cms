@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\File;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->license = app(License::class);
+    $this->license = resolve(License::class);
 });
 
 it('can get the key path', function () {

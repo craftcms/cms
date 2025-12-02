@@ -13,7 +13,7 @@ it('can render', function () {
     actingAs(User::first());
     Session::start();
 
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $widget = $dashboard->createWidget(Feed::class);
 
     expect($widget->getBodyHtml())->not()->toBeNull();

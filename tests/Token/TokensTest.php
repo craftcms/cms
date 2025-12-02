@@ -8,7 +8,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Json;
 
 beforeEach(function () {
-    $this->tokens = app(RouteTokens::class);
+    $this->tokens = resolve(RouteTokens::class);
 });
 
 it('can create tokens', function () {

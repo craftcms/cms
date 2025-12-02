@@ -26,7 +26,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->sections = app(Sections::class);
+    $this->sections = resolve(Sections::class);
 
     Section::factory()->create();
 });

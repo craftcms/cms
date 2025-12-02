@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    $this->updates = app(Updates::class);
+    $this->updates = resolve(Updates::class);
 
     Http::fake([
         Api::craftApiEndpoint().'/updates' => [
@@ -23,7 +23,7 @@ beforeEach(function () {
 });
 
 it('is a singleton', function () {
-    expect($this->updates)->toBe(app(Updates::class));
+    expect($this->updates)->toBe(resolve(Updates::class));
 });
 
 it('can check if update info is cached', function () {
@@ -88,7 +88,7 @@ it('can return if a craft update is pending', function () {
     ]);
 
     app()->forgetInstance(Updates::class);
-    $this->updates = app(Updates::class);
+    $this->updates = resolve(Updates::class);
 
     expect($this->updates->isCraftUpdatePending())->toBe(true);
     expect($this->updates->isUpdatePending())->toBe(true);
@@ -105,7 +105,7 @@ it('can return if migrations are pending', function () {
     ]);
 
     app()->forgetInstance(Updates::class);
-    $this->updates = app(Updates::class);
+    $this->updates = resolve(Updates::class);
 
     expect($this->updates->areMigrationsPending())->toBe(true);
 

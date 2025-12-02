@@ -46,7 +46,7 @@ return new class extends Migration
                 ->update(['type' => $new]);
         }
 
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
         $muteEvents = $projectConfig->muteEvents;
         $projectConfig->muteEvents = true;
 

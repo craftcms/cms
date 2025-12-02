@@ -26,7 +26,7 @@ it('hard deletes soft deleted structures', function () {
 
     $currentCount = DB::table(Table::STRUCTURES)->count();
 
-    app(HardDeleteStructures::class)();
+    resolve(HardDeleteStructures::class)();
 
     expect(DB::table(Table::STRUCTURES)->count())->toBe($currentCount - 1);
 });

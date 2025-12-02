@@ -22,7 +22,7 @@ trait FetchesUpdates
         $updates = null;
 
         spin(function () use ($constraints, &$updates) {
-            $updateData = app(Api::class)->getUpdates($constraints);
+            $updateData = resolve(Api::class)->getUpdates($constraints);
             $updates = UpdatesData::fromArray($updateData);
         }, 'Fetching available updates');
 

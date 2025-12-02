@@ -19,11 +19,11 @@ use CraftCms\Cms\Addresses\Repositories\SubdivisionRepository;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->addresses = app(Addresses::class);
+    $this->addresses = resolve(Addresses::class);
 });
 
 it('is a singleton', function () {
-    expect($this->addresses)->toBe(app(Addresses::class));
+    expect($this->addresses)->toBe(resolve(Addresses::class));
 });
 
 it('can get the country repository', function () {

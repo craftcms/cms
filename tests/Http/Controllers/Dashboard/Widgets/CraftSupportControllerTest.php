@@ -14,7 +14,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->dashboard = app(Dashboard::class);
+    $this->dashboard = resolve(Dashboard::class);
 });
 
 it('requires login', function () {

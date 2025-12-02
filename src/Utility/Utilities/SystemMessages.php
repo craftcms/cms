@@ -56,7 +56,7 @@ final class SystemMessages extends Utility
         $view->registerAssetBundle(SystemMessagesAsset::class);
 
         return $view->renderTemplate('_components/utilities/SystemMessages/index.twig', [
-            'messages' => app(SystemMessagesService::class)->getAllMessages(),
+            'messages' => resolve(SystemMessagesService::class)->getAllMessages(),
         ]);
     }
 }

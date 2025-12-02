@@ -16,12 +16,12 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->entryTypes = app(EntryTypes::class);
+    $this->entryTypes = resolve(EntryTypes::class);
 });
 
 it('is a singleton', function () {
-    expect(EntryTypesFacade::getFacadeRoot())->toBe(app(EntryTypes::class));
-    expect($this->entryTypes)->toBe(app(EntryTypes::class));
+    expect(EntryTypesFacade::getFacadeRoot())->toBe(resolve(EntryTypes::class));
+    expect($this->entryTypes)->toBe(resolve(EntryTypes::class));
 });
 
 it('can get entry types by section id', function () {

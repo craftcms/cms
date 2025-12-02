@@ -24,7 +24,7 @@ function getFakeProjectConfig(?array $internal = null, ?array $external = null):
 {
     app()->forgetInstance(ProjectConfig::class);
 
-    $projectConfig = app(ProjectConfig::class);
+    $projectConfig = resolve(ProjectConfig::class);
 
     $reflectionClass = new ReflectionClass($projectConfig);
     $reflectionClass->getProperty('_internalConfig')->setValue($projectConfig, new ReadOnlyProjectConfigData($internal ?? [
@@ -51,7 +51,7 @@ function getFakeProjectConfig(?array $internal = null, ?array $external = null):
 }
 
 test('rebuild ignores readonly', function () {
-    $projectConfig = app(ProjectConfig::class);
+    $projectConfig = resolve(ProjectConfig::class);
     $readOnly = $projectConfig->readOnly;
     $projectConfig->readOnly = true;
 

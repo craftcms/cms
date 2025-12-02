@@ -225,7 +225,7 @@ final readonly class CraftSupportController
         }
 
         // project.yaml
-        $projectConfig = app(ProjectConfig::class)->get();
+        $projectConfig = resolve(ProjectConfig::class)->get();
         $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 

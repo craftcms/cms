@@ -865,7 +865,7 @@ final class ProjectConfig
             ];
         }
 
-        $plugins = app(Plugins::class)->getAllPlugins();
+        $plugins = resolve(Plugins::class)->getAllPlugins();
 
         foreach ($plugins as $plugin) {
             $incomingSchema = (string) $this->getExternalConfig()->get(self::PATH_PLUGINS.'.'.$plugin->handle.'.schemaVersion');

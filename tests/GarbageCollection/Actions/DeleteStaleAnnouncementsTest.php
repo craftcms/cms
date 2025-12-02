@@ -21,7 +21,7 @@ it('deletes stale announcements', function () {
 
     expect(Announcement::count())->toBe(2);
 
-    app(DeleteStaleAnnouncements::class)();
+    resolve(DeleteStaleAnnouncements::class)();
 
     expect(Announcement::count())->toBe(1);
 });

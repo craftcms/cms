@@ -10,7 +10,7 @@ test('drafts', function () {
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    $draft = app(Drafts::class)->createDraft($element);
+    $draft = resolve(Drafts::class)->createDraft($element);
 
     expect(entryQuery()->drafts()->count())->toBe(1);
     expect(entryQuery()->drafts(null)->count())->toBe(3);
@@ -24,7 +24,7 @@ test('draftOf', function () {
 
     $element = Craft::$app->getElements()->getElementById($entry->id);
 
-    app(Drafts::class)->createDraft($element);
+    resolve(Drafts::class)->createDraft($element);
 
     expect(entryQuery()->draftOf($element->id)->count())->toBe(1);
     expect(entryQuery()->draftOf([$element->id])->count())->toBe(1);
@@ -41,7 +41,7 @@ test('draftCreator', function () {
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    app(Drafts::class)->createDraft($element, $user->id);
+    resolve(Drafts::class)->createDraft($element, $user->id);
 
     expect(entryQuery()->draftCreator($user->id)->count())->toBe(1);
     expect(entryQuery()->draftCreator($user)->count())->toBe(1);
@@ -51,7 +51,7 @@ test('draftCreator', function () {
 test('provisionalDrafts', function () {
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    app(Drafts::class)->createDraft($element, provisional: true);
+    resolve(Drafts::class)->createDraft($element, provisional: true);
 
     expect(entryQuery()->drafts()->count())->toBe(0);
     expect(entryQuery()->drafts()->provisionalDrafts()->count())->toBe(1);
@@ -61,7 +61,7 @@ test('provisionalDrafts', function () {
 test('canonicalsOnly', function () {
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    app(Drafts::class)->createDraft($element);
+    resolve(Drafts::class)->createDraft($element);
 
     expect(entryQuery()->canonicalsOnly()->count())->toBe(1);
     expect(entryQuery()->drafts(null)->canonicalsOnly()->count())->toBe(1);
@@ -71,7 +71,7 @@ test('canonicalsOnly', function () {
 test('savedDraftsOnly', function () {
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    app(Drafts::class)->createDraft($element);
+    resolve(Drafts::class)->createDraft($element);
 
     expect(entryQuery()->savedDraftsOnly()->count())->toBe(1);
 });
@@ -81,7 +81,7 @@ test('revisions', function () {
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    $revision = app(Revisions::class)->createRevision($element);
+    $revision = resolve(Revisions::class)->createRevision($element);
 
     expect(entryQuery()->revisions()->count())->toBe(1);
     expect(entryQuery()->revisions(null)->count())->toBe(3);
@@ -96,7 +96,7 @@ test('revisionCreator', function () {
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
-    app(Revisions::class)->createRevision($element, $user->id);
+    resolve(Revisions::class)->createRevision($element, $user->id);
 
     expect(entryQuery()->revisionCreator($user->id)->count())->toBe(1);
     expect(entryQuery()->revisionCreator($user)->count())->toBe(1);

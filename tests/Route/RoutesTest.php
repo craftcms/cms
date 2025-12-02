@@ -8,8 +8,8 @@ use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Site\Models\Site;
 
 beforeEach(function () {
-    $this->routes = app(Routes::class);
-    $this->projectConfig = app(ProjectConfig::class);
+    $this->routes = resolve(Routes::class);
+    $this->projectConfig = resolve(ProjectConfig::class);
 
     // Make sure migrations are run
     Site::first();

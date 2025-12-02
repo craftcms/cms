@@ -55,7 +55,7 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
-        app(ProjectConfig::class)->reset();
+        resolve(ProjectConfig::class)->reset();
 
         if (Craft::$app) {
             Craft::$app->getDb()->close();
@@ -100,7 +100,7 @@ class TestCase extends Orchestra
         $migration->up();
 
         // Mark all existing migrations as applied
-        $migrator = app(Migrator::class)->track('craft');
+        $migrator = resolve(Migrator::class)->track('craft');
         foreach ($migrator->getPendingMigrations() as $file) {
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }

@@ -272,7 +272,7 @@ final class Entries
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
                 TagDependency::invalidate($tag);
-                \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
+                \yii\caching\TagDependency::invalidate(resolve('Craft')->getCache(), $tag);
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;

@@ -49,7 +49,7 @@ final class Migrations extends Utility
     #[\Override]
     public static function badgeCount(): int
     {
-        return count(app(Migrator::class)
+        return count(resolve(Migrator::class)
             ->track('content')
             ->getPendingMigrations());
     }
@@ -60,7 +60,7 @@ final class Migrations extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $migrator = app(Migrator::class)->track('content');
+        $migrator = resolve(Migrator::class)->track('content');
 
         $migrationHistory = $migrator->getRepository()->getMigrations(1_000);
         $newMigrations = array_map(

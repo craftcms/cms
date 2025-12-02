@@ -29,7 +29,7 @@ it('purges unsaved drafts that have gone stale', function () {
         'dateUpdated' => now()->subSeconds(61),
     ]);
 
-    app(PurgeUnsavedDrafts::class)();
+    resolve(PurgeUnsavedDrafts::class)();
 
     expect(DB::table(Table::DRAFTS)->find($savedDraftId))->not()->toBeNull();
     expect(DB::table(Table::DRAFTS)->find($unsavedDraftId))->toBeNull();

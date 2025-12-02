@@ -22,7 +22,7 @@ final readonly class Cms
 
     public static function config(): GeneralConfig
     {
-        return app(GeneralConfig::class) ?? GeneralConfig::create();
+        return resolve(GeneralConfig::class) ?? GeneralConfig::create();
     }
 
     public static function systemName(): string

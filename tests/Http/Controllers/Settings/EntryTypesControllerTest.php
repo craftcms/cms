@@ -21,7 +21,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->entryTypes = app(EntryTypes::class);
+    $this->entryTypes = resolve(EntryTypes::class);
 
     EntryType::factory()->create();
 });

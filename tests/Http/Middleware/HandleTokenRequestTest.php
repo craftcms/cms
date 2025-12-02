@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
 beforeEach(function () {
-    $this->middleware = app(HandleTokenRequest::class);
+    $this->middleware = resolve(HandleTokenRequest::class);
 });
 
 it('does nothing if there is no token or token header', function () {
@@ -44,7 +44,7 @@ it('does nothing more when the token does not return a route', function () {
 });
 
 it('returns the response of the token route', function () {
-    $token = app(RouteTokens::class)->createToken('token/route');
+    $token = resolve(RouteTokens::class)->createToken('token/route');
 
     $result = $this->middleware->handle(Request::create('foo', parameters: [
         Cms::config()->tokenParam => $token,

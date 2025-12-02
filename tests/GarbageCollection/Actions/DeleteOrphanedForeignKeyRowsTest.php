@@ -52,7 +52,7 @@ test('it deletes orphaned child rows when parent is missing', function () {
     });
 
     // Run the cascade cleaner manually (simulating Craft’s behavior)
-    app(DeleteOrphanedForeignKeyRows::class)();
+    resolve(DeleteOrphanedForeignKeyRows::class)();
 
     // Assert orphaned posts are deleted
     expect(DB::table('test_posts')->count())->toBe(0);
@@ -78,7 +78,7 @@ test('it keeps non-orphaned child rows', function () {
     });
 
     // Run cleaner
-    app(DeleteOrphanedForeignKeyRows::class)();
+    resolve(DeleteOrphanedForeignKeyRows::class)();
 
     // Only Bob’s post should remain
     $remainingPosts = DB::table('test_posts')->pluck('title');

@@ -44,7 +44,7 @@ it('can rebuild the project config', function () {
 });
 
 it('cannot rebuild the project config if it is readonly', function () {
-    app(ProjectConfig::class)->readOnly = true;
+    resolve(ProjectConfig::class)->readOnly = true;
 
     post(action([ProjectConfigController::class, 'rebuild']))
         ->assertForbidden();
@@ -57,7 +57,7 @@ it('can discard the project config changes', function () {
 });
 
 it('cannot discard the project config changes if it is readonly', function () {
-    app(ProjectConfig::class)->readOnly = true;
+    resolve(ProjectConfig::class)->readOnly = true;
 
     post(action([ProjectConfigController::class, 'discard']))
         ->assertForbidden();

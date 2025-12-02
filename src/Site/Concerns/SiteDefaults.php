@@ -67,7 +67,7 @@ trait SiteDefaults
     private function primarySiteConfig(): ?array
     {
         return once(fn () => collect(
-            app(ProjectConfig::class)->get('sites', true) ?? []
+            resolve(ProjectConfig::class)->get('sites', true) ?? []
         )->firstWhere('primary', true));
     }
 }

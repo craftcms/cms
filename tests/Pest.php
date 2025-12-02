@@ -15,7 +15,7 @@ uses(TestCase::class)->in(__DIR__);
 
 function loadTestPlugin(): void
 {
-    $plugins = app(Plugins::class);
+    $plugins = resolve(Plugins::class);
 
     $reflectionClass = new ReflectionClass($plugins);
     $reflectionClass->getProperty('plugins')->setValue($plugins, [

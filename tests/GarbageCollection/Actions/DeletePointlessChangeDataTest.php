@@ -47,7 +47,7 @@ it('deletes pointless change data', function (string $table, array $attributes) 
 
     $originalCount = DB::table($table)->count();
 
-    app(DeletePointlessChangeData::class)();
+    resolve(DeletePointlessChangeData::class)();
 
     expect(DB::table($table)->count())->toBe($originalCount - 1);
 })->with([

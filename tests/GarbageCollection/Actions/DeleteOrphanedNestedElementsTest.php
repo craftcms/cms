@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
-    $this->action = app(DeleteOrphanedNestedElements::class, [
+    $this->action = resolve(DeleteOrphanedNestedElements::class, [
         'elementType' => TestNestedElement::class,
         'table' => 'test_nested_elements',
     ]);

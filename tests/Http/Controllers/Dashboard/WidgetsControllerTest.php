@@ -74,7 +74,7 @@ it('can store namespaced settings', function () {
 });
 
 it('can update a widget with settings', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget([
         'type' => Feed::class,
         'settings' => [
@@ -102,7 +102,7 @@ it('can update a widget with settings', function () {
 });
 
 it('validates when updating', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget([
         'type' => Feed::class,
         'settings' => [
@@ -121,7 +121,7 @@ it('validates when updating', function () {
 });
 
 it('can update the colspan of a widget', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
 
     expect(WidgetModel::first()->colspan)->toBeNull();
@@ -135,7 +135,7 @@ it('can update the colspan of a widget', function () {
 });
 
 it('colspan must be between 1 and 3', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
 
     postJson(action([WidgetsController::class, 'updateColspan']), [
@@ -150,7 +150,7 @@ it('colspan must be between 1 and 3', function () {
 });
 
 it('can reorder widgets', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
     $dashboard->saveWidget($widget2 = $dashboard->createWidget(CraftSupport::class));
 
@@ -165,7 +165,7 @@ it('can reorder widgets', function () {
 });
 
 it('can delete a widget', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
 
     expect(WidgetModel::count())->toBe(1);

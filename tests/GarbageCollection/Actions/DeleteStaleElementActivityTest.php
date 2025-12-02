@@ -25,7 +25,7 @@ it('deletes stale activity', function () {
 
     expect(DB::table(Table::ELEMENTACTIVITY)->count())->toBe(2);
 
-    app(DeleteStaleElementActivity::class)();
+    resolve(DeleteStaleElementActivity::class)();
 
     expect(DB::table(Table::ELEMENTACTIVITY)->count())->toBe(1);
 });

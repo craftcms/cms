@@ -219,7 +219,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public function getFieldLayoutProviders(): array
     {
         return [
-            app(\CraftCms\Cms\Addresses\Addresses::class),
+            resolve(\CraftCms\Cms\Addresses\Addresses::class),
         ];
     }
 
@@ -472,7 +472,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
                 if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $address = app(Drafts::class)->createDraft($address, Auth::user()->id, null, null, [
+                    $address = resolve(Drafts::class)->createDraft($address, Auth::user()->id, null, null, [
                         'canonicalId' => $address->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

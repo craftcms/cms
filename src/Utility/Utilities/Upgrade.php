@@ -55,7 +55,7 @@ final class Upgrade extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UpgradeAsset::class);
 
-        $pluginsService = app(Plugins::class);
+        $pluginsService = resolve(Plugins::class);
         $allPlugins = [];
         foreach ($pluginsService->getAllPluginInfo() as $handle => $info) {
             $allPlugins[] = [

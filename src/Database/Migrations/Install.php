@@ -482,7 +482,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        app(Migrator::class)
+        resolve(Migrator::class)
             ->getRepository()
             ->createRepository();
 
@@ -1074,7 +1074,7 @@ class Install extends Migration
             ]);
         });
 
-        $projectConfig = app(ProjectConfig::class);
+        $projectConfig = resolve(ProjectConfig::class);
 
         if ($this->applyProjectConfigYaml) {
             // Make sure at least sites are processed
@@ -1137,13 +1137,13 @@ class Install extends Migration
             return true;
         }
 
-        if (! app(ProjectConfig::class)->getDoesExternalConfigExist()) {
+        if (! resolve(ProjectConfig::class)->getDoesExternalConfigExist()) {
             $this->applyProjectConfigYaml = false;
 
             return true;
         }
 
-        $expectedSchemaVersion = (string) app(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+        $expectedSchemaVersion = (string) resolve(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
         $craftSchemaVersion = Cms::SCHEMA_VERSION;
 
         if (! version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
@@ -1152,8 +1152,8 @@ class Install extends Migration
             return false;
         }
 
-        $pluginsService = app(Plugins::class);
-        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginsService = resolve(Plugins::class);
+        $pluginConfigs = resolve(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         /**
          * Make sure that all to-be-installed plugins actually exist
@@ -1189,8 +1189,8 @@ class Install extends Migration
 
     private function _installPlugins(): void
     {
-        $pluginsService = app(Plugins::class);
-        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginsService = resolve(Plugins::class);
+        $pluginConfigs = resolve(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Prevent the plugin from sending any headers, etc.
         $realResponse = Craft::$app->getResponse();

@@ -29,7 +29,7 @@ final class FilesystemsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
         // Need Craft for now
-        app('Craft');
+        resolve('Craft');
     }
 
     public function index(): string

@@ -6,7 +6,7 @@ use craft\elements\Entry;
 use CraftCms\Cms\Element\ElementSources;
 
 beforeEach(function () {
-    $this->elementSources = app(ElementSources::class);
+    $this->elementSources = resolve(ElementSources::class);
 });
 
 it('can filter out extra headings from a collection of sources', function () {

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->dashboard = app(Dashboard::class);
+    $this->dashboard = resolve(Dashboard::class);
 
     actingAs(User::first());
 

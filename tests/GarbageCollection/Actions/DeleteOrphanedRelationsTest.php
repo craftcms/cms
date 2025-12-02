@@ -32,7 +32,7 @@ it('deletes orphaned data', function () {
 
     expect(DB::table(Table::RELATIONS)->count())->toBe(2);
 
-    app(DeleteOrphanedRelations::class)();
+    resolve(DeleteOrphanedRelations::class)();
 
     expect(DB::table(Table::RELATIONS)->count())->toBe(1);
 });

@@ -93,7 +93,7 @@ final class Entry extends BaseElementLinkType
         }
 
         // Get all the native source keys, excluding URL-less sections
-        $sources = app(ElementSources::class)
+        $sources = resolve(ElementSources::class)
             ->getSources(self::elementType(), ElementSources::CONTEXT_FIELD)
             ->filter(fn ($s) => (
                 $s['type'] === ElementSources::TYPE_NATIVE &&
@@ -132,7 +132,7 @@ final class Entry extends BaseElementLinkType
 
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = app(ElementSources::class)
+            $permittedSources = resolve(ElementSources::class)
                 ->getSources(EntryElement::class)
                 ->filter(fn ($source) => $source['type'] !== ElementSources::TYPE_HEADING)
                 ->pluck('key')

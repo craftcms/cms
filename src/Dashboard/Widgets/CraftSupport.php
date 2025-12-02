@@ -84,7 +84,7 @@ final class CraftSupport extends Widget
         }
 
         /** @var Application $craft */
-        $craft = app('Craft');
+        $craft = resolve('Craft');
 
         $view = $craft->getView();
         $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);

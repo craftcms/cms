@@ -270,7 +270,7 @@ final class PHP
             ]);
         }
 
-        $composerVersion = app(Composer::class)->getConfig()['config']['platform']['php'] ?? null;
+        $composerVersion = resolve(Composer::class)->getConfig()['config']['platform']['php'] ?? null;
 
         if (! $composerVersion) {
             return null;

@@ -33,7 +33,7 @@ it('deletes orphaned data', function () {
 
     $originalCount = DB::table(Table::SEARCHINDEX)->count();
 
-    app(DeleteOrphanedSearchIndexes::class)();
+    resolve(DeleteOrphanedSearchIndexes::class)();
 
     expect(DB::table(Table::SEARCHINDEX)->count())->toBe($originalCount - 1);
 });

@@ -50,7 +50,7 @@ final class ProjectConfig extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $projectConfig = app(ProjectConfigService::class);
+        $projectConfig = resolve(ProjectConfigService::class);
         $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
 

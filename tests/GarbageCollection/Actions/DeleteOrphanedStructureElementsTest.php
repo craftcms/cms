@@ -39,7 +39,7 @@ it('deletes orphaned data', function () {
 
     $currentCount = DB::table(Table::STRUCTUREELEMENTS)->count();
 
-    app(DeleteOrphanedStructureElements::class)();
+    resolve(DeleteOrphanedStructureElements::class)();
 
     expect(DB::table(Table::STRUCTUREELEMENTS)->count())->toBe($currentCount - 1);
 });

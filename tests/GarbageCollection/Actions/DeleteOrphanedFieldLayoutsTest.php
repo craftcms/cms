@@ -25,7 +25,7 @@ it('deletes orphaned data', function () {
 
     expect(DB::table(Table::FIELDLAYOUTS)->count())->toBe(1);
 
-    app(DeleteOrphanedFieldLayouts::class, [
+    resolve(DeleteOrphanedFieldLayouts::class, [
         'elementType' => Asset::class,
         'table' => Table::VOLUMES,
     ])();
@@ -36,7 +36,7 @@ it('deletes orphaned data', function () {
         'fieldLayoutId' => null,
     ]);
 
-    app(DeleteOrphanedFieldLayouts::class, [
+    resolve(DeleteOrphanedFieldLayouts::class, [
         'elementType' => Asset::class,
         'table' => Table::VOLUMES,
     ])();

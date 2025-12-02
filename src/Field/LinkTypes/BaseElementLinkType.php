@@ -169,7 +169,7 @@ JS, [
     {
         $availableSourceKeys = array_flip($this->availableSourceKeys());
 
-        return app(ElementSources::class)->getSources(
+        return resolve(ElementSources::class)->getSources(
             static::elementType(),
             ElementSources::CONTEXT_FIELD,
         )->filter(fn (array $source) => (

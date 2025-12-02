@@ -66,7 +66,7 @@ final class ConsoleServiceProvider extends ServiceProvider
         }
 
         $this->app->terminating(function () {
-            app('Craft')->getProjectConfig()->flush();
+            resolve('Craft')->getProjectConfig()->flush();
         });
 
         $this->commands($this->commands);

@@ -6,7 +6,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 
 beforeEach(function () {
-    $this->formatter = app(Formatter::class);
+    $this->formatter = resolve(Formatter::class);
 });
 
 test('asInteger', function (mixed $value, string $output, ?string $locale = null) {

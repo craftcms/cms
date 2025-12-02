@@ -15,7 +15,7 @@ it('deletes elements that are missing data in the element extension table', func
 
     expect(DB::table(Table::ELEMENTS)->find($element->id))->not()->toBeNull();
 
-    app(DeletePartialElements::class, [
+    resolve(DeletePartialElements::class, [
         'elementType' => Entry::class,
         'table' => Table::ENTRIES,
     ])();

@@ -853,7 +853,7 @@ JS, [
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
+                $contentBlock = resolve(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

@@ -24,7 +24,7 @@ arch('All actions extend GarbageCollectionAction')
     ->toExtend(GarbageCollectionAction::class);
 
 it('is not a singleton', function () {
-    expect(app(GarbageCollection::class))->not()->toBe(app(GarbageCollection::class));
+    expect(resolve(GarbageCollection::class))->not()->toBe(resolve(GarbageCollection::class));
 });
 
 it('runs on a lottery', function () {
@@ -35,8 +35,8 @@ it('runs on a lottery', function () {
         ->shouldReceive('runActions')
         ->once();
 
-    app(GarbageCollection::class)->run();
-    app(GarbageCollection::class)->run();
+    resolve(GarbageCollection::class)->run();
+    resolve(GarbageCollection::class)->run();
 });
 
 it('uses every action at least once', function () {
@@ -57,7 +57,7 @@ it('uses every action at least once', function () {
         })
         ->once();
 
-    app(GarbageCollection::class)->run(force: true);
+    resolve(GarbageCollection::class)->run(force: true);
 });
 
 test('it deletes partial elements', function (string $elementType, string $table) {
@@ -71,7 +71,7 @@ test('it deletes partial elements', function (string $elementType, string $table
         })
         ->once();
 
-    app(GarbageCollection::class)->run(force: true);
+    resolve(GarbageCollection::class)->run(force: true);
 })->with([
     [Address::class, Table::ADDRESSES],
     [Asset::class, Table::ASSETS],
@@ -91,7 +91,7 @@ test('it deletes orphaned field layouts', function (string $elementType, string 
         })
         ->once();
 
-    app(GarbageCollection::class)->run(force: true);
+    resolve(GarbageCollection::class)->run(force: true);
 })->with([
     [Asset::class, Table::VOLUMES],
     [Entry::class, Table::ENTRYTYPES],
@@ -108,7 +108,7 @@ test('it deletes orphaned nested elements', function (string $elementType, strin
         })
         ->once();
 
-    app(GarbageCollection::class)->run(force: true);
+    resolve(GarbageCollection::class)->run(force: true);
 })->with([
     [Address::class, Table::ADDRESSES],
     [ContentBlock::class, Table::CONTENTBLOCKS],
@@ -126,7 +126,7 @@ it('calls hard delete', function (string|array $tables) {
         })
         ->once();
 
-    app(GarbageCollection::class)->run(force: true);
+    resolve(GarbageCollection::class)->run(force: true);
 })->with([
     [[
         Table::ENTRYTYPES,

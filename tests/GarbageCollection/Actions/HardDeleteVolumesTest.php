@@ -15,7 +15,7 @@ it('deletes trashed volumes and their folders', function () {
     expect(DB::table(Table::VOLUMES)->count())->toBe(3);
     expect(DB::table(Table::VOLUMEFOLDERS)->count())->toBe(3);
 
-    app(HardDeleteVolumes::class)();
+    resolve(HardDeleteVolumes::class)();
 
     expect(DB::table(Table::VOLUMES)->count())->toBe(2);
     expect(DB::table(Table::VOLUMEFOLDERS)->count())->toBe(2);

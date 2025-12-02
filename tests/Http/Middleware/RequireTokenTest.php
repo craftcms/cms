@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Request;
 it('throws if no token is found', function () {
     $this->expectExceptionMessage('Valid token required');
 
-    app(RequireToken::class)->handle(Request::create('foo'), fn () => 'bar');
+    resolve(RequireToken::class)->handle(Request::create('foo'), fn () => 'bar');
 });
 
 it('returns next if token is found', function () {
     Context::addHidden(HandleTokenRequest::TOKEN_KEY, 'token');
 
-    expect(app(RequireToken::class)->handle(Request::create('foo'), fn () => 'bar'))->toBe('bar');
+    expect(resolve(RequireToken::class)->handle(Request::create('foo'), fn () => 'bar'))->toBe('bar');
 });

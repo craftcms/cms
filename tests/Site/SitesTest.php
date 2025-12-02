@@ -21,12 +21,12 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->sites = app(Sites::class);
-    $this->projectConfig = app(ProjectConfig::class);
+    $this->sites = resolve(Sites::class);
+    $this->projectConfig = resolve(ProjectConfig::class);
 });
 
 it('is a singleton', function () {
-    expect($this->sites)->toBe(app(Sites::class));
+    expect($this->sites)->toBe(resolve(Sites::class));
     expect($this->sites)->toBe(SitesFacade::getFacadeRoot());
 });
 
@@ -59,7 +59,7 @@ it('can determine if the current site has been set', function () {
 
     app()->forgetInstance(Sites::class);
 
-    expect(app(Sites::class)->getHasCurrentSite())->toBeFalse();
+    expect(resolve(Sites::class)->getHasCurrentSite())->toBeFalse();
 });
 
 it('can get and set the current site', function () {

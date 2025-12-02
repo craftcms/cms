@@ -253,7 +253,7 @@ final class Entries extends BaseRelationField
         // Enforce the showUnpermittedSections setting
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = app(ElementSources::class)
+            $permittedSources = resolve(ElementSources::class)
                 ->getSources(Entry::class)
                 ->where('type', '!==', ElementSources::TYPE_HEADING)
                 ->pluck('key')

@@ -72,7 +72,7 @@ trait Installable
     /** {@inheritdoc} */
     public function getMigrator(): Migrator
     {
-        return $this->migrator ?? $this->migrator = app(Migrator::class)
+        return $this->migrator ?? $this->migrator = resolve(Migrator::class)
             ->track("plugin:$this->handle")
             ->setPaths([
                 $this->getBasePath().'/migrations',

@@ -21,7 +21,7 @@ beforeEach(function () {
     ]));
 
     // Reset anything that could have changed project config
-    app(ProjectConfig::class)->rebuild();
+    resolve(ProjectConfig::class)->rebuild();
 });
 
 dataset('routes', [
@@ -94,7 +94,7 @@ test('regenerate-yaml', function () {
 test('uninstall-plugin', function () {
     Cache::put('test-uninstalled-plugin', []);
 
-    swap(Plugins::class, app(PluginsFake::class));
+    swap(Plugins::class, resolve(PluginsFake::class));
 
     postJson(action([ConfigSyncController::class, 'uninstallPlugin']), [
         'data' => Craft::$app->getSecurity()->hashData(Json::encode([
@@ -112,7 +112,7 @@ test('uninstall-plugin', function () {
 test('install-plugin', function () {
     Cache::put('test-installed-plugin', []);
 
-    swap(Plugins::class, app(PluginsFake::class));
+    swap(Plugins::class, resolve(PluginsFake::class));
 
     postJson(action([ConfigSyncController::class, 'installPlugin']), [
         'data' => Craft::$app->getSecurity()->hashData(Json::encode([

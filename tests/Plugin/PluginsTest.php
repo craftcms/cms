@@ -19,7 +19,7 @@ beforeEach(function () {
 
     loadTestPlugin();
 
-    $this->plugins = app(Plugins::class);
+    $this->plugins = resolve(Plugins::class);
 });
 
 afterEach(function () {
@@ -28,7 +28,7 @@ afterEach(function () {
 
 it('can load plugins', function () {
     app()->forgetInstance(Plugins::class);
-    $this->plugins = app(Plugins::class);
+    $this->plugins = resolve(Plugins::class);
 
     expect($this->plugins->arePluginsLoaded())->toBeFalse();
 
@@ -44,7 +44,7 @@ test('plugins are singletons', function () {
 
 it('dispatches a loading event', function () {
     app()->forgetInstance(Plugins::class);
-    $this->plugins = app(Plugins::class);
+    $this->plugins = resolve(Plugins::class);
 
     $triggeredLoading = false;
     $triggeredLoaded = false;

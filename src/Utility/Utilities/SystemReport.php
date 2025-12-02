@@ -95,7 +95,7 @@ final class SystemReport extends Utility
 
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
             'appInfo' => self::appInfo(),
-            'plugins' => app(Plugins::class)->getAllPlugins(),
+            'plugins' => resolve(Plugins::class)->getAllPlugins(),
             'modules' => $modules,
             'aliases' => $aliases,
             'requirements' => self::requirementResults(),

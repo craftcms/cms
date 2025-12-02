@@ -61,7 +61,7 @@ final class UpdaterController extends BaseUpdaterController
     public function backup(): Response
     {
         try {
-            app('Craft')->getDb()->backup();
+            resolve('Craft')->getDb()->backup();
         } catch (Throwable $e) {
             Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
 

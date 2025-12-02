@@ -47,7 +47,7 @@ final class RepairSectionStructureCommand extends RepairCommand implements Promp
         return [
             'handle' => fn () => select(
                 label: 'Select a section',
-                options: app(Sections::class)->getAllSections()
+                options: resolve(Sections::class)->getAllSections()
                     ->filter(fn (Section $section) => $section->type === SectionType::Structure)
                     ->mapWithKeys(fn (Section $section) => [$section->handle => $section->name])
                     ->all(),

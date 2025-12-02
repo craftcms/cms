@@ -140,7 +140,7 @@ final class GarbageCollection
                 [$action, $params] = $action;
             }
 
-            app($action, array_merge([
+            resolve($action, array_merge([
                 'garbageCollection' => $this,
             ], $params ?? []))();
         }

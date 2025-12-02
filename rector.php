@@ -29,7 +29,6 @@ return RectorConfig::configure()
         EnvVariableToEnvHelperRector::class => [
             __DIR__.'/src/Utility/Utilities/PhpInfo.php',
         ],
-        AppToResolveRector::class,
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)

@@ -9,7 +9,7 @@ use Illuminate\Http\Response;
 
 beforeEach(function () {
     $this->generalConfig = Cms::config();
-    $this->middleware = app(SendPoweredByHeader::class);
+    $this->middleware = resolve(SendPoweredByHeader::class);
 });
 
 it('will remove the header if the config is disabled', function () {

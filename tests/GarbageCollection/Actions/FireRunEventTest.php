@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Event;
 it('fires the event', function () {
     Event::fake();
 
-    app(FireRunEvent::class)();
+    resolve(FireRunEvent::class)();
 
     Event::assertDispatchedOnce(RunningGarbageCollection::class);
 });

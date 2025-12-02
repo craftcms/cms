@@ -16,8 +16,8 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->sites = app(Sites::class);
-    $this->siteGroups = app(SiteGroups::class);
+    $this->sites = resolve(Sites::class);
+    $this->siteGroups = resolve(SiteGroups::class);
 });
 
 it('requires authentication', function () {

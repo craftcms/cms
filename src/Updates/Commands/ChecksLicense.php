@@ -17,7 +17,7 @@ trait ChecksLicense
 {
     protected function checkLicense(): ?int
     {
-        if (app(License::class)->key()) {
+        if (resolve(License::class)->key()) {
             return null;
         }
 
@@ -36,13 +36,13 @@ trait ChecksLicense
         );
 
         spin(
-            fn () => app(Api::class)->getLicenseInfo(headers: [
+            fn () => resolve(Api::class)->getLicenseInfo(headers: [
                 'X-Craft-User-Email' => $email,
             ]),
             'Requesting new license',
         );
 
-        if (app(License::class)->key() === null) {
+        if (resolve(License::class)->key() === null) {
             $this->components->error('License key creation was unsuccessful.');
 
             return self::FAILURE;

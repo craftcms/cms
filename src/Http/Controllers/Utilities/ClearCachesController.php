@@ -66,7 +66,7 @@ final readonly class ClearCachesController
             TagDependency::invalidate($tag);
 
             // @todo: Remove after all usage of Yii's TagDependency is removed
-            \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
+            \yii\caching\TagDependency::invalidate(resolve('Craft')->getCache(), $tag);
         }
 
         return new JsonResponse;

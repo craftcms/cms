@@ -73,7 +73,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         }
 
         try {
-            return app(Addresses::class)->getCountryRepository()->get($value, app()->getLocale());
+            return resolve(Addresses::class)->getCountryRepository()->get($value, app()->getLocale());
         } catch (UnknownCountryException) {
             return null;
         }
@@ -85,7 +85,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $options = app(Addresses::class)->getCountryList(app()->getLocale());
+        $options = resolve(Addresses::class)->getCountryList(app()->getLocale());
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
@@ -131,7 +131,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $countries = app(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
+            $countries = resolve(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
             $value = $countries[array_rand($countries)];
         } else {
             if ($value instanceof CountryModel) {

@@ -10,7 +10,7 @@ use CraftCms\Cms\SystemMessage\SystemMessages;
 use function CraftCms\Cms\t;
 
 beforeEach(function () {
-    $this->systemMessages = app(SystemMessages::class);
+    $this->systemMessages = resolve(SystemMessages::class);
 });
 
 it('retrieves all the default system messages', function () {

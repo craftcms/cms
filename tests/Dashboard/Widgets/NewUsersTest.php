@@ -7,7 +7,7 @@ use CraftCms\Cms\Dashboard\Widgets\NewUsers;
 use CraftCms\Cms\Edition;
 
 it('can render', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $widget = $dashboard->createWidget(NewUsers::class);
 
     Edition::set(Edition::Pro);
@@ -15,7 +15,7 @@ it('can render', function () {
 });
 
 it('is only selectable when craft is pro or higher', function () {
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $widget = $dashboard->createWidget(NewUsers::class);
 
     Edition::set(Edition::Solo);

@@ -22,7 +22,7 @@ it('can render', function () {
     actingAs(User::first());
     Session::start();
 
-    $dashboard = app(Dashboard::class);
+    $dashboard = resolve(Dashboard::class);
     $widget = $dashboard->createWidget(Updates::class);
 
     expect($widget->getBodyHtml())->not()->toBeNull();

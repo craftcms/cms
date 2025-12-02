@@ -24,7 +24,7 @@ it('removes empty temp folders', function () {
 
     expect(DB::table(Table::VOLUMEFOLDERS))->count()->toBe(2);
 
-    app(RemoveEmptyTempFolders::class)();
+    resolve(RemoveEmptyTempFolders::class)();
 
     expect(DB::table(Table::VOLUMEFOLDERS))->count()->toBe(1);
 });

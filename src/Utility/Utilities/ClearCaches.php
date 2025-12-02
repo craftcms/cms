@@ -96,7 +96,7 @@ final class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
-        $pathService = app('Craft')->getPath();
+        $pathService = resolve('Craft')->getPath();
 
         $options = [
             [
