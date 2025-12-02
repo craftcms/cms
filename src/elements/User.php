@@ -2300,12 +2300,12 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
-        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
-        if ($locale && in_array($locale, $locales, true)) {
-            return $locale;
+        if (!$locale) {
+            return null;
         }
 
-        return null;
+        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
+        return in_array($locale, $locales, true) ? $locale : null;
     }
 
     /**
