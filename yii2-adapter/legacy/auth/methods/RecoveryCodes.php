@@ -9,9 +9,8 @@ namespace craft\auth\methods;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\records\RecoveryCodes as RecoveryCodesRecord;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
 use DateTime;
 use PragmaRX\Recovery\Recovery;
 use yii\base\InvalidArgumentException;
@@ -46,9 +45,7 @@ class RecoveryCodes extends BaseAuthMethod
      */
     public function isActive(): bool
     {
-        return RecoveryCodesRecord::find()
-            ->where(['userId' => $this->user->id])
-            ->exists();
+        return RecoveryCodesModel::where('userId', $this->user->id)->exists();
     }
 
     /**
@@ -124,9 +121,7 @@ JS, [$containerId]);
      */
     public function remove(): void
     {
-        RecoveryCodesRecord::deleteAll([
-            'userId' => $this->user->id,
-        ]);
+        RecoveryCodesModel::where('userId', $this->user->id)->delete();
     }
 
     /**
@@ -155,18 +150,15 @@ JS, [$containerId]);
      */
     public function getRecoveryCodes(): array
     {
-        /** @var RecoveryCodesRecord|null $record */
-        $record = RecoveryCodesRecord::find()
-            ->where(['userId' => $this->user->id])
-            ->one();
+        $model = RecoveryCodesModel::where('userId', $this->user->id)->first();
 
-        if (!$record) {
+        if (!$model) {
             return [[], null];
         }
 
         return [
-            Json::decode($record->recoveryCodes),
-            DateTimeHelper::toDateTime($record->dateCreated),
+            $model->recoveryCodes ?? false,
+            DateTimeHelper::toDateTime($model->dateCreated),
         ];
     }
 
@@ -181,18 +173,12 @@ JS, [$containerId]);
 
     private function storeRecoveryCodes(array $codes): void
     {
-        $record = RecoveryCodesRecord::find()
-            ->where(['userId' => $this->user->id])
-            ->one();
+        $model = RecoveryCodesModel::firstOrNew([
+            'userId' => $this->user->id,
+        ]);
 
-        if (!$record) {
-            $record = new RecoveryCodesRecord();
-            $record->userId = $this->user->id;
-        }
-
-        /** @var RecoveryCodesRecord $record */
-        $record->recoveryCodes = Json::encode($codes);
-        $record->save();
+        $model->recoveryCodes = $codes;
+        $model->save();
     }
 
     /**

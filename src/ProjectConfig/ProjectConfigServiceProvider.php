@@ -21,14 +21,16 @@ use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class ProjectConfigServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         Event::listen(RequestHandled::class, function () {
@@ -84,9 +86,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
             ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
             // User groups
-            ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}', $this->proxy('userGroups', 'handleChangedUserGroup'))
-            ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}', $this->proxy('userGroups', 'handleChangedUserGroup'))
-            ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}', $this->proxy('userGroups', 'handleDeletedUserGroup'))
+            ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleChangedUserGroup($event))
+            ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleChangedUserGroup($event))
+            ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleDeletedUserGroup($event))
             // User field layout
             ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
             ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))

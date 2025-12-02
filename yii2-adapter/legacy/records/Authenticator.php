@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $oldTimestamp old TOTP timestamp
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Models\Authenticator} instead.
  */
 class Authenticator extends ActiveRecord
 {

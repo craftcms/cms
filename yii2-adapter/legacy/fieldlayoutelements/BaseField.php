@@ -386,6 +386,16 @@ abstract class BaseField extends FieldLayoutElement
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $actionMenuItems,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            $actionMenuItems = $event->items;
+        }
+
         if (
             $this->uid &&
             $element?->id &&
@@ -862,19 +872,48 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
-        $items = [];
+        return [];
+    }
 
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineFieldActionsEvent([
-                'element' => $element,
-                'static' => $static,
-                'items' => $items,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-            return $event->items;
-        }
+    /**
+     * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param array $config
+     * @return array
+     * @since 5.9.0
+     */
+    protected function copyAttributeAction(array $config = []): array
+    {
+        $config += [
+            'id' => sprintf('action-copy-handle-%s', mt_rand()),
+            'icon' => 'clipboard',
+            'label' => Craft::t('app', 'Copy attribute name'),
+            'promptLabel' => Craft::t('app', 'Attribute Name'),
+            'attribute' => $this->attribute(),
+        ];
 
-        return $items;
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($id, $promptLabel, $attribute) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    Craft.ui.createCopyTextPrompt({
+      label: $promptLabel,
+      value: $attribute,
+    });
+  });
+})();
+JS, [
+            $view->namespaceInputId($config['id']),
+            $config['promptLabel'],
+            $config['attribute'],
+        ]);
+
+        return [
+            'id' => $config['id'],
+            'icon' => $config['icon'],
+            'label' => $config['label'],
+        ];
     }
 
     /**

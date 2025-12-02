@@ -27,6 +27,7 @@ use craft\db\Table;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Models\AssetIndexingSession} instead.
  */
 class AssetIndexingSession extends ActiveRecord
 {

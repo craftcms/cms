@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
-use craft\events\DefineFieldActionsEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -766,14 +765,12 @@ class CustomField extends BaseField
             $items = [];
         }
 
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineFieldActionsEvent([
-                'element' => $element,
-                'static' => $static,
-                'items' => $items,
+        $user = Craft::$app->getUser()->getIdentity();
+        if ($user?->admin && !$user->getPreference('showFieldHandles')) {
+            $items[] = $this->copyAttributeAction([
+                'label' => Craft::t('app', 'Copy field handle'),
+                'promptLabel' => Craft::t('app', 'Field Handle'),
             ]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-            return $event->items;
         }
 
         return $items;

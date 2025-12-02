@@ -163,9 +163,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_LTE => $value <= $this->value,
             self::OPERATOR_GT => $value > $this->value,
             self::OPERATOR_GTE => $value >= $this->value,
-            self::OPERATOR_BEGINS_WITH => is_string($value) && str_starts_with($value, $this->value),
-            self::OPERATOR_ENDS_WITH => is_string($value) && str_ends_with($value, $this->value),
-            self::OPERATOR_CONTAINS => is_string($value) && str_contains($value, $this->value),
+            self::OPERATOR_BEGINS_WITH => is_string($value) && str_starts_with(mb_strtolower($value), mb_strtolower($this->value)),
+            self::OPERATOR_ENDS_WITH => is_string($value) && str_ends_with(mb_strtolower($value), mb_strtolower($this->value)),
+            self::OPERATOR_CONTAINS => is_string($value) && str_contains(mb_strtolower($value), mb_strtolower($this->value)),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }

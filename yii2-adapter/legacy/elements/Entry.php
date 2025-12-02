@@ -44,7 +44,6 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\records\Entry as EntryRecord;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
@@ -83,7 +82,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -2879,37 +2877,29 @@ JS;
 
             // Get the entry record
             if (!$isNew) {
-                $record = EntryRecord::findOne($this->id);
-
-                if (!$record) {
-                    throw new InvalidConfigException("Invalid entry ID: $this->id");
-                }
                 $model = EntryModel::findOrFail($this->id);
             } else {
-                $record = new EntryRecord();
-                $record->id = (int)$this->id;
+                $model = new EntryModel();
+                $model->id = (int)$this->id;
             }
 
-            $record->sectionId = $this->sectionId;
-            $record->fieldId = $this->fieldId;
-            $record->primaryOwnerId = $this->getPrimaryOwnerId();
-            $record->typeId = $this->getTypeId();
-            $record->postDate = DbHelper::prepareDateForDb($this->postDate);
-            $record->expiryDate = DbHelper::prepareDateForDb($this->expiryDate);
+            $model->sectionId = $this->sectionId;
+            $model->fieldId = $this->fieldId;
+            $model->primaryOwnerId = $this->getPrimaryOwnerId();
+            $model->typeId = $this->getTypeId();
+            $model->postDate = DbHelper::prepareDateForDb($this->postDate);
+            $model->expiryDate = DbHelper::prepareDateForDb($this->expiryDate);
 
-            // todo: update after the next breakpoint
-            if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
-                $status = $this->_status();
-                $record->status = $status;
-                // only update $this->status if it's already set, indicating that staticStatuses is enabled
-                if (isset($this->status)) {
-                    $this->status = $status;
-                }
+            $status = $this->_status();
+            $model->status = $status;
+            // only update $this->status if it's already set, indicating that staticStatuses is enabled
+            if (isset($this->status)) {
+                $this->status = $status;
             }
 
             // Capture the dirty attributes from the record
-            $dirtyAttributes = array_keys($record->getDirtyAttributes());
-            $record->save(false);
+            $dirtyAttributes = array_keys($model->getDirty());
+            $model->save();
 
             // save authors
             if (isset($this->sectionId) && isset($this->_authorIds)) {

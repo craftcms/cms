@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
@@ -122,6 +123,8 @@ class LatLongField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
+        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+
         return
             Html::beginTag('div', ['class' => 'flex-fields']) .
             Cp::textFieldHtml([
@@ -134,6 +137,9 @@ class LatLongField extends BaseNativeField
                 'data' => [
                     'error-key' => 'latitude',
                 ],
+                'actionMenuItems' => array_filter([
+                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'latitude']) : null,
+                ]),
             ]) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
@@ -145,6 +151,9 @@ class LatLongField extends BaseNativeField
                 'data' => [
                     'error-key' => 'longitude',
                 ],
+                'actionMenuItems' => array_filter([
+                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'longitude']) : null,
+                ]),
             ]) .
             Html::endTag('div');
     }

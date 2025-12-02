@@ -26,6 +26,7 @@ use craft\db\Table;
  * @property bool|null $deletedWithOwner Deleted with owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Models\Element} instead.
  */
 class Element extends ActiveRecord
 {

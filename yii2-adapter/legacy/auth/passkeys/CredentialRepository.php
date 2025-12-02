@@ -8,10 +8,9 @@
 namespace craft\auth\passkeys;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
-use craft\records\WebAuthn;
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\Auth;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialSourceRepository;
@@ -31,10 +30,10 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {
-        $record = $this->_findByCredentialId($publicKeyCredentialId);
+        $model = $this->_findByCredentialId($publicKeyCredentialId);
 
-        if ($record) {
-            return PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($record->credential));
+        if ($model) {
+            return PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($model->credential));
         }
 
         return null;
@@ -50,7 +49,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
 
         $keySources = [];
         if ($user && $user->id) {
-            $records = WebAuthn::findAll(['userId' => $user->id]);
+            $records = WebAuthn::where('userId', $user->id)->get();
             foreach ($records as $record) {
                 $keySources[] = PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($record->credential));
             }
@@ -68,18 +67,18 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     public function savedNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, ?string $credentialName = null): void
     {
         $publicKeyCredentialId = $publicKeyCredentialSource->getPublicKeyCredentialId();
-        $record = $this->_findByCredentialId($publicKeyCredentialId);
+        $model = $this->_findByCredentialId($publicKeyCredentialId);
 
-        if (!$record) {
-            $record = new WebAuthn();
-            $record->userId = Craft::$app->getUser()->getIdentity()?->id;
-            $record->credentialName = !empty($credentialName) ? $credentialName : t('Secure credential');
-            $record->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
+        if (!$model) {
+            $model = new WebAuthn();
+            $model->userId = Auth::user()?->id;
+            $model->credentialName = !empty($credentialName) ? $credentialName : t('Secure credential');
+            $model->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
         }
 
-        $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
-        $record->credential = Json::encode($publicKeyCredentialSource);
-        $record->save();
+        $model->dateLastUsed = now();
+        $model->credential = Json::encode($publicKeyCredentialSource);
+        $model->save();
     }
 
     /**
@@ -92,12 +91,9 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
 
     /**
      * Find user by public key credential id
-     *
-     * @param string $publicKeyCredentialId
-     * @return WebAuthn|null
      */
     private function _findByCredentialId(string $publicKeyCredentialId): ?WebAuthn
     {
-        return WebAuthn::findOne(['credentialId' => Base64UrlSafe::encodeUnpadded($publicKeyCredentialId)]);
+        return WebAuthn::where('credentialId', Base64UrlSafe::encodeUnpadded($publicKeyCredentialId))->first();
     }
 }

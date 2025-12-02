@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Database\Eloquent\Builder;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -295,25 +296,20 @@ class Volume extends Model implements
     private function validateUniqueSubpath(string $attribute): void
     {
         // get all volumes that use the same FS, excluding current volume
-        $query = VolumeRecord::find()
-            ->andWhere(['fs' => $this->_fsHandle])
-            ->asArray();
-
-        if ($this->id !== null) {
-            $query->andWhere('id != ' . $this->id);
-        }
-
-        $records = $query->all();
+        $records = \CraftCms\Cms\Asset\Models\Volume::query()
+            ->where('fs', $this->_fsHandle)
+            ->when($this->id !== null, fn(Builder $query) => $query->whereNot('id', $this->id))
+            ->get();
 
         // if there are other volumes using the same FS
         // and this volume wants to have an empty subpath - add error
-        if (!empty($records) && empty($this->$attribute)) {
+        if ($records->isNotEmpty() && empty($this->$attribute)) {
             $this->addError($attribute, t('A subpath is required for this filesystem.'));
         }
 
         // make sure subpath starts with a unique dir across all volumes that use this FS
         foreach ($records as $record) {
-            if (strcmp(explode('/', $record[$attribute])[0], explode('/', $this->$attribute)[0]) === 0) {
+            if (strcmp(explode('/', $record->$attribute)[0], explode('/', $this->$attribute)[0]) === 0) {
                 $this->addError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'));
             }
         }

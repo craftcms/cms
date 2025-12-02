@@ -30,7 +30,6 @@ use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
-use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\Users;
 use craft\web\Application;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
@@ -42,6 +41,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -302,13 +302,13 @@ class UsersController extends Controller
 
         $requestOptions = $this->request->getRequiredBodyParam('requestOptions');
         $response = $this->request->getRequiredBodyParam('response');
-        $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
+        $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
 
         if ($credential === null) {
             return $this->asFailure(t('Passkey authentication failed.'));
         }
 
-        $user = User::findOne(['id' => $credential['userId']]);
+        $user = User::findOne(['id' => $credential->userId]);
 
         if ($user === null) {
             return $this->_handleLoginFailure();

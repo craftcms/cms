@@ -141,7 +141,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
             $field instanceof CustomField &&
             $field->getFieldUid() === $this->_fieldUid
         ));
-        if (count($allInstances) > 1) {
+        if ($allInstances && count($allInstances) > 1) {
             $valueSql = $field->getValueSql();
             switch ($this->operator) {
                 case self::OPERATOR_RELATED_TO:

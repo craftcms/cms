@@ -11,15 +11,15 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Address;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
-use craft\models\UserGroup;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Data\UserGroup;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
@@ -30,7 +30,7 @@ use yii\db\Expression;
  * @template TElement of User
  * @extends ElementQuery<TKey,TElement>
  *
- * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
+ * @property-write string|string[]|UserGroup|\craft\models\UserGroup|null $group The user group(s) that resulting users must belong to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -440,11 +440,11 @@ class UserQuery extends ElementQuery
     public function group(mixed $value): static
     {
         // If the value is a group handle, swap it with the user group
-        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+        if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
             $value = $group;
         }
 
-        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup || $item instanceof \craft\models\UserGroup ? $item->id : null)) {
             $this->groupId = $value;
         } else {
             $operator = QueryParam::extractOperator($value);
@@ -1203,7 +1203,7 @@ class UserQuery extends ElementQuery
 
         // Eager-load user groups?
         if ($this->withGroups && !$this->asArray && Edition::get()->value >= Edition::Pro->value) {
-            Craft::$app->getUserGroups()->eagerLoadGroups($elements);
+            UserGroups::eagerLoadGroups($elements);
         }
 
         return $elements;

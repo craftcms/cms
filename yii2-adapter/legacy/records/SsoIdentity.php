@@ -19,6 +19,7 @@ use craft\db\Table;
 
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Models\SsoIdentity} instead.
  */
 class SsoIdentity extends ActiveRecord
 {

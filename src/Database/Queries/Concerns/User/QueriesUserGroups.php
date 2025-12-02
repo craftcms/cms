@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns\User;
 
-use Craft;
-use craft\models\UserGroup;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -119,7 +119,7 @@ trait QueriesUserGroups
                 return $result;
             }
 
-            Craft::$app->getUserGroups()->eagerLoadGroups($result->all());
+            UserGroups::eagerLoadGroups($result->all());
 
             return $result;
         });
@@ -162,7 +162,7 @@ trait QueriesUserGroups
     public function group(mixed $value): self
     {
         // If the value is a group handle, swap it with the user group
-        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+        if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
             $value = $group;
         }
 

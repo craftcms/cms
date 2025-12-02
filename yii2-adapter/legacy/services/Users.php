@@ -14,7 +14,6 @@ use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
-use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\DefineUserGroupsEvent;
 use craft\events\UserAssignGroupEvent;
@@ -31,8 +30,8 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\models\Volume;
-use craft\records\User as UserRecord;
 use craft\web\Request;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -42,6 +41,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use DateTimeZone;
@@ -342,10 +342,10 @@ class Users extends Component
     {
         if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
             // Fetch from the DB
-            $userRecord = $this->_getUserRecordById($user->id);
-            $user->verificationCode = $userRecord->verificationCode;
-            $user->verificationCodeIssuedDate = $userRecord->verificationCodeIssuedDate
-                ? new DateTime($userRecord->verificationCodeIssuedDate, new DateTimeZone('UTC'))
+            $userModel = $this->getUserModelById($user->id);
+            $user->verificationCode = $userModel->verificationCode;
+            $user->verificationCodeIssuedDate = $userModel->verificationCodeIssuedDate
+                ? new DateTime($userModel->verificationCodeIssuedDate, new DateTimeZone('UTC'))
                 : null;
 
             if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
@@ -361,10 +361,10 @@ class Users extends Component
 
         // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
-            $userRecord ??= $this->_getUserRecordById($user->id);
-            $userRecord->verificationCode = $user->verificationCode = null;
-            $userRecord->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
-            $userRecord->save();
+            $userModel ??= $this->getUserModelById($user->id);
+            $userModel->verificationCode = $user->verificationCode = null;
+            $userModel->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
+            $userModel->save();
 
             Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.',
                 __METHOD__);
@@ -537,7 +537,7 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        $fePath = app(GeneralConfig::class)->getVerifyEmailPath();
+        $fePath = Cms::config()->getVerifyEmailPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
@@ -551,7 +551,7 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        $fePath = app(GeneralConfig::class)->getSetPasswordPath();
+        $fePath = Cms::config()->getSetPasswordPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
@@ -565,16 +565,15 @@ class Users extends Component
      */
     public function removeCredentials(User $user): void
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->active = false;
-        $userRecord->pending = false;
-        $userRecord->password = null;
-        $userRecord->verificationCode = null;
+        $userModel = $this->getUserModelById($user->id);
+        $userModel->active = false;
+        $userModel->pending = false;
+        $userModel->password = null;
+        $userModel->verificationCode = null;
 
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
-        if (!$userRecord->save()) {
-            $user->addErrors($userRecord->getErrors());
+        if (!$userModel->save()) {
             throw new InvalidElementException($user);
         }
 
@@ -769,23 +768,23 @@ class Users extends Component
      */
     public function handleValidLogin(User $user): void
     {
-        $now = DateTimeHelper::currentUTCDateTime();
+        $now = now('UTC');
 
         // Update the User record
-        $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->lastLoginDate = DbHelper::prepareDateForDb($now);
-        $userRecord->invalidLoginWindowStart = null;
-        $userRecord->invalidLoginCount = null;
+        $userModel = $this->getUserModelById($user->id);
+        $userModel->lastLoginDate = $now;
+        $userModel->invalidLoginWindowStart = null;
+        $userModel->invalidLoginCount = null;
 
-        if (app(GeneralConfig::class)->storeUserIps) {
-            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        if (Cms::config()->storeUserIps) {
+            $userModel->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         }
 
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-        $userRecord->save();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+        $userModel->save();
 
         // Update the User model too
-        $user->lastLoginDate = $now;
+        $user->lastLoginDate = $now->toDateTime();
         $user->invalidLoginCount = null;
 
         if ($indexAttributesChanged) {
@@ -800,45 +799,45 @@ class Users extends Component
      */
     public function handleInvalidLogin(User $user): void
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $now = DateTimeHelper::currentUTCDateTime();
+        $userModel = $this->getUserModelById($user->id);
+        $now = now('UTC');
 
-        $userRecord->lastInvalidLoginDate = DbHelper::prepareDateForDb($now);
+        $userModel->lastInvalidLoginDate = $now;
 
-        if (app(GeneralConfig::class)->storeUserIps) {
-            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        if (Cms::config()->storeUserIps) {
+            $userModel->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         }
 
         // Was that one too many?
-        $maxInvalidLogins = app(GeneralConfig::class)->maxInvalidLogins;
+        $maxInvalidLogins = Cms::config()->maxInvalidLogins;
         $alreadyLocked = $user->locked;
 
         if ($maxInvalidLogins) {
-            if ($this->_isUserInsideInvalidLoginWindow($userRecord)) {
-                $userRecord->invalidLoginCount++;
+            if ($this->_isUserInsideInvalidLoginWindow($userModel)) {
+                $userModel->invalidLoginCount++;
 
                 // Was that one bad password too many?
-                if ($userRecord->invalidLoginCount >= $maxInvalidLogins) {
-                    $userRecord->locked = true;
-                    $userRecord->invalidLoginCount = null;
-                    $userRecord->invalidLoginWindowStart = null;
-                    $userRecord->lockoutDate = DbHelper::prepareDateForDb($now);
+                if ($userModel->invalidLoginCount >= $maxInvalidLogins) {
+                    $userModel->locked = true;
+                    $userModel->invalidLoginCount = null;
+                    $userModel->invalidLoginWindowStart = null;
+                    $userModel->lockoutDate = $now;
 
                     $user->locked = true;
                     $user->lockoutDate = $now;
                 }
             } else {
                 // Start the invalid login window and counter
-                $userRecord->invalidLoginWindowStart = DbHelper::prepareDateForDb($now);
-                $userRecord->invalidLoginCount = 1;
+                $userModel->invalidLoginWindowStart = $now;
+                $userModel->invalidLoginCount = 1;
             }
 
             // Update the counter on the user model
-            $user->invalidLoginCount = $userRecord->invalidLoginCount;
+            $user->invalidLoginCount = $userModel->invalidLoginCount;
         }
 
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-        $userRecord->save();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+        $userModel->save();
 
         // Update the User model too
         $user->lastInvalidLoginDate = $now;
@@ -900,20 +899,20 @@ class Users extends Component
 
         DB::beginTransaction();
         try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->active = true;
-            $userRecord->pending = false;
-            $userRecord->locked = false;
-            $userRecord->suspended = false;
-            $userRecord->verificationCode = null;
-            $userRecord->verificationCodeIssuedDate = null;
-            $userRecord->invalidLoginWindowStart = null;
-            $userRecord->invalidLoginCount = null;
-            $userRecord->lastInvalidLoginDate = null;
-            $userRecord->lockoutDate = null;
+            $userModel = $this->getUserModelById($user->id);
+            $userModel->active = true;
+            $userModel->pending = false;
+            $userModel->locked = false;
+            $userModel->suspended = false;
+            $userModel->verificationCode = null;
+            $userModel->verificationCodeIssuedDate = null;
+            $userModel->invalidLoginWindowStart = null;
+            $userModel->invalidLoginCount = null;
+            $userModel->lastInvalidLoginDate = null;
+            $userModel->lockoutDate = null;
 
-            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-            $userRecord->save();
+            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+            $userModel->save();
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -958,20 +957,20 @@ class Users extends Component
 
         DB::beginTransaction();
         try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->active = false;
-            $userRecord->pending = false;
-            $userRecord->locked = false;
-            $userRecord->suspended = false;
-            $userRecord->verificationCode = null;
-            $userRecord->verificationCodeIssuedDate = null;
-            $userRecord->invalidLoginWindowStart = null;
-            $userRecord->invalidLoginCount = null;
-            $userRecord->lastInvalidLoginDate = null;
-            $userRecord->lockoutDate = null;
+            $userModel = $this->getUserModelById($user->id);
+            $userModel->active = false;
+            $userModel->pending = false;
+            $userModel->locked = false;
+            $userModel->suspended = false;
+            $userModel->verificationCode = null;
+            $userModel->verificationCodeIssuedDate = null;
+            $userModel->invalidLoginWindowStart = null;
+            $userModel->invalidLoginCount = null;
+            $userModel->lastInvalidLoginDate = null;
+            $userModel->lockoutDate = null;
 
-            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-            $userRecord->save();
+            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+            $userModel->save();
 
             $user->active = false;
             $user->pending = false;
@@ -1016,23 +1015,22 @@ class Users extends Component
             return;
         }
 
-        $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->email = $user->unverifiedEmail;
-        $userRecord->unverifiedEmail = null;
+        $userModel = $this->getUserModelById($user->id);
+        $userModel->email = $user->unverifiedEmail;
+        $userModel->unverifiedEmail = null;
 
-        if (app(GeneralConfig::class)->useEmailAsUsername) {
-            $userRecord->username = $user->unverifiedEmail;
+        if (Cms::config()->useEmailAsUsername) {
+            $userModel->username = $user->unverifiedEmail;
         }
 
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
-        if (!$userRecord->save()) {
-            $user->addErrors($userRecord->getErrors());
+        if (!$userModel->save()) {
             throw new InvalidElementException($user);
         }
 
         // If the user status is pending, let's activate them.
-        if ($userRecord->pending) {
+        if ($userModel->pending) {
             $this->activateUser($user);
         } elseif ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -1059,14 +1057,14 @@ class Users extends Component
 
         DB::beginTransaction();
         try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->locked = false;
-            $userRecord->invalidLoginCount = null;
-            $userRecord->invalidLoginWindowStart = null;
-            $userRecord->lockoutDate = null;
+            $userModel = $this->getUserModelById($user->id);
+            $userModel->locked = false;
+            $userModel->invalidLoginCount = null;
+            $userModel->invalidLoginWindowStart = null;
+            $userModel->lockoutDate = null;
 
-            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-            $userRecord->save();
+            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+            $userModel->save();
 
             DB::commit();
         } catch (Throwable $e) {
@@ -1109,12 +1107,12 @@ class Users extends Component
             }
         }
 
-        $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->suspended = true;
+        $userModel = $this->getUserModelById($user->id);
+        $userModel->suspended = true;
         $user->suspended = true;
 
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-        $userRecord->save();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+        $userModel->save();
 
         // Destroy all sessions for this user
         DB::table(Table::SESSIONS)
@@ -1154,11 +1152,11 @@ class Users extends Component
         DB::beginTransaction();
 
         try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->suspended = false;
+            $userModel = $this->getUserModelById($user->id);
+            $userModel->suspended = false;
 
-            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-            $userRecord->save();
+            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+            $userModel->save();
 
             DB::commit();
         } catch (Throwable $e) {
@@ -1243,33 +1241,33 @@ class Users extends Component
      */
     public function setVerificationCodeOnUser(User $user): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
+        $userModel = $this->getUserModelById($user->id);
 
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
 
         // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
         $unhashedCode = str_replace('_', Str::random(1), $unhashedCode);
-        $issueDate = DateTimeHelper::currentUTCDateTime();
+        $issueDate = now('UTC');
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
-        $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = DbHelper::prepareDateForDb($issueDate);
+        $userModel->verificationCode = $hashedCode;
+        $userModel->verificationCodeIssuedDate = $issueDate;
 
         // Make sure they are set to pending, if not already active
-        if (!$userRecord->active) {
-            $userRecord->pending = true;
+        if (!$userModel->active) {
+            $userModel->pending = true;
         }
 
         DB::beginTransaction();
-        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
-        $userRecord->save();
+        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
+        $userModel->save();
 
         $originalUser = clone $user;
         $user->setScenario(User::SCENARIO_ACTIVATION);
-        $user->pending = $userRecord->pending;
+        $user->pending = $userModel->pending;
         $user->verificationCode = $hashedCode;
-        $user->verificationCodeIssuedDate = $issueDate;
+        $user->verificationCodeIssuedDate = $issueDate->toDateTime();
 
         if (!$user->validate()) {
             DB::rollBack();
@@ -1395,7 +1393,7 @@ class Users extends Component
                     ->insert(array_map(fn(int $groupId) => [
                         'userId' => $userId,
                         'groupId' => $groupId,
-                        'dateCreated' => $now = now(),
+                        'dateCreated' => $now = now('UTC'),
                         'dateUpdated' => $now,
                         'uid' => Str::uuid(),
                     ], $newGroupIds));
@@ -1628,45 +1626,24 @@ class Users extends Component
     {
     }
 
-    /**
-     * Gets a user record by its ID.
-     *
-     * @param int $userId
-     *
-     * @return UserRecord
-     * @throws UserNotFoundException if $userId is invalid
-     */
-    private function _getUserRecordById(int $userId): UserRecord
+    private function getUserModelById(int $userId): UserModel
     {
-        $userRecord = UserRecord::findOne($userId);
-
-        if (!$userRecord) {
-            throw new UserNotFoundException("No user exists with the ID '$userId'");
-        }
-
-        return $userRecord;
+        return UserModel::findOrFail($userId);
     }
 
     /**
      * Determines if a user is within their invalid login window.
-     *
-     * @param UserRecord $userRecord
-     *
-     * @return bool
      */
-    private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
+    private function _isUserInsideInvalidLoginWindow(UserModel $userModel): bool
     {
         // If we don't even know the last time they logged in, they're good
-        if (!$userRecord->invalidLoginWindowStart) {
+        if (!$userModel->invalidLoginWindowStart) {
             return false;
         }
 
-        $generalConfig = app(GeneralConfig::class);
-        $interval = DateTimeHelper::secondsToInterval($generalConfig->invalidLoginWindowDuration);
-        $invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
-        $end = $invalidLoginWindowStart->add($interval);
-
-        return ($end >= DateTimeHelper::currentUTCDateTime());
+        return $userModel->invalidLoginWindowStart
+            ->addSeconds(Cms::config()->invalidLoginWindowDuration)
+            ->isFuture();
     }
 
     /**

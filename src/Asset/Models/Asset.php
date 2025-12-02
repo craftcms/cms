@@ -20,6 +20,8 @@ final class Asset extends BaseModel
 
     protected $table = Table::ASSETS;
 
+    public $incrementing = false;
+
     protected function casts(): array
     {
         return [

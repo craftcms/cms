@@ -50,11 +50,11 @@ use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
-use craft\records\Element as ElementRecord;
-use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
+use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -3843,15 +3843,15 @@ class Elements extends Component
 
         // Get the element's site record
         if (!$isNewElement && !$element->isNewForSite) {
-            $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
-                'elementId' => $element->id,
-                'siteId' => $element->siteId,
-            ]);
+            $siteSettingsModel = ElementSiteSettings::query()
+                ->where('elementId', $element->id)
+                ->where('siteId', $element->siteId)
+                ->first();
         } else {
-            $siteSettingsRecord = null;
+            $siteSettingsModel = null;
         }
 
-        $element->isNewForSite = empty($siteSettingsRecord);
+        $element->isNewForSite = is_null($siteSettingsModel);
 
         // Validate
         if ($runValidation) {
@@ -3899,7 +3899,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
-            $siteSettingsRecord,
+            $siteSettingsModel,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
@@ -3915,49 +3915,46 @@ class Elements extends Component
                 if (!$element->propagating) {
                     // Get the element record
                     if (!$isNewElement) {
-                        $elementRecord = ElementRecord::findOne($element->id);
+                        $elementModel = ElementModel::find($element->id);
 
-                        if (!$elementRecord) {
+                        if (!$elementModel) {
                             $element->firstSave = $originalFirstSave;
                             $element->isNewForSite = $originalIsNewForSite;
                             $element->propagateAll = $originalPropagateAll;
                             throw new ElementNotFoundException("No element exists with the ID '$element->id'");
                         }
                     } else {
-                        $elementRecord = new ElementRecord();
-                        $elementRecord->type = get_class($element);
+                        $elementModel = new ElementModel();
+                        $elementModel->type = $element::class;
                     }
 
                     // Set the attributes
-                    $elementRecord->uid = $element->uid;
+                    $elementModel->uid = $element->uid;
                     $canonicalId = $element->getCanonicalId();
-                    $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
-                    $elementRecord->draftId = (int)$element->draftId ?: null;
-                    $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                    $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
-                    $elementRecord->enabled = (bool)$element->enabled;
-                    $elementRecord->archived = (bool)$element->archived;
-                    $elementRecord->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
-                    $elementRecord->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
+                    $elementModel->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
+                    $elementModel->draftId = (int)$element->draftId ?: null;
+                    $elementModel->revisionId = (int)$element->revisionId ?: null;
+                    $elementModel->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
+                    $elementModel->enabled = (bool)$element->enabled;
+                    $elementModel->archived = (bool)$element->archived;
+                    $elementModel->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
+                    $elementModel->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementRecord->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
+                            $elementModel->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementRecord->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
+                            $elementModel->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
                         }
-                    } elseif ($element->resaving && !$forceTouch) {
-                        // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
-                        $elementRecord->markAttributeDirty('dateUpdated');
-                    } else {
+                    } elseif (!$element->resaving || $forceTouch) {
                         // Force a new dateUpdated value
-                        $elementRecord->dateUpdated = DbHelper::prepareValueForDb(DateTimeHelper::now());
+                        $elementModel->dateUpdated = now();
                     }
 
                     // Update our list of dirty attributes
                     if ($trackChanges) {
-                        array_push($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
+                        array_push($dirtyAttributes, ...array_keys(Arr::only($elementModel->getDirty(), [
                             'fieldLayoutId',
                             'enabled',
                             'archived',
@@ -3965,9 +3962,9 @@ class Elements extends Component
                     }
 
                     // Save the element record
-                    $elementRecord->save(false);
+                    $elementModel->save();
 
-                    $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                    $dateCreated = DateTimeHelper::toDateTime($elementModel->dateCreated);
 
                     if ($dateCreated === false) {
                         $element->firstSave = $originalFirstSave;
@@ -3976,7 +3973,7 @@ class Elements extends Component
                         throw new Exception('There was a problem calculating dateCreated.');
                     }
 
-                    $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+                    $dateUpdated = DateTimeHelper::toDateTime($elementModel->dateUpdated);
 
                     if ($dateUpdated === false) {
                         throw new Exception('There was a problem calculating dateUpdated.');
@@ -3988,7 +3985,7 @@ class Elements extends Component
 
                     if ($isNewElement) {
                         // Save the element ID on the element model
-                        $element->id = $elementRecord->id;
+                        $element->id = $elementModel->id;
 
                         // If there's a temp ID, update the URI
                         if ($element->tempId && $element->uri) {
@@ -3999,31 +3996,31 @@ class Elements extends Component
                 }
 
                 // Save the element’s site settings record
-                if ($siteSettingsRecord === null) {
+                if ($siteSettingsModel === null) {
                     // First time we've saved the element for this site
-                    $siteSettingsRecord = new Element_SiteSettingsRecord();
-                    $siteSettingsRecord->elementId = $element->id;
-                    $siteSettingsRecord->siteId = $element->siteId;
+                    $siteSettingsModel = new ElementSiteSettings();
+                    $siteSettingsModel->elementId = $element->id;
+                    $siteSettingsModel->siteId = $element->siteId;
                 }
 
                 $title = $element::hasTitles() ? $element->title : null;
-                $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
-                $siteSettingsRecord->slug = $element->slug;
-                $siteSettingsRecord->uri = $element->uri;
+                $siteSettingsModel->title = $title !== null && $title !== '' ? $title : null;
+                $siteSettingsModel->slug = $element->slug;
+                $siteSettingsModel->uri = $element->uri;
 
                 // Avoid `enabled` getting marked as dirty if it’s not really changing
                 $enabledForSite = $element->getEnabledForSite();
-                if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
-                    $siteSettingsRecord->enabled = $enabledForSite;
+                if (!$siteSettingsModel->exists || $siteSettingsModel->enabled !== $enabledForSite) {
+                    $siteSettingsModel->enabled = $enabledForSite;
                 }
 
                 // Update our list of dirty attributes
                 if ($trackChanges && !$element->isNewForSite) {
-                    array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
+                    array_push($dirtyAttributes, ...array_keys(Arr::only($siteSettingsModel->getDirty(), [
                         'slug',
                         'uri',
                     ])));
-                    if ($siteSettingsRecord->isAttributeChanged('enabled')) {
+                    if ($siteSettingsModel->isDirty('enabled')) {
                         $dirtyAttributes[] = 'enabledForSite';
                     }
                 }
@@ -4032,7 +4029,7 @@ class Elements extends Component
                 $generatedFields = $fieldLayout?->getGeneratedFields() ?? [];
 
                 if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
-                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                    $oldContent = $siteSettingsModel->content ?? []; // we'll need that if we're not saving all the content
                     if (is_string($oldContent)) {
                         $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
                     }
@@ -4091,18 +4088,18 @@ class Elements extends Component
                         }
                     }
 
-                    $siteSettingsRecord->content = $content ?: null;
+                    $siteSettingsModel->content = $content ?: null;
                 }
 
                 // Save the site settings record
-                if (!$siteSettingsRecord->save(false)) {
+                if (!$siteSettingsModel->save()) {
                     $element->firstSave = $originalFirstSave;
                     $element->isNewForSite = $originalIsNewForSite;
                     $element->propagateAll = $originalPropagateAll;
                     throw new Exception('Couldn’t save elements’ site settings record.');
                 }
 
-                $element->siteSettingsId = $siteSettingsRecord->id;
+                $element->siteSettingsId = $siteSettingsModel->id;
 
                 // Set all of the dirty attributes on the element, in case an event listener wants to know
                 if ($trackChanges) {

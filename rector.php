@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
 use RectorLaravel\Rector\Class_\AnonymousMigrationsRector;
+use RectorLaravel\Rector\FuncCall\AppToResolveRector;
 use RectorLaravel\Rector\MethodCall\ResponseHelperCallToJsonResponseRector;
 use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -28,6 +29,7 @@ return RectorConfig::configure()
         EnvVariableToEnvHelperRector::class => [
             __DIR__.'/src/Utility/Utilities/PhpInfo.php',
         ],
+        AppToResolveRector::class,
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)

@@ -62,6 +62,7 @@ use craft\services\Routes;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
+use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
@@ -488,6 +489,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Sites::registerEvents();
         Structures::registerEvents();
         SystemMessages::registerEvents();
+        UserGroups::registerEvents();
 
         /**
          * Utilities
