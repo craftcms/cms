@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
-import {property, queryAssignedElements} from 'lit/decorators.js';
+import {queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@/components/action-item/action-item';
 import {uuid} from '@lion/ui/core.js';
 
@@ -67,24 +67,26 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     const firstContent = this.contentNodes[0];
     if (firstContent) {
       firstContent.setAttribute('id', `content-${this.uid}`);
+      firstContent.setAttribute('role', 'none');
     }
+  }
+
+  override _setupOverlayCtrl() {
+    super._setupOverlayCtrl();
+    this._setupInvoker()
+    this._setupContent();
   }
 
   override firstUpdated() {
     this.uid = uuid();
     this._addEventListeners();
-    this._setupInvoker();
-    this._setupContent();
   }
 
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
-
-      <div id="overlay-content-node-wrapper">
-        <slot name="content"></slot>
-      </div>
+      <slot name="content"></slot>
     `;
   }
 }
