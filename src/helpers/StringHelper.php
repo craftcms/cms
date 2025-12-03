@@ -1956,7 +1956,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
         $parts = explode('@', $email, 2);
         foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
+            if (!empty($part) && ($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
                 return $email;
             }
         }
