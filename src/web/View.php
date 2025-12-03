@@ -2118,7 +2118,7 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
@@ -2128,6 +2128,7 @@ JS;
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2167,16 +2168,17 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
-                'variables' => &$variables,
+                'variables' => $variables,
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
