@@ -1951,7 +1951,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         $parts = explode('@', $email, 2);
         foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
+            if (!empty($part) && ($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
                 return $email;
             }
         }
