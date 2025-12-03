@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Queries;
 
 use Craft;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Database\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Database\Queries\Concerns\Asset\QueriesAssetLocation;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Database\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Database\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;

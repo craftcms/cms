@@ -108,9 +108,9 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         return UserPermissions::doesUserHavePermission($this->id, $abilities);
     }
 
-    public function asElement(): \CraftCms\Cms\Element\Elements\User
+    public function asElement(): \CraftCms\Cms\User\Elements\User
     {
-        return new \CraftCms\Cms\Element\Elements\User(Arr::except($this->toArray(), [
+        return new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
             'invalidLoginWindowStart',
         ]));
     }

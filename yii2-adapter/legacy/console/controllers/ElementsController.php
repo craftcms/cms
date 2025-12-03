@@ -13,7 +13,7 @@ use craft\console\Controller;
 use craft\helpers\Component;
 use craft\helpers\Console;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Support\Facades\DB;

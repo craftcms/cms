@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Addresses;
+namespace CraftCms\Cms\Address;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressFormat\AddressFormatRepository;
@@ -18,12 +18,12 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use CraftCms\Cms\Addresses\Events\DefineAddressCountries;
-use CraftCms\Cms\Addresses\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Addresses\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedSubdivisionFields;
-use CraftCms\Cms\Addresses\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Address\Events\DefineAddressCountries;
+use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
+use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
+use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;

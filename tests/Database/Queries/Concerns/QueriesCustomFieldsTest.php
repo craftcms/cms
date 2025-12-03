@@ -2,7 +2,7 @@
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\CustomField;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -48,7 +48,7 @@ it('can query custom fields', function () {
 
     Fields::refreshFields();
 
-    /** @var \CraftCms\Cms\Element\Elements\Entry $entry */
+    /** @var \CraftCms\Cms\Entry\Elements\Entry $entry */
     $entry = entryQuery()->first();
     $entry->title = 'Test entry';
     $entry->setFieldValue('textField', 'Foo');

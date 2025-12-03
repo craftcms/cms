@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Addresses\Models\Address;
+use CraftCms\Cms\Address\Models\Address;
 use CraftCms\Cms\Database\Queries\AddressQuery;
 
 it('queries addresses', function () {

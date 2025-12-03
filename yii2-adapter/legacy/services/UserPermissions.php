@@ -95,7 +95,7 @@ class UserPermissions extends Component
     public function getAssignablePermissions(?User $user = null): array
     {
         if ($user) {
-            $user = \CraftCms\Cms\Element\Elements\User::find()->id($user->id)->first();
+            $user = \CraftCms\Cms\User\Elements\User::find()->id($user->id)->first();
         }
 
         return $this->service->getAssignablePermissions($user)->toArray();

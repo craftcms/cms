@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Addresses\Repositories;
+namespace CraftCms\Cms\Address\Repositories;
 
 use CommerceGuys\Addressing\Locale;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Support\Json;
+use Override;
 
 /**
  * Craft's extension of the commerceguys/addressing SubdivisionRepository.
@@ -18,7 +19,7 @@ use CraftCms\Cms\Support\Json;
 class SubdivisionRepository extends BaseSubdivisionRepository
 {
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getList(array $parents, $locale = null): array
     {
         // get the list of subdivisions from commerceguys/addressing

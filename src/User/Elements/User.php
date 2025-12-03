@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Elements;
+namespace CraftCms\Cms\User\Elements;
 
 use CraftCms\Cms\Database\Queries\UserQuery;
+use Override;
 
 final class User extends \craft\elements\User
 {
-    #[\Override]
+    #[Override]
     public static function find(): UserQuery
     {
         return new UserQuery;

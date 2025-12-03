@@ -12,7 +12,7 @@ use CraftCms\Cms\Database\Queries\Concerns\User\QueriesRolesAndPermissions;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesUserGroups;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 
 /**

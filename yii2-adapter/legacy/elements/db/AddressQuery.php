@@ -12,7 +12,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
 use craft\helpers\Db;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.

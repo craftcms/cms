@@ -1,8 +1,8 @@
 <?php
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Elements\Asset;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;

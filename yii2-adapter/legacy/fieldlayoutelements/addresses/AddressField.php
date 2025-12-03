@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
@@ -131,7 +131,7 @@ class AddressField extends BaseField
                 'locality',
             ];
             for (let name of fieldNames) {
-                fields[name] = $('#' + Craft.namespaceId(name, $namespace));
+                fields[name] = $('#' + Craft.namespaceId(name, $namespace))
                 if (values && values[name] !== null) {
                     fields[name].val(values[name]);
                 }
@@ -143,7 +143,7 @@ class AddressField extends BaseField
                 }
 
                 let oldFieldVal = field.val();
-                const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace));
+                const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace))
                 field.off().on('change', () => {
                     if (!field.val() || oldFieldVal === field.val()) {
                         return;
@@ -170,7 +170,7 @@ class AddressField extends BaseField
                           // if value for any hotFieldNames is null, but we have one in fields
                           if (values[name] == null && fields[name]?.val().trim() !== '') {
                             // and the old and new field for that name is not a select - use the fields value
-                            newField = $(response.data.fieldsHtml).find('#' + Craft.namespaceId(name, $namespace));
+                            newField = $(response.data.fieldsHtml).find('#' + Craft.namespaceId(name, $namespace))
                             if (
                               newField.length > 0 &&
                               fields[name].prop('nodeName') !== 'SELECT' &&

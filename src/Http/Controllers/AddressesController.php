@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use craft\elements\Address;
 use craft\helpers\Cp;
 use craft\web\Application;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Container\Attributes\Give;

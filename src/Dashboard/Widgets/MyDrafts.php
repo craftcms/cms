@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use craft\helpers\Cp;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
