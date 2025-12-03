@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\DateTime;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -24,15 +23,6 @@ final readonly class GeneralSettingsController
 
     public function index(GeneralConfig $generalConfig): Response|View
     {
-        if (request()->has('legacy')) {
-            \Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
-
-            return view('craftcms::settings/general/_index', [
-                'system' => $this->projectConfig->get('system') ?? [],
-                'readOnly' => ! $generalConfig->allowAdminChanges,
-            ]);
-        }
-
         return Inertia::render('Settings/General/Index', [
             'system' => $this->projectConfig->get('system') ?? [],
             'timezones' => DateTime::getTimeZoneOptions(),
@@ -54,8 +44,6 @@ final readonly class GeneralSettingsController
         }
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
-
-        $request->session()->flash('message', 'System settings saved.');
 
         return back()
             ->with('success', 'System settings saved.');

@@ -6,29 +6,30 @@ namespace CraftCms\Cms\Cp;
 
 use Craft;
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 
-class Navigation
+readonly class Navigation
 {
     public function __construct(
-        private readonly Plugins $plugins,
-        private readonly Utilities $utilities,
-        private readonly GeneralConfig $generalConfig
+        private Request $request,
+        private Plugins $plugins,
+        private Utilities $utilities,
+        private GeneralConfig $generalConfig
     ) {}
 
     public function getItems(): array
     {
-        $isAdmin = Auth::user()?->isAdmin();
-        $generalConfig = Cms::config();
+        $user = Auth::user();
+        $isAdmin = $user?->isAdmin();
 
         $navItems = [
             [
@@ -81,7 +82,7 @@ class Navigation
 
         if (
             Edition::get() !== Edition::Solo &&
-            Auth::user()->can('viewUsers')
+            $user?->can('viewUsers')
         ) {
             $navItems[] = [
                 'label' => t('Users'),
@@ -96,7 +97,7 @@ class Navigation
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle) &&
+                $user->can('accessPlugin-'.$plugin->handle) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -104,10 +105,10 @@ class Navigation
         }
 
         if ($isAdmin) {
-            if ($generalConfig->enableGql) {
+            if ($this->generalConfig->enableGql) {
                 $subNavItems = [];
 
-                if ($generalConfig->allowAdminChanges) {
+                if ($this->generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
                         'label' => t('Schemas'),
                         'url' => 'graphql/schemas',
@@ -170,16 +171,16 @@ class Navigation
         // }
 
         // Figure out which item is selected, and normalize the items
-        $path = Craft::$app->getRequest()->getPathInfo();
+        $path = $this->request->getPathInfo();
 
-        if ($path === 'myaccount' || str_starts_with((string) $path, 'myaccount/')) {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
         $foundSelectedItem = false;
 
         foreach ($navItems as &$item) {
-            if (! $foundSelectedItem && ($item['url'] == $path || str_starts_with((string) $path, $item['url'].'/'))) {
+            if (! $foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'].'/'))) {
                 $item['sel'] = true;
                 if (! isset($item['subnav'])) {
                     $item['subnav'] = false;
