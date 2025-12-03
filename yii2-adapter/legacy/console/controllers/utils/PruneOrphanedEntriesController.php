@@ -11,7 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;

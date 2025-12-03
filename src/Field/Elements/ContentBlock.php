@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Elements;
+namespace CraftCms\Cms\Field\Elements;
 
 use CraftCms\Cms\Database\Queries\ContentBlockQuery;
+use Override;
 
 final class ContentBlock extends \craft\elements\ContentBlock
 {
-    #[\Override]
+    #[Override]
     public static function find(): ContentBlockQuery
     {
         return new ContentBlockQuery;

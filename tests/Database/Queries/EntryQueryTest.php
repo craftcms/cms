@@ -1,7 +1,7 @@
 <?php
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User;

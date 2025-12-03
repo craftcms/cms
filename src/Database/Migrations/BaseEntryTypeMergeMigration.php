@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Migrations;
 
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Models\EntryType;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;

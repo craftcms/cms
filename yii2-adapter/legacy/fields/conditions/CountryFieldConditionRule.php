@@ -3,7 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Field\Country;
 use yii\base\InvalidConfigException;
 

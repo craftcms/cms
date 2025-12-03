@@ -18,7 +18,7 @@ use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Models\EntryType;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;

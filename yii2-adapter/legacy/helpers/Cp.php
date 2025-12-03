@@ -27,7 +27,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;

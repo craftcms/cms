@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Queries;
 
 use CraftCms\Cms\Database\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\ContentBlock;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
  * @extends ElementQuery<ContentBlock>

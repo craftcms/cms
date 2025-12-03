@@ -8,7 +8,7 @@ use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use function CraftCms\Cms\t;
 
 /**

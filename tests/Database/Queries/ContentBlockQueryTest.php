@@ -2,7 +2,7 @@
 
 use CraftCms\Cms\Database\Queries\ContentBlockQuery;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\ContentBlock;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Models\Field;
 use Illuminate\Support\Facades\DB;
 

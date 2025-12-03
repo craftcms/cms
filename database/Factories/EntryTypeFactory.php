@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Factories;
 
-use CraftCms\Cms\Element\Models\EntryType;
+use CraftCms\Cms\Entry\Models\EntryType;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
 final class EntryTypeFactory extends Factory
 {
     protected $model = EntryType::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [

@@ -19,7 +19,7 @@ final class AssetFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => Element::factory()->set('type', \CraftCms\Cms\Element\Elements\Asset::class),
+            'id' => Element::factory()->set('type', \CraftCms\Cms\Asset\Elements\Asset::class),
             'volumeId' => Volume::factory(),
             'folderId' => VolumeFolder::factory(),
             'filename' => fake()->word().'.jpg',
@@ -27,7 +27,7 @@ final class AssetFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Asset $asset) {
@@ -35,7 +35,7 @@ final class AssetFactory extends Factory
             if ($asset->id === 0) {
                 $asset->update([
                     'id' => Element::query()
-                        ->where('type', \CraftCms\Cms\Element\Elements\Asset::class)
+                        ->where('type', \CraftCms\Cms\Asset\Elements\Asset::class)
                         ->latest('id')
                         ->first()
                         ->id,

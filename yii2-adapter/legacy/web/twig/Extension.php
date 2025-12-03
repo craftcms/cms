@@ -54,7 +54,7 @@ use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\AddressQuery;
 use CraftCms\Cms\Database\Queries\AssetQuery;

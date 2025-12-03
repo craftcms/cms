@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Addresses\Models;
+namespace CraftCms\Cms\Address\Models;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
