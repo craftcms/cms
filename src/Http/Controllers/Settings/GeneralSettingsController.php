@@ -23,7 +23,7 @@ final readonly class GeneralSettingsController
 
     public function index(GeneralConfig $generalConfig): Response|View
     {
-        return Inertia::render('Settings/General/Index', [
+        return Inertia::render('SettingsGeneralPage', [
             'system' => $this->projectConfig->get('system') ?? [],
             'timezones' => DateTime::getTimeZoneOptions(),
             'readOnly' => ! $generalConfig->allowAdminChanges,

@@ -108,7 +108,7 @@
                 This can begin with an environment variable.
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >Learn more</a
+                >Learn more</a
                 >
               </craft-callout>
             </div>
@@ -185,7 +185,7 @@
                 href="https://www.php.net/manual/en/timezones.php"
                 rel="noopener"
                 target="_blank"
-                >supported time zone</a
+              >supported time zone</a
               >.
             </craft-callout>
           </craft-select>
@@ -209,8 +209,8 @@
               <div slot="before" class="tw:flex tw:gap-2">
                 <div class="preview preview--icon"></div>
                 <craft-button type="button">{{
-                  t('app', 'Upload Icon')
-                }}</craft-button>
+                    t('app', 'Upload Icon')
+                  }}</craft-button>
               </div>
             </craft-input>
 
@@ -229,8 +229,8 @@
               <div slot="before" class="tw:flex tw:gap-2 tw:items-center">
                 <div class="preview preview--logo" style="width: 288px"></div>
                 <craft-button type="button">{{
-                  t('app', 'Upload Logo')
-                }}</craft-button>
+                    t('app', 'Upload Logo')
+                  }}</craft-button>
               </div>
             </craft-input>
           </div>
