@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
+use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
@@ -56,6 +57,12 @@ Route::middleware('auth')->group(function () {
     Route::view('content/{page}', 'craftcms::entries.index')->where('page', '[^\/]+');
     Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index')->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
+
+    /**
+     * Users
+     */
+    Route::get('users/{user}/permissions', [PermissionsController::class, 'index']);
+    Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
 
     /**
      * Routes that require admin, but do not require admin changes

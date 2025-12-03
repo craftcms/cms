@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
+use Throwable;
 
 class Install extends Migration
 {
@@ -69,7 +70,11 @@ class Install extends Migration
         }
 
         DB::afterCommit(function () {
-            $this->insertDefaultData();
+            try {
+                $this->insertDefaultData();
+            } catch (Throwable $e) {
+                $this->components->error("Error inserting default data: {$e->getMessage()}");
+            }
         });
 
         $this->newLine();

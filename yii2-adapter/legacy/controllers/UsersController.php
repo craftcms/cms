@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\base\Element;
+use craft\base\Event as YiiEvent;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
 use craft\elements\Address;
@@ -18,6 +19,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
+use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
@@ -29,7 +31,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
-use craft\models\UserGroup;
 use craft\services\Users;
 use craft\web\Application;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
@@ -56,6 +57,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
+use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -733,6 +738,7 @@ class UsersController extends Controller
         }
 
         // Make sure we still have a valid token.
+        /** @var User $user */
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken($user);
         }
@@ -1064,109 +1070,6 @@ class UsersController extends Controller
         });
 
         return $response;
-    }
-
-    /**
-     * User permissions screen.
-     *
-     * @param int|null $userId The user’s ID
-     * @return Response
-     * @since 5.0.0
-     */
-    public function actionPermissions(?int $userId = null): Response
-    {
-        $this->requireCpRequest();
-        $user = $this->editedUser($userId);
-        /**
-         * @var Response|CpScreenResponseBehavior $response
-         * @phpstan-ignore varTag.nativeType
-         */
-        $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
-
-        $response->action('users/save-permissions');
-        $response->contentTemplate('users/_permissions', [
-            'user' => $user,
-            'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
-        ]);
-
-        if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('moderateUsers')) {
-            $response->additionalButtonsHtml(
-                Html::button(t('Save and send activation email'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
-                    'data' => [
-                        'param' => 'sendActivationEmail',
-                        'value' => '1',
-                    ],
-                ])
-            );
-        }
-
-        return $response;
-    }
-
-    /**
-     * Saves a user’s permissions.
-     *
-     * @return Response
-     * @since 5.0.0
-     */
-    public function actionSavePermissions(): Response
-    {
-        $this->requireCpRequest();
-
-        $currentUser = static::currentUser();
-        $user = $this->editedUser((int)$this->request->getRequiredBodyParam('userId'));
-
-        // Is their admin status changing?
-        if ($currentUser->admin) {
-            $adminParam = (bool)($this->request->getBodyParam('admin') ?? $user->admin);
-            if ($adminParam !== $user->admin) {
-                if ($adminParam) {
-                    $this->requireElevatedSession();
-                }
-
-                $user->admin = $adminParam;
-                Craft::$app->getElements()->saveElement($user, false);
-            }
-        }
-
-        if (Edition::get()->value >= Edition::Pro->value) {
-            // Fire an 'beforeAssignGroupsAndPermissions' event
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-                $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                    'user' => $user,
-                ]));
-            }
-
-            // Assign user groups and permissions if the current user is allowed to do that
-            $this->_saveUserGroups($user, $currentUser);
-            $this->_saveUserPermissions($user, $currentUser);
-
-            // Fire an 'afterAssignGroupsAndPermissions' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-                $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                    'user' => $user,
-                ]));
-            }
-        }
-
-        if (
-            !$user->getIsCredentialed() &&
-            $currentUser->can('administrateUsers') &&
-            $this->request->getBodyParam('sendActivationEmail')
-        ) {
-            try {
-                if (!Craft::$app->getUsers()->sendActivationEmail($user)) {
-                    $this->setFailFlash(t('Couldn’t send activation email. Check your email settings.'));
-                }
-            } catch (InvalidElementException $e) {
-                $this->setFailFlash(t('Couldn’t send the activation email: {error}', [
-                    'error' => $e->getMessage(),
-                ]));
-            }
-        }
-
-        return $this->asSuccess(t('Permissions saved.'));
     }
 
     /**
@@ -2594,104 +2497,6 @@ JS);
     }
 
     /**
-     * Saves new permissions on the user
-     *
-     * @param User $user
-     * @param User $currentUser
-     * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
-     */
-    private function _saveUserPermissions(User $user, User $currentUser): void
-    {
-        if (!$currentUser->can('assignUserPermissions')) {
-            return;
-        }
-
-        // Save any user permissions
-        if ($user->admin) {
-            $permissions = [];
-        } else {
-            $permissions = $this->request->getBodyParam('permissions');
-
-            if ($permissions === null) {
-                return;
-            }
-
-            // it will be an empty string if no permissions were assigned during user saving.
-            if ($permissions === '') {
-                $permissions = [];
-            }
-        }
-
-        // See if there are any new permissions in here
-        $hasNewPermissions = false;
-
-        foreach ($permissions as $permission) {
-            if (!$user->can($permission)) {
-                $hasNewPermissions = true;
-
-                // Make sure the current user even has permission to grant it
-                if (!$currentUser->can($permission)) {
-                    throw new ForbiddenHttpException("Your account doesn't have permission to assign the $permission permission to a user.");
-                }
-            }
-        }
-
-        if ($hasNewPermissions) {
-            $this->requireElevatedSession();
-        }
-
-        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);
-    }
-
-    /**
-     * Saves user groups on a user.
-     *
-     * @param User $user
-     * @param User $currentUser
-     * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
-     */
-    private function _saveUserGroups(User $user, User $currentUser): void
-    {
-        $groupIds = $this->request->getBodyParam('groups');
-
-        if ($groupIds === null) {
-            return;
-        }
-
-        if ($groupIds === '') {
-            $groupIds = [];
-        }
-
-        /** @var UserGroup[] $allGroups */
-        $allGroups = Arr::keyBy(Craft::$app->getUserGroups()->getAllGroups(), 'id');
-
-        // See if there are any new groups in here
-        $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());
-        $hasNewGroups = false;
-        $newGroups = [];
-
-        foreach ($groupIds as $groupId) {
-            $group = $newGroups[] = $allGroups[$groupId];
-
-            if (!in_array($groupId, $oldGroupIds, false)) {
-                $hasNewGroups = true;
-
-                // Make sure the current user is in the group or has permission to assign it
-                if (!$currentUser->can("assignUserGroup:$group->uid")) {
-                    throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
-                }
-            }
-        }
-
-        if ($hasNewGroups) {
-            $this->requireElevatedSession();
-        }
-
-        Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        $user->setGroups($newGroups);
-    }
-
-    /**
      * @return array|Response
      */
     private function _processTokenRequest(): Response|array
@@ -2981,5 +2786,48 @@ JS);
             $model->newPassword = null;
             $model->currentPassword = null;
         }
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(DefineEditUserScreens::class, function(DefineEditUserScreens $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
+                $currentUser = User::find()->id($event->currentUser->id)->one();
+                $editedUser = User::find()->id($event->editedUser->id)->one();
+
+                $yiiEvent = new DefineEditUserScreensEvent([
+                    'currentUser' => $currentUser,
+                    'editedUser' => $editedUser,
+                    'screens' => $event->screens,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $yiiEvent);
+                $event->screens = $yiiEvent->screens;
+            }
+        });
+
+        Event::listen(AssigningGroupsAndPermissions::class, function(AssigningGroupsAndPermissions $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $user = User::find()->id($event->user->id)->one();
+
+                $yiiEvent = new UserEvent([
+                    'user' => $user,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
+            }
+        });
+
+        Event::listen(GroupsAndPermissionsAssigned::class, function(GroupsAndPermissionsAssigned $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $user = User::find()->id($event->user->id)->one();
+
+                $yiiEvent = new UserEvent([
+                    'user' => $user,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
+            }
+        });
     }
 }

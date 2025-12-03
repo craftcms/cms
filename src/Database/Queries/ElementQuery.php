@@ -42,6 +42,7 @@ use Twig\Markup;
  *
  * @mixin \Illuminate\Database\Query\Builder
  *
+ * @method self addSelect($column)
  * @method self orderByDesc($column)
  * @method self where($column, $operator = null, $value = null, $boolean = 'and')
  * @method self whereIn($column, $values, $boolean = 'and', $not = false)
@@ -412,6 +413,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         }
     }
 
+    /**
+     * @return TElement|null
+     */
     public function first($columns = ['*']): ?ElementInterface
     {
         // Eagerly?

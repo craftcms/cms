@@ -236,7 +236,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn’t installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }

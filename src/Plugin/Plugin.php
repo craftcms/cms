@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use ReflectionClass;
 
 abstract class Plugin extends ServiceProvider implements PluginInterface
@@ -16,6 +17,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasFieldtypes;
     use Concerns\HasFrontendAssets;
     use Concerns\HasListeners;
+    use Concerns\HasPermissions;
     use Concerns\HasRoutes;
     use Concerns\HasSettings;
     use Concerns\HasTranslations;
@@ -96,7 +98,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     /**
      * @internal
      */
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->setupTraits('register');
@@ -148,7 +150,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     public function bootPlugin(): void {}
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getBasePath(): string
     {
         return once(function () {
@@ -159,7 +161,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function create(array $config): PluginInterface
     {
         $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));
@@ -186,7 +188,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     /**
      * @return static
      */
-    #[\Override]
+    #[Override]
     public static function getInstance(): PluginInterface
     {
         return app(static::class);

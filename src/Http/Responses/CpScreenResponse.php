@@ -18,6 +18,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Traits\Conditionable;
+use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -561,7 +562,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function additionalButtonsHtml(callable|string|null $value): self
+    public function additionalButtonsHtml(callable|string|Stringable|null $value): self
     {
         $this->additionalButtonsHtml = $value;
 

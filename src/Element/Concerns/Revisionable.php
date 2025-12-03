@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Database\Table;
@@ -154,13 +155,22 @@ trait Revisionable
 
         if (! isset($this->currentRevision)) {
             $canonical = $this->getCanonical(true);
-            $this->currentRevision = static::find()
+
+            $query = static::find()
                 ->siteId($canonical->siteId)
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
-                ->status(null)
-                ->orderBy(['num' => SORT_DESC])
-                ->one() ?: false;
+                ->status(null);
+
+            if ($query instanceof ElementQuery) {
+                $this->currentRevision = $query
+                    ->orderBy(['num' => SORT_DESC])
+                    ->one() ?: false;
+            } else {
+                $this->currentRevision = $query
+                    ->orderByDesc('num')
+                    ->first() ?: false;
+            }
         }
 
         return $this->currentRevision ?: null;
