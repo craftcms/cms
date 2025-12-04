@@ -20,7 +20,6 @@ final readonly class TimezoneRule implements ValidationRule
             $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             if (! $formatter->setTimeZone($timezone)) {
-                $timezone = 'UTC';
                 $fail("Time zone “{$timezone}” does not appear to be supported by ICU.");
             }
         } catch (IntlException) {
