@@ -1,7 +1,7 @@
 <?php
 
 use CraftCms\Cms\Database\Queries\UserQuery;
-use CraftCms\Cms\Element\Elements\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 
 it('sorts by username by default', function () {

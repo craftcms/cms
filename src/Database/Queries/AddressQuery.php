@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries;
 
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Address;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 

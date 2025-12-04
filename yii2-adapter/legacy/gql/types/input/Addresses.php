@@ -127,7 +127,7 @@ class Addresses extends InputObjectType
                 ];
 
                 // Get the field input types
-                foreach (app(\CraftCms\Cms\Addresses\Addresses::class)->getFieldLayout()->getCustomFields() as $field) {
+                foreach (app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout()->getCustomFields() as $field) {
                     /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }

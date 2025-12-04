@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\elements\ElementCollection;
 use craft\web\assets\recententries\RecentEntriesAsset;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;

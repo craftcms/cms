@@ -14,7 +14,7 @@ use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Database\Query\Builder;
 use yii\console\ExitCode;
 

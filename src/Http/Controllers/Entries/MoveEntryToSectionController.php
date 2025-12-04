@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Section\Data\Section;

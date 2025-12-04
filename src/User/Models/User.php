@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Models;
 
-use Craft;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -105,7 +105,14 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             return false;
         }
 
-        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $abilities);
+        return UserPermissions::doesUserHavePermission($this->id, $abilities);
+    }
+
+    public function asElement(): \CraftCms\Cms\User\Elements\User
+    {
+        return new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
+            'invalidLoginWindowStart',
+        ]));
     }
 
     /**

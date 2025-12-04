@@ -9,13 +9,13 @@ use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use craft\models\FieldLayout;
-use CraftCms\Cms\Addresses\Addresses;
-use CraftCms\Cms\Addresses\Events\DefineAddressCountries;
-use CraftCms\Cms\Addresses\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Addresses\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedSubdivisionFields;
-use CraftCms\Cms\Addresses\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Events\DefineAddressCountries;
+use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
+use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
+use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {

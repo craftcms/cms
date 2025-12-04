@@ -14,9 +14,9 @@ use craft\elements\db\ContentBlockQuery;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Models\ContentBlock as ContentBlockModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;
 use GraphQL\Type\Definition\Type;
 use function CraftCms\Cms\t;
 

@@ -14,6 +14,7 @@ use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -157,7 +158,7 @@ JS, [
     public function can(string $permission): bool
     {
         if ($this->id) {
-            return Craft::$app->getUserPermissions()->doesGroupHavePermission($this->id, $permission);
+            return UserPermissions::doesGroupHavePermission($this->id, $permission);
         }
 
         return false;
@@ -177,9 +178,7 @@ JS, [
         ];
 
         if ($withPermissions && $this->id) {
-            $permissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
-            sort($permissions);
-            $config['permissions'] = $permissions;
+            $config['permissions'] = UserPermissions::getPermissionsByGroupId($this->id)->sort()->all();
         }
 
         return $config;

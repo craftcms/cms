@@ -40,7 +40,6 @@ class TestCase extends Orchestra
 
         Edition::set(Edition::Solo);
 
-        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
         File::cleanDirectory(config_path('project'));
 
         Factory::guessFactoryNamesUsing(
@@ -97,6 +96,8 @@ class TestCase extends Orchestra
             site: $site,
         );
 
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+
         $migration->up();
 
         // Mark all existing migrations as applied
@@ -109,7 +110,7 @@ class TestCase extends Orchestra
     #[Override]
     protected function getEnvironmentSetUp($app)
     {
-        $app->make(\Illuminate\Contracts\Config\Repository::class)->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+        $app->make(ConfigRepository::class)->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));

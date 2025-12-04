@@ -19,12 +19,12 @@ use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
 use craft\models\FieldLayout;
-use CraftCms\Cms\Addresses\Events\DefineAddressCountries;
-use CraftCms\Cms\Addresses\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Addresses\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Addresses\Events\DefineAddressUsedSubdivisionFields;
-use CraftCms\Cms\Addresses\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Address\Events\DefineAddressCountries;
+use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
+use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
+use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
@@ -38,7 +38,7 @@ use yii\base\Component;
  * @property-read SubdivisionRepository $subdivisionRepository
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Addresses\Addresses} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Addresses} instead.
  */
 class Addresses extends Component implements FieldLayoutProviderInterface
 {
@@ -94,7 +94,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getCountryRepository(): CountryRepository
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getCountryRepository();
+        return app(\CraftCms\Cms\Address\Addresses::class)->getCountryRepository();
     }
 
     /**
@@ -102,7 +102,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getSubdivisionRepository(): SubdivisionRepository
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getSubdivisionRepository();
+        return app(\CraftCms\Cms\Address\Addresses::class)->getSubdivisionRepository();
     }
 
     /**
@@ -110,7 +110,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getAddressFormatRepository(): AddressFormatRepository
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getAddressFormatRepository();
+        return app(\CraftCms\Cms\Address\Addresses::class)->getAddressFormatRepository();
     }
 
     /**
@@ -123,7 +123,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->defineAddressSubdivisions($parents, $options);
+        return app(\CraftCms\Cms\Address\Addresses::class)->defineAddressSubdivisions($parents, $options);
     }
 
     /**
@@ -135,7 +135,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getCountryList(?string $locale = null): array
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getCountryList($locale);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getCountryList($locale);
     }
 
     /**
@@ -148,7 +148,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getUsedFields(string $countryCode): array
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getUsedFields($countryCode);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getUsedFields($countryCode);
     }
 
     /**
@@ -161,7 +161,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getUsedSubdivisionFields(string $countryCode): array
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getUsedSubdivisionFields($countryCode);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getUsedSubdivisionFields($countryCode);
     }
 
     /**
@@ -175,7 +175,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getFieldLabel(string $field, string $countryCode): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getFieldLabel($field, $countryCode);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getFieldLabel($field, $countryCode);
     }
 
     /**
@@ -188,7 +188,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function formatAddress(Address $address, array $options = [], FormatterInterface $formatter = null): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->formatAddress($address, $options, $formatter);
+        return app(\CraftCms\Cms\Address\Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
     /**
@@ -197,7 +197,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getLocalityTypeLabel(?string $type): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getlocalityTypeLabel($type);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getlocalityTypeLabel($type);
     }
 
     /**
@@ -206,7 +206,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getDependentLocalityTypeLabel(?string $type): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getDependentLocalityTypeLabel($type);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getDependentLocalityTypeLabel($type);
     }
 
     /**
@@ -215,7 +215,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getPostalCodeTypeLabel(?string $type): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getPostalCodeTypeLabel($type);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getPostalCodeTypeLabel($type);
     }
 
     /**
@@ -224,7 +224,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getAdministrativeAreaTypeLabel(?string $type): string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getAdministrativeAreaTypeLabel($type);
+        return app(\CraftCms\Cms\Address\Addresses::class)->getAdministrativeAreaTypeLabel($type);
     }
 
     /**
@@ -232,7 +232,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getHandle(): ?string
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getHandle();
+        return app(\CraftCms\Cms\Address\Addresses::class)->getHandle();
     }
 
     /**
@@ -241,7 +241,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function getFieldLayout(): FieldLayout
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->getFieldLayout();
+        return app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
     }
 
     /**
@@ -253,7 +253,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function saveFieldLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        return app(\CraftCms\Cms\Addresses\Addresses::class)->saveFieldLayout($layout, $runValidation);
+        return app(\CraftCms\Cms\Address\Addresses::class)->saveFieldLayout($layout, $runValidation);
     }
 
     /**
@@ -263,7 +263,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function handleChangedAddressFieldLayout(ConfigEvent $event): void
     {
-        app(\CraftCms\Cms\Addresses\Addresses::class)->handleChangedAddressFieldLayout($event);
+        app(\CraftCms\Cms\Address\Addresses::class)->handleChangedAddressFieldLayout($event);
     }
 
     public static function registerEvents(): void

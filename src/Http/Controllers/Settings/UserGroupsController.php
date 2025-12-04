@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -116,7 +117,7 @@ final readonly class UserGroupsController
             });
     }
 
-    public function store(Request $request, UserGroup $userGroupData): Response
+    public function store(Request $request, UserPermissions $userPermissions, UserGroup $userGroupData): Response
     {
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
@@ -163,7 +164,7 @@ final readonly class UserGroupsController
             }
         }
 
-        Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
+        $userPermissions->saveGroupPermissions($group->id, $permissions);
 
         $message = Edition::get() === Edition::Team
             ? t('Permissions saved.')

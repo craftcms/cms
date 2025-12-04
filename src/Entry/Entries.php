@@ -9,7 +9,7 @@ use craft\base\Element;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Section\Data\Section;

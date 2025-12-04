@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
-use craft\elements\User;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAffiliatedSite;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAssetUploaders;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAuthors;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Database\Queries\Concerns\User\QueriesRolesAndPermissions;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesUserGroups;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -38,7 +38,7 @@ final class UserQuery extends ElementQuery
 
     public function __construct(array $config = [])
     {
-        parent::__construct(\CraftCms\Cms\Element\Elements\User::class, $config);
+        parent::__construct(User::class, $config);
 
         $this->joinElementTable(Table::USERS);
 
@@ -53,7 +53,7 @@ final class UserQuery extends ElementQuery
             'users.lastName as lastName',
             'users.email as email',
             'users.unverifiedEmail as unverifiedEmail',
-            'users.lastLoginDate as lastLo2ginDate',
+            'users.lastLoginDate as lastLoginDate',
             'users.lockoutDate as lockoutDate',
             'users.hasDashboard as hasDashboard',
             'users.affiliatedSiteId as affiliatedSiteId',

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Models;
+namespace CraftCms\Cms\Field\Models;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

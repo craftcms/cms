@@ -860,9 +860,9 @@ class Entries extends Component
         return EntriesFacade::moveEntryToSection($entry, $section);
     }
 
-    private static function newEntryFromEntry(Entry $entry): \CraftCms\Cms\Element\Elements\Entry
+    private static function newEntryFromEntry(Entry $entry): \CraftCms\Cms\Entry\Elements\Entry
     {
-        return new \CraftCms\Cms\Element\Elements\Entry($entry->toArray());
+        return new \CraftCms\Cms\Entry\Elements\Entry($entry->toArray());
     }
 
     private static function sectionFromSectionData(\CraftCms\Cms\Section\Data\Section $section): Section

@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use Throwable;
 
 final class ConfigServiceProvider extends ServiceProvider
@@ -20,10 +21,10 @@ final class ConfigServiceProvider extends ServiceProvider
         'routes',
     ];
 
-    #[\Override]
+    #[Override]
     public function register(): void
     {
-        Env::extend(fn () => ConstAdapter::class);
+        Env::extend(fn () => ConstAdapter::class, 'CraftConstAdapter');
 
         $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
     }

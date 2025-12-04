@@ -30,7 +30,7 @@ use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
-use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\EntryTypes;

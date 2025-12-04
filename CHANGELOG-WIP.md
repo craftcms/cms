@@ -426,3 +426,6 @@ Moved the following controllers:
 - Deprecated `\craft\records\User`. `\CraftCms\Cms\User\Models\User` should be used instead.
 - Deprecated `\craft\records\UserGroup`. `\CraftCms\Cms\User\Models\UserGroup` should be used instead.
 - Deprecated `\craft\records\UserPermission`. `\CraftCms\Cms\User\Models\UserPermission` should be used instead.
+- Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
+- Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
+- Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\DefineEditUserScreens` should be used instead.

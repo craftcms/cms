@@ -792,7 +792,7 @@ trait ApplicationTrait
      *
      * @return Addresses The addresses service
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Addresses\Addresses} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Addresses} instead.
      */
     public function getAddresses(): Addresses
     {
@@ -1268,6 +1268,7 @@ trait ApplicationTrait
      * Returns the user permissions service.
      *
      * @return UserPermissions The user permissions service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\UserPermissions} instead.
      */
     public function getUserPermissions(): UserPermissions
     {

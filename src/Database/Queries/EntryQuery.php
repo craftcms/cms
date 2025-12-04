@@ -14,7 +14,7 @@ use CraftCms\Cms\Database\Queries\Concerns\Entry\QueriesSections;
 use CraftCms\Cms\Database\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;

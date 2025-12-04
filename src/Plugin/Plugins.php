@@ -338,7 +338,7 @@ final class Plugins
     {
         $this->loadPlugins();
 
-        return $this->plugins;
+        return $this->plugins ?? [];
     }
 
     /**

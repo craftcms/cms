@@ -15,7 +15,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;

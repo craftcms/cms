@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Addresses\Events;
+namespace CraftCms\Cms\Address\Events;
 
 final class DefineAddressSubdivisions
 {
