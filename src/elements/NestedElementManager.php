@@ -328,7 +328,11 @@ class NestedElementManager extends Component
         $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
-            $propagationKey = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
+            if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                self::$renderedPropagationFormats[$cacheKey] = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            }
+            $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
 
         foreach ($ownerSiteIds as $siteId) {
