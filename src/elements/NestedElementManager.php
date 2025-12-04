@@ -138,6 +138,8 @@ class NestedElementManager extends Component
      */
     public ?string $propagationKeyFormat = null;
 
+    private array $siteOwners = [];
+
     /**
      * @inheritdoc
      */
@@ -341,7 +343,11 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        if (!isset($this->siteOwners["{$owner->id}:$siteId"])) {
+                            $this->siteOwners["$owner->id:$siteId"] = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        }
+
+                        $siteOwner = $this->siteOwners["$owner->id:$siteId"];
                         $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
                     }
                     break;
