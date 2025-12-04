@@ -69,6 +69,11 @@ class NestedElementManager extends Component
     public const EVENT_AFTER_CREATE_REVISIONS = 'afterCreateRevisions';
 
     /**
+     * @see getSupportedSiteIds()
+     */
+    private static array $renderedPropagationFormats = [];
+
+    /**
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
@@ -137,12 +142,6 @@ class NestedElementManager extends Component
      * if [[$propagationMethod]] is set to [[PropagationMethod::Custom]].
      */
     public ?string $propagationKeyFormat = null;
-
-    /**
-     * @var array Stores nested elements' per-site owners for when custom propagation method is used
-     * Each owner is keyed by its ID and the site's ID.
-     */
-    private array $siteOwners = [];
 
     /**
      * @inheritdoc
@@ -347,12 +346,14 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        if (!isset($this->siteOwners["{$owner->id}:$siteId"])) {
-                            $this->siteOwners["$owner->id:$siteId"] = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $siteId);
+                        if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                            $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                            self::$renderedPropagationFormats[$cacheKey] = $siteOwner
+                                ? $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
+                                : false;
                         }
-
-                        $siteOwner = $this->siteOwners["$owner->id:$siteId"];
-                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
+                        $include = $propagationKey === self::$renderedPropagationFormats[$cacheKey];
                     }
                     break;
                 default:
