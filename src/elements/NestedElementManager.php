@@ -138,6 +138,10 @@ class NestedElementManager extends Component
      */
     public ?string $propagationKeyFormat = null;
 
+    /**
+     * @var array Stores nested elements' per-site owners for when custom propagation method is used
+     * Each owner is keyed by its ID and the site's ID.
+     */
     private array $siteOwners = [];
 
     /**
