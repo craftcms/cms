@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
+use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use IntlDateFormatter;
 use IntlException;
+use Override;
 use ReflectionClass;
 use RuntimeException;
 
@@ -40,7 +42,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->registerMacros();
@@ -186,7 +188,7 @@ final class AppServiceProvider extends ServiceProvider
                 return $default;
             }
 
-            $value = \Craft::$app->getSecurity()->validateData($value);
+            $value = Craft::$app->getSecurity()->validateData($value);
 
             abort_if($value === false, 400, 'Request contained an invalid body param');
 
@@ -230,7 +232,10 @@ final class AppServiceProvider extends ServiceProvider
         if ($timezone !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                new IntlDateFormatter($this->app->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                $formatter = new IntlDateFormatter($this->app->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                if (! $formatter->setTimeZone($timezone)) {
+                    $timezone = 'UTC';
+                }
             } catch (IntlException) {
                 Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());
                 $timezone = 'UTC';
