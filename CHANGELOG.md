@@ -14,6 +14,7 @@
 - Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
 - Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
 - Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
+- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
 
 ## 5.8.20 - 2025-11-18
 

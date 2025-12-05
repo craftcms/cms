@@ -1060,6 +1060,15 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+
+    public function safeAttributes(): array
+    {
+        return ArrayHelper::withoutValue(parent::safeAttributes(), 'photoId');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setAttributesFromRequest($values): void
     {
         unset($values['unverifiedEmail']);
