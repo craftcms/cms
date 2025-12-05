@@ -2,17 +2,12 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import VarDump from '@/components/VarDump.vue';
   import type {SelectOption, SuggestionGroup} from '@/types';
 
   const props = defineProps<{
@@ -326,9 +321,6 @@
             </craft-input>
           </div>
         </template>
-      </div>
-      <div class="tw:fixed tw:right-2 tw:bottom-2 tw:max-w-4xl tw:z-[900]">
-        <VarDump :data="{form, system}"></VarDump>
       </div>
     </AppLayout>
   </form>
