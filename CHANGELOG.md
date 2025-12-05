@@ -12,6 +12,7 @@
 - Fixed a bug where user preferences were being respected for users who formerly had access to the control panel.
 - Fixed a bug where nested entries could be reordered when their owner element was resaved programmatically. ([#18121](https://github.com/craftcms/cms/pull/18121))
 - Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
+- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
 
 ## 5.8.20 - 2025-11-18
 
