@@ -28,7 +28,7 @@ final readonly class GeneralSettingsController
     {
         return Inertia::render('SettingsGeneralPage', [
             'system' => $this->projectConfig->get('system') ?? [],
-            'nameOptions' => SelectOptions::getEnvSuggestions(),
+            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
             'timezoneOptions' => [
                 ...SelectOptions::getTimeZoneOptions(),
                 ...SelectOptions::getEnvOptions(),

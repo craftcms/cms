@@ -3,27 +3,27 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
   import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
-  import {useForm, usePage} from '@inertiajs/vue3';
+  import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
+  import VarDump from '@/components/VarDump.vue';
+  import type {SelectOption, SuggestionGroup} from '@/types';
 
   const props = defineProps<{
     readOnly?: boolean;
     system: SystemData;
-    timezones: Array<TimezoneOption>;
+    nameSuggestions?: Array<SuggestionGroup>;
+    timezoneOptions?: Array<TimezoneOption>;
+    systemStatusOptions?: Array<SelectOption>;
     saveUrl: string;
-    flash: Record<any, any>;
+    flash?: Record<any, any>;
+    errors: Record<any, any>;
   }>();
 
-  const page = usePage<{
-    flash: {
-      success?: string;
-      error?: string;
-    };
-  }>();
-  const flash = computed(() => page.props.flash);
+  const flash = computed(() => props.flash);
+  const errors = computed(() => props.errors);
   const {app} = useCraftData();
 
   const form = useForm({
@@ -48,6 +48,7 @@
   });
 
   function save() {
+    form.clearErrors();
     form.submit(store());
   }
 </script>
@@ -64,6 +65,15 @@
                 style="color: var(--c-color-success-bg-emphasis)"
               ></craft-icon>
               {{ flash.success }}
+            </div>
+          </template>
+          <template v-if="form.hasErrors">
+            <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
+              <craft-icon
+                name="exclamation-triangle"
+                style="color: var(--c-color-danger-bg-emphasis)"
+              ></craft-icon>
+              {{ t('app', 'Could not save settings') }}
             </div>
           </template>
         </TransitionFade>
@@ -90,14 +100,37 @@
         class="tw:bg-white tw:border tw:border-border-subtle tw:mx-4 tw:rounded-sm tw:shadow-sm"
       >
         <div class="tw:grid tw:gap-3 tw:p-4">
-          <!-- @TODO autosuggest -->
-          <craft-input
+          <template v-if="form.hasErrors">
+            <craft-callout variant="danger" icon="exclamation-triangle">
+              <div slot="title" class="tw:font-bold">
+                Could not save settings
+              </div>
+              <ul>
+                <li v-for="(error, key) in errors">
+                  {{ error }}
+                </li>
+              </ul>
+            </craft-callout>
+          </template>
+          <craft-combobox
             :label="t('app', 'System Name')"
             id="name"
             name="name"
             v-model="form.name"
+            :has-feedback-for="errors?.name ? 'error' : ''"
             :disabled="readOnly"
+            :require-option-match="false"
+            show-all-on-empty
           >
+            <template v-for="(group, idx) in nameSuggestions" :key="idx">
+              <craft-option
+                v-for="suggestion in group.data"
+                :key="suggestion.name"
+                .choiceValue="suggestion.name"
+                .hint="suggestion.hint"
+                >{{ suggestion.name }}</craft-option
+              >
+            </template>
             <div slot="after">
               <craft-callout
                 variant="info"
@@ -108,24 +141,54 @@
                 This can begin with an environment variable.
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                >Learn more</a
+                  >Learn more</a
                 >
               </craft-callout>
             </div>
-          </craft-input>
 
-          <craft-select
+            <div slot="feedback">
+              <ul class="error-list" v-if="errors?.name">
+                <li>{{ errors.name }}</li>
+              </ul>
+            </div>
+          </craft-combobox>
+
+          <craft-combobox
             :label="t('app', 'System Status')"
             id="live"
             name="live"
-            .modelValue="system.live"
+            .modelValue="system.live ? '1' : '0'"
+            :has-feedback-for="errors?.live ? 'error' : ''"
             @model-value-changed="handleUpdate"
             :disabled="readOnly"
+            show-all-on-empty
           >
-            <select slot="input">
-              <option :value="true">Online</option>
-              <option :value="false">Offline</option>
-            </select>
+            <craft-option .choiceValue="'1'">
+              <div class="tw:flex tw:items-center tw:gap-1">
+                <craft-indicator variant="success"></craft-indicator>
+                <span>Online</span>
+              </div>
+            </craft-option>
+            <craft-option .choiceValue="'0'">
+              <div class="tw:flex tw:items-center tw:gap-1">
+                <craft-indicator variant="danger"></craft-indicator>
+                <span>Offline</span>
+              </div>
+            </craft-option>
+
+            <template v-for="option in systemStatusOptions" :key="option.label">
+              <template v-if="option.optgroup"></template>
+              <template v-else>
+                <craft-option .choiceValue="option.value">
+                  <div class="tw:flex tw:items-center tw:gap-1">
+                    <craft-indicator
+                      :variant="Boolean(option.value) ? 'success' : 'error'"
+                    ></craft-indicator>
+                    <span class="tw:font-mono">{{ option.label }}</span>
+                  </div>
+                </craft-option>
+              </template>
+            </template>
 
             <craft-callout
               slot="after"
@@ -137,13 +200,20 @@
               This can be set to an environment variable with a boolean value
               (<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>).
             </craft-callout>
-          </craft-select>
+
+            <div slot="feedback">
+              <ul class="error-list" v-if="errors.live">
+                <li>{{ errors.live }}</li>
+              </ul>
+            </div>
+          </craft-combobox>
 
           <craft-input
             :label="t('app', 'Retry Duration')"
             id="retry-duration"
             name="retryDuration"
             v-model="form.retryDuration"
+            :has-feedback-for="errors?.retryDuration ? 'error' : ''"
             inputmode="numeric"
             size="4"
             :disabled="readOnly"
@@ -154,25 +224,29 @@
               offline.
               <!--              {{ t('app', `The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.`) }}-->
             </div>
+            <ul class="error-list" v-if="errors?.retryDuration" slot="feedback">
+              <li>{{ errors.retryDuration }}</li>
+            </ul>
           </craft-input>
 
-          <craft-select
+          <craft-combobox
             :label="t('app', 'Time Zone')"
             id="time-zone"
             name="timeZone"
             .modelValue="form.timeZone"
             @model-value-changed="handleUpdate"
+            :has-feedback-for="errors?.timeZone ? 'error' : ''"
             :disabled="readOnly"
+            show-all-on-empty
           >
-            <select slot="input">
-              <option
-                v-for="timezone in timezones"
-                :key="timezone.value"
-                :value="timezone.value"
-              >
-                {{ timezone.label }} – {{ timezone.data?.hint }}
-              </option>
-            </select>
+            <craft-option
+              v-for="timezone in timezoneOptions"
+              :key="timezone.value"
+              .choiceValue="timezone.value"
+            >
+              {{ timezone.label
+              }}{{ timezone.data?.hint ? ` — ${timezone.data.hint}` : '' }}
+            </craft-option>
             <craft-callout
               slot="after"
               variant="info"
@@ -185,10 +259,13 @@
                 href="https://www.php.net/manual/en/timezones.php"
                 rel="noopener"
                 target="_blank"
-              >supported time zone</a
+                >supported time zone</a
               >.
             </craft-callout>
-          </craft-select>
+            <ul class="error-list" v-if="errors?.timeZone" slot="feedback">
+              <li>{{ errors.timeZone }}</li>
+            </ul>
+          </craft-combobox>
         </div>
 
         <template v-if="app.edition.value >= Edition.Pro">
@@ -209,8 +286,8 @@
               <div slot="before" class="tw:flex tw:gap-2">
                 <div class="preview preview--icon"></div>
                 <craft-button type="button">{{
-                    t('app', 'Upload Icon')
-                  }}</craft-button>
+                  t('app', 'Upload Icon')
+                }}</craft-button>
               </div>
             </craft-input>
 
@@ -229,12 +306,15 @@
               <div slot="before" class="tw:flex tw:gap-2 tw:items-center">
                 <div class="preview preview--logo" style="width: 288px"></div>
                 <craft-button type="button">{{
-                    t('app', 'Upload Logo')
-                  }}</craft-button>
+                  t('app', 'Upload Logo')
+                }}</craft-button>
               </div>
             </craft-input>
           </div>
         </template>
+      </div>
+      <div class="tw:fixed tw:right-2 tw:bottom-2 tw:max-w-4xl tw:z-[900]">
+        <VarDump :data="{form, system}"></VarDump>
       </div>
     </AppLayout>
   </form>
