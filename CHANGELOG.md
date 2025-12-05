@@ -1,5 +1,21 @@
 # Release Notes for Craft CMS 4
 
+## 4.16.17 - 2025-12-04
+
+- Fixed a bug where remove buttons within multi-select Selectize inputs weren’t working if the input wasn’t focusend and fully in view. ([#18079](https://github.com/craftcms/cms/issues/18079))
+- Fixed an error that could occur when executing a GraphQL mutation when the `lazyGqlTypes` config setting was enabled. ([#18014](https://github.com/craftcms/cms/issues/18014))
+- Fixed a PHP error that could occur when creating a username that began or ended with an `@`. ([#18123](https://github.com/craftcms/cms/pull/18123))
+- Fixed a bug where assets with disallowed file extensions could be stored in the system’s temp directory. ([#18049](https://github.com/craftcms/cms/pull/18049))
+- Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
+- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
+- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
+- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
+
+## 4.16.16 - 2025-11-18
+
+- Fixed a bug where assets with disallowed file extensions could still be uploaded to the system’s temp directory. ([#18015](https://github.com/craftcms/cms/issues/18015))
+- Fixed an error that could occur when an array was passed to an asset query’s `folderPath` param. ([#18056](https://github.com/craftcms/cms/issues/18056))
+
 ## 4.16.15 - 2025-10-28
 
 - Reverted an element query performance optimization for MySQL 9. ([#16401](https://github.com/craftcms/cms/issues/16401))
