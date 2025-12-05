@@ -11,6 +11,7 @@
 - Fixed a bug where relation fields weren’t handling `:empty:`/`:notempty:` element query params properly if the field had multiple instances within a field layout. ([#18092](https://github.com/craftcms/cms/pull/18092))
 - Fixed a bug where user preferences were being respected for users who formerly had access to the control panel.
 - Fixed a bug where nested entries could be reordered when their owner element was resaved programmatically. ([#18121](https://github.com/craftcms/cms/pull/18121))
+- Fixed an RCE vulnerability. (GHSA-255j-qw47-wjh5)
 
 ## 5.8.20 - 2025-11-18
 
