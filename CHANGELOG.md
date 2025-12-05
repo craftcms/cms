@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.21 - 2025-12-04
 
 - Improved the performance of saving nested elements on multi-site installs with a custom propagation method. ([#18126](https://github.com/craftcms/cms/issues/18126))
 - Fixed a bug where remove buttons within multi-select Selectize inputs weren’t working if the input wasn’t focusend and fully in view. ([#18079](https://github.com/craftcms/cms/issues/18079))
