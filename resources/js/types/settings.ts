@@ -1,3 +1,5 @@
+import type {SelectOption} from '@/types/index';
+
 export const Edition = {
   Solo: 0,
   Team: 1,
@@ -13,8 +15,8 @@ export interface SystemData {
   timeZone: string;
 }
 
-export interface TimezoneOption {
-  value: string;
-  label: string;
-  data?: Record<any, any>;
+export interface TimezoneOption extends SelectOption {
+  data?: {
+    hint?: string;
+  };
 }
