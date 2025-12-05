@@ -657,7 +657,7 @@ JS, [
 
         $layoutConfig['type'] = $elementType;
 
-        $componentConfig = Component::cleanseConfig($this->request->getBodyParam('config') ?? []);
+        $componentConfig = $this->request->getBodyParam('config') ?? [];
         $componentConfig['elementType'] = $elementType;
         $settingsStr = $this->request->getBodyParam('settings');
 
@@ -667,6 +667,8 @@ JS, [
             $settings = ArrayHelper::getValue($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
+
+        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 
