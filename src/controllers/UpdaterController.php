@@ -69,6 +69,11 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionBackup(): Response
     {
+        // make sure migrations are pending
+        if (!Craft::$app->getUpdates()->getAreMigrationsPending()) {
+            return $this->sendFinished();
+        }
+
         try {
             Craft::$app->getDb()->backup();
         } catch (Throwable $e) {

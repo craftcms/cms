@@ -13,6 +13,7 @@
 - Fixed a bug where nested entries could be reordered when their owner element was resaved programmatically. ([#18121](https://github.com/craftcms/cms/pull/18121))
 - Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
 - Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
+- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
 
 ## 5.8.20 - 2025-11-18
 
