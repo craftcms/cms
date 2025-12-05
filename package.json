@@ -16,7 +16,8 @@
     "dev:cp": "npm run dev -w @craftcms/cp",
     "build:cp": "npm run build -w @craftcms/cp",
     "test:cp": "npm run test -w @craftcms/cp",
-    "storybook:cp": "npm run storybook -w @craftcms/cp"
+    "storybook:cp": "npm run storybook -w @craftcms/cp",
+    "build:all": "npm run build:bundles && npm run build:cp && npm run build"
   },
   "workspaces": [
     "packages/*"

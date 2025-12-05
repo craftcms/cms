@@ -63,7 +63,7 @@
   <Head :title="title" />
   <div class="cp">
     <div class="cp__header">
-      <div class="tw:flex tw:gap-2 tw:p-2">
+      <div class="flex gap-2 p-2">
         <craft-button
           icon
           appearance="plain"
@@ -74,7 +74,7 @@
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
-        <div class="tw:ml-auto"></div>
+        <div class="ml-auto"></div>
         <craft-button icon appearance="plain">
           <craft-icon name="search"></craft-icon>
         </craft-button>
@@ -91,14 +91,12 @@
       <slot name="main">
         <main>
           <slot name="header">
-            <div
-              class="tw:pb-2 tw:pt-4 tw:px-4 tw:flex tw:justify-between tw:items-center"
-            >
+            <div class="pb-2 pt-4 px-4 flex justify-between items-center">
               <slot name="title">
-                <h1 class="tw:text-xl">{{ title }}</h1>
+                <h1 class="text-xl">{{ title }}</h1>
               </slot>
 
-              <div class="tw:flex tw:gap-2 tw:items-center">
+              <div class="flex gap-2 items-center">
                 <slot name="actions"></slot>
               </div>
             </div>

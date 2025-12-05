@@ -10,13 +10,13 @@
 </script>
 
 <template>
-  <div class="tw:flex tw:justify-center tw:py-4 tw:px-2 tw:text-muted">
+  <div class="flex justify-center py-4 px-2 text-muted">
     <div>
-      <span lang="en" class="tw:flex tw:items-center tw:gap-2">
+      <span lang="en" class="flex items-center gap-2">
         Craft CMS
         <span class="edition-logo">
           <span aria-hidden="true">{{ app.edition.name }}</span>
-          <span class="tw:sr-only">{{ fullEditionName }}</span>
+          <span class="sr-only">{{ fullEditionName }}</span>
         </span>
         {{ app.version }}
       </span>

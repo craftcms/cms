@@ -25,7 +25,7 @@
     <div class="cp-sidebar__header">
       <div class="sidebar-header" v-if="mode !== 'docked'">
         <SystemInfo />
-        <div class="tw:ml-auto"></div>
+        <div class="ml-auto"></div>
         <craft-button size="small" icon @click="emit('close')">
           <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
         </craft-button>
@@ -91,14 +91,14 @@
     background:
       /* Shadow Cover TOP */
       linear-gradient(white 30%, rgba(255, 255, 255, 0)) center top,
-        /* Shadow Cover BOTTOM */
-      linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
-        /* Shadow TOP */
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
-      top,
-        /* Shadow BOTTOM */
-      linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
-      bottom;
+      /* Shadow Cover BOTTOM */
+        linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
+      /* Shadow TOP */
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+        top,
+      /* Shadow BOTTOM */
+        linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+        bottom;
     background-repeat: no-repeat;
     background-size:
       100% 2.5rem,
