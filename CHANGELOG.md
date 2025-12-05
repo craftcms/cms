@@ -8,6 +8,7 @@
 - Fixed a bug where assets with disallowed file extensions could be stored in the system’s temp directory. ([#18049](https://github.com/craftcms/cms/pull/18049))
 - Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
 - Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
+- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
 
 ## 4.16.16 - 2025-11-18
 
