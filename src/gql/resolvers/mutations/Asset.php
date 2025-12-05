@@ -242,6 +242,15 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
+            // make sure the hostname is alphanumeric and not an IP address
+            $hostname = parse_url($url, PHP_URL_HOST);
+            if (
+                !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
+                filter_var($hostname, FILTER_VALIDATE_IP)
+            ) {
+                throw new UserError("$url contains an invalid hostname.");
+            }
+
             if (empty($fileInformation['filename'])) {
                 $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
             } else {
