@@ -901,6 +901,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function safeAttributes(): array
+    {
+        return ArrayHelper::withoutValue(parent::safeAttributes(), 'photoId');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setAttributes($values, $safeOnly = true): void
     {
         if ($safeOnly) {
