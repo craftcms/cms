@@ -1,14 +1,20 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.21 - 2025-12-04
 
+- Improved the performance of saving nested elements on multi-site installs with a custom propagation method. ([#18126](https://github.com/craftcms/cms/issues/18126))
 - Fixed a bug where remove buttons within multi-select Selectize inputs weren’t working if the input wasn’t focusend and fully in view. ([#18079](https://github.com/craftcms/cms/issues/18079))
 - Fixed an error that could occur when executing a GraphQL mutation when the `lazyGqlTypes` config setting was enabled. ([#18014](https://github.com/craftcms/cms/issues/18014))
 - Fixed a PHP error that could occur when creating a username that began or ended with an `@`. ([#18123](https://github.com/craftcms/cms/pull/18123))
+- Fixed a bug where assets with disallowed file extensions could be stored in the system’s temp directory. ([#18049](https://github.com/craftcms/cms/pull/18049))
 - Fixed a bug where font icons weren’t hidden from screen readers. ([#18078](https://github.com/craftcms/cms/pull/18078))
 - Fixed a bug where relation fields weren’t handling `:empty:`/`:notempty:` element query params properly if the field had multiple instances within a field layout. ([#18092](https://github.com/craftcms/cms/pull/18092))
 - Fixed a bug where user preferences were being respected for users who formerly had access to the control panel.
 - Fixed a bug where nested entries could be reordered when their owner element was resaved programmatically. ([#18121](https://github.com/craftcms/cms/pull/18121))
+- Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
+- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
+- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
+- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
 
 ## 5.8.20 - 2025-11-18
 
