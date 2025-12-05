@@ -2,7 +2,9 @@
   import useCraftData from '@/composables/useCraftData';
   import {computed} from 'vue';
 
-  const {system, site} = useCraftData();
+  const craftData = useCraftData();
+  const system = computed(() => craftData.system);
+  const site = computed(() => craftData.site);
   const tag = computed(() => (site.url ? 'a' : 'div'));
 </script>
 
