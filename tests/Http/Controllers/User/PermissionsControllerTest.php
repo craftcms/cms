@@ -5,7 +5,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +15,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::firstOrFail());
+    actingAs(User::find()->one());
 });
 
 it('requires login', function () {

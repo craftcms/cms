@@ -13,7 +13,7 @@ it('can get announcements', function () {
 });
 
 it('can get announcements for a user', function () {
-    $user = User::find();
+    $user = User::find()->one();
 
     $announcement = Announcement::factory()
         ->unread()
@@ -29,7 +29,7 @@ it('can get announcements for a user', function () {
 });
 
 it('can mark announcements as read', function () {
-    $user = User::first();
+    $user = User::find()->one();
 
     $announcement = Announcement::factory()
         ->unread()

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -13,7 +13,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('requires authentication', function () {

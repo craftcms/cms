@@ -15,7 +15,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -109,7 +109,7 @@ it('can get editable sites', function () {
     expect($this->sites->getEditableSiteIds())->toHaveCount(0);
     expect($this->sites->getEditableSites())->toHaveCount(0);
 
-    actingAs(User::first());
+    actingAs(User::find()->one());
     $this->sites->refreshSites();
 
     expect($this->sites->getTotalEditableSites())->toBe(2);

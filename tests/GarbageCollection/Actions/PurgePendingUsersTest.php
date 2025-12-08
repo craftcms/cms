@@ -6,7 +6,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
 
 it('purges pending users with stale activation codes', function () {
@@ -25,7 +24,7 @@ it('purges pending users with stale activation codes', function () {
         'dateUpdated' => now(),
     ]);
 
-    User::factory()->create([
+    \CraftCms\Cms\User\Models\User::factory()->create([
         'id' => $user1Element->id,
         'pending' => true,
         'verificationCodeIssuedDate' => now(),
@@ -42,7 +41,7 @@ it('purges pending users with stale activation codes', function () {
         'dateUpdated' => now(),
     ]);
 
-    User::factory()->create([
+    \CraftCms\Cms\User\Models\User::factory()->create([
         'id' => $user2Element->id,
         'pending' => true,
         'verificationCodeIssuedDate' => now()->subWeek()->format('Y-m-d H:i:s'),

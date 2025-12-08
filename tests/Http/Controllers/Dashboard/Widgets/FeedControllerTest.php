@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 
 use function Pest\Laravel\actingAs;
@@ -15,7 +15,7 @@ it('requires login', function () {
 });
 
 it('caches data under the key of the url', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     expect(Cache::has('feed:https://craftcms.com/news.rss'))->toBeFalse();
 
@@ -28,7 +28,7 @@ it('caches data under the key of the url', function () {
 });
 
 it('requires a valid url', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     expect(Cache::has('feed:not-an-url'))->toBeFalse();
 

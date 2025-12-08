@@ -1,10 +1,10 @@
 <?php
 
 use CraftCms\Cms\Asset\Models\Asset;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 it('can query users by user properties', function (string $property, mixed $value, mixed $param, int $expectedCount) {
-    User::factory()->create([$property => $value]);
+    \CraftCms\Cms\User\Models\User::factory()->create([$property => $value]);
 
     expect(userQuery()->$property($param)->count())->toBe($expectedCount);
 })->with([
@@ -23,7 +23,7 @@ it('can query users that have photos', function () {
     expect(userQuery()->hasPhoto()->count())->toBe(0);
     expect(userQuery()->hasPhoto(false)->count())->toBe(1);
 
-    User::first()->update([
+    \CraftCms\Cms\User\Models\User::first()->update([
         'photoId' => Asset::factory()->create()->id,
     ]);
 
@@ -32,9 +32,9 @@ it('can query users that have photos', function () {
 });
 
 it('can query by last login date', function (mixed $param, int $expectedCount) {
-    User::factory()->create(['lastLoginDate' => now()->subDay()]);
-    User::factory()->create(['lastLoginDate' => now()]);
-    User::factory()->create(['lastLoginDate' => now()->addDay()]);
+    \CraftCms\Cms\User\Models\User::factory()->create(['lastLoginDate' => now()->subDay()]);
+    \CraftCms\Cms\User\Models\User::factory()->create(['lastLoginDate' => now()]);
+    \CraftCms\Cms\User\Models\User::factory()->create(['lastLoginDate' => now()->addDay()]);
 
     expect(userQuery()->lastLoginDate($param)->count())->toBe($expectedCount);
 })->with([

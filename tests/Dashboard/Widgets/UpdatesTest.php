@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Support\Api;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
@@ -19,7 +19,7 @@ it('can render', function () {
         ],
     ]);
 
-    actingAs(User::first());
+    actingAs(User::find()->one());
     Session::start();
 
     $dashboard = app(Dashboard::class);

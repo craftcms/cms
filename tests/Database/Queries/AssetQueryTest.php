@@ -3,12 +3,12 @@
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 
 test('editable/savable returns 0 when having no access', function (string $method) {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     Edition::set(Edition::Pro);
 
@@ -16,7 +16,7 @@ test('editable/savable returns 0 when having no access', function (string $metho
 
     expect(assetQuery()->$method()->count())->toBe(1);
 
-    actingAs(User::factory()->create());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->create()->asElement());
 
     // Access to nothing
     expect(assetQuery()->$method()->count())->toBe(0);

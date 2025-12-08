@@ -6,13 +6,13 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\UpdateRelease;
 use CraftCms\Cms\Updates\Enums\UpdateStatus;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('requires authentication', function () {
