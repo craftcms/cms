@@ -1762,6 +1762,11 @@ XML;
     {
         return Craft::createObject(self::class);
     }
+    
+    public function getKey(): ?int
+    {
+        return $this->id;
+    }
 
     /**
      * {@inheritdoc}
