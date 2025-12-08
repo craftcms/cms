@@ -17,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;

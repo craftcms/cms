@@ -506,7 +506,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName): void
     {
