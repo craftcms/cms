@@ -289,6 +289,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     ];
 
     /**
+     * @var bool Whether to only include elements whose owner is also enabled (recursively).
+     * @used-by enabledByOwner()
+     * @since 5.9.0
+     */
+    public bool $enabledByOwner = false;
+
+    /**
      * @var bool Whether to return only archived elements.
      * @used-by archived()
      */
@@ -983,6 +990,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function status(array|string|null $value): static
     {
         $this->status = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $enabledByOwner
+     */
+    public function enabledByOwner(bool $value = true): static
+    {
+        $this->enabledByOwner = $value;
         return $this;
     }
 
@@ -1706,6 +1723,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->siteSettingsId) {
             $this->subQuery->andWhere(Db::parseNumericParam('elements_sites.id', $this->siteSettingsId));
+        }
+
+        if ($this->enabledByOwner) {
+            $this->subQuery->andWhere(['elements_sites.enabledByOwner' => true]);
         }
 
         if ($this->archived) {

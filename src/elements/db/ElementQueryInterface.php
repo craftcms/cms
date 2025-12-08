@@ -571,6 +571,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function status(array|string|null $value): static;
 
     /**
+     * Narrows the query results to those whose owner is also enabled (recursively).
+     *
+     * @param bool $value The property value
+     * @return static self reference
+     * @since 5.9.0
+     */
+    public function enabledByOwner(bool $value = true): static;
+
+    /**
      * Sets the [[$archived]] property.
      *
      * @param bool $value The property value (defaults to true)

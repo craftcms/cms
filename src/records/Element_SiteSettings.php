@@ -22,6 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property string|null $uri URI
  * @property array|string|null $content Content
  * @property bool $enabled Enabled
+ * @property bool $enabledByOwner Enabled by owner
  * @property Element $element Element
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

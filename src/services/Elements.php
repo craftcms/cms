@@ -3691,6 +3691,7 @@ class Elements extends Component
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     * @param bool $statusChanged Whether the element’s `enabled` status just changed
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3705,6 +3706,7 @@ class Elements extends Component
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
         bool $saveContent = false,
+        bool $statusChanged = false,
     ): bool {
         /** @var ElementInterface&DraftBehavior $element */
         $isNewElement = !$element->id;
@@ -3835,6 +3837,7 @@ class Elements extends Component
             $originalPropagateAll,
             $forceTouch,
             $saveContent,
+            $statusChanged,
             $trackChanges,
             $dirtyAttributes,
             $updateSearchIndex,
@@ -3853,6 +3856,8 @@ class Elements extends Component
 
             $newSiteIds = $element->newSiteIds;
             $element->newSiteIds = [];
+
+            $siteStatusChanged = false;
 
             $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -3881,10 +3886,17 @@ class Elements extends Component
                     $elementRecord->draftId = (int)$element->draftId ?: null;
                     $elementRecord->revisionId = (int)$element->revisionId ?: null;
                     $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
-                    $elementRecord->enabled = (bool)$element->enabled;
                     $elementRecord->archived = (bool)$element->archived;
                     $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
                     $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
+
+                    // Avoid `enabled` getting marked as dirty if it’s not really changing
+                    if ($isNewElement || $elementRecord->enabled != $element->enabled) {
+                        $elementRecord->enabled = (bool)$element->enabled;
+                        if (!$isNewElement) {
+                            $statusChanged = true;
+                        }
+                    }
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
@@ -3961,6 +3973,31 @@ class Elements extends Component
                 $enabledForSite = $element->getEnabledForSite();
                 if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
                     $siteSettingsRecord->enabled = $enabledForSite;
+                    if (!$siteSettingsRecord->getIsNewRecord()) {
+                        $siteStatusChanged = true;
+                    }
+                }
+
+                if ($element instanceof NestedElementInterface && $siteSettingsRecord->getIsNewRecord()) {
+                    $ownerId = $element->getPrimaryOwnerId();
+                    if ($ownerId) {
+                        $ownerStatuses = (new Query())
+                            ->select(['e.enabled', 'enabledForSite' => 's.enabled', 's.enabledByOwner'])
+                            ->from(['e' => Table::ELEMENTS])
+                            ->innerJoin(['s' => Table::ELEMENTS_SITES], '[[s.elementId]] = [[e.id]]')
+                            ->where([
+                                'e.id' => $ownerId,
+                                's.siteId' => $element->siteId,
+                            ])
+                            ->one();
+                        if ($ownerStatuses) {
+                            $siteSettingsRecord->enabledByOwner = (
+                                $ownerStatuses['enabled'] &&
+                                $ownerStatuses['enabledForSite'] &&
+                                $ownerStatuses['enabledByOwner']
+                            );
+                        }
+                    }
                 }
 
                 // Update our list of dirty attributes
@@ -4056,6 +4093,10 @@ class Elements extends Component
                     $element->setDirtyAttributes($dirtyAttributes, false);
                 }
 
+                if ($statusChanged || $siteStatusChanged) {
+                    $this->updateNestedEnabledByOwnerValues($element->id, $element->siteId, $element->enabled && $enabledForSite);
+                }
+
                 // It is now officially saved
                 $element->afterSave($isNewElement);
 
@@ -4087,7 +4128,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: true,
+                                    statusChanged: $statusChanged,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
@@ -4219,6 +4260,13 @@ class Elements extends Component
         return true;
     }
 
+    private function updateNestedEnabledByOwnerValues(int $elementId, int $siteId, bool $enabledByOwner): void
+    {
+        // update nested elements' enabledByOwner values,
+        // but only if they are primarily owned by this element (recursively)
+        // ...
+    }
+
     private function updateSearchIndex(
         ElementInterface $element,
         array $searchableDirtyFields,
@@ -4263,6 +4311,7 @@ class Elements extends Component
      * @param-out ElementInterface $siteElement
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether the element’s content should be saved
+     * @param bool $statusChanged Whether the element’s `enabled` status just changed
      * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
@@ -4272,6 +4321,7 @@ class Elements extends Component
         int $siteId,
         ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
+        bool $statusChanged = false,
         bool $saveContent = true,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
@@ -4420,7 +4470,8 @@ class Elements extends Component
             $crossSiteValidate,
             false,
             supportedSites: $supportedSites,
-            saveContent: $saveContent
+            saveContent: $saveContent,
+            statusChanged: $statusChanged,
         );
 
         if (!$success) {

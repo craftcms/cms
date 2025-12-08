@@ -382,6 +382,7 @@ class Install extends Migration
             'uri' => $this->string(),
             'content' => $this->json(),
             'enabled' => $this->boolean()->notNull()->defaultValue(true),
+            'enabledByOwner' => $this->boolean()->notNull()->defaultValue(true),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -907,6 +908,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['enabled'], false);
+        $this->createIndex(null, Table::ELEMENTS_SITES, ['enabledByOwner'], false);
         $this->createIndex(null, Table::SYSTEMMESSAGES, ['key', 'language'], true);
         $this->createIndex(null, Table::SYSTEMMESSAGES, ['language'], false);
         $this->createIndex(null, Table::ENTRIES, ['postDate'], false);
