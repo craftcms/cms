@@ -7,6 +7,7 @@ namespace CraftCms\Cms\User\Commands;
 use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
@@ -29,7 +30,7 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
 
     protected $aliases = ['users/delete'];
 
-    public function handle(): int
+    public function handle(Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -51,8 +52,8 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
 
         if ($inheritor) {
             $inheritor = is_numeric($inheritor)
-                ? Craft::$app->getUsers()->getUserById((int) $inheritor)
-                : Craft::$app->getUsers()->getUserByUsernameOrEmail($inheritor);
+                ? $users->getUserById((int) $inheritor)
+                : $users->getUserByUsernameOrEmail($inheritor);
 
             if (! $inheritor) {
                 $this->components->error("No user exists with a username/email/id of “{$inheritor}”");

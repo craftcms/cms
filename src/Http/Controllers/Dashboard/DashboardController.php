@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\web\Application;
+use Craft;
 use craft\web\assets\dashboard\DashboardAsset;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
 
 final readonly class DashboardController
@@ -18,9 +17,8 @@ final readonly class DashboardController
 
     public function __construct(
         private Dashboard $dashboard,
-        #[Give('Craft')] Application $craft,
     ) {
-        $this->view = $craft->getView();
+        $this->view = Craft::$app->getView();
     }
 
     public function __invoke()

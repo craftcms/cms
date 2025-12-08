@@ -15,6 +15,7 @@ use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\User\Users;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ final readonly class StoreEntryController
         private Request $request,
         private Entries $entries,
         private Sites $sites,
+        private Users $users,
     ) {}
 
     public function __invoke(): Response
@@ -248,7 +250,7 @@ final readonly class StoreEntryController
         if ($authorIds !== null) {
             $entry->setAuthorIds($authorIds);
         } elseif (! $entry->id) {
-            $craftUser = Craft::$app->getUsers()->getUserById($this->request->user()->id);
+            $craftUser = $this->users->getUserById($this->request->user()->id);
             $entry->setAuthor($craftUser);
         }
 

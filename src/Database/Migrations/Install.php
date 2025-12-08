@@ -30,6 +30,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -1128,7 +1129,7 @@ class Install extends Migration
             ]);
             Craft::$app->getElements()->saveElement($user);
 
-            Craft::$app->getUsers()->saveUserPreferences($user, [
+            Users::saveUserPreferences($user, [
                 'language' => $this->site->getLanguage(),
             ]);
 
