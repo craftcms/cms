@@ -12,6 +12,7 @@ use craft\helpers\Cp;
 use craft\models\Volume;
 use CraftCms\Cms\Field\Link;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
@@ -91,8 +92,7 @@ final class Asset extends BaseElementLinkType
             ->filter(fn (Volume $volume) => $volume->getFs()->hasUrls);
 
         if (! $this->showUnpermittedVolumes) {
-            $userService = Craft::$app->getUser();
-            $volumes = $volumes->filter(fn (Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
+            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
         }
 
         return $volumes
@@ -126,9 +126,8 @@ final class Asset extends BaseElementLinkType
             $sourceKeys = $this->sources ?? Collection::make($this->availableSources())
                 ->map(fn (array $source) => $source['key'])
                 ->all();
-            $userService = Craft::$app->getUser();
             $config['sources'] = Collection::make($sourceKeys)
-                ->filter(function (string $source) use ($userService) {
+                ->filter(function (string $source) {
                     // If it’s not a volume folder, let it through
                     if (! str_starts_with($source, 'volume:')) {
                         return true;
@@ -136,7 +135,7 @@ final class Asset extends BaseElementLinkType
                     // Only show it if they have permission to view it, or if it's the temp volume
                     $volumeUid = explode(':', $source)[1];
 
-                    return $userService->checkPermission("viewAssets:$volumeUid");
+                    return Gate::check("viewAssets:$volumeUid");
                 })
                 ->all();
         }

@@ -16,6 +16,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Support\Facades\Gate;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -223,7 +224,7 @@ abstract class Controller extends \yii\web\Controller
             // If the system is offline, make sure they have permission to access the control panel/site
             if (!$isLive) {
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
-                if (!Craft::$app->getUser()->checkPermission($permission)) {
+                if (!Gate::check($permission)) {
                     $error = $this->request->getIsCpRequest()
                         ? t('Your account doesn’t have permission to access the control panel when the system is offline.')
                         : t('Your account doesn’t have permission to access the site when the system is offline.');
@@ -505,13 +506,10 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName): void
     {
-        if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
+        Gate::authorize($permissionName);
     }
 
     /**

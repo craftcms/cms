@@ -41,6 +41,7 @@ use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -274,7 +275,7 @@ class Cp extends Component
 
         if (
             Edition::get() !== Edition::Solo &&
-            Craft::$app->getUser()->checkPermission('viewUsers')
+            Gate::check('viewUsers')
         ) {
             $navItems[] = [
                 'label' => t('Users'),
@@ -289,7 +290,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->handle) &&
+                Gate::check('accessPlugin-' . $plugin->handle) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;

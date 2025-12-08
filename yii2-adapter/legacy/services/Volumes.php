@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -126,14 +127,12 @@ class Volumes extends Component
      */
     public function getViewableVolumes(): array
     {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return $this->getAllVolumes();
         }
 
-        $userSession = Craft::$app->getUser();
-
         return Collection::make($this->getAllVolumes())
-            ->filter(fn(Volume $volume) => $userSession->checkPermission("viewAssets:$volume->uid"))
+            ->filter(fn(Volume $volume) => Gate::check("viewAssets:$volume->uid"))
             ->values()
             ->all();
     }

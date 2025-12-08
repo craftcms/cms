@@ -62,10 +62,13 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
@@ -100,8 +103,9 @@ use function CraftCms\Cms\t;
  *
  * @since 3.0.0
  */
-class User extends Element implements IdentityInterface
+class User extends Element implements IdentityInterface, AuthorizableContract
 {
+    use Authorizable;
     use NameTrait;
 
     /**
@@ -406,7 +410,7 @@ class User extends Element implements IdentityInterface
     {
         $actions = [];
 
-        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
+        if (Gate::check('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 
@@ -414,7 +418,7 @@ class User extends Element implements IdentityInterface
             $actions[] = UnsuspendUsers::class;
         }
 
-        if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
+        if (Gate::check('deleteUsers')) {
             // Delete
             $actions[] = DeleteUsers::class;
         }
@@ -909,7 +913,7 @@ class User extends Element implements IdentityInterface
     {
         if (
             Edition::get() === Edition::Solo ||
-            !Craft::$app->getUser()->checkPermission('editUsers')
+            !Gate::check('editUsers')
         ) {
             return null;
         }
@@ -1113,11 +1117,11 @@ class User extends Element implements IdentityInterface
 
             if ($this->email !== null) {
                 // are they allowed to set the email?
-                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
                     if (
                         Edition::get()->value >= Edition::Pro->value &&
                         app(ProjectConfig::class)->get('users.requireEmailVerification') &&
-                        !$userSession->checkPermission('administrateUsers')
+                        !Gate::check('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = Arr::pull($values, 'email');
@@ -1758,6 +1762,11 @@ XML;
     {
         return Craft::createObject(self::class);
     }
+    
+    public function getKey(): ?int
+    {
+        return $this->id;
+    }
 
     /**
      * {@inheritdoc}
@@ -1821,25 +1830,6 @@ XML;
         }
 
         return Auth::user()?->id === $this->id;
-    }
-
-    /**
-     * Returns whether the user has permission to perform a given action.
-     */
-    public function can(string $permission): bool
-    {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
-
-        if (!isset($this->id)) {
-            return false;
-        }
-
-        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
     }
 
     /**
@@ -2045,7 +2035,7 @@ XML;
                         }
                     }
 
-                    if (!$isCurrentUser && $userSession->checkPermission('editUsers')) {
+                    if (!$isCurrentUser && Gate::check('editUsers')) {
                         $statusItems[] = [
                             'icon' => 'paperplane',
                             'label' => t('Send password reset email'),
