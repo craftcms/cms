@@ -9,14 +9,14 @@ use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     WidgetModel::all()->each->delete();
 });

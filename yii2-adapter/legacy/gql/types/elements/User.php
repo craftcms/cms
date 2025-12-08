@@ -7,9 +7,9 @@
 
 namespace craft\gql\types\elements;
 
-use craft\elements\User as UserElement;
 use craft\gql\interfaces\elements\User as UserInterface;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

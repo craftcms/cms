@@ -23,7 +23,6 @@ use craft\elements\db\UserQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Config;
@@ -318,7 +318,7 @@ class CraftVariable extends ServiceLocator
      */
     public function users(array $criteria = []): UserQuery
     {
-        $query = User::find();
+        $query = \craft\elements\User::find();
         Craft::configure($query, $criteria);
         return $query;
     }

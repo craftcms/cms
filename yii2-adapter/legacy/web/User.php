@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
@@ -16,6 +15,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use yii\web\Cookie;
@@ -334,7 +335,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsAdmin(): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->admin);
     }
@@ -348,9 +349,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function checkPermission(string $permissionName): bool
     {
-        $user = $this->getIdentity();
-
-        return ($user && $user->can($permissionName));
+        return Gate::check($permissionName);
     }
 
     /**

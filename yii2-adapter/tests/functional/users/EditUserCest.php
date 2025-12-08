@@ -7,9 +7,9 @@
 
 namespace crafttests\functional\users;
 
-use craft\elements\User;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
 use FunctionalTester;
 
 /**

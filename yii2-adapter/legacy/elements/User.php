@@ -10,657 +10,78 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\NameTrait;
-use craft\elements\actions\DeleteUsers;
-use craft\elements\actions\Restore;
-use craft\elements\actions\SuspendUsers;
-use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\conditions\users\UserCondition;
-use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
-use craft\events\AuthenticateUserEvent;
-use craft\events\DefineValueEvent;
-use craft\fieldlayoutelements\users\FullNameField;
-use craft\helpers\App;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\UserGroup;
-use craft\records\User as UserRecord;
-use craft\validators\DateTimeValidator;
-use craft\validators\UniqueValidator;
-use craft\validators\UsernameValidator;
-use craft\validators\UserPasswordValidator;
-use craft\web\View;
-use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Enums\MenuItemType;
-use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Translation\Formatter;
-use CraftCms\Cms\User\Models\User as UserModel;
-use DateInterval;
-use DateTime;
-use DateTimeZone;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Foundation\Auth\Access\Authorizable;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB as DbFacade;
-use Illuminate\Support\Facades\Gate;
-use Throwable;
-use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\ErrorHandler;
+use Illuminate\Support\Traits\ForwardsCalls;
+use Traversable;
+use Twig\Markup;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\validators\InlineValidator;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
-use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
-use function CraftCms\Cms\t;
+use yii\web\Response;
 
 /**
- * User represents a user element.
- *
- * @property Asset|null $photo the user’s photo
- * @property UserGroup[] $groups the user’s groups
- * @property string $name the user’s full name or username
- * @property string|null $friendlyName the user’s first name or username
- * @property-read Address[]|null $addresses the user’s addresses
- * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
- * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
- * @property-read array $preferences the user’s preferences
- * @property-read bool $isCredentialed whether the user account can be logged into
- * @property-read bool $isCurrent whether this is the current logged-in user
- * @property-read string|null $preferredLanguage the user’s preferred language
- * @property-read string|null $preferredLocale the user’s preferred formatting locale
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
+ * @mixin UserElement
  */
-class User extends Element implements IdentityInterface, AuthorizableContract
+class User implements IdentityInterface, ElementInterface
 {
-    use Authorizable;
-    use NameTrait;
+    use ForwardsCalls;
 
-    /**
-     * @since 5.0.0
-     */
-    public const GQL_TYPE_NAME = 'User';
+    private UserElement $userElement;
 
-    /**
-     * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
-     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
-     * something if there is an authentication error.
-     */
-    public const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
-     *
-     * @since 3.7.0
-     */
-    public const EVENT_DEFINE_NAME = 'defineName';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
-     *
-     * @since 3.7.0
-     */
-    public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
-
-    /**
-     * @deprecated in 5.6.0. [[\craft\web\User:getImpersonatorId()]] should be used instead.
-     */
-    public const IMPERSONATE_KEY = '__impersonator_id';
-
-    /**
-     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
-     *
-     * @deprecated in 5.6.0
-     */
-    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
-
-    private static array $photoColors = [
-        'red',
-        'orange',
-        'amber',
-        'yellow',
-        'lime',
-        'green',
-        'emerald',
-        'teal',
-        'cyan',
-        'sky',
-        'blue',
-        'indigo',
-        'violet',
-        'purple',
-        'fuchsia',
-        'pink',
-        'rose',
-    ];
-
-    // User statuses
-    // -------------------------------------------------------------------------
-
-    /**
-     * @since 4.0.0
-     */
-    public const STATUS_INACTIVE = 'inactive';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_SUSPENDED = 'suspended';
-
-    public const STATUS_LOCKED = 'locked';
-
-    // Authentication error codes
-    // -------------------------------------------------------------------------
-
-    public const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
-
-    public const AUTH_PENDING_VERIFICATION = 'pending_verification';
-
-    public const AUTH_ACCOUNT_LOCKED = 'account_locked';
-
-    public const AUTH_ACCOUNT_COOLDOWN = 'account_cooldown';
-
-    public const AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
-
-    public const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
-
-    public const AUTH_NO_CP_ACCESS = 'no_cp_access';
-
-    public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
-
-    public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
-
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    /**
-     * @since 4.4.8
-     */
-    public const SCENARIO_ACTIVATION = 'activation';
-
-    public const SCENARIO_REGISTRATION = 'registration';
-
-    public const SCENARIO_PASSWORD = 'password';
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function displayName(): string
-    {
-        return t('User');
+    public function __construct(
+        array $config = [],
+    ) {
+        $this->userElement = new UserElement($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function lowerDisplayName(): string
+    public static function __callStatic(string $name, array $arguments)
     {
-        return t('user');
+        return UserElement::$name($arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function pluralDisplayName(): string
+    public function __get($name)
     {
-        return t('Users');
+        return $this->userElement->$name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function pluralLowerDisplayName(): string
+    public function __set($name, $value): void
     {
-        return t('users');
+        $this->userElement->$name = $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function refHandle(): ?string
+    public function __isset($name): bool
     {
-        return 'user';
+        return isset($this->userElement->$name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function trackChanges(): bool
+    public function __call($name, $params)
     {
-        return true;
+        return $this->forwardDecoratedCallTo($this->userElement, $name, $params);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function hasThumbs(): bool
+    public static function find(): UserQuery
     {
-        return true;
+        return new UserQuery(self::class);
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function hasStatuses(): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function statuses(): array
-    {
-        return [
-            self::STATUS_ACTIVE => [
-                'label' => t('Active'),
-            ],
-            self::STATUS_PENDING => [
-                'label' => t('Pending'),
-                'color' => Color::Orange,
-            ],
-            self::STATUS_SUSPENDED => [
-                'label' => t('Suspended'),
-                'color' => Color::Red,
-            ],
-            self::STATUS_LOCKED => [
-                'label' => t('Locked'),
-                'color' => Color::Red,
-            ],
-            self::STATUS_INACTIVE => [
-                'label' => t('Inactive'),
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return UserQuery The newly created [[UserQuery]] instance.
-     */
-    public static function find(): UserQuery|\CraftCms\Cms\Database\Queries\UserQuery
-    {
-        return new UserQuery(static::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return UserCondition
-     */
-    public static function createCondition(): ElementConditionInterface
-    {
-        return Craft::createObject(UserCondition::class, [static::class]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineSources(string $context): array
-    {
-        $sources = [
-            [
-                'key' => '*',
-                'label' => t('All users'),
-                'hasThumbs' => true,
-                'data' => [
-                    'slug' => 'all',
-                ],
-            ],
-        ];
-
-        if (Edition::get()->value >= Edition::Pro->value) {
-            $sources = array_merge($sources, [
-                [
-                    'key' => 'admins',
-                    'label' => t('Admins'),
-                    'criteria' => ['admin' => true],
-                    'hasThumbs' => true,
-                    'data' => [
-                        'slug' => 'admins',
-                    ],
-                ],
-                [
-                    'heading' => t('Account Type'),
-                ],
-                [
-                    'key' => 'credentialed',
-                    'label' => t('Credentialed'),
-                    'criteria' => [
-                        'status' => UserQuery::STATUS_CREDENTIALED,
-                    ],
-                    'hasThumbs' => true,
-                    'data' => [
-                        'slug' => 'credentialed',
-                    ],
-                ],
-                [
-                    'key' => 'inactive',
-                    'label' => t('Inactive'),
-                    'criteria' => [
-                        'status' => self::STATUS_INACTIVE,
-                    ],
-                    'hasThumbs' => true,
-                    'data' => [
-                        'slug' => 'inactive',
-                    ],
-                ],
-            ]);
-
-            $groups = Craft::$app->getUserGroups()->getAllGroups();
-
-            if (!empty($groups)) {
-                $sources[] = ['heading' => t('Groups')];
-
-                foreach ($groups as $group) {
-                    $sources[] = [
-                        'key' => 'group:' . $group->uid,
-                        'label' => t($group->name, category: 'site'),
-                        'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true,
-                        'data' => [
-                            'slug' => $group->handle,
-                        ],
-                    ];
-                }
-            }
-        }
-
-        return $sources;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineActions(string $source): array
-    {
-        $actions = [];
-
-        if (Gate::check('moderateUsers')) {
-            // Suspend
-            $actions[] = SuspendUsers::class;
-
-            // Unsuspend
-            $actions[] = UnsuspendUsers::class;
-        }
-
-        if (Gate::check('deleteUsers')) {
-            // Delete
-            $actions[] = DeleteUsers::class;
-        }
-
-        // Restore
-        $actions[] = Restore::class;
-
-        return $actions;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineSearchableAttributes(): array
-    {
-        return ['username', 'fullName', 'firstName', 'lastName', 'email'];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineSortOptions(): array
-    {
-        if (Cms::config()->useEmailAsUsername) {
-            $attributes = [
-                'email' => t('Email'),
-                'fullName' => t('Full Name'),
-                'firstName' => t('First Name'),
-                'lastName' => t('Last Name'),
-                [
-                    'label' => t('Last Login'),
-                    'orderBy' => 'lastLoginDate',
-                    'defaultDir' => 'desc',
-                ],
-                [
-                    'label' => t('Date Created'),
-                    'orderBy' => 'dateCreated',
-                    'defaultDir' => 'desc',
-                ],
-                [
-                    'label' => t('Date Updated'),
-                    'orderBy' => 'dateUpdated',
-                    'defaultDir' => 'desc',
-                ],
-            ];
-        } else {
-            $attributes = [
-                'username' => t('Username'),
-                'fullName' => t('Full Name'),
-                'firstName' => t('First Name'),
-                'lastName' => t('Last Name'),
-                'email' => t('Email'),
-                [
-                    'label' => t('Last Login'),
-                    'orderBy' => 'lastLoginDate',
-                    'defaultDir' => 'desc',
-                ],
-                [
-                    'label' => t('Date Created'),
-                    'orderBy' => 'dateCreated',
-                    'defaultDir' => 'desc',
-                ],
-                [
-                    'label' => t('Date Updated'),
-                    'orderBy' => 'dateUpdated',
-                    'defaultDir' => 'desc',
-                ],
-            ];
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineTableAttributes(): array
-    {
-        return array_merge(parent::defineTableAttributes(), array_filter([
-            'email' => ['label' => t('Email')],
-            'username' => ['label' => t('Username')],
-            'fullName' => ['label' => t('Full Name')],
-            'firstName' => ['label' => t('First Name')],
-            'lastName' => ['label' => t('Last Name')],
-            'groups' => ['label' => t('Groups')],
-            'affiliatedSite' => Sites::isMultiSite() ? ['label' => t('Affiliated Site')] : null,
-            'preferredLanguage' => ['label' => t('Preferred Language')],
-            'preferredLocale' => ['label' => t('Preferred Locale')],
-            'lastLoginDate' => ['label' => t('Last Login')],
-            'isCredentialed' => ['label' => t('Credentialed')],
-            'is2faEnabled' => ['label' => t('Two-Step Verification')],
-        ]));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineDefaultTableAttributes(string $source): array
-    {
-        return [
-            'status',
-            'fullName',
-            'email',
-            'dateCreated',
-            'lastLoginDate',
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
-    {
-        /** @var UserQuery $elementQuery */
-        if ($attribute === 'groups') {
-            $elementQuery->withGroups();
-        } else {
-            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function defineCardAttributes(): array
-    {
-        return array_merge(parent::defineCardAttributes(), [
-            'email' => [
-                'label' => t('Email'),
-                'placeholder' => fn() => 'test@example.com',
-            ],
-            'username' => [
-                'label' => t('Username'),
-                'placeholder' => fn() => t('Username'),
-            ],
-            'firstName' => [
-                'label' => t('First Name'),
-                'placeholder' => fn() => t('First Name'),
-            ],
-            'lastName' => [
-                'label' => t('Last Name'),
-                'placeholder' => fn() => t('Last Name'),
-            ],
-            'fullName' => [
-                'label' => t('Full Name'),
-                'placeholder' => t('Full Name'),
-            ],
-            'groups' => [
-                'label' => t('Groups'),
-                'placeholder' => fn() => t('Group Name'),
-            ],
-            'affiliatedSite' => [
-                'label' => t('Affiliated Site'),
-                'placeholder' => fn() => t('Site Name'),
-            ],
-            'preferredLanguage' => [
-                'label' => t('Preferred Language'),
-                'placeholder' => fn() => I18N::getLocaleById('en')->getDisplayName(app()->getLocale()),
-            ],
-            'preferredLocale' => [
-                'label' => t('Preferred Locale'),
-                'placeholder' => fn() => I18N::getLocaleById('en-US')->getDisplayName(app()->getLocale()),
-            ],
-            'isCredentialed' => [
-                'label' => t('Credentialed'),
-                'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
-                    'color' => Color::Teal,
-                    'label' => t('Credentialed'),
-                    'icon' => 'check',
-                ])),
-            ],
-            'lastLoginDate' => [
-                'label' => t('Last Login'),
-                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P14D')),
-            ],
-            'is2faEnabled' => [
-                'label' => t('Two-Step Verification'),
-                'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
-                    'color' => Color::Teal,
-                    'label' => t('Two-Step Verification'),
-                    'icon' => 'check',
-                ])),
-            ],
-        ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
-    {
-        // Get the source element IDs
-        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
-
-        if ($handle === 'addresses') {
-            $map = DbFacade::table(Table::ADDRESSES)
-                ->select([
-                    'primaryOwnerId as source',
-                    'id as target',
-                ])
-                ->where('primaryOwnerId', $sourceElementIds)
-                ->get()
-                ->map(fn(object $row) => (array) $row)
-                ->all();
-
-            return [
-                'elementType' => Address::class,
-                'map' => $map,
-                'createElement' => fn(AddressQuery $query, array $result, self $source) =>
-                    // set the addresses' owners to the source user elements
-                    // (must get set before behaviors - see https://github.com/craftcms/cms/issues/13400)
-                    $query->createElement(['owner' => $source] + $result),
-            ];
-        }
-
-        if ($handle === 'photo') {
-            $map = DbFacade::table(Table::USERS)
-                ->select(['id as source', 'photoId as target'])
-                ->whereIn('id', $sourceElementIds)
-                ->whereNotNull('photoId')
-                ->get()
-                ->map(fn(object $row) => (array) $row)
-                ->all();
-
-            return [
-                'elementType' => Asset::class,
-                'map' => $map,
-            ];
-        }
-
-        return parent::eagerLoadingMap($sourceElements, $handle);
-    }
-
-    // IdentityInterface Methods
-    // -------------------------------------------------------------------------
 
     /**
      * {@inheritdoc}
      */
     public static function findIdentity($id): ?self
     {
-        /** @var User|null $user */
         $user = self::find()
             ->addSelect(['users.password'])
             ->id($id)
@@ -673,7 +94,7 @@ class User extends Element implements IdentityInterface, AuthorizableContract
 
         // Only accept active users, unless they're being impersonated
         if (
-            $user->getStatus() !== self::STATUS_ACTIVE &&
+            $user->getStatus() !== UserElement::STATUS_ACTIVE &&
             !Craft::$app->getUser()->getImpersonator()
         ) {
             return null;
@@ -688,618 +109,6 @@ class User extends Element implements IdentityInterface, AuthorizableContract
     public static function findIdentityByAccessToken($token, $type = null): ?self
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
-
-    /**
-     * @var int|null Photo asset ID
-     */
-    public ?int $photoId = null;
-
-    /**
-     * @var bool Active
-     *
-     * @since 4.0.0
-     */
-    public bool $active = false;
-
-    /**
-     * @var bool Pending
-     */
-    public bool $pending = false;
-
-    /**
-     * @var bool Locked
-     */
-    public bool $locked = false;
-
-    /**
-     * @var bool Suspended
-     */
-    public bool $suspended = false;
-
-    /**
-     * @var bool Admin
-     */
-    public bool $admin = false;
-
-    /**
-     * @var string|null Username
-     */
-    public ?string $username = null;
-
-    /**
-     * @var string|null Email
-     */
-    public ?string $email = null;
-
-    /**
-     * @var string|null Password
-     */
-    public ?string $password = null;
-
-    /**
-     * @var int|null Affiliated site ID
-     *
-     * @since 5.6.0
-     */
-    public ?int $affiliatedSiteId = null;
-
-    /**
-     * @var DateTime|null Last login date
-     */
-    public ?DateTime $lastLoginDate = null;
-
-    /**
-     * @var int|null Invalid login count
-     */
-    public ?int $invalidLoginCount = null;
-
-    /**
-     * @var DateTime|null Last invalid login date
-     */
-    public ?DateTime $lastInvalidLoginDate = null;
-
-    /**
-     * @var DateTime|null Lockout date
-     */
-    public ?DateTime $lockoutDate = null;
-
-    /**
-     * @var bool Whether the user has a dashboard
-     *
-     * @since 3.0.4
-     */
-    public bool $hasDashboard = false;
-
-    /**
-     * @var bool Password reset required
-     */
-    public bool $passwordResetRequired = false;
-
-    /**
-     * @var DateTime|null Last password change date
-     */
-    public ?DateTime $lastPasswordChangeDate = null;
-
-    /**
-     * @var string|null Unverified email
-     */
-    public ?string $unverifiedEmail = null;
-
-    /**
-     * @var string|null New password
-     */
-    public ?string $newPassword = null;
-
-    /**
-     * @var string|null Current password
-     */
-    public ?string $currentPassword = null;
-
-    /**
-     * @var DateTime|null Verification code issued date
-     */
-    public ?DateTime $verificationCodeIssuedDate = null;
-
-    /**
-     * @var string|null Verification code
-     */
-    public ?string $verificationCode = null;
-
-    /**
-     * @var string|null Last login attempt IP address.
-     */
-    public ?string $lastLoginAttemptIp = null;
-
-    /**
-     * @var string|null Auth error
-     */
-    public ?string $authError = null;
-
-    /**
-     * @var self|null The user who should take over the user’s content if the user is deleted.
-     */
-    public ?User $inheritorOnDelete = null;
-
-    /**
-     * @var ElementCollection<Address> Addresses
-     *
-     * @see getAddresses()
-     */
-    private ElementCollection $_addresses;
-
-    /**
-     * @see getAddressManager()
-     */
-    private NestedElementManager $_addressManager;
-
-    /**
-     * @see getName()
-     * @see setName()
-     */
-    private ?string $_name = null;
-
-    /**
-     * @see getFriendlyName()
-     * @see setFriendlyName()
-     */
-    private string|bool|null $_friendlyName = null;
-
-    /**
-     * @var Asset|false|null user photo
-     */
-    private Asset|null|false $_photo = null;
-
-    /**
-     * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
-     */
-    private ?array $_groups = null;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        // Is this user in cooldown mode, and are they past their window?
-        if (
-            $this->locked &&
-            Cms::config()->cooldownDuration &&
-            !$this->getRemainingCooldownTime()
-        ) {
-            Craft::$app->getUsers()->unlockUser($this);
-        }
-
-        // Convert IDNA ASCII to Unicode
-        if ($this->username) {
-            $this->username = Str::idnToUtf8Email($this->username);
-        }
-        if ($this->email) {
-            $this->email = Str::idnToUtf8Email($this->email);
-        }
-
-        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
-            $this->username = $this->email;
-        }
-
-        if ($this->password === '') {
-            $this->password = null;
-        }
-
-        $this->normalizeNames();
-    }
-
-    /**
-     * Use the full name or username as the string representation.
-     */
-    public function __toString(): string
-    {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
-
-        return parent::__toString();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPostEditUrl(): ?string
-    {
-        if (
-            Edition::get() === Edition::Solo ||
-            !Gate::check('editUsers')
-        ) {
-            return null;
-        }
-
-        return 'users';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function crumbs(): array
-    {
-        if (Edition::get() === Edition::Solo) {
-            return [];
-        }
-
-        return [
-            [
-                'label' => t('Users'),
-                'url' => 'users',
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function uiLabel(): ?string
-    {
-        return $this->getName() ?: $this->email;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function attributes(): array
-    {
-        $names = parent::attributes();
-        $names[] = 'cooldownEndTime';
-        $names[] = 'friendlyName';
-        $names[] = 'fullName';
-        $names[] = 'isCredentialed';
-        $names[] = 'isCurrent';
-        $names[] = 'name';
-        $names[] = 'preferredLanguage';
-        $names[] = 'remainingCooldownTime';
-
-        return $names;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function extraFields(): array
-    {
-        $names = parent::extraFields();
-        $names[] = 'groups';
-        $names[] = 'addresses';
-        $names[] = 'photo';
-
-        return $names;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels(): array
-    {
-        $labels = parent::attributeLabels();
-        $labels['currentPassword'] = t('Current Password');
-        $labels['email'] = t('Email');
-        $labels['fullName'] = t('Full Name');
-        $labels['firstName'] = t('First Name');
-        $labels['lastName'] = t('Last Name');
-        $labels['newPassword'] = t('New Password');
-        $labels['password'] = t('Password');
-        $labels['unverifiedEmail'] = t('Email');
-        $labels['username'] = t('Username');
-
-        return $labels;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
-            if ($fullNameElement && $fullNameElement->required) {
-                if (Cms::config()->showFirstAndLastNameFields) {
-                    (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
-                } else {
-                    (new RequiredValidator())->validateAttribute($this, 'fullName');
-                }
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $treatAsActive = fn() => $this->getIsCredentialed() || in_array($this->getScenario(), [
-            self::SCENARIO_REGISTRATION,
-            self::SCENARIO_ACTIVATION,
-        ]);
-
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
-        $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
-        $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()];
-        $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
-        $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
-
-        if (!Cms::config()->useEmailAsUsername) {
-            $rules[] = [['username'], 'required', 'when' => $treatAsActive];
-            $rules[] = [['username'], UsernameValidator::class];
-        }
-
-        if (Craft::$app->getIsInstalled()) {
-            $rules[] = [
-                ['email'],
-                UniqueValidator::class,
-                'targetClass' => UserRecord::class,
-                'caseInsensitive' => true,
-                'filter' => ['or', ['active' => true], ['pending' => true]],
-                'when' => $treatAsActive,
-            ];
-
-            if (!Cms::config()->useEmailAsUsername) {
-                $rules[] = [
-                    ['username'],
-                    UniqueValidator::class,
-                    'targetClass' => UserRecord::class,
-                    'caseInsensitive' => true,
-                    'filter' => ['or', ['active' => true], ['pending' => true]],
-                    'when' => $treatAsActive,
-                ];
-            }
-
-            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
-        }
-
-        if (isset($this->id) && $this->passwordResetRequired) {
-            // Get the current password hash
-            $currentPassword = DbFacade::table(Table::USERS)
-                ->where('id', $this->id)
-                ->value('password');
-        } else {
-            $currentPassword = null;
-        }
-
-        $rules[] = [
-            ['newPassword'],
-            UserPasswordValidator::class,
-            'forceDifferent' => $this->passwordResetRequired,
-            'currentPassword' => $currentPassword,
-        ];
-
-        $rules[] = [
-            ['fullName', 'firstName', 'lastName', 'username'], function($attribute, $params, Validator $validator) {
-                if (str_contains($this->$attribute, '://')) {
-                    $validator->addError($this, $attribute, t('Invalid value “{value}”.'));
-                }
-            },
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setAttributesFromRequest($values): void
-    {
-        unset($values['unverifiedEmail']);
-
-        if (isset($values['email'])) {
-            $values['email'] = trim($values['email']);
-            if ($values['email'] === '' || $values['email'] === $this->email) {
-                unset($values['email']);
-            }
-        }
-
-        if (isset($values['email'])) {
-            // make sure they have an elevated session
-            $userSession = Craft::$app->getUser();
-            if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException(t('An elevated session is required to change a user’s email.'));
-            }
-
-            if ($this->email !== null) {
-                // are they allowed to set the email?
-                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
-                    if (
-                        Edition::get()->value >= Edition::Pro->value &&
-                        app(ProjectConfig::class)->get('users.requireEmailVerification') &&
-                        !Gate::check('administrateUsers')
-                    ) {
-                        // set it as the unverified email instead, and
-                        $values['unverifiedEmail'] = Arr::pull($values, 'email');
-                    }
-                } else {
-                    unset($values['email']);
-                }
-            }
-        }
-
-        parent::setAttributesFromRequest($values);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setAttributes($values, $safeOnly = true): void
-    {
-        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
-            // Unset fullName so NameTrait::prepareNamesForSave() can set it
-            $this->fullName = null;
-        } elseif (array_key_exists('fullName', $values)) {
-            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
-            $this->firstName = $this->lastName = null;
-        }
-
-        parent::setAttributes($values, $safeOnly);
-    }
-
-    /**
-     * Returns whether the user account can be logged into.
-     *
-     * @since 4.0.0
-     */
-    public function getIsCredentialed(): bool
-    {
-        return $this->active || $this->pending;
-    }
-
-    /**
-     * Returns whether the user has a password.
-     *
-     * @since 5.6.0
-     */
-    public function getHasPassword(): bool
-    {
-        if (isset($this->password)) {
-            return true;
-        }
-
-        return DbFacade::table(Table::USERS)
-            ->where('id', $this->id)
-            ->value('password') !== null;
-    }
-
-    /**
-     * Returns whether the user has an associated SSO identity.
-     *
-     * @since 5.7.8
-     */
-    public function getHasSsoIdentity(): bool
-    {
-        if (Edition::get()->value < Edition::Enterprise->value) {
-            return false;
-        }
-
-        return Craft::$app->getSso()->identityExists($this->id);
-    }
-
-    /**
-     * Validates the unverifiedEmail value is unique.
-     */
-    public function validateUnverifiedEmail(string $attribute, ?array $params, InlineValidator $validator): void
-    {
-        $query = self::find()
-            ->status(null);
-
-        if (Craft::$app->getDb()->getIsMysql()) {
-            $query->where([
-                'email' => $this->unverifiedEmail,
-            ]);
-        } else {
-            // Postgres is case-sensitive
-            $query->where([
-                'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
-            ]);
-        }
-
-        $query->andWhere(['or', ['active' => true], ['pending' => true]]);
-
-        if ($this->id) {
-            $query->andWhere(['not', ['elements.id' => $this->id]]);
-        }
-
-        if ($query->exists()) {
-            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'), $params);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
-        $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
-        $scenarios[self::SCENARIO_ACTIVATION] = ['username', 'email'];
-
-        return $scenarios;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFieldLayout(): ?FieldLayout
-    {
-        return app(Fields::class)->getLayoutByType(self::class);
-    }
-
-    /**
-     * Gets the user’s addresses.
-     *
-     * @return ElementCollection<Address>
-     *
-     * @since 4.0.0
-     */
-    public function getAddresses(): ElementCollection
-    {
-        if (!isset($this->_addresses)) {
-            if (!$this->id) {
-                /** @var ElementCollection<Address> */
-                return ElementCollection::make();
-            }
-
-            $this->_addresses = $this->createAddressQuery()
-                ->andWhere(['fieldId' => null])
-                ->collect();
-        }
-
-        return $this->_addresses;
-    }
-
-    /**
-     * Returns a nested element manager for the user’s addresses.
-     *
-     * @since 5.0.0
-     */
-    public function getAddressManager(): NestedElementManager
-    {
-        if (!isset($this->_addressManager)) {
-            $this->_addressManager = new NestedElementManager(
-                Address::class,
-                fn() => $this->createAddressQuery(),
-                [
-                    'attribute' => 'addresses',
-                    'propagationMethod' => PropagationMethod::None,
-                ],
-            );
-        }
-
-        return $this->_addressManager;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function afterRestore(): void
-    {
-        $this->getAddressManager()->restoreNestedElements($this);
-        parent::afterRestore();
-    }
-
-    private function createAddressQuery(): AddressQuery
-    {
-        return Address::find()
-            ->owner($this)
-            ->orderBy(['id' => SORT_ASC]);
     }
 
     /**
@@ -1360,1352 +169,6 @@ class User extends Element implements IdentityInterface, AuthorizableContract
     }
 
     /**
-     * Handles an invalid login for a user and sets the authError param.
-     */
-    public function handleInvalidLoginParam(): void
-    {
-        Craft::$app->getUsers()->handleInvalidLogin($this);
-        // Was that one bad password/2fa code/passkey too many?
-        if ($this->locked && !Cms::config()->preventUserEnumeration) {
-            // Will set the authError to either AccountCooldown or AccountLocked
-            $this->authError = $this->_getAuthError();
-        } else {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
-        }
-    }
-
-    /**
-     * Determines whether the user is allowed to be logged in with a given password.
-     *
-     * @param  string  $password  The user’s plain text password.
-     */
-    public function authenticate(string $password): bool
-    {
-        $this->authError = null;
-
-        // Fire a 'beforeAuthenticate' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
-            $event = new AuthenticateUserEvent(['password' => $password]);
-            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-            if (isset($this->authError)) {
-                return false;
-            }
-            if (!$event->performAuthentication) {
-                return true;
-            }
-        }
-
-        // Validate the password
-        try {
-            $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-        } catch (InvalidArgumentException) {
-            $passwordValid = false;
-        }
-
-        if (!$passwordValid) {
-            $this->handleInvalidLoginParam();
-
-            return false;
-        }
-
-        $this->authError = $this->_getAuthError();
-
-        return !isset($this->authError);
-    }
-
-    /**
-     * Determines whether the user is allowed to be logged in with a security key.
-     *
-     * @param  PublicKeyCredentialRequestOptions|array|string  $requestOptions  The public key credential request options
-     * @param  string  $response  The authentication response data
-     *
-     * @since 5.0.0
-     */
-    public function authenticateWithPasskey(
-        PublicKeyCredentialRequestOptions|array|string $requestOptions,
-        string $response,
-    ): bool {
-        $this->authError = null;
-
-        // Fire a 'beforeAuthenticate' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
-            $event = new AuthenticateUserEvent();
-            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-
-            if (isset($this->authError)) {
-                return false;
-            }
-
-            if (!$event->performAuthentication) {
-                return true;
-            }
-        }
-
-        // make sure the passkey exists and belongs to this user
-        $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
-        if (!$credential || $credential->userId != $this->id) {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-            return false;
-        }
-
-        // Validate the security key
-        try {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
-        } catch (InvalidArgumentException) {
-            $keyValid = false;
-        }
-
-        if (!$keyValid) {
-            $this->handleInvalidLoginParam();
-
-            return false;
-        }
-
-        $this->authError = $this->_getAuthError();
-
-        return !isset($this->authError);
-    }
-
-    /**
-     * Returns the reference string to this element.
-     */
-    public function getRef(): ?string
-    {
-        return $this->username;
-    }
-
-    /**
-     * Returns the user’s groups.
-     *
-     * @return UserGroup[]
-     */
-    public function getGroups(): array
-    {
-        if (isset($this->_groups)) {
-            return $this->_groups;
-        }
-
-        if (Edition::get() < Edition::Pro || !isset($this->id)) {
-            return [];
-        }
-
-        return $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
-    }
-
-    /**
-     * Sets an array of user groups on the user.
-     *
-     * @param  UserGroup[]|\CraftCms\Cms\User\Data\UserGroup[]  $groups  An array of UserGroup objects.
-     */
-    public function setGroups(array $groups): void
-    {
-        if (Edition::get()->value >= Edition::Pro->value) {
-            $this->_groups = $groups;
-        }
-    }
-
-    /**
-     * Returns whether the user is in a specific group.
-     *
-     * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
-     */
-    public function isInGroup(\CraftCms\Cms\User\Data\UserGroup|int|string $group): bool
-    {
-        if (Edition::get() < Edition::Pro) {
-            return false;
-        }
-
-        if ($group instanceof \CraftCms\Cms\User\Data\UserGroup) {
-            $group = $group->id;
-        }
-
-        if (is_numeric($group)) {
-            return Collection::make($this->getGroups())->contains('id', $group);
-        }
-
-        /** @phpstan-ignore argument.type */
-        return Collection::make($this->getGroups())->containsStrict('handle', $group);
-    }
-
-    /**
-     * Returns whether the user is in any/all the given user groups.
-     *
-     * By default, `true` will be returned if the user is in *any* of the groups. To change that so `true` is only
-     * returned if the user is in *all* of the groups, pass `true` to the second argument.
-     *
-     * @param array<int|string|UserGroup> $groups The user groups, handles, or IDs
-     * @param bool $all Whether to only return `true` if the user is in *all* of the provided groups
-     * @return bool
-     * @since 5.9.0
-     */
-    public function isInGroups(array $groups, bool $all = false): bool
-    {
-        if (!$all) {
-            foreach ($groups as $group) {
-                if ($this->isInGroup($group)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        foreach ($groups as $group) {
-            if (!$this->isInGroup($group)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns the user’s full name.
-     *
-     * @deprecated in 4.0.0. [[fullName]] should be used instead.
-     */
-    public function getFullName(): ?string
-    {
-        return $this->fullName;
-    }
-
-    /**
-     * Returns the user’s full name or username.
-     */
-    public function getName(): string
-    {
-        if (!isset($this->_name)) {
-            $this->_name = $this->_defineName();
-        }
-
-        return $this->_name;
-    }
-
-    private function _defineName(): string
-    {
-        // Fire a 'defineName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
-            $event = new DefineValueEvent();
-            $this->trigger(self::EVENT_DEFINE_NAME, $event);
-            if ($event->value !== null) {
-                return $event->value;
-            }
-        }
-
-        return $this->fullName ?? (string) $this->username;
-    }
-
-    /**
-     * Sets the user’s name.
-     *
-     * @since 3.7.0
-     */
-    public function setName(string $name): void
-    {
-        $this->_name = $name;
-    }
-
-    /**
-     * Returns the user’s first name or username.
-     */
-    public function getFriendlyName(): ?string
-    {
-        if (!isset($this->_friendlyName)) {
-            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
-        }
-
-        return $this->_friendlyName ?: null;
-    }
-
-    private function _defineFriendlyName(): ?string
-    {
-        // Fire a 'defineFriendlyName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
-            $event = new DefineValueEvent();
-            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event);
-            if ($event->handled || $event->value !== null) {
-                return $event->value;
-            }
-        }
-
-        return $this->firstName ?? $this->username;
-    }
-
-    /**
-     * Sets the user’s friendly name.
-     *
-     * @since 3.7.0
-     */
-    public function setFriendlyName(string $friendlyName): void
-    {
-        $this->_friendlyName = $friendlyName;
-    }
-
-    /**
-     * Returns the user’s affiliated site, if they have one.
-     *
-     * @since 5.6.0
-     */
-    public function getAffiliatedSite(): ?Site
-    {
-        if ($this->affiliatedSiteId === null || !Sites::isMultiSite()) {
-            return null;
-        }
-
-        return Sites::getSiteById($this->affiliatedSiteId, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getStatus(): ?string
-    {
-        // If they're disabled or archived, go with that
-        $status = parent::getStatus();
-        if ($status !== self::STATUS_ENABLED) {
-            return $status;
-        }
-
-        if ($this->suspended) {
-            return self::STATUS_SUSPENDED;
-        }
-
-        if ($this->archived) {
-            return self::STATUS_ARCHIVED;
-        }
-
-        if ($this->pending) {
-            return self::STATUS_PENDING;
-        }
-
-        if ($this->active) {
-            return self::STATUS_ACTIVE;
-        }
-
-        return self::STATUS_INACTIVE;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function thumbUrl(int $size): ?string
-    {
-        $photo = $this->getPhoto();
-
-        if ($photo) {
-            return Craft::$app->getAssets()->getThumbUrl($photo, $size, iconFallback: false);
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function thumbSvg(): ?string
-    {
-        if (!$this->uid) {
-            return null;
-        }
-
-        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
-        $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
-
-        // Choose a color based on the UUID
-        $uid = strtolower($this->uid ?? '00ff');
-        $totalColors = count(self::$photoColors);
-        /** @phpstan-ignore-next-line */
-        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
-        /** @phpstan-ignore-next-line */
-        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
-        if ($color2Index === $color1Index) {
-            $color2Index = ($color1Index + 1) % $totalColors;
-        }
-        $color1 = self::$photoColors[$color1Index % $totalColors];
-        $color2 = self::$photoColors[$color2Index % $totalColors];
-
-        $gradientId = sprintf('gradient-%s', Str::random(10));
-
-        return <<<XML
-<svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop offset="0%" style="stop-color:var(--$color1-500)" />
-        <stop offset="100%" style="stop-color:var(--$color2-500)" />
-      </linearGradient>
-    </defs>
-    <circle cx="50" cy="50" r="50" fill="url(#$gradientId)" opacity="0.25"/>
-    <text x="50" y="66" font-size="46" font-weight="500" font-family="sans-serif" text-anchor="middle" fill="var(--text-color)">$initials</text>
-</svg>
-XML;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function thumbAlt(): ?string
-    {
-        return $this->getPhoto()->alt ?? $this->getName();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function hasRoundedThumb(): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function createAnother(): ?ElementInterface
-    {
-        return Craft::createObject(self::class);
-    }
-    
-    public function getKey(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canView(User $user): bool
-    {
-        if (parent::canView($user)) {
-            return true;
-        }
-
-        return
-            $user->id === $this->id ||
-            $user->can('viewUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canSave(User $user): bool
-    {
-        if (!$this->id) {
-            return $user->canRegisterUsers();
-        }
-
-        if ($user->id === $this->id) {
-            return true;
-        }
-
-        return $user->can('editUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDuplicate(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDelete(User $user): bool
-    {
-        if (parent::canDelete($user)) {
-            return true;
-        }
-
-        return
-            $user->id !== $this->id &&
-            $user->can('deleteUsers');
-    }
-
-    /**
-     * Returns whether this is the current logged-in user.
-     */
-    public function getIsCurrent(): bool
-    {
-        if (!$this->id) {
-            return false;
-        }
-
-        return Auth::user()?->id === $this->id;
-    }
-
-    /**
-     * Returns whether the user can register additional users.
-     *
-     * @since 5.0.0
-     */
-    final public function canRegisterUsers(): bool
-    {
-        return
-            $this->can('registerUsers') &&
-            Craft::$app->getUsers()->canCreateUsers();
-    }
-
-    /**
-     * Returns whether the user is authorized to assign any user groups to users.
-     *
-     * @since 4.0.0
-     */
-    public function canAssignUserGroups(): bool
-    {
-        if (Edition::get()->value < Edition::Pro->value) {
-            return false;
-        }
-
-        if ($this->admin) {
-            return true;
-        }
-
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-            if ($this->can("assignUserGroup:$group->uid")) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns whether the user has shunned a given message.
-     */
-    public function hasShunned(string $message): bool
-    {
-        if (isset($this->id)) {
-            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns the time when the user will be over their cooldown period.
-     */
-    public function getCooldownEndTime(): ?DateTime
-    {
-        // There was an old bug that where a user’s lockoutDate could be null if they’ve
-        // passed their cooldownDuration already, but there account status is still locked.
-        // If that’s the case, just let it return null as if they are past the cooldownDuration.
-        if ($this->locked && $this->lockoutDate) {
-            $generalConfig = Cms::config();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
-            $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add($interval);
-
-            return $cooldownEnd;
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the remaining cooldown time for this user, if they’ve entered their password incorrectly too many times.
-     */
-    public function getRemainingCooldownTime(): ?DateInterval
-    {
-        if ($this->locked) {
-            $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
-
-            if ($cooldownEnd && $currentTime < $cooldownEnd) {
-                return $currentTime->diff($cooldownEnd);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function cpEditUrl(): ?string
-    {
-        if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
-            return UrlHelper::cpUrl('myaccount');
-        }
-
-        if (Edition::get() === Edition::Solo) {
-            return null;
-        }
-
-        return UrlHelper::cpUrl("users/$this->id");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function safeActionMenuItems(): array
-    {
-        if (!$this->id || $this->getIsUnpublishedDraft()) {
-            return parent::safeActionMenuItems();
-        }
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        $view = Craft::$app->getView();
-        $usersService = Craft::$app->getUsers();
-        $userSession = Craft::$app->getUser();
-
-        $canAdministrateUsers = $currentUser->can('administrateUsers');
-        $canModerateUsers = $currentUser->can('moderateUsers');
-
-        $isCurrentUser = $this->getIsCurrent();
-
-        $statusItems = [];
-        $sessionItems = [];
-        $miscItems = [];
-
-        if (Edition::get() !== Edition::Solo) {
-            $status = $this->getStatus();
-
-            switch ($status) {
-                case Element::STATUS_ARCHIVED:
-                case Element::STATUS_DISABLED:
-                    if (Craft::$app->getElements()->canSave($this)) {
-                        $statusItems[] = [
-                            'label' => t('Enable'),
-                            'action' => 'users/enable-user',
-                            'params' => [
-                                'userId' => $this->id,
-                            ],
-                        ];
-                    }
-                    break;
-                case self::STATUS_INACTIVE:
-                case self::STATUS_PENDING:
-                    // Only provide activation actions if they have an email address
-                    if ($this->email) {
-                        if ($this->pending || $canModerateUsers) {
-                            $statusItems[] = [
-                                'icon' => 'paperplane',
-                                'label' => t('Send activation email'),
-                                'action' => 'users/send-activation-email',
-                                'params' => [
-                                    'userId' => $this->id,
-                                ],
-                            ];
-                        }
-                        if ($canAdministrateUsers) {
-                            // Only need to show the "Copy activation URL" option if they don't have a password
-                            if (!$this->password) {
-                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'), $view);
-                            }
-                            $statusItems[] = [
-                                'icon' => 'enabled',
-                                'label' => t('Activate account'),
-                                'action' => 'users/activate-user',
-                                'params' => [
-                                    'userId' => $this->id,
-                                ],
-                            ];
-                        }
-                    }
-                    break;
-                case self::STATUS_SUSPENDED:
-                    if ($usersService->canSuspend($currentUser, $this)) {
-                        $statusItems[] = [
-                            'icon' => 'enabled',
-                            'label' => t('Unsuspend'),
-                            'action' => 'users/unsuspend-user',
-                            'params' => [
-                                'userId' => $this->id,
-                            ],
-                        ];
-                    }
-                    break;
-                case self::STATUS_ACTIVE:
-                    if ($this->locked) {
-                        if (
-                            !$isCurrentUser &&
-                            ($currentUser->admin || !$this->admin) &&
-                            $canModerateUsers &&
-                            (
-                                ($impersonatorId = $userSession->getImpersonatorId()) === null ||
-                                $this->id !== $impersonatorId
-                            )
-                        ) {
-                            $statusItems[] = [
-                                'label' => t('Unlock'),
-                                'action' => 'users/unlock-user',
-                                'params' => [
-                                    'userId' => $this->id,
-                                ],
-                            ];
-                        }
-                    }
-
-                    if (!$isCurrentUser && Gate::check('editUsers')) {
-                        $statusItems[] = [
-                            'icon' => 'paperplane',
-                            'label' => t('Send password reset email'),
-                            'action' => 'users/send-password-reset-email',
-                            'params' => [
-                                'userId' => $this->id,
-                            ],
-                        ];
-                        if ($canAdministrateUsers) {
-                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'), $view);
-                        }
-                    }
-                    break;
-            }
-
-            if (
-                in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE]) &&
-                $canAdministrateUsers &&
-                !$isCurrentUser
-            ) {
-                if ($this->passwordResetRequired) {
-                    $statusItems[] = [
-                        'icon' => 'asterisk-slash',
-                        'iconColor' => 'gray',
-                        'label' => t('Don’t require a password reset on next login'),
-                        'action' => 'users/remove-password-reset-requirement',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                    ];
-                } else {
-                    $statusItems[] = [
-                        'icon' => 'asterisk',
-                        'label' => t('Require a password reset on next login'),
-                        'action' => 'users/require-password-reset',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                    ];
-                }
-            }
-
-            if (!$isCurrentUser) {
-                if ($usersService->canImpersonate($currentUser, $this)) {
-                    $sessionItems[] = [
-                        'icon' => 'key',
-                        'label' => trim($this->getName())
-                            ? t('Sign in as {user}', ['user' => $this->getName()])
-                            : t('Sign in as user'),
-                        'action' => 'users/impersonate',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                        'requireElevatedSession' => true,
-                    ];
-
-                    $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
-                    $sessionItems[] = [
-                        'id' => $copyImpersonationUrlId,
-                        'icon' => 'clipboard',
-                        'label' => t('Copy impersonation URL…'),
-                    ];
-
-                    $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-      Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
-        data: {userId: $userId},
-      }).then((response) => {
-        Craft.ui.createCopyTextPrompt({
-          label: $message,
-          value: response.data.url,
-        })
-      });
-  });
-});
-JS, [
-                        $view->namespaceInputId($copyImpersonationUrlId),
-                        $this->id,
-                        t('Copy the impersonation URL, and open it in a new private window.'),
-                    ]);
-                }
-            }
-        }
-
-        return [
-            ...parent::safeActionMenuItems(),
-            ['type' => MenuItemType::HR],
-            ...$statusItems,
-            ['type' => MenuItemType::HR],
-            ...$miscItems,
-            ['type' => MenuItemType::HR],
-            ...$sessionItems,
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function destructiveActionMenuItems(): array
-    {
-        if (!$this->id || $this->getIsUnpublishedDraft()) {
-            return parent::destructiveActionMenuItems();
-        }
-
-        // Intentionally not calling parent::destructiveActionMenuItems() here,
-        // because we want to override the user deletion UX.
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        $usersService = Craft::$app->getUsers();
-
-        $canAdministrateUsers = $currentUser->can('administrateUsers');
-
-        $isCurrentUser = $this->getIsCurrent();
-
-        $items = [];
-
-        if (Edition::get() !== Edition::Solo) {
-            if (!$isCurrentUser) {
-                if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
-                    $items[] = [
-                        'icon' => 'ban',
-                        'label' => t('Suspend'),
-                        'action' => 'users/suspend-user',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                    ];
-                }
-            }
-
-            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
-            if (!$this->admin || $currentUser->admin) {
-                if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
-                    $items[] = [
-                        'icon' => 'disabled',
-                        'label' => t('Deactivate'),
-                        'action' => 'users/deactivate-user',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                        'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
-                    ];
-                }
-
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $view = Craft::$app->getView();
-                    $deleteId = sprintf('action-delete-%s', mt_rand());
-                    $items[] = [
-                        'id' => $deleteId,
-                        'icon' => 'trash',
-                        'label' => mb_ucfirst(t('Delete {type}', [
-                            'type' => static::lowerDisplayName(),
-                        ])),
-                    ];
-
-                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.sendActionRequest('POST', 'users/user-content-summary', {
-    data: {userId: $userId}
-  }).then((response) => {
-    new Craft.DeleteUserModal($userId, {
-      contentSummary: response.data,
-      redirect: $redirect,
-    })
-  });
-});
-JS,
-                        [
-                            $view->namespaceInputId($deleteId),
-                            $this->id,
-                            /** @phpstan-ignore-next-line */
-                            Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
-                        ]);
-                }
-            }
-        }
-
-        return $items;
-    }
-
-    private function _copyPasswordResetUrlActionItem(string $label, View $view): array
-    {
-        $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
-
-        $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-    Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
-      data: {userId: $userId}
-    }).then((response) => {
-      Craft.ui.createCopyTextPrompt({
-        label: $message,
-        value: response.data.url,
-      })
-    }).catch(({response}) => {
-      Craft.cp.displayError(response.data.message);
-    });
-  });
-});
-JS, [
-            $view->namespaceInputId($id),
-            $this->id,
-            t('Copy the activation URL'),
-        ]);
-
-        return [
-            'id' => $id,
-            'icon' => 'clipboard',
-            'label' => $label,
-        ];
-    }
-
-    /**
-     * Returns the user’s preferences.
-     *
-     * @return array The user’s preferences.
-     */
-    public function getPreferences(): array
-    {
-        return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
-    }
-
-    /**
-     * Returns one of the user’s preferences by its key.
-     *
-     * @param  string  $key  The preference’s key
-     * @param  mixed  $default  The default value, if the preference hasn’t been set
-     * @return mixed The user’s preference
-     */
-    public function getPreference(string $key, mixed $default = null): mixed
-    {
-        $preferences = $this->getPreferences();
-
-        return $preferences[$key] ?? $default;
-    }
-
-    /**
-     * Returns the user’s preferred language, if they have one.
-     *
-     * @return string|null The preferred language
-     */
-    public function getPreferredLanguage(): ?string
-    {
-        return $this->_validateLocale($this->getPreference('language'), false);
-    }
-
-    /**
-     * Returns the user’s preferred locale to be used for date/number formatting, if they have one.
-     *
-     * If the user doesn’t have a preferred locale, their preferred language will be used instead.
-     *
-     * @return string|null The preferred locale
-     *
-     * @since 3.5.0
-     */
-    public function getPreferredLocale(): ?string
-    {
-        return $this->_validateLocale($this->getPreference('locale'), true);
-    }
-
-    /**
-     * Returns whether the user prefers to have form fields autofocused on page load.
-     *
-     * @since 5.0.0
-     */
-    public function getAutofocusPreferred(): bool
-    {
-        return !$this->getPreference('disableAutofocus');
-    }
-
-    /**
-     * Validates and returns a locale ID.
-     *
-     * @param  bool  $checkAllLocales  Whether to check all known locale IDs, rather than just the app locales
-     */
-    private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
-    {
-        $locales = $checkAllLocales
-            ? I18N::getAllLocaleIds()
-            : I18N::getAppLocaleIds();
-
-        if ($locale && $locales->contains($locale)) {
-            return $locale;
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
-    {
-        if ($plan->handle === 'photo') {
-            /** @var Asset|null $photo */
-            $photo = $elements[0] ?? null;
-            $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
-        }
-    }
-
-    /**
-     * Returns the user’s photo.
-     */
-    public function getPhoto(): ?Asset
-    {
-        if (!isset($this->_photo)) {
-            if (!$this->photoId) {
-                return null;
-            }
-
-            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId) ?? false;
-        }
-
-        return $this->_photo ?: null;
-    }
-
-    /**
-     * Sets the user’s photo.
-     */
-    public function setPhoto(?Asset $photo = null): void
-    {
-        $this->_photo = $photo;
-        $this->photoId = $photo->id ?? null;
-    }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function attributeHtml(string $attribute): string
-    {
-        switch ($attribute) {
-            case 'email':
-                return $this->email ? Html::mailto(Html::encode($this->email)) : '';
-
-            case 'groups':
-                return implode(', ', array_map(fn(UserGroup $group) => Html::encode(t($group->name, category: 'site')), $this->getGroups()));
-
-            case 'preferredLanguage':
-                $language = $this->getPreferredLanguage();
-
-                return $language ? I18N::getLocaleById($language)->getDisplayName(app()->getLocale()) : '';
-
-            case 'preferredLocale':
-                $locale = $this->getPreferredLocale();
-
-                return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
-
-            case 'is2faEnabled':
-                $enabled = Craft::$app->getAuth()->hasActiveMethod($this);
-                if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
-                        'color' => $enabled ? Color::Teal : Color::Gray,
-                        'label' => t('Two-Step Verification'),
-                        'icon' => $enabled ? 'check' : 'xmark',
-                    ]);
-                } else {
-                    if (!$enabled) {
-                        return '';
-                    }
-
-                    return Html::tag('span', '', [
-                        'class' => 'checkbox-icon',
-                        'role' => 'img',
-                        'title' => t('Enabled'),
-                        'aria' => [
-                            'label' => t('Enabled'),
-                        ],
-                    ]);
-                }
-
-                // no break
-            case 'isCredentialed':
-                $value = $this->getIsCredentialed();
-                if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
-                        'color' => $value ? Color::Teal : Color::Gray,
-                        'label' => t('Credentialed'),
-                        'icon' => $value ? 'check' : 'xmark',
-                    ]);
-                }
-        }
-
-        return parent::attributeHtml($attribute);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function htmlAttributes(string $context): array
-    {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        return [
-            'data' => [
-                'suspended' => $this->suspended,
-                'can-suspend' => $currentUser && Craft::$app->getUsers()->canSuspend($currentUser, $this),
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function statusFieldHtml(): string
-    {
-        return '';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function metadata(): array
-    {
-        $formatter = I18N::getFormatter();
-
-        return [
-            t('Email') => Html::a($this->email, "mailto:$this->email"),
-            t('Cooldown Time Remaining') => function() use ($formatter) {
-                if (
-                    !$this->locked ||
-                    !Cms::config()->cooldownDuration ||
-                    ($duration = $this->getRemainingCooldownTime()) === null
-                ) {
-                    return false;
-                }
-
-                return $formatter->asDuration($duration);
-            },
-            t('Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
-            t('Last login') => function() use ($formatter) {
-                if ($this->pending) {
-                    return false;
-                }
-                if (!$this->lastLoginDate) {
-                    return t('Never');
-                }
-
-                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
-            },
-            t('Last login fail') => function() use ($formatter) {
-                if (!$this->locked || !$this->lastInvalidLoginDate) {
-                    return false;
-                }
-
-                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
-            },
-            t('Login fail count') => function() use ($formatter) {
-                if (!$this->locked) {
-                    return false;
-                }
-
-                return $formatter->asDecimal($this->invalidLoginCount, 0);
-            },
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.3.0
-     */
-    public function getGqlTypeName(): string
-    {
-        return self::GQL_TYPE_NAME;
-    }
-
-    // Events
-    // -------------------------------------------------------------------------
-
-    /**
-     * {@inheritdoc}
-     */
-    final public function beforeSave(bool $isNew): bool
-    {
-        if (
-            ($isNew || $this->applyingDraft) &&
-            !Craft::$app->getUsers()->canCreateUsers()
-        ) {
-            return false;
-        }
-
-        if (Cms::config()->useEmailAsUsername) {
-            $this->username = $this->email;
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    public function afterSave(bool $isNew): void
-    {
-        if ($isNew && Edition::get() === Edition::Solo) {
-            // Make sure they're an admin
-            $this->admin = true;
-        }
-
-        // Get the user record
-        if (!$isNew) {
-            $model = UserModel::findOrFail($this->id);
-            $isInactive = $model->active || $model->pending;
-
-            if ($this->active !== $model->active) {
-                throw new Exception('Unable to change a user’s active state like this.');
-            }
-
-            if ($this->pending !== $model->pending) {
-                if ($isInactive) {
-                    throw new Exception('Unable to change a user’s pending state like this.');
-                }
-                $model->pending = $this->pending;
-            }
-
-            if ($this->locked !== $model->locked) {
-                throw new Exception('Unable to change a user’s locked state like this.');
-            }
-
-            if ($this->suspended !== $model->suspended) {
-                throw new Exception('Unable to change a user’s suspended state like this.');
-            }
-        } else {
-            $model = new UserModel();
-            $model->id = $this->id;
-            $model->active = $this->active;
-            $model->pending = $this->pending;
-            $model->locked = $this->locked;
-            $model->suspended = $this->suspended;
-        }
-
-        $this->prepareNamesForSave();
-
-        $model->photoId = $this->photoId;
-        $model->affiliatedSiteId = $this->affiliatedSiteId;
-        $model->admin = $this->admin;
-        $model->username = $this->username;
-        $model->fullName = $this->fullName;
-        $model->firstName = $this->firstName;
-        $model->lastName = $this->lastName;
-        $model->email = $this->email;
-        $model->passwordResetRequired = $this->passwordResetRequired;
-        $model->unverifiedEmail = $this->unverifiedEmail;
-
-        if ($changePassword = (isset($this->newPassword))) {
-            $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
-            $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
-
-            $model->password = $this->password = $hash;
-            $model->invalidLoginWindowStart = null;
-            $model->invalidLoginCount = $this->invalidLoginCount = null;
-            $model->verificationCode = null;
-            $model->verificationCodeIssuedDate = null;
-            $model->lastPasswordChangeDate = Date::parse($this->lastPasswordChangeDate);
-
-            // If the user required a password reset *before this request*, then set passwordResetRequired to false
-            if (!$isNew && $model->getOriginal('passwordResetRequired')) {
-                $model->passwordResetRequired = $this->passwordResetRequired = false;
-            }
-
-            $this->newPassword = null;
-        }
-
-        // Capture the dirty attributes from the record
-        $dirtyAttributes = array_keys($model->getDirty());
-
-        $model->save();
-
-        // Make sure that the photo is located in the right place
-        if (!$isNew && $this->photoId) {
-            Craft::$app->getUsers()->relocateUserPhoto($this);
-        }
-
-        $this->setDirtyAttributes($dirtyAttributes);
-
-        parent::afterSave($isNew);
-
-        if (Edition::get() === Edition::Team) {
-            // Make sure they're in the Team group
-            $group = Craft::$app->getUserGroups()->getTeamGroup();
-            if (!$this->isInGroup($group)) {
-                Craft::$app->getUsers()->assignUserToGroups($this->id, [$group->id]);
-            }
-        }
-
-        if (!$isNew && $changePassword && !app()->runningInConsole()) {
-            $token = Craft::$app->getUser()->getToken();
-
-            // Destroy all other sessions for this user
-            DbFacade::table(Table::SESSIONS)
-                ->where('userId', $this->id)
-                ->when(
-                    value: $this->getIsCurrent() && $token,
-                    callback: fn($query) => $query->where('token', '!=', $token),
-                )
-                ->delete();
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function beforeDelete(): bool
-    {
-        if (!parent::beforeDelete()) {
-            return false;
-        }
-
-        $elementsService = Craft::$app->getElements();
-
-        // Do all this stuff within a transaction
-        DbFacade::beginTransaction();
-
-        try {
-            // Should we transfer the content to a new user?
-            if ($this->inheritorOnDelete) {
-                // Invalidate all entry caches
-                $elementsService->invalidateCachesForElementType(Entry::class);
-
-                // Update the entry/version/draft tables to point to the new user
-                $userRefs = [
-                    Table::DRAFTS => 'creatorId',
-                    Table::REVISIONS => 'creatorId',
-                    Table::ENTRIES_AUTHORS => 'authorId',
-                ];
-
-                foreach ($userRefs as $table => $column) {
-                    DbFacade::table($table)
-                        ->where($column, $this->id)
-                        ->update([
-                            $column => $this->inheritorOnDelete->id,
-                        ]);
-                }
-            } else {
-                // Delete the entries
-                $entryQuery = Entry::find()
-                    ->authorId($this->id)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
-
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
-                    // only delete their entry if they're the sole author
-                    if ($entry->getAuthorIds() === [$this->id]) {
-                        $elementsService->deleteElement($entry);
-                    }
-                }
-            }
-
-            DbFacade::commit();
-        } catch (Throwable $e) {
-            DbFacade::rollBack();
-            throw $e;
-        }
-
-        $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
-
-        return true;
-    }
-
-    /**
      * Validates a cookie's stored user agent against the current request's user agent string,
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
      */
@@ -2730,57 +193,1006 @@ JS, [
         return true;
     }
 
-    /**
-     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWithPasskey()]].
-     *
-     * @todo Nate! Duplicate of UserHelper::getAuthStatus()
-     *
-     * @return self::AUTH_*|null
-     */
-    private function _getAuthError(): ?string
+    public function getId(): ?int
     {
-        switch ($this->getStatus()) {
-            case self::STATUS_INACTIVE:
-            case self::STATUS_ARCHIVED:
-                return self::AUTH_INVALID_CREDENTIALS;
-            case self::STATUS_PENDING:
-                return self::AUTH_PENDING_VERIFICATION;
-            case self::STATUS_SUSPENDED:
-                return self::AUTH_ACCOUNT_SUSPENDED;
-            case self::STATUS_ACTIVE:
-                if ($this->locked) {
-                    // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Cms::config()->cooldownDuration) {
-                        return self::AUTH_ACCOUNT_COOLDOWN;
-                    }
+        return $this->userElement->getId();
+    }
 
-                    return self::AUTH_ACCOUNT_LOCKED;
-                }
-                // Is a password reset required?
-                if ($this->passwordResetRequired) {
-                    return self::AUTH_PASSWORD_RESET_REQUIRED;
-                }
-                $request = Craft::$app->getRequest();
-                if (!$request->getIsConsoleRequest()) {
-                    if ($request->getIsCpRequest()) {
-                        if (!$this->can('accessCp')) {
-                            return self::AUTH_NO_CP_ACCESS;
-                        }
-                        if (
-                            app()->isLive() === false &&
-                            $this->can('accessCpWhenSystemIsOff') === false
-                        ) {
-                            return self::AUTH_NO_CP_OFFLINE_ACCESS;
-                        }
-                    } elseif (
-                        app()->isLive() === false &&
-                        $this->can('accessSiteWhenSystemIsOff') === false
-                    ) {
-                        return self::AUTH_NO_SITE_OFFLINE_ACCESS;
-                    }
-                }
-        }
+    public function getActionMenuItems(): array
+    {
+        return $this->userElement->getActionMenuItems();
+    }
 
-        return null;
+    public function fields(): array
+    {
+        return $this->userElement->fields();
+    }
+
+    public function extraFields(): array
+    {
+        return $this->userElement->extraFields();
+    }
+
+    public function toArray(array $fields = [], array $expand = [], $recursive = true)
+    {
+        return $this->userElement->toArray($fields, $expand, $recursive);
+    }
+
+    public static function get(int|string $id): ?ElementInterface
+    {
+        return UserElement::get($id);
+    }
+
+    public function getUiLabel(): string
+    {
+        return $this->userElement->getUiLabel();
+    }
+
+    public static function displayName(): string
+    {
+        return UserElement::displayName();
+    }
+
+    public static function isSelectable(): bool
+    {
+        return UserElement::isSelectable();
+    }
+
+    public function getIterator(): Traversable
+    {
+        return $this->userElement->getIterator();
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->userElement->offsetGet($offset);
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->userElement->offsetSet($offset, $value);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        $this->userElement->offsetUnset($offset);
+    }
+
+    public function getCpEditUrl(): ?string
+    {
+        return $this->userElement->getCpEditUrl();
+    }
+
+    public static function lowerDisplayName(): string
+    {
+        return UserElement::lowerDisplayName();
+    }
+
+    public static function pluralDisplayName(): string
+    {
+        return UserElement::pluralDisplayName();
+    }
+
+    public static function pluralLowerDisplayName(): string
+    {
+        return UserElement::pluralLowerDisplayName();
+    }
+
+    public static function refHandle(): ?string
+    {
+        return UserElement::refHandle();
+    }
+
+    public static function hasDrafts(): bool
+    {
+        return UserElement::hasDrafts();
+    }
+
+    public static function trackChanges(): bool
+    {
+        return UserElement::trackChanges();
+    }
+
+    public static function hasTitles(): bool
+    {
+        return UserElement::hasTitles();
+    }
+
+    public static function hasThumbs(): bool
+    {
+        return UserElement::hasThumbs();
+    }
+
+    public static function hasUris(): bool
+    {
+        return UserElement::hasUris();
+    }
+
+    public static function isLocalized(): bool
+    {
+        return UserElement::isLocalized();
+    }
+
+    public static function hasStatuses(): bool
+    {
+        return UserElement::hasStatuses();
+    }
+
+    public static function findOne(mixed $criteria = null): ?static
+    {
+        return UserElement::findOne($criteria);
+    }
+
+    public static function findAll(mixed $criteria = null): array
+    {
+        return UserElement::findAll($criteria);
+    }
+
+    public static function createCondition(): ElementConditionInterface
+    {
+        return UserElement::createCondition();
+    }
+
+    public static function multiPageSources(): bool
+    {
+        return UserElement::multiPageSources();
+    }
+
+    public static function sources(string $context): array
+    {
+        return UserElement::sources($context);
+    }
+
+    public static function findSource(string $sourceKey, ?string $context): ?array
+    {
+        return UserElement::findSource($sourceKey, $context);
+    }
+
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        return UserElement::sourcePath($sourceKey, $stepKey, $context);
+    }
+
+    public static function fieldLayouts(?string $source): array
+    {
+        return UserElement::fieldLayouts($source);
+    }
+
+    public static function modifyCustomSource(array $config): array
+    {
+        return UserElement::modifyCustomSource($config);
+    }
+
+    public static function actions(string $source): array
+    {
+        return UserElement::actions($source);
+    }
+
+    public static function exporters(string $source): array
+    {
+        return UserElement::exporters($source);
+    }
+
+    public static function searchableAttributes(): array
+    {
+        return UserElement::searchableAttributes();
+    }
+
+    public static function baseBulkDuplicateAttributes(): array
+    {
+        return UserElement::baseBulkDuplicateAttributes();
+    }
+
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string {
+        return UserElement::indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $selectable, $sortable);
+    }
+
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
+    {
+        return UserElement::indexElementCount($elementQuery, $sourceKey);
+    }
+
+    public static function sortOptions(): array
+    {
+        return UserElement::sortOptions();
+    }
+
+    public static function indexViewModes(): array
+    {
+        return UserElement::indexViewModes();
+    }
+
+    public static function tableAttributes(): array
+    {
+        return UserElement::tableAttributes();
+    }
+
+    public static function defaultTableAttributes(string $source): array
+    {
+        return UserElement::defaultTableAttributes($source);
+    }
+
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array
+    {
+        return UserElement::cardAttributes();
+    }
+
+    public static function defaultCardAttributes(): array
+    {
+        return UserElement::defaultCardAttributes();
+    }
+
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return UserElement::attributePreviewHtml($attribute);
+    }
+
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
+    {
+        return UserElement::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    public static function baseGqlType(): Type
+    {
+        return UserElement::baseGqlType();
+    }
+
+    public static function gqlScopesByContext(mixed $context): array
+    {
+        return UserElement::gqlScopesByContext($context);
+    }
+
+    public function getIsDraft(): bool
+    {
+        return $this->userElement->getIsDraft();
+    }
+
+    public function getIsRevision(): bool
+    {
+        return $this->userElement->getIsRevision();
+    }
+
+    public function getIsCanonical(): bool
+    {
+        return $this->userElement->getIsCanonical();
+    }
+
+    public function getIsDerivative(): bool
+    {
+        return $this->userElement->getIsDerivative();
+    }
+
+    public function getCanonical(bool $anySite = false): ElementInterface
+    {
+        return $this->userElement->getCanonical($anySite);
+    }
+
+    public function setCanonical(ElementInterface $element): void
+    {
+        $this->userElement->setCanonical($element);
+    }
+
+    public function getCanonicalId(): ?int
+    {
+        return $this->userElement->getCanonicalId();
+    }
+
+    public function setCanonicalId(?int $canonicalId): void
+    {
+        $this->userElement->setCanonicalId($canonicalId);
+    }
+
+    public function getCanonicalUid(): ?string
+    {
+        return $this->userElement->getCanonicalUid();
+    }
+
+    public function getIsUnpublishedDraft(): bool
+    {
+        return $this->userElement->getIsUnpublishedDraft();
+    }
+
+    public function mergeCanonicalChanges(): void
+    {
+        $this->userElement->mergeCanonicalChanges();
+    }
+
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return $this->userElement->getFieldLayout();
+    }
+
+    public function getSite(): Site
+    {
+        return $this->userElement->getSite();
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->userElement->getLanguage();
+    }
+
+    public function getSupportedSites(): array
+    {
+        return $this->userElement->getSupportedSites();
+    }
+
+    public function getUriFormat(): ?string
+    {
+        return $this->userElement->getUriFormat();
+    }
+
+    public function getSearchKeywords(string $attribute): string
+    {
+        return $this->userElement->getSearchKeywords($attribute);
+    }
+
+    public function getRoute(): mixed
+    {
+        return $this->userElement->getRoute();
+    }
+
+    public function getIsHomepage(): bool
+    {
+        return $this->userElement->getIsHomepage();
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->userElement->getUrl();
+    }
+
+    public function getLink(): ?Markup
+    {
+        return $this->userElement->getLink();
+    }
+
+    public function getCrumbs(): array
+    {
+        return $this->userElement->getCrumbs();
+    }
+
+    public function setUiLabel(?string $label): void
+    {
+        $this->userElement->setUiLabel($label);
+    }
+
+    public function getUiLabelPath(): array
+    {
+        return $this->userElement->getUiLabelPath();
+    }
+
+    public function setUiLabelPath(array $path): void
+    {
+        $this->userElement->setUiLabelPath($path);
+    }
+
+    public function getChipLabelHtml(): string
+    {
+        return $this->userElement->getChipLabelHtml();
+    }
+
+    public function showStatusIndicator(): bool
+    {
+        return $this->userElement->showStatusIndicator();
+    }
+
+    public function getCardTitle(): ?string
+    {
+        return $this->userElement->getCardTitle();
+    }
+
+    public function getCardBodyHtml(): ?string
+    {
+        return $this->userElement->getCardBodyHtml();
+    }
+
+    public function getRef(): ?string
+    {
+        return $this->userElement->getRef();
+    }
+
+    public function createAnother(): ?ElementInterface
+    {
+        return $this->userElement->createAnother();
+    }
+
+    public function canView(UserElement $user): bool
+    {
+        return $this->userElement->canView($user);
+    }
+
+    public function canSave(UserElement $user): bool
+    {
+        return $this->userElement->canSave($user);
+    }
+
+    public function canDuplicate(UserElement $user): bool
+    {
+        return $this->userElement->canDuplicate($user);
+    }
+
+    public function canDuplicateAsDraft(UserElement $user): bool
+    {
+        return $this->userElement->canDuplicateAsDraft($user);
+    }
+
+    public function canCopy(UserElement $user): bool
+    {
+        return $this->userElement->canCopy($user);
+    }
+
+    public function canDelete(UserElement $user): bool
+    {
+        return $this->userElement->canDelete($user);
+    }
+
+    public function canDeleteForSite(UserElement $user): bool
+    {
+        return $this->userElement->canDeleteForSite($user);
+    }
+
+    public function canCreateDrafts(UserElement $user): bool
+    {
+        return $this->userElement->canCreateDrafts($user);
+    }
+
+    public function hasRevisions(): bool
+    {
+        return $this->userElement->hasRevisions();
+    }
+
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
+        $this->userElement->prepareEditScreen($response, $containerId);
+    }
+
+    public function getPostEditUrl(): ?string
+    {
+        return $this->userElement->getPostEditUrl();
+    }
+
+    public function getCpRevisionsUrl(): ?string
+    {
+        return $this->userElement->getCpRevisionsUrl();
+    }
+
+    public function getAdditionalButtons(): string
+    {
+        return $this->userElement->getAdditionalButtons();
+    }
+
+    public function getAltActions(): array
+    {
+        return $this->userElement->getAltActions();
+    }
+
+    public function getPreviewTargets(): array
+    {
+        return $this->userElement->getPreviewTargets();
+    }
+
+    public function getEnabledForSite(?int $siteId = null): ?bool
+    {
+        return $this->userElement->getEnabledForSite($siteId);
+    }
+
+    public function setEnabledForSite(bool|array $enabledForSite): void
+    {
+        $this->userElement->setEnabledForSite($enabledForSite);
+    }
+
+    public function getRootOwner(): ElementInterface
+    {
+        return $this->userElement->getRootOwner();
+    }
+
+    public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection
+    {
+        return $this->userElement->getLocalized();
+    }
+
+    public function getNext(mixed $criteria = false): ?UserElement
+    {
+        return $this->userElement->getNext($criteria);
+    }
+
+    public function getPrev(mixed $criteria = false): ?UserElement
+    {
+        return $this->userElement->getPrev($criteria);
+    }
+
+    public function setNext(ElementInterface|false $element): void
+    {
+        $this->userElement->setNext($element);
+    }
+
+    public function setPrev(ElementInterface|false $element): void
+    {
+        $this->userElement->setPrev($element);
+    }
+
+    public function getParent(): ?ElementInterface
+    {
+        return $this->userElement->getParent();
+    }
+
+    public function getParentUri(): ?string
+    {
+        return $this->userElement->getParentUri();
+    }
+
+    public function setParent(?ElementInterface $parent): void
+    {
+        $this->userElement->setParent($parent);
+    }
+
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection
+    {
+        return $this->userElement->getAncestors();
+    }
+
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection
+    {
+        return $this->userElement->getDescendants();
+    }
+
+    public function getChildren(): ElementQueryInterface|ElementQuery|ElementCollection
+    {
+        return $this->userElement->getChildren();
+    }
+
+    public function getSiblings(): ElementQueryInterface|ElementQuery|ElementCollection
+    {
+        return $this->userElement->getSiblings();
+    }
+
+    public function getPrevSibling(): ?ElementInterface
+    {
+        return $this->userElement->getPrevSibling();
+    }
+
+    public function getNextSibling(): ?ElementInterface
+    {
+        return $this->userElement->getNextSibling();
+    }
+
+    public function getHasDescendants(): bool
+    {
+        return $this->userElement->getHasDescendants();
+    }
+
+    public function getTotalDescendants(): int
+    {
+        return $this->userElement->getTotalDescendants();
+    }
+
+    public function isAncestorOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isAncestorOf($element);
+    }
+
+    public function isDescendantOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isDescendantOf($element);
+    }
+
+    public function isParentOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isParentOf($element);
+    }
+
+    public function isChildOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isChildOf($element);
+    }
+
+    public function isSiblingOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isSiblingOf($element);
+    }
+
+    public function isPrevSiblingOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isPrevSiblingOf($element);
+    }
+
+    public function isNextSiblingOf(ElementInterface $element): bool
+    {
+        return $this->userElement->isNextSiblingOf($element);
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return $this->userElement->offsetExists($offset);
+    }
+
+    public function setAttributesFromRequest(array $values): void
+    {
+        $this->userElement->setAttributesFromRequest($values);
+    }
+
+    public function getAttributeStatus(string $attribute): ?array
+    {
+        return $this->userElement->getAttributeStatus($attribute);
+    }
+
+    public function getOutdatedAttributes(): array
+    {
+        return $this->userElement->getOutdatedAttributes();
+    }
+
+    public function isAttributeOutdated(string $name): bool
+    {
+        return $this->userElement->isAttributeOutdated($name);
+    }
+
+    public function getModifiedAttributes(): array
+    {
+        return $this->userElement->getModifiedAttributes();
+    }
+
+    public function isAttributeModified(string $name): bool
+    {
+        return $this->userElement->isAttributeModified($name);
+    }
+
+    public function isAttributeDirty(string $name): bool
+    {
+        return $this->userElement->isAttributeDirty($name);
+    }
+
+    public function getDirtyAttributes(): array
+    {
+        return $this->userElement->getDirtyAttributes();
+    }
+
+    public function setDirtyAttributes(array $names, bool $merge = true): void
+    {
+        $this->userElement->setDirtyAttributes($names, $merge);
+    }
+
+    public function getIsTitleTranslatable(): bool
+    {
+        return $this->userElement->getIsTitleTranslatable();
+    }
+
+    public function getTitleTranslationDescription(): ?string
+    {
+        return $this->userElement->getTitleTranslationDescription();
+    }
+
+    public function getTitleTranslationKey(): string
+    {
+        return $this->userElement->getTitleTranslationKey();
+    }
+
+    public function getIsSlugTranslatable(): bool
+    {
+        return $this->userElement->getIsSlugTranslatable();
+    }
+
+    public function getSlugTranslationDescription(): ?string
+    {
+        return $this->userElement->getSlugTranslationDescription();
+    }
+
+    public function getSlugTranslationKey(): string
+    {
+        return $this->userElement->getSlugTranslationKey();
+    }
+
+    public function isFieldEmpty(string $handle): bool
+    {
+        return $this->userElement->isFieldEmpty($handle);
+    }
+
+    public function getFieldValues(?array $fieldHandles = null): array
+    {
+        return $this->userElement->getFieldValues();
+    }
+
+    public function getSerializedFieldValues(?array $fieldHandles = null): array
+    {
+        return $this->userElement->getSerializedFieldValues();
+    }
+
+    public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array
+    {
+        return $this->userElement->getSerializedFieldValuesForDb();
+    }
+
+    public function setFieldValues(array $values): void
+    {
+        $this->userElement->setFieldValues($values);
+    }
+
+    public function getFieldValue(string $fieldHandle): mixed
+    {
+        return $this->userElement->getFieldValue($fieldHandle);
+    }
+
+    public function setFieldValue(string $fieldHandle, mixed $value): void
+    {
+        $this->userElement->setFieldValue($fieldHandle, $value);
+    }
+
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
+    {
+        $this->userElement->setFieldValueFromRequest($fieldHandle, $value);
+    }
+
+    public function getOutdatedFields(): array
+    {
+        return $this->userElement->getOutdatedFields();
+    }
+
+    public function isFieldOutdated(string $fieldHandle): bool
+    {
+        return $this->userElement->isFieldOutdated($fieldHandle);
+    }
+
+    public function getModifiedFields(bool $anySite = false): array
+    {
+        return $this->userElement->getModifiedFields($anySite);
+    }
+
+    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool
+    {
+        return $this->userElement->isFieldModified($fieldHandle, $anySite);
+    }
+
+    public function isFieldDirty(string $fieldHandle): bool
+    {
+        return $this->userElement->isFieldDirty($fieldHandle);
+    }
+
+    public function getDirtyFields(): array
+    {
+        return $this->userElement->getDirtyFields();
+    }
+
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
+    {
+        $this->userElement->setDirtyFields($fieldHandles, $merge);
+    }
+
+    public function markAsDirty(): void
+    {
+        $this->userElement->markAsDirty();
+    }
+
+    public function markAsClean(): void
+    {
+        $this->userElement->markAsClean();
+    }
+
+    public function getCacheTags(): array
+    {
+        return $this->userElement->getCacheTags();
+    }
+
+    public function setFieldValuesFromRequest(string $paramNamespace): void
+    {
+        $this->userElement->setFieldValuesFromRequest($paramNamespace);
+    }
+
+    public function getFieldParamNamespace(): ?string
+    {
+        return $this->userElement->getFieldParamNamespace();
+    }
+
+    public function setFieldParamNamespace(string $namespace): void
+    {
+        $this->userElement->setFieldParamNamespace($namespace);
+    }
+
+    public function getFieldContext(): string
+    {
+        return $this->userElement->getFieldContext();
+    }
+
+    public function getGeneratedFieldValues(): array
+    {
+        return $this->userElement->getGeneratedFieldValues();
+    }
+
+    public function setGeneratedFieldValues(array $values): void
+    {
+        $this->userElement->setGeneratedFieldValues($values);
+    }
+
+    public function getInvalidNestedElementIds(): array
+    {
+        return $this->userElement->getInvalidNestedElementIds();
+    }
+
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        $this->userElement->addInvalidNestedElementIds($ids);
+    }
+
+    public function hasEagerLoadedElements(string $handle): bool
+    {
+        return $this->userElement->hasEagerLoadedElements($handle);
+    }
+
+    public function getEagerLoadedElements(string $handle): ?ElementCollection
+    {
+        return $this->userElement->getEagerLoadedElements($handle);
+    }
+
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        $this->userElement->setEagerLoadedElements($handle, $elements, $plan);
+    }
+
+    public function setLazyEagerLoadedElements(string $handle, bool $value = true): void
+    {
+        $this->userElement->setLazyEagerLoadedElements($handle, $value);
+    }
+
+    public function getEagerLoadedElementCount(string $handle): ?int
+    {
+        return $this->userElement->getEagerLoadedElementCount($handle);
+    }
+
+    public function setEagerLoadedElementCount(string $handle, int $count): void
+    {
+        $this->userElement->setEagerLoadedElementCount($handle, $count);
+    }
+
+    public function getIsFresh(): bool
+    {
+        return $this->userElement->getIsFresh();
+    }
+
+    public function setIsFresh(bool $isFresh = true): void
+    {
+        $this->userElement->setIsFresh();
+    }
+
+    public function setRevisionCreatorId(?int $creatorId): void
+    {
+        $this->userElement->setRevisionCreatorId($creatorId);
+    }
+
+    public function setRevisionNotes(?string $notes): void
+    {
+        $this->userElement->setRevisionNotes($notes);
+    }
+
+    public function getCurrentRevision(): ?ElementInterface
+    {
+        return $this->userElement->getCurrentRevision();
+    }
+
+    public function getIsCrossSiteCopyable(): bool
+    {
+        return $this->userElement->getIsCrossSiteCopyable();
+    }
+
+    public function getHtmlAttributes(string $context): array
+    {
+        return $this->userElement->getHtmlAttributes($context);
+    }
+
+    public function getAttributeHtml(string $attribute): string
+    {
+        return $this->userElement->getAttributeHtml($attribute);
+    }
+
+    public function getInlineAttributeInputHtml(string $attribute): string
+    {
+        return $this->userElement->getInlineAttributeInputHtml($attribute);
+    }
+
+    public function getSidebarHtml(bool $static): string
+    {
+        return $this->userElement->getSidebarHtml($static);
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->userElement->getMetadata();
+    }
+
+    public function getGqlTypeName(): string
+    {
+        return $this->userElement->getGqlTypeName();
+    }
+
+    public function beforeSave(bool $isNew): bool
+    {
+        return $this->userElement->beforeSave($isNew);
+    }
+
+    public function afterSave(bool $isNew): void
+    {
+        $this->userElement->afterSave($isNew);
+    }
+
+    public function afterPropagate(bool $isNew): void
+    {
+        $this->userElement->afterPropagate();
+    }
+
+    public function beforeDelete(): bool
+    {
+        return $this->userElement->beforeDelete();
+    }
+
+    public function afterDelete(): void
+    {
+        $this->userElement->afterDelete();
+    }
+
+    public function beforeDeleteForSite(): bool
+    {
+        return $this->userElement->beforeDeleteForSite();
+    }
+
+    public function afterDeleteForSite(): void
+    {
+        $this->userElement->afterDeleteForSite();
+    }
+
+    public function beforeRestore(): bool
+    {
+        return $this->userElement->beforeRestore();
+    }
+
+    public function afterRestore(): void
+    {
+        $this->userElement->afterRestore();
+    }
+
+    public function beforeMoveInStructure(int $structureId): bool
+    {
+        return $this->userElement->beforeMoveInStructure($structureId);
+    }
+
+    public function afterMoveInStructure(int $structureId): void
+    {
+        $this->userElement->afterMoveInStructure($structureId);
+    }
+
+    public function __toString(): string
+    {
+        return $this->userElement->__toString();
+    }
+
+    public function render(array $variables = []): Markup
+    {
+        return $this->userElement->render($variables);
+    }
+
+    public static function instance($refresh = false)
+    {
+        return UserElement::instance($refresh);
+    }
+
+    public static function statuses(): array
+    {
+        return UserElement::statuses();
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->userElement->getStatus();
+    }
+
+    public function getThumbHtml(int $size): ?string
+    {
+        return $this->userElement->getThumbHtml($size);
     }
 }

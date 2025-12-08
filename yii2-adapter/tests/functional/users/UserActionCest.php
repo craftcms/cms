@@ -8,10 +8,10 @@
 namespace crafttests\functional\users;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\User\Elements\User;
 use FunctionalTester;
 use Throwable;
 use yii\db\Exception;

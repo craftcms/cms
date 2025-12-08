@@ -6,7 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 
@@ -104,14 +104,14 @@ it('determines if the edition can be upgraded', function () {
     // Not logged in
     expect(Edition::canUpgrade())->toBefalse();
 
-    User::first()->update(['admin' => false]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    actingAs(User::find()->firstOrFail());
 
     // Not an admin
     expect(Edition::canUpgrade())->toBefalse();
 
-    User::first()->update(['admin' => true]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    actingAs(User::find()->firstOrFail());
 
     expect(Edition::canUpgrade())->toBeTrue();
 
@@ -131,7 +131,7 @@ it('determines if the edition can be upgraded', function () {
 it('can require a certain edition', function (Edition $edition, Edition|int $requiredEdition, bool $orBetter, bool $throws) {
     Edition::set($edition);
 
-    \Craft::$app->setIsInstalled();
+    Craft::$app->setIsInstalled();
     ProjectConfig::reset();
 
     $thrown = false;

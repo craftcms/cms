@@ -3,7 +3,7 @@
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 test('drafts', function () {
     EntryModel::factory()->create();
@@ -37,7 +37,7 @@ test('draftOf', function () {
 });
 
 test('draftCreator', function () {
-    $user = User::first();
+    $user = User::find()->firstOrFail();
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);
@@ -92,7 +92,7 @@ test('revisions', function () {
 });
 
 test('revisionCreator', function () {
-    $user = User::first();
+    $user = User::find()->firstOrFail();
 
     $entry = EntryModel::factory()->create();
     $element = Craft::$app->getElements()->getElementById($entry->id);

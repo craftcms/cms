@@ -5,7 +5,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -14,7 +14,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 });
 
 it('requires authentication', function () {
@@ -66,21 +66,13 @@ test('require2fa only gets saved when above team edition', function () {
 test('user settings only get saved when above pro edition', function (string $property, mixed $default, mixed $value) {
     Edition::set(Edition::Team);
 
-    if ($default) {
-        expect(ProjectConfig::get("users.$property"))->toBeTruthy();
-    } else {
-        expect(ProjectConfig::get("users.$property"))->toBeFalsy();
-    }
+    $current = ProjectConfig::get("users.$property");
 
     post(action([UserSettingsController::class, 'store'], [
         $property => $value,
     ]))->assertRedirectBack();
 
-    if ($default) {
-        expect(ProjectConfig::get("users.$property"))->toBeTruthy();
-    } else {
-        expect(ProjectConfig::get("users.$property"))->toBeFalsy();
-    }
+    expect(ProjectConfig::get("users.$property"))->toBe($current);
 
     Edition::set(Edition::Pro);
 

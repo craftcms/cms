@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -19,7 +19,7 @@ use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->entryTypes = app(EntryTypes::class);
 

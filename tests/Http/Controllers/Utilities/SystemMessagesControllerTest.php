@@ -5,14 +5,14 @@ declare(strict_types=1);
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->edition = Edition::get();
 
@@ -28,9 +28,9 @@ it('needs authentication for the routes', function (string $method, array $route
 
     $this->$method(action($route))->assertUnauthorized();
 
-    User::first()->update(['admin' => false]);
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
 
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->$method(action($route))->assertForbidden();
 })->with([

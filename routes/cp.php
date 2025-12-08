@@ -36,7 +36,7 @@ Route::get('install', [InstallController::class, 'index'])
 /**
  * Admin requests that require a login
  */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:craft')->group(function () {
     Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);

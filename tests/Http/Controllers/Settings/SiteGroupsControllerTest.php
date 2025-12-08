@@ -7,14 +7,14 @@ use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->sites = app(Sites::class);
     $this->siteGroups = app(SiteGroups::class);

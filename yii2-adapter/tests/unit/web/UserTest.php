@@ -8,13 +8,13 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use UnitTester;
 
 /**

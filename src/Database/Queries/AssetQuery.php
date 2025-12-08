@@ -170,7 +170,7 @@ final class AssetQuery extends ElementQuery
         });
     }
 
-    protected function createElement(array $row): ElementInterface
+    public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
         $siteAlt = Arr::pull($row, 'siteAlt');

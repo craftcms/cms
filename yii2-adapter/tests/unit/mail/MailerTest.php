@@ -8,7 +8,6 @@
 namespace crafttests\unit\mail;
 
 use Craft;
-use craft\elements\User;
 use craft\mail\Message;
 use craft\test\TestCase;
 use craft\test\TestMailer;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use ReflectionException;
 use UnitTester;

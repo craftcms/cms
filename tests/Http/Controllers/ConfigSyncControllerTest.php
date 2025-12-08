@@ -6,7 +6,7 @@ use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 
 use function Pest\Laravel\actingAs;
@@ -14,7 +14,7 @@ use function Pest\Laravel\postJson;
 use function Pest\Laravel\swap;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
 
@@ -129,7 +129,7 @@ test('install-plugin', function () {
 
 class PluginsFake extends Plugins
 {
-    #[\Override]
+    #[Override]
     public function installPlugin(string $handle, ?string $edition = null): bool
     {
         Cache::put('test-installed-plugin', $handle);
@@ -137,7 +137,7 @@ class PluginsFake extends Plugins
         return true;
     }
 
-    #[\Override]
+    #[Override]
     public function uninstallPlugin(string $handle, bool $force = false): bool
     {
         Cache::put('test-uninstalled-plugin', $handle);

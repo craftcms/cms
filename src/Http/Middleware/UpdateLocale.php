@@ -7,9 +7,10 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\User\Users;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -22,6 +23,8 @@ final readonly class UpdateLocale
         private I18N $i18N,
         private Updates $updates,
         private AuthManager $auth,
+        private Sites $sites,
+        private Users $users,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
@@ -42,15 +45,14 @@ final readonly class UpdateLocale
         }
 
         if (! $request->isCpRequest()) {
-            return Sites::getCurrentSite()->getLanguage();
+            return $this->sites->getCurrentSite()->getLanguage();
         }
 
-        /** @var ?\CraftCms\Cms\User\Models\User $user */
         $user = $this->auth->user();
 
         if (
             $user?->getAuthIdentifier() &&
-            ($language = \Craft::$app->getUsers()->getUserPreference($user->getAuthIdentifier(), 'language')) !== null &&
+            ($language = $this->users->getUserPreference($user->getAuthIdentifier(), 'language')) !== null &&
             $this->i18N->validateAppLocaleId($language)
         ) {
             return $language;

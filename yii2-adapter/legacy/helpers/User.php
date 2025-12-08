@@ -8,8 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\elements\User as UserElement;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use function CraftCms\Cms\t;
 
 /**

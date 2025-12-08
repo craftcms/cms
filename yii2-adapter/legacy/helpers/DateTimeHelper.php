@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
@@ -17,6 +16,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -1106,7 +1106,7 @@ class DateTimeHelper
      */
     public static function firstWeekDay(): int
     {
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         return (int)(($user?->getPreference('weekStartDay')) ?? Cms::config()->defaultWeekStartDay);
     }
 }

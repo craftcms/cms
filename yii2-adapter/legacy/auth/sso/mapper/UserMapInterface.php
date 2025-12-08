@@ -7,7 +7,7 @@
 
 namespace craft\auth\sso\mapper;
 
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

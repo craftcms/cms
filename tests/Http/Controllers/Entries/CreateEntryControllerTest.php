@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -12,7 +12,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 });
 
 it('requires login', function () {

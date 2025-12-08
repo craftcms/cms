@@ -8,7 +8,6 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\ContentBlock;
 use craft\elements\Entry;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
@@ -32,6 +31,7 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 

@@ -330,7 +330,7 @@ final class ElementSources
         }
 
         return array_any(
-            $user->getGroups()->all(),
+            $user->getGroups(),
             fn ($group) => in_array($group->uid, $source['userGroups'], true)
         );
     }
@@ -548,7 +548,6 @@ final class ElementSources
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
         $user = Auth::user();
-        $userElement = Craft::$app->getUsers()->getUserById($user->id);
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
@@ -557,7 +556,7 @@ final class ElementSources
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Factor in the user condition for non-admins
-                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($userElement) ?? true)) {
+                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($user) ?? true)) {
                     continue;
                 }
 
@@ -574,7 +573,7 @@ final class ElementSources
 
                     if (
                         $field instanceof PreviewableFieldInterface &&
-                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($userElement) ?? true))
+                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
                         if ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)

@@ -1012,7 +1012,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Craft::$app->getUser()->getIdentity() ?? Auth::user();
+        $user = Auth::user();
 
         if (!$user) {
             throw new QueryAbortedException();

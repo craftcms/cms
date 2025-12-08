@@ -9,14 +9,14 @@ use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 });
 
 dataset('routes', [
@@ -42,11 +42,11 @@ it('requires the editStructure permission', function (string $route) {
     // Set edition so permissions actually get checked
     Edition::set(Edition::Pro);
 
-    $user = User::factory()->create([
+    $user = \CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 
-    actingAs($user);
+    actingAs($user->asElement());
 
     $structure = Structure::factory()->create();
 
@@ -57,6 +57,7 @@ it('requires the editStructure permission', function (string $route) {
     ])->assertForbidden();
 
     $user->update(['admin' => true]);
+    actingAs($user->asElement());
 
     $status = postJson($route, [
         'structureId' => $structure->id,

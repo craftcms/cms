@@ -10,8 +10,9 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\User;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -102,18 +103,18 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                     const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: () => {
-                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
+                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container))
                             modal.hide();
                             return false;
                         },
                         redirect: $redirect
-                    });
+                    })
                 })
                 .finally(() => {
                     elementIndex.setIndexAvailable();
                 });
         },
-    });
+    })
 })();
 JS,
             [
@@ -203,12 +204,12 @@ JS,
      */
     private function _getUndeletableUserIds(): array
     {
-        if (!Craft::$app->getUser()->getIsAdmin()) {
+        if (!Auth::user()->isAdmin()) {
             // Only admins can delete other admins
             return User::find()->admin()->ids();
         }
 
         // Can't delete your own account from here
-        return [Craft::$app->getUser()->getIdentity()->id];
+        return [Auth::user()->id];
     }
 }

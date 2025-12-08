@@ -7,7 +7,8 @@
 
 namespace craft\console;
 
-use craft\elements\User as UserElement;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use Illuminate\Support\Facades\Auth;
 use yii\base\Component;
 
 /**
@@ -33,7 +34,7 @@ class User extends Component
      */
     public function getIsAdmin(): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->admin);
     }
@@ -46,7 +47,7 @@ class User extends Component
      */
     public function checkPermission(string $permissionName): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->can($permissionName));
     }
@@ -59,7 +60,7 @@ class User extends Component
      */
     public function getIdentity(bool $autoRenew = true): UserElement|null
     {
-        return $this->_identity;
+        return Auth::user();
     }
 
     /**
@@ -80,7 +81,7 @@ class User extends Component
      */
     public function getIsGuest(): bool
     {
-        return $this->getIdentity() === null;
+        return Auth::user() === null;
     }
 
     /**
@@ -91,8 +92,6 @@ class User extends Component
      */
     public function getId(): ?int
     {
-        $identity = $this->getIdentity();
-
-        return $identity?->getId();
+        return Auth::user()?->getId();
     }
 }

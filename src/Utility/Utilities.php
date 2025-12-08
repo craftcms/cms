@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility;
 
 use craft\queue\QueueInterface;
+use craft\services\Auth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
@@ -23,7 +23,6 @@ use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -105,7 +104,6 @@ final readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var ?User $user */
         $user = Auth::user();
 
         // The Project Config utility is for admins only!

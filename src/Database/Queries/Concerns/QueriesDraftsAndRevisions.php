@@ -8,7 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;

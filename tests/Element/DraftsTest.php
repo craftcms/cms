@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -26,11 +26,11 @@ it('can get editable drafts', function () {
 
     $element = EntryElement::findOne();
 
-    $this->drafts->createDraft($element, User::first()->id);
+    $this->drafts->createDraft($element, User::find()->firstOrFail()->id);
 
     expect($this->drafts->getEditableDrafts($element))->toBeEmpty();
 
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     expect($this->drafts->getEditableDrafts($element))->not()->toBeEmpty();
 });
@@ -77,7 +77,7 @@ it('can save an element as draft', function () {
 
     expect($element->getIsDraft())->toBeFalse();
 
-    $this->drafts->saveElementAsDraft($element, User::first()->id);
+    $this->drafts->saveElementAsDraft($element, User::find()->firstOrFail()->id);
 
     expect($element->getIsDraft())->toBeTrue();
 });

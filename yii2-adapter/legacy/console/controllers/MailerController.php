@@ -9,10 +9,10 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\elements\User;
 use craft\helpers\Console;
 use craft\helpers\MailerHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 

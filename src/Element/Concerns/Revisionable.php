@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
-use craft\elements\User;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;

@@ -11,11 +11,12 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\elements\User;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -355,7 +356,7 @@ abstract class FieldLayoutComponent extends Model
             $elementCondition = $this->getElementCondition();
 
             if ($userCondition) {
-                $currentUser = Craft::$app->getUser()->getIdentity();
+                $currentUser = Auth::user();
                 if ($currentUser && !$userCondition->matchElement($currentUser)) {
                     return false;
                 }

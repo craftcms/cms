@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\License;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -18,7 +17,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
@@ -105,7 +104,6 @@ final readonly class License
      */
     public function issues(bool $withUnresolvables = true, bool $fetch = false): array
     {
-        /** @var ?User $user */
         $user = $this->auth->user();
 
         if (! $user) {

@@ -14,7 +14,7 @@ use CraftCms\Cms\Site\Data\Site;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +27,7 @@ use Override;
 
 class TestCase extends Orchestra
 {
-    use LazilyRefreshDatabase;
+    use RefreshDatabase;
     use WithWorkbench;
 
     #[Override]
@@ -40,7 +40,8 @@ class TestCase extends Orchestra
 
         Edition::set(Edition::Solo);
 
-        File::cleanDirectory(config_path('project'));
+        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(storage_path('runtime/compiled_classes'));
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
@@ -110,7 +111,10 @@ class TestCase extends Orchestra
     #[Override]
     protected function getEnvironmentSetUp($app)
     {
-        $app->make(ConfigRepository::class)->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+        $config = $app->make(ConfigRepository::class);
+
+        $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+        $config->set('auth.defaults.guard', 'craft');
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -124,7 +128,7 @@ class TestCase extends Orchestra
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
 
-        $app->make(ConfigRepository::class)->set($configKey, array_merge(
+        $config->set($configKey, array_merge(
             Config::array($configKey, []),
             [
                 'host' => env('DB_HOST'),

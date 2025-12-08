@@ -15,7 +15,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.29
  */
-class UnsupportedSiteException extends ElementException
+class UnsupportedSiteException extends \CraftCms\Cms\Element\Exceptions\ElementException
 {
     /**
      * @var int The site ID that the element doesn’t support.

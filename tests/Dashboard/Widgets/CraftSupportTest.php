@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Session;
 
 use function Pest\Laravel\actingAs;
 
 it('can render', function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
     Session::start();
 
     $dashboard = app(Dashboard::class);
@@ -20,15 +21,15 @@ it('can render', function () {
 });
 
 it('is only selectable by admins', function () {
-    User::first()->update(['admin' => false]);
+    UserModel::first()->update(['admin' => false]);
 
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
     Session::start();
 
     expect(CraftSupport::isSelectable())->toBeFalse();
 
-    User::first()->update(['admin' => true]);
-    actingAs(User::first());
+    UserModel::first()->update(['admin' => true]);
+    actingAs(User::find()->firstOrFail());
 
     expect(CraftSupport::isSelectable())->toBeTrue();
 });

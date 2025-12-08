@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\helpers\Db;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Edition;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
@@ -39,7 +39,7 @@ use yii\db\Expression;
  * @replace {elements} users
  * @replace {twig-method} craft.users()
  * @replace {myElement} myUser
- * @replace {element-class} \craft\elements\User
+ * @replace {element-class} \CraftCms\Cms\User\Elements\User
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\UserQuery} instead.
  */
 class UserQuery extends ElementQuery
@@ -62,12 +62,12 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch all the admins
-     * $admins = \craft\elements\User::find()
+     * $admins = \CraftCms\Cms\User\Elements\User::find()
      *     ->admin(true)
      *     ->all();
      *
      * // fetch all the non-admins
-     * $nonAdmins = \craft\elements\User::find()
+     * $nonAdmins = \CraftCms\Cms\User\Elements\User::find()
      *     ->admin(false)
      *     ->all();
      * ```
@@ -91,7 +91,7 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch all authors
-     * $authors = \craft\elements\User::find()
+     * $authors = \CraftCms\Cms\User\Elements\User::find()
      *     ->authors()
      *     ->all();
      * ```
@@ -111,7 +111,7 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch all users who have uploaded an asset
-     * $uploaders = \craft\elements\User::find()
+     * $uploaders = \CraftCms\Cms\User\Elements\User::find()
      *     ->assetUploaders()
      *     ->all();
      * ```
@@ -137,7 +137,7 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch users who can access the front end when the system is offline
-     * $admins = \craft\elements\User::find()
+     * $admins = \CraftCms\Cms\User\Elements\User::find()
      *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
@@ -156,7 +156,7 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch the authors
-     * $admins = \craft\elements\User::find()
+     * $admins = \CraftCms\Cms\User\Elements\User::find()
      *     ->group('authors')
      *     ->all();
      * ```
@@ -227,7 +227,7 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch users with their user groups
-     * $users = \craft\elements\User::find()
+     * $users = \CraftCms\Cms\User\Elements\User::find()
      *     ->withGroups()
      *     ->all();
      * ```
@@ -913,7 +913,7 @@ class UserQuery extends ElementQuery
      *
      * ```php
      * // fetch users with their user groups
-     * $users = \craft\elements\User::find()
+     * $users = \CraftCms\Cms\User\Elements\User::find()
      *     ->withGroups()
      *     ->all();
      * ```
@@ -966,6 +966,7 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
+            'users.rememberToken',
         ]);
 
         // todo: cleanup after next breakpoint

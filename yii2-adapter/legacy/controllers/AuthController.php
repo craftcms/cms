@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -308,7 +309,7 @@ class AuthController extends Controller
         $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
         $primarySite = Sites::getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         $generalConfig = Cms::config();
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;

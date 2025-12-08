@@ -96,6 +96,13 @@ final class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
+        /**
+         * TODO: Remove this when dependency on app('Craft') is gone.
+         */
+        if (app()->runningUnitTests()) {
+            return [];
+        }
+
         $pathService = app('Craft')->getPath();
 
         $options = [

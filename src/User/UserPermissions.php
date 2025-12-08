@@ -750,7 +750,6 @@ final class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        /** @var ?\CraftCms\Cms\User\Models\User $currentUser */
         $currentUser = Auth::user();
 
         if (! $currentUser && ! $user) {

@@ -5,14 +5,14 @@ declare(strict_types=1);
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     $this->dashboard = app(Dashboard::class);
 });

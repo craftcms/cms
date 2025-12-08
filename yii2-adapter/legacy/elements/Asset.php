@@ -74,10 +74,12 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -387,7 +389,7 @@ class Asset extends Element
         }
 
         $assetsService = Craft::$app->getAssets();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         foreach ($volumeIds as $volumeId) {
             $folder = $assetsService->getRootFolderByVolumeId($volumeId);
@@ -429,7 +431,7 @@ class Asset extends Element
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
             if ($folder) {
-                $source = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+                $source = self::_assembleSourceInfoForFolder($folder, Auth::user());
                 $source['keyPath'] = $sourceKey;
                 return $source;
             }
@@ -720,7 +722,7 @@ class Asset extends Element
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
-                'placeholder' => fn() => ($uploader = Craft::$app->getUser()->getIdentity()) ? Cp::elementChipHtml($uploader) : '',
+                'placeholder' => fn() => ($uploader = Auth::user()) ? Cp::elementChipHtml($uploader) : '',
             ],
         ]);
 
@@ -1578,7 +1580,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        $user = $userSession->getIdentity();
+        $user = Auth::user();
         $view = Craft::$app->getView();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 

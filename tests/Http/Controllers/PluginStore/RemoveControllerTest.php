@@ -7,16 +7,16 @@ use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\swap;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
-    $this->hashedData = \Craft::$app->getSecurity()->hashData(Json::encode([
+    $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
         'packageName' => 'craftcms/test-plugin',
     ]));
 });
@@ -35,13 +35,13 @@ it('requires authentication, adminChanges and admin for all routes', function (s
 
     postJson(action([$controller, $action]))->assertUnauthorized();
 
-    User::first()->update(['admin' => false]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    actingAs(User::find()->firstOrFail());
 
     postJson(action([$controller, $action]))->assertForbidden();
 
-    User::first()->update(['admin' => true]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    actingAs(User::find()->firstOrFail());
     Cms::config()->allowAdminChanges(false);
 
     postJson(action([$controller, $action]))->assertForbidden();
@@ -77,7 +77,7 @@ test('composer-remove', function () {
     // Fake the composer uninstall call
     swap(Composer::class, new class extends Composer
     {
-        #[\Override]
+        #[Override]
         public function uninstall(array $packages, ?callable $callback = null): void
         {
             $callback('', '');

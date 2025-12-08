@@ -6,15 +6,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
-    $this->hashedData = \Craft::$app->getSecurity()->hashData(Json::encode([
+    $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
         'packageName' => 'craftcms/test-plugin',
         'handle' => 'test-plugin',
         'edition' => 'standard',
@@ -46,13 +46,13 @@ it('requires authentication, adminChanges and admin for all routes', function (s
 
     postJson(action([$controller, $action]))->assertUnauthorized();
 
-    User::first()->update(['admin' => false]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    actingAs(User::find()->firstOrFail());
 
     postJson(action([$controller, $action]))->assertForbidden();
 
-    User::first()->update(['admin' => true]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    actingAs(User::find()->firstOrFail());
     Cms::config()->allowAdminChanges(false);
 
     postJson(action([$controller, $action]))->assertForbidden();

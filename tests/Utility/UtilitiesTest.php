@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -50,13 +50,13 @@ it('can register extra utilities', function () {
 it('can get authorized utility types', function () {
     expect($this->utilities->getAuthorizedUtilityTypes())->toBeEmpty();
 
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toBeEmpty();
 });
 
 test('disabled utilities are not included', function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);
 
@@ -66,26 +66,26 @@ test('disabled utilities are not included', function () {
 });
 
 it('can get badge count for all utilities', function () {
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     expect($this->utilities->getUtilitiesBadgeCount())->toBe(0);
 });
 
 class DummyUtility extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'Dummy';
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'dummy';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         return '';

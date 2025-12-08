@@ -11,7 +11,7 @@ use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -19,7 +19,7 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     $this->dashboard = app(Dashboard::class);
 
-    actingAs(User::first());
+    actingAs(User::find()->firstOrFail());
 
     WidgetModel::all()->each->delete();
 });

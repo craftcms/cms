@@ -2,7 +2,7 @@
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 it('can query users by having authored entries', function () {
     $entry = Entry::factory()->create();
@@ -14,7 +14,7 @@ it('can query users by having authored entries', function () {
 
     \Illuminate\Support\Facades\DB::table(Table::ENTRIES_AUTHORS)
         ->insert([
-            'authorId' => User::first()->id,
+            'authorId' => User::find()->firstOrFail()->id,
             'entryId' => $entryElement->id,
             'sortOrder' => 1,
         ]);

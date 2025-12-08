@@ -296,7 +296,6 @@ final readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        /** @var User $user */
         $user = Auth::user();
 
         // Recent Entries widget
@@ -321,14 +320,16 @@ final readonly class Dashboard
             ],
         ]));
 
-        $user->update([
+        User::where('id', $user->id)->update([
             'hasDashboard' => true,
         ]);
+
+        $user->hasDashboard = true;
     }
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget
     {
-        $userId = Auth::user()->getAuthIdentifier();
+        $userId = Auth::user()?->getAuthIdentifier();
 
         if ($widgetId !== null) {
             return Models\Widget::query()
@@ -352,7 +353,6 @@ final readonly class Dashboard
      */
     private function getUserWidgets(): Collection|false
     {
-        /** @var User $user */
         $user = Auth::user();
 
         if (! $user) {

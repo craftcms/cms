@@ -32,7 +32,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use yii\base\Exception;
@@ -495,7 +497,7 @@ class Category extends Element
         ];
 
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         $ancestors = $this->getAncestors();
         if ($ancestors instanceof ElementQueryInterface) {

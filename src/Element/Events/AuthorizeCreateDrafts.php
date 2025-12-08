@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\User\Models\User;
+use craft\elements\User;
 
 final class AuthorizeCreateDrafts
 {
