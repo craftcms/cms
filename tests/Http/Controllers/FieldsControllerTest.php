@@ -9,12 +9,12 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('needs authentication and admin changes for the routes', function (string $method, array $route, bool $requireAdminChanges) {
@@ -22,13 +22,13 @@ it('needs authentication and admin changes for the routes', function (string $me
 
     $this->$method(action($route))->assertUnauthorized();
 
-    User::first()->update(['admin' => false]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    actingAs(User::find()->one());
 
     $this->$method(action($route))->assertForbidden();
 
-    User::first()->update(['admin' => true]);
-    actingAs(User::first());
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    actingAs(User::find()->one());
 
     if ($requireAdminChanges) {
         Cms::config()->allowAdminChanges(false);

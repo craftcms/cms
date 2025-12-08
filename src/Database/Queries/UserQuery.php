@@ -59,6 +59,7 @@ final class UserQuery extends ElementQuery
             'users.affiliatedSiteId as affiliatedSiteId',
             'users.active as active',
             'users.fullName as fullName',
+            'users.rememberToken as rememberToken',
         ]);
     }
 

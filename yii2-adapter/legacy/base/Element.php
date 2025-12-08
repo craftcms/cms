@@ -3799,7 +3799,7 @@ abstract class Element extends Component implements ElementInterface
             return $event->authorized;
         }
 
-        return $this->traitCanCreateDrafts(\CraftCms\Cms\User\Models\User::findOrFail($user->id));
+        return $this->traitCanCreateDrafts($user);
     }
 
     /**

@@ -8,7 +8,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -16,7 +16,7 @@ use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('requires login', function () {
@@ -27,7 +27,7 @@ it('requires login', function () {
 });
 
 it('renders the plugin store', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     get(action([PluginStoreController::class, 'index']))
         ->assertOk()

@@ -33,6 +33,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
@@ -74,6 +75,7 @@ class Install extends Migration
                 $this->insertDefaultData();
             } catch (Throwable $e) {
                 $this->components->error("Error inserting default data: {$e->getMessage()}");
+                $this->getOutput()->info($e->getTraceAsString());
             }
         });
 
@@ -774,7 +776,7 @@ class Install extends Migration
             $table->string('unverifiedEmail')->nullable();
             $table->boolean('passwordResetRequired')->default(false);
             $table->dateTime('lastPasswordChangeDate')->nullable();
-            $table->rememberToken();
+            $table->string('rememberToken', 100)->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
 
@@ -1130,8 +1132,8 @@ class Install extends Migration
                 'language' => $this->site->getLanguage(),
             ]);
 
-            if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getUser()->login($user, Cms::config()->userSessionDuration);
+            if (! app()->runningInConsole()) {
+                Auth::guard('craft')->loginUsingId($user->id);
             }
         });
     }

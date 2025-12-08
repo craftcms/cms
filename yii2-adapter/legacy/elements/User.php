@@ -62,7 +62,9 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -103,10 +105,16 @@ use function CraftCms\Cms\t;
  *
  * @since 3.0.0
  */
-class User extends Element implements IdentityInterface, AuthorizableContract
+class User extends Element implements IdentityInterface, AuthenticatableContract, AuthorizableContract
 {
     use Authorizable;
+    use Authenticatable;
     use NameTrait;
+
+    /**
+     * @var string|null The Laravel session remember token.
+     */
+    public ?string $rememberToken = null;
 
     /**
      * @since 5.0.0
@@ -1762,10 +1770,25 @@ XML;
     {
         return Craft::createObject(self::class);
     }
-    
+
+    public function getRememberTokenName()
+    {
+        return 'rememberToken';
+    }
+
+    public function getKeyName(): string
+    {
+        return 'id';
+    }
+
     public function getKey(): ?int
     {
         return $this->id;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->admin;
     }
 
     /**

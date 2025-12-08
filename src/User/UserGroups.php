@@ -65,7 +65,7 @@ final readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        /** @var ?\CraftCms\Cms\User\Models\User $currentUser */
+        /** @var ?\craft\elements\User $user */
         $currentUser = Auth::user();
 
         if (! $currentUser && ! $user) {

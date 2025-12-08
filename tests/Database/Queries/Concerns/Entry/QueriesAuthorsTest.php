@@ -2,12 +2,11 @@
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 
 it('can query entries by authors', function () {
-    $author1 = User::factory()->create();
-    $author2 = User::factory()->create();
+    $author1 = \CraftCms\Cms\User\Models\User::factory()->create();
+    $author2 = \CraftCms\Cms\User\Models\User::factory()->create();
 
     Entry::factory()
         ->hasAttached($author1, ['sortOrder' => 0], 'authors')
@@ -32,7 +31,7 @@ it('can query entries by authors', function () {
 });
 
 it('can query entries by author groups', function () {
-    $author1 = User::factory()
+    $author1 = \CraftCms\Cms\User\Models\User::factory()
         ->hasAttached(
             $userGroup1 = UserGroup::factory()->create(),
             ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => \Illuminate\Support\Str::uuid()->toString()],
@@ -40,7 +39,7 @@ it('can query entries by author groups', function () {
         )
         ->create();
 
-    $author2 = User::factory()
+    $author2 = \CraftCms\Cms\User\Models\User::factory()
         ->hasAttached(
             $userGroup2 = UserGroup::factory()->create(),
             ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => \Illuminate\Support\Str::uuid()->toString()],

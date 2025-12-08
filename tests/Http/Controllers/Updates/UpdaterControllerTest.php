@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
-    $this->hashedData = \Craft::$app->getSecurity()->hashData(Json::encode([
+    $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
         'install' => [
             'craft' => '6.0.0',
         ],

@@ -6,7 +6,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Data\PermissionGroup;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\UserPermissions;
 
@@ -47,16 +47,16 @@ test('getAllPermissions contains headings', function (string $heading) {
 ]);
 
 test('getAssignablePermissions', function () {
-    $admin = User::firstOrFail();
+    $admin = User::find()->one();
 
     actingAs($admin);
 
     expect($this->userPermissions->getAllPermissions())
         ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions());
 
-    $user = User::factory()->create();
+    $user = \CraftCms\Cms\User\Models\User::factory()->create();
 
-    actingAs($user);
+    actingAs($user->asElement());
 
     expect($this->userPermissions->getAllPermissions())
         ->not()
@@ -82,7 +82,7 @@ test('getPermissionsByGroupId & doesGroupHavePermission', function () {
 test('getGroupPermissionsByUserId', function () {
     $group = UserGroup::factory()->create();
 
-    $user = User::firstOrFail();
+    $user = \CraftCms\Cms\User\Models\User::firstOrFail();
     $user->userGroups()->attach($group->id);
 
     expect($this->userPermissions->getGroupPermissionsByUserId($user->id))->toBeEmpty();
@@ -95,7 +95,7 @@ test('getGroupPermissionsByUserId', function () {
 test('getPermissionsByUserId & doesUserHavePermission', function () {
     $group = UserGroup::factory()->create();
 
-    $user = User::firstOrFail();
+    $user = \CraftCms\Cms\User\Models\User::firstOrFail();
     $user->userGroups()->attach($group->id);
 
     expect($this->userPermissions->getPermissionsByUserId($user->id))->toBeEmpty();
@@ -113,7 +113,7 @@ test('validatePermission', function () {
 });
 
 test('saveUserPermissions', function () {
-    $user = User::firstOrFail();
+    $user = User::find()->one();
 
     expect($this->userPermissions->doesUserHavePermission($user->id, 'accessSiteWhenSystemIsOff'))->toBeFalse();
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use Craft;
 use craft\elements\User as UserElement;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -127,7 +127,7 @@ trait Draftable
     /**
      * {@inheritdoc}
      */
-    public function canCreateDrafts(User $user): bool
+    public function canCreateDrafts(UserElement $user): bool
     {
         if (Event::hasListeners(AuthorizeCreateDrafts::class)) {
             Event::dispatch($event = new AuthorizeCreateDrafts($this, $user));
@@ -144,7 +144,7 @@ trait Draftable
     public function canDuplicateAsDraft(UserElement $user): bool
     {
         // if anything, this will be more lenient than canDuplicate()
-        return \Craft::$app->getElements()->canDuplicate($this, $user);
+        return Craft::$app->getElements()->canDuplicate($this, $user);
     }
 
     /**

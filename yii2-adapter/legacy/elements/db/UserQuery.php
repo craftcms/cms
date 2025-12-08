@@ -966,6 +966,7 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
+            'users.rememberToken',
         ]);
 
         // todo: cleanup after next breakpoint

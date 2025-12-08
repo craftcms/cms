@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use craft\elements\User;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Support\Facades\Announcements;
-use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
 
@@ -13,7 +13,7 @@ it('can get announcements', function () {
 });
 
 it('can get announcements for a user', function () {
-    $user = User::first();
+    $user = User::find()->one();
 
     $announcement = Announcement::factory()
         ->unread()
@@ -21,7 +21,7 @@ it('can get announcements for a user', function () {
             'userId' => $user->id,
         ]);
 
-    actingAs(User::find($user->id));
+    actingAs($user);
 
     expect($announcements = Announcements::get())->not()->toBe([])
         ->and($announcements[0]['id'])->toBe($announcement->id)
@@ -29,7 +29,7 @@ it('can get announcements for a user', function () {
 });
 
 it('can mark announcements as read', function () {
-    $user = User::first();
+    $user = User::find()->one();
 
     $announcement = Announcement::factory()
         ->unread()
@@ -37,7 +37,7 @@ it('can mark announcements as read', function () {
             'userId' => $user->id,
         ]);
 
-    actingAs(User::find($user->id));
+    actingAs($user);
 
     Announcements::markAsRead([$announcement->id]);
 

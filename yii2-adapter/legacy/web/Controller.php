@@ -16,6 +16,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
@@ -509,7 +510,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePermission(string $permissionName): void
     {
-        Gate::authorize($permissionName);
+        Gate::forUser(Auth::guard('craft')->user())->authorize($permissionName);
     }
 
     /**

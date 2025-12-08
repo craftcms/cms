@@ -7,6 +7,7 @@ namespace CraftCms\Cms;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Support\Facades\Auth;
@@ -125,7 +126,7 @@ enum Edition: int
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::getUser()?->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return false;
         }
 
@@ -146,7 +147,7 @@ enum Edition: int
             $edition = self::from($edition);
         }
 
-        if (! \Craft::$app->getIsInstalled()) {
+        if (! Info::isInstalled()) {
             return;
         }
 

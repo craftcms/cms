@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAnnouncements;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 it('deletes stale announcements', function () {
     // Valid announcement
     Announcement::factory()->create([
-        'userId' => User::first()->id,
+        'userId' => User::find()->one()->id,
         'dateRead' => now(),
     ]);
 
     // Stale announcement
     Announcement::factory()->create([
-        'userId' => User::first()->id,
+        'userId' => User::find()->one()->id,
         'dateRead' => now()->subDays(7)->subSecond(),
     ]);
 
