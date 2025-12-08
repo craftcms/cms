@@ -14,7 +14,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
-use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -46,16 +45,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerMacros();
-
-        /**
-         * Make sure we're using Craft's User model
-         *
-         * @var class-string<\Illuminate\Contracts\Auth\Authenticatable> $model
-         */
-        $model = Config::get('auth.providers.users.model');
-        if (! class_exists($model) || ! is_a($model, User::class, true)) {
-            Config::set('auth.providers.users.model', User::class);
-        }
 
         Authenticate::redirectUsing(function () {
             if (\request()->isCpRequest()) {

@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
+use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Shared\Models\Info;
@@ -22,10 +23,11 @@ use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class RouteServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         /**
@@ -70,6 +72,7 @@ final class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            SetCraftGuard::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,
             CheckForUpdates::class,

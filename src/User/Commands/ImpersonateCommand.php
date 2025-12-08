@@ -6,7 +6,6 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\User\Actions\GetImpersonationUrlAction;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laravel\Prompts\Concerns\Colors;
@@ -31,7 +30,7 @@ final class ImpersonateCommand extends Command implements PromptsForMissingInput
             return self::FAILURE;
         }
 
-        $url = $getImpersonationUrlAction(User::findOrFail($user->id));
+        $url = $getImpersonationUrlAction($user);
 
         if ($url === false) {
             $this->components->error('Unable to create the impersonation token.');

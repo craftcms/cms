@@ -17,6 +17,10 @@ use CraftCms\Cms\User\Commands\SetPasswordCommand;
 use CraftCms\Cms\User\Commands\UnlockCommand;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Contracts\Hashing\Hasher;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -26,6 +30,18 @@ final class UserServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        Auth::provider('craft', fn (Application $app) => new UserProvider($app->make(Hasher::class)));
+
+        Config::set('auth.guards.craft', [
+            'driver' => 'session',
+            'provider' => 'craft',
+        ]);
+
+        Config::set('auth.providers.craft', [
+            'driver' => 'craft',
+            'model' => \craft\elements\User::class,
+        ]);
+
         /**
          * This hooks our permission system into
          * Laravel's Gate authorization system
