@@ -13,7 +13,6 @@ use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
-use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -27,9 +26,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth as AuthFacade;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
@@ -221,7 +222,7 @@ class Auth extends Component
             $userSession = Craft::$app->getUser();
             if ($userSession->getImpersonator() !== null) {
                 /** @var User $user */
-                $user = Craft::$app->getUser()->getIdentity();
+                $user = AuthFacade::user();
             }
 
             $userSession->login($user, $sessionDuration);
@@ -266,7 +267,7 @@ class Auth extends Component
      */
     public function getAllMethods(?User $user = null): array
     {
-        $user ??= Craft::$app->getUser()->getIdentity() ?? $this->getUser();
+        $user ??= AuthFacade::user() ?? $this->getUser();
 
         if (!$user?->id) {
             return [];

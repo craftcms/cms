@@ -8,8 +8,8 @@
 namespace craft\fieldlayoutelements\users;
 
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\fieldlayoutelements\FullNameField as BaseFullNameField;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 
 /**

@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
@@ -17,6 +16,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\types\elements\User;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\User\Elements\User as UserElement;
 
 /**
  * Class UserType

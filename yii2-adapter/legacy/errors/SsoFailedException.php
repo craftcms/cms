@@ -8,7 +8,7 @@
 namespace craft\errors;
 
 use craft\auth\sso\ProviderInterface;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use Throwable;
 use yii\base\Exception;
 

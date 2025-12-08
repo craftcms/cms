@@ -8,13 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\elements\User;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\UserGroups as UserGroupsFacade;
 use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
 use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;

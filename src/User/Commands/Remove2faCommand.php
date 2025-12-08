@@ -7,8 +7,8 @@ namespace CraftCms\Cms\User\Commands;
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
-use craft\elements\User;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 

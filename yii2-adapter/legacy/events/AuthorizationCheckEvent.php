@@ -9,7 +9,7 @@ namespace craft\events;
 
 use craft\base\ElementInterface;
 use craft\base\Event;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Authorization Check Event.

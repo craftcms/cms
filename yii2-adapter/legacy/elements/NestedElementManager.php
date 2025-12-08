@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -590,7 +591,7 @@ class NestedElementManager extends Component
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
             /** @var ElementInterface $owner */
-            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            if ($owner->draftCreatorId === Auth::user()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }

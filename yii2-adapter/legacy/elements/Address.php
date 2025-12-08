@@ -26,6 +26,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 

@@ -20,7 +20,7 @@ trait QueriesAuthors
      *                ---
      *                ```php
      *                // fetch all authors
-     *                $authors = \craft\elements\User::find()
+     *                $authors = \CraftCms\Cms\User\Elements\User::find()
      *                ->authors()
      *                ->all();
      *                ```

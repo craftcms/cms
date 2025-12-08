@@ -85,17 +85,6 @@ class User extends \yii\web\User
             default => throw new RuntimeException('Unable to convert identity from "' . print_r($identity, true) . '"'),
         };
 
-        /** @var class-string<IdentityInterface> $identityClass */
-        $identityClass = $this->identityClass;
-
-        if (!empty($attributes) && is_subclass_of($identityClass, BaseActiveRecord::class)) {
-            $record = new $identityClass();
-
-            call_user_func([$identityClass, 'populateRecord'], $record, $attributes);
-
-            return $record;
-        }
-
-        return call_user_func([$identityClass, 'findIdentity'], $id);
+        return \craft\elements\User::find()->id($id)->status(null)->one();
     }
 }

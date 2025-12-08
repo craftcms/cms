@@ -9,9 +9,9 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\db\UserQuery;
-use craft\elements\User;
 use craft\web\Controller;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
 use yii\web\BadRequestHttpException;

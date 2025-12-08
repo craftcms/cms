@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Entry;
 
 use Craft;
 use craft\base\Element;
-use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
@@ -272,7 +272,6 @@ final class Entries
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
                 TagDependency::invalidate($tag);
-                \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;

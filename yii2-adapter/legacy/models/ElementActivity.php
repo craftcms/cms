@@ -8,7 +8,7 @@
 namespace craft\models;
 
 use craft\base\ElementInterface;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use DateTime;
 
 /**

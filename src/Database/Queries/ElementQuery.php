@@ -42,14 +42,14 @@ use Twig\Markup;
  *
  * @mixin \Illuminate\Database\Query\Builder
  *
- * @method self addSelect($column)
- * @method self orderByDesc($column)
- * @method self where($column, $operator = null, $value = null, $boolean = 'and')
- * @method self whereIn($column, $values, $boolean = 'and', $not = false)
- * @method self whereNot($column, $operator = null, $value = null, $boolean = 'and')
- * @method self whereNotIn($column, $values, $boolean = 'and')
- * @method self whereNotNull($columns, $boolean = 'and')
- * @method self whereNotExists($callback, $boolean = 'and')
+ * @method static addSelect($column)
+ * @method static orderByDesc($column)
+ * @method static where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static whereIn($column, $values, $boolean = 'and', $not = false)
+ * @method static whereNot($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static whereNotIn($column, $values, $boolean = 'and')
+ * @method static whereNotNull($columns, $boolean = 'and')
+ * @method static whereNotExists($callback, $boolean = 'and')
  */
 class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
 {
@@ -832,7 +832,17 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['orderby', 'orderbydesc', 'select', 'reorder'])) {
+        /**
+         * Joins should be done on both queries
+         */
+        if (str_contains(strtolower($method), 'join')) {
+            $this->forwardCallTo($this->query, $method, $parameters);
+            $this->forwardCallTo($this->subQuery, $method, $parameters);
+
+            return $this;
+        }
+
+        if (in_array(strtolower($method), ['orderby', 'orderbydesc', 'select', 'reorder', 'addselect'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;

@@ -9,7 +9,6 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\GlobalSet;
-use craft\elements\User;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -42,6 +41,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;

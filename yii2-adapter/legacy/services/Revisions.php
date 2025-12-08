@@ -9,12 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;

@@ -9,7 +9,7 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\test\DbFixture;

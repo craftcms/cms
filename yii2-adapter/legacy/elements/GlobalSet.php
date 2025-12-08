@@ -18,6 +18,7 @@ use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 

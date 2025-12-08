@@ -30,7 +30,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
-use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -100,13 +99,16 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
+use Stringable;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
@@ -4110,7 +4112,7 @@ JS, [
         $items = [];
 
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         // Figure out what we're dealing with here
         $isCanonical = $this->getIsCanonical();
@@ -5796,7 +5798,7 @@ JS, [
      * @see getAttributeHtml()
      * @since 5.0.0
      */
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
         switch ($attribute) {
             case 'id':

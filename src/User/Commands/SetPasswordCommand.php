@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Commands;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 

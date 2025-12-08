@@ -9,7 +9,6 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -48,9 +48,11 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -529,7 +531,7 @@ JS;
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
-        $currentUser = $userSession->getIdentity();
+        $currentUser = Auth::user();
         $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
         $data = [
@@ -774,7 +776,7 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(\CraftCms\Cms\Section\Data\Section $section): array
+    private function _entryTypes(Section $section): array
     {
         $types = [];
 

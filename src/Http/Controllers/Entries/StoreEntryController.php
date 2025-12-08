@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
 use craft\base\Element;
-use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\EnforcesPermissions;

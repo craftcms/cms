@@ -12,10 +12,10 @@ use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -26,8 +26,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use DateTime;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -256,9 +258,9 @@ class ElementHelper
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        $info = DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, 'elements_sites')
+        $info = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
@@ -416,7 +418,7 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (!Sites::isMultiSite()) {
@@ -443,7 +445,7 @@ class ElementHelper
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (Sites::isMultiSite()) {
@@ -1130,7 +1132,7 @@ class ElementHelper
      */
     private static function provisionalDrafts(array $elements): array
     {
-        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
+        $user = self::$provisionalDraftUser ?? Auth::user();
         if (!$user) {
             return [];
         }
@@ -1189,7 +1191,7 @@ class ElementHelper
     public static function setProvisionalDraftUser(UserElement|int|null $user): void
     {
         if (is_int($user)) {
-            $user = \Craft::$app->getUsers()->getUserById($user);
+            $user = Craft::$app->getUsers()->getUserById($user);
         }
 
         self::$provisionalDraftUser = $user;

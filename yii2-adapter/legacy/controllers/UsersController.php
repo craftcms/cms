@@ -16,8 +16,6 @@ use craft\base\NameTrait;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
@@ -46,6 +44,7 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -57,9 +56,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -97,7 +98,7 @@ class UsersController extends Controller
      * ```php
      * use Craft;
      * use craft\controllers\UsersController;
-     * use craft\elements\User;
+     * use CraftCms\Cms\User\Elements\User;
      * use craft\events\FindLoginUserEvent;
      * use yii\base\Event;
      *
@@ -287,7 +288,7 @@ class UsersController extends Controller
         // if we're impersonating, pass the user we're impersonating to the complete method
         $impersonator = $userSession->getImpersonator();
         if ($impersonator !== null) {
-            $user = Craft::$app->getUser()->getIdentity() ?? $user;
+            $user = Auth::user() ?? $user;
         }
 
         return $this->_completeLogin($user, $duration);
@@ -327,7 +328,7 @@ class UsersController extends Controller
         // if we're impersonating, pass the user we're impersonating to the complete method
         $userSession = Craft::$app->getUser();
         if ($userSession->getImpersonator() !== null) {
-            $user = $userSession->getIdentity();
+            $user = Auth::user();
         }
 
         return $this->_completeLogin($user, $duration);
@@ -348,11 +349,7 @@ class UsersController extends Controller
     {
         $userSession = Craft::$app->getUser();
 
-        // Try logging them in
-        if (!$userSession->login($user, $duration)) {
-            // Unknown error
-            return $this->_handleLoginFailure(null, $user);
-        }
+        Auth::login($user, $duration > 0);
 
         return $this->_handleSuccessfulLogin($user);
     }
@@ -368,7 +365,7 @@ class UsersController extends Controller
             $user = null;
         }
 
-        $user ??= Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user ??= \CraftCms\Cms\Support\Facades\Users::getUserByUsernameOrEmail($loginName);
 
         // Fire an 'afterFindLoginUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_FIND_LOGIN_USER)) {
@@ -405,7 +402,7 @@ class UsersController extends Controller
 
         $userSession = Craft::$app->getUser();
         /** @var User|null $user */
-        $user = $userSession->getIdentity();
+        $user = Auth::user();
 
         $return = [
             'isGuest' => $user === null,
@@ -1291,7 +1288,7 @@ JS);
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
-        $currentUser = $userSession->getIdentity();
+        $currentUser = Auth::user();
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Cms::config();
         $userSettings = app(ProjectConfig::class)->get('users') ?? [];
@@ -2335,7 +2332,7 @@ JS);
             return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
-        return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
+        return $this->redirectToPostedUrl(Auth::user(), $returnUrl);
     }
 
     /**

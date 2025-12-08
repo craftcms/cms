@@ -558,7 +558,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     /** {@inheritdoc} */
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()->isAdmin()) {
+        if (! $this->id || ! Auth::user()?->isAdmin()) {
             return null;
         }
 

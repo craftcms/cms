@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Commands;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;

@@ -8,8 +8,8 @@
 namespace craft\filters;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 

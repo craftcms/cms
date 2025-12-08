@@ -8,8 +8,8 @@
 namespace craft\mail;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\MailerHelper;
+use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**

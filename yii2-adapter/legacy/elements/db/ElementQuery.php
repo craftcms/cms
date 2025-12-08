@@ -20,7 +20,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
@@ -40,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
@@ -792,7 +792,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function draftCreator($value): static
     {
-        if ($value instanceof User) {
+        if ($value instanceof User || $value instanceof \craft\elements\User) {
             $this->draftCreator = $value->id;
         } elseif (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
@@ -890,7 +890,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function revisionCreator($value): static
     {
-        if ($value instanceof User) {
+        if ($value instanceof User || $value instanceof \craft\elements\User) {
             $this->revisionCreator = $value->id;
         } elseif (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;
