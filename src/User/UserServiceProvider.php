@@ -32,15 +32,19 @@ final class UserServiceProvider extends ServiceProvider
     {
         Auth::provider('craft', fn (Application $app) => new UserProvider($app->make(Hasher::class)));
 
-        Config::set('auth.guards.craft', [
-            'driver' => 'session',
-            'provider' => 'craft',
-        ]);
+        if (! Config::has('auth.guards.craft')) {
+            Config::set('auth.guards.craft', [
+                'driver' => 'session',
+                'provider' => 'craft',
+            ]);
+        }
 
-        Config::set('auth.providers.craft', [
-            'driver' => 'craft',
-            'model' => \craft\elements\User::class,
-        ]);
+        if (! Config::has('auth.providers.craft')) {
+            Config::set('auth.providers.craft', [
+                'driver' => 'craft',
+                'model' => \craft\elements\User::class,
+            ]);
+        }
 
         /**
          * This hooks our permission system into
