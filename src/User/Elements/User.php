@@ -88,6 +88,8 @@ use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 
+use function CraftCms\Cms\t;
+
 /**
  * User represents a user element.
  *
@@ -221,6 +223,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function getKey(): ?int
+    {
+        return $this->id;
     }
 
     /**

@@ -85,6 +85,6 @@ class User extends \yii\web\User
             default => throw new RuntimeException('Unable to convert identity from "' . print_r($identity, true) . '"'),
         };
 
-        return \craft\elements\User::find()->id($id)->status(null)->one();
+        return \CraftCms\Cms\User\Elements\User::find()->id($id)->status(null)->one();
     }
 }

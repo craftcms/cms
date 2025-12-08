@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\errors\InvalidElementException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Models\User;

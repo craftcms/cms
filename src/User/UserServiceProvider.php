@@ -15,7 +15,7 @@ use CraftCms\Cms\User\Commands\PasswordResetUrlCommand;
 use CraftCms\Cms\User\Commands\Remove2faCommand;
 use CraftCms\Cms\User\Commands\SetPasswordCommand;
 use CraftCms\Cms\User\Commands\UnlockCommand;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Foundation\Application;
@@ -42,7 +42,7 @@ final class UserServiceProvider extends ServiceProvider
         if (! Config::has('auth.providers.craft')) {
             Config::set('auth.providers.craft', [
                 'driver' => 'craft',
-                'model' => \craft\elements\User::class,
+                'model' => User::class,
             ]);
         }
 
@@ -51,7 +51,7 @@ final class UserServiceProvider extends ServiceProvider
          * Laravel's Gate authorization system
          */
         Gate::before(function (Authorizable $user, string $ability) {
-            if (! $user instanceof User && ! $user instanceof \craft\elements\User) {
+            if (! $user instanceof User) {
                 return null;
             }
 

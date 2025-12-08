@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Closure;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Support\Arrayable;

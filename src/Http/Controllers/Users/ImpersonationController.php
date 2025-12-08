@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Actions\GetImpersonationUrlAction;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
