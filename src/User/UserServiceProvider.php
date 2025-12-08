@@ -31,7 +31,7 @@ final class UserServiceProvider extends ServiceProvider
          * Laravel's Gate authorization system
          */
         Gate::before(function (Authorizable $user, string $ability) {
-            if (! $user instanceof User) {
+            if (! $user instanceof User && ! $user instanceof \craft\elements\User) {
                 return null;
             }
 
