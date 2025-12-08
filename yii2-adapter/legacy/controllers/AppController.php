@@ -37,6 +37,7 @@ use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -76,7 +77,7 @@ class AppController extends Controller
                 'class' => UtilityAccess::class,
                 'utility' => UpdatesUtility::class,
                 'only' => ['check-for-updates', 'cache-updates'],
-                'when' => fn() => !Craft::$app->getUser()->checkPermission('performUpdates'),
+                'when' => fn() => !Gate::check('performUpdates'),
             ],
         ]);
     }

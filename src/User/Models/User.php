@@ -12,7 +12,6 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\Facades\UserPermissions;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -82,30 +81,6 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
                     ->whereColumn(Table::USERS.'.id', Table::ELEMENTS.'.id')
                     ->whereNull(Table::ELEMENTS.'.dateDeleted')
             );
-    }
-
-    /**
-     * Returns whether the user has permission to perform a given action.
-     *
-     * @param  string  $abilities
-     *
-     * @todo Permissions to Laravel Gates
-     */
-    #[Override]
-    public function can($abilities, $arguments = []): bool
-    {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
-
-        if (! isset($this->id)) {
-            return false;
-        }
-
-        return UserPermissions::doesUserHavePermission($this->id, $abilities);
     }
 
     public function asElement(): \CraftCms\Cms\User\Elements\User

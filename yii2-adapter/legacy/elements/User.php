@@ -66,6 +66,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
@@ -406,7 +407,7 @@ class User extends Element implements IdentityInterface
     {
         $actions = [];
 
-        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
+        if (Gate::check('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 
@@ -414,7 +415,7 @@ class User extends Element implements IdentityInterface
             $actions[] = UnsuspendUsers::class;
         }
 
-        if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
+        if (Gate::check('deleteUsers')) {
             // Delete
             $actions[] = DeleteUsers::class;
         }
@@ -909,7 +910,7 @@ class User extends Element implements IdentityInterface
     {
         if (
             Edition::get() === Edition::Solo ||
-            !Craft::$app->getUser()->checkPermission('editUsers')
+            !Gate::check('editUsers')
         ) {
             return null;
         }
@@ -1113,11 +1114,11 @@ class User extends Element implements IdentityInterface
 
             if ($this->email !== null) {
                 // are they allowed to set the email?
-                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
                     if (
                         Edition::get()->value >= Edition::Pro->value &&
                         app(ProjectConfig::class)->get('users.requireEmailVerification') &&
-                        !$userSession->checkPermission('administrateUsers')
+                        !Gate::check('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = Arr::pull($values, 'email');
@@ -1828,18 +1829,7 @@ XML;
      */
     public function can(string $permission): bool
     {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
-
-        if (!isset($this->id)) {
-            return false;
-        }
-
-        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
+        return Gate::check($permission);
     }
 
     /**
@@ -2045,7 +2035,7 @@ XML;
                         }
                     }
 
-                    if (!$isCurrentUser && $userSession->checkPermission('editUsers')) {
+                    if (!$isCurrentUser && Gate::check('editUsers')) {
                         $statusItems[] = [
                             'icon' => 'paperplane',
                             'label' => t('Send password reset email'),

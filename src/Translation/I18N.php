@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use ResourceBundle;
 use Stringable;
@@ -254,7 +255,7 @@ final class I18N
             return $this->getSiteLocales();
         }
 
-        return $this->getSiteLocales()->filter(fn (Locale $locale) => Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id));
+        return $this->getSiteLocales()->filter(fn (Locale $locale) => Gate::check('editLocale:'.$locale->id));
     }
 
     /**

@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\base\Component;
 
@@ -149,10 +150,8 @@ class Globals extends Component
         $currentSiteId = Sites::getCurrentSite()->id;
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
-            $session = Craft::$app->getUser();
-
             $this->_editableGlobalSets[$currentSiteId] = Collection::make($this->_allSets($currentSiteId))
-                ->filter(fn(GlobalSet $globalSet) => $session->checkPermission("editGlobalSet:$globalSet->uid"))
+                ->filter(fn(GlobalSet $globalSet) => Gate::check("editGlobalSet:$globalSet->uid"))
                 ->values()
                 ->all();
         }

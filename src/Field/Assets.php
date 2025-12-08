@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -694,7 +695,7 @@ final class Assets extends BaseRelationField
                 // (Use restrictedLocationSource here because the actual folder could belong to a temp volume)
                 $volume = $this->_volumeBySourceKey($this->restrictedLocationSource);
 
-                if (! $volume || ! Craft::$app->getUser()->checkPermission("viewAssets:$volume->uid")) {
+                if (! $volume || ! Gate::check("viewAssets:$volume->uid")) {
                     return [];
                 }
             }
@@ -724,11 +725,10 @@ final class Assets extends BaseRelationField
 
         // Now enforce the showUnpermittedVolumes setting
         if (! $this->showUnpermittedVolumes && ! empty($sources)) {
-            $userService = Craft::$app->getUser();
             $volumesService = Craft::$app->getVolumes();
 
             return Collection::make($sources)
-                ->filter(function (string $source) use ($volumesService, $userService) {
+                ->filter(function (string $source) use ($volumesService) {
                     // If it’s not a volume folder, let it through
                     if (! str_starts_with($source, 'volume:')) {
                         return true;
@@ -736,7 +736,7 @@ final class Assets extends BaseRelationField
 
                     // Only show it if they have permission to view it, or if it's the temp volume
                     $volumeUid = explode(':', $source)[1];
-                    if ($userService->checkPermission("viewAssets:$volumeUid")) {
+                    if (Gate::check("viewAssets:$volumeUid")) {
                         return true;
                     }
 
@@ -767,7 +767,7 @@ final class Assets extends BaseRelationField
             $this->allowUploads &&
             $uploadVolume &&
             $uploadFs &&
-            Craft::$app->getUser()->checkPermission("saveAssets:$uploadVolume->uid")
+            Gate::check("saveAssets:$uploadVolume->uid")
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
 

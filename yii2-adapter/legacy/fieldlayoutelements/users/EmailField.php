@@ -13,6 +13,7 @@ use craft\elements\User;
 use craft\fieldlayoutelements\TextField;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Support\Facades\Gate;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -99,7 +100,7 @@ class EmailField extends TextField
             Edition::get()->value >= Edition::Pro->value &&
             app(ProjectConfig::class)->get('users.requireEmailVerification') &&
             !$element->getIsDraft() &&
-            !Craft::$app->getUser()->checkPermission('administrateUsers')
+            !Gate::check('administrateUsers')
         ) {
             return t('New email addresses must be verified before taking effect.');
         }
@@ -120,7 +121,7 @@ class EmailField extends TextField
             if (
                 !$element->getIsCurrent() &&
                 !$element->getIsDraft() &&
-                !Craft::$app->getUser()->checkPermission('administrateUsers')
+                !Gate::check('administrateUsers')
             ) {
                 return null;
             }

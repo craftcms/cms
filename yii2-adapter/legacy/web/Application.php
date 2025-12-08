@@ -32,6 +32,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -50,7 +51,6 @@ use yii\debug\panels\MailPanel;
 use yii\debug\panels\ProfilingPanel;
 use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
 use yii\web\UnauthorizedHttpException;
@@ -245,9 +245,8 @@ class Application extends \yii\web\Application
                     if ($userSession->getIsGuest()) {
                         return $userSession->loginRequired();
                     }
-                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->handle)) {
-                        throw new ForbiddenHttpException();
-                    }
+
+                    Gate::authorize('accessPlugin-' . $plugin->handle);
                 }
 
                 if (!$userSession->getIsGuest()) {
