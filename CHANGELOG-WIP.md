@@ -10,6 +10,7 @@
 - Added the `uuid()` Twig function.
 
 ### Extensibility
+- Added `craft\services\Search::deleteOrphanedIndexJobs()`.
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
@@ -24,3 +25,4 @@
 - Global set queries no longer register cache tags.
 - Updated Twig to 3.19. ([#17603](https://github.com/craftcms/cms/discussions/17603))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
+- Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
