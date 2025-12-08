@@ -19,10 +19,11 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class UserServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         /**
@@ -45,7 +46,7 @@ final class UserServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if (! (new UserPermissions)->doesUserHavePermission($user->id, $ability)) {
+            if (! app(UserPermissions::class)->doesUserHavePermission($user->id, $ability)) {
                 return null;
             }
 
