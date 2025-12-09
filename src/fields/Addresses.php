@@ -530,18 +530,18 @@ class Addresses extends Field implements
         return $addresses;
     }
 
-    private function createAddressQuery(?ElementInterface $element = null): AddressQuery
+    private function createAddressQuery(?ElementInterface $owner = null): AddressQuery
     {
         $query = Address::find();
 
         // Existing element?
-        if ($element && $element->id) {
+        if ($owner && $owner->id) {
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     AddressQuery $query,
-                ) use ($element) {
-                    $query->ownerId = $element->id;
+                ) use ($owner) {
+                    $query->ownerId = $owner->id;
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -549,7 +549,7 @@ class Addresses extends Field implements
                     }
 
                     // If the owner is a revision, allow revision addresses to be returned as well
-                    if ($element->getIsRevision()) {
+                    if ($owner->getIsRevision()) {
                         $query
                             ->revisions(null)
                             ->trashed(null);
@@ -558,14 +558,14 @@ class Addresses extends Field implements
             ], true));
 
             // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $element);
+            $query->prepForEagerLoading($this->handle, $owner);
         } else {
             $query->id = false;
         }
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId ?? null);
+            ->siteId($owner->siteId ?? null);
 
         return $query;
     }
