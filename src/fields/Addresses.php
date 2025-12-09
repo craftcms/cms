@@ -24,7 +24,6 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\ElementIndexViewMode;
@@ -526,7 +525,7 @@ class Addresses extends Field implements
             $addresses[] = $address;
         }
 
-        /** @var Entry[] $addresses */
+        /** @var Address[] $addresses */
         return $addresses;
     }
 
