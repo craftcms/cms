@@ -29,6 +29,7 @@ use craft\elements\User;
 use craft\enums\ElementIndexViewMode;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
+use craft\events\PopulateElementEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
@@ -556,6 +557,18 @@ class Addresses extends Field implements
                         $query
                             ->revisions(null)
                             ->trashed(null);
+                    }
+                },
+                ElementQuery::EVENT_AFTER_POPULATE_ELEMENT => function(PopulateElementEvent $event) use ($owner) {
+                    /** @var Address $address */
+                    $address = $event->element;
+                    if ($address->siteId === $owner->siteId) {
+                        if ($address->getOwnerId() === $owner->id) {
+                            $address->setOwner($owner);
+                        }
+                        if ($address->getPrimaryOwnerId() === $owner->id) {
+                            $address->setPrimaryOwner($owner);
+                        }
                     }
                 },
             ], true));

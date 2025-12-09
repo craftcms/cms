@@ -34,6 +34,7 @@ use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
 use craft\events\CancelableEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
+use craft\events\PopulateElementEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -786,6 +787,18 @@ class Matrix extends Field implements
                         $query
                             ->revisions(null)
                             ->trashed(null);
+                    }
+                },
+                ElementQuery::EVENT_AFTER_POPULATE_ELEMENT => function(PopulateElementEvent $event) use ($owner) {
+                    /** @var Entry $entry */
+                    $entry = $event->element;
+                    if ($entry->siteId === $owner->siteId) {
+                        if ($entry->getOwnerId() === $owner->id) {
+                            $entry->setOwner($owner);
+                        }
+                        if ($entry->getPrimaryOwnerId() === $owner->id) {
+                            $entry->setPrimaryOwner($owner);
+                        }
                     }
                 },
             ], true));
