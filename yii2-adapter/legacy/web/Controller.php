@@ -9,13 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
-use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use yii\base\Action;
@@ -245,7 +245,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Craft::$app->getUser()->getIdentity($autoRenew);
+        return Auth::user();
     }
 
     /**

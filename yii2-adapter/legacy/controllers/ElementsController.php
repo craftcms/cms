@@ -786,15 +786,27 @@ JS, [
         if (!$isUnpublishedDraft) {
             $user = Auth::user();
 
-            $drafts = $element::find()
-                ->draftOf($element)
-                ->siteId($element->siteId)
-                ->status(null)
-                ->orderBy(['dateUpdated' => SORT_DESC])
-                ->with(['draftCreator'])
-                ->collect()
-                ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
-                ->all();
+            if ($element instanceof User) {
+                $drafts = $element::find()
+                    ->draftOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->orderByDesc('dateUpdated')
+                    ->with(['draftCreator'])
+                    ->get()
+                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->all();
+            } else {
+                $drafts = $element::find()
+                    ->draftOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->orderBy(['dateUpdated' => SORT_DESC])
+                    ->with(['draftCreator'])
+                    ->collect()
+                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->all();
+            }
         } else {
             $drafts = [];
         }

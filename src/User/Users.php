@@ -65,6 +65,8 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use yii\base\Exception;
 use yii\base\UserException;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 final class Users
 {

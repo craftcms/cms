@@ -347,9 +347,7 @@ class UsersController extends Controller
      */
     private function _completeLogin(User $user, int $duration): Response
     {
-        $userSession = Craft::$app->getUser();
-
-        Auth::login($user, $duration > 0);
+        Auth::setRememberDuration($duration)->login($user, $duration > 0);
 
         return $this->_handleSuccessfulLogin($user);
     }

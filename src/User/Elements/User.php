@@ -39,6 +39,7 @@ use craft\validators\UserPasswordValidator;
 use craft\web\View;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -557,7 +558,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
     {
         /** @var \CraftCms\Cms\Database\Queries\UserQuery $elementQuery */
         if ($attribute === 'groups') {
@@ -1209,7 +1210,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
                 $query->where('active', true)
                     ->orWhere('pending', true);
             })
-            ->when($this->id, function (Builder $query) {
+            ->when($this->id, function (UserQuery $query) {
                 $query->whereNot('elements.id', $this->id);
             });
 

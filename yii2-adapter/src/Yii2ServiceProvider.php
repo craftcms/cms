@@ -524,13 +524,13 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Event::listen(Authenticated::class, function(Authenticated $event) {
-            $user = User::find()->id($event->user->id)->status(null)->one();
+            $user = User::find()->id($event->user->getAuthIdentifier())->status(null)->one();
 
             app('Craft')->getUser()->setIdentity($user);
         });
 
         Event::listen(Login::class, function(Login $event) {
-            $user = User::find()->id($event->user->id)->status(null)->one();
+            $user = User::find()->id($event->user->getAuthIdentifier())->status(null)->one();
 
             app('Craft')->getUser()->setIdentity($user);
         });

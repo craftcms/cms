@@ -49,7 +49,7 @@ trait EditUserTrait
             ->id($userId)
             ->drafts(null)
             ->status(null)
-            ->one();
+            ->first();
 
         abort_if(is_null($user), 400, 'No user was identified by the request.');
 

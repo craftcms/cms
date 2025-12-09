@@ -836,7 +836,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'authors':

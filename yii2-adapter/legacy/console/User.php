@@ -21,13 +21,6 @@ use yii\base\Component;
 class User extends Component
 {
     /**
-     * @var UserElement|null
-     * @see getIdentity()
-     * @see setIdentity()
-     */
-    private ?UserElement $_identity = null;
-
-    /**
      * Returns whether the current user is an admin.
      *
      * @return bool Whether the current user is an admin.
@@ -71,7 +64,7 @@ class User extends Component
      */
     public function setIdentity(?UserElement $identity = null): void
     {
-        $this->_identity = $identity;
+        Auth::login($identity);
     }
 
     /**

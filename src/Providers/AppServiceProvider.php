@@ -130,6 +130,8 @@ final class AppServiceProvider extends ServiceProvider
             // NOT /adminsarefun
         ));
 
+        Request::macro('isSiteRequest', fn (): bool => ! $this->isCpRequest());
+
         Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
 
         Request::macro('actionSegments', function (): array {

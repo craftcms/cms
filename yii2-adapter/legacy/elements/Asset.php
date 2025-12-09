@@ -65,6 +65,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -664,7 +665,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
     {
         if ($attribute === 'uploader') {
             $elementQuery->andWith('uploader');

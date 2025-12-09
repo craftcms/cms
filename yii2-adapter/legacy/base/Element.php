@@ -1418,11 +1418,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Prepares an element query for an element index that includes a given table attribute.
      *
-     * @param ElementQueryInterface $elementQuery
+     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery
      * @param string $attribute
      */
     protected static function prepElementQueryForTableAttribute(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         string $attribute,
     ): void {
         switch ($attribute) {
