@@ -31,6 +31,7 @@ use DateInterval;
 use DateTime;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
@@ -77,6 +78,8 @@ class ExtensionTest extends TestCase
         ]);
         Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
         Craft::$app->getRequest()->setRawBody('This is a raw body');
+
+        Auth::login($user);
 
         // Current user
         $this->testRenderResult(
