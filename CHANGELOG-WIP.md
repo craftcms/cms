@@ -15,6 +15,7 @@
 - Element, field, and entry type edit pages now redirect back to the previous page’s URL on save. ([#16140](https://github.com/craftcms/cms/pull/16140))
 - Bulk element actions are now available on element indexes for mobile devices.
 - Textual condition rules are now case-insensitive. ([#18107](https://github.com/craftcms/cms/issues/18107))
+- Added support for exporting elements as XLSX and YAML files. ([#18160](https://github.com/craftcms/cms/pull/18160))
 
 ### Accessibility
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
@@ -91,9 +92,14 @@
 - Added `craft\services\Search::deleteOrphanedIndexJobs()`.
 - Added `craft\services\Structure::EVENT_AFTER_UPDATE_ELEMENT`.
 - Added `craft\services\Structure::EVENT_BEFORE_UPDATE_ELEMENT`.
+- Added `craft\web\BaseSpreadsheetResponseFormatter`.
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Request::getHasInvalidToken()`.
 - Added `craft\web\Response::FORMAT_GQL`.
+- Added `craft\web\Response::FORMAT_XLSX`.
+- Added `craft\web\Response::FORMAT_YAML`.
+- Added `craft\web\XlsxResponseFormatter`.
+- Added `craft\web\YamlResponseFormatter`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
@@ -116,6 +122,7 @@
 - Deprecated `craft\fields\Matrix::$showCardsInGrid`.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
+- Deprecated `craft\web\CvsResponseResponseFormatter::$escapeChar`.
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
@@ -133,4 +140,5 @@
 - Fixed a bug where titles, slugs, and required custom field values weren’t always getting propagated to other sites when creating a new element. ([#17955](https://github.com/craftcms/cms/issues/17955))
 - Fixed a bug where it was possible to create more than five users with the Team edition.
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
+- Added the PhpSpreadsheet library.
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
