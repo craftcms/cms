@@ -23,6 +23,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
@@ -1191,7 +1192,7 @@ class ElementHelper
     public static function setProvisionalDraftUser(UserElement|int|null $user): void
     {
         if (is_int($user)) {
-            $user = Craft::$app->getUsers()->getUserById($user);
+            $user = Users::getUserById($user);
         }
 
         self::$provisionalDraftUser = $user;

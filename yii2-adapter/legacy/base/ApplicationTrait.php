@@ -345,7 +345,7 @@ trait ApplicationTrait
             $id = Session::get($user->idParam);
             if (
                 $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
                 \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;

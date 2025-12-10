@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -72,15 +73,14 @@ JS, [
         $query->status(User::STATUS_SUSPENDED);
         /** @var User[] $users */
         $users = $query->all();
-        $usersService = Craft::$app->getUsers();
         $currentUser = Auth::user();
 
-        $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
-            if (!$usersService->canSuspend($currentUser, $user)) {
+        $successCount = count(array_filter($users, function(User $user) use ($currentUser) {
+            if (!Users::canSuspend($currentUser, $user)) {
                 return false;
             }
             try {
-                $usersService->unsuspendUser($user);
+                Users::unsuspendUser($user);
                 return true;
             } catch (Throwable) {
                 return false;

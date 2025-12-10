@@ -18,6 +18,7 @@ use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -172,7 +173,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // Finally, attempt via username / email
         if ($idpIdentifier) {
-            return Craft::$app->getUsers()->getUserByUsernameOrEmail(
+            return Users::getUserByUsernameOrEmail(
                 $idpIdentifier
             );
         }
@@ -250,7 +251,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         $this->trigger(Sso::EVENT_POPULATE_USER_GROUPS, $event);
 
-        return Craft::$app->getUsers()->assignUserToGroups(
+        return Users::assignUserToGroups(
             $user->getId(),
             $event->groupIds,
         );
@@ -263,7 +264,7 @@ abstract class BaseExternalProvider extends BaseProvider
     private function enableUser(User $user): void
     {
         if ($user->getId()) {
-            Craft::$app->getUsers()->activateUser($user);
+            Users::activateUser($user);
 
             return;
         }

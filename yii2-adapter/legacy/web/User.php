@@ -14,6 +14,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
@@ -85,7 +86,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
     {
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = Users::getUserById($userId);
 
         if (!$user) {
             return false;
@@ -459,7 +460,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
         // Update the user record
         if (!$impersonator) {
-            Craft::$app->getUsers()->handleValidLogin($identity);
+            Users::handleValidLogin($identity);
         }
 
         parent::afterLogin($identity, $cookieBased, $duration);

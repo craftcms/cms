@@ -29,6 +29,7 @@ use CraftCms\Cms\User\Events\AssigningUserToGroups;
 use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
+use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\SavingUserPhoto;
 use CraftCms\Cms\User\Events\SuspendingUser;
 use CraftCms\Cms\User\Events\UnlockingUser;
@@ -43,6 +44,7 @@ use CraftCms\Cms\User\Events\UserPhotoSaved;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
+use CraftCms\Cms\User\Events\VerifyingEmail;
 use DateTime;
 use Illuminate\Support\Facades\Event;
 use Throwable;
@@ -874,12 +876,14 @@ class Users extends Component
         }
 
         foreach ([
-             UserLocked::class => self::EVENT_AFTER_LOCK_USER,
-             UserActivated::class => self::EVENT_AFTER_ACTIVATE_USER,
-             UserDeactivated::class => self::EVENT_AFTER_DEACTIVATE_USER,
-             UserUnlocked::class => self::EVENT_AFTER_UNLOCK_USER,
-             UserSuspended::class => self::EVENT_AFTER_SUSPEND_USER,
-             UserUnsuspended::class => self::EVENT_AFTER_UNSUSPEND_USER,
+            UserLocked::class => self::EVENT_AFTER_LOCK_USER,
+            UserActivated::class => self::EVENT_AFTER_ACTIVATE_USER,
+            UserDeactivated::class => self::EVENT_AFTER_DEACTIVATE_USER,
+            UserUnlocked::class => self::EVENT_AFTER_UNLOCK_USER,
+            UserSuspended::class => self::EVENT_AFTER_SUSPEND_USER,
+            UserUnsuspended::class => self::EVENT_AFTER_UNSUSPEND_USER,
+            VerifyingEmail::class => self::EVENT_BEFORE_VERIFY_EMAIL,
+            EmailVerified::class => self::EVENT_AFTER_VERIFY_EMAIL,
         ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
                 if (Craft::$app->getUsers()->hasEventHandlers($old)) {

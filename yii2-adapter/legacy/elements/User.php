@@ -43,8 +43,9 @@ class User implements IdentityInterface, ElementInterface
 
     public function __construct(
         array $config = [],
+        UserElement|null $user = null,
     ) {
-        $this->userElement = new UserElement($config);
+        $this->userElement = $user ?? new UserElement($config);
     }
 
     public static function __callStatic(string $name, array $arguments)

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use yii\base\Exception;
@@ -155,7 +156,7 @@ JS,
         }
 
         if ($this->transferContentTo) {
-            $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
+            $transferContentTo = Users::getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {
                 throw new Exception("No user exists with the ID “{$this->transferContentTo}”");

@@ -1781,7 +1781,7 @@ XML;
     {
         return
             $this->can('registerUsers') &&
-            Craft::$app->getUsers()->canCreateUsers();
+            Users::canCreateUsers();
     }
 
     /**
@@ -1814,7 +1814,7 @@ XML;
     public function hasShunned(string $message): bool
     {
         if (isset($this->id)) {
-            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
+            return Users::hasUserShunnedMessage($this->id, $message);
         }
 
         return false;
@@ -1885,7 +1885,6 @@ XML;
 
         $currentUser = Auth::user();
         $view = Craft::$app->getView();
-        Craft::$app->getUsers();
         $userSession = Craft::$app->getUser();
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
@@ -2197,7 +2196,7 @@ JS, [
      */
     public function getPreferences(): array
     {
-        return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
+        return $this->id ? Users::getUserPreferences($this->id) : [];
     }
 
     /**
@@ -2465,7 +2464,7 @@ JS, [
     {
         if (
             ($isNew || $this->applyingDraft) &&
-            ! Craft::$app->getUsers()->canCreateUsers()
+            ! Users::canCreateUsers()
         ) {
             return false;
         }

@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\errors\InvalidElementException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User as UserElement;
@@ -102,7 +103,7 @@ final readonly class PermissionsController
             $request->boolean('sendActivationEmail')
         ) {
             try {
-                if (! Craft::$app->getUsers()->sendActivationEmail($user)) {
+                if (! Users::sendActivationEmail($user)) {
                     Flash::fail(t('Couldn’t send activation email. Check your email settings.'));
                 }
             } catch (InvalidElementException $e) {
@@ -153,7 +154,7 @@ final readonly class PermissionsController
             $this->requireElevatedSession();
         }
 
-        Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        Users::assignUserToGroups($user->id, $groupIds);
 
         $user->setGroups($newGroups);
     }

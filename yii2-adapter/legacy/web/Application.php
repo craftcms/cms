@@ -28,6 +28,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -385,7 +386,7 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(Db::escapeParam($username));
+        $user = Users::getUserByUsernameOrEmail(Db::escapeParam($username));
 
         if (!$user) {
             throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
@@ -395,7 +396,7 @@ class Application extends \yii\web\Application
             throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
         }
 
-        $this->getUser()->setIdentity($user);
+        $this->getUser()->setIdentity(new \craft\elements\User(user: $user));
     }
 
     /**

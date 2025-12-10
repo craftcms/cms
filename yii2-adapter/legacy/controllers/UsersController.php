@@ -59,7 +59,9 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\VerifyingEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -522,7 +524,7 @@ class UsersController extends Controller
             $userId = $this->request->getBodyParam('userId');
 
             if ($userId) {
-                $user = Craft::$app->getUsers()->getUserById($userId);
+                $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
                 if (!$user) {
                     throw new NotFoundHttpException('User not found');
@@ -543,7 +545,7 @@ class UsersController extends Controller
                 return $this->_handleSendPasswordResetError($errors);
             }
 
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+            $user = \CraftCms\Cms\Support\Facades\Users::getUserByUsernameOrEmail($loginName);
 
             if (
                 !$user?->getIsCredentialed() ||
@@ -560,7 +562,7 @@ class UsersController extends Controller
 
         // Don't try to send the email if there are already error or there is no user
         try {
-            if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+            if (empty($errors) && !empty($user) && !\CraftCms\Cms\Support\Facades\Users::sendPasswordResetEmail($user)) {
                 throw new Exception();
             }
         } catch (Exception) {
@@ -601,14 +603,14 @@ class UsersController extends Controller
         }
 
         $userId = $this->request->getRequiredParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
         }
 
         try {
-            $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+            $url = \CraftCms\Cms\Support\Facades\Users::getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
             if (in_array($user->getStatus(), [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
                 $message = t('Couldn’t generate an activation URL: {error}', [
@@ -638,7 +640,7 @@ class UsersController extends Controller
         $this->requirePermission('administrateUsers');
 
         $userId = $this->request->getRequiredParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -668,7 +670,7 @@ class UsersController extends Controller
         $this->requirePermission('administrateUsers');
 
         $userId = $this->request->getRequiredParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -735,7 +737,7 @@ class UsersController extends Controller
 
         // Make sure we still have a valid token.
         /** @var User $user */
-        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken($user);
         }
 
@@ -757,7 +759,7 @@ class UsersController extends Controller
         // If they're pending, try to activate them, and maybe treat this as an activation request
         if ($user->getStatus() === User::STATUS_PENDING) {
             try {
-                Craft::$app->getUsers()->activateUser($user);
+                \CraftCms\Cms\Support\Facades\Users::activateUser($user);
                 $response = $this->_onAfterActivateUser($user);
                 if ($response !== null) {
                     return $response;
@@ -823,24 +825,23 @@ class UsersController extends Controller
         // POST request
         $code = $this->request->getRequiredBodyParam('code');
         $uid = $this->request->getRequiredParam('uid');
-        $user = Craft::$app->getUsers()->getUserByUid($uid);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserByUid($uid);
 
         if (!$user) {
             throw new BadRequestHttpException("Invalid user UUID: $uid");
         }
 
         // Make sure we still have a valid token.
-        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken($user);
         }
 
         $pending = $user->pending;
-        $usersService = Craft::$app->getUsers();
 
         // Do they have an unverified email?
         if ($user->unverifiedEmail) {
             try {
-                $usersService->verifyEmailForUser($user);
+                \CraftCms\Cms\Support\Facades\Users::verifyEmailForUser($user);
             } catch (InvalidElementException) {
                 return $this->renderTemplate('_special/emailtaken.twig', [
                     'email' => $user->unverifiedEmail,
@@ -848,7 +849,7 @@ class UsersController extends Controller
             }
         } elseif ($pending) {
             // No unverified email so just get on with activating their account
-            $usersService->activateUser($user);
+            \CraftCms\Cms\Support\Facades\Users::activateUser($user);
         }
 
         // If they're logged in, give them a success notice
@@ -875,7 +876,7 @@ class UsersController extends Controller
         $this->requirePostRequest();
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -914,14 +915,14 @@ class UsersController extends Controller
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
         }
 
         try {
-            Craft::$app->getUsers()->activateUser($user);
+            \CraftCms\Cms\Support\Facades\Users::activateUser($user);
         } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
@@ -1149,7 +1150,7 @@ class UsersController extends Controller
             ]);
         }
 
-        Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
+        \CraftCms\Cms\Support\Facades\Users::saveUserPreferences($user, $preferences);
         //Craft::$app->updateTargetLanguage();
 
         return $this->asSuccess(t('Preferences saved.'));
@@ -1463,7 +1464,7 @@ JS);
         if ($isPublicRegistration) {
             // set the default group on the user, so that any content
             // based on user group condition can be validated and saved against them
-            $groups = Craft::$app->getUsers()->getDefaultUserGroups($user);
+            $groups = \CraftCms\Cms\Support\Facades\Users::getDefaultUserGroups($user);
             if (!empty($groups)) {
                 $user->setGroups($groups);
             }
@@ -1523,7 +1524,7 @@ JS);
         // If this is a new user and email verification isn't required,
         // go ahead and activate them now.
         if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault) {
-            Craft::$app->getUsers()->activateUser($user);
+            \CraftCms\Cms\Support\Facades\Users::activateUser($user);
         }
 
         // Is this the current user, and did their username just change?
@@ -1541,7 +1542,7 @@ JS);
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group
-                Craft::$app->getUsers()->assignUserToDefaultGroup($user);
+                \CraftCms\Cms\Support\Facades\Users::assignUserToDefaultGroup($user);
             }
         }
 
@@ -1554,10 +1555,10 @@ JS);
 
             if ($isNewUser) {
                 // Send the activation email
-                Craft::$app->getUsers()->sendActivationEmail($user);
+                \CraftCms\Cms\Support\Facades\Users::sendActivationEmail($user);
             } else {
                 // Send the standard verification email
-                Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+                \CraftCms\Cms\Support\Facades\Users::sendNewEmailVerifyEmail($user);
             }
 
             // Put the original email back into place
@@ -1624,7 +1625,7 @@ JS);
         $this->requireAcceptsJson();
         $this->requireCpRequest();
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             throw new BadRequestHttpException("Invalid user ID: $userId");
@@ -1657,13 +1658,12 @@ JS);
                 throw new UploadFailedException($file->error);
             }
 
-            $users = Craft::$app->getUsers();
-            $user = $users->getUserById($userId);
+            $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
             // Move to our own temp location
             $fileLocation = Assets::tempFilePath($file->getExtension());
             move_uploaded_file($file->tempName, $fileLocation);
-            $users->saveUserPhoto($fileLocation, $user, $file->name, $file->type);
+            \CraftCms\Cms\Support\Facades\Users::saveUserPhoto($fileLocation, $user, $file->name, $file->type);
 
             return $this->_renderPhotoTemplate($user);
         } catch (Throwable $exception) {
@@ -1695,7 +1695,7 @@ JS);
             $this->requirePermission('editUsers');
         }
 
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if ($user->photoId) {
             Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
@@ -1744,7 +1744,7 @@ JS);
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         try {
-            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+            $emailSent = \CraftCms\Cms\Support\Facades\Users::sendActivationEmail($user);
         } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
@@ -1772,7 +1772,7 @@ JS);
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -1791,7 +1791,7 @@ JS);
             }
         }
 
-        Craft::$app->getUsers()->unlockUser($user);
+        \CraftCms\Cms\Support\Facades\Users::unlockUser($user);
 
         $this->setSuccessFlash(t('User unlocked.'));
         return $this->redirectToPostedUrl();
@@ -1809,22 +1809,19 @@ JS);
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
         }
 
-        $usersService = Craft::$app->getUsers();
-        $currentUser = static::currentUser();
-
-        if (!$usersService->canSuspend($currentUser, $user)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::canSuspend(Auth::user(), $user)) {
             $this->setFailFlash(t('Couldn’t suspend user.'));
             return null;
         }
 
         try {
-            $usersService->suspendUser($user);
+            \CraftCms\Cms\Support\Facades\Users::suspendUser($user);
         } catch (InvalidElementException) {
             $this->setFailFlash(t('Couldn’t suspend user.'));
             return null;
@@ -1899,7 +1896,7 @@ JS);
         $this->requirePostRequest();
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -1916,7 +1913,7 @@ JS);
 
         // Deactivate the user
         try {
-            Craft::$app->getUsers()->deactivateUser($user);
+            \CraftCms\Cms\Support\Facades\Users::deactivateUser($user);
             $this->setSuccessFlash(t('Successfully deactivated the user.'));
         } catch (InvalidElementException) {
             $this->setFailFlash(t('There was a problem deactivating the user.'));
@@ -1935,7 +1932,7 @@ JS);
         $this->requirePostRequest();
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
@@ -1958,7 +1955,7 @@ JS);
         }
 
         if ($transferContentToId) {
-            $transferContentTo = Craft::$app->getUsers()->getUserById($transferContentToId);
+            $transferContentTo = \CraftCms\Cms\Support\Facades\Users::getUserById($transferContentToId);
 
             if (!$transferContentTo) {
                 $this->_noUserExists();
@@ -1995,23 +1992,20 @@ JS);
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
 
         if (!$user) {
             $this->_noUserExists();
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
-        $usersService = Craft::$app->getUsers();
-        $currentUser = static::currentUser();
-
-        if (!$usersService->canSuspend($currentUser, $user)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::canSuspend(Auth::user(), $user)) {
             $this->setFailFlash(t('Couldn’t unsuspend user.'));
             return null;
         }
 
         try {
-            $usersService->unsuspendUser($user);
+            \CraftCms\Cms\Support\Facades\Users::unsuspendUser($user);
         } catch (InvalidElementException) {
             $this->setFailFlash(t('Couldn’t unsuspend user.'));
             return null;
@@ -2154,7 +2148,7 @@ JS);
             'username',
         ];
 
-        if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::saveLayout($fieldLayout)) {
             Craft::$app->getUrlManager()->setRouteParams([
                 'variables' => [
                     'fieldLayout' => $fieldLayout,
@@ -2430,10 +2424,8 @@ JS);
     private function _processUserPhoto(User $user): void
     {
         // Delete their photo?
-        $users = Craft::$app->getUsers();
-
         if ($this->request->getBodyParam('deletePhoto')) {
-            $users->deleteUserPhoto($user);
+            \CraftCms\Cms\Support\Facades\Users::deleteUserPhoto($user);
             $user->photoId = null;
             Craft::$app->getElements()->saveElement($user);
         }
@@ -2480,7 +2472,7 @@ JS);
 
         if ($newPhoto) {
             try {
-                $users->saveUserPhoto($fileLocation, $user, $filename, $mimeType);
+                \CraftCms\Cms\Support\Facades\Users::saveUserPhoto($fileLocation, $user, $filename, $mimeType);
             } catch (Throwable $e) {
                 if (file_exists($fileLocation)) {
                     FileHelper::unlink($fileLocation);
@@ -2516,23 +2508,16 @@ JS);
             $userSession->logout();
         }
 
-        // Fire a 'beforeVerifyUser' event
-        $usersService = Craft::$app->getUsers();
-        if ($usersService->hasEventHandlers(Users::EVENT_BEFORE_VERIFY_EMAIL)) {
-            $usersService->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL, new UserEvent([
-                'user' => $user,
-            ]));
+        if (Event::hasListeners(VerifyingEmail::class)) {
+            Event::dispatch(new VerifyingEmail($user));
         }
 
-        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+        if (!\CraftCms\Cms\Support\Facades\Users::isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken($user);
         }
 
-        // Fire an 'afterVerifyUser' event
-        if ($usersService->hasEventHandlers(Users::EVENT_AFTER_VERIFY_EMAIL)) {
-            $usersService->trigger(Users::EVENT_AFTER_VERIFY_EMAIL, new UserEvent([
-                'user' => $user,
-            ]));
+        if (Event::hasListeners(EmailVerified::class)) {
+            Event::dispatch(new EmailVerified($user));
         }
 
         return [$user, $uid, $code];

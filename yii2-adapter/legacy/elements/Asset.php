@@ -72,6 +72,7 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -2111,7 +2112,7 @@ JS,[
             return null;
         }
 
-        if (($this->_uploader = Craft::$app->getUsers()->getUserById($this->uploaderId)) === null) {
+        if (($this->_uploader = Users::getUserById($this->uploaderId)) === null) {
             // The uploader is probably soft-deleted. Just pretend no uploader is set
             return null;
         }
