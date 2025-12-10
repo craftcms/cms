@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @extends ElementQuery<Entry>
+ *
+ * @phpstan-ignore class.missingExtends
  */
 final class EntryQuery extends ElementQuery
 {

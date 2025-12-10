@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\elements\ElementCollection;
 use craft\models\FieldLayout;
 use yii\db\Connection;
+use yii\db\QueryInterface;
 
 /**
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
@@ -24,8 +25,18 @@ use yii\db\Connection;
  * @since 3.0.0
  * @deprecated 6.0.0
  */
-interface ElementQueryInterface
+interface ElementQueryInterface extends QueryInterface
 {
+    /**
+     * Executes the query and returns a single row of result.
+     * @param Connection|null $db the database connection used to execute the query.
+     * If this parameter is not given, the `db` application component will be used.
+     * @return ElementInterface|null the first row (in terms of an array) of the query result. False is returned if the query
+     * results in nothing.
+     * @phpstan-ignore method.childReturnType
+     */
+    public function one($db = null);
+
     /**
      * Causes the query results to be returned in reverse order.
      *

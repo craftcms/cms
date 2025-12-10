@@ -21,6 +21,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/** @phpstan-ignore class.missingExtends */
 final class AssetQuery extends ElementQuery
 {
     use EagerloadsTransforms;

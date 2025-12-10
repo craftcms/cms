@@ -657,7 +657,6 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
-                /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -903,6 +902,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
+            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1028,7 +1028,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->get();
+            $value = $this->_all($value, $element)->all();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
@@ -1225,7 +1225,7 @@ JS, [
      */
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1246,8 +1246,8 @@ JS, [
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->get()
-                ->map(fn (ElementInterface $element) => $element->id)
+                ->collect()
+                ->pluck('id')
                 ->all();
         }
 
@@ -1785,7 +1785,7 @@ JS, [
     /**
      * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      */
-    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery|ElementQueryInterface $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
+    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
         $clone = (clone $query)
             ->drafts(null)

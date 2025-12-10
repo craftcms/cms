@@ -958,6 +958,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function get(int|string $id): ?static
     {
+        /** @phpstan-ignore return.type */
         return static::find()
             ->id($id)
             ->fixedOrder()
@@ -2354,12 +2355,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var ElementInterface|false|null
      * @see getCanonical()
+     * @phpstan-ignore property.unusedType
      */
     private ElementInterface|false|null $_canonical = null;
 
     /**
      * @var ElementInterface|false|null
      * @see getCanonical()
+     * @phpstan-ignore property.unusedType
      */
     private ElementInterface|false|null $_canonicalAnySite = null;
 

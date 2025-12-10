@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Database\Queries\Concerns\LegacyMethods;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
@@ -56,6 +57,8 @@ use Twig\Markup;
  * @method static whereNotIn($column, $values, $boolean = 'and')
  * @method static whereNotNull($columns, $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
+ *
+ * @phpstan-ignore class.missingExtends
  */
 class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
@@ -66,13 +69,14 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     }
 
     use Concerns\CachesQueries;
+
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
-
     /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
 
     use Concerns\OverridesResults;
+
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -85,6 +89,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
+    /** @TODO: Remove after ElementQueryInterface is removed */
+    use LegacyMethods;
 
     /**
      * The base query builder instance.
@@ -486,17 +492,22 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Execute the query as a "select" statement.
      *
+     * @param  array|string  $columns
      * @return array<int, TElement>
+     *
+     * @phpstan-ignore-next-line
      */
-    public function all(array|string $columns = ['*']): array
+    public function all($columns = ['*']): array
     {
         return collect($this->get($columns))->all();
     }
 
     /**
      * @return TElement|null
+     *
+     * @phpstan-ignore parameter.defaultValue, method.childReturnType
      */
-    public function one(array|string $columns = ['*']): ?ElementInterface
+    public function one($columns = ['*']): ?ElementInterface
     {
         return $this->first($columns);
     }
@@ -531,7 +542,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $result->when($this->asArray, fn (Collection $collection) => $collection->all());
     }
 
-    public function count($columns = '*'): int
+    /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
+    public function count($columns = '*', $_ = null): int
     {
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
@@ -640,7 +652,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->subQuery;
     }
 
-    public function limit(?int $value): self
+    public function limit($value): self
     {
         $this->subQuery->limit = $value;
 
@@ -655,7 +667,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->subQuery->getLimit();
     }
 
-    public function offset(?int $value): self
+    public function offset($value): self
     {
         $this->subQuery->offset = $value;
 

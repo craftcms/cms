@@ -59,6 +59,7 @@ class Tag extends ElementMutationResolver
             $tag = $elementService->createElement(['type' => TagElement::class, 'groupId' => $tagGroup->id]);
         }
 
+        /** @var \craft\elements\Tag $tag */
         if ($tag->groupId != $tagGroup->id) {
             throw new Error('Impossible to change the group of an existing tag');
         }

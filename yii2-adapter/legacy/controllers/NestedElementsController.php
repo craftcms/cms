@@ -156,6 +156,7 @@ class NestedElementsController extends Controller
         }
 
         // If the element primarily belongs to a different element, just delete the ownership
+        /** @phpstan-ignore method.notFound */
         if ($element->getPrimaryOwnerId() !== $this->owner->id) {
             DB::table(Table::ELEMENTS_OWNERS)
                 ->where('ownerId', $this->owner->id)

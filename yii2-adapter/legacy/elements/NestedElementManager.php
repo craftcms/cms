@@ -201,8 +201,10 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
+        /** @phpstan-ignore function.alreadyNarrowedType */
         $result = method_exists($query, 'getCachedResult')
             ? $query->getCachedResult()
+            /** @phpstan-ignore method.notFound */
             : $query->getResultOverride();
 
         if ($fetchAll && $result === null) {
@@ -798,8 +800,10 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
+            /** @phpstan-ignore function.alreadyNarrowedType */
             $elements = method_exists($value, 'getCachedResult')
                 ? $value->getCachedResult()
+                /** @phpstan-ignore method.notFound */
                 : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);

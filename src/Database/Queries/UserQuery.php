@@ -17,6 +17,8 @@ use Illuminate\Database\Query\Builder;
 
 /**
  * @extends ElementQuery<User>
+ *
+ * @phpstan-ignore class.missingExtends
  */
 final class UserQuery extends ElementQuery
 {
