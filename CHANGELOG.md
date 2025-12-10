@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
+- Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
 
 ## 5.8.21 - 2025-12-04
 
