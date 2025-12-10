@@ -10,6 +10,7 @@ namespace crafttests\functional\users;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use FunctionalTester;
 
 /**
@@ -40,7 +41,7 @@ class EditUserCest
             ->admin()
             ->one();
 
-        $I->amLoggedInAs($this->currentUser);
+        $I->amLoggedInAs(new IdentityWrapper($this->currentUser));
         $this->cpTrigger = Cms::config()->cpTrigger;
 
         Edition::set(Edition::Pro);
