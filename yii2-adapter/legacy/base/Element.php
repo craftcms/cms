@@ -1267,7 +1267,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function indexHtml(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         ?array $disabledElementIds,
         array $viewState,
         ?string $sourceKey,
@@ -1399,17 +1399,29 @@ abstract class Element extends Component implements ElementInterface
 
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
-        if (is_array($elementQuery->where)) {
-            foreach ($elementQuery->where as $key => $condition) {
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $wheres = $elementQuery->getSubQuery()->wheres;
+        } else {
+            $wheres = $elementQuery->where;
+        }
+
+        if (is_array($wheres)) {
+            foreach ($wheres as $key => $condition) {
                 if ($condition instanceof ExcludeDescendantIdsExpression) {
                     $elementQuery = clone $elementQuery;
-                    unset($elementQuery->where[$key]);
+                    unset($wheres[$key]);
                     break;
                 }
             }
-        } elseif ($elementQuery->where instanceof ExcludeDescendantIdsExpression) {
+        } elseif ($wheres instanceof ExcludeDescendantIdsExpression) {
             $elementQuery = clone $elementQuery;
-            $elementQuery->where = null;
+            $wheres = null;
+        }
+
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $elementQuery->getSubQuery()->wheres = $wheres;
+        } else {
+            $elementQuery->where = $wheres;
         }
 
         return $elementQuery;

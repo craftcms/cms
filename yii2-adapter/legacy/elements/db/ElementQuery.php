@@ -959,6 +959,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this;
     }
 
+    public function getLimit(): int|null|ExpressionInterface
+    {
+        return $this->limit;
+    }
+
+    public function getOffset(): int|null|ExpressionInterface
+    {
+        return $this->offset;
+    }
+
     /**
      * @inheritdoc
      * @uses $orderBy

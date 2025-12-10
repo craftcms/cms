@@ -52,6 +52,21 @@ trait FormatsResults
     public bool $fixedOrder = false;
 
     /**
+     * @param  string|callable  $indexBy  the name of the column by which the query results should be indexed by.
+     *                                    This can also be a callable (e.g. anonymous function) that returns the index value based on the given
+     *                                    row data. The signature of the callable should be:
+     *
+     * ```php
+     * function ($row)
+     * {
+     *     // return the index value corresponding to $row
+     * }
+     * ```
+     * @return $this the query object itself
+     */
+    public $indexBy;
+
+    /**
      * Causes the query results to be returned in reverse order.
      *
      * ---
@@ -137,6 +152,27 @@ trait FormatsResults
     public function fixedOrder(bool $value = true): static
     {
         $this->fixedOrder = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[indexBy]] property.
+     *
+     * @param  string|callable  $column  the name of the column by which the query results should be indexed by.
+     *                                   This can also be a callable (e.g. anonymous function) that returns the index value based on the given
+     *                                   row data. The signature of the callable should be:
+     *
+     * ```php
+     * function ($row)
+     * {
+     *     // return the index value corresponding to $row
+     * }
+     * ```
+     */
+    public function indexBy($column): static
+    {
+        $this->indexBy = $column;
 
         return $this;
     }

@@ -11,9 +11,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\ElementCollection;
 use craft\models\FieldLayout;
-use yii\base\Arrayable;
 use yii\db\Connection;
-use yii\db\QueryInterface;
 
 /**
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
@@ -26,7 +24,7 @@ use yii\db\QueryInterface;
  * @since 3.0.0
  * @deprecated 6.0.0
  */
-interface ElementQueryInterface extends QueryInterface, Arrayable
+interface ElementQueryInterface
 {
     /**
      * Causes the query results to be returned in reverse order.
@@ -1137,7 +1135,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @param mixed $value The property value
      * @return static self reference
      */
-    public function ref(mixed $value): static;
+    //public function ref(mixed $value): static;
 
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
@@ -1615,7 +1613,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * If this parameter is not given, the `db` application component will be used.
      * @return ElementInterface[]|array[] The resulting elements.
      */
-    public function all($db = null): array;
+    //public function all($db = null): array;
 
     /**
      * Executes the query and returns all results as a collection.
@@ -1625,7 +1623,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return ElementCollection A collection of the resulting elements.
      * @since 4.0.0
      */
-    public function collect(?Connection $db = null): ElementCollection;
+    //public function collect(?Connection $db = null): ElementCollection;
 
     /**
      * Executes the query and returns a single row of result.
@@ -1635,7 +1633,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * component will be used.
      * @return mixed The resulting element. Null is returned if the query results in nothing.
      */
-    public function one($db = null): mixed;
+    //public function one($db = null): mixed;
 
     /**
      * Executes the query and returns a single row of result at a given offset.
@@ -1646,7 +1644,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return mixed The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?Connection $db = null): mixed;
+    //public function nth(int $n, ?Connection $db = null): mixed;
 
     /**
      * Executes the query and returns the IDs of the resulting elements.
@@ -1655,7 +1653,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * If this parameter is not given, the `db` application component will be used.
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
-    public function ids(?Connection $db = null): array;
+    //public function ids(?Connection $db = null): array;
 
     /**
      * Converts a found row into an element instance.
@@ -1673,7 +1671,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return ElementInterface[]|array[]
      * @since 3.6.0
      */
-    public function afterPopulate(array $elements): array;
+    //public function afterPopulate(array $elements): array;
 
     /**
      * Returns the field layouts that could be associated with the resulting elements.
@@ -1681,5 +1679,5 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return FieldLayout[]
      * @since 5.6.0
      */
-    public function getFieldLayouts(): array;
+    //public function getFieldLayouts(): array;
 }

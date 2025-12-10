@@ -8,12 +8,14 @@ use Closure;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -55,7 +57,7 @@ use Twig\Markup;
  * @method static whereNotNull($columns, $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
  */
-class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
+class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
     use BuildsQueries {
@@ -442,6 +444,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         $models = $this->getModels($columns);
 
         return $this->applyAfterQueryCallbacks(new ElementCollection($models))
+            ->when($this->indexBy, fn (ElementCollection $collection) => $collection->keyBy($this->indexBy))
             ->when($this->asArray, fn (ElementCollection $collection) => $collection->all());
     }
 
@@ -655,6 +658,26 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
     public function offset(?int $value): self
     {
         $this->subQuery->offset = $value;
+
+        return $this;
+    }
+
+    public function orderBy($column, $direction = 'asc'): self
+    {
+        /**
+         * In case orderBy is called with an array of [$column, $direction]
+         */
+        if (is_array($column)) {
+            Deprecator::log(static::class.'::orderBy', static::class.'::orderBy() with an array argument is deprecated in 6.0.0.');
+
+            foreach ($column as $c => $dir) {
+                $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+            }
+
+            return $this;
+        }
+
+        $this->forwardCallTo($this->query, 'orderBy', func_get_args());
 
         return $this;
     }
@@ -1017,7 +1040,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
 
         foreach ($this->query->columns as $column) {
             if ($column instanceof Alias) {
-                $column = $column->getValue($this->getGrammar());
+                $column = $column->getValue($this->query->getGrammar());
             }
 
             [$column, $alias] = explode(' as ', $column, 2) + [1 => null];

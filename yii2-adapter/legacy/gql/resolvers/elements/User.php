@@ -7,6 +7,7 @@
 
 namespace craft\gql\resolvers\elements;
 
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
@@ -40,7 +41,7 @@ class User extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (!$query instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 
