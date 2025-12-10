@@ -1031,7 +1031,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function randomString(int $length = 36, bool $extendedChars = false): string
     {
         if ($extendedChars) {
-            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
+            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?';
         } else {
             $validChars = 'abcdefghijklmnopqrstuvwxyz';
         }
