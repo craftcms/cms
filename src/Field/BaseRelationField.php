@@ -708,7 +708,7 @@ JS, [
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
-        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
 
@@ -725,7 +725,7 @@ JS, [
         // only save relations to elements in the current site.
         // (see https://github.com/craftcms/cms/issues/15459)
         if (
-            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
+            $value instanceof ElementQueryInterface &&
             $element?->propagating &&
             $element->isNewForSite &&
             ! $element->resaving &&
@@ -738,7 +738,7 @@ JS, [
                 ->ids();
         }
 
-        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery || $value instanceof ElementCollection) {
+        if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
             return $value;
         }
 
@@ -747,8 +747,8 @@ JS, [
         $query = new EntryQuery()
             ->siteId($this->targetSiteId($element));
 
-        if (is_array($value)) {
-            $value = array_values(array_filter($value));
+        if (is_array($value) || is_int($value)) {
+            $value = collect($value)->filter()->values()->all();
             $query->whereIn('elements.id', $value);
             if (! empty($value)) {
                 $query->orderBy(new FixedOrderExpression('elements.id', $value));
@@ -1246,6 +1246,12 @@ JS, [
             Arr::isNumeric($where['values'])
         ) {
             $targetIds = $where['values'] ?? [];
+        } elseif (
+            $value instanceof ElementQuery &&
+            isset($value->where['elements.id']) &&
+            Arr::isNumeric($value->where['elements.id'])
+        ) {
+            $targetIds = $value->where['elements.id'] ?: [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
