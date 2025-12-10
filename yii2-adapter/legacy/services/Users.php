@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\elements\db\UserQuery;
 use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\events\DefineUserGroupsEvent;
@@ -208,38 +207,7 @@ class Users extends Component
      */
     public function ensureUserByEmail(string $email): User
     {
-        /** @var User|null $user */
-        $user = User::find()
-            ->email($email)
-            ->status([UserQuery::STATUS_CREDENTIALED])
-            ->one();
-
-        if ($user) {
-            return $user;
-        }
-
-        /** @var User|null $user */
-        $user = User::find()
-            ->email($email)
-            ->status([User::STATUS_INACTIVE])
-            ->one();
-
-        if ($user) {
-            return $user;
-        }
-
-        $user = new User();
-        $user->email = $email;
-
-        if (!$user->validate(['email'])) {
-            throw new InvalidArgumentException($user->getFirstError('email'));
-        }
-
-        if (!Craft::$app->getElements()->saveElement($user, false)) {
-            throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
-        }
-
-        return $user;
+        return UsersFacade::ensureUserByEmail($email);
     }
 
     /**
@@ -271,31 +239,7 @@ class Users extends Component
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail): ?User
     {
-        $query = User::find()
-            ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null);
-
-        if (Craft::$app->getDb()->getIsMysql()) {
-            $query
-                ->where([
-                    'username' => $usernameOrEmail,
-                ])
-                ->orWhere([
-                    'email' => $usernameOrEmail,
-                ]);
-        } else {
-            // Postgres is case-sensitive
-            $query
-                ->where([
-                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
-                ])
-                ->orWhere([
-                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
-                ]);
-        }
-
-        /** @var User|null */
-        return $query->one();
+        return UsersFacade::getUserByUsernameOrEmail($usernameOrEmail);
     }
 
     /**
@@ -311,11 +255,7 @@ class Users extends Component
      */
     public function getUserByUid(string $uid): ?User
     {
-        /** @var User|null */
-        return User::find()
-            ->uid($uid)
-            ->status(null)
-            ->one();
+        return UsersFacade::getUserByUid($uid);
     }
 
     /**
