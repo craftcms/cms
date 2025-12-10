@@ -3855,6 +3855,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             {label: 'XLSX', value: 'xlsx'},
             {label: 'JSON', value: 'json'},
             {label: 'XML', value: 'xml'},
+            {label: 'YAML', value: 'yaml'},
           ],
           class: 'fullwidth',
         })
