@@ -1103,7 +1103,7 @@ final class Users
     public function assignUserToGroups(int $userId, array $groupIds): bool
     {
         // Get the unique, indexed group IDs
-        $newGroupIds = array_flip(array_unique(array_filter($groupIds)));
+        $newGroupIds = collect($groupIds)->filter()->unique()->flip()->all();
 
         // Get the current groups
         $oldGroups = DB::table(Table::USERGROUPS_USERS)
@@ -1131,7 +1131,13 @@ final class Users
         $newGroupIds = array_keys($newGroupIds);
 
         if (Event::hasListeners(AssigningUserToGroups::class)) {
-            Event::dispatch($event = new AssigningUserToGroups($userId, $groupIds, $newGroupIds, $removedGroupIds));
+            Event::dispatch($event = new AssigningUserToGroups(
+                userId: $userId,
+                groupIds: $groupIds,
+                removedGroupIds: $removedGroupIds,
+                newGroupIds: $newGroupIds,
+            ));
+
             if (! $event->isValid) {
                 return false;
             }
@@ -1172,7 +1178,12 @@ final class Users
         }
 
         if (Event::hasListeners(UserAssignedToGroups::class)) {
-            Event::dispatch(new UserAssignedToGroups($userId, $groupIds, $newGroupIds, $removedGroupIds));
+            Event::dispatch(new UserAssignedToGroups(
+                userId: $userId,
+                groupIds: $groupIds,
+                removedGroupIds: $removedGroupIds,
+                newGroupIds: $newGroupIds,
+            ));
         }
 
         $this->invalidateIndexCaches();
