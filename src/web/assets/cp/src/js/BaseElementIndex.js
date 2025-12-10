@@ -3852,6 +3852,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           label: Craft.t('app', 'Format'),
           options: [
             {label: 'CSV', value: 'csv'},
+            {label: 'XLSX', value: 'xlsx'},
             {label: 'JSON', value: 'json'},
             {label: 'XML', value: 'xml'},
           ],
