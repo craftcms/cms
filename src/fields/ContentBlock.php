@@ -501,6 +501,9 @@ class ContentBlock extends Field implements
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
+                    // explicitly fetch revisions if the owner element is a revision
+                    // (see https://github.com/craftcms/cms/pull/18161)
+                    ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
                     ->collect();
 
