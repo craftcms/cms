@@ -497,12 +497,17 @@ class ContentBlock extends Field implements
                 ->all();
 
             if (count($sameSiteElements) > 1) {
-                $contentBlocks = ContentBlockElement::find()
+                $query = ContentBlockElement::find()
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
-                    ->indexBy('ownerId')
-                    ->collect();
+                    ->indexBy('ownerId');
+
+                if ($element->getIsRevision()) {
+                    $query->revisions();
+                }
+
+                $contentBlocks = $query->collect();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
