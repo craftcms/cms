@@ -1087,8 +1087,12 @@ JS, [
 
         foreach ($sourceElements as $sourceElement) {
             $rawValue = $sourceElement->getBehavior('customFields')->{$this->handle} ?? null;
-            if ($rawValue instanceof ElementQueryInterface) {
+            if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
+            }
+            if ($rawValue instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+                $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
+                $rawValue = $where['value'] ?? null;
             }
             if (is_array($rawValue)) {
                 foreach ($rawValue as $targetElementId) {
