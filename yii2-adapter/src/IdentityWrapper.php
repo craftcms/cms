@@ -93,7 +93,7 @@ final class IdentityWrapper implements IdentityInterface
             throw new Exception('No user session token exists.');
         }
 
-        $userAgent = request()->userAgent();
+        $userAgent = Craft::$app->getRequest()->getUserAgent();
 
         // The auth key is a combination of the hashed token, its row's UID, and the user agent string
         return Json::encode([
