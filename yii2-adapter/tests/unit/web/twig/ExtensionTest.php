@@ -24,6 +24,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
@@ -74,7 +75,7 @@ class ExtensionTest extends TestCase
             'firstName' => 'John',
             'lastName' => 'Smith',
         ]);
-        Craft::$app->getUser()->setIdentity($user);
+        Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 
         // Current user
