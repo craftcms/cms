@@ -294,6 +294,9 @@ class Users extends Component
                 ]);
         }
 
+        // order by credentialed users first
+        $query->orderBy(['users.active' => SORT_DESC, 'users.pending' => SORT_DESC]);
+
         /** @var User|null */
         return $query->one();
     }
