@@ -43,7 +43,11 @@ use Twig\Markup;
  * @mixin \Illuminate\Database\Query\Builder
  *
  * @method static addSelect($column)
+ * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
+ * @method static leftJoin($table, $first, $operator = null, $second = null)
+ * @method static orderBy($column)
  * @method static orderByDesc($column)
+ * @method static rightJoin($table, $first, $operator = null, $second = null)
  * @method static where($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereIn($column, $values, $boolean = 'and', $not = false)
  * @method static whereNot($column, $operator = null, $value = null, $boolean = 'and')

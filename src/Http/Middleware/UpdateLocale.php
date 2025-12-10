@@ -47,12 +47,11 @@ final readonly class UpdateLocale
             return Sites::getCurrentSite()->getLanguage();
         }
 
-        /** @var ?\craft\elements\User $user */
         $user = $this->auth->user();
 
         if (
-            $user?->getAuthIdentifier() &&
-            ($language = $this->users->getUserPreference($user->getAuthIdentifier(), 'language')) !== null &&
+            ($id = $user?->getAuthIdentifier()) &&
+            ($language = $this->users->getUserPreference($id, 'language')) !== null &&
             $this->i18N->validateAppLocaleId($language)
         ) {
             return $language;

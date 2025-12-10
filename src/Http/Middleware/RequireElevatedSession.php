@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Craft;
-use craft\elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
@@ -16,7 +16,7 @@ final readonly class RequireElevatedSession
     public function handle(Request $request, Closure $next): mixed
     {
         Craft::$app->getUser()->setIdentity(
-            new User(user: $request->user()),
+            new IdentityWrapper($request->user()),
         );
 
         abort_unless(

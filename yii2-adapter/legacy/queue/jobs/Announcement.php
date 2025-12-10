@@ -80,12 +80,11 @@ class Announcement extends BaseJob
         $dateCreated = now();
 
         $userQuery->chunk($batchSize, function(Collection $users, int $batchIndex) use ($dateCreated, $pluginId, $totalUsers, $batchSize, $queue) {
-            /** @var User[] $batch */
             $this->setProgress($queue, ($batchIndex * $batchSize) / $totalUsers);
 
             $rows = [];
 
-            foreach ($batch as $user) {
+            foreach ($users as $user) {
                 $rows[] = [
                     'userId' => $user->id,
                     'pluginId' => $pluginId,

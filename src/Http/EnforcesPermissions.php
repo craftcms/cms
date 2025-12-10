@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Http;
 
 use Craft;
 use craft\elements\Entry;
-use craft\elements\User;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -54,7 +54,7 @@ trait EnforcesPermissions
     protected function requireElevatedSession(): void
     {
         Craft::$app->getUser()->setIdentity(
-            new User(user: Auth::user()),
+            new IdentityWrapper(Auth::user()),
         );
 
         abort_unless(

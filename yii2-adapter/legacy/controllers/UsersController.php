@@ -62,6 +62,7 @@ use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -2588,7 +2589,7 @@ JS);
         if (!$generalConfig->autoLoginAfterAccountActivation) {
             return false;
         }
-        return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+        return Craft::$app->getUser()->login(new IdentityWrapper($user), $generalConfig->userSessionDuration);
     }
 
     /**

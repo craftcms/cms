@@ -18,15 +18,16 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\User as UserHelper;
-use craft\models\UserGroup;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
@@ -225,7 +226,7 @@ class Auth extends Component
                 $user = AuthFacade::user();
             }
 
-            $userSession->login($user, $sessionDuration);
+            $userSession->login(new IdentityWrapper($user), $sessionDuration);
         }
 
         return true;
@@ -399,7 +400,7 @@ class Auth extends Component
         }
 
         if (is_array($require2fa)) {
-            $groups = array_flip(array_map(fn(UserGroup $group) => $group->uid, $user->getGroups()));
+            $groups = Arr::pluck(array: $user->getGroups(), value: '', key: 'uid');
             foreach ($require2fa as $group) {
                 if ($group === 'admins') {
                     if ($user->admin) {

@@ -792,7 +792,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function draftCreator($value): static
     {
-        if ($value instanceof User || $value instanceof \craft\elements\User) {
+        if ($value instanceof User) {
             $this->draftCreator = $value->id;
         } elseif (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
@@ -890,7 +890,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function revisionCreator($value): static
     {
-        if ($value instanceof User || $value instanceof \craft\elements\User) {
+        if ($value instanceof User) {
             $this->revisionCreator = $value->id;
         } elseif (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;

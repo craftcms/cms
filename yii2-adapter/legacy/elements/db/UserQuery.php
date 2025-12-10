@@ -27,7 +27,7 @@ use yii\db\Expression;
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
  * @template TKey of array-key
- * @template TElement of User
+ * @template TElement
  * @extends ElementQuery<TKey,TElement>
  *
  * @property-write string|string[]|UserGroup|\craft\models\UserGroup|null $group The user group(s) that resulting users must belong to
@@ -41,6 +41,7 @@ use yii\db\Expression;
  * @replace {myElement} myUser
  * @replace {element-class} \CraftCms\Cms\User\Elements\User
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\UserQuery} instead.
+ * @phpstan-ignore generics.notSubtype
  */
 class UserQuery extends ElementQuery
 {

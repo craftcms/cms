@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -92,7 +93,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             return false;
         }
 
-        return $this->login($user, $duration);
+        return $this->login(new IdentityWrapper($user), $duration);
     }
 
     /**
@@ -463,7 +464,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             Users::handleValidLogin($identity);
         }
 
-        parent::afterLogin($identity, $cookieBased, $duration);
+        parent::afterLogin(new IdentityWrapper($identity), $cookieBased, $duration);
     }
 
     /**
@@ -567,7 +568,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     protected function beforeLogout($identity): bool
     {
         /** @var UserElement $identity */
-        if (!parent::beforeLogout($identity)) {
+        if (!parent::beforeLogout(new IdentityWrapper($identity))) {
             return false;
         }
 
@@ -605,7 +606,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             Craft::$app->getRequest()->getCsrfToken(true);
         }
 
-        parent::afterLogout($identity);
+        parent::afterLogout(new IdentityWrapper($identity));
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Auth\UserProvider;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Commands\ActivationUrlCommand;
 use CraftCms\Cms\User\Commands\CreateCommand;

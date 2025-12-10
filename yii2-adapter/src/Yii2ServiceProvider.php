@@ -8,7 +8,6 @@ use craft\controllers\UsersController;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\EditionChangeEvent;
@@ -524,15 +523,15 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Event::listen(Authenticated::class, function(Authenticated $event) {
-            $user = User::find()->id($event->user->getAuthIdentifier())->status(null)->one();
-
-            app('Craft')->getUser()->setIdentity($user);
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
         Event::listen(Login::class, function(Login $event) {
-            $user = User::find()->id($event->user->getAuthIdentifier())->status(null)->one();
-
-            app('Craft')->getUser()->setIdentity($user);
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
         Event::listen(Logout::class, function() {

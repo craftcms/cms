@@ -7,7 +7,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
-use craft\models\UserGroup;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
@@ -70,7 +70,6 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $element->getGroups());
-        return $this->matchValue($groupUids);
+        return $this->matchValue(Arr::pluck($element->getGroups(), 'uid'));
     }
 }

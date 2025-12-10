@@ -296,7 +296,6 @@ final readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        /** @var ?\craft\elements\User $user */
         $user = Auth::user();
 
         // Recent Entries widget

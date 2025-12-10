@@ -2834,7 +2834,8 @@ class Elements extends Component
         $users = User::find()
             ->id($userIds)
             ->status(null)
-            ->indexBy('id')
+            ->get()
+            ->keyBy('id')
             ->all();
 
         /** @var Collection<ElementActivity> $activity */

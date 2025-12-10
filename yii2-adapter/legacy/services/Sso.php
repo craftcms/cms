@@ -18,6 +18,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -277,7 +278,7 @@ class Sso extends Component
         }
 
         // Try logging them in
-        if (!$userSession->login($user, $sessionDuration)) {
+        if (!$userSession->login(new IdentityWrapper($user), $sessionDuration)) {
             throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
         }
 

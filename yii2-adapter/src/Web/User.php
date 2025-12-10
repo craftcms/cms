@@ -2,6 +2,7 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -85,9 +86,8 @@ class User extends \yii\web\User
             default => throw new RuntimeException('Unable to convert identity from "' . print_r($identity, true) . '"'),
         };
 
-        /** @var \craft\elements\User $identity */
-        $identity = \craft\elements\User::find()->id($id)->status(null)->one();
+        $identity = \CraftCms\Cms\User\Elements\User::find()->id($id)->status(null)->firstOrFail();
 
-        return $identity;
+        return new IdentityWrapper($identity);
     }
 }

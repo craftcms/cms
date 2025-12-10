@@ -19,7 +19,6 @@ use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\TagQuery;
-use craft\elements\db\UserQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -314,11 +313,11 @@ class CraftVariable extends ServiceLocator
      * Returns a new [user query](https://craftcms.com/docs/5.x/reference/element-types/users.html#querying-users).
      *
      * @param array $criteria
-     * @return UserQuery
+     * @return \CraftCms\Cms\Database\Queries\UserQuery
      */
-    public function users(array $criteria = []): UserQuery
+    public function users(array $criteria = []): \CraftCms\Cms\Database\Queries\UserQuery
     {
-        $query = \craft\elements\User::find();
+        $query = User::find();
         Craft::configure($query, $criteria);
         return $query;
     }
