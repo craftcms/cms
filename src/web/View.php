@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
+use craft\events\DefineBasePathsEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\App;
@@ -107,6 +108,12 @@ class View extends \yii\web\View
      * @since 4.5.0
      */
     public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
+
+    /**
+     * @event DefineBasepaths The event that is triggered when base paths are defined before resolving templates
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_BASEPATHS = 'defineBasePaths';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -991,6 +998,15 @@ class View extends \yii\web\View
         }
 
         $basePaths[] = $this->_templatesPath;
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BASEPATHS)) {
+            $event = new DefineBasePathsEvent([
+                'basePaths' => $basePaths
+            ]);
+
+            $this->trigger(self::EVENT_DEFINE_BASEPATHS, $event);
+            $basePaths = $event->basePaths;
+        }
 
         foreach ($basePaths as $basePath) {
             if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
