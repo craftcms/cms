@@ -497,17 +497,15 @@ class ContentBlock extends Field implements
                 ->all();
 
             if (count($sameSiteElements) > 1) {
-                $query = ContentBlockElement::find()
+                $contentBlocks = ContentBlockElement::find()
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
-                    ->indexBy('ownerId');
-
-                if ($element->getIsRevision()) {
-                    $query->revisions();
-                }
-
-                $contentBlocks = $query->collect();
+                    // explicitly fetch revisions if the owner element is a revision
+                    // (see https://github.com/craftcms/cms/pull/18161)
+                    ->revisions($element->getIsRevision())
+                    ->indexBy('ownerId')
+                    ->collect();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
