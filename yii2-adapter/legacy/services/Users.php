@@ -49,7 +49,6 @@ use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -201,7 +200,6 @@ class Users extends Component
      * @param string $email
      *
      * @return User
-     * @throws InvalidArgumentException if `$email` is invalid
      * @throws Exception if the user couldn’t be saved for some unexpected reason
      * @since 4.0.0
      */
