@@ -442,8 +442,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration): void
     {
-        /** @var UserElement $identity */
-
         if ($duration > 0) {
             // Store the duration on the session
             SessionHelper::set($this->authDurationParam, $duration);
@@ -456,15 +454,15 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = $this->getImpersonator();
         if (!$impersonator) {
-            $this->sendUsernameCookie($identity);
+            $this->sendUsernameCookie(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
         if (!$impersonator) {
-            Users::handleValidLogin($identity);
+            Users::handleValidLogin(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
-        parent::afterLogin(new IdentityWrapper($identity), $cookieBased, $duration);
+        parent::afterLogin($identity, $cookieBased, $duration);
     }
 
     /**
@@ -567,8 +565,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function beforeLogout($identity): bool
     {
-        /** @var UserElement $identity */
-        if (!parent::beforeLogout(new IdentityWrapper($identity))) {
+        if (!parent::beforeLogout($identity)) {
             return false;
         }
 
@@ -582,7 +579,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
             DB::table(Table::SESSIONS)
                 ->where('token', $token)
-                ->where('userId', $identity->id)
+                ->where('userId', $identity->getId())
                 ->delete();
         }
 
@@ -594,7 +591,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogout($identity): void
     {
-        /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
         SessionHelper::remove($this->impersonatorIdParam);
         $this->impersonator = false;
@@ -606,7 +602,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             Craft::$app->getRequest()->getCsrfToken(true);
         }
 
-        parent::afterLogout(new IdentityWrapper($identity));
+        parent::afterLogout($identity);
     }
 
     /**
