@@ -69,14 +69,13 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     }
 
     use Concerns\CachesQueries;
-
     use Concerns\CollectsCacheTags;
     use Concerns\FormatsResults;
+
     /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
 
     use Concerns\OverridesResults;
-
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -89,6 +88,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
+
     /** @TODO: Remove after ElementQueryInterface is removed */
     use LegacyMethods;
 
