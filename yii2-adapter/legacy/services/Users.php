@@ -746,7 +746,7 @@ class Users extends Component
         Event::listen(SavingUserPhoto::class, function(SavingUserPhoto $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'photoId' => $event->photoId,
                 ]);
 
@@ -759,7 +759,7 @@ class Users extends Component
         Event::listen(UserPhotoSaved::class, function(UserPhotoSaved $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'photoId' => $event->photoId,
                 ]);
 
@@ -770,7 +770,7 @@ class Users extends Component
         Event::listen(DeletingUserPhoto::class, function(DeletingUserPhoto $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'photoId' => $event->photoId,
                 ]);
 
@@ -781,7 +781,7 @@ class Users extends Component
         Event::listen(UserPhotoDeleted::class, function(UserPhotoDeleted $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'photoId' => $event->photoId,
                 ]);
 
@@ -799,7 +799,7 @@ class Users extends Component
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
                 if (Craft::$app->getUsers()->hasEventHandlers($old)) {
                     $yiiEvent = new UserEvent([
-                        'user' => new User($event->user->toArray()),
+                        'user' => $event->user,
                     ]);
 
                     Craft::$app->getUsers()->trigger($old, $yiiEvent);
@@ -826,7 +826,7 @@ class Users extends Component
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
                 if (Craft::$app->getUsers()->hasEventHandlers($old)) {
                     $yiiEvent = new UserEvent([
-                        'user' => new User($event->user->toArray()),
+                        'user' => $event->user,
                     ]);
 
                     Craft::$app->getUsers()->trigger($old, $yiiEvent);
@@ -869,7 +869,7 @@ class Users extends Component
         Event::listen(DefineDefaultUserGroups::class, function(DefineDefaultUserGroups $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_DEFINE_DEFAULT_USER_GROUPS)) {
                 $yiiEvent = new DefineUserGroupsEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'userGroups' => array_map(function(\CraftCms\Cms\User\Data\UserGroup $userGroupData) {
                         return new UserGroup($userGroupData->getConfig());
                     }, $event->userGroups),
@@ -886,7 +886,7 @@ class Users extends Component
         Event::listen(AssigningUserToDefaultGroups::class, function(AssigningUserToDefaultGroups $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP)) {
                 $yiiEvent = new UserAssignGroupEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'userGroups' => array_map(function(\CraftCms\Cms\User\Data\UserGroup $userGroupData) {
                         return new UserGroup($userGroupData->getConfig());
                     }, $event->userGroups),
@@ -901,7 +901,7 @@ class Users extends Component
         Event::listen(UserAssignedToDefaultGroups::class, function(UserAssignedToDefaultGroups $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP)) {
                 $yiiEvent = new UserAssignGroupEvent([
-                    'user' => new User($event->user->toArray()),
+                    'user' => $event->user,
                     'userGroups' => array_map(function(\CraftCms\Cms\User\Data\UserGroup $userGroupData) {
                         return new UserGroup($userGroupData->getConfig());
                     }, $event->userGroups),

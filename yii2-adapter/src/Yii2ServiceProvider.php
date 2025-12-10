@@ -65,6 +65,7 @@ use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
+use craft\services\Users;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -495,6 +496,7 @@ class Yii2ServiceProvider extends ServiceProvider
         SystemMessages::registerEvents();
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
+        Users::registerEvents();
 
         /**
          * Controllers
