@@ -1482,7 +1482,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        return (int)$elementQuery
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            return $elementQuery
+                ->select(DB::raw('1'))
+                ->count();
+        }
+
+        return (int) $elementQuery
             ->select(new Expression('1'))
             ->count();
     }

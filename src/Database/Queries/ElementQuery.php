@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\Query\Builder;
@@ -1051,7 +1052,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         $includeDefaults = false;
 
         foreach ($this->query->columns as $column) {
-            if ($column instanceof Alias) {
+            if ($column instanceof Expression) {
                 $column = $column->getValue($this->query->getGrammar());
             }
 
