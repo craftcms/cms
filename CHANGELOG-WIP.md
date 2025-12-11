@@ -122,7 +122,7 @@
 - Deprecated `craft\fields\Matrix::$showCardsInGrid`.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
-- Deprecated `craft\web\CvsResponseResponseFormatter::$escapeChar`.
+- Deprecated `craft\web\CsvResponseResponseFormatter::$escapeChar`.
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
