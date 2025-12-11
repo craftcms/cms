@@ -1,14 +1,17 @@
 <?php
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -192,6 +195,28 @@ test('unsuspend', function () {
 
     expect($user->suspended)->toBeFalse();
     expect($user->getStatus())->not()->toBe(User::STATUS_SUSPENDED);
+});
+
+test('shunned messages', function () {
+    $user = UserModel::factory()->create();
+
+    expect(DB::table(Table::SHUNNEDMESSAGES)->count())->toBe(0);
+    expect($this->users->hasUserShunnedMessage($user->id, 'Some message'))->toBeFalse();
+
+    $this->users->shunMessageForUser($user->id, 'Some message');
+
+    expect(DB::table(Table::SHUNNEDMESSAGES)->count())->toBe(1);
+    expect($this->users->hasUserShunnedMessage($user->id, 'Some message'))->toBeTrue();
+
+    $this->users->shunMessageForUser($user->id, 'Some message');
+
+    expect(DB::table(Table::SHUNNEDMESSAGES)->count())->toBe(1);
+    expect($this->users->hasUserShunnedMessage($user->id, 'Some message'))->toBeTrue();
+
+    $this->users->unshunMessageForUser($user->id, 'Some message');
+
+    expect(DB::table(Table::SHUNNEDMESSAGES)->count())->toBe(0);
+    expect($this->users->hasUserShunnedMessage($user->id, 'Some message'))->toBeFalse();
 });
 
 test('set verification code', function () {
@@ -401,3 +426,24 @@ test('handleValidLogin clears values', function () {
 test('isVerificationCodeValidForUser', function () {})->todo('Need to be able to fake verification codes');
 
 test('sendActivationEmail', function () {})->todo('Add test after Mails are ported.');
+
+test('canImpersonate', function () {
+    Edition::set(Edition::Pro);
+
+    $admin1 = UserModel::factory()->active()->create(['admin' => true])->asElement();
+    $admin2 = UserModel::factory()->active()->create(['admin' => true])->asElement();
+    $user1 = UserModel::factory()->active()->create()->asElement();
+    $user2 = UserModel::factory()->active()->create()->asElement();
+
+    // Admins can impersonate anyone
+    expect($this->users->canImpersonate($admin1, $user1))->toBeTrue();
+    expect($this->users->canImpersonate($admin1, $admin2))->toBeTrue();
+
+    // A normal user cannot impersonate an admin
+    expect($this->users->canImpersonate($user1, $admin1))->toBeFalse();
+
+    // A normal user cannot impersonate another user without the permission
+    expect($this->users->canImpersonate($user1, $user2))->toBeFalse();
+    UserPermissions::saveUserPermissions($user1->id, ['viewUsers', 'editUsers', 'impersonateUsers']);
+    expect($this->users->canImpersonate($user1, $user2))->toBeTrue();
+});

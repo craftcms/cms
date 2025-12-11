@@ -10,7 +10,6 @@ use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Template;
@@ -28,6 +27,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -973,8 +973,11 @@ final class Users
             ->upsert([
                 'userId' => $userId,
                 'message' => $message,
-                'expiryDate' => DbHelper::prepareDateForDb($expiryDate),
-            ], ['userId', 'message']);
+                'dateCreated' => now(),
+                'dateUpdated' => now(),
+            ], ['userId', 'message'], [
+                'expiryDate' => $expiryDate,
+            ]);
     }
 
     /**
@@ -1323,11 +1326,11 @@ final class Users
         }
 
         // Make sure the impersonator has at least all the same permissions as the impersonatee
-        $impersonatorPermissions = \CraftCms\Cms\Support\Facades\UserPermissions::getPermissionsByUserId($impersonator->id)->flip();
-        $impersonateePermissions = \CraftCms\Cms\Support\Facades\UserPermissions::getPermissionsByUserId($impersonatee->id);
+        $impersonatorPermissions = UserPermissions::getPermissionsByUserId($impersonator->id)->flip();
+        $impersonateePermissions = UserPermissions::getPermissionsByUserId($impersonatee->id);
 
         foreach ($impersonateePermissions as $permission) {
-            if (! isset($impersonatorPermissions[$permission]) && \CraftCms\Cms\Support\Facades\UserPermissions::validatePermission($permission)) {
+            if (! isset($impersonatorPermissions[$permission]) && UserPermissions::validatePermission($permission)) {
                 return false;
             }
         }
