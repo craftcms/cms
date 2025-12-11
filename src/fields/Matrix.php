@@ -789,6 +789,8 @@ class Matrix extends Field implements
                             ->trashed(null);
                     }
                 },
+            ], true));
+            $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_AFTER_POPULATE_ELEMENT => function(PopulateElementEvent $event) use ($owner) {
                     /** @var Entry $entry */
                     $entry = $event->element;
@@ -801,7 +803,7 @@ class Matrix extends Field implements
                         }
                     }
                 },
-            ], true));
+            ]));
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
