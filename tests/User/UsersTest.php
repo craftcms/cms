@@ -17,6 +17,90 @@ beforeEach(function () {
     Edition::set(Edition::Team);
 });
 
+test('ensureUserByEmail', function () {
+    $email = fake()->email();
+
+    expect(UserModel::where('email', $email)->exists())->toBeFalse();
+
+    $this->users->ensureUserByEmail($email);
+
+    expect(UserModel::where('email', $email)->exists())->toBeTrue();
+
+    expect($this->users->getUserByUsernameOrEmail($email))->toBeInstanceOf(User::class);
+});
+
+test('retrieval', function () {
+    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
+    Craft::$app->elements->saveElement($user);
+
+    expect($this->users->getUserById($user->id))->toBeInstanceOf(User::class);
+    expect($this->users->getUserByUid($user->uid))->toBeInstanceOf(User::class);
+    expect($this->users->getUserByUsernameOrEmail($user->email))->toBeInstanceOf(User::class);
+    expect($this->users->getUserByUsernameOrEmail($user->username))->toBeInstanceOf(User::class);
+});
+
+test('userPreferences', function () {
+    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
+    Craft::$app->elements->saveElement($user);
+
+    expect($this->users->getUserPreferences($user->id))->toBeEmpty();
+
+    $this->users->saveUserPreferences($user, ['foo' => 'bar']);
+
+    expect($this->users->getUserPreferences($user->id))->toBe(['foo' => 'bar']);
+    expect($this->users->getUserPreference($user->id, 'foo'))->toBe('bar');
+});
+
+test('getActivationUrl', function () {
+    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
+    Craft::$app->elements->saveElement($user);
+
+    expect($this->users->getActivationUrl($user))->toBeUrl();
+});
+
+test('getEmailVerifyUrl', function () {
+    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
+    Craft::$app->elements->saveElement($user);
+
+    expect($this->users->getEmailVerifyUrl($user))->toBeUrl();
+});
+
+test('getPasswordResetUrl', function () {
+    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
+    Craft::$app->elements->saveElement($user);
+
+    expect($this->users->getPasswordResetUrl($user))->toBeUrl();
+});
+
+test('removeCredentials', function () {
+    $userElement = UserModel::factory()->make([
+        'id' => null,
+    ])->asElement();
+    Craft::$app->elements->saveElement($userElement);
+
+    $user = UserModel::findOrFail($userElement->id);
+    $user->update([
+        'active' => true,
+        'pending' => true,
+        'password' => \Illuminate\Support\Facades\Hash::make('password'),
+        'verificationCode' => \CraftCms\Cms\Support\Str::random(32),
+    ]);
+
+    expect($user->active)->toBeTrue();
+    expect($user->pending)->toBeTrue();
+    expect($user->password)->not()->toBeNull();
+    expect($user->verificationCode)->not()->toBeNull();
+
+    $this->users->removeCredentials($userElement);
+
+    $user = UserModel::findOrFail($userElement->id);
+
+    expect($user->active)->toBeFalse();
+    expect($user->pending)->toBeFalse();
+    expect($user->password)->toBeNull();
+    expect($user->verificationCode)->toBeNull();
+});
+
 test('user activation', function () {
     $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
     Craft::$app->elements->saveElement($user);
