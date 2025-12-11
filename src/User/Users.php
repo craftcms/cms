@@ -642,14 +642,14 @@ final class Users
                 $userModel->invalidLoginCount = 1;
             }
 
-            // Update the counter on the user model
+            // Update the counter on the user element
             $user->invalidLoginCount = $userModel->invalidLoginCount;
         }
 
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
         $userModel->save();
 
-        // Update the User model too
+        // Update the User element too
         $user->lastInvalidLoginDate = $now;
 
         if (! $alreadyLocked && $user->locked && Event::hasListeners(UserLocked::class)) {
