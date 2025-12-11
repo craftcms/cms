@@ -88,9 +88,8 @@ final class MigrateCommand extends Command implements Isolatable
                 ->setOutput($this->output);
         }
 
-        return $this->migrators[$track] ??= app(Migrator::class)
-            ->setOutput($this->output)
-            ->track($track);
+        return ($this->migrators[$track] ??= app(Migrator::class)->track($track))
+            ->setOutput($this->output);
     }
 
     private function runMigrations(): void
@@ -163,7 +162,7 @@ final class MigrateCommand extends Command implements Isolatable
             // Update version info
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
-            } elseif ($track !== 'content') {
+            } elseif (str_starts_with((string) $track, 'plugin')) {
                 $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
             }
         }
@@ -215,6 +214,8 @@ final class MigrateCommand extends Command implements Isolatable
 
                     continue;
                 }
+
+                $this->migrators[$track] = $migrator;
 
                 if (! empty($migrations = $migrator->getPendingMigrations())) {
                     $migrationsByTrack[$track] = $migrations;
