@@ -19,7 +19,12 @@ use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
+use CraftCms\Cms\Http\Controllers\Users\AddressesController;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
@@ -61,8 +66,23 @@ Route::middleware('auth:craft')->group(function () {
     /**
      * Users
      */
-    Route::get('users/{user}/permissions', [PermissionsController::class, 'index']);
+    Route::get('myaccount', [UsersController::class, 'edit']);
+    Route::get('myaccount/addresses', [AddressesController::class, 'index']);
     Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
+    Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
+    Route::get('myaccount/password', [PasswordController::class, 'index']);
+    Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+
+    Route::middleware([
+        RequireEdition::class.':'.Edition::Team->value,
+    ])->group(function () {
+        Route::get('users/new', [UsersController::class, 'create']);
+        Route::get('users/{userId}', [UsersController::class, 'edit'])->whereNumber('userId');
+        Route::get('users/{userId}/addresses', [AddressesController::class, 'index'])->whereNumber('userId');
+        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index']);
+    });
+
+    Route::get('users/{slug?}', [UsersController::class, 'index']);
 
     /**
      * Routes that require admin, but do not require admin changes

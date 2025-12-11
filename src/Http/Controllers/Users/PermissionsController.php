@@ -32,9 +32,9 @@ final readonly class PermissionsController
     use EditUserTrait;
     use RespondsWithFlash;
 
-    public function index(Request $request, ?User $user = null): CpScreenResponse
+    public function index(Request $request, ?int $userId = null): CpScreenResponse
     {
-        $user = $this->editedUser($user?->id);
+        $user = $this->editedUser($userId);
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
         $response->action('users/save-permissions');

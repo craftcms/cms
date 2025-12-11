@@ -38,6 +38,7 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -430,7 +431,7 @@ class ElementsController extends Controller
             ->noticeHtml($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
-                fn(Response $response, string $containerId) => $this->_prepareEditor(
+                fn(Response|CpScreenResponse $response, string $containerId) => $this->_prepareEditor(
                     $element,
                     $isUnpublishedDraft,
                     $canSave,
@@ -1069,7 +1070,7 @@ JS, [
         ElementInterface $element,
         bool $isUnpublishedDraft,
         bool $canSave,
-        Response $response,
+        Response|CpScreenResponse $response,
         string $containerId,
         callable $contentFn,
         callable $sidebarFn,
@@ -1082,8 +1083,12 @@ JS, [
         $contentHtml = $contentFn($form);
         $sidebarHtml = $sidebarFn($form);
 
-        /** @var CpScreenResponseBehavior|null $behavior */
-        $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+        if ($response instanceof CpScreenResponse) {
+            $behavior = $response;
+        } else {
+            /** @var CpScreenResponseBehavior|null $behavior */
+            $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+        }
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->getAcceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [

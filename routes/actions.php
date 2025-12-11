@@ -34,8 +34,15 @@ use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Http\Controllers\Users\ActivateController;
+use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PhotoController;
+use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SuspendController;
+use CraftCms\Cms\Http\Controllers\Users\UnlockController;
+use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -278,6 +285,17 @@ Route::prefix(implode('/', [
         });
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
+        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
+        Route::post('users/activate-user', [ActivateController::class, 'activate']);
+        Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
+        Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
+        Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
+        Route::post('users/enable-user', EnableController::class);
+        Route::post('users/unlock-user', UnlockController::class);
+        Route::post('users/delete-user', [UsersController::class, 'destroy']);
+        Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
+        Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
 
         // User groups
         Route::middleware([

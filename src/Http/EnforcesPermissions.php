@@ -63,4 +63,9 @@ trait EnforcesPermissions
             t('This action may only be performed with an elevated session.'),
         );
     }
+
+    protected function requireAdmin(): void
+    {
+        abort_unless(Auth::user()->isAdmin(), 403, 'User is not permitted to perform this action.');
+    }
 }

@@ -37,7 +37,7 @@ trait LegacyMethods
 
     public function afterPopulate(array $elements): array
     {
-        throw new BadMethodCallException;
+        return $elements;
     }
 
     public function andWhere($condition): never
