@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Database\Events\RegisterMigrators;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -14,6 +15,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
+use Illuminate\Support\Facades\Event;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Throwable;
@@ -121,10 +123,11 @@ final class MigrateCommand extends Command implements Isolatable
         foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
 
-            $which = match ($track) {
-                'craft' => 'Craft',
-                'content' => 'content',
-                default => $plugins[substr((string) $track, 7)]->name,
+            $which = match (true) {
+                $track === 'craft' => 'Craft',
+                $track === 'content' => 'content',
+                str_starts_with((string) $track, 'plugin') => $plugins[substr((string) $track, 7)]->name,
+                default => $track,
             };
 
             $this->box(
@@ -194,6 +197,28 @@ final class MigrateCommand extends Command implements Isolatable
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
+            }
+        }
+
+        if (Event::hasListeners(RegisterMigrators::class)) {
+            Event::dispatch($event = new RegisterMigrators([]));
+
+            foreach ($event->migrators as $migrator) {
+                if (! $migrator instanceof Migrator) {
+                    $this->components->warn($migrator::class.' is not an instance of '.Migrator::class);
+
+                    continue;
+                }
+
+                if (! $track = $migrator->getTrack()) {
+                    $this->components->warn('A migrator was registered without a track.');
+
+                    continue;
+                }
+
+                if (! empty($migrations = $migrator->getPendingMigrations())) {
+                    $migrationsByTrack[$track] = $migrations;
+                }
             }
         }
     }
