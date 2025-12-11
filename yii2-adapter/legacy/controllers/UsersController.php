@@ -1908,34 +1908,6 @@ class UsersController extends Controller
         );
     }
 
-    /**
-     * Renders the user photo template.
-     *
-     * @param User $user
-     * @return Response
-     */
-    private function _renderPhotoTemplate(User $user): Response
-    {
-        $view = $this->getView();
-        $templateMode = $view->getTemplateMode();
-        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo.twig')) {
-            $templateMode = View::TEMPLATE_MODE_CP;
-        }
-
-        $data = [
-            'html' => $view->renderTemplate('users/_photo.twig', [
-                'user' => $user,
-            ], $templateMode),
-            'photoId' => $user->photoId,
-        ];
-
-        if ($user->getIsCurrent() && $this->request->getIsCpRequest()) {
-            $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
-        }
-
-        return $this->asJson($data);
-    }
-
     private function _hashCheck()
     {
         Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
