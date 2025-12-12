@@ -74,29 +74,7 @@ final readonly class GeneralSettingsController
         ])->validate();
 
         if (Edition::isAtLeast(Edition::Pro)) {
-            foreach (['siteIcon', 'siteLogo'] as $key) {
-                // Resolve the input name to the folder
-                $folder = $key === 'siteIcon' ? 'icon' : 'logo';
-
-                // Make sure the user actually wants to change this
-                if ($request->has($key)) {
-                    // If the user explicitly removed the file just delete the folder
-                    if ($request->input($key) === null) {
-                        Storage::disk('rebrand')->deleteDirectory($folder);
-                    }
-
-                    // If the user uploaded a new file
-                    if ($request->hasFile($key)) {
-                        $image = $request->file($key);
-                        Storage::disk('rebrand')->deleteDirectory($folder);
-
-                        if ($image) {
-                            $safeName = Assets::prepareAssetName($image->getClientOriginalName(), true, true);
-                            $image->storePubliclyAs($folder, $safeName, 'rebrand');
-                        }
-                    }
-                }
-            }
+            $this->updateRebrand($request);
         }
 
         $systemSettings = $this->projectConfig->get('system') ?? [];
@@ -113,5 +91,38 @@ final readonly class GeneralSettingsController
 
         return back()
             ->with('success', 'System settings saved.');
+    }
+
+    /**
+     * @TODO Refactor/remove this once rebrand assets are refactored
+     */
+    private function updateRebrand(Request $request): void
+    {
+        foreach (['siteIcon', 'siteLogo'] as $key) {
+            // Resolve the input name to the folder
+            $folder = $key === 'siteIcon' ? 'icon' : 'logo';
+
+            // Make sure the user actually wants to change this
+            if (! $request->has($key)) {
+                continue;
+            }
+
+            // If the user explicitly removed the file just delete the folder
+            if ($request->input($key) === null) {
+                Storage::disk('rebrand')->deleteDirectory($folder);
+            }
+
+            // If the user uploaded a new file
+            if (! $request->hasFile($key)) {
+                continue;
+            }
+
+            $image = $request->file($key);
+            Storage::disk('rebrand')->deleteDirectory($folder);
+            if ($image) {
+                $safeName = Assets::prepareAssetName($image->getClientOriginalName(), true, true);
+                $image->storePubliclyAs($folder, $safeName, 'rebrand');
+            }
+        }
     }
 }
