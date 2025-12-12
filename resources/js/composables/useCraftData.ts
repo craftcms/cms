@@ -3,7 +3,10 @@ import {usePage} from '@inertiajs/vue3';
 export interface CraftData {
   system: {
     name: string;
-    icon: string;
+    icon: {
+      url: string;
+      name: string;
+    } | null;
   };
   app: {
     version: string;

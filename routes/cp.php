@@ -26,6 +26,7 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Admin requests that do not require a login
@@ -92,6 +93,17 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/plugins', [PluginsController::class, 'index']);
         Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+
+        // Rebrand
+        Route::get('rebrand/{type}/{filename}', function (string $type, string $filename) {
+            abort_unless(in_array($type, ['icon', 'logo']), 404);
+
+            $file = Storage::disk('rebrand')->path("$type/$filename");
+
+            abort_unless(file_exists($file), 404);
+
+            return response()->file($file);
+        })->where('filename', '.*');
 
         // Routes
         Route::get('settings/routes', [RoutesController::class, 'index']);

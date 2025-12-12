@@ -16,7 +16,9 @@
     :target="site.url ? '_blank' : ''"
     tabindex="0"
   >
-    <div class="system-info__icon" v-html="system.icon"></div>
+    <div class="system-info__icon">
+      <img :src="system.icon.url" alt="" v-if="system.icon" />
+    </div>
     <div class="system-info__name">{{ system.name }}</div>
   </component>
 </template>

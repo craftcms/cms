@@ -141,6 +141,17 @@ enum Edition: int implements Arrayable
             ($licensedEdition !== null && $licensedEdition->value < self::Pro->value);
     }
 
+    public static function isAtLeast(Edition|int $edition): bool
+    {
+        try {
+            self::require($edition);
+
+            return true;
+        } catch (WrongEditionException) {
+            return false;
+        }
+    }
+
     public static function require(Edition|int $edition, bool $orBetter = true): void
     {
         if (is_int($edition)) {

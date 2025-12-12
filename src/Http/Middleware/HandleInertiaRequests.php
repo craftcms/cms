@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Http\Middleware;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\web\twig\variables\Rebrand;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -69,8 +69,8 @@ class HandleInertiaRequests extends Middleware
 
         $systemIcon = Cp::iconSvg('c-outline');
 
-        if (Edition::get()->value >= Edition::Pro->value && $rebrand = app(Rebrand::class)) {
-            $systemIcon = $rebrand->isIconUploaded() ? $rebrand->getIcon()->getUrl() : $systemIcon;
+        if (Edition::isAtLeast(Edition::Pro) && $rebrand = app(Rebrand::class)) {
+            $systemIcon = $rebrand->getImage('icon');
         }
 
         return [

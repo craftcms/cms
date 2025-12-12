@@ -13,6 +13,7 @@
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import type {SelectOption, SuggestionGroup} from '@/types';
+  import FileUpload from '@/components/FileUpload.vue';
 
   const props = defineProps<{
     readOnly?: boolean;
@@ -20,6 +21,8 @@
     nameSuggestions?: Array<SuggestionGroup>;
     timezoneOptions?: Array<TimezoneOption>;
     systemStatusOptions?: Array<SelectOption>;
+    siteIcon?: any;
+    siteLogo?: any;
     saveUrl: string;
     flash?: Record<any, any>;
     errors: Record<any, any>;
@@ -34,6 +37,8 @@
     live: props.system.live,
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
+    siteIcon: props.siteIcon,
+    siteLogo: props.siteLogo,
   });
 
   function handleUpdate(event: CustomEvent) {
@@ -51,8 +56,36 @@
   });
 
   function save() {
-    form.clearErrors();
-    form.submit(store());
+    form
+      .transform((data) => {
+        /**
+         * I'm not convinced this is the right approach but it works for the moment.
+         *
+         * When you first upload a file, we get a `File` object, that gets passed
+         * to the server and processed. All is well there.
+         *
+         * When we display the file you've uploaded, we send back an array of just
+         * the URL and the filename. We then use that information to set the
+         * uploadResponses on `craft-file-input` which is how we pre-fill the form.
+         *
+         * This means that the URL and name get sent up to the server on updates
+         * but the server doesn't know what to do with that. Instead of adding
+         * logic on the server, we just remove the `siteIcon` and `siteLogo`
+         * if they're not an instance of File and therefore weren't uploaded
+         * in this request.
+         */
+        if (data.siteIcon !== null && !(data.siteIcon instanceof File)) {
+          delete data.siteIcon;
+        }
+
+        if (data.siteLogo !== null && !(data.siteLogo instanceof File)) {
+          delete data.siteLogo;
+        }
+
+        return data;
+      })
+      .clearErrors()
+      .submit(store());
   }
 </script>
 
@@ -284,8 +317,10 @@
         <template v-if="app.edition.value >= Edition.Pro">
           <hr />
           <div class="p-4 grid gap-3">
-            <craft-input
+            <FileUpload
               :label="t('app', 'Site Icon')"
+              name="siteIcon"
+              v-model="form.siteIcon"
               :help-text="
                 t(
                   'app',
@@ -293,19 +328,15 @@
                   {size: '32px'}
                 )
               "
+              :thumbnail-size="32"
               :disabled="readOnly"
-              type="hidden"
-            >
-              <div slot="before" class="flex gap-2">
-                <div class="preview preview--icon"></div>
-                <craft-button type="button">{{
-                  t('app', 'Upload Icon')
-                }}</craft-button>
-              </div>
-            </craft-input>
+              :error="form.errors.siteIcon"
+            />
 
-            <craft-input
+            <FileUpload
               :label="t('app', 'Login Page Logo')"
+              v-model="form.siteLogo"
+              name="siteLogo"
               :help-text="
                 t(
                   'app',
@@ -314,15 +345,9 @@
                 )
               "
               :disabled="readOnly"
-              type="hidden"
-            >
-              <div slot="before" class="flex gap-2 items-center">
-                <div class="preview preview--logo" style="width: 288px"></div>
-                <craft-button type="button">{{
-                  t('app', 'Upload Logo')
-                }}</craft-button>
-              </div>
-            </craft-input>
+              :thumbnail-size="288"
+              :error="form.errors.siteLogo"
+            />
           </div>
         </template>
       </div>

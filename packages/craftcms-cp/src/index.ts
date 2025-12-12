@@ -8,6 +8,8 @@ export {default as CraftCopyButton} from './components/copy-button/copy-button.j
 export {default as CraftButton} from './components/button/button.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
 export {default as CraftInput} from './components/input/input.js';
+export {default as CraftInputFile} from './components/input-file/input-file.js';
+export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftChip} from './components/chip/chip.js';
 export {default as CraftStatus} from './components/status/status.js';

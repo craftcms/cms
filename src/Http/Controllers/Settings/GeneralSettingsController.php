@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use craft\helpers\Assets;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Rules\RequiresEditionRule;
 use CraftCms\Cms\Shared\Rules\TimezoneRule;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +27,7 @@ final readonly class GeneralSettingsController
 
     public function __construct(
         private ProjectConfig $projectConfig,
+        private Rebrand $rebrand,
     ) {}
 
     public function index(GeneralConfig $generalConfig): Response|View
@@ -33,6 +39,8 @@ final readonly class GeneralSettingsController
                 ...SelectOptions::getTimeZoneOptions(),
                 ...SelectOptions::getEnvOptions(),
             ],
+            'siteIcon' => $this->rebrand->getImage('icon'),
+            'siteLogo' => $this->rebrand->getImage('logo'),
             'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
             'readOnly' => ! $generalConfig->allowAdminChanges,
             'saveUrl' => route('craft.cp.settings.general.store'),
@@ -42,9 +50,11 @@ final readonly class GeneralSettingsController
     public function store(Request $request)
     {
         $resolvedValues = [];
+
+        $envAllowedKeys = ['name', 'live', 'timeZone'];
         foreach ($request->all() as $key => $value) {
-            if (is_string($value)) {
-                $resolvedValues[$key] = str_starts_with($value, '$') ? Env::parse($value) : $value;
+            if (in_array($key, $envAllowedKeys) && is_string($value) && str_starts_with($value, '$')) {
+                $resolvedValues[$key] = Env::parse($value);
             } else {
                 $resolvedValues[$key] = $value;
             }
@@ -58,9 +68,37 @@ final readonly class GeneralSettingsController
             'live' => ['required', 'boolean'],
             'retryDuration' => ['nullable', 'integer'],
             'timeZone' => ['required', 'string', new TimezoneRule],
+            'siteIcon' => ['sometimes', 'nullable', new RequiresEditionRule(Edition::Pro), 'image:allow_svg'],
+            'siteLogo' => ['sometimes', 'nullable', new RequiresEditionRule(Edition::Pro), 'image:allow_svg'],
         ])->validate();
 
-        $systemSettings = $this->projectConfig->get('system');
+        if (Edition::isAtLeast(Edition::Pro)) {
+            foreach (['siteIcon', 'siteLogo'] as $key) {
+                // Resolve the input name to the folder
+                $folder = $key === 'siteIcon' ? 'icon' : 'logo';
+
+                // Make sure the user actually wants to change this
+                if ($request->has($key)) {
+                    // If the user explicitly removed the file just delete the folder
+                    if ($request->input($key) === null) {
+                        Storage::disk('rebrand')->deleteDirectory($folder);
+                    }
+
+                    // If the user uploaded a new file
+                    if ($request->hasFile($key)) {
+                        $image = $request->file($key);
+                        Storage::disk('rebrand')->deleteDirectory($folder);
+
+                        if ($image) {
+                            $safeName = Assets::prepareAssetName($image->getClientOriginalName(), true, true);
+                            $image->storePubliclyAs($folder, $safeName, 'rebrand');
+                        }
+                    }
+                }
+            }
+        }
+
+        $systemSettings = $this->projectConfig->get('system') ?? [];
         $systemSettings['name'] = $request->input('name');
         $systemSettings['live'] = $request->input('live');
         $systemSettings['retryDuration'] = $request->input('retryDuration') ?: null;
