@@ -6,8 +6,98 @@
       "resources/js/cp.ts"
     ]
   },
+  "node_modules/@lion/ui/components/combobox/translations/bg.js": {
+    "file": "bg.js",
+    "name": "bg",
+    "src": "node_modules/@lion/ui/components/combobox/translations/bg.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/cs.js": {
+    "file": "cs.js",
+    "name": "cs",
+    "src": "node_modules/@lion/ui/components/combobox/translations/cs.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/de.js": {
+    "file": "de.js",
+    "name": "de",
+    "src": "node_modules/@lion/ui/components/combobox/translations/de.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/en.js": {
+    "file": "en.js",
+    "name": "en",
+    "src": "node_modules/@lion/ui/components/combobox/translations/en.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/es.js": {
+    "file": "es.js",
+    "name": "es",
+    "src": "node_modules/@lion/ui/components/combobox/translations/es.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/fr.js": {
+    "file": "fr.js",
+    "name": "fr",
+    "src": "node_modules/@lion/ui/components/combobox/translations/fr.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/hu.js": {
+    "file": "hu.js",
+    "name": "hu",
+    "src": "node_modules/@lion/ui/components/combobox/translations/hu.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/it.js": {
+    "file": "it.js",
+    "name": "it",
+    "src": "node_modules/@lion/ui/components/combobox/translations/it.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/nl.js": {
+    "file": "nl.js",
+    "name": "nl",
+    "src": "node_modules/@lion/ui/components/combobox/translations/nl.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/pl.js": {
+    "file": "pl.js",
+    "name": "pl",
+    "src": "node_modules/@lion/ui/components/combobox/translations/pl.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/ro.js": {
+    "file": "ro.js",
+    "name": "ro",
+    "src": "node_modules/@lion/ui/components/combobox/translations/ro.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/ru.js": {
+    "file": "ru.js",
+    "name": "ru",
+    "src": "node_modules/@lion/ui/components/combobox/translations/ru.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/sk.js": {
+    "file": "sk.js",
+    "name": "sk",
+    "src": "node_modules/@lion/ui/components/combobox/translations/sk.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/uk.js": {
+    "file": "uk.js",
+    "name": "uk",
+    "src": "node_modules/@lion/ui/components/combobox/translations/uk.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/combobox/translations/zh.js": {
+    "file": "zh.js",
+    "name": "zh",
+    "src": "node_modules/@lion/ui/components/combobox/translations/zh.js",
+    "isDynamicEntry": true
+  },
   "node_modules/@lion/ui/components/form-core/translations/bg-BG.js": {
-    "file": "bg-BG.js",
+    "file": "bg-BG2.js",
     "name": "bg-BG",
     "src": "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
     "isDynamicEntry": true,
@@ -16,13 +106,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/bg.js": {
-    "file": "bg.js",
+    "file": "bg3.js",
     "name": "bg",
     "src": "node_modules/@lion/ui/components/form-core/translations/bg.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js": {
-    "file": "cs-CZ.js",
+    "file": "cs-CZ2.js",
     "name": "cs-CZ",
     "src": "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js",
     "isDynamicEntry": true,
@@ -31,13 +121,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/cs.js": {
-    "file": "cs.js",
+    "file": "cs3.js",
     "name": "cs",
     "src": "node_modules/@lion/ui/components/form-core/translations/cs.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/de-DE.js": {
-    "file": "de-DE.js",
+    "file": "de-DE2.js",
     "name": "de-DE",
     "src": "node_modules/@lion/ui/components/form-core/translations/de-DE.js",
     "isDynamicEntry": true,
@@ -46,13 +136,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/de.js": {
-    "file": "de.js",
+    "file": "de3.js",
     "name": "de",
     "src": "node_modules/@lion/ui/components/form-core/translations/de.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/en-AU.js": {
-    "file": "en-AU.js",
+    "file": "en-AU2.js",
     "name": "en-AU",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-AU.js",
     "isDynamicEntry": true,
@@ -61,7 +151,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en-GB.js": {
-    "file": "en-GB.js",
+    "file": "en-GB2.js",
     "name": "en-GB",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-GB.js",
     "isDynamicEntry": true,
@@ -70,7 +160,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en-US.js": {
-    "file": "en-US.js",
+    "file": "en-US2.js",
     "name": "en-US",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-US.js",
     "isDynamicEntry": true,
@@ -79,13 +169,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en.js": {
-    "file": "en.js",
+    "file": "en3.js",
     "name": "en",
     "src": "node_modules/@lion/ui/components/form-core/translations/en.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/es-ES.js": {
-    "file": "es-ES.js",
+    "file": "es-ES2.js",
     "name": "es-ES",
     "src": "node_modules/@lion/ui/components/form-core/translations/es-ES.js",
     "isDynamicEntry": true,
@@ -94,13 +184,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/es.js": {
-    "file": "es.js",
+    "file": "es3.js",
     "name": "es",
     "src": "node_modules/@lion/ui/components/form-core/translations/es.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/fr-BE.js": {
-    "file": "fr-BE.js",
+    "file": "fr-BE2.js",
     "name": "fr-BE",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr-BE.js",
     "isDynamicEntry": true,
@@ -109,7 +199,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/fr-FR.js": {
-    "file": "fr-FR.js",
+    "file": "fr-FR2.js",
     "name": "fr-FR",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr-FR.js",
     "isDynamicEntry": true,
@@ -118,13 +208,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/fr.js": {
-    "file": "fr.js",
+    "file": "fr3.js",
     "name": "fr",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/hu-HU.js": {
-    "file": "hu-HU.js",
+    "file": "hu-HU2.js",
     "name": "hu-HU",
     "src": "node_modules/@lion/ui/components/form-core/translations/hu-HU.js",
     "isDynamicEntry": true,
@@ -133,13 +223,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/hu.js": {
-    "file": "hu.js",
+    "file": "hu3.js",
     "name": "hu",
     "src": "node_modules/@lion/ui/components/form-core/translations/hu.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/it-IT.js": {
-    "file": "it-IT.js",
+    "file": "it-IT2.js",
     "name": "it-IT",
     "src": "node_modules/@lion/ui/components/form-core/translations/it-IT.js",
     "isDynamicEntry": true,
@@ -148,13 +238,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/it.js": {
-    "file": "it.js",
+    "file": "it3.js",
     "name": "it",
     "src": "node_modules/@lion/ui/components/form-core/translations/it.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/nl-BE.js": {
-    "file": "nl-BE.js",
+    "file": "nl-BE2.js",
     "name": "nl-BE",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl-BE.js",
     "isDynamicEntry": true,
@@ -163,7 +253,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/nl-NL.js": {
-    "file": "nl-NL.js",
+    "file": "nl-NL2.js",
     "name": "nl-NL",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl-NL.js",
     "isDynamicEntry": true,
@@ -172,13 +262,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/nl.js": {
-    "file": "nl.js",
+    "file": "nl3.js",
     "name": "nl",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/pl-PL.js": {
-    "file": "pl-PL.js",
+    "file": "pl-PL2.js",
     "name": "pl-PL",
     "src": "node_modules/@lion/ui/components/form-core/translations/pl-PL.js",
     "isDynamicEntry": true,
@@ -187,13 +277,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/pl.js": {
-    "file": "pl.js",
+    "file": "pl3.js",
     "name": "pl",
     "src": "node_modules/@lion/ui/components/form-core/translations/pl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/ro-RO.js": {
-    "file": "ro-RO.js",
+    "file": "ro-RO2.js",
     "name": "ro-RO",
     "src": "node_modules/@lion/ui/components/form-core/translations/ro-RO.js",
     "isDynamicEntry": true,
@@ -202,13 +292,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/ro.js": {
-    "file": "ro.js",
+    "file": "ro3.js",
     "name": "ro",
     "src": "node_modules/@lion/ui/components/form-core/translations/ro.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/ru-RU.js": {
-    "file": "ru-RU.js",
+    "file": "ru-RU2.js",
     "name": "ru-RU",
     "src": "node_modules/@lion/ui/components/form-core/translations/ru-RU.js",
     "isDynamicEntry": true,
@@ -217,13 +307,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/ru.js": {
-    "file": "ru.js",
+    "file": "ru3.js",
     "name": "ru",
     "src": "node_modules/@lion/ui/components/form-core/translations/ru.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/sk-SK.js": {
-    "file": "sk-SK.js",
+    "file": "sk-SK2.js",
     "name": "sk-SK",
     "src": "node_modules/@lion/ui/components/form-core/translations/sk-SK.js",
     "isDynamicEntry": true,
@@ -232,7 +322,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/sk.js": {
-    "file": "sk.js",
+    "file": "sk3.js",
     "name": "sk",
     "src": "node_modules/@lion/ui/components/form-core/translations/sk.js",
     "isDynamicEntry": true
@@ -253,7 +343,7 @@
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/uk-UA.js": {
-    "file": "uk-UA.js",
+    "file": "uk-UA2.js",
     "name": "uk-UA",
     "src": "node_modules/@lion/ui/components/form-core/translations/uk-UA.js",
     "isDynamicEntry": true,
@@ -262,15 +352,267 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/uk.js": {
-    "file": "uk.js",
+    "file": "uk3.js",
     "name": "uk",
     "src": "node_modules/@lion/ui/components/form-core/translations/uk.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/zh.js": {
-    "file": "zh.js",
+    "file": "zh3.js",
     "name": "zh",
     "src": "node_modules/@lion/ui/components/form-core/translations/zh.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/bg-BG.js": {
+    "file": "bg-BG.js",
+    "name": "bg-BG",
+    "src": "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/bg.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/bg.js": {
+    "file": "bg2.js",
+    "name": "bg",
+    "src": "node_modules/@lion/ui/components/input-file/translations/bg.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js": {
+    "file": "cs-CZ.js",
+    "name": "cs-CZ",
+    "src": "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/cs.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/cs.js": {
+    "file": "cs2.js",
+    "name": "cs",
+    "src": "node_modules/@lion/ui/components/input-file/translations/cs.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/de-DE.js": {
+    "file": "de-DE.js",
+    "name": "de-DE",
+    "src": "node_modules/@lion/ui/components/input-file/translations/de-DE.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/de.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/de.js": {
+    "file": "de2.js",
+    "name": "de",
+    "src": "node_modules/@lion/ui/components/input-file/translations/de.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/en-AU.js": {
+    "file": "en-AU.js",
+    "name": "en-AU",
+    "src": "node_modules/@lion/ui/components/input-file/translations/en-AU.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/en.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/en-GB.js": {
+    "file": "en-GB.js",
+    "name": "en-GB",
+    "src": "node_modules/@lion/ui/components/input-file/translations/en-GB.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/en.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/en-US.js": {
+    "file": "en-US.js",
+    "name": "en-US",
+    "src": "node_modules/@lion/ui/components/input-file/translations/en-US.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/en.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/en.js": {
+    "file": "en2.js",
+    "name": "en",
+    "src": "node_modules/@lion/ui/components/input-file/translations/en.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/es-ES.js": {
+    "file": "es-ES.js",
+    "name": "es-ES",
+    "src": "node_modules/@lion/ui/components/input-file/translations/es-ES.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/es.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/es.js": {
+    "file": "es2.js",
+    "name": "es",
+    "src": "node_modules/@lion/ui/components/input-file/translations/es.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/fr-BE.js": {
+    "file": "fr-BE.js",
+    "name": "fr-BE",
+    "src": "node_modules/@lion/ui/components/input-file/translations/fr-BE.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/fr.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/fr-FR.js": {
+    "file": "fr-FR.js",
+    "name": "fr-FR",
+    "src": "node_modules/@lion/ui/components/input-file/translations/fr-FR.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/fr.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/fr.js": {
+    "file": "fr2.js",
+    "name": "fr",
+    "src": "node_modules/@lion/ui/components/input-file/translations/fr.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/hu-HU.js": {
+    "file": "hu-HU.js",
+    "name": "hu-HU",
+    "src": "node_modules/@lion/ui/components/input-file/translations/hu-HU.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/hu.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/hu.js": {
+    "file": "hu2.js",
+    "name": "hu",
+    "src": "node_modules/@lion/ui/components/input-file/translations/hu.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/it-IT.js": {
+    "file": "it-IT.js",
+    "name": "it-IT",
+    "src": "node_modules/@lion/ui/components/input-file/translations/it-IT.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/it.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/it.js": {
+    "file": "it2.js",
+    "name": "it",
+    "src": "node_modules/@lion/ui/components/input-file/translations/it.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/nl-BE.js": {
+    "file": "nl-BE.js",
+    "name": "nl-BE",
+    "src": "node_modules/@lion/ui/components/input-file/translations/nl-BE.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/nl.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/nl-NL.js": {
+    "file": "nl-NL.js",
+    "name": "nl-NL",
+    "src": "node_modules/@lion/ui/components/input-file/translations/nl-NL.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/nl.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/nl.js": {
+    "file": "nl2.js",
+    "name": "nl",
+    "src": "node_modules/@lion/ui/components/input-file/translations/nl.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/pl-PL.js": {
+    "file": "pl-PL.js",
+    "name": "pl-PL",
+    "src": "node_modules/@lion/ui/components/input-file/translations/pl-PL.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/pl.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/pl.js": {
+    "file": "pl2.js",
+    "name": "pl",
+    "src": "node_modules/@lion/ui/components/input-file/translations/pl.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/ro-RO.js": {
+    "file": "ro-RO.js",
+    "name": "ro-RO",
+    "src": "node_modules/@lion/ui/components/input-file/translations/ro-RO.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/ro.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/ro.js": {
+    "file": "ro2.js",
+    "name": "ro",
+    "src": "node_modules/@lion/ui/components/input-file/translations/ro.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/ru-RU.js": {
+    "file": "ru-RU.js",
+    "name": "ru-RU",
+    "src": "node_modules/@lion/ui/components/input-file/translations/ru-RU.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/ru.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/ru.js": {
+    "file": "ru2.js",
+    "name": "ru",
+    "src": "node_modules/@lion/ui/components/input-file/translations/ru.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/sk-SK.js": {
+    "file": "sk-SK.js",
+    "name": "sk-SK",
+    "src": "node_modules/@lion/ui/components/input-file/translations/sk-SK.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/sk.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/sk.js": {
+    "file": "sk2.js",
+    "name": "sk",
+    "src": "node_modules/@lion/ui/components/input-file/translations/sk.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/uk-UA.js": {
+    "file": "uk-UA.js",
+    "name": "uk-UA",
+    "src": "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/@lion/ui/components/input-file/translations/uk.js"
+    ]
+  },
+  "node_modules/@lion/ui/components/input-file/translations/uk.js": {
+    "file": "uk2.js",
+    "name": "uk",
+    "src": "node_modules/@lion/ui/components/input-file/translations/uk.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@lion/ui/components/input-file/translations/zh.js": {
+    "file": "zh2.js",
+    "name": "zh",
+    "src": "node_modules/@lion/ui/components/input-file/translations/zh.js",
     "isDynamicEntry": true
   },
   "node_modules/@popperjs/core/dist/esm/popper.js": {
@@ -314,7 +656,7 @@
     ],
     "dynamicImports": [
       "resources/js/pages/Install.vue",
-      "resources/js/pages/Settings/General/Index.vue"
+      "resources/js/pages/SettingsGeneralPage.vue"
     ]
   },
   "resources/js/legacy.ts": {
@@ -359,7 +701,57 @@
       "node_modules/@lion/ui/components/form-core/translations/uk.js",
       "node_modules/@lion/ui/components/form-core/translations/zh.js",
       "node_modules/@lion/ui/components/form-core/translations/en.js",
-      "node_modules/@popperjs/core/dist/esm/popper.js"
+      "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
+      "node_modules/@lion/ui/components/input-file/translations/bg.js",
+      "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
+      "node_modules/@lion/ui/components/input-file/translations/cs.js",
+      "node_modules/@lion/ui/components/input-file/translations/de-DE.js",
+      "node_modules/@lion/ui/components/input-file/translations/de.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-AU.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-GB.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-US.js",
+      "node_modules/@lion/ui/components/input-file/translations/en.js",
+      "node_modules/@lion/ui/components/input-file/translations/es-ES.js",
+      "node_modules/@lion/ui/components/input-file/translations/es.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr-FR.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr-BE.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr.js",
+      "node_modules/@lion/ui/components/input-file/translations/hu-HU.js",
+      "node_modules/@lion/ui/components/input-file/translations/hu.js",
+      "node_modules/@lion/ui/components/input-file/translations/it-IT.js",
+      "node_modules/@lion/ui/components/input-file/translations/it.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl-BE.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl-NL.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl.js",
+      "node_modules/@lion/ui/components/input-file/translations/pl-PL.js",
+      "node_modules/@lion/ui/components/input-file/translations/pl.js",
+      "node_modules/@lion/ui/components/input-file/translations/ro-RO.js",
+      "node_modules/@lion/ui/components/input-file/translations/ro.js",
+      "node_modules/@lion/ui/components/input-file/translations/ru-RU.js",
+      "node_modules/@lion/ui/components/input-file/translations/ru.js",
+      "node_modules/@lion/ui/components/input-file/translations/sk-SK.js",
+      "node_modules/@lion/ui/components/input-file/translations/sk.js",
+      "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
+      "node_modules/@lion/ui/components/input-file/translations/uk.js",
+      "node_modules/@lion/ui/components/input-file/translations/zh.js",
+      "node_modules/@lion/ui/components/input-file/translations/en.js",
+      "node_modules/@popperjs/core/dist/esm/popper.js",
+      "node_modules/@lion/ui/components/combobox/translations/bg.js",
+      "node_modules/@lion/ui/components/combobox/translations/cs.js",
+      "node_modules/@lion/ui/components/combobox/translations/de.js",
+      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "node_modules/@lion/ui/components/combobox/translations/es.js",
+      "node_modules/@lion/ui/components/combobox/translations/fr.js",
+      "node_modules/@lion/ui/components/combobox/translations/hu.js",
+      "node_modules/@lion/ui/components/combobox/translations/it.js",
+      "node_modules/@lion/ui/components/combobox/translations/nl.js",
+      "node_modules/@lion/ui/components/combobox/translations/pl.js",
+      "node_modules/@lion/ui/components/combobox/translations/ro.js",
+      "node_modules/@lion/ui/components/combobox/translations/ru.js",
+      "node_modules/@lion/ui/components/combobox/translations/sk.js",
+      "node_modules/@lion/ui/components/combobox/translations/uk.js",
+      "node_modules/@lion/ui/components/combobox/translations/zh.js",
+      "node_modules/@lion/ui/components/combobox/translations/en.js"
     ]
   },
   "resources/js/pages/Install.vue": {
@@ -382,10 +774,10 @@
       "assets/db.png"
     ]
   },
-  "resources/js/pages/Settings/General/Index.vue": {
-    "file": "Index.js",
-    "name": "Index",
-    "src": "resources/js/pages/Settings/General/Index.vue",
+  "resources/js/pages/SettingsGeneralPage.vue": {
+    "file": "SettingsGeneralPage.js",
+    "name": "SettingsGeneralPage",
+    "src": "resources/js/pages/SettingsGeneralPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
@@ -393,7 +785,7 @@
       "resources/js/legacy.ts"
     ],
     "css": [
-      "assets/Index.css"
+      "assets/SettingsGeneralPage.css"
     ]
   }
 }

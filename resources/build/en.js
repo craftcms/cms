@@ -1,1 +1,1 @@
-const a={validationError:"Error",validationWarning:"Warning",validationSuccess:"Success",validationInfo:"Info"};export{a as default};
+const o={optionsPopup:"Combobox options popup"};export{o as default};

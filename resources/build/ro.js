@@ -1,1 +1,1 @@
-const a={validationError:"Eroare",validationWarning:"Atenție",validationSuccess:"Succes",validationInfo:"Informații"};export{a as default};
+const o={optionsPopup:"Fereastra pop-up cu opţiuni Combobox"};export{o as default};

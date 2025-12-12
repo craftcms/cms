@@ -12,7 +12,7 @@ export default css`
     --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-on-subtle: var(--c-color-neutral-on-subtle);
   }
-  
+
   :host([variant='danger']) {
     --c-color-bg-emphasis: var(--c-color-danger-bg-emphasis);
     --c-color-bg-normal: var(--c-color-danger-bg-normal);

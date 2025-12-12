@@ -1,1 +1,1 @@
-const i={validationError:"Hiba",validationWarning:"Figyelmeztetés",validationSuccess:"Sikeres",validationInfo:"Információ"};export{i as default};
+const a={optionsPopup:"Kombinált lista opcióinak felugró ablaka"};export{a as default};

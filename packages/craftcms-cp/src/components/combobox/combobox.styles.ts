@@ -18,8 +18,8 @@ export default css`
       calc(var(--c-input-spacing-inline) * 1.5 + 1em);
     border-radius: var(--c-input-radius);
   }
-  
-  ::slotted([slot="listbox"]) {
+
+  ::slotted([slot='listbox']) {
     display: grid;
     gap: var(--c-spacing-xs);
     border: 1px solid var(--c-color-neutral-border-subtle);

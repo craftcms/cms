@@ -1,1 +1,1 @@
-import e from"./es.js";const s={...e};export{s as default};
+import e from"./es2.js";const s={...e};export{s as default};

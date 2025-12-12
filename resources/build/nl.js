@@ -1,1 +1,1 @@
-const a={validationError:"Fout",validationWarning:"Waarschuwing",validationSuccess:"Succes",validationInfo:"Informatie"};export{a as default};
+const o={optionsPopup:"Pop-up van opties"};export{o as default};

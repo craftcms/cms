@@ -1,1 +1,1 @@
-const a={validationError:"Грешка",validationWarning:"Предупреждение",validationSuccess:"Успех",validationInfo:"Информация"};export{a as default};
+const o={optionsPopup:"Изскачащ прозорец за опции за комбинирано поле"};export{o as default};

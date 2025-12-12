@@ -15,7 +15,9 @@ const meta = {
       <div class="stack">
         ${Object.keys(Variant).map(
           (variant) =>
-            html`<craft-indicator variant="${Variant[variant]}"></craft-indicator>`
+            html`<craft-indicator
+              variant="${Variant[variant]}"
+            ></craft-indicator>`
         )}
       </div>
     `;

@@ -1,1 +1,1 @@
-import o from"./bg.js";const r={...o};export{r as default};
+import o from"./bg2.js";const r={...o};export{r as default};

@@ -73,7 +73,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   override _setupOverlayCtrl() {
     super._setupOverlayCtrl();
-    this._setupInvoker()
+    this._setupInvoker();
     this._setupContent();
   }
 

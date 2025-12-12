@@ -1,1 +1,1 @@
-import e from"./de.js";const t={...e};export{t as default};
+import e from"./de2.js";const t={...e};export{t as default};

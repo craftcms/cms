@@ -1,1 +1,1 @@
-const a={validationError:"Erreur",validationWarning:"Avertissement",validationSuccess:"Succès",validationInfo:"Info"};export{a as default};
+const o={optionsPopup:"Fenêtre popup des options de la boîte combinée"};export{o as default};

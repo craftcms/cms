@@ -1,1 +1,1 @@
-const a={validationError:"Errore",validationWarning:"Avvertenza",validationSuccess:"Operazione riuscita",validationInfo:"Info"};export{a as default};
+const o={optionsPopup:"Finestra a comparsa opzioni ComboBox"};export{o as default};

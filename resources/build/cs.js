@@ -1,1 +1,1 @@
-const a={validationError:"Chyba",validationWarning:"Varování",validationSuccess:"Úspěch",validationInfo:"Informace"};export{a as default};
+const o={optionsPopup:"Vyskakovací okno možností ComboBox"};export{o as default};

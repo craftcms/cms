@@ -29,14 +29,14 @@ export default class CraftIndicator extends LitElement {
 
   protected override render(): unknown {
     return html`<span
-        class="${classMap({
-          indicator: true,
-          'indicator--success': this.variant === Variant.Success,
-          'indicator--danger': this.variant === Variant.Danger,
-          'indicator--warning': this.variant === Variant.Warning,
-          'indicator--info': this.variant === Variant.Info,
-        })}"
-      ></span>`;
+      class="${classMap({
+        indicator: true,
+        'indicator--success': this.variant === Variant.Success,
+        'indicator--danger': this.variant === Variant.Danger,
+        'indicator--warning': this.variant === Variant.Warning,
+        'indicator--info': this.variant === Variant.Info,
+      })}"
+    ></span>`;
   }
 }
 

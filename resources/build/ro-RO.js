@@ -1,1 +1,1 @@
-import o from"./ro.js";const t={...o};export{t as default};
+import o from"./ro2.js";const t={...o};export{t as default};

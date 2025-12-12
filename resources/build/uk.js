@@ -1,1 +1,1 @@
-const a={validationError:"Помилка",validationWarning:"Попередження",validationSuccess:"Успішно",validationInfo:"Інформація"};export{a as default};
+const o={optionsPopup:"Спливаюче вікно параметрів поля зі списком"};export{o as default};
