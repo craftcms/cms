@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use craft\helpers\Image as ImageHelper;
 use craft\services\Path;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class Rebrand
 {
@@ -31,11 +32,12 @@ class Rebrand
          * I'm assuming it probably is, especially if the rebrand dist is remote.
          */
         if (! isset($this->_imageVariables[$type])) {
-            $this->_imageVariables[$type] = collect(\Illuminate\Support\Facades\Storage::disk('rebrand')->files($type))
+            $this->_imageVariables[$type] = collect(Storage::disk('rebrand')->files($type))
                 ->filter(fn ($file) => ImageHelper::canManipulateAsImage(Str::after($file, '.')))
                 ->map(fn ($file) => [
-                    'name' => basename((string) $file),
-                    'url' => \Illuminate\Support\Facades\Storage::disk('rebrand')->url($file),
+                    'name' => basename($file),
+                    'path' => Storage::disk('rebrand')->path($file),
+                    'url' => Storage::disk('rebrand')->url($file),
                 ])
                 ->first();
         }

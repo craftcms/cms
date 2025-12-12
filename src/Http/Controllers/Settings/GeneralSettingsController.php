@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Rules\RequiresEditionRule;
 use CraftCms\Cms\Shared\Rules\TimezoneRule;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ final readonly class GeneralSettingsController
         private Rebrand $rebrand,
     ) {}
 
-    public function index(GeneralConfig $generalConfig): Response|View
+    public function index(Request $request, GeneralConfig $generalConfig): Response|View
     {
         return Inertia::render('SettingsGeneralPage', [
             'system' => $this->projectConfig->get('system') ?? [],
@@ -39,8 +40,8 @@ final readonly class GeneralSettingsController
                 ...SelectOptions::getTimeZoneOptions(),
                 ...SelectOptions::getEnvOptions(),
             ],
-            'siteIcon' => $this->rebrand->getImage('icon'),
-            'siteLogo' => $this->rebrand->getImage('logo'),
+            'siteIcon' => $this->rebrand->getImage('icon') ? Arr::only($this->rebrand->getImage('icon'), ['url', 'name']) : null,
+            'siteLogo' => $this->rebrand->getImage('logo') ? Arr::only($this->rebrand->getImage('logo'), ['url', 'name']) : null,
             'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
             'readOnly' => ! $generalConfig->allowAdminChanges,
             'saveUrl' => route('craft.cp.settings.general.store'),
