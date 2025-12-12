@@ -6,16 +6,16 @@ export default class CraftNavigation extends LitElement {
       display: block;
     }
 
-    nav {
+    .nav {
       display: grid;
     }
   `;
 
   override render() {
     return html`
-      <nav>
+      <div class="nav">
         <slot></slot>
-      </nav>
+      </div>
     `;
   }
 }

@@ -21,30 +21,30 @@
 </script>
 
 <template>
-  <div class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
+  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
     <div class="cp-sidebar__header">
       <div class="sidebar-header" v-if="mode !== 'docked'">
         <SystemInfo />
         <div class="ml-auto"></div>
-        <craft-button size="small" icon @click="emit('close')">
+        <craft-button size="small" icon @click="emit('close')" type="button">
           <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
         </craft-button>
       </div>
     </div>
-    <aside class="cp-sidebar__body">
+    <div class="cp-sidebar__body">
       <MainNav />
-    </aside>
+    </div>
     <div class="cp-sidebar__footer">
       <EditionInfo />
       <DevModeIndicator />
     </div>
-  </div>
+  </nav>
 </template>
 
 <style scoped lang="scss">
   .cp-sidebar {
     height: 100%;
-    width: var(--cp-sidebar-width);
+    width: var(--global-sidebar-width);
     background-color: var(--c-bg-overlay);
     display: grid;
     grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
