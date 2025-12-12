@@ -34,7 +34,6 @@ use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
 use craft\events\CancelableEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
-use craft\events\PopulateElementEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -775,7 +774,7 @@ class Matrix extends Field implements
                     CancelableEvent $event,
                     EntryQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -790,20 +789,6 @@ class Matrix extends Field implements
                     }
                 },
             ], true));
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_AFTER_POPULATE_ELEMENT => function(PopulateElementEvent $event) use ($owner) {
-                    /** @var Entry $entry */
-                    $entry = $event->element;
-                    if ($entry->siteId === $owner->siteId) {
-                        if ($entry->getOwnerId() === $owner->id) {
-                            $entry->setOwner($owner);
-                        }
-                        if ($entry->getPrimaryOwnerId() === $owner->id) {
-                            $entry->setPrimaryOwner($owner);
-                        }
-                    }
-                },
-            ]));
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -1709,9 +1694,8 @@ JS,
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($entries as $entry) {
@@ -1767,8 +1751,7 @@ JS,
             /** @var Entry[] $oldEntriesById */
             $oldEntriesById = Entry::find()
                 ->fieldId($this->id)
-                ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->owner($element)
                 ->drafts(null)
                 ->status(null)
                 ->indexBy($uids ? 'uid' : 'id')

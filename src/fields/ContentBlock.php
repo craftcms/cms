@@ -28,7 +28,6 @@ use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
-use craft\events\PopulateElementEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
@@ -558,7 +557,7 @@ class ContentBlock extends Field implements
                     CancelableEvent $event,
                     ContentBlockQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -573,20 +572,6 @@ class ContentBlock extends Field implements
                     }
                 },
             ], true));
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_AFTER_POPULATE_ELEMENT => function(PopulateElementEvent $event) use ($owner) {
-                    /** @var ContentBlockElement $contentBlock */
-                    $contentBlock = $event->element;
-                    if ($contentBlock->siteId === $owner->siteId) {
-                        if ($contentBlock->getOwnerId() === $owner->id) {
-                            $contentBlock->setOwner($owner);
-                        }
-                        if ($contentBlock->getPrimaryOwnerId() === $owner->id) {
-                            $contentBlock->setPrimaryOwner($owner);
-                        }
-                    }
-                },
-            ]));
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -894,9 +879,8 @@ JS, [
 
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($contentBlocks as $contentBlock) {
