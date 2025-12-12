@@ -95,6 +95,7 @@ Route::middleware('auth')->group(function () {
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
 
         // Rebrand
+        // @TODO: Remove when rebrand assets are refactored
         Route::get('rebrand/{type}/{filename}', function (string $type, string $filename) {
             abort_unless(in_array($type, ['icon', 'logo']), 404);
 

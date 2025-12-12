@@ -97,6 +97,22 @@ final class AppServiceProvider extends ServiceProvider
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft'),
         ], ['craftcms', 'craftcms-assets']);
+
+        // @TODO Remove when rebrand assets are refactored
+        config([
+            'filesystems.disks.rebrand' => [
+                'driver' => 'local',
+                'root' => storage_path('rebrand'),
+                'url' => implode('/', [
+                    config('app.url'),
+                    Cms::config()->cpTrigger,
+                    'rebrand',
+                ]),
+                'visibility' => 'public',
+                'throw' => false,
+                'report' => false,
+            ],
+        ]);
     }
 
     private function registerMacros(): void
