@@ -5,7 +5,7 @@
   const craftData = useCraftData();
   const system = computed(() => craftData.system);
   const site = computed(() => craftData.site);
-  const tag = computed(() => (site.url ? 'a' : 'div'));
+  const tag = computed(() => (site.value.url ? 'a' : 'div'));
 </script>
 
 <template>
