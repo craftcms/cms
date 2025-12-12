@@ -723,9 +723,16 @@ class View extends \yii\web\View
 
             // Get the variables to pass to the template
             if ($object instanceof Arrayable) {
+                if (preg_match('/\binclude\b/', $template)) {
+                    // Export all normal fields, since we don’t know what the included template is going to need
+                    // (https://github.com/craftcms/cms/issues/18165)
+                    $fields = [];
+                } else {
+                    $fields = $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'];
+                }
+
                 $variables += $object->toArray(
-                    // Don't pass a non-empty array to $fields, otherwise all fields will be exported
-                    $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'],
+                    $fields,
                     $this->filterFieldsByTemplate($object->extraFields(), $template),
                     false,
                 );
