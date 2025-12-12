@@ -12,7 +12,7 @@
 
 <style scoped lang="scss">
   .dev-mode {
-    padding: calc(var(--tw-spacing) * 2);
+    padding: calc(var(--spacing) * 2);
     text-align: center;
     background-image: repeating-linear-gradient(
       -45deg,
