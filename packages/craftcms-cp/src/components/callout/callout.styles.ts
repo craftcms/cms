@@ -11,11 +11,11 @@ export default css`
     --c-color-on-emphasis: var(--c-color-neutral-on-emphasis);
     --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-on-subtle: var(--c-color-neutral-on-subtle);
+    --_radius: var(--c-callout-radius, var(--c-radius-md));
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: start;
     padding: var(--c-spacing-md);
-    border-radius: var(--c-callout-radius, var(--c-radius-md));
     border: 1px solid transparent;
   }
 
@@ -37,7 +37,25 @@ export default css`
     align-items: center;
   }
 
-  :host([appearance~='accent']) {
+  :host([rounded~='all']) {
+    border-radius: var(--_radius);
+  }
+
+  :host([rounded~='none']) {
+    border-radius: 0;
+  }
+
+  :host([rounded~='start']) {
+    border-start-start-radius: var(--_radius);
+    border-start-end-radius: var(--_radius);
+  }
+
+  :host([rounded~='end']) {
+    border-end-start-radius: var(--_radius);
+    border-end-end-radius: var(--_radius);
+  }
+
+  :host([]) :host([appearance~='accent']) {
     --c-fg-link: var(--c-color-on-emphasis);
     background-color: var(--c-color-bg-emphasis);
     color: var(--c-color-on-emphasis);

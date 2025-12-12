@@ -53,3 +53,14 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+.c-icon {
+  display: inline-flex;
+  width: 1.25em;
+  height: 1em;
+
+  svg {
+    height: 1em;
+    overflow: visible;
+  }
+}
