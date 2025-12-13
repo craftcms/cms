@@ -202,17 +202,6 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider capitalizePersonalNameDataProvider
-     * @param string $expected
-     * @param string $string
-     */
-    public function testCapitalizePersonalName(string $expected, string $string): void
-    {
-        $actual = StringHelper::capitalizePersonalName($string);
-        self::assertSame($expected, $actual);
-    }
-
-    /**
      * @dataProvider charsAsArrayDataProvider
      * @param string[] $expected
      * @param string $string
@@ -2350,58 +2339,6 @@ class StringHelperTest extends TestCase
             ['camelΣase', 'camel σase'],
             ['στανιλCase', 'Στανιλ case'],
             ['σamelCase', 'σamel  Case'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function capitalizePersonalNameDataProvider(): array
-    {
-        return [
-            ['Marcus Aurelius', 'marcus aurelius'],
-            ['Torbjørn Færøvik', 'torbjørn færøvik'],
-            ['Jaap de Hoop Scheffer', 'jaap de hoop scheffer'],
-            ['K. Anders Ericsson', 'k. anders ericsson'],
-            ['Per-Einar', 'per-einar'],
-            [
-                'Line Break',
-                'line
-             break',
-            ],
-            ['ab', 'ab'],
-            ['af', 'af'],
-            ['al', 'al'],
-            ['and', 'and'],
-            ['ap', 'ap'],
-            ['bint', 'bint'],
-            ['binte', 'binte'],
-            ['da', 'da'],
-            ['de', 'de'],
-            ['del', 'del'],
-            ['den', 'den'],
-            ['der', 'der'],
-            ['di', 'di'],
-            ['dit', 'dit'],
-            ['ibn', 'ibn'],
-            ['la', 'la'],
-            ['mac', 'mac'],
-            ['nic', 'nic'],
-            ['of', 'of'],
-            ['ter', 'ter'],
-            ['the', 'the'],
-            ['und', 'und'],
-            ['van', 'van'],
-            ['von', 'von'],
-            ['y', 'y'],
-            ['zu', 'zu'],
-            ['Bashar al-Assad', 'bashar al-assad'],
-            ["d'Name", "d'Name"],
-            ['ffName', 'ffName'],
-            ["l'Name", "l'Name"],
-            ['macDuck', 'macDuck'],
-            ['mcDuck', 'mcDuck'],
-            ['nickMick', 'nickMick'],
         ];
     }
 
