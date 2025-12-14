@@ -120,6 +120,9 @@
 - `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
 - Deprecated `craft\fields\BaseRelationField::$showCardsInGrid`.
 - Deprecated `craft\fields\Matrix::$showCardsInGrid`.
+- Deprecated `craft\helpers\StringHelper::capitalizePersonalName()`. `toPascalCase()` should be used instead.
+- Deprecated `craft\helpers\StringHelper::isWhitespace()`. `isBlank()` should be used instead.
+- Deprecated `craft\helpers\StringHelper::upperCamelize()`. `toPascalCase()` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\web\CsvResponseResponseFormatter::$escapeChar`.
@@ -140,5 +143,7 @@
 - Fixed a bug where titles, slugs, and required custom field values weren’t always getting propagated to other sites when creating a new element. ([#17955](https://github.com/craftcms/cms/issues/17955))
 - Fixed a bug where it was possible to create more than five users with the Team edition.
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
+- Added the Illuminate Support library.
 - Added the PhpSpreadsheet library.
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
+- Removed the Stringy library. ([#16606](https://github.com/craftcms/cms/issues/16606))
