@@ -88,8 +88,12 @@ final class EntryTypesController
             ]);
     }
 
-    public function edit(EntryTypeModel $entryType): CpScreenResponse
+    public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
     {
+        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
+
+        abort_if(is_null($entryType), 404, 'Entry type not found');
+
         $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');

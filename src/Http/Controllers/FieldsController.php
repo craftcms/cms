@@ -73,7 +73,9 @@ final class FieldsController
     {
         $fieldId ??= $field->id ?? $request->input('fieldId');
 
-        abort_if(is_null($fieldId), 404, 'Field not found');
+        if (is_null($fieldId)) {
+            return $this->create();
+        }
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 

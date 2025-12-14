@@ -357,7 +357,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Load Craft when necessary
          */
         spl_autoload_register(function($class) {
-            if ($class === 'Craft') {
+            if ($class === 'Craft' || $class === 'Yii') {
                 app('Craft');
             }
         });
