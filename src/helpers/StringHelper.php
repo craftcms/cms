@@ -344,8 +344,9 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function contains(string $haystack, string $needle, bool $caseSensitive = true): bool
     {
         if (!$caseSensitive) {
-            $haystack = mb_strtolower($haystack);
-            $needle = mb_strtolower($needle);
+            // mb_strtolower() isn't as reliable on PHP 8.2
+            $haystack = mb_strtoupper($haystack);
+            $needle = mb_strtoupper($needle);
         }
 
         return str_contains($haystack, $needle);
@@ -468,8 +469,9 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function countSubstrings(string $str, string $substring, bool $caseSensitive = true): int
     {
         if (!$caseSensitive) {
-            $str = mb_strtolower($str);
-            $substring = mb_strtolower($substring);
+            // mb_strtolower() isn't as reliable on PHP 8.2
+            $str = mb_strtoupper($str);
+            $substring = mb_strtoupper($substring);
         }
 
         return mb_substr_count($str, $substring);
