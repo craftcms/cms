@@ -25,6 +25,9 @@ use const ENT_COMPAT;
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Nicolas Grekas <p@tchwork.com>
+ * @author Hamid Sarfraz <http://pageconfig.com/>
+ * @author Lars Moelleken <http://www.moelleken.org/>
  * @since 3.0.0
  */
 class StringHelper extends \yii\helpers\StringHelper
