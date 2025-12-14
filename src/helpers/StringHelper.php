@@ -69,7 +69,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        return mb_substr($str, $offset + (int) mb_strlen($separator));
+        return mb_substr($str, $offset + mb_strlen($separator));
     }
 
     /**
@@ -93,7 +93,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        return mb_substr($str, $offset + (int) mb_strlen($separator));
+        return mb_substr($str, $offset + mb_strlen($separator));
     }
 
     /**
@@ -271,8 +271,8 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        $substrIndex = $startPos + (int) mb_strlen($start);
-        $endPos = \mb_strpos($str, $end, $substrIndex);
+        $substrIndex = $startPos + mb_strlen($start);
+        $endPos = mb_strpos($str, $end, $substrIndex);
 
         if ($endPos === false || $endPos === $substrIndex) {
             return '';
@@ -326,7 +326,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function collapseWhitespace(string $str): string
     {
-        return mb_ereg_replace('[[:space:]]+', ' ', $str);
+        return trim(mb_ereg_replace('[[:space:]]+', ' ', $str));
     }
 
     /**
@@ -378,6 +378,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAll(string $haystack, array $needles, bool $caseSensitive = true): bool
     {
+        if (empty($needles)) {
+            return false;
+        }
+
         foreach ($needles as $needle) {
             if (!static::contains($haystack, $needle, $caseSensitive)) {
                 return false;
@@ -644,10 +648,102 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function extractText(string $str, string $search = '', ?int $length = null, string $replacerForSkippedText = '…'): string
     {
-        return Str::excerpt($str, $search, [
-            'radius' => $length,
-            'omission' => $replacerForSkippedText,
-        ]);
+        if ($str === '') {
+            return '';
+        }
+
+        $trimChars = "\t\r\n -_()!~?=+/*\\,.:;\"'[]{}`&";
+
+        if ($length === null) {
+            $length = round(mb_strlen($str) / 2);
+        }
+
+        if ($search === '') {
+            if ($length > 0) {
+                $stringLength = mb_strlen($str);
+                $end = ($length - 1) > $stringLength ? $stringLength : ($length - 1);
+            } else {
+                $end = 0;
+            }
+
+            $pos = min(
+                mb_strpos($str, ' ', $end),
+                mb_strpos($str, '.', $end),
+            );
+
+            if ($pos) {
+                $strSub = mb_substr($str, 0, $pos);
+
+                if ($strSub === '') {
+                    return '';
+                }
+
+                return rtrim($strSub, $trimChars) . $replacerForSkippedText;
+            }
+
+            return $str;
+        }
+
+        $wordPosition = mb_stripos($str, $search);
+        $halfSide = (int) ($wordPosition - $length / 2 + mb_strlen($search) / 2);
+
+        $posStart = 0;
+        if ($halfSide > 0) {
+            $halfText = mb_substr($str, 0, $halfSide);
+            if ($halfText !== '') {
+                $posStart = max(
+                    mb_strrpos($halfText, ' '),
+                    mb_strrpos($halfText, '.'),
+                );
+            }
+        }
+
+        if ($wordPosition && $halfSide > 0) {
+            $offset = $posStart + $length - 1;
+            $real_length = mb_strlen($str);
+
+            if ($offset > $real_length) {
+                $offset = $real_length;
+            }
+
+            $posEnd = min(
+                    mb_strpos($str, ' ', $offset),
+                    mb_strpos($str, '.', $offset),
+                ) - $posStart;
+
+            if (!$posEnd || $posEnd <= 0) {
+                $strSub = mb_substr($str, $posStart, mb_strlen($str));
+                if ($strSub !== '') {
+                    $extract = $replacerForSkippedText . ltrim($strSub, $trimChars);
+                } else {
+                    $extract = '';
+                }
+            } else {
+                $strSub = mb_substr($str, $posStart, $posEnd);
+                $extract = $replacerForSkippedText . trim($strSub, $trimChars) . $replacerForSkippedText;
+            }
+        } else {
+            $offset = $length - 1;
+            $trueLength = mb_strlen($str);
+
+            if ($offset > $trueLength) {
+                $offset = $trueLength;
+            }
+
+            $posEnd = min(
+                mb_strpos($str, ' ', $offset),
+                mb_strpos($str, '.', $offset),
+            );
+
+            if ($posEnd) {
+                $strSub = mb_substr($str, 0, $posEnd);
+                $extract = rtrim($strSub, $trimChars) . $replacerForSkippedText;
+            } else {
+                $extract = $str;
+            }
+        }
+
+        return $extract;
     }
 
     /**
@@ -802,7 +898,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function insert(string $str, string $substring, int $index): string
     {
-        $len = (int) mb_strlen($str);
+        $len = mb_strlen($str);
         if ($index > $len) {
             return $str;
         }
@@ -965,7 +1061,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return false;
         }
 
-        return $str === 'b:0;' || @\unserialize($str, []) !== false;
+        return $str === 'b:0;' || @unserialize($str, []) !== false;
     }
 
     /**
@@ -1081,7 +1177,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lineWrapAfterWord(string $str, int $limit): string
     {
-        return Str::wordWrap($str, $limit);
+        return Str::wordWrap($str, $limit) . "\n";
     }
 
     /**
@@ -1235,10 +1331,15 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function randomStringWithChars(string $validChars, int $length): string
     {
+        if ($validChars === '') {
+            return '';
+        }
+
         $randomString = '';
 
         // count the number of chars in the valid chars string so we know how many choices we have
-        $numValidChars = static::length($validChars);
+        $chars = static::charsAsArray($validChars);
+        $numValidChars = count($chars);
 
         // repeat the steps until we've created a string of the right length
         for ($i = 0; $i < $length; $i++) {
@@ -1246,7 +1347,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $randomPick = random_int(0, $numValidChars - 1);
 
             // take the random character out of the string of valid chars
-            $randomChar = $validChars[$randomPick];
+            $randomChar = $chars[$randomPick];
 
             // add the randomly-chosen char onto the end of our string
             $randomString .= $randomChar;
@@ -1310,7 +1411,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function removeLeft(string $str, string $substring): string
     {
         if ($substring && str_starts_with($str, $substring)) {
-            return mb_substr($str, (int) mb_strlen($substring));
+            return mb_substr($str, mb_strlen($substring));
         }
 
         return $str;
@@ -1326,7 +1427,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function removeRight(string $str, string $substring): string
     {
         if ($substring && str_ends_with($str, $substring)) {
-            return mb_substr($str, 0, (int) mb_strlen($str) - (int) mb_strlen($substring));
+            return mb_substr($str, 0, mb_strlen($str) - mb_strlen($substring));
         }
 
         return $str;
@@ -1370,7 +1471,20 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceAll(string $str, array $search, string|array $replacement, bool $caseSensitive = true): string
     {
-        return Str::replace($search, $replacement, $str, $caseSensitive);
+        if ($caseSensitive) {
+            return str_replace($search, $replacement, $str);
+        }
+
+        // str_ireplace() doesn't handle multibyte characters properly
+        foreach ($search as &$s) {
+            if ($s === '') {
+                $s = '/^(?<=.)$/';
+            } else {
+                $s = '/' . preg_quote($s, '/') . '/ui';
+            }
+        }
+
+        return preg_replace($search, $replacement, $str);
     }
 
     /**
@@ -1384,6 +1498,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceBeginning(string $str, string $search, string $replacement): string
     {
+        if ($search === '') {
+            return $replacement . $str;
+        }
+
         return Str::replaceStart($search, $replacement, $str);
     }
 
@@ -1398,6 +1516,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceEnding(string $str, string $search, string $replacement): string
     {
+        if ($search === '') {
+            return $str . $replacement;
+        }
+
         return Str::replaceEnd($search, $replacement, $str);
     }
 
@@ -1494,10 +1616,40 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function safeTruncate(string $str, int $length, string $substring = '', bool $ignoreDoNotSplitWordsForOneWord = true): string
     {
-        return Str::excerpt($str, options: [
-            'radius' => $length,
-            'omission' => $substring,
-        ]);
+        if ($str === '' || $length <= 0) {
+            return $substring;
+        }
+
+        if ($length >= mb_strlen($str)) {
+            return $str;
+        }
+
+        // need to further trim the string so we can append the substring
+        $length -= mb_strlen($substring);
+        if ($length <= 0) {
+            return $substring;
+        }
+
+        $truncated = mb_substr($str, 0, $length);
+        if ($truncated === '') {
+            return '';
+        }
+
+        // if the last word was truncated
+        $spacePosition = mb_strpos($str, ' ', $length - 1);
+        if ($spacePosition !== $length) {
+            // find pos of the last occurrence of a space, get up to that
+            $last_position = mb_strrpos($truncated, ' ', 0);
+
+            if (
+                $last_position !== false ||
+                ($spacePosition !== false && !$ignoreDoNotSplitWordsForOneWord)
+            ) {
+                $truncated = mb_substr($truncated, 0, (int) $last_position);
+            }
+        }
+
+        return $truncated . $substring;
     }
 
     /**
@@ -1511,10 +1663,31 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function shortenAfterWord(string $str, int $length, string $strAddOn = '…'): string
     {
-        return Str::excerpt($str, options: [
-            'radius' => $length,
-            'omission' => $strAddOn,
-        ]);
+        if ($str === '' || $length <= 0) {
+            return '';
+        }
+
+        if (mb_strlen($str) <= $length) {
+            return $str;
+        }
+
+        if (mb_substr($str, $length - 1, 1) === ' ') {
+            return (mb_substr($str, 0, $length - 1)) . $strAddOn;
+        }
+
+        $str = mb_substr($str, 0, $length);
+        if ($str === '') {
+            return $strAddOn;
+        }
+
+        $array = explode(' ', $str, -1);
+        $new_str = implode(' ', $array);
+
+        if ($new_str === '') {
+            return (mb_substr($str, 0, $length - 1)) . $strAddOn;
+        }
+
+        return $new_str . $strAddOn;
     }
 
     /**
@@ -1526,7 +1699,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function shuffle(string $str): string
     {
-        $indexes = range(0, (int) mb_strlen($str) - 1);
+        $indexes = range(0, mb_strlen($str) - 1);
         shuffle($indexes);
 
         $shuffledStr = '';
@@ -1553,11 +1726,11 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function slice(string $str, int $start, ?int $end = null): string
     {
         if ($end === null) {
-            $length = (int) mb_strlen($str);
+            $length = mb_strlen($str);
         } elseif ($end >= 0 && $end <= $start) {
             return '';
         } elseif ($end < 0) {
-            $length = (int) mb_strlen($str) + $end - $start;
+            $length = mb_strlen($str) + $end - $start;
         } else {
             $length = $end - $start;
         }
@@ -1703,10 +1876,6 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        if ($length === null) {
-            return $str;
-        }
-
         return mb_substr($str, $start, $length);
     }
 
@@ -1783,7 +1952,127 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function titleize(string $str, ?array $ignore = null): string
     {
-        return Str::title($str);
+        if ($str === '') {
+            return '';
+        }
+
+        $smallWords = [
+            '(?<!q&)a',
+            'an',
+            'and',
+            'as',
+            'at(?!&t)',
+            'but',
+            'by',
+            'en',
+            'for',
+            'if',
+            'in',
+            'of',
+            'on',
+            'or',
+            'the',
+            'to',
+            'v[.]?',
+            'via',
+            'vs[.]?',
+        ];
+
+        $ignore ??= [];
+        if ($ignore !== []) {
+            $smallWords = array_merge($smallWords, $ignore);
+        }
+
+        $smallWordsRx = implode('|', $smallWords);
+        $apostropheRx = '(?x: [\'’] [[:lower:]]* )?';
+
+        $str = trim($str);
+
+        if (!static::hasLowerCase($str)) {
+            $str = Str::lower($str);
+        }
+
+        // the main substitutions
+        $str = (string) preg_replace_callback(
+            '~\\b (_*) (?:                                                                  # 1. Leading underscore and
+                        ( (?<=[ ][/\\\\]) [[:alpha:]]+ [-_[:alpha:]/\\\\]+ |                # 2. file path or
+                          [-_[:alpha:]]+ [@.:] [-_[:alpha:]@.:/]+ ' . $apostropheRx . ' )  #    URL, domain, or email
+                        |                                                                   #
+                        ( (?i: ' . $smallWordsRx . ' ) ' . $apostropheRx . ' )           # 3. or small word (case-insensitive)
+                        |                                                                   #
+                        ( [[:alpha:]] [[:lower:]\'’()\[\]{}]* ' . $apostropheRx . ' )      # 4. or word w/o internal caps
+                        |                                                                   #
+                        ( [[:alpha:]] [[:alpha:]\'’()\[\]{}]* ' . $apostropheRx . ' )      # 5. or some other word
+                      ) (_*) \\b                                                            # 6. With trailing underscore
+                    ~ux',
+            function(array $matches): string {
+                // preserve leading underscore
+                $str = $matches[1];
+                if ($matches[2]) {
+                    // preserve URLs, domains, emails and file paths
+                    $str .= $matches[2];
+                } elseif ($matches[3]) {
+                    // lower-case small words
+                    $str .= Str::lower($matches[3]);
+                } elseif ($matches[4]) {
+                    // capitalize word w/o internal caps
+                    $str .= Str::ucfirst($matches[4]);
+                } else {
+                    // preserve other kinds of word (iPhone)
+                    $str .= $matches[5];
+                }
+                // preserve trailing underscore
+                $str .= $matches[6];
+
+                return $str;
+            },
+            $str,
+        );
+
+        // Exceptions for small words: capitalize at start of title...
+        $str = preg_replace_callback(
+            '~(  \\A [[:punct:]]*            # start of title...
+                      |  [:.;?!][ ]+                # or of subsentence...
+                      |  [ ][\'"“‘(\[][ ]* )        # or of inserted subphrase...
+                      ( ' . $smallWordsRx . ' ) \\b # ...followed by small word
+                     ~uxi',
+            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            $str,
+        );
+
+        // ...and end of title
+        $str = preg_replace_callback(
+            '~\\b ( ' . $smallWordsRx . ' ) # small word...
+                      (?= [[:punct:]]* \Z          # ...at the end of the title...
+                      |   [\'"’”)\]] [ ] )         # ...or of an inserted subphrase?
+                     ~uxi',
+            fn(array $matches) => Str::ucfirst($matches[1]),
+            $str,
+        );
+
+        // Exceptions for small words in hyphenated compound words.
+        // e.g. "in-flight" -> In-Flight
+        $str = preg_replace_callback(
+            '~\\b
+                        (?<! -)                   # Negative lookbehind for a hyphen; we do not want to match man-in-the-middle but do want (in-flight)
+                        ( ' . $smallWordsRx . ' )
+                        (?= -[[:alpha:]]+)        # lookahead for "-someword"
+                       ~uxi',
+            fn(array $matches) => Str::ucfirst($matches[1]),
+            $str,
+        );
+
+        // e.g. "Stand-in" -> "Stand-In" (Stand is already capped at this point)
+        return preg_replace_callback(
+            '~\\b
+                      (?<!…)                    # Negative lookbehind for a hyphen; we do not want to match man-in-the-middle but do want (stand-in)
+                      ( [[:alpha:]]+- )         # $1 = first word and hyphen, should already be properly capped
+                      ( ' . $smallWordsRx . ' ) # ...followed by small word
+                      (?!	- )                 # Negative lookahead for another -
+                     ~uxi',
+            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            $str,
+        );
     }
 
     /**
@@ -1802,7 +2091,126 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function titleizeForHumans(string $str, array $ignore = []): string
     {
-        return Str::title($str);
+        if ($str === '') {
+            return '';
+        }
+
+        $smallWords = [
+            '(?<!q&)a',
+            'an',
+            'and',
+            'as',
+            'at(?!&t)',
+            'but',
+            'by',
+            'en',
+            'for',
+            'if',
+            'in',
+            'of',
+            'on',
+            'or',
+            'the',
+            'to',
+            'v[.]?',
+            'via',
+            'vs[.]?',
+        ];
+
+        if ($ignore !== []) {
+            $smallWords = array_merge($smallWords, $ignore);
+        }
+
+        $smallWordsRx = implode('|', $smallWords);
+        $apostropheRx = '(?x: [\'’] [[:lower:]]* )?';
+
+        $str = trim($str);
+
+        if (!static::hasLowerCase($str)) {
+            $str = Str::lower($str);
+        }
+
+        // the main substitutions
+        $str = preg_replace_callback(
+            '~\\b (_*) (?:                                                                  # 1. Leading underscore and
+                        ( (?<=[ ][/\\\\]) [[:alpha:]]+ [-_[:alpha:]/\\\\]+ |                # 2. file path or
+                          [-_[:alpha:]]+ [@.:] [-_[:alpha:]@.:/]+ ' . $apostropheRx . ' )  #    URL, domain, or email
+                        |                                                                   #
+                        ( (?i: ' . $smallWordsRx . ' ) ' . $apostropheRx . ' )           # 3. or small word (case-insensitive)
+                        |                                                                   #
+                        ( [[:alpha:]] [[:lower:]\'’()\[\]{}]* ' . $apostropheRx . ' )      # 4. or word w/o internal caps
+                        |                                                                   #
+                        ( [[:alpha:]] [[:alpha:]\'’()\[\]{}]* ' . $apostropheRx . ' )      # 5. or some other word
+                      ) (_*) \\b                                                            # 6. With trailing underscore
+                    ~ux',
+            function(array $matches): string {
+                // preserve leading underscore
+                $str = $matches[1];
+                if ($matches[2]) {
+                    // preserve URLs, domains, emails and file paths
+                    $str .= $matches[2];
+                } elseif ($matches[3]) {
+                    // lower-case small words
+                    $str .= Str::lower($matches[3]);
+                } elseif ($matches[4]) {
+                    // capitalize word w/o internal caps
+                    $str .= Str::ucfirst($matches[4]);
+                } else {
+                    // preserve other kinds of word (iPhone)
+                    $str .= $matches[5];
+                }
+                // preserve trailing underscore
+                $str .= $matches[6];
+
+                return $str;
+            },
+            $str,
+        );
+
+        // Exceptions for small words: capitalize at start of title...
+        $str = preg_replace_callback(
+            '~(  \\A [[:punct:]]*            # start of title...
+                      |  [:.;?!][ ]+                # or of subsentence...
+                      |  [ ][\'"“‘(\[][ ]* )        # or of inserted subphrase...
+                      ( ' . $smallWordsRx . ' ) \\b # ...followed by small word
+                     ~uxi',
+            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            $str,
+        );
+
+        // ...and end of title
+        $str = preg_replace_callback(
+            '~\\b ( ' . $smallWordsRx . ' ) # small word...
+                      (?= [[:punct:]]* \Z          # ...at the end of the title...
+                      |   [\'"’”)\]] [ ] )         # ...or of an inserted subphrase?
+                     ~uxi',
+            fn(array $matches) => Str::ucfirst($matches[1]),
+            $str
+        );
+
+        // Exceptions for small words in hyphenated compound words.
+        // e.g. "in-flight" -> In-Flight
+        $str = preg_replace_callback(
+            '~\\b
+                        (?<! -)                   # Negative lookbehind for a hyphen; we do not want to match man-in-the-middle but do want (in-flight)
+                        ( ' . $smallWordsRx . ' )
+                        (?= -[[:alpha:]]+)        # lookahead for "-someword"
+                       ~uxi',
+            fn(array $matches) => Str::ucfirst($matches[1]),
+            $str,
+        );
+
+        // e.g. "Stand-in" -> "Stand-In" (Stand is already capped at this point)
+        return preg_replace_callback(
+            '~\\b
+                      (?<!…)                    # Negative lookbehind for a hyphen; we do not want to match man-in-the-middle but do want (stand-in)
+                      ( [[:alpha:]]+- )         # $1 = first word and hyphen, should already be properly capped
+                      ( ' . $smallWordsRx . ' ) # ...followed by small word
+                      (?!	- )                 # Negative lookahead for another -
+                     ~uxi',
+            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            $str,
+        );
     }
 
     /**
@@ -1886,7 +2294,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toPascalCase(string $str): string
     {
-        return self::mb_ucfirst(static::camelCase($str));
+        $words = self::toWords($str, true, true);
+        return implode('', array_map([
+            static::class,
+            'upperCaseFirst',
+        ], $words));
     }
 
     /**
@@ -1987,7 +2399,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toTransliterate(string $str, bool $strict = false): string
     {
-        return static::toAscii($str);
+        return ASCII::to_transliterate($str, strict: $strict);
     }
 
     /**
