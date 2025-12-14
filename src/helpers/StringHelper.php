@@ -302,7 +302,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $str The string to parse.
      * @return string The string with personal names capitalized.
      * @since 3.3.0
-     * @deprecated in 5.9.0. Use [[toPascalCase]] instead.
+     * @deprecated in 5.9.0. Use [[toPascalCase()]] instead.
      */
     public static function capitalizePersonalName(string $str): string
     {
@@ -1099,6 +1099,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $str The string to check.
      * @return bool Whether $str contains only whitespace characters.
      * @since 3.3.0
+     * @deprecated in 5.9.0. [[`isBlank()`]] should be used instead.
      */
     public static function isWhitespace(string $str): bool
     {
@@ -2564,6 +2565,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $str The string to upper camelize.
      * @return string The upper camelized $str.
      * @since 3.3.0
+     * @deprecated in 5.9.0. [[toPascalCase()]] should be used instead.
      */
     public static function upperCamelize(string $str): string
     {
