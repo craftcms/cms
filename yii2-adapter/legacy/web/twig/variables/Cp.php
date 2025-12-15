@@ -634,20 +634,6 @@ class Cp extends Component
     }
 
     /**
-     * @param array $options
-     * @return array
-     */
-    private function _envOptions(array $options): array
-    {
-        return Collection::make($options)
-            ->sortBy('value')
-            ->prepend([
-                'optgroup' => t('Environment Variables'),
-            ])
-            ->all();
-    }
-
-    /**
      * Returns all known time zones for a time zone input.
      *
      * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
