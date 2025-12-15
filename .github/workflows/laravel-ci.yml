@@ -98,7 +98,6 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: none
-          ini-values: memory_limit=512M
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSER_AUTH_JSON: |
