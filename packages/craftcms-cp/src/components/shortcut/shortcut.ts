@@ -56,9 +56,9 @@ export default class CraftShortcut extends LitElement {
       return 'Windows';
     } else if (platform.includes('linux')) {
       return 'Linux';
-    } else {
-      return 'Unknown';
     }
+
+    return 'Unknown';
   }
 
   private renderShortcutPrefix() {

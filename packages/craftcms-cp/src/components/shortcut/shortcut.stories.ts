@@ -19,7 +19,9 @@ const meta: Meta<CraftShortcut> = {
     },
   },
   render({shift, alt, os}) {
-    return html`<craft-shortcut ?shift="${shift}" ?alt="${alt}" os="${os}">S</craft-shortcut>`;
+    return html`<craft-shortcut ?shift="${shift}" ?alt="${alt}" os="${os}"
+      >S</craft-shortcut
+    >`;
   },
 } satisfies Meta<CraftShortcut>;
 
