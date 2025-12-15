@@ -52,7 +52,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -355,11 +354,11 @@ class ElementsController extends Controller
 
         if ($previewTargets) {
             if ($isDraft && !$element->isProvisionalDraft) {
-                Gate::authorize("previewDraft:$element->draftId");
+                Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
             } elseif ($isRevision) {
-                Gate::authorize("previewRevision:$element->revisionId");
+                Craft::$app->getSession()->authorize("previewRevision:$element->revisionId");
             } else {
-                Gate::authorize("previewElement:$canonical->id");
+                Craft::$app->getSession()->authorize("previewElement:$canonical->id");
             }
         }
 
@@ -2037,7 +2036,7 @@ JS, [
         }
 
         // Make sure the user is authorized to preview the draft
-        Gate::authorize("previewDraft:$element->draftId");
+        Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
 
         return $this->_asSuccess(t('{type} saved.', [
             'type' => t('Draft'),

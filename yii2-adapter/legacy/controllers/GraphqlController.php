@@ -27,7 +27,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use DateTimeZone;
-use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -395,7 +394,7 @@ class GraphqlController extends Controller
             } catch (InvalidArgumentException) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
-            Gate::authorize("graphql-schema:$schemaUid");
+            Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
         } else {
             $selectedSchema = GqlHelper::createFullAccessSchema();
         }

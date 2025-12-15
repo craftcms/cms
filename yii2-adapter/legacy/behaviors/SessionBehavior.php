@@ -11,6 +11,7 @@ use Craft;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\Cache;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;
@@ -266,19 +267,14 @@ JS
      */
     public function authorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+        Cache::lock(self::AUTH_LOCK_NAME)->block(5, function() use ($action) {
+            $access = $this->owner->get($this->authAccessParam, []);
 
-        $access = $this->owner->get($this->authAccessParam, []);
-
-        if (!in_array($action, $access, true)) {
-            $access[] = $action;
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+            if (!in_array($action, $access, true)) {
+                $access[] = $action;
+                $this->owner->set($this->authAccessParam, $access);
+            }
+        });
     }
 
     /**
@@ -288,20 +284,15 @@ JS
      */
     public function deauthorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+        Cache::lock(self::AUTH_LOCK_NAME)->block(5, function() use ($action) {
+            $access = $this->owner->get($this->authAccessParam, []);
+            $index = array_search($action, $access, true);
 
-        $access = $this->owner->get($this->authAccessParam, []);
-        $index = array_search($action, $access, true);
-
-        if ($index !== false) {
-            array_splice($access, $index, 1);
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+            if ($index !== false) {
+                array_splice($access, $index, 1);
+                $this->owner->set($this->authAccessParam, $access);
+            }
+        });
     }
 
     /**
