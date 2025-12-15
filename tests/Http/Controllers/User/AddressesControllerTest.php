@@ -51,7 +51,4 @@ test('store & destroy', function () {
     ])->assertOk();
 
     expect(new AddressQuery()->count())->toBe(0);
-
-    // Bulk op?
-    DB::commit();
 });
