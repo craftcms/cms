@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -202,7 +203,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("viewCategories:$group->uid"),
+                'structureEditable' => app()->runningInConsole() || Gate::check("viewCategories:$group->uid"),
             ];
         }
 

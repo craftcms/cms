@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Models\UserPermission;
 
@@ -10,11 +10,11 @@ it('can query for admins', function () {
 });
 
 it('can query for permissions', function () {
-    User::factory()->create([
+    \CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 
-    $user = User::factory()->create([
+    $user = \CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 

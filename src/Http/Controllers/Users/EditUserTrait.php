@@ -77,7 +77,7 @@ trait EditUserTrait
 
         $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
 
-        $currentUser = Auth::user()->asElement();
+        $currentUser = Auth::user();
 
         if (Event::hasListeners(DefineEditUserScreens::class)) {
             Event::dispatch($event = new DefineEditUserScreens($currentUser, $user, $screens));
@@ -162,7 +162,7 @@ trait EditUserTrait
 
     private function showPermissionsScreen(): bool
     {
-        $currentUser = Auth::user()->asElement();
+        $currentUser = Auth::user();
 
         return
             Edition::get()->value >= Edition::Team->value &&

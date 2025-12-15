@@ -2,8 +2,10 @@
 
 use craft\test\TestSetup;
 use CraftCms\Yii2Adapter\Tests\TestCase;
+use DG\BypassFinals;
+use Illuminate\Support\Facades\Config;
 
-\DG\BypassFinals::enable();
+BypassFinals::enable();
 
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');
@@ -26,6 +28,8 @@ const CRAFT_TESTS_PATH = __DIR__;
  * Initialize the Laravel Craft Application
  */
 new TestCase('laravel')->createApplication();
+
+Config::set('auth.defaults.guard', 'craft');
 
 $devMode = true;
 

@@ -15,6 +15,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\Gate;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -161,7 +162,7 @@ class GlobalsController extends Controller
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->uid)) {
+            if (Gate::check('editGlobalSet:' . $thisGlobalSet->uid)) {
                 $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }

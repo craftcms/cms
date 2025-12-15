@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Events;
 
-use CraftCms\Cms\User\Elements\User;
+use craft\elements\User;
 
 /**
  * @event DefineEditUserScreens The event that is triggered when defining the screens that should be

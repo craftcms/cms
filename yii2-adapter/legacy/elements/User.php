@@ -33,7 +33,6 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -58,14 +57,20 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User as UserModel;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
@@ -100,9 +105,16 @@ use function CraftCms\Cms\t;
  *
  * @since 3.0.0
  */
-class User extends Element implements IdentityInterface
+class User extends Element implements IdentityInterface, AuthenticatableContract, AuthorizableContract
 {
+    use Authorizable;
+    use Authenticatable;
     use NameTrait;
+
+    /**
+     * @var string|null The Laravel session remember token.
+     */
+    public ?string $rememberToken = null;
 
     /**
      * @since 5.0.0
@@ -406,7 +418,7 @@ class User extends Element implements IdentityInterface
     {
         $actions = [];
 
-        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
+        if (Gate::check('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 
@@ -414,7 +426,7 @@ class User extends Element implements IdentityInterface
             $actions[] = UnsuspendUsers::class;
         }
 
-        if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
+        if (Gate::check('deleteUsers')) {
             // Delete
             $actions[] = DeleteUsers::class;
         }
@@ -909,7 +921,7 @@ class User extends Element implements IdentityInterface
     {
         if (
             Edition::get() === Edition::Solo ||
-            !Craft::$app->getUser()->checkPermission('editUsers')
+            !Gate::check('editUsers')
         ) {
             return null;
         }
@@ -1113,11 +1125,11 @@ class User extends Element implements IdentityInterface
 
             if ($this->email !== null) {
                 // are they allowed to set the email?
-                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
                     if (
                         Edition::get()->value >= Edition::Pro->value &&
                         app(ProjectConfig::class)->get('users.requireEmailVerification') &&
-                        !$userSession->checkPermission('administrateUsers')
+                        !Gate::check('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = Arr::pull($values, 'email');
@@ -1506,13 +1518,13 @@ class User extends Element implements IdentityInterface
      *
      * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
      */
-    public function isInGroup(\CraftCms\Cms\User\Data\UserGroup|int|string $group): bool
+    public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Edition::get() < Edition::Pro) {
             return false;
         }
 
-        if ($group instanceof \CraftCms\Cms\User\Data\UserGroup) {
+        if ($group instanceof UserGroup) {
             $group = $group->id;
         }
 
@@ -1759,6 +1771,26 @@ XML;
         return Craft::createObject(self::class);
     }
 
+    public function getRememberTokenName()
+    {
+        return 'rememberToken';
+    }
+
+    public function getKeyName(): string
+    {
+        return 'id';
+    }
+
+    public function getKey(): ?int
+    {
+        return $this->id;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->admin;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -1821,25 +1853,6 @@ XML;
         }
 
         return Auth::user()?->id === $this->id;
-    }
-
-    /**
-     * Returns whether the user has permission to perform a given action.
-     */
-    public function can(string $permission): bool
-    {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
-
-        if (!isset($this->id)) {
-            return false;
-        }
-
-        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
     }
 
     /**
@@ -2045,7 +2058,7 @@ XML;
                         }
                     }
 
-                    if (!$isCurrentUser && $userSession->checkPermission('editUsers')) {
+                    if (!$isCurrentUser && Gate::check('editUsers')) {
                         $statusItems[] = [
                             'icon' => 'paperplane',
                             'label' => t('Send password reset email'),

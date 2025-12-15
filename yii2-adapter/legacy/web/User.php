@@ -17,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
@@ -147,7 +148,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getDefaultReturnUrl(): string
     {
         // Is this a control panel request and can they access the control panel?
-        if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
+        if (Craft::$app->getRequest()->getIsCpRequest() && Gate::check('accessCp')) {
             return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
         }
 
@@ -223,6 +224,8 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *   </a>
      * {% endif %}
      * ```
+     *
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Auth::guest()} instead.
      */
     public function getIsGuest(): bool
     {
@@ -341,6 +344,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @param string $permissionName The name of the permission.
      * @return bool Whether the current user has the permission.
+     * @deprecated 6.0.0 use {@see Gate::check} instead.
      */
     public function checkPermission(string $permissionName): bool
     {

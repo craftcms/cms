@@ -61,6 +61,7 @@ use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -522,7 +523,7 @@ class UsersController extends Controller
         $loginName = null;
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
-        if (Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (Gate::check('editUsers')) {
             $userId = $this->request->getBodyParam('userId');
 
             if ($userId) {
@@ -1053,10 +1054,9 @@ class UsersController extends Controller
         $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
 
         $response->contentHtml(function() use ($user) {
-            $canEditUsers = Craft::$app->getUser()->checkPermission('editUsers');
             $config = [
                 'showInGrid' => true,
-                'canCreate' => $canEditUsers,
+                'canCreate' => Gate::check('editUsers'),
             ];
 
             // Use an element index view if there's more than 50 addresses

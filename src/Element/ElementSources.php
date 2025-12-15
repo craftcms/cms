@@ -330,7 +330,7 @@ final class ElementSources
         }
 
         return array_any(
-            $user->getGroups()->all(),
+            $user->getGroups(),
             fn ($group) => in_array($group->uid, $source['userGroups'], true)
         );
     }

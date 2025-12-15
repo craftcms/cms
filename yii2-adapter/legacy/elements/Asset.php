@@ -79,6 +79,7 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
@@ -503,7 +504,7 @@ class Asset extends Element
             $actions[] = DownloadAssetFile::class;
 
             $userSession = Craft::$app->getUser();
-            if ($isTemp || $userSession->checkPermission("replaceFiles:$volume->uid")) {
+            if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
                 $actions[] = ReplaceFile::class;
@@ -530,7 +531,7 @@ class Asset extends Element
             $actions[] = CopyReferenceTag::class;
 
             // Edit Image
-            if ($isTemp || $userSession->checkPermission("editImages:$volume->uid")) {
+            if ($isTemp || Gate::check("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
             }
 
@@ -544,7 +545,7 @@ class Asset extends Element
             ];
 
             // Delete
-            if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
+            if (Gate::check("deletePeerAssets:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -998,12 +999,12 @@ class Asset extends Element
         }
 
         $userSession = Craft::$app->getUser();
-        $canUpload = $userSession->checkPermission("saveAssets:$volume->uid");
-        $canMoveTo = $canUpload && $userSession->checkPermission("deleteAssets:$volume->uid");
+        $canUpload = Gate::check("saveAssets:$volume->uid");
+        $canMoveTo = $canUpload && Gate::check("deleteAssets:$volume->uid");
         $canMovePeerFilesTo = (
             $canMoveTo &&
-            $userSession->checkPermission("savePeerAssets:$volume->uid") &&
-            $userSession->checkPermission("deletePeerAssets:$volume->uid")
+            Gate::check("savePeerAssets:$volume->uid") &&
+            Gate::check("deletePeerAssets:$volume->uid")
         );
 
         $sourcePathInfo = $folder->getSourcePathInfo();
@@ -1794,8 +1795,8 @@ JS, [
         // Image editor
         if (
             $this->getSupportsImageEditor() &&
-            $userSession->checkPermission("editImages:$volume->uid") &&
-            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
+            Gate::check("editImages:$volume->uid") &&
+            ($userSession->getId() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
         ) {
             $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
@@ -2851,8 +2852,8 @@ JS,[
             $previewable = Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission("editImages:$volume->uid") &&
-                ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
+                Gate::check("editImages:$volume->uid") &&
+                ($userSession->getId() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
             );
 
             switch ($this->kind) {
@@ -3409,8 +3410,8 @@ JS;
             $userSession = Craft::$app->getUser();
 
             if (
-                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
-                $userSession->checkPermission("deletePeerAssets:$volume->uid")
+                Gate::check("savePeerAssets:$volume->uid") &&
+                Gate::check("deletePeerAssets:$volume->uid")
             ) {
                 $attributes['data']['movable'] = true;
             }
@@ -3450,13 +3451,13 @@ JS;
         } else {
             $attributes['data']['peer-file'] = true;
             $movable = (
-                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
-                $userSession->checkPermission("deletePeerAssets:$volume->uid")
+                Gate::check("savePeerAssets:$volume->uid") &&
+                Gate::check("deletePeerAssets:$volume->uid")
             );
-            $replaceable = $userSession->checkPermission("replacePeerFiles:$volume->uid");
+            $replaceable = Gate::check("replacePeerFiles:$volume->uid");
             $imageEditable = (
                 $imageEditable &&
-                ($userSession->checkPermission("editPeerImages:$volume->uid"))
+                (Gate::check("editPeerImages:$volume->uid"))
             );
         }
 

@@ -12,7 +12,7 @@ interface ConfigurableComponentInterface
      * By default, this method returns all public non-static properties that were defined on the called class.
      * You may override this method to change the default behavior.
      *
-     * @return array<string, mixed> The list of settings attribute names and values
+     * @return string[] The list of settings attribute names and values
      *
      * @see getSettings()
      */

@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\AddressesController;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('can list fields with a namespace and countryCode', function () {

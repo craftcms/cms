@@ -296,7 +296,7 @@ final readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        /** @var User $user */
+        /** @var ?\craft\elements\User $user */
         $user = Auth::user();
 
         // Recent Entries widget
@@ -321,9 +321,11 @@ final readonly class Dashboard
             ],
         ]));
 
-        $user->update([
+        User::where('id', $user->id)->update([
             'hasDashboard' => true,
         ]);
+
+        $user->hasDashboard = true;
     }
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget

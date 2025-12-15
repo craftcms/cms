@@ -11,6 +11,7 @@ use Craft;
 use craft\base\FsInterface;
 use craft\base\Model;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Gate;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -146,11 +147,10 @@ class VolumeFolder extends Model
         }
 
         $volume = $this->getVolume();
-        $userSession = Craft::$app->getUser();
-        $canView = $userSession->checkPermission("viewAssets:$volume->uid");
-        $canCreate = $userSession->checkPermission("createFolders:$volume->uid");
-        $canDelete = $userSession->checkPermission("deletePeerAssets:$volume->uid");
-        $canMove = $canDelete && $userSession->checkPermission("savePeerAssets:$volume->uid");
+        $canView = Gate::check("viewAssets:$volume->uid");
+        $canCreate = Gate::check("createFolders:$volume->uid");
+        $canDelete = Gate::check("deletePeerAssets:$volume->uid");
+        $canMove = $canDelete && Gate::check("savePeerAssets:$volume->uid");
 
         $info = [
             'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
@@ -172,7 +172,7 @@ class VolumeFolder extends Model
                 'handle' => $volume->handle,
             ];
         } else {
-            $canRename = $canCreate && $userSession->checkPermission("deleteAssets:$volume->uid");
+            $canRename = $canCreate && Gate::check("deleteAssets:$volume->uid");
 
             $info += [
                 'key' => "folder:$this->uid",

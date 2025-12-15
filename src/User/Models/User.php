@@ -12,28 +12,18 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\Facades\UserPermissions;
-use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 
-class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
+class User extends BaseModel
 {
-    use Authenticatable;
-    use Authorizable;
-    use CanResetPassword;
     use HasFactory;
     use MustVerifyEmail;
 
@@ -46,7 +36,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      */
     protected $hidden = [
         'password',
-        'remember_token',
+        'rememberToken',
     ];
 
     private ?Collection $userGroupData = null;
@@ -82,30 +72,6 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
                     ->whereColumn(Table::USERS.'.id', Table::ELEMENTS.'.id')
                     ->whereNull(Table::ELEMENTS.'.dateDeleted')
             );
-    }
-
-    /**
-     * Returns whether the user has permission to perform a given action.
-     *
-     * @param  string  $abilities
-     *
-     * @todo Permissions to Laravel Gates
-     */
-    #[Override]
-    public function can($abilities, $arguments = []): bool
-    {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
-
-        if (! isset($this->id)) {
-            return false;
-        }
-
-        return UserPermissions::doesUserHavePermission($this->id, $abilities);
     }
 
     public function asElement(): \CraftCms\Cms\User\Elements\User
