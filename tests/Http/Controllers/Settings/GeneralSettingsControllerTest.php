@@ -6,7 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
@@ -17,7 +17,7 @@ use function Pest\Laravel\post;
 
 beforeEach(function () {
     Storage::fake('rebrand');
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('requires authentication', function () {
