@@ -150,7 +150,7 @@ Route::prefix(implode('/', [
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryType}', [EntryTypesController::class, 'edit']);
+        Route::get('entry-types/edit/{entryType?}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {

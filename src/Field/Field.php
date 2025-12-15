@@ -356,6 +356,12 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
 
         foreach ($config as $name => $value) {
             if (! property_exists($this, $name)) {
+                if (method_exists($this, $method = 'set'.Str::studly($name))) {
+                    $this->$method($value);
+
+                    continue;
+                }
+
                 continue;
             }
 
@@ -490,7 +496,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     public function attributes(): array
     {
         return Collection::make($this->settingsAttributes())
-            ->reject(fn ($value, $name): bool => in_array($name, [
+            ->reject(fn ($name): bool => in_array($name, [
                 'validateHandleUniqueness',
                 'layoutElement',
                 'static',
@@ -1330,7 +1336,17 @@ JS, [
 
     public function toArray(): array
     {
-        return $this->attributes();
+        return collect($this->attributes())->mapWithKeys(function (string $attribute) {
+            if (property_exists($this, $attribute)) {
+                return [$attribute => $this->$attribute];
+            }
+
+            if (method_exists($this, $method = 'get'.Str::studly($attribute))) {
+                return [$attribute => $this->$method()];
+            }
+
+            return '__invalid__';
+        })->reject(fn ($value) => $value === '__invalid__')->all();
     }
 
     /**

@@ -13,7 +13,6 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
-use craft\models\UserGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\User\Data\UserGroup;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -563,7 +563,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         if (is_iterable($value)) {
             $collection = Collection::make($value);
             if ($collection->every(fn($v) => $v instanceof UserGroup)) {
-                $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
+                $this->authorGroupId = $collection->pluck('id')->all();
                 return $this;
             }
         }

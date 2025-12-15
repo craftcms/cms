@@ -512,20 +512,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes['allowSelfRelations'] = $this->allowSelfRelations;
-        $attributes['branchLimit'] = $this->branchLimit;
-        $attributes['defaultPlacement'] = $this->defaultPlacement;
-        $attributes['maintainHierarchy'] = $this->maintainHierarchy;
-        $attributes['maxRelations'] = $this->maxRelations;
-        $attributes['minRelations'] = $this->minRelations;
-        $attributes['selectionLabel'] = $this->selectionLabel;
-        $attributes['showSearchInput'] = $this->showSearchInput;
-        $attributes['showSiteMenu'] = $this->showSiteMenu;
-        $attributes['source'] = $this->source;
-        $attributes['sources'] = $this->sources;
-        $attributes['targetSiteId'] = $this->targetSiteId;
-        $attributes['validateRelatedElements'] = $this->validateRelatedElements;
-        $attributes['viewMode'] = $this->viewMode;
+        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
+        $attributes[] = 'defaultPlacement';
+        $attributes[] = 'maintainHierarchy';
+        $attributes[] = 'maxRelations';
+        $attributes[] = 'minRelations';
+        $attributes[] = 'selectionLabel';
+        $attributes[] = 'showSearchInput';
+        $attributes[] = 'showSiteMenu';
+        $attributes[] = 'source';
+        $attributes[] = 'sources';
+        $attributes[] = 'targetSiteId';
+        $attributes[] = 'validateRelatedElements';
+        $attributes[] = 'viewMode';
 
         return $attributes;
     }

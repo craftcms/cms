@@ -1,164 +1,18 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\models;
 
-use Craft;
-use craft\base\Model;
-use craft\validators\SingleSectionUriValidator;
-use craft\validators\SiteIdValidator;
-use craft\validators\UriFormatValidator;
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Facades\Sites;
-use yii\base\InvalidConfigException;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 
-use function CraftCms\Cms\t;
-
-/**
- * Section_SiteSettings model class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Section\Data\SectionSiteSettings} instead.
- */
-class Section_SiteSettings extends Model
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var int|null ID
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Section\Data\SectionSiteSettings} instead.
      */
-    public ?int $id = null;
-
-    /**
-     * @var int|null Section ID
-     */
-    public ?int $sectionId = null;
-
-    /**
-     * @var int|null Site ID
-     */
-    public ?int $siteId = null;
-
-    /**
-     * @var bool Enabled by default
-     */
-    public bool $enabledByDefault = true;
-
-    /**
-     * @var bool Has URLs?
-     */
-    public bool $hasUrls = false;
-
-    /**
-     * @var string|null URI format
-     */
-    public ?string $uriFormat = null;
-
-    /**
-     * @var string|null Entry template
-     */
-    public ?string $template = null;
-
-    /**
-     * @var Section|null
-     */
-    private ?Section $_section = null;
-
-    /**
-     * Returns the section.
-     *
-     * @return Section
-     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
-     */
-    public function getSection(): Section
+    class Section_SiteSettings
     {
-        if (isset($this->_section)) {
-            return $this->_section;
-        }
-
-        if (!$this->sectionId) {
-            throw new InvalidConfigException('Section site settings model is missing its section ID');
-        }
-
-        if (($this->_section = Craft::$app->getEntries()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
-        }
-
-        return $this->_section;
-    }
-
-    /**
-     * Sets the section.
-     *
-     * @param Section $section
-     */
-    public function setSection(Section $section): void
-    {
-        $this->_section = $section;
-    }
-
-    /**
-     * Returns the site.
-     *
-     * @return Site
-     * @throws InvalidConfigException if [[siteId]] is missing or invalid
-     */
-    public function getSite(): Site
-    {
-        if (!$this->siteId) {
-            throw new InvalidConfigException('Section site settings model is missing its site ID');
-        }
-
-        if (($site = Sites::getSiteById($this->siteId)) === null) {
-            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
-        }
-
-        return $site;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels(): array
-    {
-        $labels = [
-            'template' => t('Template'),
-        ];
-
-        if ($this->getSection()->type === SectionType::Single->value) {
-            $labels['uriFormat'] = t('URI');
-        } else {
-            $labels['uriFormat'] = t('Entry URI Format');
-        }
-
-        return $labels;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
-        $rules[] = [['siteId'], SiteIdValidator::class];
-        $rules[] = [['uriFormat', 'template'], 'trim'];
-        $rules[] = [['template'], 'string', 'max' => 500];
-
-        if ($this->getSection()->type === SectionType::Single->value) {
-            $rules[] = ['uriFormat', SingleSectionUriValidator::class];
-        } else {
-            $rules[] = ['uriFormat', UriFormatValidator::class];
-        }
-
-        if ($this->hasUrls) {
-            $rules[] = [['uriFormat'], 'required'];
-        }
-
-        return $rules;
     }
 }
+
+class_alias(SectionSiteSettings::class, Section_SiteSettings::class);
