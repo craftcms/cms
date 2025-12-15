@@ -51,9 +51,17 @@ final class UserServiceProvider extends ServiceProvider
          * This hooks our permission system into
          * Laravel's Gate authorization system
          */
-        Gate::before(function (Authorizable $user, string $ability) {
+        Gate::after(function (Authorizable $user, string $ability, ?bool $result) {
             if (! $user instanceof User) {
                 return null;
+            }
+
+            /**
+             * Only check our permissions when the
+             * result was not explicitly set.
+             */
+            if (! is_null($result)) {
+                return $result;
             }
 
             if (
