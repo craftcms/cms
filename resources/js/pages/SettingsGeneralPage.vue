@@ -2,11 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
@@ -172,7 +168,7 @@
           <template v-if="form.hasErrors">
             <craft-callout variant="danger" icon="exclamation-triangle">
               <div slot="title" class="tw:font-bold">
-                Could not save settings
+                {{ t('app', 'Could not save settings') }}
               </div>
               <ul>
                 <li v-for="(error, key) in errors">
@@ -207,10 +203,10 @@
                 class="p-0"
                 icon="lightbulb"
               >
-                This can begin with an environment variable.
+                {{ t('app', 'This can begin with an environment variable.') }}
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >Learn more</a
+                  >{{ t('app', 'Learn more') }}</a
                 >
               </craft-callout>
             </div>
@@ -235,13 +231,13 @@
             <craft-option .choiceValue="'1'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="success"></craft-indicator>
-                <span>Online</span>
+                <span>{{ t('app', 'Online') }}</span>
               </div>
             </craft-option>
             <craft-option .choiceValue="'0'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="danger"></craft-indicator>
-                <span>Offline</span>
+                <span>{{ t('app', 'Offline') }}</span>
               </div>
             </craft-option>
 
@@ -265,9 +261,17 @@
               appearance="plain"
               class="p-0"
               icon="lightbulb"
+              v-html="
+                t(
+                  'app',
+                  'This can be set to an environment variable with a boolean value ({examples})',
+                  {
+                    examples:
+                      '<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>',
+                  }
+                )
+              "
             >
-              This can be set to an environment variable with a boolean value
-              (<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>).
             </craft-callout>
 
             <div slot="feedback">
@@ -287,12 +291,15 @@
             size="4"
             :disabled="readOnly"
           >
-            <div slot="help-text">
-              The number of seconds that the <code>Retry-After</code> HTTP
-              header should be set to for 503 responses when the system is
-              offline.
-              <!--              {{ t('app', `The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.`) }}-->
-            </div>
+            <div
+              slot="help-text"
+              v-html="
+                t(
+                  'app',
+                  'The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.'
+                )
+              "
+            ></div>
             <ul class="error-list" v-if="errors?.retryDuration" slot="feedback">
               <li>{{ errors.retryDuration }}</li>
             </ul>
