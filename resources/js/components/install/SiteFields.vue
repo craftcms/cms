@@ -48,11 +48,7 @@
   </craft-input>
 
   <!-- @TODO this should be autocomplete -->
-  <craft-input
-    name="baseUrl"
-    :label="t('Base URL')"
-    v-model="model.baseUrl"
-  >
+  <craft-input name="baseUrl" :label="t('Base URL')" v-model="model.baseUrl">
   </craft-input>
 
   <craft-select
