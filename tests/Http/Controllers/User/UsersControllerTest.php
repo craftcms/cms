@@ -16,7 +16,7 @@ beforeEach(function () {
     Edition::set(Edition::Pro);
 
     actingAs(User::findOne());
-})->skip();
+});
 
 it('requires login', function () {
     auth()->logout();
