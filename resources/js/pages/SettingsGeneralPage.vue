@@ -2,11 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {Edition, type SystemData, type TimezoneOption,} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
@@ -44,6 +40,7 @@
   function handleUpdate(event: CustomEvent) {
     const target = event.target as HTMLSelectElement & {modelValue: string};
     if (target) {
+      // @ts-ignore we're just going to trust that `name` is a key of `form` for now
       form[target.name] = target.modelValue;
     }
   }
