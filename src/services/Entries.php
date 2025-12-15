@@ -1665,7 +1665,6 @@ SQL)->execute();
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->icon = $data['icon'] ?? null;
             $entryTypeRecord->color = $data['color'] ?? null;
-            $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -1679,6 +1678,9 @@ SQL)->execute();
             // todo: remove after the next breakpoint
             if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
                 $entryTypeRecord->description = $data['description'] ?? null;
+            }
+            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+                $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             }
 
             if (!empty($data['fieldLayouts'])) {
