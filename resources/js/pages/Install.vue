@@ -108,7 +108,7 @@
 </script>
 
 <template>
-  <Head :title="t('app', 'Install Craft CMS')" />
+  <Head :title="t('Install Craft CMS')" />
 
   <div class="install">
     <template v-if="isCurrent('start')">
@@ -118,7 +118,7 @@
         variant="primary"
         class="begin-button"
       >
-        {{ t('app', 'Install Craft CMS') }}
+        {{ t('Install Craft CMS') }}
         <craft-icon name="arrow-right" slot="suffix"></craft-icon>
       </craft-button>
     </template>
@@ -144,7 +144,7 @@
                 variant="primary"
                 @click="goTo('account')"
               >
-                {{ t('app', 'Got it') }}
+                {{ t('Got it') }}
               </craft-button>
             </div>
           </template>
@@ -212,7 +212,7 @@
                   appearance="plain"
                   class="justify-self-start"
                 >
-                  {{ t('app', 'Back') }}
+                  {{ t('Back') }}
                   <craft-icon name="arrow-left" slot="prefix"></craft-icon>
                 </craft-button>
                 <ul class="flex gap-2 justify-center">
@@ -235,7 +235,7 @@
                   variant="primary"
                   :loading="state === 'loading'"
                 >
-                  {{ current.submitLabel ?? t('app', 'Next') }}
+                  {{ current.submitLabel ?? t('Next') }}
                   <craft-icon name="arrow-right" slot="suffix"></craft-icon>
                 </craft-button>
               </div>

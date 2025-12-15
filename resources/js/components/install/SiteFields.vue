@@ -39,7 +39,7 @@
   <!-- @TODO add error output -->
   <craft-input
     name="name"
-    :label="t('app', 'System Name')"
+    :label="t('System Name')"
     id="site-name"
     v-model="model.name"
     maxlength="255"
@@ -50,13 +50,13 @@
   <!-- @TODO this should be autocomplete -->
   <craft-input
     name="baseUrl"
-    :label="t('app', 'Base URL')"
+    :label="t('Base URL')"
     v-model="model.baseUrl"
   >
   </craft-input>
 
   <craft-select
-    :label="t('app', 'Language')"
+    :label="t('Language')"
     id="site-language"
     name="language"
     .modelValue="model.language"

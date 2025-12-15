@@ -39,7 +39,7 @@ interface CraftGlobal {
   csrfTokenValue?: string;
   ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
-  t(category: string, message: string, params?: object): string;
+  t(message: string, params?: object, category?: string): string;
   sendActionRequest(
     method: string,
     action: string,
