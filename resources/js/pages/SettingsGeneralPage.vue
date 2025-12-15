@@ -92,7 +92,7 @@
 
 <template>
   <form @submit.prevent="save">
-    <AppLayout :title="t('app', 'General Settings')">
+    <AppLayout :title="t('General Settings')">
       <template #actions>
         <TransitionFade>
           <template v-if="form.recentlySuccessful && flash?.success">
@@ -110,7 +110,7 @@
                 name="exclamation-triangle"
                 style="color: var(--c-color-danger-bg-emphasis)"
               ></craft-icon>
-              {{ t('app', 'Could not save settings') }}
+              {{ t('Could not save settings') }}
             </div>
           </template>
         </TransitionFade>
@@ -121,7 +121,7 @@
             variant="primary"
             :loading="form.processing"
           >
-            {{ t('app', 'Save') }}
+            {{ t('Save') }}
           </craft-button>
           <craft-action-menu>
             <craft-button slot="invoker" variant="primary" type="button" icon>
@@ -130,7 +130,7 @@
 
             <div slot="content">
               <craft-action-item @click="save">
-                {{ t('app', 'Save and continue editing') }}
+                {{ t('Save and continue editing') }}
                 <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
             </div>
@@ -162,8 +162,7 @@
             </span>
             {{
               t(
-                'app',
-                'Changes to these settings aren’t permitted in this environment.'
+                'Changes to these settings arenʼt permitted in this environment.'
               )
             }}
           </craft-callout>
@@ -172,7 +171,7 @@
           <template v-if="form.hasErrors">
             <craft-callout variant="danger" icon="exclamation-triangle">
               <div slot="title" class="tw:font-bold">
-                {{ t('app', 'Could not save settings') }}
+                {{ t('Could not save settings') }}
               </div>
               <ul>
                 <li v-for="(error, key) in errors">
@@ -182,7 +181,7 @@
             </craft-callout>
           </template>
           <craft-combobox
-            :label="t('app', 'System Name')"
+            :label="t('System Name')"
             id="name"
             name="name"
             v-model="form.name"
@@ -207,10 +206,10 @@
                 class="p-0"
                 icon="lightbulb"
               >
-                {{ t('app', 'This can begin with an environment variable.') }}
+                {{ t('This can begin with an environment variable.') }}
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >{{ t('app', 'Learn more') }}</a
+                  >{{ t('Learn more') }}</a
                 >
               </craft-callout>
             </div>
@@ -223,7 +222,7 @@
           </craft-combobox>
 
           <craft-combobox
-            :label="t('app', 'System Status')"
+            :label="t('System Status')"
             id="live"
             name="live"
             .modelValue="system.live ? '1' : '0'"
@@ -235,13 +234,13 @@
             <craft-option .choiceValue="'1'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="success"></craft-indicator>
-                <span>{{ t('app', 'Online') }}</span>
+                <span>{{ t('Online') }}</span>
               </div>
             </craft-option>
             <craft-option .choiceValue="'0'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="danger"></craft-indicator>
-                <span>{{ t('app', 'Offline') }}</span>
+                <span>{{ t('Offline') }}</span>
               </div>
             </craft-option>
 
@@ -267,7 +266,6 @@
               icon="lightbulb"
               v-html="
                 t(
-                  'app',
                   'This can be set to an environment variable with a boolean value ({examples})',
                   {
                     examples:
@@ -286,7 +284,7 @@
           </craft-combobox>
 
           <craft-input
-            :label="t('app', 'Retry Duration')"
+            :label="t('Retry Duration')"
             id="retry-duration"
             name="retryDuration"
             v-model="form.retryDuration"
@@ -299,7 +297,6 @@
               slot="help-text"
               v-html="
                 t(
-                  'app',
                   'The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.'
                 )
               "
@@ -310,7 +307,7 @@
           </craft-input>
 
           <craft-combobox
-            :label="t('app', 'Time Zone')"
+            :label="t('Time Zone')"
             id="time-zone"
             name="timeZone"
             .modelValue="form.timeZone"
@@ -352,12 +349,11 @@
           <hr />
           <div class="p-4 grid gap-3">
             <FileUpload
-              :label="t('app', 'Site Icon')"
+              :label="t('Site Icon')"
               name="siteIcon"
               v-model="form.siteIcon"
               :help-text="
                 t(
-                  'app',
                   'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
                   {size: '32px'}
                 )
@@ -368,7 +364,7 @@
             />
 
             <FileUpload
-              :label="t('app', 'Login Page Logo')"
+              :label="t('Login Page Logo')"
               v-model="form.siteLogo"
               name="siteLogo"
               :help-text="
