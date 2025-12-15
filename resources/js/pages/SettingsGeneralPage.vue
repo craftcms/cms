@@ -369,7 +369,6 @@
               name="siteLogo"
               :help-text="
                 t(
-                  'app',
                   'SVG file recommended. The logo will be displayed at {size} wide.',
                   {size: '288px'}
                 )
