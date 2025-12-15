@@ -125,7 +125,6 @@
               variant="primary"
               type="button"
               icon
-              @click="console.error('TODO: Not yet implemented')"
             >
               <craft-icon name="chevron-down"></craft-icon>
             </craft-button>
@@ -133,7 +132,7 @@
             <div slot="content">
               <craft-action-item @click="save">
                 {{ t('app', 'Save and continue editing') }}
-                <span slot="suffix"><code>⌘</code>+<code>s</code></span>
+                <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
             </div>
           </craft-action-menu>

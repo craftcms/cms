@@ -38,6 +38,7 @@ export {default as CraftActionItem} from './components/action-item/action-item.j
 export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
+export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
