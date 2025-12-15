@@ -8,8 +8,8 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\models\UserGroup;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Data\UserGroup;
 use function CraftCms\Cms\t;
 
 /**

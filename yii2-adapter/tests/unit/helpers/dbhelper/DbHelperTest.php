@@ -11,9 +11,9 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
-use craft\models\UserGroup;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\test\TestCase;
+use CraftCms\Cms\User\Data\UserGroup;
 use DateTime;
 use DateTimeZone;
 use stdClass;
@@ -124,8 +124,8 @@ class DbHelperTest extends TestCase
      */
     public function testNormalizeModelParam(): void
     {
-        $group1 = new UserGroup(['id' => 1]);
-        $group2 = new UserGroup(['id' => 2]);
+        $group1 = UserGroup::from(['id' => 1]);
+        $group2 = UserGroup::from(['id' => 2]);
 
         $normalizeUserGroup = fn($item) => $item instanceof UserGroup ? $item->id : null;
 

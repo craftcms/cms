@@ -14,9 +14,9 @@ use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
-use craft\models\Site;
-use craft\models\SiteGroup;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
 use CraftCms\Cms\Site\Events\ApplyingSiteGroupDelete;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
@@ -37,7 +37,6 @@ use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
@@ -153,9 +152,7 @@ class Sites extends Component
      */
     public function getAllGroups(): array
     {
-        return SiteGroups::getAllGroups()
-            ->map(fn(\CraftCms\Cms\Site\Data\SiteGroup $group) => self::siteGroupFromSiteGroupData($group))
-            ->all();
+        return SiteGroups::getAllGroups()->all();
     }
 
     /**
@@ -166,13 +163,7 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId): ?SiteGroup
     {
-        $group = SiteGroups::getGroupById($groupId);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::siteGroupFromSiteGroupData($group);
+        return SiteGroups::getGroupById($groupId);
     }
 
     /**
@@ -185,13 +176,7 @@ class Sites extends Component
      */
     public function getGroupByUid(string $uid): ?SiteGroup
     {
-        $group = SiteGroups::getGroupByUid($uid);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::siteGroupFromSiteGroupData($group);
+        return SiteGroups::getGroupByUid($uid);
     }
 
     /**
@@ -203,14 +188,7 @@ class Sites extends Component
      */
     public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
     {
-        $newGroup = \CraftCms\Cms\Site\Data\SiteGroup::from([
-            'id' => $group->id,
-            'uid' => $group->uid,
-        ]);
-
-        $newGroup->setName($group->getName(false));
-
-        return SiteGroups::saveGroup($newGroup);
+        return SiteGroups::saveGroup($group);
     }
 
     /**
@@ -248,14 +226,7 @@ class Sites extends Component
      */
     public function deleteGroup(SiteGroup $group): bool
     {
-        $newGroup = \CraftCms\Cms\Site\Data\SiteGroup::from([
-            'id' => $group->id,
-            'uid' => $group->uid,
-        ]);
-
-        $newGroup->setName($group->getName(false));
-
-        return SiteGroups::deleteGroup($newGroup);
+        return SiteGroups::deleteGroup($group);
     }
 
     // Sites
@@ -282,7 +253,7 @@ class Sites extends Component
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
-        return Site::fromSiteData(SitesFacade::getSiteByUid($uid, $withDisabled));
+        return SitesFacade::getSiteByUid($uid, $withDisabled);
     }
 
     /**
@@ -306,19 +277,17 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        return Site::fromSiteData(SitesFacade::getCurrentSite());
+        return SitesFacade::getCurrentSite();
     }
 
     /**
      * Sets the current site.
      *
      * @param  Site|string|int|null  $site  the current site, or its handle/ID, or null
-     *
-     * @throws InvalidArgumentException if $site is invalid
      */
     public function setCurrentSite(mixed $site): void
     {
-        SitesFacade::setCurrentSite($this->siteDataFromSite($site));
+        SitesFacade::setCurrentSite($site);
     }
 
     /**
@@ -331,7 +300,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        return Site::fromSiteData(SitesFacade::getPrimarySite());
+        return SitesFacade::getPrimarySite();
     }
 
     /**
@@ -352,9 +321,7 @@ class Sites extends Component
      */
     public function getAllSites(?bool $withDisabled = null): array
     {
-        return SitesFacade::getAllSites($withDisabled)
-            ->map(fn(\CraftCms\Cms\Site\Data\Site $site) => Site::fromSiteData($site))
-            ->all();
+        return SitesFacade::getAllSites($withDisabled)->all();
     }
 
     /**
@@ -364,9 +331,7 @@ class Sites extends Component
      */
     public function getEditableSites(): array
     {
-        return SitesFacade::getEditableSites()
-            ->map(fn(\CraftCms\Cms\Site\Data\Site $site) => Site::fromSiteData($site))
-            ->all();
+        return SitesFacade::getEditableSites()->all();
     }
 
     /**
@@ -377,9 +342,7 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)
-            ->map(fn(\CraftCms\Cms\Site\Data\Site $site) => Site::fromSiteData($site))
-            ->all();
+        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)->all();
     }
 
     /**
@@ -392,9 +355,7 @@ class Sites extends Component
      */
     public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)
-            ->map(fn(\CraftCms\Cms\Site\Data\Site $site) => Site::fromSiteData($site))
-            ->all();
+        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)->all();
     }
 
     /**
@@ -418,7 +379,7 @@ class Sites extends Component
      */
     public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
-        return Site::fromSiteData(SitesFacade::getSiteById($siteId, $withDisabled));
+        return SitesFacade::getSiteById($siteId, $withDisabled);
     }
 
     /**
@@ -426,13 +387,7 @@ class Sites extends Component
      */
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
-        $site = SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
-
-        if ($site) {
-            return Site::fromSiteData($site);
-        }
-
-        return null;
+        return SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
     }
 
     /**
@@ -445,9 +400,7 @@ class Sites extends Component
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByLanguage($language, $withDisabled)
-            ->map(fn(\CraftCms\Cms\Site\Data\Site $site) => Site::fromSiteData($site))
-            ->all();
+        return SitesFacade::getSitesByLanguage($language, $withDisabled)->all();
     }
 
     /**
@@ -472,9 +425,7 @@ class Sites extends Component
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
-        $siteData = $this->siteDataFromSite($site);
-
-        return SitesFacade::saveSite($siteData);
+        return SitesFacade::saveSite($site);
     }
 
     /**
@@ -527,9 +478,7 @@ class Sites extends Component
      */
     public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
-        $siteData = $this->siteDataFromSite($site);
-
-        return SitesFacade::deleteSite($siteData, $transferContentTo);
+        return SitesFacade::deleteSite($site, $transferContentTo);
     }
 
     /**
@@ -575,7 +524,7 @@ class Sites extends Component
         Event::listen(SavingSiteGroup::class, function(SavingSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupFromSiteGroupData($event->siteGroup),
+                    'group' => $event->siteGroup,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -584,7 +533,7 @@ class Sites extends Component
         Event::listen(SavedSiteGroup::class, function(SavedSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupFromSiteGroupData($event->siteGroup),
+                    'group' => $event->siteGroup,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -593,7 +542,7 @@ class Sites extends Component
         Event::listen(ApplyingSiteGroupDelete::class, function(ApplyingSiteGroupDelete $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
-                    'group' => self::siteGroupFromSiteGroupData($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -601,7 +550,7 @@ class Sites extends Component
         Event::listen(DeletingSiteGroup::class, function(DeletingSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupFromSiteGroupData($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -609,7 +558,7 @@ class Sites extends Component
         Event::listen(DeletedSiteGroup::class, function(DeletedSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupFromSiteGroupData($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -617,7 +566,7 @@ class Sites extends Component
         Event::listen(SavingSite::class, function(SavingSite $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
@@ -627,7 +576,7 @@ class Sites extends Component
         Event::listen(SiteSaved::class, function(SiteSaved $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
@@ -653,7 +602,7 @@ class Sites extends Component
         Event::listen(DeletingSite::class, function(DeletingSite $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE, $yiiEvent = new DeleteSiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                     'transferContentTo' => $event->transferContentTo,
                 ]));
                 $event->isValid = $yiiEvent->isValid;
@@ -663,7 +612,7 @@ class Sites extends Component
         Event::listen(ApplyingSiteDelete::class, function(ApplyingSiteDelete $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SITE_DELETE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_SITE_DELETE, new DeleteSiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
@@ -671,7 +620,7 @@ class Sites extends Component
         Event::listen(SiteDeleted::class, function(SiteDeleted $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
@@ -679,40 +628,9 @@ class Sites extends Component
         Event::listen(PrimarySiteChanged::class, function(PrimarySiteChanged $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
-                    'site' => Site::fromSiteData($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
-    }
-
-    public static function siteGroupFromSiteGroupData(\CraftCms\Cms\Site\Data\SiteGroup $siteGroup): SiteGroup
-    {
-        $group = new SiteGroup([
-            'id' => $siteGroup->id,
-            'uid' => $siteGroup->uid,
-        ]);
-
-        $group->setName($siteGroup->getName(false));
-
-        return $group;
-    }
-
-    public function siteDataFromSite(Site $site): \CraftCms\Cms\Site\Data\Site
-    {
-        return new \CraftCms\Cms\Site\Data\Site(
-            id: $site->id,
-            groupId: $site->groupId,
-            name: $site->getName(false),
-            handle: $site->handle,
-            language: $site->getLanguage(false),
-            baseUrl: $site->getBaseUrl(false),
-            primary: $site->primary,
-            hasUrls: $site->hasUrls,
-            sortOrder: $site->sortOrder,
-            uid: $site->uid,
-            dateCreated: $site->dateCreated,
-            dateUpdated: $site->dateUpdated,
-            enabled: $site->getEnabled(false),
-        );
     }
 }

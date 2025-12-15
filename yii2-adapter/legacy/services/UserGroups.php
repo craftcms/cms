@@ -10,11 +10,9 @@ namespace craft\services;
 use Craft;
 use craft\elements\User;
 use craft\events\UserGroupEvent;
-use craft\models\UserGroup;
-use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\UserGroups as UserGroupsFacade;
-use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
 use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;
@@ -60,17 +58,6 @@ class UserGroups extends Component
      */
     public const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
-    public static function userGroupFromUserGroupData(UserGroupData $userGroupData): UserGroup
-    {
-        return new UserGroup([
-            'id' => $userGroupData->id,
-            'name' => $userGroupData->name,
-            'handle' => $userGroupData->handle,
-            'description' => $userGroupData->description,
-            'uid' => $userGroupData->uid,
-        ]);
-    }
-
     /**
      * Returns all user groups.
      *
@@ -78,9 +65,7 @@ class UserGroups extends Component
      */
     public function getAllGroups(): array
     {
-        return UserGroupsFacade::getAllGroups()
-            ->map(fn(UserGroupData $userGroup) => self::userGroupFromUserGroupData($userGroup))
-            ->all();
+        return UserGroupsFacade::getAllGroups()->all();
     }
 
     /**
@@ -92,9 +77,7 @@ class UserGroups extends Component
      */
     public function getAssignableGroups(?User $user = null): array
     {
-        return UserGroupsFacade::getAssignableGroups($user)
-            ->map(fn(UserGroupData $userGroup) => self::userGroupFromUserGroupData($userGroup))
-            ->all();
+        return UserGroupsFacade::getAssignableGroups($user)->all();
     }
 
     /**
@@ -106,13 +89,7 @@ class UserGroups extends Component
      */
     public function getGroupById(int $groupId): ?UserGroup
     {
-        $group = UserGroupsFacade::getGroupById($groupId);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::userGroupFromUserGroupData($group);
+        return UserGroupsFacade::getGroupById($groupId);
     }
 
     /**
@@ -124,13 +101,7 @@ class UserGroups extends Component
      */
     public function getGroupByUid(string $uid): ?UserGroup
     {
-        $group = UserGroupsFacade::getGroupByUid($uid);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::userGroupFromUserGroupData($group);
+        return UserGroupsFacade::getGroupByUid($uid);
     }
 
     /**
@@ -142,13 +113,7 @@ class UserGroups extends Component
      */
     public function getGroupByHandle(string $groupHandle): ?UserGroup
     {
-        $group = UserGroupsFacade::getGroupByHandle($groupHandle);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::userGroupFromUserGroupData($group);
+        return UserGroupsFacade::getGroupByHandle($groupHandle);
     }
 
     /**
@@ -159,7 +124,7 @@ class UserGroups extends Component
      */
     public function getTeamGroup(): UserGroup
     {
-        return self::userGroupFromUserGroupData(UserGroupsFacade::getTeamGroup());
+        return UserGroupsFacade::getTeamGroup();
     }
 
     /**
@@ -171,9 +136,7 @@ class UserGroups extends Component
      */
     public function getGroupsByUserId(int $userId): array
     {
-        return UserGroupsFacade::getGroupsByUserId($userId)
-            ->map(fn(UserGroupData $userGroup) => self::userGroupFromUserGroupData($userGroup))
-            ->all();
+        return UserGroupsFacade::getGroupsByUserId($userId)->all();
     }
 
     /**
@@ -195,20 +158,10 @@ class UserGroups extends Component
      * @param bool $runValidation Whether the user group should be validated
      *
      * @return bool
-     * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation) {
-            $group->validate();
-        }
-
-        $data = UserGroupData::from($group->toArray());
-        $success = UserGroupsFacade::saveGroup($data);
-
-        $group->id = $data->id;
-
-        return $success;
+        return UserGroupsFacade::saveGroup($group);
     }
 
     /**
@@ -253,7 +206,7 @@ class UserGroups extends Component
      */
     public function deleteGroup(UserGroup $group): bool
     {
-        return UserGroupsFacade::deleteGroup(UserGroupData::from($group->toArray()));
+        return UserGroupsFacade::deleteGroup($group);
     }
 
     public static function registerEvents(): void
@@ -261,29 +214,25 @@ class UserGroups extends Component
         Event::listen(SavingUserGroup::class, function(SavingUserGroup $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, $yiiEvent = new UserGroupEvent([
-                    'userGroup' => self::userGroupFromUserGroupData($event->userGroup),
+                    'userGroup' => $event->userGroup,
                     'isNew' => $event->isNew,
                 ]));
-
-                $event->userGroup = UserGroupData::from($yiiEvent->userGroup->toArray());
             }
         });
 
         Event::listen(UserGroupSaved::class, function(UserGroupSaved $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, $yiiEvent = new UserGroupEvent([
-                    'userGroup' => self::userGroupFromUserGroupData($event->userGroup),
+                    'userGroup' => $event->userGroup,
                     'isNew' => $event->isNew,
                 ]));
-
-                $event->userGroup = UserGroupData::from($yiiEvent->userGroup->toArray());
             }
         });
 
         Event::listen(ApplyingUserGroupDelete::class, function(ApplyingUserGroupDelete $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new UserGroupEvent([
-                    'userGroup' => self::userGroupFromUserGroupData($event->userGroup),
+                    'userGroup' => $event->userGroup,
                 ]));
             }
         });
@@ -291,7 +240,7 @@ class UserGroups extends Component
         Event::listen(DeletingUserGroup::class, function(DeletingUserGroup $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
-                    'userGroup' => self::userGroupFromUserGroupData($event->userGroup),
+                    'userGroup' => $event->userGroup,
                 ]));
             }
         });
@@ -299,7 +248,7 @@ class UserGroups extends Component
         Event::listen(UserGroupDeleted::class, function(UserGroupDeleted $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
-                    'userGroup' => self::userGroupFromUserGroupData($event->userGroup),
+                    'userGroup' => $event->userGroup,
                 ]));
             }
         });

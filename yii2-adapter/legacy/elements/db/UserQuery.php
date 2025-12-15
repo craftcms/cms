@@ -30,7 +30,7 @@ use yii\db\Expression;
  * @template TElement of User
  * @extends ElementQuery<TKey,TElement>
  *
- * @property-write string|string[]|UserGroup|\craft\models\UserGroup|null $group The user group(s) that resulting users must belong to
+ * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -444,7 +444,7 @@ class UserQuery extends ElementQuery
             $value = $group;
         }
 
-        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup || $item instanceof \craft\models\UserGroup ? $item->id : null)) {
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
             $this->groupId = $value;
         } else {
             $operator = QueryParam::extractOperator($value);

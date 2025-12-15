@@ -3651,14 +3651,14 @@ JS, [
      * If only one site is meant to be shown, an empty array will be returned.
      *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
-     * @param \craft\models\Site|Site|null $selectedSite
+     * @param Site|null $selectedSite
      * @param array $config
      * @return array
      * @since 5.0.0
      */
     public static function siteMenuItems(
         array|Collection|null $sites = null,
-        \craft\models\Site|Site|null $selectedSite = null,
+        Site|null $selectedSite = null,
         array $config = [],
     ): array {
         if ($sites === null) {
