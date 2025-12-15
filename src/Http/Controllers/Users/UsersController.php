@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use Craft;
 use craft\base\Element;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -33,6 +34,8 @@ final readonly class UsersController
     public function index(Request $request, ?string $slug = null): View
     {
         $this->authorize('viewUsers');
+
+        Edition::require(Edition::Team);
 
         return view('craftcms::users._index', [
             'title' => t('Users'),
@@ -79,6 +82,7 @@ final readonly class UsersController
          * @TODO: Refactor away the runAction
          * let the elements/edit action do most of the work
          */
+        Craft::$app->request->setIsCpRequest(true);
         $response = Craft::$app->runAction('elements/edit', [
             'element' => $user,
         ]);
