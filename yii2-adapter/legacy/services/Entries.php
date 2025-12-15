@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
@@ -17,9 +16,8 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
-use craft\models\EntryType;
-use craft\models\Section;
-use craft\models\Section_SiteSettings;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
@@ -27,8 +25,8 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
-use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
@@ -36,13 +34,11 @@ use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
-use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\Entries as EntriesFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
@@ -191,9 +187,7 @@ class Entries extends Component
      */
     public function getAllSections(): array
     {
-        return Sections::getAllSections()->values()
-            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
-            ->all();
+        return Sections::getAllSections()->values()->all();
     }
 
     /**
@@ -213,9 +207,7 @@ class Entries extends Component
      */
     public function getEditableSections(): array
     {
-        return Sections::geteditableSections()->values()
-            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
-            ->all();
+        return Sections::geteditableSections()->values()->all();
     }
 
     /**
@@ -239,10 +231,7 @@ class Entries extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return Sections::getSectionsByType(SectionType::from($type))
-            ->values()
-            ->map(fn($sectionData) => self::sectionFromSectionData($sectionData))
-            ->all();
+        return Sections::getSectionsByType(SectionType::from($type))->values()->all();
     }
 
     /**
@@ -304,13 +293,7 @@ class Entries extends Component
      */
     public function getSectionById(int $sectionId): ?Section
     {
-        $sectionData = Sections::getSectionById($sectionId);
-
-        if (!$sectionData) {
-            return null;
-        }
-
-        return self::sectionFromSectionData($sectionData);
+        return Sections::getSectionById($sectionId);
     }
 
     /**
@@ -332,13 +315,7 @@ class Entries extends Component
      */
     public function getSectionByUid(string $uid): ?Section
     {
-        $sectionData = Sections::getSectionByUid($uid);
-
-        if (!$sectionData) {
-            return null;
-        }
-
-        return self::sectionFromSectionData($sectionData);
+        return Sections::getSectionByUid($uid);
     }
 
     /**
@@ -360,13 +337,7 @@ class Entries extends Component
      */
     public function getSectionByHandle(string $sectionHandle): ?Section
     {
-        $sectionData = Sections::getSectionByHandle($sectionHandle);
-
-        if (!$sectionData) {
-            return null;
-        }
-
-        return self::sectionFromSectionData($sectionData);
+        return Sections::getSectionByHandle($sectionHandle);
     }
 
     /**
@@ -374,14 +345,12 @@ class Entries extends Component
      *
      * @param int $sectionId
      *
-     * @return Section_SiteSettings[] The section’s site-specific settings.
+     * @return SectionSiteSettings[] The section’s site-specific settings.
      * @since 5.0.0
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return array_map(function(SectionSiteSettings $data) {
-            return self::sectionSiteSettingsFromSiteSettingsData($data);
-        }, Sections::getSectionSiteSettings($sectionId));
+        return Sections::getSectionSiteSettings($sectionId);
     }
 
     /**
@@ -421,12 +390,6 @@ class Entries extends Component
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
-        if ($runValidation) {
-            $section->validate();
-        }
-
-        $section = $this->sectionDataFromSection($section);
-
         return Sections::saveSection($section);
     }
 
@@ -479,8 +442,6 @@ class Entries extends Component
      */
     public function deleteSection(Section $section): bool
     {
-        $section = $this->sectionDataFromSection($section);
-
         return Sections::deleteSection($section);
     }
 
@@ -505,9 +466,7 @@ class Entries extends Component
      */
     public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
-        $event = new SiteDeleted(Site::from($event->site->toArray()));
-
-        Sections::pruneDeletedSite($event);
+        Sections::pruneDeletedSite(new SiteDeleted($event->site));
     }
 
     /**
@@ -558,9 +517,7 @@ class Entries extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        return EntryTypes::getEntryTypesBySectionId($sectionId)
-            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
-            ->all();
+        return EntryTypes::getEntryTypesBySectionId($sectionId)->all();
     }
 
     /**
@@ -577,9 +534,7 @@ class Entries extends Component
      */
     public function getAllEntryTypes(): array
     {
-        return EntryTypes::getAllEntryTypes()
-            ->map(fn(\CraftCms\Cms\Entry\Data\EntryType $entryType) => self::entryTypeFromEntryTypeData($entryType))
-            ->all();
+        return EntryTypes::getAllEntryTypes()->all();
     }
 
     /**
@@ -599,13 +554,7 @@ class Entries extends Component
      */
     public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
     {
-        $entryType = EntryTypes::getEntryTypeById($entryTypeId, $withTrashed);
-
-        if (!$entryType) {
-            return null;
-        }
-
-        return self::entryTypeFromEntryTypeData($entryType);
+        return EntryTypes::getEntryTypeById($entryTypeId, $withTrashed);
     }
 
     /**
@@ -618,13 +567,7 @@ class Entries extends Component
      */
     public function getEntryTypeByUid(string $uid): ?EntryType
     {
-        $entryType = EntryTypes::getEntryTypeByUid($uid);
-
-        if (!$entryType) {
-            return null;
-        }
-
-        return self::entryTypeFromEntryTypeData($entryType);
+        return EntryTypes::getEntryTypeByUid($uid);
     }
 
     /**
@@ -643,13 +586,7 @@ class Entries extends Component
      */
     public function getEntryTypeByHandle(string $entryTypeHandle): ?EntryType
     {
-        $entryType = EntryTypes::getEntryTypeByHandle($entryTypeHandle);
-
-        if (!$entryType) {
-            return null;
-        }
-
-        return self::entryTypeFromEntryTypeData($entryType);
+        return EntryTypes::getEntryTypeByHandle($entryTypeHandle);
     }
 
     /**
@@ -662,13 +599,7 @@ class Entries extends Component
      */
     public function getEntryType(mixed $entryType): ?EntryType
     {
-        $entryType = EntryTypes::getEntryType($entryType);
-
-        if (!$entryType) {
-            return null;
-        }
-
-        return self::entryTypeFromEntryTypeData($entryType);
+        return EntryTypes::getEntryType($entryType);
     }
 
     /**
@@ -684,18 +615,7 @@ class Entries extends Component
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
-        if ($runValidation && !$entryType->validate()) {
-            return false;
-        }
-
-        $data = $entryType->toArray();
-        $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
-        $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
-        $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
-        $entryTypeData->setFieldLayout($entryType->getFieldLayout());
-
-        return EntryTypes::saveEntryType($entryTypeData);
+        return EntryTypes::saveEntryType($entryType);
     }
 
     /**
@@ -747,13 +667,7 @@ class Entries extends Component
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        $data = $entryType->toArray();
-        $data['titleTranslationMethod'] = TranslationMethod::from($data['titleTranslationMethod']);
-        $data['slugTranslationMethod'] = TranslationMethod::from($data['slugTranslationMethod']);
-        $data['color'] = Color::tryFrom($data['color']['value'] ?? null);
-        $entryTypeData = new \CraftCms\Cms\Entry\Data\EntryType(...$data);
-
-        return EntryTypes::deleteEntryType($entryTypeData);
+        return EntryTypes::deleteEntryType($entryType);
     }
 
     /**
@@ -849,63 +763,9 @@ class Entries extends Component
      * @throws UnsupportedSiteException
      * @since 5.3.0
      */
-    public function moveEntryToSection(Entry $entry, Section|\CraftCms\Cms\Section\Data\Section $section): bool
+    public function moveEntryToSection(Entry $entry, Section $section): bool
     {
-        if ($section instanceof Section) {
-            $section = self::sectionDataFromSection($section);
-        }
-
-        $entry = self::newEntryFromEntry($entry);
-
         return EntriesFacade::moveEntryToSection($entry, $section);
-    }
-
-    private static function newEntryFromEntry(Entry $entry): \CraftCms\Cms\Entry\Elements\Entry
-    {
-        return new \CraftCms\Cms\Entry\Elements\Entry($entry->toArray());
-    }
-
-    private static function sectionFromSectionData(\CraftCms\Cms\Section\Data\Section $section): Section
-    {
-        $yiiSection = new Section(Utils::getPublicProperties($section));
-        $yiiSection->setSiteSettings(array_map(function(SectionSiteSettings $sectionSiteSettings) {
-            return self::sectionSiteSettingsFromSiteSettingsData($sectionSiteSettings);
-        }, $section->getSiteSettings()));
-        $yiiSection->setEntryTypes(array_map(function(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData) {
-            return self::entryTypeFromEntryTypeData($entryTypeData);
-        }, $section->getEntryTypes()));
-
-        return $yiiSection;
-    }
-
-    private static function sectionDataFromSection(Section $section): \CraftCms\Cms\Section\Data\Section
-    {
-        $data = $section->toArray();
-        if (is_array($data['propagationMethod'])) {
-            $data['propagationMethod'] = $data['propagationMethod']['value'];
-        }
-
-        return \CraftCms\Cms\Section\Data\Section::from($data);
-    }
-
-    private static function sectionSiteSettingsFromSiteSettingsData(SectionSiteSettings $siteSettings): Section_SiteSettings
-    {
-        return new Section_SiteSettings(Utils::getPublicProperties($siteSettings));
-    }
-
-    private static function entryTypeFromEntryTypeData(\CraftCms\Cms\Entry\Data\EntryType $entryTypeData): EntryType
-    {
-        $data = Utils::getPublicProperties($entryTypeData);
-        $data['titleTranslationMethod'] = $data['titleTranslationMethod']->value;
-        $data['slugTranslationMethod'] = $data['slugTranslationMethod']->value;
-        $data['original'] = isset($data['original'])
-            ? self::entryTypeFromEntryTypeData($data['original'])
-            : null;
-
-        $entryType = new EntryType($data);
-        $entryType->setFieldLayout($entryTypeData->getFieldLayout());
-
-        return $entryType;
     }
 
     public static function registerEvents(): void
@@ -913,7 +773,7 @@ class Entries extends Component
         Event::listen(SavingSection::class, function(SavingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -922,7 +782,7 @@ class Entries extends Component
         Event::listen(SectionSaved::class, function(SectionSaved $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -931,7 +791,7 @@ class Entries extends Component
         Event::listen(DeletingSection::class, function(DeletingSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                 ]));
             }
         });
@@ -939,7 +799,7 @@ class Entries extends Component
         Event::listen(ApplyingSectionDelete::class, function(ApplyingSectionDelete $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SECTION_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_SECTION_DELETE, new SectionEvent([
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                 ]));
             }
         });
@@ -947,7 +807,7 @@ class Entries extends Component
         Event::listen(SectionDeleted::class, function(SectionDeleted $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                 ]));
             }
         });
@@ -955,7 +815,7 @@ class Entries extends Component
         Event::listen(SavingEntryType::class, function(SavingEntryType $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'entryType' => $event->entryType,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -964,7 +824,7 @@ class Entries extends Component
         Event::listen(EntryTypeSaved::class, function(EntryTypeSaved $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'entryType' => $event->entryType,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -973,7 +833,7 @@ class Entries extends Component
         Event::listen(DeletingEntryType::class, function(DeletingEntryType $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'entryType' => $event->entryType,
                 ]));
             }
         });
@@ -981,7 +841,7 @@ class Entries extends Component
         Event::listen(ApplyingDeleteEntryType::class, function(ApplyingDeleteEntryType $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
-                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'entryType' => $event->entryType,
                 ]));
             }
         });
@@ -989,7 +849,7 @@ class Entries extends Component
         Event::listen(EntryTypeDeleted::class, function(EntryTypeDeleted $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-                    'entryType' => self::entryTypeFromEntryTypeData($event->entryType),
+                    'entryType' => $event->entryType,
                 ]));
             }
         });
@@ -998,7 +858,7 @@ class Entries extends Component
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
                     'entry' => $event->entry,
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                 ]));
             }
         });
@@ -1007,7 +867,7 @@ class Entries extends Component
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
                     'entry' => $event->entry,
-                    'section' => self::sectionFromSectionData($event->section),
+                    'section' => $event->section,
                 ]));
             }
         });

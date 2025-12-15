@@ -8,10 +8,10 @@
 namespace crafttests\unit\validators;
 
 use Craft;
-use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\test\TestCase;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\User\Data\UserGroup;
 use crafttests\fixtures\UserGroupsFixture;
 use yii\db\ActiveQueryInterface;
 
@@ -56,7 +56,7 @@ class UniqueValidatorTest extends TestCase
                 $model->setAttributes($modelConfig);
             }
         } else {
-            $model = new UserGroup($modelConfig);
+            $model = UserGroup::from($modelConfig);
         }
 
         $uniqueValidator->validateAttribute($model, $attribute);

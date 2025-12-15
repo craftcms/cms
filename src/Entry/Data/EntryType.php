@@ -381,7 +381,7 @@ JS, [
             $fields = Fields::getFieldsByType($type);
             foreach ($fields as $field) {
                 foreach ($field->getFieldLayoutProviders() as $provider) {
-                    if ($provider instanceof \craft\models\EntryType && $provider->id === $this->id) {
+                    if ($provider instanceof self && $provider->id === $this->id) {
                         $usages[] = $field;
                     }
                 }

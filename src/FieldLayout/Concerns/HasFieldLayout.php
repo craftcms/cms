@@ -6,8 +6,8 @@ namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
@@ -104,7 +104,8 @@ trait HasFieldLayout
             // Set the provider to the original entry type, so it uses the original provider handle
             // (see https://github.com/craftcms/cms/pull/17213)
             // todo: FieldLayoutProviderInterface could define a getProvider() method
-            $fieldLayout->provider = $this->owner->original ?? $this->owner;
+            $fieldLayout->provider = $this->original ?? $this;
+            /** @phpstan-ignore instanceof.alwaysFalse */
         } elseif ($this instanceof FieldLayoutProviderInterface) {
             $fieldLayout->provider = $this;
         }

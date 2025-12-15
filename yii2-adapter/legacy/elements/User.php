@@ -33,7 +33,6 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -58,6 +57,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User as UserModel;
 use DateInterval;
 use DateTime;
@@ -1518,13 +1518,13 @@ class User extends Element implements IdentityInterface, AuthenticatableContract
      *
      * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
      */
-    public function isInGroup(\CraftCms\Cms\User\Data\UserGroup|int|string $group): bool
+    public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Edition::get() < Edition::Pro) {
             return false;
         }
 
-        if ($group instanceof \CraftCms\Cms\User\Data\UserGroup) {
+        if ($group instanceof UserGroup) {
             $group = $group->id;
         }
 

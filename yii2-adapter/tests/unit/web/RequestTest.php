@@ -8,11 +8,11 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\models\Site;
 use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Site\Data\Site;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
@@ -75,10 +75,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo',
-        ]));
+        $sites->setCurrentSite(new Site(
+            name: 'Site',
+            handle: 'site',
+            language: 'en-US',
+            baseUrl: 'http://craft.test/foo',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
@@ -164,10 +166,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo/bar',
-        ]));
+        $sites->setCurrentSite(new Site(
+            name: 'Site',
+            handle: 'site',
+            language: 'en-US',
+            baseUrl: 'http://craft.test/foo/bar',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));

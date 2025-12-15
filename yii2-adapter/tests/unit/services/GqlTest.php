@@ -21,12 +21,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\models\Section;
 use craft\models\TagGroup;
-use craft\models\UserGroup;
 use craft\services\Categories;
 use craft\services\Entries;
 use craft\services\Globals;
@@ -40,8 +37,12 @@ use craft\test\TestCase;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
@@ -277,31 +278,31 @@ class GqlTest extends TestCase
      */
     public function testPermissionListGenerated(): void
     {
-        $typeA = new EntryType([
+        $typeA = EntryType::from([
             'id' => 1,
             'uid' => 'entryTypeUid',
             'name' => 'Test entry type',
         ]);
-        $typeB = new EntryType([
+        $typeB = EntryType::from([
             'id' => 2,
             'uid' => 'entryTypeUid',
             'name' => 'Test entry type',
         ]);
 
-        $sectionA = new Section([
+        $sectionA = Section::from([
             'id' => 1,
             'uid' => 'sectionUid',
             'name' => 'Test section',
-            'type' => 'channel',
+            'type' => SectionType::Channel,
             'entryTypes' => [
                 $typeA,
             ],
         ]);
-        $sectionB = new Section([
+        $sectionB = Section::from([
             'id' => 2,
             'uid' => 'otherSectionUid',
             'name' => 'Other test section',
-            'type' => 'single',
+            'type' => SectionType::Single,
             'entryTypes' => [
                 $typeB,
             ],
@@ -358,7 +359,7 @@ class GqlTest extends TestCase
 
         $userGroupService = $this->make(UserGroups::class, [
             'getAllGroups' => [
-                new UserGroup([
+                UserGroup::from([
                     'id' => 1,
                     'name' => 'Test user group',
                     'uid' => 'userGroupUid',

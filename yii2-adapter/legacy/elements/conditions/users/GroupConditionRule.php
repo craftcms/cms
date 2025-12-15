@@ -8,8 +8,8 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use craft\models\UserGroup;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Data\UserGroup;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 

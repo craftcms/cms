@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\SiteGroup;
+use CraftCms\Cms\Site\Data\SiteGroup;
 
 /**
  * SiteGroupEvent class.

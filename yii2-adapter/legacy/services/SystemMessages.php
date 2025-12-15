@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use craft\events\RegisterEmailMessagesEvent;
-use craft\models\SystemMessage;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
@@ -68,9 +68,7 @@ class SystemMessages extends Component
      */
     public function getAllDefaultMessages(): array
     {
-        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getAllDefaultMessages()->map(function(\CraftCms\Cms\SystemMessage\Models\SystemMessage $message) {
-            return new SystemMessage($message->toArray());
-        })->all();
+        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getAllDefaultMessages()->all();
     }
 
     /**
@@ -82,13 +80,7 @@ class SystemMessages extends Component
      */
     public function getDefaultMessage(string $key): ?SystemMessage
     {
-        $message = app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getDefaultMessage($key);
-
-        if (!$message) {
-            return null;
-        }
-
-        return new SystemMessage($message->toArray());
+        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getDefaultMessage($key);
     }
 
     /**
@@ -100,9 +92,7 @@ class SystemMessages extends Component
      */
     public function getAllMessages(?string $language = null): array
     {
-        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getAllMessages($language)->map(function(\CraftCms\Cms\SystemMessage\Models\SystemMessage $message) {
-            return new SystemMessage($message->toArray());
-        })->all();
+        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getAllMessages($language)->all();
     }
 
     /**
@@ -115,13 +105,7 @@ class SystemMessages extends Component
      */
     public function getMessage(string $key, ?string $language = null): ?SystemMessage
     {
-        $message = app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getMessage($key, $language);
-
-        if (!$message) {
-            return null;
-        }
-
-        return new SystemMessage($message->toArray());
+        return app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->getMessage($key, $language);
     }
 
     /**
@@ -134,8 +118,6 @@ class SystemMessages extends Component
      */
     public function saveMessage(SystemMessage $message, ?string $language = null): bool
     {
-        $message = new \CraftCms\Cms\SystemMessage\Models\SystemMessage($message->toArray());
-
         app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->saveMessage($message, $language);
 
         return true;
@@ -144,7 +126,7 @@ class SystemMessages extends Component
     public static function registerEvents(): void
     {
         Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
-            $messages = $event->messages->map(function(\CraftCms\Cms\SystemMessage\Models\SystemMessage $message) {
+            $messages = $event->messages->map(function(SystemMessage $message) {
                 return $message->toArray();
             })->all();
 
@@ -154,9 +136,8 @@ class SystemMessages extends Component
 
             $event->messages = collect($yiiEvent->messages)->map(function($message) {
                 return match (true) {
-                    is_array($message) => new \CraftCms\Cms\SystemMessage\Models\SystemMessage($message),
-                    $message instanceof SystemMessage => new \CraftCms\Cms\SystemMessage\Models\SystemMessage($message->toArray()),
-                    default => new \CraftCms\Cms\SystemMessage\Models\SystemMessage((array) $message),
+                    is_array($message) => new SystemMessage($message),
+                    default => $message,
                 };
             });
         });
