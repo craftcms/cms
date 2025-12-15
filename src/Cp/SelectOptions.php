@@ -179,7 +179,7 @@ class SelectOptions
      *
      * @since 6.0.0
      */
-    public function getLanguageEnvOptions(bool $appOnly = false): array
+    public static function getLanguageEnvOptions(bool $appOnly = false): array
     {
         $options = [];
         if ($appOnly) {
