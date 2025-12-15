@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -20,9 +21,9 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([UsersController::class, 'index']))->assertRedirect('admin/login');
-    get(action([UsersController::class, 'create']))->assertRedirect('admin/login');
-    get(action([UsersController::class, 'edit']))->assertRedirect('admin/login');
+    get(action([UsersController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
+    get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->cpTrigger.'/login');
+    get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     postJson(action([UsersController::class, 'destroy']))->assertUnauthorized();
 });
 

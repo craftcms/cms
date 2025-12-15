@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\User\Elements\User;
 
@@ -15,7 +16,7 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([PreferencesController::class, 'index']))->assertRedirect('admin/login');
+    get(action([PreferencesController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     postJson(action([PreferencesController::class, 'store']))->assertUnauthorized();
 });
 

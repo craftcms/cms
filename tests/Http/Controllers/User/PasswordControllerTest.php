@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\User\Elements\User;
 
@@ -14,7 +15,7 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([PasswordController::class, 'index']))->assertRedirect('admin/login');
+    get(action([PasswordController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
 });
 
 test('index', function () {
