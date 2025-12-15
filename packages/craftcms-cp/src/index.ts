@@ -27,7 +27,7 @@ export {default as CraftSwitchButton} from './components/switch-button/switch-bu
 export {default as CraftBreadcrumbs} from './components/breadcrumbs/breadcrumbs.js';
 export {default as CraftBreadcrumbItem} from './components/breadcrumb-item/breadcrumb-item.js';
 export {default as CraftPopover} from './components/popover/popover.js';
-export {default as CraftNavigation} from './components/navigation/navigation.js';
+export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftDrawer} from './components/drawer/drawer.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';

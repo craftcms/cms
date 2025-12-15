@@ -14,14 +14,14 @@ const meta = {
   argTypes: {},
   render: ({active, indicator}) => {
     return html`
-      <craft-navigation>
+      <craft-nav-list>
         <craft-nav-item
           icon="gauge"
           ?active="${active}"
           ?indicator="${indicator}"
           >Dashboard</craft-nav-item
         >
-      </craft-navigation>
+      </craft-nav-list>
     `;
   },
 } satisfies Meta<any>;
@@ -49,16 +49,16 @@ export const WithChildren: Story = {
   args: {},
   render(args) {
     return html`
-      <craft-navigation style="max-width: 300px">
+      <craft-nav-list style="max-width: 300px">
         <craft-nav-item icon="code">
           GraphQL
-          <craft-navigation slot="subnav">
+          <craft-nav-list slot="subnav">
             <craft-nav-item>Schemas</craft-nav-item>
             <craft-nav-item active>Tokens</craft-nav-item>
             <craft-nav-item external>GraphiQL</craft-nav-item>
-          </craft-navigation>
+          </craft-nav-list>
         </craft-nav-item>
-      </craft-navigation>
+      </craft-nav-list>
     `;
   },
 };

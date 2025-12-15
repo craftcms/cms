@@ -163,22 +163,24 @@ export default class CraftNavItem extends LitElement {
   override render() {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
     return html`
-      ${this.iconOnly
-        ? this.renderIconItem(hasSubnav)
-        : this.renderItem(hasSubnav)}
-      ${hasSubnav
-        ? html`
-            <div
-              class="subnav"
-              id="${this.id}-subnav"
-              style="${styleMap({
-                display: this.subnavState === 'open' ? 'block' : 'none',
-              })}"
-            >
-              <slot name="subnav"></slot>
-            </div>
-          `
-        : nothing}
+      <li>
+        ${this.iconOnly
+          ? this.renderIconItem(hasSubnav)
+          : this.renderItem(hasSubnav)}
+        ${hasSubnav
+          ? html`
+              <div
+                class="subnav"
+                id="${this.id}-subnav"
+                style="${styleMap({
+                  display: this.subnavState === 'open' ? 'block' : 'none',
+                })}"
+              >
+                <slot name="subnav"></slot>
+              </div>
+            `
+          : nothing}
+      </li>
     `;
   }
 }

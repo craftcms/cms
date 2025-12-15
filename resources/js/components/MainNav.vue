@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <craft-navigation label="Primary">
+  <craft-nav-list label="Primary">
     <craft-nav-item
       v-for="item in nav"
       :key="item.url"
@@ -18,7 +18,7 @@
       {{ item.label }}
 
       <template v-if="item.subnav">
-        <craft-navigation slot="subnav" v-if="item.subnav">
+        <craft-nav-list slot="subnav" v-if="item.subnav">
           <craft-nav-item
             v-for="subnavItem in item.subnav"
             :key="subnavItem.url"
@@ -29,10 +29,10 @@
           >
             {{ subnavItem.label }}
           </craft-nav-item>
-        </craft-navigation>
+        </craft-nav-list>
       </template>
     </craft-nav-item>
-  </craft-navigation>
+  </craft-nav-list>
 </template>
 
 <style scoped lang="scss"></style>
