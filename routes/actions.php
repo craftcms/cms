@@ -35,7 +35,6 @@ use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
-use CraftCms\Cms\Http\Controllers\Users\AddressesController as UserAddressesController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
@@ -81,8 +80,8 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
-        Route::post('users/save-address', (new UserAddressesController)->store(...));
-        Route::post('users/delete-address', (new UserAddressesController)->destroy(...));
+        Route::post('users/save-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {
