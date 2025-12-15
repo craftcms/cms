@@ -15,6 +15,7 @@
 - Element, field, and entry type edit pages now redirect back to the previous page’s URL on save. ([#16140](https://github.com/craftcms/cms/pull/16140))
 - Bulk element actions are now available on element indexes for mobile devices.
 - Textual condition rules are now case-insensitive. ([#18107](https://github.com/craftcms/cms/issues/18107))
+- Added support for exporting elements as XLSX and YAML files. ([#18160](https://github.com/craftcms/cms/pull/18160))
 
 ### Accessibility
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
@@ -45,6 +46,7 @@
 - The `maxCachedCloudImageSize` config setting is now set to `0` by default. ([#17997](https://github.com/craftcms/cms/pull/17997))
 - System message emails are now rendered using GitHub-flavored Markdown. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 - Drag-and-drop icons are now longer shown for devices that don’t support pointer events. ([#18067](https://github.com/craftcms/cms/pull/18067))
+- The Caches utility now keeps track of which options were previously selected. ([#9447](https://github.com/craftcms/cms/discussions/9447))
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -91,9 +93,14 @@
 - Added `craft\services\Search::deleteOrphanedIndexJobs()`.
 - Added `craft\services\Structure::EVENT_AFTER_UPDATE_ELEMENT`.
 - Added `craft\services\Structure::EVENT_BEFORE_UPDATE_ELEMENT`.
+- Added `craft\web\BaseSpreadsheetResponseFormatter`.
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Request::getHasInvalidToken()`.
 - Added `craft\web\Response::FORMAT_GQL`.
+- Added `craft\web\Response::FORMAT_XLSX`.
+- Added `craft\web\Response::FORMAT_YAML`.
+- Added `craft\web\XlsxResponseFormatter`.
+- Added `craft\web\YamlResponseFormatter`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
@@ -112,10 +119,15 @@
 - `craft\services\ElementSources::sourceExists()` now has a `$page` argument. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
 - `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
+- Checkbox selects can now be configured with a `storageKey` setting.
 - Deprecated `craft\fields\BaseRelationField::$showCardsInGrid`.
 - Deprecated `craft\fields\Matrix::$showCardsInGrid`.
+- Deprecated `craft\helpers\StringHelper::capitalizePersonalName()`. `toPascalCase()` should be used instead.
+- Deprecated `craft\helpers\StringHelper::isWhitespace()`. `isBlank()` should be used instead.
+- Deprecated `craft\helpers\StringHelper::upperCamelize()`. `toPascalCase()` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
+- Deprecated `craft\web\CsvResponseResponseFormatter::$escapeChar`.
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
@@ -133,4 +145,7 @@
 - Fixed a bug where titles, slugs, and required custom field values weren’t always getting propagated to other sites when creating a new element. ([#17955](https://github.com/craftcms/cms/issues/17955))
 - Fixed a bug where it was possible to create more than five users with the Team edition.
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
+- Added the Illuminate Support library.
+- Added the PhpSpreadsheet library.
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
+- Removed the Stringy library. ([#16606](https://github.com/craftcms/cms/issues/16606))

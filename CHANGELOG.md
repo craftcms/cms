@@ -3,6 +3,11 @@
 ## Unreleased
 
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
+- Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
+- Fixed a bug where Content Block fields could appear to be missing their content when viewing a revision. ([#18149](https://github.com/craftcms/cms/issues/18149))
+- Fixed a bug where Dropdown and Radio Button fields weren’t handling `:empty:`/`:notempty:` element query params properly for options with blank values. ([#18156](https://github.com/craftcms/cms/issues/18156))
+- Fixed a bug where chip icons were getting rounded. ([#18163](https://github.com/craftcms/cms/pull/18163))
+- Fixed a bug where object templates that included another template were missing variables. ([#18165](https://github.com/craftcms/cms/issues/18165))
 
 ## 5.8.21 - 2025-12-04
 

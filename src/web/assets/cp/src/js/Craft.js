@@ -3089,7 +3089,9 @@ $.extend($.fn, {
   checkboxselect: function () {
     return this.each(function () {
       if (!$.data(this, 'checkboxSelect')) {
-        new Garnish.CheckboxSelect(this);
+        new Garnish.CheckboxSelect(this, {
+          storageKey: this.getAttribute('data-storage-key'),
+        });
       }
     });
   },
