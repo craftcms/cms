@@ -46,17 +46,22 @@ test('create makes a user draft and redirects to it', function () {
         ->assertRedirect();
 });
 
+test('destroy deletes a user', function () {
+    $user = \CraftCms\Cms\User\Models\User::factory()->create();
+
+    expect(new UserQuery()->count())->toBe(2);
+
+    postJson(action([UsersController::class, 'destroy']), [
+        'userId' => $user->id,
+    ])->assertOk();
+
+    expect(new UserQuery()->count())->toBe(1);
+
+    // Bulk op is causing issues here
+    \Illuminate\Support\Facades\DB::commit();
+});
+
 test('edit shows a cp screen', function () {
     get(action([UsersController::class, 'edit']))
         ->assertSee(t('Profile'));
-});
-
-test('destroy deletes a user', function () {
-    expect(new UserQuery()->count())->toBe(1);
-
-    postJson(action([UsersController::class, 'destroy']), [
-        'userId' => auth()->id(),
-    ])->assertOk();
-
-    expect(new UserQuery()->count())->toBe(0);
 });
