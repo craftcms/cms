@@ -68,7 +68,7 @@ export default class CraftSelectedFileList extends LionSelectedFileList {
         @click=${() => this._removeFile(file)}
       >
         ${this._removeButtonContentTemplate()}
-      </craft-bbutton>
+      </craft-button>
     `;
   }
 
