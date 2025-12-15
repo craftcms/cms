@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -598,7 +599,8 @@ class NestedElementManager extends Component
             }
         }
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
-        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+
+        Gate::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use (

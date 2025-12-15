@@ -108,6 +108,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use ReflectionClass;
 use Stringable;
 use Throwable;
@@ -1313,7 +1314,7 @@ abstract class Element extends Component implements ElementInterface
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
-                        Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
+                        Gate::authorize('editStructure:' . $variables['structure']->id);
                     }
                 } else {
                     unset($viewState['order']);
