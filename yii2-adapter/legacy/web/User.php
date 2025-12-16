@@ -60,11 +60,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public array $usernameCookie;
 
     /**
-     * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
-     */
-    public string $elevatedSessionTimeoutParam = '__elevated_timeout';
-
-    /**
      * @var string The session variable name used to store the original user ID, when impersonating another user.
      * @since 5.6.0
      */
@@ -605,9 +600,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
     private function _clearOtherSessionParams(): void
     {
-        // Clear out the elevated session, if there is one
-        SessionHelper::remove($this->elevatedSessionTimeoutParam);
-
         // Make sure 2FA data doesn't bleed over
         $authService = Craft::$app->getAuth();
         $authService->setUser(null);
