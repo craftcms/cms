@@ -133,7 +133,7 @@ final readonly class InstallController
         $request->validate([
             'email' => ['required', 'email:strict'],
             'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
-            'password' => Password::required(),
+            'password' => ['required', Password::default()],
         ]);
 
         return new JsonResponse;

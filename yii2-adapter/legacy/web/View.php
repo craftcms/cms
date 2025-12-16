@@ -725,26 +725,31 @@ class View extends \yii\web\View
             }
 
             // Get the variables to pass to the template
+            if ($object instanceof Arrayable) {
+                if (preg_match('/\binclude\b/', $template)) {
+                    // Export all normal fields, since we don’t know what the included template is going to need
+                    // (https://github.com/craftcms/cms/issues/18165)
+                    $fields = [];
+                } else {
+                    $fields = $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'];
+                }
+
+                $variables += $object->toArray(
+                    $fields,
+                    $this->filterFieldsByTemplate($object->extraFields(), $template),
+                    false,
+                );
+            }
+
             if ($object instanceof Model) {
                 foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && str_contains($template, $name)) {
+                    if (
+                        !isset($variables[$name]) &&
+                        preg_match(sprintf('/\b%s\b/', preg_quote($name, '/')), $template)
+                    ) {
                         $variables[$name] = $object->$name;
                     }
                 }
-            }
-
-            if ($object instanceof Arrayable) {
-                // See if we should be including any of the extra fields
-                $extra = [];
-                foreach ($object->extraFields() as $field => $definition) {
-                    if (is_int($field)) {
-                        $field = $definition;
-                    }
-                    if (preg_match('/\b' . preg_quote($field, '/') . '\b/', $template)) {
-                        $extra[] = $field;
-                    }
-                }
-                $variables += $object->toArray([], $extra, false);
             }
 
             $variables['object'] = $object;
@@ -764,6 +769,22 @@ class View extends \yii\web\View
                 $twig->enableStrictVariables();
             }
         }
+    }
+
+    private function filterFieldsByTemplate(array $fields, string $template): array
+    {
+        $filtered = [];
+
+        foreach ($fields as $field => $definition) {
+            if (is_int($field)) {
+                $field = $definition;
+            }
+            if (preg_match(sprintf('/\b%s\b/', preg_quote($field, '/')), $template)) {
+                $filtered[] = $field;
+            }
+        }
+
+        return $filtered;
     }
 
     /**
@@ -2121,7 +2142,7 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
@@ -2131,6 +2152,7 @@ JS;
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2170,16 +2192,17 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
-                'variables' => &$variables,
+                'variables' => $variables,
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;

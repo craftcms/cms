@@ -88,7 +88,7 @@
                     {% if source.heading | length %}
                         {% embed '_includes/disclosure-toggle' with {
                             persist: true,
-                            storageKey: 'sources-list:' ~ key,
+                            storageKey: 'sources-list.' ~ key,
                             controls: sourceId,
                             attributes: {
                                 class: 'source-item__toggle'
@@ -120,7 +120,7 @@
                     {% if source.nested is defined and source.nested is not empty %}
                         {% embed '_includes/disclosure-toggle' with {
                             persist: true,
-                            storageKey: 'sources-list:'~ key,
+                            storageKey: 'sources-list.'~ key,
                             controls: key,
                             attributes: {
                                 class: 'source-item__toggle'
