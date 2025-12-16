@@ -18,54 +18,54 @@ const translations = {
 describe('Translate', () => {
   describe('t', () => {
     test.for([
-      ['site', 'Welcome', {}, translations, 'Bienvenue'],
-      ['app', 'Not translated', {}, translations, 'Not translated'],
-      ['unknown', 'Hello', {}, translations, 'Hello'],
-      ['app', 'Simple message', null, translations, 'Simple message'],
+      ['Welcome', {}, 'site', translations, 'Bienvenue'],
+      ['Not translated', {}, 'app', translations, 'Not translated'],
+      ['Hello', {}, 'unknown', translations, 'Hello'],
+      ['Simple message', null, 'app', translations, 'Simple message'],
       [
-        'app',
         'Are you sure you want to delete this {type}?',
         {type: 'item'},
+        'app',
         translations,
         'This is a translated string item?',
       ],
-      ['app', 'Hello {name}', {name: 'World'}, {}, 'Hello World'],
+      ['Hello {name}', {name: 'World'}, 'app', {}, 'Hello World'],
       [
-        'app',
         'Delete {num, plural, =1{user} other{users}} and content',
         {num: 1},
+        'app',
         translations,
         'Delete user and content',
       ],
       [
-        'app',
         'Delete {num, plural, =1{user} other{users}} and content',
         {num: 5},
+        'app',
         translations,
         'Delete users and content',
       ],
       [
-        'app',
         'Are you sure you want to delete this {type}?',
         {type: 'item'},
+        'app',
         translations,
         'This is a translated string item?',
       ],
       [
-        'app',
         '<span class="visually-hidden">Characters left:</span> {chars, number}',
         {chars: 100},
+        'app',
         translations,
         '<span class="visually-hidden">Characters left:</span> 100',
       ],
     ])(
       't(%s, %s, %s) -> %s',
-      ([category, message, params, store, expected]) => {
+      ([message, params, category, store, expected]) => {
         expect(
           t(
-            category as string,
             message as string,
             params as any,
+            category as string,
             store as Record<string, any>
           )
         ).toBe(expected);
@@ -73,7 +73,7 @@ describe('Translate', () => {
     );
 
     test('works without store parameter', () => {
-      expect(t('app', 'Hello {name}', {name: 'World'})).toBe('Hello World');
+      expect(t('Hello {name}', {name: 'World'}, 'app')).toBe('Hello World');
     });
   });
 

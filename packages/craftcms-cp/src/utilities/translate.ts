@@ -203,9 +203,9 @@ export function formatMessage(pattern: string, params: object): string {
 }
 
 export function t(
-  category: string,
   message: string,
   params?: Record<any, any>,
+  category: string = 'app',
   store?: Record<string, any>
 ): string {
   if (
