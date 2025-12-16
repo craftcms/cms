@@ -27,7 +27,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
@@ -133,7 +132,7 @@ class Auth extends Component
             $this->_user = false;
             $this->_sessionDuration = false;
             $session = Craft::$app->getSession();
-            $userId = $session->get($this->userIdParam);
+            $userId = $session->get('user.id');
 
             if ($userId) {
                 $user = User::findOne($userId);
@@ -226,7 +225,7 @@ class Auth extends Component
                 $user = AuthFacade::user();
             }
 
-            $userSession->login(new IdentityWrapper($user), $sessionDuration);
+            AuthFacade::setRememberDuration($sessionDuration)->login($user, true);
         }
 
         return true;

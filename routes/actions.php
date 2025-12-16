@@ -6,6 +6,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
@@ -104,6 +107,13 @@ Route::prefix(implode('/', [
     Route::any('app/api-headers', [ApiController::class, 'headers']);
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
+
+    // Auth
+    Route::post('users/login', [LoginController::class, 'attemptLogin']);
+    Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+    Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+    Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+    Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
 
     // Updater
     Route::prefix('updater')->group(function () {

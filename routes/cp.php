@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
@@ -38,10 +41,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('install', [InstallController::class, 'index'])
     ->middleware([HandleInertiaRequests::class]);
 
+Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
+Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+
 /**
  * Admin requests that require a login
  */
 Route::middleware('auth:craft')->group(function () {
+    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
     Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);

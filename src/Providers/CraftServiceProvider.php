@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Providers;
 
 use CraftCms\Cms\Asset\AssetServiceProvider;
+use CraftCms\Cms\Auth\AuthServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
@@ -26,6 +27,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         ConfigServiceProvider::class,
+        AuthServiceProvider::class,
         FilesystemServiceProvider::class,
         TranslationServiceProvider::class,
         DatabaseServiceProvider::class,

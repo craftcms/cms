@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\auth\methods\RecoveryCodes;
-use craft\auth\methods\TOTP;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Cms;
@@ -42,8 +41,6 @@ class AuthController extends Controller
      */
     protected array|bool|int $allowAnonymous = [
         'passkey-request-options' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-recovery-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-totp' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -136,46 +133,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Verifies a TOTP code.
-     *
-     * @return Response
-     */
-    public function actionVerifyTotp(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $code = $this->request->getRequiredBodyParam('code');
-        $authService = Craft::$app->getAuth();
-
-        if (!$authService->verify(TOTP::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage());
-        }
-
-        return $this->asSuccess(t('Verification successful.'));
-    }
-
-    /**
-     * Verifies a recovery code.
-     *
-     * @return Response
-     */
-    public function actionVerifyRecoveryCode(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $code = $this->request->getRequiredBodyParam('code');
-        $authService = Craft::$app->getAuth();
-
-        if (!$authService->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage(t('Invalid recovery code.')));
-        }
-
-        return $this->asSuccess(t('Verification successful.'));
-    }
-
-    /**
      * Generates new passkey credential creation options for the user.
      *
      * @return Response
@@ -188,23 +145,6 @@ class AuthController extends Controller
         $this->requireElevatedSession();
 
         $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
-
-        return $this->asJson([
-            'options' => $options,
-        ]);
-    }
-
-    /**
-     * Returns the available passkey options.
-     *
-     * @return Response
-     */
-    public function actionPasskeyRequestOptions(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
 
         return $this->asJson([
             'options' => $options,
