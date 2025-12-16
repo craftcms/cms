@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -36,7 +37,7 @@ final readonly class StructuresController
             'siteId' => ['required', 'integer'],
         ]);
 
-        $this->requirePermission("editStructure:$structureId");
+        $this->requireSessionAuthorization("editStructure:$structureId");
 
         abort_if(
             is_null($this->structure = $structures->getStructureById($structureId)),
@@ -44,7 +45,7 @@ final readonly class StructuresController
             'Structure not found.'
         );
 
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
 
         abort_if(
             is_null($elementType = $elementsService->getElementTypeById($elementId)),
@@ -77,10 +78,10 @@ final readonly class StructuresController
         $prevElementId = $this->request->input('prevId');
 
         if ($prevElementId) {
-            $prevElement = \Craft::$app->getElements()->getElementById($prevElementId, null, $this->element->siteId);
+            $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->element->siteId);
             $success = $this->structures->moveAfter($this->structure->id, $this->element, $prevElement);
         } elseif ($parentElementId) {
-            $parentElement = \Craft::$app->getElements()->getElementById($parentElementId, null, $this->element->siteId);
+            $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->element->siteId);
             $success = $this->structures->prepend($this->structure->id, $this->element, $parentElement);
         } else {
             $success = $this->structures->prependToRoot($this->structure->id, $this->element);
