@@ -1102,6 +1102,15 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * {@inheritdoc}
      */
+    #[\Override]
+    public function safeAttributes(): array
+    {
+        return Arr::except(parent::safeAttributes(), ['photoId']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     #[Override]
     public function setAttributesFromRequest($values): void
     {
@@ -2196,6 +2205,11 @@ JS, [
      */
     public function getPreferences(): array
     {
+        // only CP users can save preferences
+        if (! $this->can('accessCp')) {
+            return [];
+        }
+
         return $this->id ? Users::getUserPreferences($this->id) : [];
     }
 
@@ -2254,6 +2268,10 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
+        if (! $locale) {
+            return null;
+        }
+
         $locales = $checkAllLocales
             ? I18N::getAllLocaleIds()
             : I18N::getAppLocaleIds();

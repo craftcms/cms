@@ -146,6 +146,9 @@ final class Users
                 $query->where(new Lower('username'), mb_strtolower($usernameOrEmail))
                     ->orWhere(new Lower('email'), mb_strtolower($usernameOrEmail));
             })
+            // order by credentialed users first
+            ->orderByDesc('active')
+            ->orderByDesc('pending')
             ->first();
     }
 

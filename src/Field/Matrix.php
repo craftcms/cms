@@ -737,7 +737,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         // Existing element?
         if ($owner && $owner->id) {
             $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
-                $entryQuery->ownerId = $owner->id;
+                $entryQuery->owner($owner);
 
                 // Clear out id=false if this query was populated previously
                 if ($entryQuery->id === false) {
@@ -1682,9 +1682,8 @@ JS,
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($entries as $entry) {
@@ -1741,8 +1740,7 @@ JS,
             /** @var Entry[] $oldEntriesById */
             $oldEntriesById = Entry::find()
                 ->fieldId($this->id)
-                ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->owner($element)
                 ->drafts(null)
                 ->status(null)
                 ->get()

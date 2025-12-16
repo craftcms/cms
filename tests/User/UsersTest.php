@@ -42,6 +42,50 @@ test('retrieval', function () {
     expect($this->users->getUserByUsernameOrEmail($user->username))->toBeInstanceOf(User::class);
 });
 
+test('getUserByUserNameOrEmail gets active users first', function () {
+    $inactive = UserModel::factory()->make([
+        'id' => null,
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($inactive);
+
+    $active = UserModel::factory()->make([
+        'id' => null,
+        'active' => true,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($active);
+
+    expect($this->users->getUserByUsernameOrEmail('john')->id)->toBe($active->id);
+});
+
+test('getUserByUserNameOrEmail gets pending users first', function () {
+    $nonPending = UserModel::factory()->make([
+        'id' => null,
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($nonPending);
+
+    $pending = UserModel::factory()->make([
+        'id' => null,
+        'active' => false,
+        'pending' => true,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($pending);
+
+    expect($this->users->getUserByUsernameOrEmail('john')->id)->toBe($pending->id);
+});
+
 test('userPreferences', function () {
     $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
     Craft::$app->elements->saveElement($user);

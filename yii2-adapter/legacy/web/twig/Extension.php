@@ -1216,6 +1216,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function groupFilter(iterable $arr, callable|string $arrow): array
     {
+        self::checkArrowFunction($arrow, 'group', 'filter');
+
         $groups = [];
 
         if (is_callable($arrow)) {

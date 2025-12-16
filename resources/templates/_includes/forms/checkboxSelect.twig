@@ -3,6 +3,7 @@
 {%- set values = values ?? [] %}
 {%- set disabled = disabled ?? false %}
 {%- set sortable = sortable ?? false %}
+{%- set storageKey = storageKey ?? null %}
 
 {% set options = options|map((value, key) => value is iterable ? value : {
     label: value,
@@ -25,6 +26,9 @@
 {% set containerAttributes = {
     id,
     class: ['checkbox-select']|merge((class ?? [])|explodeClass),
+    data: {
+      'storage-key': storageKey,
+    },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

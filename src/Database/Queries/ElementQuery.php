@@ -875,14 +875,14 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         /**
          * Joins should be done on both queries
          */
-        if (str_contains(strtolower($method), 'join')) {
+        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
             $this->forwardCallTo($this->subQuery, $method, $parameters);
 
             return $this;
         }
 
-        if (in_array(strtolower($method), ['orderby', 'orderbydesc', 'select', 'reorder', 'addselect'])) {
+        if (in_array(strtolower($method), ['select', 'reorder', 'addselect'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
