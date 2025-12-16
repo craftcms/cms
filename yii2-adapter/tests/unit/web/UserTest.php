@@ -166,6 +166,8 @@ class UserTest extends TestCase
 
         DateTimeHelper::resume();
         Session::reset();
+
+        \Illuminate\Support\Facades\Session::clearResolvedInstances();
     }
 
     /**
