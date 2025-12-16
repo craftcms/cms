@@ -39,6 +39,13 @@ trait EnforcesPermissions
         abort_unless($canSave, 403, 'User is not authorized to perform this action.');
     }
 
+    protected function requireSessionAuthorization(string $permission): void
+    {
+        if (! Craft::$app->getSession()->checkAuthorization($permission)) {
+            abort(403, 'User is not authorized to perform this action.');
+        }
+    }
+
     protected function requirePermission(string $permission): void
     {
         if (! $user = Auth::user()) {

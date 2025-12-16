@@ -1039,7 +1039,6 @@ class Install extends Migration
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('creatorId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
-        Schema::table(Table::SEARCHINDEXQUEUE, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::SEARCHINDEXQUEUE_FIELDS, fn (Blueprint $table) => $table->foreign('jobId')->references('id')->on(Table::SEARCHINDEXQUEUE)->cascadeOnDelete());
         Schema::table(Table::SECTIONS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->nullOnDelete());
         Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());

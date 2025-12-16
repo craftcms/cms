@@ -10,6 +10,7 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset as AssetElement;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
@@ -199,6 +200,8 @@ class Asset extends ElementMutationResolver
         $tempPath = null;
         $filename = null;
 
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+
         if (!empty($fileInformation['fileData'])) {
             $dataString = $fileInformation['fileData'];
             $fileData = null;
@@ -224,7 +227,11 @@ class Asset extends ElementMutationResolver
                     $filename = 'Upload.' . $extension;
                 } else {
                     $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
-                    $extension = pathinfo($filename, PATHINFO_EXTENSION);
+                    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                }
+
+                if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+                    throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -235,13 +242,25 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
+            // make sure the hostname is alphanumeric and not an IP address
+            $hostname = parse_url($url, PHP_URL_HOST);
+            if (
+                !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
+                filter_var($hostname, FILTER_VALIDATE_IP)
+            ) {
+                throw new UserError("$url contains an invalid hostname.");
+            }
+
             if (empty($fileInformation['filename'])) {
                 $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
             } else {
                 $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
             }
 
-            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+                throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+            }
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
