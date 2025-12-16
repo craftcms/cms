@@ -16,6 +16,7 @@ use craft\web\User as WebUser;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
 use UnitTester;
 
 /**
@@ -157,9 +158,10 @@ class UserTest extends TestCase
     public function testGetHasElevatedSessionMath(): void
     {
         DateTimeHelper::pause();
-        $this->user->setIdentity(new IdentityWrapper($this->userElement));
+        Auth::login($this->userElement);
 
-        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
+        \Illuminate\Support\Facades\Session::shouldReceive('get')->andReturn(DateTimeHelper::currentTimeStamp() + 50);
+
         self::assertEquals(50, $this->user->getElevatedSessionTimeout());
 
         DateTimeHelper::resume();
