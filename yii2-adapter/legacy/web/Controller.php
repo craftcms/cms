@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ModelInterface;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
@@ -521,7 +522,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAuthorization(string $action): void
     {
-        if (!Craft::$app->getSession()->checkAuthorization($action)) {
+        if (!SessionAuth::checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
         }
     }
@@ -533,7 +534,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireElevatedSession(): void
     {
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
+        if (!SessionAuth::hasElevatedSession()) {
             throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
         }
     }

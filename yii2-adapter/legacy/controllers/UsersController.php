@@ -35,6 +35,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -456,10 +457,8 @@ class UsersController extends Controller
      */
     public function actionGetElevatedSessionTimeout(): Response
     {
-        $timeout = Craft::$app->getUser()->getElevatedSessionTimeout();
-
         return $this->asJson([
-            'timeout' => $timeout,
+            'timeout' => SessionAuth::elevatedSessionTimeout(),
         ]);
     }
 
@@ -867,7 +866,7 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
+        if (!SessionAuth::hasElevatedSession()) {
             throw new BadRequestHttpException('An elevated session is required to change your password.');
         }
 
@@ -1638,7 +1637,7 @@ class UsersController extends Controller
      */
     private function _verifyElevatedSession(): bool
     {
-        return (Craft::$app->getUser()->getHasElevatedSession() || $this->_verifyExistingPassword());
+        return (SessionAuth::hasElevatedSession() || $this->_verifyExistingPassword());
     }
 
     /**

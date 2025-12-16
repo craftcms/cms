@@ -75,6 +75,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
@@ -1313,7 +1314,7 @@ abstract class Element extends Component implements ElementInterface
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
-                        Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
+                        SessionAuth::authorize('editStructure:' . $variables['structure']->id);
                     }
                 } else {
                     unset($viewState['order']);

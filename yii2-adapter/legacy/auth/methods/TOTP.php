@@ -17,6 +17,7 @@ use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Auth\Models\Authenticator;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use Exception;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
@@ -208,7 +209,7 @@ JS, [
     private function storeSecret(int $userId, string $secret): void
     {
         // Make sure they have an elevated session first
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
+        if (!SessionAuth::hasElevatedSession()) {
             throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
         }
 

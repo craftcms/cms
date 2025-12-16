@@ -13,6 +13,7 @@ use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\web\Controller;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
@@ -54,13 +55,12 @@ class NestedElementsController extends Controller
         $this->owner = $owner;
 
         // Make sure they're authorized to manage it
-        $session = Craft::$app->getSession();
         $attribute = $this->request->getRequiredBodyParam('attribute');
         if (
-            !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
+            !SessionAuth::checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
             (
                 $owner->id === $owner->getCanonicalId() ||
-                !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
+                !SessionAuth::checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
             )
         ) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');

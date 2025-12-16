@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Http;
 
 use Craft;
 use craft\elements\Entry;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -42,7 +42,7 @@ trait EnforcesPermissions
 
     protected function requireSessionAuthorization(string $permission): void
     {
-        if (! Craft::$app->getSession()->checkAuthorization($permission)) {
+        if (! SessionAuth::checkAuthorization($permission)) {
             abort(403, 'User is not authorized to perform this action.');
         }
     }
@@ -60,12 +60,8 @@ trait EnforcesPermissions
 
     protected function requireElevatedSession(): void
     {
-        Craft::$app->getUser()->setIdentity(
-            new IdentityWrapper(Auth::user()),
-        );
-
         abort_unless(
-            Craft::$app->getUser()->getHasElevatedSession(),
+            SessionAuth::hasElevatedSession(),
             403,
             t('This action may only be performed with an elevated session.'),
         );

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use Craft;
-use CraftCms\Yii2Adapter\IdentityWrapper;
+use CraftCms\Cms\Auth\SessionAuth;
 use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
@@ -15,12 +14,8 @@ final readonly class RequireElevatedSession
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        Craft::$app->getUser()->setIdentity(
-            new IdentityWrapper($request->user()),
-        );
-
         abort_unless(
-            Craft::$app->getUser()->getHasElevatedSession(),
+            SessionAuth::hasElevatedSession(),
             403,
             t('This action may only be performed with an elevated session.')
         );

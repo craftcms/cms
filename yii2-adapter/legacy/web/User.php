@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
@@ -359,43 +360,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
+     * @deprecated 6.0.0 use {@see SessionAuth::elevatedSessionTimeout()} instead.
      */
     public function getElevatedSessionTimeout(): int|false
     {
-        // Are they logged in?
-        if (!$this->getIsGuest()) {
-            $expires = SessionHelper::get($this->elevatedSessionTimeoutParam);
-
-            if ($expires !== null) {
-                $currentTime = DateTimeHelper::currentTimeStamp();
-
-                if ($expires > $currentTime) {
-                    return $expires - $currentTime;
-                }
-            }
-        }
-
-        // If it has been disabled, return false.
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return false;
-        }
-
-        return 0;
+        return SessionAuth::elevatedSessionTimeout();
     }
 
     /**
      * Returns whether the user currently has an elevated session.
      *
      * @return bool Whether the user currently has an elevated session
+     * @deprecated 6.0.0 use {@see SessionAuth::hasElevatedSession()} instead.
      */
     public function getHasElevatedSession(): bool
     {
-        // If it's been disabled, just return true
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return true;
-        }
-
-        return ($this->getElevatedSessionTimeout() !== 0);
+        return SessionAuth::hasElevatedSession();
     }
 
     /**

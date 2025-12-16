@@ -38,6 +38,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
@@ -1125,8 +1126,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
         if (isset($values['email'])) {
             // make sure they have an elevated session
-            $userSession = Craft::$app->getUser();
-            if (! $userSession->getHasElevatedSession()) {
+            if (! SessionAuth::hasElevatedSession()) {
                 throw new BadRequestHttpException(t('An elevated session is required to change a user’s email.'));
             }
 
