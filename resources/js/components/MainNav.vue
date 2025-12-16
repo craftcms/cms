@@ -1,12 +1,11 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
-  import VarDump from '@/components/VarDump.vue';
 
   const {nav} = useCraftData();
 </script>
 
 <template>
-  <craft-nav-list label="Primary">
+  <craft-nav-list>
     <craft-nav-item
       v-for="item in nav"
       :key="item.url"

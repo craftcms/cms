@@ -46,7 +46,7 @@
       {% include '_layouts/components/system-info' %}
     </div>
 
-    <craft-nav-list class="global-sidebar__nav" label="{{ 'Primary' | t('app') }}">
+    <craft-nav-list class="global-sidebar__nav">
       {% for item in craft.cp.nav() %}
         {{ _self.action(item, false) }}
       {% endfor %}

@@ -1103,6 +1103,15 @@ class User extends Element implements IdentityInterface, AuthenticatableContract
     }
 
     /**
+     * @inheritdoc
+     */
+
+    public function safeAttributes(): array
+    {
+        return Arr::except(parent::safeAttributes(), ['photoId']);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function setAttributesFromRequest($values): void
@@ -2279,6 +2288,11 @@ JS, [
      */
     public function getPreferences(): array
     {
+        // only CP users can save preferences
+        if (!$this->can('accessCp')) {
+            return [];
+        }
+
         return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
     }
 
@@ -2337,11 +2351,15 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
+        if (!$locale) {
+            return null;
+        }
+
         $locales = $checkAllLocales
             ? I18N::getAllLocaleIds()
             : I18N::getAppLocaleIds();
 
-        if ($locale && $locales->contains($locale)) {
+        if ($locales->contains($locale)) {
             return $locale;
         }
 

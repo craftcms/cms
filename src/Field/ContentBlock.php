@@ -439,6 +439,9 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn (ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
+                    // explicitly fetch revisions if the owner element is a revision
+                    // (see https://github.com/craftcms/cms/pull/18161)
+                    ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
                     ->collect();
 
@@ -489,7 +492,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
                     CancelableEvent $event,
                     ContentBlockQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -794,9 +797,8 @@ JS, [
 
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($contentBlocks as $contentBlock) {

@@ -465,7 +465,7 @@ trait NestedElementTrait
      */
     private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
     {
-        if (!$this->saveOwnership || !isset($this->fieldId)) {
+        if (!$this->saveOwnership || !isset($this->fieldId) || $this->resaving) {
             return;
         }
 

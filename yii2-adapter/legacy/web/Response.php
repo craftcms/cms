@@ -37,6 +37,16 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
     public const FORMAT_GQL = 'gql';
 
     /**
+     * @since 5.9.0
+     */
+    public const FORMAT_XLSX = 'xlsx';
+
+    /**
+     * @since 5.9.0
+     */
+    public const FORMAT_YAML = 'yaml';
+
+    /**
      * Default response formatter configurations.
      *
      * This could be set from `config/app.web.php` to append additional default response formatters, or modify existing ones.
@@ -333,6 +343,8 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
             [
                 self::FORMAT_CSV => ['class' => CsvResponseFormatter::class],
                 self::FORMAT_GQL => ['class' => GqlResponseFormatter::class],
+                self::FORMAT_XLSX => ['class' => XlsxResponseFormatter::class],
+                self::FORMAT_YAML => ['class' => YamlResponseFormatter::class],
             ],
             $this->defaultFormatters,
         );

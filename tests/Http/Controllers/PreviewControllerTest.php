@@ -17,6 +17,8 @@ beforeEach(function () {
     actingAs(User::find()->one());
 
     $this->entry = Entry::factory()->create();
+
+    Craft::$app->getSession()->authorize("previewElement:{$this->entry->id}");
 });
 
 it('can create a token', function () {

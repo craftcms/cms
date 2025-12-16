@@ -73,6 +73,11 @@ class NestedElementManager extends Component
     public const EVENT_AFTER_CREATE_REVISIONS = 'afterCreateRevisions';
 
     /**
+     * @see getSupportedSiteIds()
+     */
+    private static array $renderedPropagationFormats = [];
+
+    /**
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
@@ -331,7 +336,11 @@ class NestedElementManager extends Component
         $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
-            $propagationKey = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
+            if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                self::$renderedPropagationFormats[$cacheKey] = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            }
+            $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
 
         foreach ($ownerSiteIds as $siteId) {
@@ -349,8 +358,14 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
-                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
+                        $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $siteId);
+                        if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                            $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                            self::$renderedPropagationFormats[$cacheKey] = $siteOwner
+                                ? $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
+                                : false;
+                        }
+                        $include = $propagationKey === self::$renderedPropagationFormats[$cacheKey];
                     }
                     break;
                 default:
@@ -835,6 +850,7 @@ JS, [
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
+                    $element->resaving = $owner->resaving;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is

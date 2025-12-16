@@ -298,7 +298,7 @@ final class FieldsController
         if (! isset($fieldLayoutConfig['id'])) {
             $fieldLayout = Craft::createObject([
                 'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
+                ...Component::cleanseConfig($fieldLayoutConfig),
             ]);
             $fieldLayout->type = $fieldLayoutConfig['type'];
         } else {
@@ -354,7 +354,7 @@ final class FieldsController
 
         $uid = $request->input('uid');
         $elementType = $request->input('elementType');
-        $layoutConfig = $request->array('layoutConfig');
+        $layoutConfig = Component::cleanseConfig($request->array('layoutConfig'));
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
 
@@ -370,6 +370,8 @@ final class FieldsController
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
+
+        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 

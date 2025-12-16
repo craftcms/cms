@@ -42,7 +42,7 @@
     "seld/cli-prompt": "^1.0.4",
     "spatie/laravel-data": "^4.17",
     "twig/twig": "~3.21.1",
-    "voku/stringy": "^6.5",
+    "voku/portable-ascii": "^2.0",
     "yiisoft/yii2": "~2.0.52.0",
     "yiisoft/yii2-debug": "~2.1.27.0",
     "yiisoft/yii2-queue": "~2.3.2",

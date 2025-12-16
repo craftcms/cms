@@ -312,16 +312,10 @@ class Search extends Component
         }
 
         try {
-            retry(3, function() use ($jobId) {
-                DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
-                    ->where('id', $jobId)
-                    ->update([
-                        'reserved' => true,
-                    ]);
-            }, 1_000, fn(Throwable $e) =>
-                // A gap lock was probably hit. Try again in one second
-                // https://github.com/craftcms/cms/issues/15221
-                $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
+            if (!DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)->where('id', $jobId)->update(['reserved' => true])) {
+                // another process must be handling the same job
+                return;
+            }
         } finally {
             $mutex->release();
         }
@@ -589,6 +583,21 @@ class Search extends Component
             ->whereNotExists(
                 DB::table(\CraftCms\Cms\Database\Table::ELEMENTS, 'e')
                     ->whereColumn('e.id', 's.elementId'),
+            )
+            ->delete();
+    }
+
+    /**
+     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     *
+     * @since 5.9.0
+     */
+    public function deleteOrphanedIndexJobs(): void
+    {
+        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE, 'q')
+            ->whereNotExists(
+                DB::table(\CraftCms\Cms\Database\Table::ELEMENTS, 'elements')
+                    ->whereColumn('elements.id', 'q.elementId'),
             )
             ->delete();
     }
