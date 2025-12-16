@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
@@ -40,6 +40,8 @@ use function CraftCms\Cms\t;
  */
 class User extends \CraftCms\Yii2Adapter\Web\User
 {
+    use ConfirmsPasswords;
+
     /**
      * @var string The session variable name used to store the duration of the authenticated state.
      * @since 3.6.8
@@ -360,22 +362,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
-     * @deprecated 6.0.0 use {@see SessionAuth::elevatedSessionTimeout()} instead.
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::confirmedPasswordTimeout()} instead.
      */
     public function getElevatedSessionTimeout(): int|false
     {
-        return SessionAuth::elevatedSessionTimeout();
+        return $this->confirmedPasswordTimeout();
     }
 
     /**
      * Returns whether the user currently has an elevated session.
      *
      * @return bool Whether the user currently has an elevated session
-     * @deprecated 6.0.0 use {@see SessionAuth::hasElevatedSession()} instead.
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::isPasswordConfirmed()} instead.
      */
     public function getHasElevatedSession(): bool
     {
-        return SessionAuth::hasElevatedSession();
+        return $this->isPasswordConfirmed();
     }
 
     /**
@@ -394,8 +396,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             // Set the elevated session expiration date
             $generalConfig = Cms::config();
             if ($generalConfig->elevatedSessionDuration !== 0) {
-                $timeout = DateTimeHelper::currentTimeStamp() + $generalConfig->elevatedSessionDuration;
-                SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
+                \Illuminate\Support\Facades\Session::passwordConfirmed();
             }
         }
 

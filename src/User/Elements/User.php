@@ -37,8 +37,8 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\WebAuthn;
-use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
@@ -112,6 +112,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 {
     use Authenticatable;
     use Authorizable;
+    use ConfirmsPasswords;
     use NameTrait;
 
     /**
@@ -1126,7 +1127,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
         if (isset($values['email'])) {
             // make sure they have an elevated session
-            if (! SessionAuth::hasElevatedSession()) {
+            if (! $this->isPasswordConfirmed()) {
                 throw new BadRequestHttpException(t('An elevated session is required to change a user’s email.'));
             }
 

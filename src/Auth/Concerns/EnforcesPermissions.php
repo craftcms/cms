@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http;
+namespace CraftCms\Cms\Auth\Concerns;
 
 use Craft;
 use craft\elements\Entry;
@@ -10,8 +10,6 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
-
-use function CraftCms\Cms\t;
 
 trait EnforcesPermissions
 {
@@ -56,15 +54,6 @@ trait EnforcesPermissions
         if (! $user->can($permission)) {
             abort(403, 'User is not permitted to perform this action.');
         }
-    }
-
-    protected function requireElevatedSession(): void
-    {
-        abort_unless(
-            SessionAuth::hasElevatedSession(),
-            403,
-            t('This action may only be performed with an elevated session.'),
-        );
     }
 
     protected function requireAdmin(): void

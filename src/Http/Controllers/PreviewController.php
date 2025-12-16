@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Http\EnforcesPermissions;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;

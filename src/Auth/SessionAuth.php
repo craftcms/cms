@@ -7,10 +7,13 @@ namespace CraftCms\Cms\Auth;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 
 final class SessionAuth
 {
+    use \CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+
     private const string AUTH_LOCK_NAME = 'authAccess';
 
     /**
@@ -21,11 +24,6 @@ final class SessionAuth
      * @see checkAuthorization()
      */
     public static ?string $authAccessParam = '__auth_access';
-
-    /**
-     * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
-     */
-    public static string $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     /**
      * Authorizes the user to perform an action for the duration of the session.
@@ -81,16 +79,6 @@ final class SessionAuth
         return $prefix.self::$authAccessParam;
     }
 
-    public static function hasElevatedSession(): bool
-    {
-        // If it's been disabled, just return true
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return true;
-        }
-
-        return self::elevatedSessionTimeout() !== 0;
-    }
-
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
@@ -101,13 +89,13 @@ final class SessionAuth
     {
         // Are they logged in?
         if (Auth::check()) {
-            $expires = Session::get(self::$elevatedSessionTimeoutParam);
+            $confirmedAt = Session::get('auth.password_confirmed_at');
 
-            if ($expires !== null) {
-                $currentTime = now()->getTimestamp();
+            if ($confirmedAt !== null) {
+                $confirmedAt = Date::now()->unix() - $confirmedAt;
 
-                if ($expires > $currentTime) {
-                    return $expires - $currentTime;
+                if ($confirmedAt > Cms::config()->elevatedSessionDuration) {
+                    return $confirmedAt;
                 }
             }
         }

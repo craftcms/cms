@@ -16,8 +16,8 @@ use craft\helpers\Session as SessionHelper;
 use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
-use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use Exception;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
@@ -33,6 +33,8 @@ use function CraftCms\Cms\t;
  */
 class TOTP extends BaseAuthMethod
 {
+    use ConfirmsPasswords;
+
     /**
      * @var string The session variable name used to store the authenticator
      * secret while setting up this method.
@@ -209,9 +211,7 @@ JS, [
     private function storeSecret(int $userId, string $secret): void
     {
         // Make sure they have an elevated session first
-        if (!SessionAuth::hasElevatedSession()) {
-            throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
-        }
+        $this->requireConfirmedPassword();
 
         $model = Authenticator::firstOrNew([
             'userId' => $userId,
