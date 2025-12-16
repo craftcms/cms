@@ -8,6 +8,7 @@
 - Fixed a bug where Dropdown and Radio Button fields weren’t handling `:empty:`/`:notempty:` element query params properly for options with blank values. ([#18156](https://github.com/craftcms/cms/issues/18156))
 - Fixed a bug where chip icons were getting rounded. ([#18163](https://github.com/craftcms/cms/pull/18163))
 - Fixed a bug where object templates that included another template were missing variables. ([#18165](https://github.com/craftcms/cms/issues/18165))
+- Fixed a JavaScript error that could occur if two control panel animations were triggered simultaneously.
 
 ## 5.8.21 - 2025-12-04
 
