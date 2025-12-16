@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
@@ -209,7 +210,8 @@ trait FormatsResults
             }
         }
 
-        $this->parseOrderColumnMappings($elementQuery);
+        $this->parseOrderColumnMappings($elementQuery, $this->query);
+        $this->parseOrderColumnMappings($elementQuery, $this->subQuery);
     }
 
     private function applyDefaultOrder(ElementQuery $elementQuery): void
@@ -261,15 +263,15 @@ trait FormatsResults
         }
     }
 
-    private function parseOrderColumnMappings(ElementQuery $elementQuery): void
+    private function parseOrderColumnMappings(ElementQuery $elementQuery, Builder $query): void
     {
-        $orders = $elementQuery->query->orders;
+        $orders = $query->orders;
 
         if (is_null($orders)) {
             return;
         }
 
-        $elementQuery->query->orders = array_map(function ($order) use ($elementQuery) {
+        $query->orders = array_map(function ($order) use ($elementQuery) {
             if (! is_string($order['column'])) {
                 return $order;
             }
@@ -284,6 +286,11 @@ trait FormatsResults
     {
         $elementQuery->query->orders = array_filter(
             $elementQuery->query->orders ?? [],
+            fn (array $order) => $order['column'] !== 'score',
+        );
+
+        $elementQuery->subQuery->orders = array_filter(
+            $elementQuery->subQuery->orders ?? [],
             fn (array $order) => $order['column'] !== 'score',
         );
 
@@ -314,5 +321,6 @@ trait FormatsResults
         }
 
         $elementQuery->query->orderBy(new CaseGroup($rules, new Value($i + 1)));
+        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

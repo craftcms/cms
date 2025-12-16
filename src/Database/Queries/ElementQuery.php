@@ -685,12 +685,14 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
 
             foreach ($column as $c => $dir) {
                 $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+                $this->subQuery->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
             }
 
             return $this;
         }
 
-        $this->forwardCallTo($this->query, 'orderBy', func_get_args());
+        $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
+        $this->forwardCallTo($this->subQuery, 'orderBy', [$column, $direction]);
 
         return $this;
     }
@@ -873,7 +875,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         }
 
         /**
-         * Joins should be done on both queries
+         * Joins and orders should be done on both queries
          */
         if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
