@@ -1102,7 +1102,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
@@ -2276,7 +2276,7 @@ JS, [
             ? I18N::getAllLocaleIds()
             : I18N::getAppLocaleIds();
 
-        if ($locale && $locales->contains($locale)) {
+        if ($locales->contains($locale)) {
             return $locale;
         }
 

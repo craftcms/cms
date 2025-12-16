@@ -2362,14 +2362,12 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var ElementInterface|false|null
      * @see getCanonical()
-     * @phpstan-ignore property.unusedType
      */
     private ElementInterface|false|null $_canonical = null;
 
     /**
      * @var ElementInterface|false|null
      * @see getCanonical()
-     * @phpstan-ignore property.unusedType
      */
     private ElementInterface|false|null $_canonicalAnySite = null;
 
