@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use Craft;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
@@ -25,9 +26,9 @@ final readonly class PreviewController
     public function createToken(Request $request, RouteTokens $tokens, RouteToken $tokenData): JsonResponse|RedirectResponse
     {
         match (true) {
-            isset($tokenData->draftId) => $this->requirePermission("previewDraft:{$tokenData->draftId}"),
-            isset($tokenData->revisionId) => $this->requirePermission("previewRevision:{$tokenData->revisionId}"),
-            default => $this->requirePermission("previewElement:{$tokenData->getCanonicalId()}"),
+            isset($tokenData->draftId) => $this->requireSessionAuthorization("previewDraft:{$tokenData->draftId}"),
+            isset($tokenData->revisionId) => $this->requireSessionAuthorization("previewRevision:{$tokenData->revisionId}"),
+            default => $this->requireSessionAuthorization("previewElement:{$tokenData->getCanonicalId()}"),
         };
 
         $token = $tokens->createPreviewToken([
@@ -85,7 +86,7 @@ final readonly class PreviewController
             }
 
             $element->previewing = true;
-            \Craft::$app->getElements()->setPlaceholderElement($element);
+            Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
         /** @var \Illuminate\Support\Uri $originalUri */
