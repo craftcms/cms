@@ -32,6 +32,8 @@ use craft\web\Request;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
+use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -51,6 +53,7 @@ use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -108,17 +111,20 @@ class UsersController extends Controller
      * ```
      *
      * @since 4.2.0
+     * @deprecated 6.0.0 use {@see RetrievingLoginUser} instead.
      */
     public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
 
     /**
      * @event FindLoginUserEvent The event that is triggered after attempting to find a user to sign in
      * @since 4.2.0
+     * @deprecated 6.0.0 use {@see LoginUserRetrieved} instead.
      */
     public const EVENT_AFTER_FIND_LOGIN_USER = 'afterFindLoginUser';
 
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
+     * @deprecated 6.0.0 use {@see Failed} instead.
      */
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
 
@@ -1644,13 +1650,45 @@ class UsersController extends Controller
 
         Event::listen(GroupsAndPermissionsAssigned::class, function(GroupsAndPermissionsAssigned $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-                $user = User::find()->id($event->user->id)->one();
-
                 $yiiEvent = new UserEvent([
-                    'user' => $user,
+                    'user' => $event->user,
                 ]);
 
                 YiiEvent::trigger(UsersController::class, UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, $yiiEvent);
+            }
+        });
+
+        Event::listen(RetrievingLoginUser::class, function(RetrievingLoginUser $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_FIND_LOGIN_USER)) {
+                $yiiEvent = new FindLoginUserEvent([
+                    'loginName' => $event->loginName,
+                    'user' => $event->user,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_BEFORE_FIND_LOGIN_USER, $yiiEvent);
+
+                $event->user = $yiiEvent->user;
+            }
+        });
+
+        Event::listen(LoginUserRetrieved::class, function(LoginUserRetrieved $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_AFTER_FIND_LOGIN_USER)) {
+                $yiiEvent = new FindLoginUserEvent([
+                    'loginName' => $event->loginName,
+                    'user' => $event->user,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_AFTER_FIND_LOGIN_USER, $yiiEvent);
+            }
+        });
+
+        Event::listen(Failed::class, function(Failed $event) {
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_LOGIN_FAILURE)) {
+                $yiiEvent = new LoginFailureEvent([
+                    'user' => $event->user,
+                ]);
+
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_LOGIN_FAILURE, $yiiEvent);
             }
         });
     }
