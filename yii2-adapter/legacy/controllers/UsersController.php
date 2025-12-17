@@ -35,8 +35,6 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
-use CraftCms\Cms\Auth\Models\WebAuthn;
-use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -212,40 +210,6 @@ class UsersController extends Controller
     public function actionRedirect(): Response
     {
         return $this->redirect(Craft::$app->getUser()->getDefaultReturnUrl());
-    }
-
-    /**
-     * Returns information about the current user session, if any.
-     *
-     * @return Response
-     * @since 3.4.0
-     */
-    public function actionSessionInfo(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $userSession = Craft::$app->getUser();
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        $return = [
-            'isGuest' => $user === null,
-            'timeout' => $userSession->getRemainingSessionTime(),
-        ];
-
-        if (Cms::config()->enableCsrfProtection) {
-            $return['csrfTokenName'] = Cms::config()->csrfTokenName;
-            $return['csrfTokenValue'] = $this->request->getCsrfToken();
-        }
-
-        if ($user !== null) {
-            $return['id'] = $user->id;
-            $return['uid'] = $user->uid;
-            $return['username'] = $user->username;
-            $return['email'] = $user->email;
-        }
-
-        return $this->asJson($return);
     }
 
     /**

@@ -15,7 +15,6 @@ use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
-use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -45,14 +44,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerMacros();
-
-        Authenticate::redirectUsing(function () {
-            if (\request()->isCpRequest()) {
-                return Cms::config()->cpTrigger.'/login';
-            }
-
-            return Cms::config()->loginPath;
-        });
     }
 
     public function boot(): void

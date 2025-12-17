@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +25,16 @@ final class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        Authenticate::redirectUsing(function (Request $request) {
+            if ($request->isCpRequest()) {
+                return Cms::config()->cpTrigger.'/login';
+            }
+
+            return Cms::config()->loginPath;
+        });
+
+        RedirectIfAuthenticated::redirectUsing(fn (Request $request) => $request->user()->getDefaultReturnUrl());
+
         Auth::provider('craft', fn (Application $app) => new UserProvider($app->make(Hasher::class)));
 
         if (! Config::has('auth.guards.craft')) {
