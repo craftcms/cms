@@ -10,7 +10,6 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -23,6 +22,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -237,7 +239,7 @@ class CustomField extends BaseField
             $field = $this->getField();
             // include field type display name in the field layout designer's keywords
             $fieldTypeKeyword = [$field->displayName()];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // fail silently
         }
 
@@ -588,7 +590,7 @@ class CustomField extends BaseField
         $editCondition = $this->getEditCondition();
 
         if ($editCondition) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
+            $currentUser = Auth::user();
             if (!$currentUser || !$editCondition->matchElement($currentUser)) {
                 return false;
             }
@@ -765,7 +767,7 @@ class CustomField extends BaseField
             $items = [];
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         if ($user?->admin && !$user->getPreference('showFieldHandles')) {
             $items[] = $this->copyAttributeAction([
                 'label' => Craft::t('app', 'Copy field handle'),

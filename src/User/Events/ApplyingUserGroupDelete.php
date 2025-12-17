@@ -12,6 +12,6 @@ use CraftCms\Cms\User\Data\UserGroup;
 final class ApplyingUserGroupDelete
 {
     public function __construct(
-        public UserGroup $userGroup
+        public UserGroup $userGroup,
     ) {}
 }

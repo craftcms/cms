@@ -20,7 +20,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
@@ -40,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
@@ -957,6 +957,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $this;
+    }
+
+    public function getLimit(): int|null|ExpressionInterface
+    {
+        return $this->limit;
+    }
+
+    public function getOffset(): int|null|ExpressionInterface
+    {
+        return $this->offset;
     }
 
     /**

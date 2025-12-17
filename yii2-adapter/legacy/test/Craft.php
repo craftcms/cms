@@ -32,6 +32,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\User\Users;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use DateTime;
 use Exception;
@@ -183,6 +184,7 @@ class Craft extends Yii2
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Fields::class);
         app()->forgetInstance(ProjectConfig::class);
+        app()->forgetInstance(Users::class);
     }
 
     /**

@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\elements;
 
 use Craft;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementResolver;
@@ -38,7 +38,7 @@ class Tag extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (!$query instanceof ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 

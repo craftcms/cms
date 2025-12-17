@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
@@ -16,6 +15,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Override;
 

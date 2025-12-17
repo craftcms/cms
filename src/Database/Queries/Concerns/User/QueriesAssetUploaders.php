@@ -19,7 +19,7 @@ trait QueriesAssetUploaders
      *                ---
      *                ```php
      *                // fetch all users who have uploaded an asset
-     *                $uploaders = \craft\elements\User::find()
+     *                $uploaders = \CraftCms\Cms\User\Elements\User::find()
      *                ->assetUploaders()
      *                ->all();
      *                ```

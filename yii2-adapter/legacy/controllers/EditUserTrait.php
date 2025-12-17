@@ -9,12 +9,12 @@
 namespace craft\controllers;
 
 use craft\base\Event;
-use craft\elements\User;
 use craft\events\DefineEditUserScreensEvent;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;

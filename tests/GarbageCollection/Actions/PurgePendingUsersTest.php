@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
 it('purges pending users with stale activation codes', function () {
@@ -14,7 +15,7 @@ it('purges pending users with stale activation codes', function () {
     Cms::config()->purgePendingUsersDuration = 60 * 60 * 24;
 
     $user1Element = Element::factory()->create([
-        'type' => \craft\elements\User::class,
+        'type' => User::class,
         'dateDeleted' => null,
     ]);
     DB::table(Table::ELEMENTS_SITES)->insert([
@@ -31,7 +32,7 @@ it('purges pending users with stale activation codes', function () {
     ]);
 
     $user2Element = Element::factory()->create([
-        'type' => \craft\elements\User::class,
+        'type' => User::class,
         'dateDeleted' => null,
     ]);
     DB::table(Table::ELEMENTS_SITES)->insert([

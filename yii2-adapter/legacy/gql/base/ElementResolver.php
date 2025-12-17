@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
@@ -41,7 +42,7 @@ abstract class ElementResolver extends Resolver
     public static function resolveOne(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
-        $value = $query instanceof ElementQuery ? $query->one() : $query;
+        $value = $query instanceof ElementQueryInterface ? $query->one() : $query;
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
@@ -51,7 +52,7 @@ abstract class ElementResolver extends Resolver
     public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
-        $value = $query instanceof ElementQuery ? $query->all() : $query;
+        $value = $query instanceof ElementQueryInterface ? $query->all() : $query;
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
@@ -79,7 +80,7 @@ abstract class ElementResolver extends Resolver
      * @param ResolveInfo $resolveInfo
      * @return ElementQuery|ElementCollection
      */
-    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|ElementCollection
+    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQueryInterface|ElementCollection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
@@ -98,7 +99,7 @@ abstract class ElementResolver extends Resolver
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
-        if (!$query instanceof ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 
@@ -132,12 +133,12 @@ abstract class ElementResolver extends Resolver
         $maxGraphqlResults = Cms::config()->maxGraphqlResults;
 
         // Reset negative limit to zero
-        if ((int)$query->limit < 0) {
+        if ((int)$query->getLimit() < 0) {
             $query->limit(0);
         }
 
         if ($maxGraphqlResults > 0) {
-            $queryLimit = is_null($query->limit) ? $maxGraphqlResults : min($maxGraphqlResults, $query->limit);
+            $queryLimit = is_null($query->getLimit()) ? $maxGraphqlResults : min($maxGraphqlResults, $query->getLimit());
             $query->limit($queryLimit);
         }
 

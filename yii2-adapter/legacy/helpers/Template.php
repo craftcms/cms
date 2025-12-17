@@ -14,6 +14,7 @@ use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Entries;
+use Illuminate\Support\Facades\Auth;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
@@ -286,7 +287,7 @@ class Template
             return self::$_shouldProfile = true;
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if (!$user) {
             return false;

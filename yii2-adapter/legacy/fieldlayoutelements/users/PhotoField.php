@@ -9,10 +9,10 @@ namespace craft\fieldlayoutelements\users;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 

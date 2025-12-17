@@ -14,7 +14,7 @@ use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use craft\errors\DbConnectException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
@@ -345,7 +345,7 @@ trait ApplicationTrait
             $id = Session::get($user->idParam);
             if (
                 $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
                 \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;
@@ -1278,6 +1278,7 @@ trait ApplicationTrait
     /**
      * Returns the users service.
      *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Users} instead.
      * @return Users The users service
      */
     public function getUsers(): Users

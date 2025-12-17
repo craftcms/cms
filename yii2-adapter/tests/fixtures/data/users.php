@@ -1,4 +1,7 @@
 <?php
+
+use CraftCms\Cms\User\Elements\User;
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,7 +13,7 @@ return [
         'active' => true,
         'username' => 'user1',
         'email' => 'user1@crafttest.com',
-        'fieldLayoutType' => 'craft\elements\User',
+        'fieldLayoutType' => User::class,
         'shortBio' => "I'm Commander Sheppard and this is my favorite user in this install",
     ],
     [
@@ -19,7 +22,7 @@ return [
         'lastName' => 'smith',
         'username' => 'user2',
         'email' => 'user2@crafttest.com',
-        'fieldLayoutType' => 'craft\elements\User',
+        'fieldLayoutType' => User::class,
         'shortBio' => 'This is the guy who knows stuff',
     ],
     [

@@ -9,11 +9,11 @@ namespace craft\fieldlayoutelements\users;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 

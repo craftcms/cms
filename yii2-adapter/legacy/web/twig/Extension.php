@@ -16,7 +16,6 @@ use craft\base\MissingComponentInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -77,6 +76,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
@@ -1827,17 +1827,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $currentSite = Sites::getCurrentSite();
             $primarySite = Sites::getPrimarySite();
 
-            $currentUser = Craft::$app->getUser()->getIdentity();
-
-            if (!$currentUser) {
-                $user = Auth::user();
-
-                if ($user) {
-                    Craft::$app->getUser()->setIdentity(Craft::$app->getUsers()->getUserById($user->id));
-                    $currentUser = Craft::$app->getUser()->getIdentity();
-                }
-            }
-
+            $currentUser = Auth::user();
             $siteName = t($currentSite->getName(), category: 'site');
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Cms::systemName();

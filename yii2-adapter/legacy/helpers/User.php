@@ -8,8 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\elements\User as UserElement;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -149,7 +150,7 @@ class User
                 }
                 break;
             case UserElement::AUTH_PASSWORD_RESET_REQUIRED:
-                if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                if (Users::sendPasswordResetEmail($user)) {
                     $message = t('You need to reset your password. Check your email for instructions.');
                 } else {
                     $message = t('You need to reset your password, but an error was encountered when sending the password reset email.');

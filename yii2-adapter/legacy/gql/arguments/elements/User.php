@@ -8,10 +8,10 @@
 namespace craft\gql\arguments\elements;
 
 use craft\base\GqlInlineFragmentFieldInterface;
-use craft\elements\User as UserElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\Type;
 
 /**

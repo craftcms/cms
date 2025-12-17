@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Cms;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;

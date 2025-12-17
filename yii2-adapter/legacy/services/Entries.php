@@ -9,13 +9,13 @@ namespace craft\services;
 
 use Craft;
 use craft\errors\EntryTypeNotFoundException;
-use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;

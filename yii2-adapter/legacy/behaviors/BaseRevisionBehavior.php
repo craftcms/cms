@@ -8,7 +8,7 @@
 namespace craft\behaviors;
 
 use craft\base\ElementInterface;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use yii\base\Behavior;
 

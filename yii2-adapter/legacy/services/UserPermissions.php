@@ -8,13 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\RegisterUserPermissions;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
@@ -94,10 +94,6 @@ class UserPermissions extends Component
      */
     public function getAssignablePermissions(?User $user = null): array
     {
-        if ($user) {
-            $user = \CraftCms\Cms\User\Elements\User::find()->id($user->id)->first();
-        }
-
         return $this->service->getAssignablePermissions($user)->toArray();
     }
 

@@ -8,14 +8,18 @@
 namespace craft\web;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use yii\web\Cookie;
@@ -36,6 +40,8 @@ use function CraftCms\Cms\t;
  */
 class User extends \CraftCms\Yii2Adapter\Web\User
 {
+    use ConfirmsPasswords;
+
     /**
      * @var string The session variable name used to store the duration of the authenticated state.
      * @since 3.6.8
@@ -52,11 +58,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * @see Cookie
      */
     public array $usernameCookie;
-
-    /**
-     * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
-     */
-    public string $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     /**
      * @var string The session variable name used to store the original user ID, when impersonating another user.
@@ -84,13 +85,13 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
     {
-        $user = Craft::$app->getUsers()->getUserById($userId);
+        $user = Users::getUserById($userId);
 
         if (!$user) {
             return false;
         }
 
-        return $this->login($user, $duration);
+        return $this->login(new IdentityWrapper($user), $duration);
     }
 
     /**
@@ -334,7 +335,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsAdmin(): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->admin);
     }
@@ -348,9 +349,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function checkPermission(string $permissionName): bool
     {
-        $user = $this->getIdentity();
-
-        return ($user && $user->can($permissionName));
+        return Gate::check($permissionName);
     }
 
     /**
@@ -358,43 +357,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::confirmedPasswordTimeout()} instead.
      */
     public function getElevatedSessionTimeout(): int|false
     {
-        // Are they logged in?
-        if (!$this->getIsGuest()) {
-            $expires = SessionHelper::get($this->elevatedSessionTimeoutParam);
-
-            if ($expires !== null) {
-                $currentTime = DateTimeHelper::currentTimeStamp();
-
-                if ($expires > $currentTime) {
-                    return $expires - $currentTime;
-                }
-            }
-        }
-
-        // If it has been disabled, return false.
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return false;
-        }
-
-        return 0;
+        return $this->confirmedPasswordTimeout();
     }
 
     /**
      * Returns whether the user currently has an elevated session.
      *
      * @return bool Whether the user currently has an elevated session
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::isPasswordConfirmed()} instead.
      */
     public function getHasElevatedSession(): bool
     {
-        // If it's been disabled, just return true
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return true;
-        }
-
-        return ($this->getElevatedSessionTimeout() !== 0);
+        return $this->isPasswordConfirmed();
     }
 
     /**
@@ -413,8 +391,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             // Set the elevated session expiration date
             $generalConfig = Cms::config();
             if ($generalConfig->elevatedSessionDuration !== 0) {
-                $timeout = DateTimeHelper::currentTimeStamp() + $generalConfig->elevatedSessionDuration;
-                SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
+                \Illuminate\Support\Facades\Session::passwordConfirmed();
             }
         }
 
@@ -441,8 +418,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration): void
     {
-        /** @var UserElement $identity */
-
         if ($duration > 0) {
             // Store the duration on the session
             SessionHelper::set($this->authDurationParam, $duration);
@@ -455,12 +430,12 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = $this->getImpersonator();
         if (!$impersonator) {
-            $this->sendUsernameCookie($identity);
+            $this->sendUsernameCookie(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
         if (!$impersonator) {
-            Craft::$app->getUsers()->handleValidLogin($identity);
+            Users::handleValidLogin(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         parent::afterLogin($identity, $cookieBased, $duration);
@@ -566,7 +541,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function beforeLogout($identity): bool
     {
-        /** @var UserElement $identity */
         if (!parent::beforeLogout($identity)) {
             return false;
         }
@@ -581,7 +555,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
             DB::table(Table::SESSIONS)
                 ->where('token', $token)
-                ->where('userId', $identity->id)
+                ->where('userId', $identity->getId())
                 ->delete();
         }
 
@@ -593,7 +567,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogout($identity): void
     {
-        /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
         SessionHelper::remove($this->impersonatorIdParam);
         $this->impersonator = false;
@@ -627,9 +600,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
     private function _clearOtherSessionParams(): void
     {
-        // Clear out the elevated session, if there is one
-        SessionHelper::remove($this->elevatedSessionTimeoutParam);
-
         // Make sure 2FA data doesn't bleed over
         $authService = Craft::$app->getAuth();
         $authService->setUser(null);

@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
@@ -46,6 +46,7 @@ final readonly class Drafts
             return collect();
         }
 
+        /** @var \craft\elements\db\ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)

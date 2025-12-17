@@ -17,7 +17,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
-use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
@@ -33,10 +32,12 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
+use Override;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -54,21 +55,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     private const string VIEW_MODE_INLINE = 'inline';
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Content Block');
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'block';
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -78,14 +79,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ContentBlockElement::class);
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -352,14 +353,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -371,6 +372,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         bool $fromRequest,
     ): ContentBlockElement {
         if ($value instanceof ElementQueryInterface) {
+            /** @var ?ContentBlockElement $contentBlock */
             $contentBlock = $value->one();
 
             if ($contentBlock) {
@@ -530,7 +532,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -544,7 +546,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -558,35 +560,35 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->contentBlockManager()->getIsTranslatable($element);
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function showStatus(): bool
     {
         return false;
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $element?->id) {
@@ -602,7 +604,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -666,7 +668,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -698,7 +700,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
@@ -738,7 +740,7 @@ JS, [
     //    }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -750,7 +752,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return ContentBlockInputType::getType($this);
@@ -760,7 +762,7 @@ JS, [
     // -------------------------------------------------------------------------
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         Fields::saveLayout($this->getFieldLayout(), false);
@@ -768,7 +770,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->contentBlockManager()->maintainNestedElements($element, $isNew);
@@ -776,7 +778,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -790,7 +792,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         $elementsService = Craft::$app->getElements();
@@ -809,7 +811,7 @@ JS, [
     }
 
     /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element

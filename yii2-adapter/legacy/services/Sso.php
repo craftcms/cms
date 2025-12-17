@@ -10,14 +10,16 @@ namespace craft\services;
 use Craft;
 use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
-use craft\db\Table;
-use craft\elements\User;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -219,17 +221,10 @@ class Sso extends Component
     public function findUser(ProviderInterface $provider, string $idpIdentifier): ?User
     {
         return User::find()
-            ->innerJoin(
-                ['s_i' => Table::SSO_IDENTITIES],
-                '[[s_i.userId]] = [[users.id]]',
-            )
-            ->andWhere(
-                [
-                    's_i.provider' => $provider->getHandle(),
-                    's_i.identityId' => $idpIdentifier,
-                ]
-            )
-            ->one();
+            ->join(new Alias(Table::SSO_IDENTITIES, 's_i'), 's_i.userId', '=', 'users.id')
+            ->where('s_i.provider', $provider->getHandle())
+            ->where('s_i.identityId', $idpIdentifier)
+            ->first();
     }
 
     /**
@@ -283,7 +278,7 @@ class Sso extends Component
         }
 
         // Try logging them in
-        if (!$userSession->login($user, $sessionDuration)) {
+        if (!$userSession->login(new IdentityWrapper($user), $sessionDuration)) {
             throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
         }
 

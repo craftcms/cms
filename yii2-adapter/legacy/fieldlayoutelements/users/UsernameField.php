@@ -8,9 +8,9 @@
 namespace craft\fieldlayoutelements\users;
 
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\fieldlayoutelements\TextField;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
