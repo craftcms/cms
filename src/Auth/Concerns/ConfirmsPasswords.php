@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Concerns;
 
-use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
@@ -31,7 +30,7 @@ trait ConfirmsPasswords
     {
         $maximumSecondsSinceConfirmation = config('auth.password_timeout', 900);
 
-        if ($maximumSecondsSinceConfirmation === 0) {
+        if ($maximumSecondsSinceConfirmation === -1) {
             return true;
         }
 
@@ -46,15 +45,16 @@ trait ConfirmsPasswords
 
             if ($confirmedAt !== null) {
                 $diff = Date::now()->unix() - $confirmedAt;
+                $remainingTime = $maximumSecondsSinceConfirmation - $diff;
 
-                if ($diff >= $maximumSecondsSinceConfirmation) {
-                    return $diff;
+                if ($remainingTime >= 0) {
+                    return $remainingTime;
                 }
             }
         }
 
         // If it has been disabled, return false.
-        if (Cms::config()->elevatedSessionDuration === 0) {
+        if (config('auth.password_timeout') === -1) {
             return false;
         }
 
