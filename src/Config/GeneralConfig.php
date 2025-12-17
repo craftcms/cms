@@ -4641,7 +4641,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $elevatedSessionDuration
      */
-    #[\Deprecated(message: 'use the `auth.password_timeout` config setting instead.', since: '6.0.0')]
+    #[Deprecated(message: 'use the `auth.password_timeout` config setting instead.', since: '6.0.0')]
     public function elevatedSessionDuration(mixed $value): self
     {
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);

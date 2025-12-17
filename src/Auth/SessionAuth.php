@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Cms;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 
 final class SessionAuth
 {
-    use \CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
-
     private const string AUTH_LOCK_NAME = 'authAccess';
 
     /**
@@ -77,34 +73,5 @@ final class SessionAuth
         $prefix = md5('CraftSession'.Cms::envId());
 
         return $prefix.self::$authAccessParam;
-    }
-
-    /**
-     * Returns how many seconds are left in the current elevated user session.
-     *
-     * @return int|false The number of seconds left in the current elevated user session
-     *                   or false if it has been disabled.
-     */
-    public static function elevatedSessionTimeout(): int|false
-    {
-        // Are they logged in?
-        if (Auth::check()) {
-            $confirmedAt = Session::get('auth.password_confirmed_at');
-
-            if ($confirmedAt !== null) {
-                $confirmedAt = Date::now()->unix() - $confirmedAt;
-
-                if ($confirmedAt > Cms::config()->elevatedSessionDuration) {
-                    return $confirmedAt;
-                }
-            }
-        }
-
-        // If it has been disabled, return false.
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return false;
-        }
-
-        return 0;
     }
 }
