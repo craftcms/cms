@@ -213,39 +213,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Renders the login modal for logged-out control panel uses.
-     *
-     * @return Response
-     * @since 5.0.0
-     */
-    public function actionLoginModal(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePostRequest();
-
-        $forElevatedSession = (bool)$this->request->getBodyParam('forElevatedSession');
-
-        // If the current user is being impersonated, get the impersonator instead
-        if ($forElevatedSession && ($impersonator = Craft::$app->getUser()->getImpersonator())) {
-            $staticEmail = $impersonator->email;
-        } else {
-            $staticEmail = $this->request->getRequiredBodyParam('email');
-        }
-
-        $view = $this->getView();
-        $html = $view->renderTemplate('_special/login-modal.twig', [
-            'staticEmail' => $staticEmail,
-            'forElevatedSession' => $forElevatedSession,
-        ], View::TEMPLATE_MODE_CP);
-
-        return $this->asJson([
-            'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-        ]);
-    }
-
-    /**
      * Returns how many seconds are left in the current elevated user session.
      *
      * @return Response

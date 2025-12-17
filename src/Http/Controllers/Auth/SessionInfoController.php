@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers\Users;
+namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;

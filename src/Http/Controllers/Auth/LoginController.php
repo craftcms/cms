@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\web\View;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Timebox;
@@ -32,6 +34,30 @@ final readonly class LoginController extends AuthenticationController
 
         // TODO: _rerouteWithFallbackTemplate??
         return view('craftcms::login');
+    }
+
+    public function showLoginModal(Request $request): JsonResponse
+    {
+        $forElevatedSession = $request->boolean('forElevatedSession');
+
+        // If the current user is being impersonated, get the impersonator instead
+        if ($forElevatedSession && ($impersonator = Craft::$app->getUser()->getImpersonator())) {
+            $staticEmail = $impersonator->email;
+        } else {
+            $staticEmail = $request->validate(['email' => ['required']])['email'];
+        }
+
+        $view = Craft::$app->getView();
+        $html = $view->renderTemplate('_special/login-modal.twig', [
+            'staticEmail' => $staticEmail,
+            'forElevatedSession' => $forElevatedSession,
+        ], View::TEMPLATE_MODE_CP);
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     public function attemptLogin(Request $request): Response
@@ -105,7 +131,7 @@ final readonly class LoginController extends AuthenticationController
         }
 
         return $this->asSuccess(
-            redirect: $this->generalConfig->getPostLogoutRedirect()
+            redirect: $this->generalConfig->getPostLogoutRedirect(),
         );
     }
 }

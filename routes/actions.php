@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
+use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
@@ -43,7 +44,6 @@ use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
-use CraftCms\Cms\Http\Controllers\Users\SessionInfoController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -80,7 +80,9 @@ VerifyCsrfToken::except(collect([
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
+
     Route::any('users/session-info', SessionInfoController::class);
+    Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
@@ -111,6 +113,7 @@ Route::prefix(implode('/', [
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
 
     Route::any('users/session-info', SessionInfoController::class);
+    Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
 
     // Auth
     Route::post('users/login', [LoginController::class, 'attemptLogin']);
