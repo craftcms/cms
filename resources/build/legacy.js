@@ -2592,15 +2592,15 @@ wa-popup[data-current-placement='right-end'] #menu {
           padding: var(--c-spacing-md);
         }
       `]}};customElements.get("craft-popover")||customElements.define("craft-popover",Up);var cr=class extends H{render(){return x`
-      <nav>
+      <div class="nav">
         <slot></slot>
-      </nav>
+      </div>
     `}};cr.styles=F`
     :host {
       display: block;
     }
 
-    nav {
+    .nav {
       display: grid;
     }
   `,customElements.get("craft-navigation")||customElements.define("craft-navigation",cr);const Ma="important",Hp=" !"+Ma,qp=_s(class extends vs{constructor(i){if(super(i),i.type!==gs.ATTRIBUTE||i.name!=="style"||i.strings?.length>2)throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.")}render(i){return Object.keys(i).reduce(((e,t)=>{const s=i[t];return s==null?e:e+`${t=t.includes("-")?t:t.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g,"-$&").toLowerCase()}:${s};`}),"")}update(i,[e]){const{style:t}=i.element;if(this.ft===void 0)return this.ft=new Set(Object.keys(e)),this.render(e);for(const s of this.ft)e[s]==null&&(this.ft.delete(s),s.includes("-")?t.removeProperty(s):t[s]=null);for(const s in e){const n=e[s];if(n!=null){this.ft.add(s);const o=typeof n=="string"&&n.endsWith(Hp);s.includes("-")||o?t.setProperty(s,o?n.slice(0,-11):n,o?Ma:""):t[s]=n}}return Te}});var jp=F`
