@@ -25,12 +25,10 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
-use craft\helpers\User as UserHelper;
 use craft\web\Application;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use craft\web\Request;
-use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
@@ -1140,43 +1138,6 @@ class UsersController extends Controller
         return $this->asFailure(t('Invalid password.'));
     }
 
-    /**
-     * Handles a failed login attempt.
-     *
-     * @param string|null $authError
-     * @param User|null $user
-     * @return Response|null
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _handleLoginFailure(?string $authError = null, ?User $user = null): ?Response
-    {
-        [$authError, $message] = UserHelper::getLoginFailureInfo($authError, $user);
-
-        // Fire a 'loginFailure' event
-        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
-            $event = new LoginFailureEvent([
-                'authError' => $authError,
-                'message' => $message,
-                'user' => $user,
-            ]);
-            $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
-            $message = $event->message;
-        }
-
-        return $this->asFailure(
-            $message,
-            data: [
-                'errorCode' => $authError,
-            ],
-            routeParams: [
-                'loginName' => $this->request->getBodyParam('loginName'),
-                'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
-                'errorCode' => $authError,
-                'errorMessage' => $message,
-            ]
-        );
-    }
-
     public function actionAuthForm(): Response
     {
         // If the current user is being impersonated, use the impersonator
@@ -1255,38 +1216,6 @@ class UsersController extends Controller
         }
 
         return $this->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
-    }
-
-    /**
-     * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
-     * logged in.
-     *
-     * @param User $user
-     * @return Response
-     */
-    private function _handleSuccessfulLogin(User $user): Response
-    {
-        // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
-
-        // If this was an Ajax request, just return success:true
-        if ($this->request->getAcceptsJson()) {
-            $return = [
-                'returnUrl' => $returnUrl,
-            ];
-
-            if (Cms::config()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
-            }
-
-            return $this->asModelSuccess($user, modelName: 'user', data: $return);
-        }
-
-        return $this->redirectToPostedUrl(Auth::user(), $returnUrl);
     }
 
     /**
@@ -1617,11 +1546,6 @@ class UsersController extends Controller
                 'errors' => $errors,
             ]
         );
-    }
-
-    private function _hashCheck()
-    {
-        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
     }
 
     private function _randomlyDelayResponse(float $maxOffset = 0)
