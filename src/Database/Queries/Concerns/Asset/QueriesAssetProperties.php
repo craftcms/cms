@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns\Asset;
 
-use craft\elements\User;
 use craft\helpers\Assets;
 use CraftCms\Cms\Database\Queries\AssetQuery;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Database\Query\Builder;
 use yii\base\InvalidArgumentException;

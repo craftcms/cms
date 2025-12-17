@@ -7,7 +7,7 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
@@ -68,7 +68,7 @@ class Entry extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (!$query instanceof ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 

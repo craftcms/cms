@@ -13,6 +13,7 @@ use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
@@ -567,7 +568,7 @@ class RequestTest extends TestCase
     private function _setMockUser()
     {
         Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(1)
+            new IdentityWrapper(Craft::$app->getUsers()->getUserById(1))
         );
     }
 }

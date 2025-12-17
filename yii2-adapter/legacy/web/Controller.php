@@ -9,13 +9,15 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
-use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use yii\base\Action;
@@ -43,6 +45,8 @@ use function CraftCms\Cms\t;
  */
 abstract class Controller extends \yii\web\Controller
 {
+    use ConfirmsPasswords;
+
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
@@ -245,7 +249,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Craft::$app->getUser()->getIdentity($autoRenew);
+        return Auth::user();
     }
 
     /**
@@ -521,7 +525,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAuthorization(string $action): void
     {
-        if (!Craft::$app->getSession()->checkAuthorization($action)) {
+        if (!SessionAuth::checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
         }
     }
@@ -533,9 +537,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireElevatedSession(): void
     {
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
-        }
+        $this->requireConfirmedPassword(t('This action may only be performed with an elevated session.'));
     }
 
     /**

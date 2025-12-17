@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use craft\elements\User;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
 
@@ -26,12 +26,12 @@ final class ListAdminsCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): void
     {
-        /** @var User[] $users */
+        /** @var \Illuminate\Support\Collection<User> $users */
         $users = User::find()
             ->admin()
             ->status(null)
-            ->orderBy(['username' => SORT_ASC])
-            ->all();
+            ->orderBy('username')
+            ->get();
 
         $total = count($users);
 
@@ -43,7 +43,7 @@ final class ListAdminsCommand extends Command
                 $generalConfig->useEmailAsUsername ? null : 'Email',
                 'Status',
             ]),
-            rows: collect($users)->map(fn (User $user) => array_filter([
+            rows: $users->map(fn (User $user) => array_filter([
                 $generalConfig->useEmailAsUsername ? $user->email : $user->username,
                 $generalConfig->useEmailAsUsername ? null : $user->email,
                 match ($user->getStatus()) {

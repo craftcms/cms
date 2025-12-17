@@ -29,6 +29,7 @@ use craft\models\VolumeFolder;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
@@ -687,7 +688,7 @@ final class Assets extends BaseRelationField
     public function getInputSources(?ElementInterface $element = null): array
     {
         $folder = $this->_uploadFolder($element, false, false);
-        Craft::$app->getSession()->authorize('saveAssets:'.$folder->getVolume()->uid);
+        SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
 
         if ($this->restrictLocation) {
             if (! $this->showUnpermittedVolumes) {

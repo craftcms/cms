@@ -15,6 +15,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use function CraftCms\Cms\t;
 
@@ -179,7 +180,7 @@ JS, [static::class]);
         }
 
         $deletedElementIds = [];
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         $deleteOwnership = [];
 

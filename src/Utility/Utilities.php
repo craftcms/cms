@@ -105,7 +105,6 @@ final readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var ?\craft\elements\User $user */
         $user = Auth::user();
 
         // The Project Config utility is for admins only!

@@ -7,10 +7,10 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;
 use function CraftCms\Cms\t;
@@ -191,7 +191,7 @@ trait FieldConditionRuleTrait
      */
     public function showLabelHint(): bool
     {
-        return Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
+        return Auth::user()?->getPreference('showFieldHandles') ?? false;
     }
 
     /**

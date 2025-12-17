@@ -33,8 +33,15 @@ use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Http\Controllers\Users\ActivateController;
+use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PhotoController;
+use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SuspendController;
+use CraftCms\Cms\Http\Controllers\Users\UnlockController;
+use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -46,7 +53,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
-use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -72,6 +78,8 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
+        Route::post('users/save-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {
@@ -264,12 +272,23 @@ Route::prefix(implode('/', [
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
         // Users
-        Route::middleware([RequireElevatedSession::class])->group(function () {
+        Route::middleware('password.confirm')->group(function () {
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
         });
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
+        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
+        Route::post('users/activate-user', [ActivateController::class, 'activate']);
+        Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
+        Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
+        Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
+        Route::post('users/enable-user', EnableController::class);
+        Route::post('users/unlock-user', UnlockController::class);
+        Route::post('users/delete-user', [UsersController::class, 'destroy']);
+        Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
+        Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
 
         // User groups
         Route::middleware([

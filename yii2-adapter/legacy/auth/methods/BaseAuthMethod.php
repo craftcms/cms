@@ -8,7 +8,7 @@
 namespace craft\auth\methods;
 
 use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * BaseAuthMethod provides a base implementation of an authentication method.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Auth\UserProvider;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Commands\ActivationUrlCommand;
 use CraftCms\Cms\User\Commands\CreateCommand;
@@ -15,7 +16,7 @@ use CraftCms\Cms\User\Commands\PasswordResetUrlCommand;
 use CraftCms\Cms\User\Commands\Remove2faCommand;
 use CraftCms\Cms\User\Commands\SetPasswordCommand;
 use CraftCms\Cms\User\Commands\UnlockCommand;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Foundation\Application;
@@ -42,7 +43,7 @@ final class UserServiceProvider extends ServiceProvider
         if (! Config::has('auth.providers.craft')) {
             Config::set('auth.providers.craft', [
                 'driver' => 'craft',
-                'model' => \craft\elements\User::class,
+                'model' => User::class,
             ]);
         }
 
@@ -50,9 +51,17 @@ final class UserServiceProvider extends ServiceProvider
          * This hooks our permission system into
          * Laravel's Gate authorization system
          */
-        Gate::before(function (Authorizable $user, string $ability) {
-            if (! $user instanceof User && ! $user instanceof \craft\elements\User) {
+        Gate::after(function (Authorizable $user, string $ability, ?bool $result) {
+            if (! $user instanceof User) {
                 return null;
+            }
+
+            /**
+             * Only check our permissions when the
+             * result was not explicitly set.
+             */
+            if (! is_null($result)) {
+                return $result;
             }
 
             if (

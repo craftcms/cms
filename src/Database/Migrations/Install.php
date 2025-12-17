@@ -9,7 +9,6 @@ namespace CraftCms\Cms\Database\Migrations;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
@@ -31,7 +30,9 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1127,7 +1128,7 @@ class Install extends Migration
             ]);
             Craft::$app->getElements()->saveElement($user);
 
-            Craft::$app->getUsers()->saveUserPreferences($user, [
+            Users::saveUserPreferences($user, [
                 'language' => $this->site->getLanguage(),
             ]);
 

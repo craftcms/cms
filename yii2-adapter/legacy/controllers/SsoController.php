@@ -17,6 +17,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -141,7 +142,7 @@ class SsoController extends Controller
             $returnUrl ?
                 Craft::$app->getView()->renderObjectTemplate(
                     $returnUrl,
-                    $userSession->getIdentity()
+                    Auth::user(),
                 ) :
                 $this->request->getPathInfo()
         );

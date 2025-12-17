@@ -25,10 +25,8 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
-use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -53,6 +51,7 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -69,11 +68,13 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -805,7 +806,6 @@ class Elements extends Component
     {
         $tags = ['element'];
         TagDependency::invalidate($tags);
-        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -826,7 +826,6 @@ class Elements extends Component
     {
         $tags = ["element::$elementType"];
         TagDependency::invalidate($tags);
-        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -885,7 +884,6 @@ class Elements extends Component
         }
 
         TagDependency::invalidate($tags);
-        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -2836,7 +2834,8 @@ class Elements extends Component
         $users = User::find()
             ->id($userIds)
             ->status(null)
-            ->indexBy('id')
+            ->get()
+            ->keyBy('id')
             ->all();
 
         /** @var Collection<ElementActivity> $activity */
@@ -2913,7 +2912,7 @@ class Elements extends Component
     public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
     {
         if ($user === null) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 throw new InvalidArgumentException('$user must be set if no user is signed in.');
             }
@@ -3440,9 +3439,15 @@ class Elements extends Component
                         $query = $this->createElementQuery($map['elementType']);
 
                         // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                        $query->orderBy = null;
-                        $query->offset = null;
-                        $query->limit = null;
+                        if ($query instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+                            $query->reorder();
+                            $query->offset(null);
+                            $query->limit(null);
+                        } else {
+                            $query->orderBy = null;
+                            $query->offset = null;
+                            $query->limit = null;
+                        }
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
@@ -3593,7 +3598,9 @@ class Elements extends Component
 
                         // Pass the instantiated elements to afterPopulate()
                         $query->asArray = false;
-                        $query->afterPopulate($flatTargetElements);
+                        if ($query instanceof ElementQueryInterface) {
+                            $query->afterPopulate($flatTargetElements);
+                        }
                     }
 
                     // Now eager-load any sub paths
@@ -4506,7 +4513,7 @@ class Elements extends Component
     ): bool {
         // get site we're propagating to
         $propagateToSite = Sites::getSiteById($siteElement->siteId);
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->getName(),
         ]);
@@ -4617,7 +4624,7 @@ class Elements extends Component
     public function canView(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4641,7 +4648,7 @@ class Elements extends Component
     public function canSave(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4687,7 +4694,7 @@ class Elements extends Component
     public function canDuplicate(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4708,7 +4715,7 @@ class Elements extends Component
     public function canDuplicateAsDraft(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4732,7 +4739,7 @@ class Elements extends Component
     public function canCopy(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4755,7 +4762,7 @@ class Elements extends Component
     public function canDelete(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4778,7 +4785,7 @@ class Elements extends Component
     public function canDeleteForSite(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -4802,7 +4809,7 @@ class Elements extends Component
     public function canCreateDrafts(ElementInterface $element, ?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }

@@ -8,14 +8,14 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\db\Table;
-use craft\elements\User;
-use craft\helpers\Db;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\I18N;
-use DateTime;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use yii\base\Exception;
 
 /**
@@ -77,33 +77,25 @@ class Announcement extends BaseJob
 
         $totalUsers = $userQuery->count();
         $batchSize = 100;
-        $dateCreated = Db::prepareDateForDb(new DateTime());
-        $db = Craft::$app->getDb();
+        $dateCreated = now();
 
-        foreach (Db::batch($userQuery, $batchSize) as $batchIndex => $batch) {
-            /** @var User[] $batch */
+        $userQuery->chunk($batchSize, function(Collection $users, int $batchIndex) use ($dateCreated, $pluginId, $totalUsers, $batchSize, $queue) {
             $this->setProgress($queue, ($batchIndex * $batchSize) / $totalUsers);
 
             $rows = [];
 
-            foreach ($batch as $user) {
+            foreach ($users as $user) {
                 $rows[] = [
-                    $user->id,
-                    $pluginId,
-                    $this->heading,
-                    $this->body,
-                    $dateCreated,
+                    'userId' => $user->id,
+                    'pluginId' => $pluginId,
+                    'heading' => $this->heading,
+                    'body' => $this->body,
+                    'dateCreated' => $dateCreated,
                 ];
             }
 
-            $db->createCommand()->batchInsert(Table::ANNOUNCEMENTS, [
-                'userId',
-                'pluginId',
-                'heading',
-                'body',
-                'dateCreated',
-            ], $rows)->execute();
-        }
+            DB::table(Table::ANNOUNCEMENTS)->insert($rows);
+        });
     }
 
     /**

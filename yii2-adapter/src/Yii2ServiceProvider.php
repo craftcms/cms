@@ -65,6 +65,7 @@ use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
+use craft\services\Users;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -93,6 +94,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
@@ -104,6 +106,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -118,6 +121,7 @@ use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use yii\base\Event as YiiEvent;
 use yii\BaseYii;
+use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
@@ -492,6 +496,7 @@ class Yii2ServiceProvider extends ServiceProvider
         SystemMessages::registerEvents();
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
+        Users::registerEvents();
 
         /**
          * Controllers
@@ -519,14 +524,24 @@ class Yii2ServiceProvider extends ServiceProvider
             ]));
         });
 
-        Event::listen(Login::class, function(Login $event) {
-            $user = app('Craft')->getUsers()->getUserById($event->user->getAuthIdentifier());
+        Event::listen(Authenticated::class, function(Authenticated $event) {
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
+        });
 
-            app('Craft')->getUser()->setIdentity($user);
+        Event::listen(Login::class, function(Login $event) {
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
         Event::listen(Logout::class, function() {
             app('Craft')->getUser()->setIdentity(null);
+        });
+
+        Event::listen(TagsInvalidated::class, function(TagsInvalidated $event) {
+            YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
         /**

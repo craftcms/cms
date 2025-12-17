@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
@@ -17,6 +16,7 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\Event;
 use yii\base\Model;
 use function CraftCms\Cms\t;

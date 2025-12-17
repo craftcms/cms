@@ -8,8 +8,9 @@
 namespace craft\filters;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 
@@ -46,8 +47,10 @@ class BasicHttpAuthLogin extends HttpBasicAuth
             return null;
         }
 
-        $user = User::find()->username($username)->one();
-        $identity = $user?->findIdentity($user->id);
+        $user = User::find()->username($username)->first();
+
+        /** @var ?IdentityWrapper $identity */
+        $identity = $user ? new IdentityWrapper($user)->findIdentity($user->id) : null;
 
         if ($identity && Craft::$app->getSecurity()->validatePassword($password, $identity->password)) {
             return $identity;

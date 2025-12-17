@@ -8,11 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\elements\User;
 use craft\events\UserGroupEvent;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\UserGroups as UserGroupsFacade;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
 use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;

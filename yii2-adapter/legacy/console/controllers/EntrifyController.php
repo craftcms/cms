@@ -13,7 +13,6 @@ use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
@@ -35,6 +34,8 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -697,7 +698,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_author)) {
             if (isset($this->author)) {
-                $author = Craft::$app->getUsers()->getUserByUsernameOrEmail($this->author);
+                $author = Users::getUserByUsernameOrEmail($this->author);
                 if (!$author) {
                     throw new InvalidConfigException("Invalid author username or email: $this->author");
                 }
@@ -706,14 +707,13 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
-                $usersService = Craft::$app->getUsers();
                 $what = Cms::config()->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
-                    'validator' => fn(string $value) => $usersService->getUserByUsernameOrEmail($value) !== null,
+                    'validator' => fn(string $value) => Users::getUserByUsernameOrEmail($value) !== null,
                     'error' => "Invalid $what.",
                 ]);
-                $this->_author = $usersService->getUserByUsernameOrEmail($usernameOrEmail);
+                $this->_author = Users::getUserByUsernameOrEmail($usernameOrEmail);
             }
         }
 

@@ -65,19 +65,23 @@ use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -387,7 +391,7 @@ class Asset extends Element
         }
 
         $assetsService = Craft::$app->getAssets();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         foreach ($volumeIds as $volumeId) {
             $folder = $assetsService->getRootFolderByVolumeId($volumeId);
@@ -429,7 +433,7 @@ class Asset extends Element
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
             if ($folder) {
-                $source = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+                $source = self::_assembleSourceInfoForFolder($folder, Auth::user());
                 $source['keyPath'] = $sourceKey;
                 return $source;
             }
@@ -662,7 +666,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
     {
         if ($attribute === 'uploader') {
             $elementQuery->andWith('uploader');
@@ -720,7 +724,7 @@ class Asset extends Element
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
-                'placeholder' => fn() => ($uploader = Craft::$app->getUser()->getIdentity()) ? Cp::elementChipHtml($uploader) : '',
+                'placeholder' => fn() => ($uploader = Auth::user()) ? Cp::elementChipHtml($uploader) : '',
             ],
         ]);
 
@@ -1578,7 +1582,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        $user = $userSession->getIdentity();
+        $user = Auth::user();
         $view = Craft::$app->getView();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
@@ -2108,7 +2112,7 @@ JS,[
             return null;
         }
 
-        if (($this->_uploader = Craft::$app->getUsers()->getUserById($this->uploaderId)) === null) {
+        if (($this->_uploader = Users::getUserById($this->uploaderId)) === null) {
             // The uploader is probably soft-deleted. Just pretend no uploader is set
             return null;
         }

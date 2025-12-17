@@ -76,18 +76,22 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
+use yii\db\Expression;
 use function CraftCms\Cms\t;
 
 /**
@@ -313,7 +317,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         foreach ($sectionTypes as $type => $heading) {
             if (!empty($sectionsByType[$type])) {
@@ -452,7 +456,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $elementsService = Craft::$app->getElements();
 
         if ($section) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -694,7 +698,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineCardAttributes(): array
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = Auth::user();
 
         $attributes = array_merge(parent::defineCardAttributes(), [
             'section' => [
@@ -832,7 +836,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'authors':
@@ -1361,7 +1365,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section->type === SectionType::Structure) {
             $elementsService = Craft::$app->getElements();
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1823,12 +1827,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $authors = User::find()
                     ->authorOf($this)
                     ->status(null)
-                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], [
-                        'and',
-                        ['entries_authors.entryId' => $this->id],
-                        '[[entries_authors.authorId]] = [[users.id]]',
-                    ])
-                    ->orderBy(['entries_authors.sortOrder' => SORT_ASC])
+                    ->join(
+                        new Alias(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS, 'entries_authors'),
+                        function(JoinClause $join) {
+                            $join->on('entries_authors.authorId', '=', 'users.id')
+                                ->where('entries_authors.entryId', '=', $this->id);
+                        }
+                    )
+                    ->orderBy('entries_authors.sortOrder')
                     ->all();
             }
 
@@ -2386,7 +2392,7 @@ JS, [
     private function _canMove(?User $user = null): bool
     {
         if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if (!$user) {
                 return false;
             }
@@ -2456,7 +2462,7 @@ JS, [
         $fields = [];
         $view = Craft::$app->getView();
         $section = $this->getSection();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
@@ -2842,7 +2848,7 @@ JS;
             !isset($this->fieldId) &&
             $this->getSection()->type !== SectionType::Single
         ) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
             if ($user) {
                 $this->setAuthor($user);
             }

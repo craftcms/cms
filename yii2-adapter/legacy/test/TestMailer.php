@@ -7,9 +7,9 @@
 
 namespace craft\test;
 
-use craft\elements\User;
 use craft\mail\Mailer;
 use craft\mail\Message;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Exactly the same as Codeception\Lib\Connector\Yii2\TestMailer except that we override based on Crafts own mailer class.

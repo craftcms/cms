@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http;
+namespace CraftCms\Cms\Auth\Concerns;
 
 use Craft;
 use craft\elements\Entry;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
-
-use function CraftCms\Cms\t;
 
 trait EnforcesPermissions
 {
@@ -41,7 +40,7 @@ trait EnforcesPermissions
 
     protected function requireSessionAuthorization(string $permission): void
     {
-        if (! Craft::$app->getSession()->checkAuthorization($permission)) {
+        if (! SessionAuth::checkAuthorization($permission)) {
             abort(403, 'User is not authorized to perform this action.');
         }
     }
@@ -57,16 +56,8 @@ trait EnforcesPermissions
         }
     }
 
-    protected function requireElevatedSession(): void
+    protected function requireAdmin(): void
     {
-        Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(Auth::user()->id),
-        );
-
-        abort_unless(
-            Craft::$app->getUser()->getHasElevatedSession(),
-            403,
-            t('This action may only be performed with an elevated session.'),
-        );
+        abort_unless(Auth::user()->isAdmin(), 403, 'User is not permitted to perform this action.');
     }
 }

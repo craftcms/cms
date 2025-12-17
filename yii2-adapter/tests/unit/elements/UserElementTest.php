@@ -10,13 +10,14 @@ namespace crafttests\unit\elements;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\services\Users;
 use craft\test\TestCase;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -151,7 +152,7 @@ class UserElementTest extends TestCase
 
         self::assertSame(
             '["TOKEN",null,"' . md5('Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)') . '"]',
-            $this->activeUser->getAuthKey()
+            new IdentityWrapper($this->activeUser)->getAuthKey()
         );
 
         Session::reset();
@@ -167,7 +168,7 @@ class UserElementTest extends TestCase
         ]);
 
         $this->tester->expectThrowable(Exception::class, function() {
-            $this->activeUser->getAuthKey();
+            new IdentityWrapper($this->activeUser)->getAuthKey();
         });
     }
 
@@ -183,15 +184,15 @@ class UserElementTest extends TestCase
                 'token' => 'EXAMPLE_TOKEN',
             ])->execute();
 
-        self::assertFalse($this->activeUser->validateAuthKey('NOT_JSON'));
-        self::assertFalse($this->activeUser->validateAuthKey('["JSON_ONE_ITEM"]'));
+        self::assertFalse(new IdentityWrapper($this->activeUser)->validateAuthKey('NOT_JSON'));
+        self::assertFalse(new IdentityWrapper($this->activeUser)->validateAuthKey('["JSON_ONE_ITEM"]'));
         self::assertFalse(
-            $this->activeUser->validateAuthKey(
+            new IdentityWrapper($this->activeUser)->validateAuthKey(
                 '["EXAMPLE_TOKEN",null,"NOT_A_USER_AGENT"]'
             )
         );
         self::assertFalse(
-            $this->activeUser->validateAuthKey(
+            new IdentityWrapper($this->activeUser)->validateAuthKey(
                 '["NOT_A_VALID_TOKEN",null,"' . $validUserAgent . '"]'
             )
         );
@@ -203,7 +204,7 @@ class UserElementTest extends TestCase
             'getUserAgent' => $validUserAgent,
         ]);
         self::assertTrue(
-            $this->activeUser->validateAuthKey(
+            new IdentityWrapper($this->activeUser)->validateAuthKey(
                 '["EXAMPLE_TOKEN",null,"' . md5($validUserAgent) . '"]'
             )
         );
@@ -228,7 +229,7 @@ class UserElementTest extends TestCase
             ])->execute();
 
         self::assertTrue(
-            $this->activeUser->validateAuthKey(
+            new IdentityWrapper($this->activeUser)->validateAuthKey(
                 '["EXAMPLE_TOKEN",null,"INVALID_USER_AGENT"]'
             )
         );

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -13,6 +12,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
 use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;
@@ -65,7 +65,6 @@ final readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        /** @var ?\craft\elements\User $user */
         $currentUser = Auth::user();
 
         if (! $currentUser && ! $user) {

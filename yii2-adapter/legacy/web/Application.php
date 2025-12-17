@@ -28,8 +28,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -253,7 +256,7 @@ class Application extends \yii\web\Application
                     // See if the user is expected to have 2FA enabled
                     if (!$generalConfig->disable2fa) {
                         $auth = $this->getAuth();
-                        $user = $userSession->getIdentity();
+                        $user = Auth::user();
                         if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
                             return $this->runAction('users/setup-2fa');
                         }
@@ -384,7 +387,7 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(Db::escapeParam($username));
+        $user = Users::getUserByUsernameOrEmail(Db::escapeParam($username));
 
         if (!$user) {
             throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
@@ -394,7 +397,7 @@ class Application extends \yii\web\Application
             throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
         }
 
-        $this->getUser()->setIdentity($user);
+        $this->getUser()->setIdentity(new IdentityWrapper($user));
     }
 
     /**
@@ -409,7 +412,7 @@ class Application extends \yii\web\Application
         }
 
         // Only load the debug toolbar if it's enabled for the user, or Dev Mode is enabled and the request wants it
-        $user = $this->getUser()->getIdentity();
+        $user = Auth::user();
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||

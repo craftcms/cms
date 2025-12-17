@@ -45,7 +45,7 @@ final readonly class UserSettingsController
 
         $settings = $this->projectConfig->get('users') ?? [];
         $settings['photoVolumeUid'] = $request->input('photoVolumeId')
-            ? Craft::$app->getVolumes()->getVolumeById($request->input('photoVolumeId'))?->uid
+            ? Craft::$app->getVolumes()->getVolumeById($request->integer('photoVolumeId'))?->uid
             : null;
         $settings['photoSubpath'] = $request->input('photoSubpath');
 

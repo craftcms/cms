@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
@@ -18,7 +19,7 @@ beforeEach(function () {
 
     $this->entry = Entry::factory()->create();
 
-    Craft::$app->getSession()->authorize("previewElement:{$this->entry->id}");
+    SessionAuth::authorize("previewElement:{$this->entry->id}");
 });
 
 it('can create a token', function () {

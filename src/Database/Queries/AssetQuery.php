@@ -21,6 +21,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Language\Alias;
 
+/** @phpstan-ignore class.missingExtends */
 final class AssetQuery extends ElementQuery
 {
     use EagerloadsTransforms;
@@ -170,7 +171,7 @@ final class AssetQuery extends ElementQuery
         });
     }
 
-    protected function createElement(array $row): ElementInterface
+    public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
         $siteAlt = Arr::pull($row, 'siteAlt');

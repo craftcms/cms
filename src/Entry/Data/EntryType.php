@@ -170,7 +170,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        if (! Auth::user()->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return [];
         }
 
@@ -282,7 +282,7 @@ JS, [
      */
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()->isAdmin()) {
+        if (! $this->id || ! Auth::user()?->isAdmin()) {
             return null;
         }
 

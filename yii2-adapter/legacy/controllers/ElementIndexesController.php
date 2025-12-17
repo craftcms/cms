@@ -26,6 +26,7 @@ use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -68,12 +69,12 @@ class ElementIndexesController extends BaseElementsController
 
     protected ?array $viewState = null;
 
-    protected ?ElementQueryInterface $elementQuery = null;
+    protected ElementQueryInterface|ElementQuery|null $elementQuery = null;
 
     /**
      * @since 5.0.0
      */
-    protected ?ElementQueryInterface $unfilteredElementQuery = null;
+    protected ElementQueryInterface|ElementQuery|null $unfilteredElementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null
@@ -668,7 +669,7 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element query based on the current params.
      */
-    protected function elementQuery(): ElementQueryInterface
+    protected function elementQuery(): ElementQueryInterface|ElementQuery
     {
         $query = $this->elementType::find();
         $conditionsService = Craft::$app->getConditions();

@@ -12,7 +12,6 @@ use Craft;
 use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
@@ -24,12 +23,15 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
@@ -74,8 +76,10 @@ class ExtensionTest extends TestCase
             'firstName' => 'John',
             'lastName' => 'Smith',
         ]);
-        Craft::$app->getUser()->setIdentity($user);
+        Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
         Craft::$app->getRequest()->setRawBody('This is a raw body');
+
+        Auth::login($user);
 
         // Current user
         $this->testRenderResult(

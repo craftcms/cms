@@ -21,6 +21,7 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -37,7 +38,7 @@ final readonly class CreateEntryController
         private Entries $entries,
     ) {}
 
-    public function __invoke(Drafts $drafts): Response
+    public function __invoke(Drafts $drafts, Users $users): Response
     {
         $section = $this->getSection();
         $site = $this->getSite($section);
@@ -70,7 +71,7 @@ final readonly class CreateEntryController
         }
 
         // Make sure the user is allowed to create this entry
-        $craftUser = Craft::$app->getUsers()->getUserById($user->id);
+        $craftUser = $users->getUserById($user->id);
         abort_unless(Craft::$app->getElements()->canSave($entry, $craftUser), 403, 'User not authorized to create this entry.');
 
         $this->setTitleAndSlug($entry, $site);

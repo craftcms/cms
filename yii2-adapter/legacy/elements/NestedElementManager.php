@@ -20,6 +20,7 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
@@ -34,6 +35,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -205,8 +207,10 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
+        /** @phpstan-ignore function.alreadyNarrowedType */
         $result = method_exists($query, 'getCachedResult')
             ? $query->getCachedResult()
+            /** @phpstan-ignore method.notFound */
             : $query->getResultOverride();
 
         if ($fetchAll && $result === null) {
@@ -605,12 +609,12 @@ class NestedElementManager extends Component
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
             /** @var ElementInterface $owner */
-            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            if ($owner->draftCreatorId === Auth::user()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
-        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use (
@@ -812,8 +816,10 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
+            /** @phpstan-ignore function.alreadyNarrowedType */
             $elements = method_exists($value, 'getCachedResult')
                 ? $value->getCachedResult()
+                /** @phpstan-ignore method.notFound */
                 : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);

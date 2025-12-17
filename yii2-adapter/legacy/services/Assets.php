@@ -18,7 +18,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
-use craft\elements\User;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\FsException;
@@ -44,6 +43,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
@@ -983,11 +984,8 @@ class Assets extends Component
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
-        if ($user === null) {
-            // Default to the logged-in user, if there is one
-            $user = Craft::$app->getUser()->getIdentity();
-        }
-
+        // Default to the logged-in user, if there is one
+        $user ??= Auth::user();
         $cacheKey = $user->id ?? '__GUEST__';
 
         if (isset($this->_userTempFolders[$cacheKey])) {

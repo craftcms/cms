@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
@@ -63,7 +64,7 @@ trait LogTargetTrait
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = $user->getIdentity(false))) {
+        if ($user && ($identity = Auth::user())) {
             $userID = $identity->getId();
         } else {
             $userID = '-';

@@ -7,8 +7,8 @@
 
 namespace craft\auth\passkeys;
 
-use Craft;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Auth;
 use ParagonIE\ConstantTime\Base64UrlSafe;
@@ -45,7 +45,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
     {
         // Get the user ID by their UID.
-        $user = Craft::$app->getUsers()->getUserByUid($publicKeyCredentialUserEntity->getId());
+        $user = Users::getUserByUid($publicKeyCredentialUserEntity->getId());
 
         $keySources = [];
         if ($user && $user->id) {
