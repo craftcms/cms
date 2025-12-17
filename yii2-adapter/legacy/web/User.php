@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
@@ -39,6 +40,8 @@ use function CraftCms\Cms\t;
  */
 class User extends \CraftCms\Yii2Adapter\Web\User
 {
+    use ConfirmsPasswords;
+
     /**
      * @var string The session variable name used to store the duration of the authenticated state.
      * @since 3.6.8
@@ -55,11 +58,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * @see Cookie
      */
     public array $usernameCookie;
-
-    /**
-     * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
-     */
-    public string $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     /**
      * @var string The session variable name used to store the original user ID, when impersonating another user.
@@ -359,43 +357,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::confirmedPasswordTimeout()} instead.
      */
     public function getElevatedSessionTimeout(): int|false
     {
-        // Are they logged in?
-        if (!$this->getIsGuest()) {
-            $expires = SessionHelper::get($this->elevatedSessionTimeoutParam);
-
-            if ($expires !== null) {
-                $currentTime = DateTimeHelper::currentTimeStamp();
-
-                if ($expires > $currentTime) {
-                    return $expires - $currentTime;
-                }
-            }
-        }
-
-        // If it has been disabled, return false.
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return false;
-        }
-
-        return 0;
+        return $this->confirmedPasswordTimeout();
     }
 
     /**
      * Returns whether the user currently has an elevated session.
      *
      * @return bool Whether the user currently has an elevated session
+     * @deprecated 6.0.0 use {@see ConfirmsPasswords::isPasswordConfirmed()} instead.
      */
     public function getHasElevatedSession(): bool
     {
-        // If it's been disabled, just return true
-        if (Cms::config()->elevatedSessionDuration === 0) {
-            return true;
-        }
-
-        return ($this->getElevatedSessionTimeout() !== 0);
+        return $this->isPasswordConfirmed();
     }
 
     /**
@@ -414,8 +391,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             // Set the elevated session expiration date
             $generalConfig = Cms::config();
             if ($generalConfig->elevatedSessionDuration !== 0) {
-                $timeout = DateTimeHelper::currentTimeStamp() + $generalConfig->elevatedSessionDuration;
-                SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
+                \Illuminate\Support\Facades\Session::passwordConfirmed();
             }
         }
 
@@ -624,9 +600,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
     private function _clearOtherSessionParams(): void
     {
-        // Clear out the elevated session, if there is one
-        SessionHelper::remove($this->elevatedSessionTimeoutParam);
-
         // Make sure 2FA data doesn't bleed over
         $authService = Craft::$app->getAuth();
         $authService->setUser(null);

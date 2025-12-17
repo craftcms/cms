@@ -32,6 +32,7 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
 use craft\web\View;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -354,11 +355,11 @@ class ElementsController extends Controller
 
         if ($previewTargets) {
             if ($isDraft && !$element->isProvisionalDraft) {
-                Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
+                SessionAuth::authorize("previewDraft:$element->draftId");
             } elseif ($isRevision) {
-                Craft::$app->getSession()->authorize("previewRevision:$element->revisionId");
+                SessionAuth::authorize("previewRevision:$element->revisionId");
             } else {
-                Craft::$app->getSession()->authorize("previewElement:$canonical->id");
+                SessionAuth::authorize("previewElement:$canonical->id");
             }
         }
 
@@ -2036,7 +2037,7 @@ JS, [
         }
 
         // Make sure the user is authorized to preview the draft
-        Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
+        SessionAuth::authorize("previewDraft:$element->draftId");
 
         return $this->_asSuccess(t('{type} saved.', [
             'type' => t('Draft'),

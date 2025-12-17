@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Http\EnforcesPermissions;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Structures;

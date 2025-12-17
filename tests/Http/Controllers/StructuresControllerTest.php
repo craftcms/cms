@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -59,7 +60,7 @@ it('requires the editStructure permission', function (string $route) {
     $user->update(['admin' => true]);
     actingAs($user->asElement());
 
-    Craft::$app->getSession()->authorize("editStructure:{$structure->id}");
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $status = postJson($route, [
         'structureId' => $structure->id,
@@ -73,7 +74,7 @@ it('requires the editStructure permission', function (string $route) {
 it('needs a valid element', function (string $route) {
     $structure = Structure::factory()->create();
 
-    Craft::$app->getSession()->authorize("editStructure:{$structure->id}");
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     postJson($route, [
         'structureId' => $structure->id,
@@ -86,7 +87,7 @@ it('can get element level delta', function (string $elementToTest, int $expected
     $structure = Structure::factory()->create();
     $root = $structure->structureElements()->firstOrFail();
     Entry::factory()->create(['id' => $root->elementId]);
-    Craft::$app->getSession()->authorize("editStructure:{$structure->id}");
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $child = new StructureElement([
         'structureId' => $structure->id,
@@ -121,7 +122,7 @@ it('can move elements', function () {
     $structure = Structure::factory()->create();
     $root = $structure->structureElements()->firstOrFail();
     Entry::factory()->create(['id' => $root->elementId]);
-    Craft::$app->getSession()->authorize("editStructure:{$structure->id}");
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $child1 = new StructureElement([
         'structureId' => $structure->id,

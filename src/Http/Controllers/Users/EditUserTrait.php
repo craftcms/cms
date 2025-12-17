@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;

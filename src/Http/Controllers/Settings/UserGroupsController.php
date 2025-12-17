@@ -6,9 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
 use craft\helpers\Cp;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -23,6 +24,7 @@ use function CraftCms\Cms\t;
 
 final readonly class UserGroupsController
 {
+    use ConfirmsPasswords;
     use EnforcesPermissions;
     use RespondsWithFlash;
 
@@ -149,7 +151,7 @@ final readonly class UserGroupsController
                 }
 
                 // Yep. This will require an elevated session
-                $this->requireElevatedSession();
+                $this->requireConfirmedPassword();
                 break;
             }
         }

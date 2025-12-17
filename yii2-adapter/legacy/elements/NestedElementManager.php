@@ -20,6 +20,7 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
@@ -613,7 +614,7 @@ class NestedElementManager extends Component
             }
         }
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
-        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use (

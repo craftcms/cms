@@ -20,6 +20,7 @@ use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
 use craft\web\Response;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -394,7 +395,7 @@ class GraphqlController extends Controller
             } catch (InvalidArgumentException) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
-            Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
+            SessionAuth::authorize("graphql-schema:$schemaUid");
         } else {
             $selectedSchema = GqlHelper::createFullAccessSchema();
         }

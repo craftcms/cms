@@ -53,7 +53,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
-use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -273,7 +272,7 @@ Route::prefix(implode('/', [
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
         // Users
-        Route::middleware([RequireElevatedSession::class])->group(function () {
+        Route::middleware('password.confirm')->group(function () {
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
         });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -29,6 +30,7 @@ use function CraftCms\Cms\t;
 
 final readonly class PermissionsController
 {
+    use ConfirmsPasswords;
     use EditUserTrait;
     use RespondsWithFlash;
 
@@ -75,7 +77,7 @@ final readonly class PermissionsController
 
             if ($adminParam !== $user->admin) {
                 if ($adminParam) {
-                    $this->requireElevatedSession();
+                    $this->requireConfirmedPassword();
                 }
 
                 $user->admin = $adminParam;
@@ -151,7 +153,7 @@ final readonly class PermissionsController
         }
 
         if ($hasNewGroups) {
-            $this->requireElevatedSession();
+            $this->requireConfirmedPassword();
         }
 
         Users::assignUserToGroups($user->id, $groupIds);
@@ -198,7 +200,7 @@ final readonly class PermissionsController
         }
 
         if ($hasNewPermissions) {
-            $this->requireElevatedSession();
+            $this->requireConfirmedPassword();
         }
 
         UserPermissions::saveUserPermissions($user->id, $permissions);

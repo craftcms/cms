@@ -34,6 +34,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -84,6 +85,7 @@ use function CraftCms\Cms\t;
  */
 class UsersController extends Controller
 {
+    use ConfirmsPasswords;
     use EditUserTrait;
 
     /**
@@ -456,10 +458,8 @@ class UsersController extends Controller
      */
     public function actionGetElevatedSessionTimeout(): Response
     {
-        $timeout = Craft::$app->getUser()->getElevatedSessionTimeout();
-
         return $this->asJson([
-            'timeout' => $timeout,
+            'timeout' => $this->confirmedPasswordTimeout(),
         ]);
     }
 
@@ -867,9 +867,7 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new BadRequestHttpException('An elevated session is required to change your password.');
-        }
+        $this->requireConfirmedPassword(message: 'An elevated session is required to change your password.');
 
         $user = static::currentUser();
 
@@ -1638,7 +1636,7 @@ class UsersController extends Controller
      */
     private function _verifyElevatedSession(): bool
     {
-        return (Craft::$app->getUser()->getHasElevatedSession() || $this->_verifyExistingPassword());
+        return ($this->isPasswordConfirmed() || $this->_verifyExistingPassword());
     }
 
     /**
