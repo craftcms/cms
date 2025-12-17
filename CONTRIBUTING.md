@@ -69,7 +69,7 @@ If you would like to work on a new core feature or improvement, first create a [
 
 ## Control Panel Front End
 
-In order to work on the control panel front end, you'll want to spin up two terminal windows. Run `npm run dev` in one, and `npm run dev:cp` in the other. That will start the main Vite process as well as the Vite process for the `@craftcms/cp` package. 
+In order to work on the control panel front end, we recommend opening two terminal windows. Run `npm run dev` in one, and `npm run dev:cp` in the other. That will start the main Vite process as well as the Vite process for the `@craftcms/cp` package. 
 
 With both running, you'll be able to work on most aspects of the control panel. 
 
@@ -77,8 +77,7 @@ If getting into the weeds is your thing, more detail on these pieces is provided
 
 ### CP assets
 
-The assets specific to the CP live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the CP there are two commands:
-
+The assets specific to the CP live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the CP, there are two commands:
 ```shell
 # Run the vite development server
 npm run dev
@@ -90,7 +89,6 @@ npm run build
 ### `@craftcms/cp` package
 
 The CP is largely backed by web components that live in the `@craftcms/cp` package within the `packages/craftcms-cp` directory. Like other packages, it has its own build process that can be run independently of the CP.
-
 ```shell
 # Run the build in watch mode. Assets will be rebuilt on every change
 npm run dev:cp
@@ -106,8 +104,7 @@ In practice, you rarely work on one without the other, so we recommend having tw
 > [!NOTE]  
 > Updating the legacy bundles should be a rare occurrence. Avoid when possible.
 
-ALl of the styles and scripts used to support the CP up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project you're able to run the build scripts via the `build:bundles` command.
-
+All of the styles and scripts used to support the CP up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
 ```sh
 # Build assets for production
 npm run build:bundles
