@@ -215,6 +215,10 @@ final class MigrateCommand extends Command implements Isolatable
                     continue;
                 }
 
+                if ($this->option('track') && $this->option('track') !== $track) {
+                    continue;
+                }
+
                 $this->migrators[$track] = $migrator;
 
                 if (! empty($migrations = $migrator->getPendingMigrations())) {
