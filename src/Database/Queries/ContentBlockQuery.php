@@ -10,6 +10,8 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
  * @extends ElementQuery<ContentBlock>
+ *
+ * @phpstan-ignore class.missingExtends
  */
 final class ContentBlockQuery extends ElementQuery
 {

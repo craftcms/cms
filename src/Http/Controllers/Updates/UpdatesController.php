@@ -132,7 +132,7 @@ final readonly class UpdatesController
             $arr['statusText'] = Html::tag('strong', t('This plugin is no longer maintained.'));
 
             if ($update->replacementName) {
-                if (Auth::user()->isAdmin() && $this->generalConfig->allowAdminChanges) {
+                if (Auth::user()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
                     $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
                 } else {
                     $replacementUrl = $update->replacementUrl;

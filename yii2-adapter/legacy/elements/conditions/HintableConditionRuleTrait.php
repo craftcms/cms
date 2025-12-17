@@ -7,7 +7,7 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * HintableConditionRuleTrait
@@ -22,6 +22,6 @@ trait HintableConditionRuleTrait
      */
     public function showLabelHint(): bool
     {
-        return Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
+        return Auth::user()?->getPreference('showFieldHandles') ?? false;
     }
 }

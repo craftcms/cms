@@ -14,8 +14,6 @@ use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
@@ -38,7 +36,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -46,7 +46,9 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
@@ -429,7 +431,7 @@ class ElementsController extends Controller
             ->noticeHtml($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
-                fn(Response $response, string $containerId) => $this->_prepareEditor(
+                fn(Response|CpScreenResponse $response, string $containerId) => $this->_prepareEditor(
                     $element,
                     $isUnpublishedDraft,
                     $canSave,
@@ -783,17 +785,29 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         if (!$isUnpublishedDraft) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Auth::user();
 
-            $drafts = $element::find()
-                ->draftOf($element)
-                ->siteId($element->siteId)
-                ->status(null)
-                ->orderBy(['dateUpdated' => SORT_DESC])
-                ->with(['draftCreator'])
-                ->collect()
-                ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
-                ->all();
+            if ($element instanceof User) {
+                $drafts = $element::find()
+                    ->draftOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->orderByDesc('dateUpdated')
+                    ->with(['draftCreator'])
+                    ->get()
+                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->all();
+            } else {
+                $drafts = $element::find()
+                    ->draftOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->orderBy(['dateUpdated' => SORT_DESC])
+                    ->with(['draftCreator'])
+                    ->collect()
+                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->all();
+            }
         } else {
             $drafts = [];
         }
@@ -1056,7 +1070,7 @@ JS, [
         ElementInterface $element,
         bool $isUnpublishedDraft,
         bool $canSave,
-        Response $response,
+        Response|CpScreenResponse $response,
         string $containerId,
         callable $contentFn,
         callable $sidebarFn,
@@ -1069,8 +1083,12 @@ JS, [
         $contentHtml = $contentFn($form);
         $sidebarHtml = $sidebarFn($form);
 
-        /** @var CpScreenResponseBehavior|null $behavior */
-        $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+        if ($response instanceof CpScreenResponse) {
+            $behavior = $response;
+        } else {
+            /** @var CpScreenResponseBehavior|null $behavior */
+            $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+        }
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->getAcceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
@@ -2450,7 +2468,7 @@ JS, [
         }
 
         $elementsService = Craft::$app->getElements();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = Auth::user();
         $activity = $elementsService->getRecentActivity($element, $currentUser->id);
         $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
 

@@ -750,7 +750,6 @@ final class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        /** @var ?\craft\elements\User $currentUser */
         $currentUser = Auth::user();
 
         if (! $currentUser && ! $user) {

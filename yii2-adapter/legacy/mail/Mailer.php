@@ -8,7 +8,6 @@
 namespace craft\mail;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
+use CraftCms\Cms\User\Elements\User;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;

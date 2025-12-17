@@ -7,15 +7,15 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
-use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use yii\base\UnknownMethodException;
 
 /**
@@ -41,7 +41,7 @@ class User extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (!$query instanceof ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 

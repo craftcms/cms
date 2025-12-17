@@ -30,7 +30,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
-use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -89,6 +88,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -100,13 +100,16 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
+use Stringable;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
@@ -956,6 +959,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function get(int|string $id): ?static
     {
+        /** @phpstan-ignore return.type */
         return static::find()
             ->id($id)
             ->fixedOrder()
@@ -1265,7 +1269,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function indexHtml(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         ?array $disabledElementIds,
         array $viewState,
         ?string $sourceKey,
@@ -1397,17 +1401,29 @@ abstract class Element extends Component implements ElementInterface
 
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
-        if (is_array($elementQuery->where)) {
-            foreach ($elementQuery->where as $key => $condition) {
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $wheres = $elementQuery->getSubQuery()->wheres;
+        } else {
+            $wheres = $elementQuery->where;
+        }
+
+        if (is_array($wheres)) {
+            foreach ($wheres as $key => $condition) {
                 if ($condition instanceof ExcludeDescendantIdsExpression) {
                     $elementQuery = clone $elementQuery;
-                    unset($elementQuery->where[$key]);
+                    unset($wheres[$key]);
                     break;
                 }
             }
-        } elseif ($elementQuery->where instanceof ExcludeDescendantIdsExpression) {
+        } elseif ($wheres instanceof ExcludeDescendantIdsExpression) {
             $elementQuery = clone $elementQuery;
-            $elementQuery->where = null;
+            $wheres = null;
+        }
+
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $elementQuery->getSubQuery()->wheres = $wheres;
+        } else {
+            $elementQuery->where = $wheres;
         }
 
         return $elementQuery;
@@ -1416,11 +1432,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Prepares an element query for an element index that includes a given table attribute.
      *
-     * @param ElementQueryInterface $elementQuery
+     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery
      * @param string $attribute
      */
     protected static function prepElementQueryForTableAttribute(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         string $attribute,
     ): void {
         switch ($attribute) {
@@ -1467,7 +1483,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        return (int)$elementQuery
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            return $elementQuery
+                ->select(DB::raw('1'))
+                ->count();
+        }
+
+        return (int) $elementQuery
             ->select(new Expression('1'))
             ->count();
     }
@@ -3805,7 +3827,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function prepareEditScreen(Response $response, string $containerId): void
+    public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void
     {
     }
 
@@ -4110,7 +4132,7 @@ JS, [
         $items = [];
 
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         // Figure out what we're dealing with here
         $isCanonical = $this->getIsCanonical();
@@ -5796,7 +5818,7 @@ JS, [
      * @see getAttributeHtml()
      * @since 5.0.0
      */
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
         switch ($attribute) {
             case 'id':

@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -205,8 +206,10 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
+        /** @phpstan-ignore function.alreadyNarrowedType */
         $result = method_exists($query, 'getCachedResult')
             ? $query->getCachedResult()
+            /** @phpstan-ignore method.notFound */
             : $query->getResultOverride();
 
         if ($fetchAll && $result === null) {
@@ -605,7 +608,7 @@ class NestedElementManager extends Component
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
             /** @var ElementInterface $owner */
-            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            if ($owner->draftCreatorId === Auth::user()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }
@@ -812,8 +815,10 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
+            /** @phpstan-ignore function.alreadyNarrowedType */
             $elements = method_exists($value, 'getCachedResult')
                 ? $value->getCachedResult()
+                /** @phpstan-ignore method.notFound */
                 : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);

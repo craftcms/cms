@@ -7,8 +7,8 @@
 
 namespace craft\gql\handlers;
 
-use craft\elements\User;
 use craft\gql\base\RelationArgumentHandler;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Class RelatedUsers

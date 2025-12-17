@@ -24,7 +24,7 @@ trait QueriesUserGroups
      *            ---
      *            ```php
      *            // fetch the authors
-     *            $admins = \craft\elements\User::find()
+     *            $admins = \CraftCms\Cms\User\Elements\User::find()
      *            ->group('authors')
      *            ->all();
      *            ```
@@ -45,7 +45,7 @@ trait QueriesUserGroups
      *           ---
      *           ```php
      *           // fetch users with their user groups
-     *           $users = \craft\elements\User::find()
+     *           $users = \CraftCms\Cms\User\Elements\User::find()
      *           ->withGroups()
      *           ->all();
      *           ```
@@ -239,7 +239,7 @@ trait QueriesUserGroups
      *
      * ```php
      * // fetch users with their user groups
-     * $users = \craft\elements\User::find()
+     * $users = \CraftCms\Cms\User\Elements\User::find()
      *     ->withGroups()
      *     ->all();
      * ```

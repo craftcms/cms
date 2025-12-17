@@ -9,7 +9,7 @@ namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Set a value from a parsed view template as a User's attribute

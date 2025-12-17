@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\User;
+namespace CraftCms\Cms\Auth;
 
-use Closure;
-use craft\elements\User;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
+use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use SensitiveParameter;
 
 final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
@@ -55,7 +57,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
     {
         DB::table(Table::USERS)
             ->where('id', $user->getAuthIdentifier())
-            ->update([$user->getRememberTokenName() => $token]);
+            ->update(['rememberToken' => $token]);
     }
 
     /**
@@ -73,19 +75,23 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
             return null;
         }
 
-        $query = User::find();
+        $loginName = $credentials['loginName'];
 
-        foreach ($credentials as $key => $value) {
-            if (is_array($value) || $value instanceof Arrayable) {
-                $query->whereIn($key, $value);
-            } elseif ($value instanceof Closure) {
-                $value($query);
-            } else {
-                $query->where($key, $value);
-            }
+        $user = null;
+        if (Event::hasListeners(RetrievingLoginUser::class)) {
+            Event::dispatch($event = new RetrievingLoginUser($loginName));
+            $user = $event->user;
         }
 
-        return $query->first();
+        $user ??= Users::getUserByUsernameOrEmail($loginName);
+
+        if (Event::hasListeners(LoginUserRetrieved::class)) {
+            Event::dispatch($event = new LoginUserRetrieved($loginName, $user));
+
+            return $event->user;
+        }
+
+        return $user;
     }
 
     /**

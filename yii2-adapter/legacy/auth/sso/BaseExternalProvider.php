@@ -9,7 +9,6 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\auth\sso\mapper\UserAttributesMapper;
-use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
@@ -19,8 +18,10 @@ use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Exception;
@@ -172,7 +173,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // Finally, attempt via username / email
         if ($idpIdentifier) {
-            return Craft::$app->getUsers()->getUserByUsernameOrEmail(
+            return Users::getUserByUsernameOrEmail(
                 $idpIdentifier
             );
         }
@@ -250,7 +251,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         $this->trigger(Sso::EVENT_POPULATE_USER_GROUPS, $event);
 
-        return Craft::$app->getUsers()->assignUserToGroups(
+        return Users::assignUserToGroups(
             $user->getId(),
             $event->groupIds,
         );
@@ -263,7 +264,7 @@ abstract class BaseExternalProvider extends BaseProvider
     private function enableUser(User $user): void
     {
         if ($user->getId()) {
-            Craft::$app->getUsers()->activateUser($user);
+            Users::activateUser($user);
 
             return;
         }

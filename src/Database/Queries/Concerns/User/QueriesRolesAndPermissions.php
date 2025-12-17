@@ -21,12 +21,12 @@ trait QueriesRolesAndPermissions
      *                ---
      *                ```php
      *                // fetch all the admins
-     *                $admins = \craft\elements\User::find()
+     *                $admins = \CraftCms\Cms\User\Elements\User::find()
      *                ->admin(true)
      *                ->all();
      *
      * // fetch all the non-admins
-     * $nonAdmins = \craft\elements\User::find()
+     * $nonAdmins = \CraftCms\Cms\User\Elements\User::find()
      *     ->admin(false)
      *     ->all();
      * ```
@@ -51,7 +51,7 @@ trait QueriesRolesAndPermissions
      *            ---
      *            ```php
      *            // fetch users who can access the front end when the system is offline
-     *            $admins = \craft\elements\User::find()
+     *            $admins = \CraftCms\Cms\User\Elements\User::find()
      *            ->can('accessSiteWhenSystemIsOff')
      *            ->all();
      *            ```

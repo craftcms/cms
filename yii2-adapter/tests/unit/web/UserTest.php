@@ -8,13 +8,14 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use UnitTester;
 
 /**
@@ -94,7 +95,7 @@ class UserTest extends TestCase
         self::assertSame(0, $this->user->getRemainingSessionTime());
 
         // With a user and authTimeout null it should return -1
-        $this->user->setIdentity($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
         $this->user->authTimeout = null;
         self::assertSame(-1, $this->user->getRemainingSessionTime());
     }
@@ -106,7 +107,7 @@ class UserTest extends TestCase
     public function testGetRemainingSessionTimeMath(): void
     {
         DateTimeHelper::pause();
-        $this->user->setIdentity($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
 
         // ensure Craft::$app->getSession()->get() always returns the current timestamp + 50.
         $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
@@ -137,7 +138,7 @@ class UserTest extends TestCase
      */
     public function testGetHasElevatedSessionVoid(): void
     {
-        $this->user->setIdentity($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
         // Session must return null
         $this->_sessionGetStub(null);
 
@@ -156,7 +157,7 @@ class UserTest extends TestCase
     public function testGetHasElevatedSessionMath(): void
     {
         DateTimeHelper::pause();
-        $this->user->setIdentity($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
 
         $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
         self::assertEquals(50, $this->user->getElevatedSessionTimeout());

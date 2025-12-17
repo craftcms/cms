@@ -8,6 +8,7 @@ use Craft;
 use craft\elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -60,7 +61,7 @@ trait EnforcesPermissions
     protected function requireElevatedSession(): void
     {
         Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(Auth::user()->id),
+            new IdentityWrapper(Auth::user()),
         );
 
         abort_unless(
@@ -68,5 +69,10 @@ trait EnforcesPermissions
             403,
             t('This action may only be performed with an elevated session.'),
         );
+    }
+
+    protected function requireAdmin(): void
+    {
+        abort_unless(Auth::user()->isAdmin(), 403, 'User is not permitted to perform this action.');
     }
 }

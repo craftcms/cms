@@ -12,7 +12,9 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
-use craft\elements\User;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use function CraftCms\Cms\t;
 
@@ -56,7 +58,7 @@ class SuspendUsers extends ElementAction
 
             return true;
         }
-    });
+    })
 })();
 JS, [
             static::class,
@@ -77,15 +79,14 @@ JS, [
 
         /** @var User[] $users */
         $users = $query->all();
-        $usersService = Craft::$app->getUsers();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = Auth::user();
 
-        $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
+        $successCount = count(array_filter($users, function(User $user) use ($currentUser) {
             try {
-                if (!$usersService->canSuspend($currentUser, $user)) {
+                if (!Users::canSuspend($currentUser, $user)) {
                     return false;
                 }
-                $usersService->suspendUser($user);
+                Users::suspendUser($user);
                 return true;
             } catch (Throwable) {
                 return false;

@@ -8,8 +8,8 @@
 namespace craft\auth\methods;
 
 use craft\base\ModelInterface;
-use craft\elements\User;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * AuthMethodInterface defines the common interface to be implemented by

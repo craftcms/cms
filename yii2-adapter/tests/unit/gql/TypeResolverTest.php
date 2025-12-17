@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\User;
 use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -21,7 +20,9 @@ use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -112,11 +113,17 @@ class TypeResolverTest extends TestCase
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
-        $elementQuery = Craft::configure($elementType::find(), $params);
+        $elementQueryClass = $elementType::find()::class;
+
+        if ($elementQueryClass instanceof ElementQuery) {
+            $elementQuery = new $elementQueryClass($params);
+        } else {
+            $elementQuery = Craft::configure($elementType::find(), $params);
+        }
 
         // Get the ids and elements.
-        $ids = $elementQuery->ids();
-        $elementResults = $elementQuery->all();
+        $ids = (clone $elementQuery)->ids();
+        $elementResults = (clone $elementQuery)->all();
 
         $sourceElement = new ExampleElement();
         $sourceElement->someField = $elementType::find()->id($ids);

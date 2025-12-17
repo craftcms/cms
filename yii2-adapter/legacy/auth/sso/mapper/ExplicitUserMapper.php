@@ -8,7 +8,7 @@
 namespace craft\auth\sso\mapper;
 
 use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Set an explicit value as a User's attribute

@@ -61,6 +61,7 @@ use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -151,7 +152,7 @@ class Cp
     public static function alerts(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         $generalConfig = Cms::config();
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
@@ -1062,7 +1063,7 @@ JS, [
     private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         $editable = $user && $elementsService->canView($element, $user);
 
         return Arr::merge(
@@ -1720,7 +1721,7 @@ JS, [
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
             $userSessionService->getIsAdmin() &&
-            $userSessionService->getIdentity()->getPreference('showFieldHandles')
+            Auth::user()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
             !empty($config['actionMenuItems']) &&

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
@@ -20,7 +20,7 @@ final class UnlockCommand extends Command implements PromptsForMissingInput
 
     protected $aliases = ['users/unlock'];
 
-    public function handle(): int
+    public function handle(Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -34,7 +34,7 @@ final class UnlockCommand extends Command implements PromptsForMissingInput
 
         $this->components->task(
             'Unlocking the user',
-            fn () => Craft::$app->getUsers()->unlockUser($user),
+            fn () => $users->unlockUser($user),
         );
 
         return self::SUCCESS;

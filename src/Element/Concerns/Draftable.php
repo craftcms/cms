@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\elements\User as UserElement;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 

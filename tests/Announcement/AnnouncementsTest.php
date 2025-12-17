@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\elements\User;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Support\Facades\Announcements;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 

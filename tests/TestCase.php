@@ -52,6 +52,11 @@ class TestCase extends Orchestra
         $this->withoutVite();
     }
 
+    protected function connectionsToTransact(): array
+    {
+        return [config('database.default'), 'db2'];
+    }
+
     #[Override]
     protected function tearDown(): void
     {

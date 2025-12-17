@@ -13,7 +13,6 @@ use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
-use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -25,11 +24,14 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth as AuthFacade;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
@@ -221,10 +223,10 @@ class Auth extends Component
             $userSession = Craft::$app->getUser();
             if ($userSession->getImpersonator() !== null) {
                 /** @var User $user */
-                $user = Craft::$app->getUser()->getIdentity();
+                $user = AuthFacade::user();
             }
 
-            $userSession->login($user, $sessionDuration);
+            $userSession->login(new IdentityWrapper($user), $sessionDuration);
         }
 
         return true;
@@ -266,7 +268,7 @@ class Auth extends Component
      */
     public function getAllMethods(?User $user = null): array
     {
-        $user ??= Craft::$app->getUser()->getIdentity() ?? $this->getUser();
+        $user ??= AuthFacade::user() ?? $this->getUser();
 
         if (!$user?->id) {
             return [];
@@ -398,7 +400,7 @@ class Auth extends Component
         }
 
         if (is_array($require2fa)) {
-            $groups = array_flip(array_map(fn(UserGroup $group) => $group->uid, $user->getGroups()));
+            $groups = Arr::pluck(array: $user->getGroups(), value: '', key: 'uid');
             foreach ($require2fa as $group) {
                 if ($group === 'admins') {
                     if ($user->admin) {

@@ -12,6 +12,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 
+/** @phpstan-ignore class.missingExtends */
 final class AddressQuery extends ElementQuery
 {
     use QueriesNestedElements;

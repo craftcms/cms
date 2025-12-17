@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;

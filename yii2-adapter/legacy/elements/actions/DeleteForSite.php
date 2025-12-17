@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -54,7 +55,7 @@ class DeleteForSite extends ElementAction
 
             return elementIndex.settings.canDeleteElements(selectedItems);
         },
-    });
+    })
 })();
 JS, [static::class]);
 
@@ -93,7 +94,7 @@ JS, [static::class]);
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         // Ignore any elements the user doesn’t have permission to delete
         $elements = array_filter(

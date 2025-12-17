@@ -13,6 +13,7 @@ use CraftCms\Cms\Database\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Database\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use stdClass;
@@ -96,7 +97,7 @@ trait HydratesElements
         return $elements;
     }
 
-    protected function createElement(array $row): ElementInterface
+    public function createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
         if (
@@ -196,6 +197,14 @@ trait HydratesElements
                 $element = $event->element;
             }
         }
+
+        /**
+         * When using addSelect() to select extra columns, they might appear
+         * as `table.column`. We just want `column`
+         */
+        $row = collect($row)
+            ->mapWithKeys(fn (mixed $value, string $key) => [Str::after($key, '.') => $value])
+            ->all();
 
         $element ??= new $class($row);
 

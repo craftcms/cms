@@ -93,6 +93,7 @@ class Asset extends ElementMutationResolver
 
         if (empty($newFolderId)) {
             if (!$canIdentify) {
+                /** @var \craft\elements\Asset $asset */
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
             }
         } else {

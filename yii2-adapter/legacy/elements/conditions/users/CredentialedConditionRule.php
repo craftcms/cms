@@ -7,7 +7,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**

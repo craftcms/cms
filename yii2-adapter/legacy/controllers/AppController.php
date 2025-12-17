@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Search;
@@ -36,6 +37,7 @@ use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
@@ -172,12 +174,12 @@ class AppController extends Controller
         $this->requirePermission('accessCp');
 
         $message = $this->request->getRequiredBodyParam('message');
-        $user = static::currentUser();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow);
+        Users::shunMessageForUser(Auth::user()->id, $message, $tomorrow);
+
         return $this->asSuccess();
     }
 
