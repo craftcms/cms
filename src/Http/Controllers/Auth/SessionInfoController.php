@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +12,9 @@ use Illuminate\Http\Request;
 
 final readonly class SessionInfoController
 {
-    public function __invoke(Request $request, GeneralConfig $generalConfig): JsonResponse
+    use ConfirmsPasswords;
+
+    public function show(Request $request, GeneralConfig $generalConfig): JsonResponse
     {
         $data = [
             'isGuest' => $request->user() === null,
@@ -30,5 +33,12 @@ final readonly class SessionInfoController
         }
 
         return new JsonResponse($data);
+    }
+
+    public function confirmTimeout(): JsonResponse
+    {
+        return new JsonResponse([
+            'timeout' => $this->confirmedPasswordTimeout(),
+        ]);
     }
 }

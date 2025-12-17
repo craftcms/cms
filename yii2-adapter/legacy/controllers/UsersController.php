@@ -213,18 +213,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Returns how many seconds are left in the current elevated user session.
-     *
-     * @return Response
-     */
-    public function actionGetElevatedSessionTimeout(): Response
-    {
-        return $this->asJson([
-            'timeout' => $this->confirmedPasswordTimeout(),
-        ]);
-    }
-
-    /**
      * Sends a password reset email.
      *
      * @return Response|null

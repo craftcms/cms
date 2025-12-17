@@ -76,13 +76,27 @@ VerifyCsrfToken::except(collect([
 ])->all());
 
 /**
+ * Actions that are accessible both with and without CP can be registered here.
+ */
+foreach ([
+    Cms::config()->actionTrigger,
+    implode('/', [
+        Cms::config()->cpTrigger,
+        Cms::config()->actionTrigger,
+    ]),
+] as $prefix) {
+    Route::prefix($prefix)->group(function () {
+        Route::any('users/session-info', [SessionInfoController::class, 'show']);
+        Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
+        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+    });
+}
+
+/**
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
-
-    Route::any('users/session-info', SessionInfoController::class);
-    Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
@@ -111,9 +125,6 @@ Route::prefix(implode('/', [
     Route::any('app/api-headers', [ApiController::class, 'headers']);
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
-
-    Route::any('users/session-info', SessionInfoController::class);
-    Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
 
     // Auth
     Route::post('users/login', [LoginController::class, 'attemptLogin']);
