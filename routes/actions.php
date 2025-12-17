@@ -24,7 +24,6 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
@@ -259,13 +258,6 @@ Route::prefix(implode('/', [
         // SystemMessages
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
         Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
-
-        // System settings
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('system-settings/save-general-settings', [GeneralSettingsController::class, 'store']);
-        });
 
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);

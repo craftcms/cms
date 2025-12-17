@@ -2,8 +2,8 @@
 CP Styles
  */
 @layer theme, base, components, cp, utilities;
-@import 'tailwindcss/theme.css' layer(theme) prefix(tw);
-@import 'tailwindcss/utilities.css' layer(utilities) prefix(tw);
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
 @import '@craftcms/cp/styles/cp.css' layer(cp);
 
 @import './global-sidebar.css';
@@ -13,10 +13,6 @@ CP Styles
   --header-height: calc(44rem / 16);
 }
 
-/**
-@TODO this should be in the @craftcms/cp package
- */
-img {
-  max-width: 100%;
-  height: auto;
+@theme {
+  --color-border-subtle: var(--c-color-neutral-border-subtle);
 }

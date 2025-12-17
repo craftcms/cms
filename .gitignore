@@ -19,3 +19,8 @@ cpresources/*
 .ddev/
 test-results/
 resources/hot
+
+# Wayfinder generated files
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder

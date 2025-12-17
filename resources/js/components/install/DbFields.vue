@@ -48,8 +48,8 @@
     </ul>
   </Callout>
 
-  <div class="tw:grid tw:grid-cols-5 tw:gap-2">
-    <div class="tw:col-span-2">
+  <div class="grid grid-cols-5 gap-2">
+    <div class="col-span-2">
       <craft-select
         :label="t('app', 'Driver')"
         name="driver"
@@ -73,7 +73,7 @@
         </ul>
       </craft-select>
     </div>
-    <div class="tw:col-span-2">
+    <div class="col-span-2">
       <craft-input
         :label="t('app', 'Host')"
         name="host"
@@ -100,14 +100,14 @@
       </craft-input>
     </div>
 
-    <ul class="error-list tw:col-span-5" v-if="errors?.server">
+    <ul class="error-list col-span-5" v-if="errors?.server">
       <li v-for="formError in errors.server">
         {{ formError }}
       </li>
     </ul>
   </div>
 
-  <div class="tw:grid tw:grid-cols-2 tw:gap-2">
+  <div class="grid grid-cols-2 gap-2">
     <div>
       <craft-input
         :label="t('app', 'Username')"
@@ -135,15 +135,15 @@
       </craft-input-password>
     </div>
 
-    <ul class="error-list tw:col-span-2" v-if="errors?.user">
+    <ul class="error-list col-span-2" v-if="errors?.user">
       <li v-for="formError in errors.user">
         {{ formError }}
       </li>
     </ul>
   </div>
 
-  <div class="tw:grid tw:grid-cols-4 tw:gap-2">
-    <div class="tw:col-span-2">
+  <div class="grid grid-cols-4 gap-2">
+    <div class="col-span-2">
       <craft-input
         :label="t('app', 'Database Name')"
         name="name"

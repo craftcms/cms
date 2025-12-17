@@ -8,20 +8,16 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\elements\Entry;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
-use craft\helpers\App;
-use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\License\License;
@@ -29,16 +25,12 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
-use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
@@ -595,64 +587,12 @@ class Cp extends Component
      * @phpstan-param callable(scalar):bool|null $filter
      * @return array[]
      * @phpstan-return array{label:string,data:array}[]
+     * @deprecated in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.
      * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
-        $suggestions = [];
-        $security = Craft::$app->getSecurity();
-
-        $envSuggestions = [];
-        foreach (array_keys($_SERVER) as $var) {
-            if (
-                is_string($var) &&
-                !str_starts_with($var, 'HTTP_') &&
-                is_scalar($env = Env::get($var)) &&
-                (!$filter || $filter($env))
-            ) {
-                $envSuggestions[] = [
-                    'name' => '$' . $var,
-                    'hint' => $security->redactIfSensitive($var, Craft::getAlias((string)$env, false)),
-                ];
-            }
-        }
-        $suggestions[] = [
-            'label' => t('Environment Variables'),
-            'data' => array_values(Arr::sort($envSuggestions, 'name')),
-        ];
-
-        if ($includeAliases) {
-            $aliasSuggestions = [];
-            foreach (Aliases::getAll() as $alias => $path) {
-                // Don't ever suggest @web
-                if ($alias === '@web' || str_starts_with($alias, '@web/')) {
-                    continue;
-                }
-
-                if (is_array($path)) {
-                    if (
-                        isset($path[$alias]) &&
-                        (!$filter || $filter($path[$alias]))
-                    ) {
-                        $aliasSuggestions[] = [
-                            'name' => $alias,
-                            'hint' => $path[$alias],
-                        ];
-                    }
-                } elseif (!$filter || $filter($path)) {
-                    $aliasSuggestions[] = [
-                        'name' => $alias,
-                        'hint' => $path,
-                    ];
-                }
-            }
-            $suggestions[] = [
-                'label' => t('Aliases'),
-                'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
-            ];
-        }
-
-        return $suggestions;
+        return SelectOptions::getEnvSuggestions($includeAliases, $filter);
     }
 
     /**
@@ -661,41 +601,11 @@ class Cp extends Component
      * @param array|null $allowedValues
      * @return array
      * @since 3.7.22
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getEnvOptions] should be used instead.
      */
     public function getEnvOptions(?array $allowedValues = null): array
     {
-        if ($allowedValues !== null) {
-            if (empty($allowedValues)) {
-                return [];
-            }
-
-            $allowedValues = array_flip(array_filter($allowedValues));
-        }
-
-        $options = [];
-        $security = Craft::$app->getSecurity();
-
-        foreach (array_keys($_SERVER) as $var) {
-            if (
-                is_string($var) &&
-                !str_starts_with($var, 'HTTP_') &&
-                is_string($value = Env::get($var)) &&
-                ($allowedValues === null || isset($allowedValues[$value]))
-            ) {
-                $data = [];
-                if ($value !== '') {
-                    $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
-                }
-
-                $options[] = array_filter([
-                    'label' => "$$var",
-                    'value' => "$$var",
-                    'data' => !empty($data) ? $data : null,
-                ]);
-            }
-        }
-
-        return $this->_envOptions($options);
+        return SelectOptions::getEnvOptions($allowedValues);
     }
 
     /**
@@ -703,32 +613,11 @@ class Cp extends Component
      *
      * @return array
      * @since 3.7.22
+     * @deprecated  in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getBooleanEnvOptions] should be used instead.
      */
     public function getBooleanEnvOptions(): array
     {
-        $options = [];
-
-        foreach (array_keys($_SERVER) as $var) {
-            if (!is_string($var)) {
-                continue;
-            }
-            $value = Env::get($var);
-            if ($value === null || $value === '') {
-                continue;
-            }
-            $booleanValue = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-            if ($booleanValue !== null) {
-                $options[] = [
-                    'label' => "$$var",
-                    'value' => "$$var",
-                    'data' => [
-                        'boolean' => $booleanValue ? '1' : '0',
-                    ],
-                ];
-            }
-        }
-
-        return $this->_envOptions($options);
+        return SelectOptions::getBooleanEnvOptions();
     }
 
     /**
@@ -737,56 +626,11 @@ class Cp extends Component
      * @param bool $appOnly Whether to limit the env options to those that match available app locales
      * @return array
      * @since 5.0.0
+     * @deprecated  in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageEnvOptions]] shoudl be used instead.
      */
     public function getLanguageEnvOptions(bool $appOnly = false): array
     {
-        $options = [];
-        if ($appOnly) {
-            $allLanguages = I18N::getAppLocales()->map(fn(Locale $locale) => $locale->id);
-        } else {
-            $allLanguages = I18N::getAllLocales()->map(fn(Locale $locale) => $locale->id);
-        }
-
-        foreach (array_keys($_SERVER) as $var) {
-            if (!is_string($var)) {
-                continue;
-            }
-            $value = Env::get($var);
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $languageValue = null;
-            if ($allLanguages->contains($value)) {
-                $languageValue = $value;
-            }
-
-            if ($languageValue !== null) {
-                $options[] = [
-                    'label' => "$$var",
-                    'value' => "$$var",
-                    'data' => [
-                        'hint' => $languageValue,
-                    ],
-                ];
-            }
-        }
-
-        return $this->_envOptions($options);
-    }
-
-    /**
-     * @param array $options
-     * @return array
-     */
-    private function _envOptions(array $options): array
-    {
-        return Collection::make($options)
-            ->sortBy('value')
-            ->prepend([
-                'optgroup' => t('Environment Variables'),
-            ])
-            ->all();
+        return SelectOptions::getLanguageEnvOptions($appOnly);
     }
 
     /**
@@ -795,57 +639,11 @@ class Cp extends Component
      * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
      * @return array
      * @since 3.7.0
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.
      */
     public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
-        // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
-        $options = [];
-
-        $offsetDate ??= new DateTime();
-        $offsetDate->setTimezone(new DateTimeZone('UTC'));
-        $offsets = [];
-        $timezoneIds = [];
-
-        foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
-            $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
-            $abbr = $transition[0]['abbr'];
-
-            $offset = round($timezone->getOffset($offsetDate) / 60);
-
-            if ($offset) {
-                $hour = floor($offset / 60);
-                $minutes = floor(abs($offset) % 60);
-                $format = sprintf("%+03d:%02u", $hour, $minutes);
-            } else {
-                $format = '';
-            }
-
-            $label = "(GMT$format)";
-            if (preg_match('/^[A-Z]+$/', $abbr)) {
-                $label .= " $abbr";
-            }
-
-            $data = [];
-
-            if ($timezoneId !== 'UTC') {
-                [, $city] = explode('/', $timezoneId, 2);
-                // Cleanup, e.g. North_Dakota/New_Salem => New Salem, North Dakota
-                $data['hint'] = str_replace('_', ' ', implode(', ', array_reverse(explode('/', $city))));
-            }
-
-            $offsets[] = $offset;
-            $timezoneIds[] = $timezoneId;
-            $options[] = array_filter([
-                'value' => $timezoneId,
-                'label' => $label,
-                'data' => !empty($data) ? $data : null,
-            ]);
-        }
-
-        array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
-
-        return $options;
+        return SelectOptions::getTimeZoneOptions($offsetDate);
     }
 
     /**
@@ -856,52 +654,14 @@ class Cp extends Component
      * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
      * @return array
      * @since 5.0.0
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageOptions]] should be used instead.
      */
     public function getLanguageOptions(
         bool $showLocaleIds = false,
         bool $showLocalizedNames = false,
         bool $appLocales = false,
     ): array {
-        $options = [];
-
-        $languageId = I18N::getLocale()->getLanguageID();
-
-        if ($appLocales) {
-            $allLocales = I18N::getAppLocales();
-        } else {
-            $allLocales = I18N::getAllLocales();
-        }
-
-        $allLocales = $allLocales->sortBy(fn(Locale $locale) => $locale->getDisplayName());
-
-        foreach ($allLocales as $locale) {
-            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
-            $option = [
-                'label' => $locale->getDisplayName(app()->getLocale()),
-                'value' => $locale->id,
-                'data' => [
-                    'data' => [
-                        'keywords' => $name,
-                    ],
-                ],
-            ];
-
-            $hints = [];
-            if ($showLocaleIds) {
-                $hints[] = $locale->id;
-            }
-            if ($showLocalizedNames) {
-                $hints[] = $name;
-                $option['data']['data']['hintLang'] = $locale->id;
-            }
-            if (!empty($hints)) {
-                $option['data']['data']['hint'] = implode(', ', $hints);
-            }
-
-            $options[] = $option;
-        }
-
-        return $options;
+        return SelectOptions::getLanguageOptions($showLocaleIds, $showLocalizedNames, $appLocales);
     }
 
     /**
@@ -909,17 +669,11 @@ class Cp extends Component
      *
      * @return array
      * @since 4.0.0
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.
      */
     public function getFsOptions(): array
     {
-        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
-            ->map(fn(FsInterface $fs) => [
-                'label' => t($fs->name, category: 'site'),
-                'value' => $fs->handle,
-            ])
-            ->sortBy(fn(array $option) => $option['label'])
-            ->all();
+        return SelectOptions::getFsOptions();
     }
 
     /**
@@ -927,16 +681,11 @@ class Cp extends Component
      *
      * @return array
      * @since 4.0.0
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getVolumeOptions]] should be used instead.
      */
     public function getVolumeOptions(): array
     {
-        return Collection::make(Craft::$app->getVolumes()->getAllVolumes())
-            ->map(fn(Volume $volume) => [
-                'label' => $volume->name,
-                'value' => $volume->id,
-            ])
-            ->sortBy('label')
-            ->all();
+        return SelectOptions::getVolumeOptions();
     }
 
     /**

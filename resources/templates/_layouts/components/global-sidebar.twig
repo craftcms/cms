@@ -30,12 +30,12 @@
     {{ item.label }}
 
     {% if not isSubnav and subnav %}
-      <craft-navigation slot="subnav">
+      <craft-nav-list slot="subnav">
         {% for subItem in subnav %}
           {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
           {{ _self.action(subItem, true, isSelected) }}
         {% endfor %}
-      </craft-navigation>
+      </craft-nav-list>
     {% endif %}
   </craft-nav-item>
 {% endmacro %}
@@ -46,11 +46,11 @@
       {% include '_layouts/components/system-info' %}
     </div>
 
-    <craft-navigation class="global-sidebar__nav" label="{{ 'Primary' | t('app') }}">
+    <craft-nav-list class="global-sidebar__nav">
       {% for item in craft.cp.nav() %}
         {{ _self.action(item, false) }}
       {% endfor %}
-    </craft-navigation>
+    </craft-nav-list>
 
     <div class="global-sidebar__footer">
       <div class="sidebar-actions">

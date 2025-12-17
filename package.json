@@ -16,7 +16,8 @@
     "dev:cp": "npm run dev -w @craftcms/cp",
     "build:cp": "npm run build -w @craftcms/cp",
     "test:cp": "npm run test -w @craftcms/cp",
-    "storybook:cp": "npm run storybook -w @craftcms/cp"
+    "storybook:cp": "npm run storybook -w @craftcms/cp",
+    "build:all": "npm run build:bundles && npm run build:cp && npm run build"
   },
   "workspaces": [
     "packages/*"
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
+    "@laravel/vite-plugin-wayfinder": "^0.1.7",
     "@playwright/test": "^1.52.0",
     "@tailwindcss/vite": "^4.1.16",
     "@total-typescript/tsconfig": "^1.0.4",
