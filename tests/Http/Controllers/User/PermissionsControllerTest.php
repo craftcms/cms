@@ -1,6 +1,5 @@
 <?php
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -35,7 +34,7 @@ test('index is forbidden when edition is not above team', function () {
 });
 
 it('can store permissions and groups', function () {
-    Cms::config()->elevatedSessionDuration(0);
+    session()->passwordConfirmed();
 
     $this->withoutExceptionHandling();
     Edition::set(Edition::Pro);

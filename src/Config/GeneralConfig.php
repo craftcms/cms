@@ -4648,7 +4648,7 @@ class GeneralConfig extends BaseConfig
 
         app()->booting(function () {
             Deprecator::log('generalConfig.elevatedSessionDuration', 'Use the `auth.password_timeout` config setting instead.');
-            Config::set('auth.password_timeout', $this->elevatedSessionDuration);
+            Config::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration);
         });
 
         return $this;
