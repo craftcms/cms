@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
@@ -312,6 +313,7 @@ Route::prefix(implode('/', [
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
         });
+        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);

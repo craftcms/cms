@@ -31,7 +31,6 @@ use craft\web\Controller;
 use craft\web\Request;
 use craft\web\UploadedFile;
 use craft\web\View;
-use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -1555,19 +1554,6 @@ class UsersController extends Controller
         if ($max > 500000) {
             usleep(random_int(500000, $max));
         }
-    }
-
-    /**
-     * Marks the user’s feature announcements as read.
-     *
-     * @return Response
-     */
-    public function actionMarkAnnouncementsAsRead(): Response
-    {
-        $this->requirePostRequest();
-        $ids = $this->request->getRequiredBodyParam('ids');
-        app(Announcements::class)->markAsRead($ids);
-        return $this->asSuccess();
     }
 
     private function populateNameAttributes(object $model): void
