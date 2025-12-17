@@ -1,4 +1,20 @@
 {
+  "_CalloutReadOnly.css": {
+    "file": "assets/CalloutReadOnly.css",
+    "src": "_CalloutReadOnly.css"
+  },
+  "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js": {
+    "file": "CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+    "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "resources/js/cp.ts",
+      "__plugin-vue_export-helper.js",
+      "resources/js/legacy.ts"
+    ],
+    "css": [
+      "assets/CalloutReadOnly.css"
+    ]
+  },
   "__plugin-vue_export-helper.js": {
     "file": "_plugin-vue_export-helper.js",
     "name": "_plugin-vue_export-helper",
@@ -656,7 +672,8 @@
     ],
     "dynamicImports": [
       "resources/js/pages/Install.vue",
-      "resources/js/pages/SettingsGeneralPage.vue"
+      "resources/js/pages/SettingsGeneralPage.vue",
+      "resources/js/pages/SettingsIndexPage.vue"
     ]
   },
   "resources/js/legacy.ts": {
@@ -782,10 +799,26 @@
     "imports": [
       "resources/js/cp.ts",
       "__plugin-vue_export-helper.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "resources/js/legacy.ts"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
+    ]
+  },
+  "resources/js/pages/SettingsIndexPage.vue": {
+    "file": "SettingsIndexPage.js",
+    "name": "SettingsIndexPage",
+    "src": "resources/js/pages/SettingsIndexPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/cp.ts",
+      "resources/js/legacy.ts",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "__plugin-vue_export-helper.js"
+    ],
+    "css": [
+      "assets/SettingsIndexPage.css"
     ]
   }
 }

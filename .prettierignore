@@ -5,6 +5,7 @@ composer.lock
 vendor/*
 .ddev/*
 resources/build/*
+resources/icons/*
 resources/js/actions/*
 resources/js/routes/*
 resources/js/wayfinder/*
