@@ -84,7 +84,8 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         $this->publishes([
-            "{$this->root}/resources/build/" => public_path('vendor/craft'),
+            "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
+            "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
         ], ['craftcms', 'craftcms-assets']);
 
         // @TODO Remove when rebrand assets are refactored

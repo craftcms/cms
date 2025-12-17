@@ -1,4 +1,5 @@
 import '@github/relative-time-element';
+import {configureIcons} from '@/utilities/icons';
 
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
@@ -46,3 +47,5 @@ export {t, formatMessage} from './utilities/translate.js';
 export {formatNumber} from './utilities/format.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
+
+configureIcons();
