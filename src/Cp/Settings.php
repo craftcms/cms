@@ -14,10 +14,14 @@ use function CraftCms\Cms\t;
 
 class Settings
 {
+    public function __construct(
+        public Plugins $pluginsService
+    ) {}
+
     /**
      * Returns the list of settings.
      */
-    public static function all(): array
+    public function all(): array
     {
         $readOnly = ! Cms::config()->allowAdminChanges;
         $settings = [];
@@ -90,13 +94,11 @@ class Settings
 
         $label = t('Plugins');
 
-        $pluginsService = app(Plugins::class);
-
-        foreach ($pluginsService->getAllPlugins() as $plugin) {
+        foreach ($this->pluginsService->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSettings && (! $readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->handle] = [
                     'url' => 'settings/plugins/'.$plugin->handle,
-                    'icon' => $pluginsService->getPluginIconSvg($plugin->handle),
+                    'icon' => $this->pluginsService->getPluginIconSvg($plugin->handle),
                     'label' => $plugin->name,
                 ];
             }

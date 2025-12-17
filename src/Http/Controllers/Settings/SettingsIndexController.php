@@ -10,11 +10,11 @@ use Inertia\Inertia;
 
 class SettingsIndexController
 {
-    public function __invoke(GeneralConfig $generalConfig)
+    public function __invoke(GeneralConfig $generalConfig, Settings $cpSettings)
     {
         return Inertia::render('SettingsIndexPage', [
             'readOnly' => ! $generalConfig->allowAdminChanges,
-            'settings' => Settings::all(),
+            'settings' => $cpSettings->all(),
         ]);
     }
 }
