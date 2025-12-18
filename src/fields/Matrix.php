@@ -961,6 +961,7 @@ copyAllBtn.on('activate', () => {
         revisionId: element.data('revisionId'),
         ownerId: element.data('ownerId'),
         siteId: element.data('siteId'),
+        ensureReturnElement: true,
       }, $baseInfo));
   });
   Craft.cp.copyElements(elementInfo);

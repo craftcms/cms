@@ -2503,6 +2503,7 @@ JS, [
         $draftId = $elementInfo['draftId'] ?? $this->_draftId;
         $revisionId = $elementInfo['revisionId'] ?? $this->_revisionId;
         $provisional = $elementInfo['isProvisionalDraft'] ?? $this->_provisional;
+        $ensureReturnElement = $elementInfo['ensureReturnElement'] ?? false;
 
         if (!$elementType) {
             if ($elementId) {
@@ -2580,8 +2581,12 @@ JS, [
                     $siteId,
                     $preferSites,
                 );
-                if ($element && $elementsService->canView($element, $user)) {
-                    return $this->redirect($element->getCpEditUrl());
+                if ($element) {
+                    if ($ensureReturnElement) {
+                        return $element;
+                    } elseif ($elementsService->canView($element, $user)) {
+                        return $this->redirect($element->getCpEditUrl());
+                    }
                 }
                 throw new BadRequestHttpException($draftId ? "Invalid draft ID: $draftId" : "Invalid revision ID: $revisionId");
             }
