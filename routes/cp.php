@@ -141,7 +141,9 @@ Route::middleware('auth:craft')->group(function () {
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
 
         // Sites
-        Route::get('settings/sites', [SitesController::class, 'index']);
+        Route::get('settings/sites', [SitesController::class, 'index'])
+            ->middleware([HandleInertiaRequests::class])
+            ->name('settings.sites.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
 

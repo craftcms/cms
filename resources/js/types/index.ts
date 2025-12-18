@@ -14,3 +14,26 @@ export interface SuggestionGroup {
   label: string;
   data: Array<Suggestion>;
 }
+
+export interface SiteGroup {
+  id: number;
+  uid: string;
+  name: string;
+}
+
+export interface Site {
+  name: string;
+  handle: string;
+  language: string;
+  id: number;
+  enabled: boolean;
+  groupId: number;
+  group: SiteGroup | null;
+  primary: boolean;
+  hasUrls: boolean;
+  baseUrl: string;
+  sortOrder: number;
+  uid: string;
+  dateCreated: string;
+  dateUpdated: string;
+}

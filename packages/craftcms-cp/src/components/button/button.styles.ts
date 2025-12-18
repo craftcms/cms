@@ -11,7 +11,7 @@ export default css`
     align-items: center;
     border-radius: var(--c-button-radius, var(--c-radius-sm));
     color: var(--c-button-fg, inherit);
-    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-lg));
+    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-md));
     padding-block: 0;
     width: auto;
     min-height: var(--c-button-height, var(--c-size-control-md));

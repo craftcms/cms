@@ -15,12 +15,12 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use DateTimeInterface;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rules\Unique;
 use RuntimeException;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Dto;
@@ -29,7 +29,7 @@ use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class Site extends Dto implements Chippable, Stringable
+final class Site extends Dto implements Arrayable, Chippable, Stringable
 {
     /**
      * @var string|null Base URL
@@ -236,6 +236,22 @@ final class Site extends Dto implements Chippable, Stringable
             'sortOrder' => $this->sortOrder,
             'primary' => $this->primary,
             'enabled' => $this->getEnabled(false),
+        ];
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->getName(),
+            'uiLabel' => $this->getUiLabel(),
+            'handle' => $this->handle,
+            'primary' => $this->primary,
+            'language' => $this->getLanguage(),
+            'locale' => $this->getLocale(),
+            'baseUrl' => $this->getBaseUrl(),
+            'enabled' => $this->getEnabled(),
+            'group' => $this->getGroup(),
         ];
     }
 }

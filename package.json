@@ -53,6 +53,7 @@
   "dependencies": {
     "@craftcms/cp": "file:packages/craftcms-cp",
     "@inertiajs/vue3": "^2.2.7",
+    "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.0.0",
     "axios": "^1.13.2",
     "laravel-vite-plugin": "^2.0.1",

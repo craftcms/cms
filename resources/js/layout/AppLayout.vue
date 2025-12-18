@@ -1,15 +1,20 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, watch} from 'vue';
+  import {computed, reactive, ref, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
 
-  defineProps<{
-    title: string;
-    debug?: any;
-  }>();
+  withDefaults(
+    defineProps<{
+      title: string;
+      debug?: any;
+      fullWidth?: boolean;
+    }>(),
+    {fullWidth: false}
+  );
 
   const state = reactive<{
     sidebar: {
@@ -24,6 +29,7 @@
   });
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+  const debugOpen = ref(false);
 
   watch(
     isLargeScreen,
@@ -94,7 +100,7 @@
       <slot name="main">
         <main>
           <slot name="header">
-            <div class="container">
+            <div :class="{container: true, 'container--full': fullWidth}">
               <div class="flex justify-between items-center pt-4 pb-2">
                 <slot name="title">
                   <h1 class="text-xl">{{ title }}</h1>
@@ -106,7 +112,7 @@
               </div>
             </div>
           </slot>
-          <div class="container">
+          <div :class="{container: true, 'container--full': fullWidth}">
             <slot></slot>
           </div>
         </main>
@@ -114,7 +120,7 @@
     </div>
     <div class="cp__footer">
       <footer>
-        <div class="container">
+        <div :class="{container: true, 'container--full': fullWidth}">
           <slot name="footer"></slot>
         </div>
       </footer>
@@ -123,12 +129,29 @@
 
   <template v-if="debug">
     <div class="fixed bottom-2 right-2 max-w-[600px]">
-      <div class="flex justify-end">
-        <craft-button icon size="small">
-          <craft-icon label="t('Close Debug panel')" name="x"></craft-icon>
+      <div class="absolute top-2 right-2" v-if="debugOpen">
+        <craft-button
+          icon
+          size="small"
+          type="button"
+          @click="debugOpen = false"
+        >
+          <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
         </craft-button>
       </div>
-      <VarDump :data="debug" class="max-h-[50vh] overflow-scroll" />
+      <div v-else>
+        <craft-button type="button" @click="debugOpen = true" icon>
+          <craft-icon
+            name="code"
+            :label="t('Show debug variables')"
+          ></craft-icon>
+        </craft-button>
+      </div>
+      <VarDump
+        :data="debug"
+        class="max-h-[50vh] overflow-scroll"
+        v-if="debugOpen"
+      />
     </div>
   </template>
 </template>
@@ -147,6 +170,10 @@
     max-width: var(--global-content-width);
     margin: 0 auto;
     padding-inline: var(--c-spacing-lg);
+  }
+
+  .container--full {
+    max-width: none;
   }
 
   @media screen and (min-width: 1024px) {

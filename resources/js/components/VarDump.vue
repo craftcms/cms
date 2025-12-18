@@ -13,7 +13,7 @@
     font-size: 0.7rem;
     padding: var(--c-spacing-md);
     border: 1px solid var(--color-slate-400);
-    background-color: var(--color-slate-200);
+    background-color: var(--color-slate-50);
     border-radius: var(--c-radius-md);
     overflow: auto;
   }

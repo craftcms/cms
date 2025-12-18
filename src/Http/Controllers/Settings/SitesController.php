@@ -18,6 +18,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -50,23 +51,33 @@ final readonly class SitesController
             ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
         ];
 
-        $view = \Craft::$app->getView();
-        $view->registerAssetBundle(SitesAsset::class);
-        $view->registerTranslations('app', [
-            'Could not create the group:',
-            'Group renamed.',
-            'Could not rename the group:',
-            'What do you want to name the group?',
-            'Are you sure you want to delete this group?',
-            'What do you want to do with any content that is only available in {language}?',
-            'Transfer it to:',
-            'Delete it',
-            'Delete {site}',
-        ]);
+        if ($request->has('legacy')) {
+            $view = \Craft::$app->getView();
+            $view->registerAssetBundle(SitesAsset::class);
+            $view->registerTranslations('app', [
+                'Could not create the group:',
+                'Group renamed.',
+                'Could not rename the group:',
+                'What do you want to name the group?',
+                'Are you sure you want to delete this group?',
+                'What do you want to do with any content that is only available in {language}?',
+                'Transfer it to:',
+                'Delete it',
+                'Delete {site}',
+            ]);
 
-        return view('craftcms::settings/sites/index', [
+            return view('craftcms::settings/sites/index', [
+                'crumbs' => $crumbs,
+                'group' => $group ?? null,
+                'sites' => $sites,
+                'readOnly' => $this->readOnly,
+            ]);
+        }
+
+        return Inertia::render('SettingsSitesIndex', [
             'crumbs' => $crumbs,
             'group' => $group ?? null,
+            'groups' => $this->siteGroups->getAllGroups(),
             'sites' => $sites,
             'readOnly' => $this->readOnly,
         ]);
