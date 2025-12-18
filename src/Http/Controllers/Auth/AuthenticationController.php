@@ -25,9 +25,7 @@ abstract readonly class AuthenticationController
 
     protected function completeLogin(Request $request, User $user, bool $remember): Response
     {
-        Auth::guard('craft')
-            ->setRememberDuration((int) $this->generalConfig->rememberedUserSessionDuration / 60)
-            ->login($user, $remember);
+        Auth::guard('craft')->login($user, $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }

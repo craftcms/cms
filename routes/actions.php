@@ -62,6 +62,7 @@ use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -80,14 +81,14 @@ VerifyCsrfToken::except(collect([
  * Actions that are accessible both with and without CP can be registered here.
  */
 foreach ([
-    Cms::config()->actionTrigger,
+    Cms::config()->actionTrigger => [],
     implode('/', [
         Cms::config()->cpTrigger,
         Cms::config()->actionTrigger,
-    ]),
-] as $prefix) {
-    Route::prefix($prefix)->group(function () {
-        Route::any('users/session-info', [SessionInfoController::class, 'show']);
+    ]) => ['craft.cp'],
+] as $prefix => $middleware) {
+    Route::prefix($prefix)->middleware($middleware)->group(function () {
+        Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
     });

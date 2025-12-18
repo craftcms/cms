@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -85,13 +84,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
     {
-        $user = Users::getUserById($userId);
-
-        if (!$user) {
-            return false;
-        }
-
-        return $this->login(new IdentityWrapper($user), $duration);
+        return Auth::loginUsingId($userId, $duration > 0) !== false;
     }
 
     /**
@@ -402,20 +395,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogin($identity, $cookieBased, $duration): bool
-    {
-        // Only allow the login if the request meets our user agent and IP requirements
-        if (!$this->_validateUserAgentAndIp()) {
-            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
-            return false;
-        }
-
-        return parent::beforeLogin($identity, $cookieBased, $duration);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function afterLogin($identity, $cookieBased, $duration): void
     {
         if ($duration > 0) {
@@ -501,14 +480,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             return;
         }
 
-        if (!$this->_validateUserAgentAndIp()) {
-            // Only log a warning if a PHP session exists
-            if (Craft::$app->getSession()->getHasSessionId()) {
-                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
-            }
-            return;
-        }
-
         // Should we be extending the user’s session on this request?
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
@@ -579,23 +550,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         }
 
         parent::afterLogout($identity);
-    }
-
-    /**
-     * Validates that the request has a user agent and IP associated with it,
-     * if the 'requireUserAgentAndIpForSession' config setting is enabled.
-     *
-     * @return bool
-     */
-    private function _validateUserAgentAndIp(): bool
-    {
-        if (!Cms::config()->requireUserAgentAndIpForSession) {
-            return true;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        return $request->getUserAgent() !== null && $request->getUserIP() !== null;
     }
 
     private function _clearOtherSessionParams(): void

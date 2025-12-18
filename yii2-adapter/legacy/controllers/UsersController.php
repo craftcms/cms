@@ -52,7 +52,6 @@ use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\VerifyingEmail;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -1480,11 +1479,13 @@ class UsersController extends Controller
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        $generalConfig = Cms::config();
-        if (!$generalConfig->autoLoginAfterAccountActivation) {
+        if (!Cms::config()->autoLoginAfterAccountActivation) {
             return false;
         }
-        return Craft::$app->getUser()->login(new IdentityWrapper($user), $generalConfig->userSessionDuration);
+
+        Auth::login($user);
+
+        return true;
     }
 
     /**

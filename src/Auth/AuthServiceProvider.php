@@ -6,8 +6,11 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Contracts\Auth\Access\Authorizable;
@@ -16,7 +19,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -41,6 +46,7 @@ final class AuthServiceProvider extends ServiceProvider
             Config::set('auth.guards.craft', [
                 'driver' => 'session',
                 'provider' => 'craft',
+                'remember' => floor(Cms::config()->rememberedUserSessionDuration / 60),
             ]);
         }
 
@@ -84,6 +90,24 @@ final class AuthServiceProvider extends ServiceProvider
             }
 
             return true;
+        });
+
+        Event::listen(Login::class, function (Login $event) {
+            if (! $event->user instanceof User) {
+                return;
+            }
+
+            Users::handleValidLogin($event->user);
+
+            Session::passwordConfirmed();
+        });
+
+        Event::listen(Failed::class, function (Failed $event) {
+            if (! $event->user instanceof User) {
+                return;
+            }
+
+            Users::handleInvalidLogin($event->user);
         });
     }
 }

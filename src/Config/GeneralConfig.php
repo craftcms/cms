@@ -14,7 +14,6 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Deprecated;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -2095,6 +2094,8 @@ class GeneralConfig extends BaseConfig
      * @see https://php.net/manual/en/function.session-name.php
      *
      * @group Session
+     *
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public string $phpSessionName = 'CraftSessionId';
 
@@ -2410,6 +2411,7 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 90 days
      *
      * @since 3.3.0
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
 
@@ -2488,6 +2490,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireMatchingUserAgentForSession = true;
 
@@ -2504,6 +2508,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireUserAgentAndIpForSession = true;
 
@@ -3333,6 +3339,8 @@ class GeneralConfig extends BaseConfig
      * @group Session
      *
      * @defaultAlt 1 hour
+     *
+     * @deprecated 6.0.0
      */
     public mixed $userSessionDuration = 3600;
 
@@ -3420,8 +3428,6 @@ class GeneralConfig extends BaseConfig
      */
     public mixed $verifyEmailSuccessPath = '';
 
-    protected ?DateInterval $_rememberedUserSessionDuration = null;
-
     public function __construct()
     {
         // (Re-)normalize everything.
@@ -3439,9 +3445,7 @@ class GeneralConfig extends BaseConfig
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
             ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
             ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
             ->softDeleteDuration($this->softDeleteDuration)
-            ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
@@ -6063,10 +6067,8 @@ class GeneralConfig extends BaseConfig
      * @throws InvalidConfigException
      *
      * @see $rememberedUserSessionDuration
-     * @see getRememberedUserSessionDuration()
      * @since 4.2.0
      */
-    #[Deprecated(message: 'in 6.0.0. Configure `auth.guards.web.remember` in minutes instead.')]
     public function rememberedUserSessionDuration(mixed $value): self
     {
         // Store the DateInterval separately for getRememberedUserSessionDuration()
@@ -6077,14 +6079,13 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
-        $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        if (app()->has(ConfigRepository::class)) {
-            app()->get(ConfigRepository::class)->set(
-                'auth.guards.web.remember',
+        app()->booting(function () {
+            Config::set(
+                'auth.guards.craft.remember',
                 floor($this->rememberedUserSessionDuration / 60),
             );
-        }
+        });
 
         return $this;
     }
@@ -7111,6 +7112,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $userSessionDuration
      */
+    #[\Deprecated(message: "configure sessions using Laravel's session config instead.", since: '6.0.0')]
     public function userSessionDuration(mixed $value): self
     {
         $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
@@ -7331,7 +7333,9 @@ class GeneralConfig extends BaseConfig
      */
     public function getRememberedUserSessionDuration(): ?DateInterval
     {
-        return $this->_rememberedUserSessionDuration ?: null;
+        return $this->rememberedUserSessionDuration > 0
+            ? DateTimeHelper::toDateInterval($this->rememberedUserSessionDuration)
+            : null;
     }
 
     /**

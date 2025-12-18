@@ -188,16 +188,9 @@ class UserElementTest extends TestCase
         self::assertFalse(new IdentityWrapper($this->activeUser)->validateAuthKey('["JSON_ONE_ITEM"]'));
         self::assertFalse(
             new IdentityWrapper($this->activeUser)->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"NOT_A_USER_AGENT"]'
-            )
-        );
-        self::assertFalse(
-            new IdentityWrapper($this->activeUser)->validateAuthKey(
                 '["NOT_A_VALID_TOKEN",null,"' . $validUserAgent . '"]'
             )
         );
-
-        Cms::config()->requireMatchingUserAgentForSession = true;
 
         // Valid token, user agent, and json string
         $this->tester->mockCraftMethods('request', [
@@ -217,7 +210,6 @@ class UserElementTest extends TestCase
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
 
-        Cms::config()->requireMatchingUserAgentForSession = false;
         $this->tester->mockCraftMethods('request', [
             'getUserAgent' => $validUserAgent,
         ]);

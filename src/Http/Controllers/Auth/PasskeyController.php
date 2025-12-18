@@ -31,8 +31,6 @@ final readonly class PasskeyController extends AuthenticationController
             'response' => ['required'],
         ]);
 
-        $duration = $this->generalConfig->userSessionDuration;
-
         $requestOptions = $request->input('requestOptions');
         $response = $request->input('response');
         $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
@@ -57,6 +55,6 @@ final readonly class PasskeyController extends AuthenticationController
             $user = Auth::user();
         }
 
-        return $this->completeLogin($request, $user, $duration > 0);
+        return $this->completeLogin($request, $user, true);
     }
 }

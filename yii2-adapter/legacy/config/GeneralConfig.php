@@ -49,7 +49,6 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             ->rememberUsernameDuration($this->rememberUsernameDuration)
             ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
             ->softDeleteDuration($this->softDeleteDuration)
-            ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
