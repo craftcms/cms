@@ -10,6 +10,10 @@
   display: grid;
 }
 
+.gap-1 {
+  gap: 0.25rem;
+}
+
 .gap-2 {
   gap: 0.5rem;
 }
@@ -22,4 +26,15 @@
   display: inline-flex;
   width: auto;
   height: 1em;
+}
+
+.stack {
+  display: grid;
+  gap: 1em;
+}
+
+.list {
+  list-style: disc;
+  padding-inline-start: 1.5em;
+  margin: 0;
 }

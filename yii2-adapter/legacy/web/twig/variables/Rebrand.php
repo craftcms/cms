@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Cp\Rebrand as RebrandService;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use yii\base\Exception;
@@ -46,7 +46,7 @@ class Rebrand
      */
     public function isLogoUploaded(): bool
     {
-        return $this->isImageUploaded('logo');
+        return app(\CraftCms\Cms\Cp\Rebrand::class)->getImage('logo') !== null;
     }
 
     /**
@@ -56,7 +56,7 @@ class Rebrand
      */
     public function isIconUploaded(): bool
     {
-        return $this->isImageUploaded('icon');
+        return app(\CraftCms\Cms\Cp\Rebrand::class)->getImage('icon') !== null;
     }
 
     /**
@@ -129,36 +129,13 @@ class Rebrand
             return $this->_paths[$type];
         }
 
-        $dir = Craft::$app->getPath()->getRebrandPath() . DIRECTORY_SEPARATOR . $type;
-
-        if (!is_dir($dir)) {
+        $image = app(RebrandService::class)->getImage($type);
+        if (isset($image['path'])) {
+            $this->_paths[$type] = $image['path'];
+        } else {
             $this->_paths[$type] = false;
-            return false;
         }
 
-        $handle = opendir($dir);
-        if ($handle === false) {
-            throw new Exception("Unable to open directory: $dir");
-        }
-        while (($subDir = readdir($handle)) !== false) {
-            if ($subDir === '.' || $subDir === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $subDir;
-            if (is_dir($path) || !ImageHelper::canManipulateAsImage(pathinfo($path, PATHINFO_EXTENSION))) {
-                continue;
-            }
-
-            // Found a file - cache and return.
-            $this->_paths[$type] = $path;
-
-            return $path;
-        }
-        closedir($handle);
-
-        // Couldn't find a file
-        $this->_paths[$type] = false;
-
-        return false;
+        return $this->_paths[$type];
     }
 }

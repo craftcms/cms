@@ -1,11 +1,11 @@
 import {css} from 'lit';
-import {inputStyles} from '../../styles/form.styles.js';
 
 export default css`
   /* If an input has a "size" attribute, it should not grow */
-  //:host([size]) ::slotted(.form-control) {
-  //  flex: 0 0 auto;
-  //}
+  :host([size]) ::slotted(.form-control) {
+    width: auto;
+    flex: 0 0 auto;
+  }
 
   craft-input input[type='checkbox'],
   craft-input input[type='radio'] {

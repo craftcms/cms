@@ -8,6 +8,8 @@ export {default as CraftCopyButton} from './components/copy-button/copy-button.j
 export {default as CraftButton} from './components/button/button.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
 export {default as CraftInput} from './components/input/input.js';
+export {default as CraftInputFile} from './components/input-file/input-file.js';
+export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftChip} from './components/chip/chip.js';
 export {default as CraftStatus} from './components/status/status.js';
@@ -25,13 +27,18 @@ export {default as CraftSwitchButton} from './components/switch-button/switch-bu
 export {default as CraftBreadcrumbs} from './components/breadcrumbs/breadcrumbs.js';
 export {default as CraftBreadcrumbItem} from './components/breadcrumb-item/breadcrumb-item.js';
 export {default as CraftPopover} from './components/popover/popover.js';
-export {default as CraftNavigation} from './components/navigation/navigation.js';
+export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftDrawer} from './components/drawer/drawer.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
 export {default as CraftCallout} from './components/callout/callout.js';
+export {default as CraftActionItem} from './components/action-item/action-item.js';
+export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
+export {default as CraftCombobox} from './components/combobox/combobox.js';
+export {default as CraftIndicator} from './components/indicator/indicator.js';
+export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';

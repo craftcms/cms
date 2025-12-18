@@ -22,7 +22,7 @@ export const baseInputStyles = css`
 
 export const baseFieldStyles = css`
   :host(:not([label-sr-only])) .form-field__group-one {
-    margin-bottom: var(--c-spacing-sm);
+    margin-block-end: var(--c-spacing-sm);
   }
 
   :host([has-feedback-for='error']) {
@@ -45,7 +45,11 @@ export const baseFieldStyles = css`
   }
 
   .form-field__group-one {
-    margin-bottom: var(--c-spacing-sm);
+    margin-block-end: var(--c-spacing-sm);
+  }
+
+  .input-group__after {
+    margin-block-start: var(--c-spacing-sm);
   }
 `;
 
