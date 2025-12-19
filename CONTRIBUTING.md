@@ -69,17 +69,20 @@ If you would like to work on a new core feature or improvement, first create a [
 
 ## Control Panel Front End
 
-In order to work on the control panel front end, we recommend opening two terminal windows. Run `npm run dev` in one, and `npm run dev:cp` in the other. That will start the main Vite process as well as the Vite process for the `@craftcms/cp` package. 
+In order to work on the control panel front end, we recommend opening two terminal windows.
 
-With both running, you'll be able to work on most aspects of the control panel. 
+1. Run `npm run dev` in one window to start the Vite development server.
+2. Run `npm run dev:cp` in the other window to start the Vite process for the `@craftcms/cp` package.
+
+With both processes running, you'll be able to work on most aspects of the control panel. 
 
 If getting into the weeds is your thing, more detail on these pieces is provided below. 
 
-### CP assets
+### Control Panel Assets
 
-The assets specific to the CP live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the CP, there are two commands:
+The assets specific to the control panel live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the control panel, there are two commands:
 ```shell
-# Run the vite development server
+# Run the Vite development server
 npm run dev
 
 # Build assets for production
@@ -88,7 +91,7 @@ npm run build
 
 ### `@craftcms/cp` package
 
-The CP is largely backed by web components that live in the `@craftcms/cp` package within the `packages/craftcms-cp` directory. Like other packages, it has its own build process that can be run independently of the CP.
+The control panel is largely backed by web components that live in the `@craftcms/cp` package within the `packages/craftcms-cp` directory. Like other packages, it has its own build process that can be run independently of the control panel.
 ```shell
 # Run the build in watch mode. Assets will be rebuilt on every change
 npm run dev:cp
@@ -97,14 +100,14 @@ npm run dev:cp
 npm run build:cp
 ```
 
-In practice, you rarely work on one without the other, so we recommend having two terminal panes open. One running the main CP assets build and another building the web components.
+In practice, you rarely work on one without the other, so we recommend having two terminal panes open. One running the main control panel assets build and another building the web components.
 
 ### Legacy Bundles
 
 > [!NOTE]  
 > Updating the legacy bundles should be a rare occurrence. Avoid when possible.
 
-All of the styles and scripts used to support the CP up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
+All the styles and scripts used to support the control panel up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
 ```sh
 # Build assets for production
 npm run build:bundles
