@@ -1055,7 +1055,6 @@
                 fieldId: entry.matrix.settings.fieldId,
                 ownerId: entry.matrix.settings.ownerId,
                 siteId: entry.matrix.settings.siteId,
-                ensureReturnElement: true,
               });
             }
           } else {
@@ -1070,7 +1069,6 @@
                 fieldId: this.matrix.settings.fieldId,
                 ownerId: this.matrix.settings.ownerId,
                 siteId: this.matrix.settings.siteId,
-                ensureReturnElement: true,
               },
             ];
           }

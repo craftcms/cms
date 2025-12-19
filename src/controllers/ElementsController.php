@@ -2503,7 +2503,6 @@ JS, [
         $draftId = $elementInfo['draftId'] ?? $this->_draftId;
         $revisionId = $elementInfo['revisionId'] ?? $this->_revisionId;
         $provisional = $elementInfo['isProvisionalDraft'] ?? $this->_provisional;
-        $ensureReturnElement = $elementInfo['ensureReturnElement'] ?? false;
 
         if (!$elementType) {
             if ($elementId) {
@@ -2581,12 +2580,11 @@ JS, [
                     $siteId,
                     $preferSites,
                 );
-                if ($element) {
-                    if ($ensureReturnElement) {
-                        return $element;
-                    } elseif ($elementsService->canView($element, $user)) {
+                if ($element && $elementsService->canView($element, $user)) {
+                    if (!$this->request->getAcceptsJson()) {
                         return $this->redirect($element->getCpEditUrl());
                     }
+                    return $element;
                 }
                 throw new BadRequestHttpException($draftId ? "Invalid draft ID: $draftId" : "Invalid revision ID: $revisionId");
             }
@@ -2613,7 +2611,12 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
-        if (!$strictSite && isset($site) && $element->siteId !== $site->id) {
+        if (
+            !$strictSite &&
+            isset($site) &&
+            $element->siteId !== $site->id &&
+            !$this->request->getAcceptsJson()
+        ) {
             return $this->redirect($element->getCpEditUrl());
         }
 
