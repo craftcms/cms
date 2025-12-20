@@ -22,7 +22,7 @@ use yii\base\BaseObject;
  *
  * @property-read ElementInterface|null $element The element linked by the field, if there is one
  * @property-read ElementQueryInterface|null $elementQuery An element query that will fetch the element linked by the field, if there is one
- * @property-read Markup|null $link An anchor tag for this link
+ * @property-read Markup $link An anchor tag for this link
  * @property-read string $label The link label
  * @property-read string $type The link type ID
  * @property-read string $url The full link URL, including the suffix
