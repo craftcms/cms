@@ -78,6 +78,7 @@
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_THUMBS`.
 - Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
+- Added `craft\fields\data\LinkData::getAttributes()`. ([#18184](https://github.com/craftcms/cms/discussions/18184))
 - Added `craft\gql\base\ElementArguments::EVENT_DEFINE_ARGUMENTS`. ([#18062](https://github.com/craftcms/cms/discussions/18062))
 - Added `craft\helpers\Assets::resolveSubpath()`. ([#18103](https://github.com/craftcms/cms/pull/18103))
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
