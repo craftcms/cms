@@ -18,6 +18,7 @@ export interface SuggestionGroup {
 export interface SiteGroup {
   id: number;
   uid: string;
+  rawName: string;
   name: string;
 }
 

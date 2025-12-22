@@ -3,11 +3,7 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {Site, SiteGroup, SuggestionGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -50,7 +46,7 @@
       form.name = '';
       form.id = null;
     } else {
-      form.name = props.group?.name ?? '';
+      form.name = props.group?.rawName ?? props.group?.name ?? '';
       form.id = props.group?.id ?? null;
     }
 
@@ -176,7 +172,7 @@
         <SiteGroupActions
           class="inline-block"
           v-if="group"
-          @click:rename="modalActive = true"
+          @click:rename="openModal('update')"
           @click:delete="handleDeleteClick"
         />
       </div>
@@ -285,7 +281,8 @@
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
-        v-model="form.name"
+        .modelValue="form.name"
+        @model-value-changed="form.name = $event.target.modelValue"
         :has-feedback-for="form.errors?.name ? 'error' : ''"
         :require-option-match="false"
         show-all-on-empty

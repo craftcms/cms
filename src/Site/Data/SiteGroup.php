@@ -75,6 +75,7 @@ final class SiteGroup extends Dto implements Arrayable
         return [
             'id' => $this->id,
             'uid' => $this->uid,
+            'rawName' => $this->name,
             'name' => $this->getName(),
         ];
     }
