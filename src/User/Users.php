@@ -907,11 +907,11 @@ final class Users
 
         // Destroy all sessions for this user
         DB::table(Table::SESSIONS)
-            ->where('userId', $user->id)
+            ->where('user_id', $user->id)
             ->delete();
 
         if (Event::hasListeners(UserSuspended::class)) {
-            Event::dispatch($event = new UserSuspended($user));
+            Event::dispatch(new UserSuspended($user));
         }
 
         if ($indexAttributesChanged) {

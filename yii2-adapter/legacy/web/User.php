@@ -14,13 +14,10 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -399,48 +396,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     /**
      * @inheritdoc
      */
-    public function switchIdentity($identity, $duration = 0): void
-    {
-        if ($this->enableSession) {
-            SessionHelper::remove($this->tokenParam);
-
-            if ($identity) {
-                /** @var UserElement $identity */
-                // Generate a new session token
-                $this->generateToken($identity->id);
-            }
-        }
-
-        $this->_clearOtherSessionParams();
-
-        parent::switchIdentity($identity, $duration);
-    }
-
-    /**
-     * Generates a new user session token.
-     *
-     * @param int $userId
-     * @since 3.1.1
-     */
-    public function generateToken(int $userId): void
-    {
-        $token = Craft::$app->getSecurity()->generateRandomString(100);
-
-        DB::table(Table::SESSIONS)
-            ->insert([
-                'userId' => $userId,
-                'token' => $token,
-                'dateCreated' => $now = now(),
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ]);
-
-        SessionHelper::set($this->tokenParam, $token);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function setReturnUrl($url): void
     {
         parent::setReturnUrl(strip_tags($url));
@@ -494,17 +449,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
         // Stop keeping track of the session duration specified on login
         SessionHelper::remove($this->authDurationParam);
-
-        // Delete the session token in the database
-        $token = $this->getToken();
-        if ($token !== null) {
-            SessionHelper::remove($this->tokenParam);
-
-            DB::table(Table::SESSIONS)
-                ->where('token', $token)
-                ->where('userId', $identity->getId())
-                ->delete();
-        }
 
         return true;
     }

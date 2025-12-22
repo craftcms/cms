@@ -624,12 +624,12 @@ class Install extends Migration
         });
 
         Schema::create('sessions', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('userId');
-            $table->char('token', 100);
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
         });
 
         Schema::create('shunnedmessages', function (Blueprint $table) {
@@ -912,10 +912,6 @@ class Install extends Migration
         Schema::createIndex(Table::SECTIONS, ['dateDeleted']);
         Schema::createIndex(Table::SECTIONS_SITES, ['sectionId', 'siteId'], unique: true);
         Schema::createIndex(Table::SECTIONS_SITES, ['siteId']);
-        Schema::createIndex(Table::SESSIONS, ['uid']);
-        Schema::createIndex(Table::SESSIONS, ['token']);
-        Schema::createIndex(Table::SESSIONS, ['dateUpdated']);
-        Schema::createIndex(Table::SESSIONS, ['userId']);
         Schema::createIndex(Table::SHUNNEDMESSAGES, ['userId', 'message'], unique: true);
         Schema::createIndex(Table::SITES, ['dateDeleted']);
         Schema::createIndex(Table::SITES, ['handle']);
@@ -1046,7 +1042,6 @@ class Install extends Migration
         Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('typeId')->references('id')->on(Table::ENTRYTYPES)->cascadeOnDelete());
         Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
-        Schema::table(Table::SESSIONS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::SHUNNEDMESSAGES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::SITEGROUPS)->cascadeOnDelete());
         Schema::table(Table::SSO_IDENTITIES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());

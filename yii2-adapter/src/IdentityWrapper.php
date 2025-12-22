@@ -115,7 +115,7 @@ final class IdentityWrapper implements IdentityInterface
 
         $tokenId = DbFacade::table(Table::SESSIONS)
             ->where('token', $token)
-            ->where('userId', $this->id)
+            ->where('user_id', $this->id)
             ->value('id');
 
         if (!$tokenId) {
@@ -125,9 +125,7 @@ final class IdentityWrapper implements IdentityInterface
         // Update the session row's dateUpdated value so it doesn't get GC'd
         DbFacade::table(Table::SESSIONS)
             ->where('id', $tokenId)
-            ->update([
-                'dateUpdated' => now(),
-            ]);
+            ->update(['last_activity' => now()]);
 
         return true;
     }

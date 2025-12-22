@@ -103,6 +103,7 @@ use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
+use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use GraphQL\Type\Definition\Type;
@@ -322,6 +323,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
+            MigrateSessionsTableCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
 
@@ -367,6 +369,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->ensureNewMigrationTable();
+        $this->ensureNewSessionsTable();
 
         if (!$this->app->runningInConsole()) {
             return;
@@ -1205,6 +1208,33 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             Artisan::call('craft:migrate:migration-table', [
+                '--force' => true,
+            ]);
+        } catch (PDOException) {
+            // No database connection
+        }
+    }
+
+    /**
+     * Check if we're dealing with an older sessions table.
+     * In that case we'll need to migrate this on the fly.
+     */
+    private function ensureNewSessionsTable(): void
+    {
+        try {
+            if (Schema::hasColumn(Table::SESSIONS, 'payload')) {
+                return;
+            }
+
+            if (!Cms::config()->allowAdminChanges) {
+                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
+            }
+
+            if (app()->environment('workbench')) {
+                return;
+            }
+
+            Artisan::call('craft:migrate:sessions-table', [
                 '--force' => true,
             ]);
         } catch (PDOException) {

@@ -2597,16 +2597,7 @@ JS, [
         }
 
         if (! $isNew && $changePassword && ! app()->runningInConsole()) {
-            $token = Craft::$app->getUser()->getToken();
-
-            // Destroy all other sessions for this user
-            DbFacade::table(Table::SESSIONS)
-                ->where('userId', $this->id)
-                ->when(
-                    value: $this->getIsCurrent() && $token,
-                    callback: fn ($query) => $query->where('token', '!=', $token),
-                )
-                ->delete();
+            Auth::logoutOtherDevices($this->newPassword);
         }
     }
 
