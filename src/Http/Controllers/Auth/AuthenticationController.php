@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -13,6 +12,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract readonly class AuthenticationController
@@ -32,7 +32,7 @@ abstract readonly class AuthenticationController
 
     protected function handleSuccessfulLogin(Request $request, User $user): Response
     {
-        $returnUrl = Craft::$app->getUser()->getReturnUrl();
+        $returnUrl = URL::returnUrl();
         if ($request->wantsJson()) {
             return $this->asModelSuccess($user, modelName: 'user', data: [
                 'returnUrl' => $returnUrl,

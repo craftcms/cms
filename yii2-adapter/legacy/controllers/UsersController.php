@@ -58,6 +58,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -213,7 +214,7 @@ class UsersController extends Controller
      */
     public function actionRedirect(): Response
     {
-        return $this->redirect(Craft::$app->getUser()->getDefaultReturnUrl());
+        return $this->redirect(URL::defaultReturnUrl());
     }
 
     /**
@@ -1200,7 +1201,7 @@ class UsersController extends Controller
             } else {
                 $defaultReturnUrl = UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
             }
-            $returnUrl = $userSession->getReturnUrl($defaultReturnUrl);
+            $returnUrl = URL::returnUrl($defaultReturnUrl);
         }
 
         $authFormData = [
@@ -1436,11 +1437,8 @@ class UsersController extends Controller
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
         if ($user && !$user->verificationCode) {
-            $userSession = Craft::$app->getUser();
             if (!Auth::guest()) {
-                $returnUrl = $userSession->getReturnUrl();
-                $userSession->removeReturnUrl();
-                return $this->redirect($returnUrl);
+                return $this->redirect(URL::returnUrl());
             }
         }
 

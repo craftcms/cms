@@ -18,6 +18,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -266,10 +267,10 @@ class Sso extends Component
         }
 
         // Try logging them in
-        Auth::setRememberDuration($sessionDuration ?? config('auth.guards.craft.remember', 576000))->login($user, $rememberMe);
-
-        if (!Auth::check()) {
-            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
+        try {
+            Auth::setRememberDuration($sessionDuration ?? config('auth.guards.craft.remember', 576000))->login($user, $rememberMe);
+        } catch (Throwable $e) {
+            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'), previous: $e);
         }
 
         return true;

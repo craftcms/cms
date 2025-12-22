@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter;
 
-use Craft;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
@@ -87,13 +86,13 @@ final class IdentityWrapper implements IdentityInterface
 
     public function getAuthKey(): string
     {
-        $token = Craft::$app->getUser()->getToken();
+        $token = session()->id();
 
         if ($token === null) {
             throw new Exception('No user session token exists.');
         }
 
-        $userAgent = Craft::$app->getRequest()->getUserAgent();
+        $userAgent = request()->userAgent();
 
         // The auth key is a combination of the hashed token, its row's UID, and the user agent string
         return Json::encode([

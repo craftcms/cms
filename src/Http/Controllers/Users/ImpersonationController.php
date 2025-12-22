@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -16,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -115,11 +115,7 @@ final readonly class ImpersonationController
     private function handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->wantsJson()) {

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -47,7 +48,7 @@ final class AuthServiceProvider extends ServiceProvider
             return Cms::config()->loginPath;
         });
 
-        RedirectIfAuthenticated::redirectUsing(fn (Request $request) => $request->user()->getDefaultReturnUrl());
+        RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());
     }
 
     private function registerGuard(): void

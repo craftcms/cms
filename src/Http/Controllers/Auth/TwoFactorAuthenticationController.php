@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,8 +34,6 @@ final readonly class TwoFactorAuthenticationController
 
     public function showForm(Request $request, Impersonation $impersonation): Response|string
     {
-        $userSession = Craft::$app->getUser();
-
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
 
@@ -47,7 +46,7 @@ final readonly class TwoFactorAuthenticationController
                 return redirect($loginPath);
             }
 
-            return redirect(CpAuthPath::Login);
+            return redirect(CpAuthPath::Login->value);
         }
 
         $activeMethods = Craft::$app->getAuth()->getActiveMethods($user);
@@ -87,7 +86,7 @@ final readonly class TwoFactorAuthenticationController
                 $defaultReturnUrl = UrlHelper::siteUrl($this->generalConfig->getPostLoginRedirect());
             }
 
-            $returnUrl = $userSession->getReturnUrl($defaultReturnUrl);
+            $returnUrl = URL::returnUrl($defaultReturnUrl);
         }
 
         $authFormData = [

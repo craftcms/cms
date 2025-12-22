@@ -9,14 +9,14 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Session\SessionManager;
 
 #[Singleton]
-final readonly class Impersonation
+final class Impersonation
 {
     private const string SESSION_KEY = '__impersonator_id';
 
-    private ?User $impersonator;
+    private ?User $impersonator = null;
 
     public function __construct(
-        private SessionManager $session,
+        private readonly SessionManager $session,
     ) {}
 
     public function getImpersonator(): ?User

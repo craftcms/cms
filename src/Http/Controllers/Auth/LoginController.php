@@ -69,8 +69,11 @@ final readonly class LoginController extends AuthenticationController
             'rememberMe' => ['nullable'],
         ]);
 
+        /** @var \Illuminate\Auth\SessionGuard $guard */
+        $guard = Auth::guard('craft');
         /** @var \CraftCms\Cms\Auth\UserProvider $provider */
-        $provider = Auth::guard('craft')->getProvider();
+        $provider = $guard->getProvider();
+
         $user = $provider->retrieveByCredentials($request->only('loginName', 'password'));
 
         return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {

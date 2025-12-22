@@ -18,6 +18,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -119,11 +120,7 @@ class SsoController extends Controller
     protected function handleSuccessfulResponse(): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {

@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\RememberedUsername;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
@@ -91,24 +91,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see URL::returnUrl()} instead.
      */
     public function getReturnUrl($defaultUrl = null): string
     {
-        // Set the default based on the config, if it’s not specified
-        if ($defaultUrl === null) {
-            if (Auth::guest()) {
-                $defaultUrl = UrlHelper::actionUrl('users/redirect');
-            } else {
-                $defaultUrl = $this->getDefaultReturnUrl();
-            }
-        }
-
-        $url = parent::getReturnUrl($defaultUrl);
-
-        // Strip out any tags that may have gotten in there by accident
-        // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
-        // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
-        return str_replace(['{', '}'], '', $url);
+        return URL::returnUrl($defaultUrl);
     }
 
     /**
@@ -116,25 +103,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return string
      * @since 5.6.2
+     * @deprecated 6.0.0 use {@see URL::defaultReturnUrl()} instead.
      */
     public function getDefaultReturnUrl(): string
     {
-        // Is this a control panel request and can they access the control panel?
-        if (Craft::$app->getRequest()->getIsCpRequest() && Gate::check('accessCp')) {
-            return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
-        }
-
-        return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+        return URL::defaultReturnUrl();
     }
 
     /**
      * Removes the stored return URL, if there is one.
      *
      * @see getReturnUrl()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session::forget('_previous.url')} instead.
      */
     public function removeReturnUrl(): void
     {
-        SessionHelper::remove($this->returnUrlParam);
+        \Illuminate\Support\Facades\Session::forget('_previous.url');
     }
 
     /**
@@ -218,7 +202,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         if (!$this->checkRedirectAcceptable()) {
             throw new ForbiddenHttpException(t('Guest Required'));
         }
-        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
+        return Craft::$app->getResponse()->redirect(URL::returnUrl());
     }
 
     /**

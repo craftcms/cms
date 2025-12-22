@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Providers;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -24,9 +25,12 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use IntlDateFormatter;
@@ -35,6 +39,7 @@ use Override;
 use ReflectionClass;
 use RuntimeException;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
 final class AppServiceProvider extends ServiceProvider
@@ -202,6 +207,27 @@ final class AppServiceProvider extends ServiceProvider
             $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
 
             return $this;
+        });
+
+        UrlGenerator::macro('defaultReturnUrl', function (): string {
+            if (request()->isCpRequest() && Gate::check('accessCp')) {
+                return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
+            }
+
+            return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+        });
+
+        UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
+            $defaultUrl ??= Auth::guest()
+                ? action_url('users/redirect')
+                : $this->defaultReturnUrl();
+
+            $url = url()->previous($defaultUrl);
+
+            // Strip out any tags that may have gotten in there by accident
+            // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
+            // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
+            return str_replace(['{', '}'], '', $url);
         });
 
         Factory::macro('create', fn (array $options = []) => $this->throw()
