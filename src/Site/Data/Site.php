@@ -252,6 +252,7 @@ final class Site extends Dto implements Arrayable, Chippable, Stringable
             'baseUrl' => $this->getBaseUrl(),
             'enabled' => $this->getEnabled(),
             'group' => $this->getGroup(),
+            'sortOrder' => $this->sortOrder,
         ];
     }
 }

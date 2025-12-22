@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {CraftCombobox, t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
@@ -9,19 +9,53 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
-  import type {Site, SiteGroup} from '@/types';
+  import type {Site, SiteGroup, SuggestionGroup} from '@/types';
+  import ModalForm from '@/components/ModalForm.vue';
+  import {Deferred, router, useForm} from '@inertiajs/vue3';
+  import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
+  import SiteGroupActions from '@/components/SiteGroupActions.vue';
 
   const props = defineProps<{
     readOnly: boolean;
     group: SiteGroup | null;
     groups: Array<SiteGroup>;
-    sites: Record<string, Site>;
+    sites: Array<Site>;
+    nameSuggestions?: Array<SuggestionGroup>;
+    flash: {
+      success: string | null;
+      error: string | null;
+    };
   }>();
 
-  const tableData = computed(() =>
-    Object.keys(props.sites).map((key) => props.sites[key] as Site)
-  );
+  const modalActive = ref(false);
   const columnHelper = createColumnHelper<Site>();
+  const flashError = computed(() => props.flash.error);
+
+  const form = useForm({
+    id: props.group?.id ?? null,
+    name: props.group?.name ?? '',
+  });
+
+  function saveGroup() {
+    form.clearErrors().submit(store(), {
+      onSuccess: () => {
+        modalActive.value = false;
+        form.reset();
+      },
+    });
+  }
+
+  function openModal(mode: 'create' | 'update') {
+    if (mode === 'create') {
+      form.name = '';
+      form.id = null;
+    } else {
+      form.name = props.group?.name ?? '';
+      form.id = props.group?.id ?? null;
+    }
+
+    modalActive.value = true;
+  }
 
   const columns = ref([
     columnHelper.accessor('name', {
@@ -30,6 +64,7 @@
         h(
           'a',
           {
+            // @TODO Update to respect CP trigger
             href: `/admin/settings/sites/${row.original.id}`,
           },
           h(
@@ -98,7 +133,7 @@
 
   const sitesTable = useVueTable({
     get data() {
-      return tableData.value;
+      return props.sites;
     },
     get columns() {
       return columns.value;
@@ -111,10 +146,41 @@
       maxSize: 200,
     },
   });
+
+  function handleDeleteClick() {
+    if (
+      props.group?.id &&
+      // @TODO custom confirmation dialog?
+      confirm(t('Are you sure you want to delete this group?'))
+    ) {
+      router.delete(destroy({groupId: props.group.id}));
+    }
+  }
+
+  const pageTitle = computed(() => {
+    if (props.group?.name) {
+      return props.group.name;
+    }
+
+    return t('Sites');
+  });
 </script>
 
 <template>
-  <AppLayout :title="t('Sites')" :debug="$props" :full-width="true">
+  <AppLayout :debug="{form, $props}" :full-width="true" :title="pageTitle">
+    <template #title>
+      <div class="flex gap-2 items-center">
+        <h1 class="title text-xl">
+          {{ pageTitle }}
+        </h1>
+        <SiteGroupActions
+          class="inline-block"
+          v-if="group"
+          @click:rename="modalActive = true"
+          @click:delete="handleDeleteClick"
+        />
+      </div>
+    </template>
     <template #actions>
       <craft-button variant="primary">
         <craft-icon name="plus" slot="prefix"></craft-icon>
@@ -123,7 +189,7 @@
     </template>
 
     <div class="interior">
-      <div>
+      <div class="">
         <nav>
           <craft-nav-list>
             <craft-nav-item url="/admin/settings/sites" :active="!group">
@@ -134,41 +200,146 @@
               :key="g.id"
               :url="`/admin/settings/sites?groupId=${g.id}`"
               :active="group && g.id === group.id"
+              suffix-only-on-hover
             >
               {{ g.name }}
             </craft-nav-item>
           </craft-nav-list>
         </nav>
 
-        <div class="mt-4">
-          <craft-button type="button" @click="() => console.log('To do')">
+        <div class="mt-4 flex gap-2 border-t border-t-border-subtle pt-2">
+          <craft-button type="button" @click="openModal('create')" size="small">
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('New Group') }}
           </craft-button>
         </div>
       </div>
-      <div class="bg-white border border-border-subtle rounded-sm shadow-sm">
-        <div>
-          <template v-if="readOnly">
-            <CalloutReadOnly />
-          </template>
+      <div>
+        <div
+          class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-hidden"
+        >
+          <div>
+            <template v-if="readOnly">
+              <CalloutReadOnly />
+            </template>
 
-          <AdminTable :table="sitesTable" v-if="sites"></AdminTable>
-          <template v-else>
-            <div>
-              <p>{{ t('No sites exist for this group yet.') }}</p>
-            </div>
-          </template>
+            <AdminTable :table="sitesTable" v-if="sites.length"></AdminTable>
+            <template v-else>
+              <div class="py-20">
+                <div
+                  class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
+                >
+                  <craft-icon
+                    name="light/earth-americas"
+                    style="font-size: calc(48rem / 16)"
+                  ></craft-icon>
+                  <p>{{ t('No sites exist for this group yet.') }}</p>
+                  <craft-button>
+                    <craft-icon name="plus" slot="prefix"></craft-icon>
+                    {{ t('New site') }}
+                  </craft-button>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </div>
   </AppLayout>
+
+  <ModalForm
+    :is-active="modalActive"
+    @close="
+      modalActive = false;
+      form.reset();
+    "
+    @submit="saveGroup"
+    :loading="form.processing"
+  >
+    <Deferred data="nameSuggestions">
+      <template #fallback>
+        <craft-input
+          readonly
+          :label="t('Group Name')"
+          :help-text="t('What this group will be called in the control panel.')"
+        >
+          <div slot="after">
+            <craft-callout
+              variant="info"
+              appearance="plain"
+              class="p-0"
+              icon="lightbulb"
+            >
+              {{ t('This can begin with an environment variable.') }}
+              <a
+                href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+                >{{ t('Learn more') }}</a
+              >
+            </craft-callout>
+          </div>
+        </craft-input>
+      </template>
+      <craft-combobox
+        :label="t('Group Name')"
+        id="name"
+        name="name"
+        required
+        :help-text="t('What this group will be called in the control panel.')"
+        v-model="form.name"
+        :has-feedback-for="form.errors?.name ? 'error' : ''"
+        :require-option-match="false"
+        show-all-on-empty
+      >
+        <template v-for="(group, idx) in nameSuggestions" :key="idx">
+          <craft-option
+            v-for="suggestion in group.data"
+            :key="suggestion.name"
+            .choiceValue="suggestion.name"
+            .hint="suggestion.hint"
+            >{{ suggestion.name }}</craft-option
+          >
+        </template>
+        <div slot="after">
+          <craft-callout
+            variant="info"
+            appearance="plain"
+            class="p-0"
+            icon="lightbulb"
+          >
+            {{ t('This can begin with an environment variable.') }}
+            <a
+              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+              >{{ t('Learn more') }}</a
+            >
+          </craft-callout>
+        </div>
+
+        <div slot="feedback">
+          <ul class="error-list" v-if="form.errors?.name">
+            <li>{{ form.errors.name }}</li>
+          </ul>
+        </div>
+      </craft-combobox>
+    </Deferred>
+  </ModalForm>
 </template>
 
 <style scoped lang="scss">
   .interior {
     display: grid;
-    grid-template-columns: calc(180rem / 16) 1fr;
-    gap: var(--c-spacing-lg);
+    grid-template-columns: minmax(calc(120rem / 16), 16%) 1fr;
+    gap: var(--c-spacing-md);
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+  }
+
+  .separator {
+    font-size: 0.8em;
+    font-weight: 400;
+    opacity: 0.5;
   }
 </style>

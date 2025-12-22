@@ -4,17 +4,26 @@
   import {computed, reactive, ref, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
-  import {Head} from '@inertiajs/vue3';
+  import {Head, usePage} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
 
   withDefaults(
     defineProps<{
-      title: string;
+      title?: string;
       debug?: any;
       fullWidth?: boolean;
     }>(),
     {fullWidth: false}
   );
+
+  const page = usePage<{
+    flash: {
+      success: string | null;
+      error: string | null;
+    };
+  }>();
+  const errorFlash = computed(() => page.props.flash?.error);
+  const successFlash = computed(() => page.props.flash?.success);
 
   const state = reactive<{
     sidebar: {
@@ -88,6 +97,17 @@
           <craft-icon name="search"></craft-icon>
         </craft-button>
       </div>
+      <!-- TODO: this is just temporary placement -->
+      <template v-if="errorFlash">
+        <craft-callout variant="danger" rounded="none">{{
+          errorFlash
+        }}</craft-callout>
+      </template>
+      <template v-if="successFlash">
+        <craft-callout variant="success" rounded="none">{{
+          successFlash
+        }}</craft-callout>
+      </template>
     </div>
     <div class="cp__sidebar">
       <CpSidebar

@@ -143,6 +143,8 @@ Route::middleware('auth:craft')->group(function () {
         Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
 
+        // Site Groups
+        Route::post('settings/site-groups', [SiteGroupsController::class, 'store']);
         Route::delete('settings/site-groups/{groupId}', [SiteGroupsController::class, 'destroy'])
             ->name('settings.site-groups.destroy');
 

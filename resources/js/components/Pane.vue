@@ -18,7 +18,7 @@
   );
 
   const showHeader = computed(() => {
-    return slots.header;
+    return slots.header || slots.title || slots['header-actions'];
   });
 
   const showFooter = computed(() => {
@@ -49,8 +49,8 @@
       <div class="pane__footer">
         <slot name="actions">
           <div class="actions">
-            <slot name="primary-action"></slot>
             <slot name="secondary-action"></slot>
+            <slot name="primary-action"></slot>
           </div>
         </slot>
       </div>
@@ -88,7 +88,8 @@
 
   .actions {
     display: flex;
-    justify-content: space-between;
+    gap: var(--c-spacing-md);
+    justify-content: end;
     align-items: center;
   }
 </style>
