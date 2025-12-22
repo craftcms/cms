@@ -46,6 +46,7 @@ export default css`
     padding-inline: var(--c-spacing-sm);
     min-width: var(--c-size-control-sm);
     min-height: var(--c-size-control-sm);
+    font-size: 0.9em;
 
     craft-icon {
       font-size: 0.8em;
