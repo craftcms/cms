@@ -245,14 +245,14 @@ class Application extends \yii\web\Application
                     ($firstSeg = $request->getSegment(1)) !== null &&
                     ($plugin = app(Plugins::class)->getPlugin($firstSeg)) !== null
                 ) {
-                    if ($userSession->getIsGuest()) {
+                    if (Auth::guest()) {
                         return $userSession->loginRequired();
                     }
 
                     Gate::authorize('accessPlugin-' . $plugin->handle);
                 }
 
-                if (!$userSession->getIsGuest()) {
+                if (!Auth::guest()) {
                     // See if the user is expected to have 2FA enabled
                     if (!$generalConfig->disable2fa) {
                         $auth = $this->getAuth();

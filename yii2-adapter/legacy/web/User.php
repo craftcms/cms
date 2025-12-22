@@ -108,7 +108,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         // Set the default based on the config, if it’s not specified
         if ($defaultUrl === null) {
-            if ($this->getIsGuest()) {
+            if (Auth::guest()) {
                 $defaultUrl = UrlHelper::actionUrl('users/redirect');
             } else {
                 $defaultUrl = $this->getDefaultReturnUrl();
@@ -213,7 +213,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsGuest(): bool
     {
-        return parent::getIsGuest();
+        return Auth::guest();
     }
 
     /**
@@ -239,7 +239,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getRemainingSessionTime(): int
     {
         // Are they logged in?
-        if (!$this->getIsGuest()) {
+        if (!Auth::guest()) {
             if (!isset($this->authTimeout)) {
                 // The session duration must have been empty (expire when the HTTP session ends)
                 return -1;
@@ -300,6 +300,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * Returns whether the current user is an admin.
      *
      * @return bool Whether the current user is an admin.
+     * @deprecated 6.0.0 use `Auth::user()?->isAdmin()` instead.
      */
     public function getIsAdmin(): bool
     {

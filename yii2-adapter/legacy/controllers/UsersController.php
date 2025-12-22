@@ -198,7 +198,7 @@ class UsersController extends Controller
     {
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
-        if ($action->id === 'login' && !Craft::$app->getUser()->getIsGuest()) {
+        if ($action->id === 'login' && !Auth::guest()) {
             $this->enableCsrfValidation = false;
         }
 
@@ -481,7 +481,7 @@ class UsersController extends Controller
             $return = [
                 'status' => $user->getStatus(),
             ];
-            if (!Craft::$app->getUser()->getIsGuest() && Cms::config()->enableCsrfProtection) {
+            if (!Auth::guest() && Cms::config()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
             return $this->asSuccess(data: $return);
@@ -561,7 +561,7 @@ class UsersController extends Controller
         }
 
         // If they're logged in, give them a success notice
-        if (!Craft::$app->getUser()->getIsGuest()) {
+        if (!Auth::guest()) {
             $this->setSuccessFlash(t('Email verified'));
         }
 
@@ -1399,9 +1399,8 @@ class UsersController extends Controller
         }
 
         // If someone is logged in and it’s not this person, log them out
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->getIsGuest() && $userSession->getId() != $user->id) {
-            $userSession->logout();
+        if (!Auth::guest() && Auth::id() !== $user->id) {
+            Auth::logout();
         }
 
         if (Event::hasListeners(VerifyingEmail::class)) {
@@ -1437,7 +1436,7 @@ class UsersController extends Controller
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
         if ($user && !$user->verificationCode) {
             $userSession = Craft::$app->getUser();
-            if (!$userSession->getIsGuest()) {
+            if (!Auth::guest()) {
                 $returnUrl = $userSession->getReturnUrl();
                 $userSession->removeReturnUrl();
                 return $this->redirect($returnUrl);

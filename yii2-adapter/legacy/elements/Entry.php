@@ -2203,7 +2203,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $actions = parent::safeActionMenuItems();
 
         if (
-            Craft::$app->getUser()->getIsAdmin() &&
+            Auth::user()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings

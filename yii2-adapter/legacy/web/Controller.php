@@ -214,7 +214,7 @@ abstract class Controller extends \yii\web\Controller
             if ($isCpRequest) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } elseif (Craft::$app->getUser()->getIsGuest()) {
+            } elseif (Auth::guest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -463,7 +463,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $userSession = Craft::$app->getUser();
 
-        if ($userSession->getIsGuest()) {
+        if (Auth::guest()) {
             $userSession->loginRequired();
             Craft::$app->end();
         }
@@ -478,7 +478,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $userSession = Craft::$app->getUser();
 
-        if (!$userSession->getIsGuest()) {
+        if (!Auth::guest()) {
             $userSession->guestRequired();
             Craft::$app->end();
         }
@@ -497,7 +497,7 @@ abstract class Controller extends \yii\web\Controller
         $this->requireLogin();
 
         // Make sure they're an admin
-        if (!Craft::$app->getUser()->getIsAdmin()) {
+        if (!Auth::user()?->isAdmin()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action.');
         }
 

@@ -13,6 +13,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use Illuminate\Support\Facades\Auth;
 use yii\base\Arrayable;
 
 /**
@@ -73,7 +74,7 @@ trait MissingComponentTrait
         $iconSvg = null;
 
         if (
-            Craft::$app->getUser()->getIsAdmin() &&
+            Auth::user()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $pluginsService = app(Plugins::class);
