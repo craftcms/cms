@@ -3439,7 +3439,6 @@ class GeneralConfig extends BaseConfig
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
-            ->elevatedSessionDuration($this->elevatedSessionDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
             ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
@@ -7112,7 +7111,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $userSessionDuration
      */
-    #[\Deprecated(message: "configure sessions using Laravel's session config instead.", since: '6.0.0')]
+    #[Deprecated(message: "configure sessions using Laravel's session config instead.", since: '6.0.0')]
     public function userSessionDuration(mixed $value): self
     {
         $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
