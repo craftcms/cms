@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Flash;
@@ -28,6 +29,7 @@ final readonly class ImpersonationController
     public function __construct(
         private Request $request,
         private Users $users,
+        private Impersonation $impersonation,
     ) {}
 
     public function impersonate(): Response
@@ -46,10 +48,10 @@ final readonly class ImpersonationController
 
         $this->enforceImpersonatePermission($user);
 
-        Craft::$app->getUser()->setImpersonatorId($this->request->user()->id);
+        $this->impersonation->setImpersonatorId($this->request->user()->id);
 
         try {
-            Auth::login($user);
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 
@@ -97,10 +99,10 @@ final readonly class ImpersonationController
         /** @var User $user */
         $user = $this->users->getUserById($userId);
 
-        Craft::$app->getUser()->setImpersonatorId($prevUserId);
+        $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            Auth::login($user);
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 

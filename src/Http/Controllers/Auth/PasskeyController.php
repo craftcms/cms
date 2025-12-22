@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -24,7 +25,7 @@ final readonly class PasskeyController extends AuthenticationController
         ]);
     }
 
-    public function login(Request $request): Response
+    public function login(Request $request, Impersonation $impersonation): Response
     {
         $request->validate([
             'requestOptions' => ['required'],
@@ -50,8 +51,7 @@ final readonly class PasskeyController extends AuthenticationController
         }
 
         // if we're impersonating, pass the user we're impersonating to the complete method
-        $userSession = Craft::$app->getUser();
-        if ($userSession->getImpersonator() !== null) {
+        if ($impersonation->isImpersonating()) {
             $user = Auth::user();
         }
 

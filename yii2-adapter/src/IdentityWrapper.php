@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -66,7 +67,7 @@ final class IdentityWrapper implements IdentityInterface
         // Only accept active users, unless they're being impersonated
         if (
             $user->getStatus() !== User::STATUS_ACTIVE &&
-            !Craft::$app->getUser()->getImpersonator()
+            !app(Impersonation::class)->isImpersonating()
         ) {
             return null;
         }

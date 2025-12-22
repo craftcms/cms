@@ -11,6 +11,7 @@ use craft\auth\methods\TOTP;
 use craft\helpers\UrlHelper;
 use craft\web\View;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Arr;
@@ -30,11 +31,11 @@ final readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request): Response|string
+    public function showForm(Request $request, Impersonation $impersonation): Response|string
     {
         $userSession = Craft::$app->getUser();
 
-        $user = $userSession->getImpersonator()
+        $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
 
         if (! $user) {

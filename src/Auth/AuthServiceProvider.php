@@ -11,6 +11,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Contracts\Auth\Access\Authorizable;
@@ -108,6 +109,10 @@ final class AuthServiceProvider extends ServiceProvider
             }
 
             Users::handleInvalidLogin($event->user);
+        });
+
+        Event::listen(Logout::class, function (Logout $event) {
+            app(Impersonation::class)->setImpersonatorId(null);
         });
     }
 }

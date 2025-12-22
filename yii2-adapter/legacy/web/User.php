@@ -12,6 +12,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Config;
@@ -57,17 +58,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * @see Cookie
      */
     public array $usernameCookie;
-
-    /**
-     * @var string The session variable name used to store the original user ID, when impersonating another user.
-     * @since 5.6.0
-     */
-    public string $impersonatorIdParam = '__impersonator_id';
-
-    /**
-     * @see getImpersonator()
-     */
-    private UserElement|false $impersonator;
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -271,25 +261,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return UserElement|null
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::getImpersonator()} instead.
      */
     public function getImpersonator(): ?UserElement
     {
-        if (!isset($this->impersonator)) {
-            $impersonatorId = SessionHelper::get($this->impersonatorIdParam);
-            if (!$impersonatorId) {
-                return null;
-            }
-
-            $impersonator = UserElement::find()
-                ->id($impersonatorId)
-                ->one();
-
-            $this->impersonator = $impersonator?->can('impersonateUsers')
-                ? $impersonator
-                : false;
-        }
-
-        return $this->impersonator ?: null;
+        return app(Impersonation::class)->getImpersonator();
     }
 
     /**
@@ -297,25 +273,24 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|null
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::getImpersonatorId()} instead.
      */
     public function getImpersonatorId(): ?int
     {
-        return $this->getImpersonator()?->id;
+        return app(Impersonation::class)->getImpersonatorId();
     }
 
     /**
      * Sets the ID of the original user, if the current user is being impersonated.
      *
      * @param int|null $id
+     *
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::setImpersonatorId()} instead.
      */
     public function setImpersonatorId(?int $id): void
     {
-        if ($id) {
-            SessionHelper::set($this->impersonatorIdParam, $id);
-        } else {
-            SessionHelper::remove($this->impersonatorIdParam);
-        }
+        app(Impersonation::class)->setImpersonatorId($id);
     }
 
     // Authorization
@@ -407,7 +382,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         $this->_clearOtherSessionParams();
 
         // Save the username cookie if they're not being impersonated
-        $impersonator = $this->getImpersonator();
+        $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
             $this->sendUsernameCookie(UserElement::find()->id($identity->getId())->firstOrFail());
         }
@@ -538,10 +513,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogout($identity): void
     {
-        // Delete the impersonation session, if there is one
-        SessionHelper::remove($this->impersonatorIdParam);
-        $this->impersonator = false;
-
         $this->_clearOtherSessionParams();
 
         if (Cms::config()->enableCsrfProtection) {

@@ -38,6 +38,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -1895,7 +1896,7 @@ XML;
 
         $currentUser = Auth::user();
         $view = Craft::$app->getView();
-        $userSession = Craft::$app->getUser();
+        Craft::$app->getUser();
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
@@ -1971,7 +1972,7 @@ XML;
                             ($currentUser->admin || ! $this->admin) &&
                             $canModerateUsers &&
                             (
-                                ($impersonatorId = $userSession->getImpersonatorId()) === null ||
+                                ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
                                 $this->id !== $impersonatorId
                             )
                         ) {

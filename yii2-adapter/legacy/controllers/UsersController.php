@@ -34,6 +34,7 @@ use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -1147,7 +1148,7 @@ class UsersController extends Controller
         // If the current user is being impersonated, use the impersonator
         $userSession = Craft::$app->getUser();
         $authService = Craft::$app->getAuth();
-        $user = $userSession->getImpersonator() ?? $authService->getUser();
+        $user = app(Impersonation::class)->getImpersonator() ?? Auth::user();
 
         if (!$user) {
             if ($this->request->getIsSiteRequest()) {

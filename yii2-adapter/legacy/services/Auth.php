@@ -20,6 +20,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\User as UserHelper;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -219,8 +220,7 @@ class Auth extends Component
             $this->setUser(null);
 
             // if we're impersonating, pass the user we're impersonating to the complete the login
-            $userSession = Craft::$app->getUser();
-            if ($userSession->getImpersonator() !== null) {
+            if (app(Impersonation::class)->isImpersonating()) {
                 /** @var User $user */
                 $user = AuthFacade::user();
             }

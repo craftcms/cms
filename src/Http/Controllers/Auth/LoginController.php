@@ -8,6 +8,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\View;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,12 +37,12 @@ final readonly class LoginController extends AuthenticationController
         return view('craftcms::login');
     }
 
-    public function showLoginModal(Request $request): JsonResponse
+    public function showLoginModal(Request $request, Impersonation $impersonation): JsonResponse
     {
         $forElevatedSession = $request->boolean('forElevatedSession');
 
         // If the current user is being impersonated, get the impersonator instead
-        if ($forElevatedSession && ($impersonator = Craft::$app->getUser()->getImpersonator())) {
+        if ($forElevatedSession && ($impersonator = $impersonation->getImpersonator())) {
             $staticEmail = $impersonator->email;
         } else {
             $staticEmail = $request->validate(['email' => ['required']])['email'];
@@ -60,7 +61,7 @@ final readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request): Response
+    public function attemptLogin(Request $request, Impersonation $impersonation): Response
     {
         $request->validate([
             'loginName' => ['required', 'string'],
@@ -72,7 +73,7 @@ final readonly class LoginController extends AuthenticationController
         $provider = Auth::guard('craft')->getProvider();
         $user = $provider->retrieveByCredentials($request->only('loginName', 'password'));
 
-        return new Timebox()->call(function () use ($request, $provider, $user) {
+        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
             if (! $user || $user->password === null) {
                 return $this->handleLoginFailure($request, User::AUTH_INVALID_CREDENTIALS);
             }
@@ -108,8 +109,7 @@ final readonly class LoginController extends AuthenticationController
             }
 
             // if we're impersonating, pass the user we're impersonating to the complete method
-            $impersonator = Craft::$app->getUser()->getImpersonator();
-            if ($impersonator !== null) {
+            if ($impersonation->isImpersonating()) {
                 $user = Auth::user() ?? $user;
             }
 
