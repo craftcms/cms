@@ -7,7 +7,7 @@
     "rootDir": ".",
     "types": ["vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@src/*": ["./src/*"]
     }
   },
   "include": ["src"]

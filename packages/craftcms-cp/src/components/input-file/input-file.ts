@@ -1,5 +1,5 @@
 import {LionInputFile} from '@lion/ui/input-file.js';
-import {inputStyles} from '@/styles/form.styles';
+import {inputStyles} from '@src/styles/form.styles';
 import styles from './input-file.styles.js';
 import CraftSelectedFileList from './selected-file-list.js';
 import {html} from 'lit';

@@ -7,8 +7,8 @@ import {
   type AppearanceKey,
   Variant,
   type VariantKey,
-} from '@/types/index.js';
-import variantsStyles from '@/styles/variants.styles';
+} from '@src/types/index.js';
+import variantsStyles from '@src/styles/variants.styles.js';
 
 export default class CraftCallout extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
