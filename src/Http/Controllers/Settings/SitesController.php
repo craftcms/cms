@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\UrlHelper;
-use craft\web\assets\sites\SitesAsset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Data\Site;
@@ -45,40 +45,22 @@ final readonly class SitesController
 
         $sites = isset($group)
             ? $this->sites->getSitesByGroupId($groupId)
-            : $this->sites->getAllSites();
+            : $this->sites->getAllSites()->values();
 
         $crumbs = [
             ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
         ];
 
-        if ($request->has('legacy')) {
-            $view = \Craft::$app->getView();
-            $view->registerAssetBundle(SitesAsset::class);
-            $view->registerTranslations('app', [
-                'Could not create the group:',
-                'Group renamed.',
-                'Could not rename the group:',
-                'What do you want to name the group?',
-                'Are you sure you want to delete this group?',
-                'What do you want to do with any content that is only available in {language}?',
-                'Transfer it to:',
-                'Delete it',
-                'Delete {site}',
-            ]);
-
-            return view('craftcms::settings/sites/index', [
-                'crumbs' => $crumbs,
-                'group' => $group ?? null,
-                'sites' => $sites,
-                'readOnly' => $this->readOnly,
-            ]);
-        }
-
         return Inertia::render('SettingsSitesIndex', [
             'crumbs' => $crumbs,
+            'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
             'groups' => $this->siteGroups->getAllGroups(),
-            'sites' => $sites,
+            'sites' => $sites
+                ->sortBy([
+                    ['id', 'asc'],
+                    ['sortOrder', 'asc'],
+                ])->values()->toArray(),
             'readOnly' => $this->readOnly,
         ]);
     }
