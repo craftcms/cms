@@ -13,6 +13,8 @@ import {uuid} from '@lion/ui/core.js';
 export default class CraftActionMenu extends OverlayMixin(LitElement) {
   static override styles = css`
     ::slotted([slot='content']) {
+      font-size: var(--c-text-base);
+      font-weight: 400;
       display: grid;
       gap: var(--c-spacing-xs);
       border: 1px solid var(--c-color-neutral-border-subtle);
