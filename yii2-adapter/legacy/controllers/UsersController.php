@@ -35,6 +35,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -420,7 +421,7 @@ class UsersController extends Controller
             /** @var string $code */
             [$user, $uid, $code] = $info;
 
-            Craft::$app->getUser()->sendUsernameCookie($user);
+            RememberedUsername::set($user);
 
             // Send them to the set password template.
             return $this->_renderSetPasswordTemplate([
@@ -521,7 +522,7 @@ class UsersController extends Controller
             /** @var string $code */
             [$user, $uid, $code] = $info;
 
-            Craft::$app->getUser()->sendUsernameCookie($user);
+            RememberedUsername::set($user);
 
             // Send them to the set verify-email template
             return $this->_rerouteWithFallbackTemplate('verify-email.twig', [
@@ -891,7 +892,7 @@ class UsersController extends Controller
         /** @noinspection PhpUndefinedVariableInspection */
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
-            $userSession->sendUsernameCookie($user);
+            RememberedUsername::set($user);
         }
 
         // Save the user’s photo, if it was submitted

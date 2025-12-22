@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
-use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 
 final class SessionAuth
@@ -70,8 +70,6 @@ final class SessionAuth
 
     private static function authAccessParam(): string
     {
-        $prefix = md5('CraftSession'.Cms::envId());
-
-        return $prefix.self::$authAccessParam;
+        return Cookie::craftPrefix().self::$authAccessParam;
     }
 }

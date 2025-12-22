@@ -31,6 +31,14 @@ final class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->registerRedirects();
+        $this->registerGuard();
+        $this->registerPermissions();
+        $this->registerEvents();
+    }
+
+    private function registerRedirects(): void
+    {
         Authenticate::redirectUsing(function (Request $request) {
             if ($request->isCpRequest()) {
                 return Cms::config()->cpTrigger.'/login';
@@ -40,7 +48,10 @@ final class AuthServiceProvider extends ServiceProvider
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => $request->user()->getDefaultReturnUrl());
+    }
 
+    private function registerGuard(): void
+    {
         Auth::provider('craft', fn (Application $app) => new UserProvider($app->make(Hasher::class)));
 
         if (! Config::has('auth.guards.craft')) {
@@ -57,7 +68,10 @@ final class AuthServiceProvider extends ServiceProvider
                 'model' => User::class,
             ]);
         }
+    }
 
+    private function registerPermissions(): void
+    {
         /**
          * This hooks our permission system into
          * Laravel's Gate authorization system
@@ -92,13 +106,18 @@ final class AuthServiceProvider extends ServiceProvider
 
             return true;
         });
+    }
 
+    private function registerEvents(): void
+    {
         Event::listen(Login::class, function (Login $event) {
             if (! $event->user instanceof User) {
                 return;
             }
 
             Users::handleValidLogin($event->user);
+
+            RememberedUsername::set($event->user);
 
             Session::passwordConfirmed();
         });
@@ -111,7 +130,7 @@ final class AuthServiceProvider extends ServiceProvider
             Users::handleInvalidLogin($event->user);
         });
 
-        Event::listen(Logout::class, function (Logout $event) {
+        Event::listen(Logout::class, function () {
             app(Impersonation::class)->setImpersonatorId(null);
         });
     }

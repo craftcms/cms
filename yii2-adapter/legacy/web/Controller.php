@@ -473,6 +473,7 @@ abstract class Controller extends \yii\web\Controller
      * Redirects the user to the account template if they are logged in.
      *
      * @since 3.4.0
+     * @deprecated 6.0.0 use the "guest" middleware instead.
      */
     public function requireGuest(): void
     {

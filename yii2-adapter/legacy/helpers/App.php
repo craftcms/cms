@@ -37,6 +37,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
+use Illuminate\Support\Facades\Cookie;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -817,8 +818,6 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
-
         return [
             'class' => WebUser::class,
             'identityClass' => User::class,
@@ -826,7 +825,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
+            'usernameCookie' => Craft::cookieConfig(['name' => Cookie::craftPrefix() . '_username']),
         ];
     }
 

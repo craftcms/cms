@@ -54,6 +54,7 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\AddressQuery;
 use CraftCms\Cms\Database\Queries\AssetQuery;
@@ -1845,6 +1846,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
+            'rememberedUsername' => RememberedUsername::get(),
             'primarySite' => $primarySite,
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,

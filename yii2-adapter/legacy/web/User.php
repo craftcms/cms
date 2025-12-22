@@ -13,6 +13,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
@@ -85,17 +86,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        $generalConfig = Cms::config();
-
-        if ($generalConfig->rememberUsernameDuration !== 0) {
-            $cookie = new Cookie($this->usernameCookie);
-            $cookie->value = $user->username;
-            $seconds = Config::durationInSeconds($generalConfig->rememberUsernameDuration);
-            $cookie->expire = DateTimeHelper::currentTimeStamp() + $seconds;
-            Craft::$app->getResponse()->getCookies()->add($cookie);
-        } else {
-            Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
-        }
+        RememberedUsername::set($user);
     }
 
     /**
@@ -180,10 +171,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * ```
      *
      * @return string|null
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Cookie::getRememberedUsername()} instead.
      */
     public function getRememberedUsername(): ?string
     {
-        return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
+        return RememberedUsername::get();
     }
 
     /**
@@ -219,6 +211,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * @return Response the redirection response
      * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
      * @since 3.4.0
+     * @deprecated 6.0.0 use the "guest" middleware instead.
      */
     public function guestRequired(): Response
     {
@@ -382,7 +375,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
-            $this->sendUsernameCookie(UserElement::find()->id($identity->getId())->firstOrFail());
+            RememberedUsername::set(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
