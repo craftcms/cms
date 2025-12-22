@@ -4,7 +4,8 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "paths": {
-      "@/*": ["./resources/js/*"]
+      "@/*": ["./resources/js/*"],
+      "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"]
     },
     "types": ["vite/client", "./resources/js/types"]
   },
