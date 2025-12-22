@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
+use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
@@ -27,7 +28,6 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
-use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -37,8 +37,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Admin requests that do not require a login
  */
-Route::get('install', [InstallController::class, 'index'])
-    ->middleware([HandleInertiaRequests::class]);
+Route::get('install', [InstallController::class, 'index']);
 
 /**
  * Admin requests that require a login
@@ -94,7 +93,6 @@ Route::middleware('auth:craft')->group(function () {
     ])->group(function () {
         // Index page
         Route::get('settings', SettingsIndexController::class)
-            ->middleware([HandleInertiaRequests::class])
             ->name('settings.index');
 
         // Entry types
@@ -109,7 +107,6 @@ Route::middleware('auth:craft')->group(function () {
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])
-            ->middleware([HandleInertiaRequests::class])
             ->name('settings.general.index');
         Route::post('settings/general', [GeneralSettingsController::class, 'store'])
             ->middleware([RequireAdminChanges::class])
@@ -142,10 +139,12 @@ Route::middleware('auth:craft')->group(function () {
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
-            ->middleware([HandleInertiaRequests::class])
             ->name('settings.sites.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
+
+        Route::delete('settings/site-groups/{groupId}', [SiteGroupsController::class, 'destroy'])
+            ->name('settings.site-groups.destroy');
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
