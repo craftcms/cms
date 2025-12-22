@@ -19,7 +19,7 @@ interface CookieOptions {
  * A simple cookie manager.
  *
  * @example
- * import Cookies from "@/utilities/cookies";
+ * import Cookies from "@src/utilities/cookies";
  *
  * const cookies = new Cookies(Craft.defaultCookieOptions)
  * cookies.set("foo", "bar");

@@ -1,9 +1,8 @@
-import {LitElement, html, css} from 'lit';
+import {css, html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import {Variant, type VariantKey} from '@/types';
+import {Variant, type VariantKey} from '@src/types';
 import {classMap} from 'lit/directives/class-map.js';
-import variantsStyles from '@/styles/variants.styles';
-import CraftCombobox from '@/components/combobox/combobox';
+import variantsStyles from '@src/styles/variants.styles';
 
 export default class CraftIndicator extends LitElement {
   static override styles = [
