@@ -14,7 +14,6 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Deprecated;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -32,17 +31,17 @@ class GeneralConfig extends BaseConfig
 {
     use Conditionable;
 
-    public const IMAGE_DRIVER_AUTO = 'auto';
+    public const string IMAGE_DRIVER_AUTO = 'auto';
 
-    public const IMAGE_DRIVER_GD = 'gd';
+    public const string IMAGE_DRIVER_GD = 'gd';
 
-    public const IMAGE_DRIVER_IMAGICK = 'imagick';
+    public const string IMAGE_DRIVER_IMAGICK = 'imagick';
 
-    public const CAMEL_CASE = 'camel';
+    public const string CAMEL_CASE = 'camel';
 
-    public const PASCAL_CASE = 'pascal';
+    public const string PASCAL_CASE = 'pascal';
 
-    public const SNAKE_CASE = 'snake';
+    public const string SNAKE_CASE = 'snake';
 
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
@@ -3856,7 +3855,7 @@ class GeneralConfig extends BaseConfig
     public function blowfishHashCost(int $value): self
     {
         app()->booting(function () use ($value) {
-            config()->set('hashing.bcrypt.rounds', $value);
+            Config::set('hashing.bcrypt.rounds', $value);
             Deprecator::log('generalConfig.blowfishHashCost', 'blowfishHashCost is deprecated. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS instead.');
         });
 
@@ -4081,7 +4080,10 @@ class GeneralConfig extends BaseConfig
     {
         $this->defaultCookieDomain = $value;
 
-        config()->set('session.domain', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.defaultCookieDomain', 'Calling defaultCookieDomain() is deprecated.');
+            Config::set('session.domain', $value);
+        });
 
         return $this;
     }
@@ -4359,11 +4361,12 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: 'in 6.0.0. Set `app.debug` or `APP_DEBUG` environment variable instead.')]
     public function devMode(bool $value = true): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.'));
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.');
+            Config::set('app.debug', $value);
+        });
 
         $this->devMode = $value;
-
-        config()->set('app.debug', $value);
 
         return $this;
     }
@@ -5668,11 +5671,12 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: 'in 6.0.0. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.')]
     public function phpSessionName(string $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.'));
-
         $this->phpSessionName = $value;
 
-        config()->set('session.cookie', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.');
+            Config::set('session.cookie', $value);
+        });
 
         return $this;
     }
@@ -6079,12 +6083,9 @@ class GeneralConfig extends BaseConfig
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
         $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        if (app()->has(ConfigRepository::class)) {
-            app()->get(ConfigRepository::class)->set(
-                'auth.guards.web.remember',
-                floor($this->rememberedUserSessionDuration / 60),
-            );
-        }
+        app()->booting(function () {
+            Config::set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
+        });
 
         return $this;
     }
@@ -6494,11 +6495,12 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: 'in 6.0.0. Configure `app.key` or set `APP_KEY` in your environment instead.')]
     public function securityKey(string $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.securityKey', 'Calling securityKey() is deprecated.'));
-
         $this->securityKey = $value;
 
-        config()->set('app.key', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.securityKey', 'Calling securityKey() is deprecated.');
+            Config::set('app.key', $value);
+        });
 
         return $this;
     }
@@ -6794,9 +6796,10 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
     public function timezone(?string $value): self
     {
-        config()->set('app.timezone', $value);
-
-        app()->booting(fn () => Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.'));
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
+            Config::set('app.timezone', $value);
+        });
 
         $this->timezone = $value;
 
@@ -7062,9 +7065,10 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: 'in 6.0.0. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.')]
     public function useSecureCookies(string|bool $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.'));
-
-        config()->set('session.secure', $value === 'auto' ? null : $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.');
+            Config::set('session.secure', $value === 'auto' ? null : $value);
+        });
 
         $this->useSecureCookies = $value;
 

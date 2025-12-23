@@ -30,7 +30,7 @@ final readonly class TwigMapper
 
         $trace = collect($exception->getTrace())
             ->map(function (array $frame, int $index) use (&$viewIndex) {
-                $templateInfo = $this->resolveTemplatePathAndLine($frame['file'] ?? '', $frame['line']);
+                $templateInfo = $this->resolveTemplatePathAndLine($frame['file'] ?? '', $frame['line'] ?? null);
 
                 if ($templateInfo !== false) {
                     [$frame['file'], $frame['line']] = $templateInfo;
