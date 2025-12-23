@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
@@ -76,14 +75,9 @@ class TestCase extends Orchestra
         parent::tearDown();
     }
 
-    protected function migrateDatabases()
+    protected function migrateDatabases(): void
     {
-        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
-
-        /** Drop Laravel migrations */
-        Schema::drop('migrations');
-        Schema::drop('cache');
-        Schema::drop('users');
+        $this->artisan('db:wipe');
 
         $site = new Site(
             name: 'Craft test site',
