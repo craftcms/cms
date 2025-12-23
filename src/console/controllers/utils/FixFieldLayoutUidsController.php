@@ -21,6 +21,8 @@ use yii\console\ExitCode;
  */
 class FixFieldLayoutUidsController extends Controller
 {
+    private array $topLevelUids = [];
+
     /**
      * Fixes any duplicate UUIDs found within field layout components in the project config.
      *
@@ -31,6 +33,8 @@ class FixFieldLayoutUidsController extends Controller
         $this->stdout("Looking for duplicate UUIDs ...\n");
         $count = 0;
         $this->_fixUids(Craft::$app->getProjectConfig()->get(), $count);
+
+        $this->fixFieldLayoutUids($count);
 
         if ($count) {
             $summary = sprintf('Fixed %s duplicate or missing %s.', $count, $count === 1 ? 'UUID' : 'UUIDs');
@@ -50,6 +54,7 @@ class FixFieldLayoutUidsController extends Controller
         if (is_array($config['fieldLayouts'] ?? null)) {
             $modified = false;
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
+                $this->topLevelUids[$fieldLayoutUid][] = $path;
                 if (is_array($fieldLayoutConfig)) {
                     $fieldLayoutPath = sprintf('%sfieldLayouts.%s', $path ? "$path." : '', $fieldLayoutUid);
                     $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
@@ -120,5 +125,39 @@ class FixFieldLayoutUidsController extends Controller
         $this->stdout(".\n    Setting to ");
         $this->stdout($config['uid'], Console::FG_CYAN);
         $this->stdout(".\n");
+    }
+
+    private function fixFieldLayoutUids(int &$count): void
+    {
+        foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
+            if (count($paths) == 1) {
+                unset($this->topLevelUids[$fieldLayoutUid]);
+            }
+        }
+
+        // we still have some duplicates remaining
+        if (!empty($this->topLevelUids)) {
+            foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
+                // leave the first path as is
+                array_shift($paths);
+                // all others need to have their UIDs adjusted
+                foreach ($paths as $path) {
+                    $newUid = StringHelper::UUID();
+                    $config = Craft::$app->getProjectConfig()->get($path);
+                    $innerConfig = $config['fieldLayouts'][$fieldLayoutUid];
+                    unset($config['fieldLayouts'][$fieldLayoutUid]);
+                    $config['fieldLayouts'][$newUid] = $innerConfig;
+
+                    $this->stdout("    > Duplicate UUID at ");
+                    $this->stdout($path . ".fieldLayouts." . $fieldLayoutUid, Console::FG_CYAN);
+                    $this->stdout(".\n    Setting to ");
+                    $this->stdout($newUid, Console::FG_CYAN);
+                    $this->stdout(".\n");
+
+                    Craft::$app->getProjectConfig()->set($path, $config);
+                    $count++;
+                }
+            }
+        }
     }
 }
