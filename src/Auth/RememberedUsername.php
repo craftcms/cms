@@ -12,12 +12,12 @@ final readonly class RememberedUsername
 {
     public static function get(): ?string
     {
-        return Cookie::get(Cookie::craftPrefix().'_username');
+        return Cookie::get(Cms::cookiePrefix().'_username');
     }
 
     public static function set(User $user): void
     {
-        $prefix = Cookie::craftPrefix();
+        $prefix = Cms::cookiePrefix();
 
         if (Cms::config()->rememberUsernameDuration === 0) {
             Cookie::forget("{$prefix}_username");

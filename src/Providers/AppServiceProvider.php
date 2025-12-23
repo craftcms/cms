@@ -17,7 +17,6 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Cookie\CookieJar;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -136,8 +135,6 @@ final class AppServiceProvider extends ServiceProvider
 
             return $this;
         });
-
-        CookieJar::macro('craftPrefix', fn (): string => md5('CraftSession'.Cms::envId()));
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
             Cms::config()->cpTrigger, // /admin

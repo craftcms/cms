@@ -46,4 +46,9 @@ final readonly class Cms
     {
         return sprintf('%s--%s', self::systemName(), app()->environment());
     }
+
+    public static function cookiePrefix(): string
+    {
+        return md5('CraftSession'.self::envId());
+    }
 }

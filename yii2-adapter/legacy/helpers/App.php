@@ -825,7 +825,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'usernameCookie' => Craft::cookieConfig(['name' => Cookie::craftPrefix() . '_username']),
+            'usernameCookie' => Craft::cookieConfig(['name' => Cms::cookiePrefix() . '_username']),
         ];
     }
 
