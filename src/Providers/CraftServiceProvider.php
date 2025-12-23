@@ -18,6 +18,7 @@ use CraftCms\Cms\Route\RouteServiceProvider;
 use CraftCms\Cms\Section\SectionServiceProvider;
 use CraftCms\Cms\Structure\StructureServiceProvider;
 use CraftCms\Cms\Translation\TranslationServiceProvider;
+use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
@@ -30,6 +31,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
         TranslationServiceProvider::class,
         DatabaseServiceProvider::class,
         ViewServiceProvider::class,
+        TwigServiceProvider::class,
         ProjectConfigServiceProvider::class,
         DeprecatorServiceProvider::class,
         LicenseServiceProvider::class,
