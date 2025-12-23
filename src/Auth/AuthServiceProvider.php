@@ -32,13 +32,17 @@ final class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->registerRedirects();
         $this->registerGuard();
         $this->registerPermissions();
         $this->registerEvents();
     }
 
-    private function registerRedirects(): void
+    public function boot(): void
+    {
+        $this->bootRedirects();
+    }
+
+    private function bootRedirects(): void
     {
         Authenticate::redirectUsing(function (Request $request) {
             if ($request->isCpRequest()) {
