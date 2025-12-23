@@ -15,6 +15,7 @@ use craft\test\TestCase;
 use craft\web\User as WebUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
 use UnitTester;
 
 /**
@@ -56,6 +57,7 @@ class UserTest extends TestCase
         self::assertSame(0, $this->user->getRemainingSessionTime());
 
         // With a user and authTimeout null it should return -1
+        Auth::login($this->userElement);
         $this->user->setIdentity(new IdentityWrapper($this->userElement));
         $this->user->authTimeout = null;
         self::assertSame(-1, $this->user->getRemainingSessionTime());
