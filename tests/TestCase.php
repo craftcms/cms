@@ -83,7 +83,6 @@ class TestCase extends Orchestra
         /** Drop Laravel migrations */
         Schema::drop('migrations');
         Schema::drop('cache');
-        Schema::drop('sessions');
         Schema::drop('users');
 
         $site = new Site(
