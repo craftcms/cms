@@ -186,12 +186,16 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getLink(): Markup
     {
-        $url = $this->getUrl();
-        if ($url === '') {
+        $attributes = $this->getAttributes();
+
+        if ($attributes === null) {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, $this->getAttributes());
+            if ($label === '') {
+                $label = $this->getUrl();
+            }
+            $html = Html::a(Html::encode($label), options: $attributes);
         }
 
         return Template::raw($html);
@@ -212,6 +216,7 @@ class LinkData extends BaseObject implements Serializable
         }
 
         return [
+            'href' => $url,
             'target' => $this->target,
             'title' => $this->title,
             'class' => $this->class,
