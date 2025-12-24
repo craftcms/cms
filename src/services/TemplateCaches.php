@@ -156,6 +156,8 @@ class TemplateCaches extends Component
         }
 
         [$dep, $maxDuration] = Craft::$app->getElements()->stopCollectingCacheInfo();
+        $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
+        $maxDuration = min($maxDuration, $defaultDuration);
 
         if ($withResources) {
             $view = Craft::$app->getView();
@@ -174,21 +176,18 @@ class TemplateCaches extends Component
         $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
 
         if ($saveCache) {
-            if (!$dep) {
-                $dep = new TagDependency();
-            }
+            $dep = $dep ?? new TagDependency();
 
             // Always add a `template` tag
             $dep->tags[] = 'template';
 
+            $cacheInfo = [
+                'tags' => $dep->tags,
+            ];
+
             if ($maxDuration) {
                 $expiryDate = DateTimeHelper::now()->modify("+$maxDuration seconds");
-                $cacheInfo = [
-                    'tags' => $dep->tags,
-                    'expiryDate' => DateTimeHelper::toIso8601($expiryDate),
-                ];
-            } else {
-                $cacheInfo = $dep->tags;
+                $cacheInfo['expiryDate'] = DateTimeHelper::toIso8601($expiryDate);
             }
 
             $cacheValue = [$body, $cacheInfo];

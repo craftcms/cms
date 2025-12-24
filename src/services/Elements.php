@@ -691,16 +691,6 @@ class Elements extends Component
             return [null, null];
         }
 
-        // Only use the duration if it's less than the cacheDuration config setting
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($generalConfig->cacheDuration) {
-            if ($duration) {
-                $duration = min($duration, $generalConfig->cacheDuration);
-            } else {
-                $duration = $generalConfig->cacheDuration;
-            }
-        }
-
         $dep = new TagDependency([
             'tags' => array_keys($tags),
         ]);
