@@ -47,6 +47,7 @@
 - System message emails are now rendered using GitHub-flavored Markdown. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 - Drag-and-drop icons are now longer shown for devices that don’t support pointer events. ([#18067](https://github.com/craftcms/cms/pull/18067))
 - The Caches utility now keeps track of which options were previously selected. ([#9447](https://github.com/craftcms/cms/discussions/9447))
+- Field layouts can now set editability conditions on custom fields, based on the edited element. ([#18181](https://github.com/craftcms/cms/discussions/18181))
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -72,6 +73,8 @@
 - Added `craft\events\RegisterElementCardAttributesEvent::$fieldLayout`. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - Added `craft\fieldlayoutelements\BaseField::EVENT_DEFINE_ACTION_MENU_ITEMS`. ([#18037](https://github.com/craftcms/cms/issues/18037))
 - Added `craft\fieldlayoutelements\BaseField::copyAttributeAction()`. ([#18114](https://github.com/craftcms/cms/pull/18114))
+- Added `craft\fieldlayoutelements\CustomField::getElementEditCondition()`.
+- Added `craft\fieldlayoutelements\CustomField::setElementEditCondition()`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
@@ -113,6 +116,7 @@
 - `craft\base\ElementInterface::beforeMoveInStructure()` is no longer deprecated.
 - `craft\base\ElementInterface::cardAttributes()` now has a `$fieldLayout` argument. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - `craft\events\ElementStructureEvent` is no longer deprecated.
+- `craft\fieldlayoutelements\CustomField::editable()` now has an `$element` argument.
 - `craft\helpers\ElementHelper::findSource()` now has `$withDisabled` and `$page` arguments.
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))

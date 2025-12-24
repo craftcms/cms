@@ -1186,6 +1186,7 @@ return [
     'Online' => 'Online',
     'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only make editable for users who match the following rules:' => 'Only make editable for users who match the following rules:',
+    'Only make editable when editing {type} that match the following rules:' => 'Only make editable when editing {type} that match the following rules:',
     'Only save entries to the site they were created in' => 'Only save entries to the site they were created in',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
     'Only show when editing {type} that match the following rules:' => 'Only show when editing {type} that match the following rules:',

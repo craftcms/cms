@@ -997,7 +997,7 @@ class FieldLayout extends Model
     public function getEditableCustomFields(ElementInterface $element): array
     {
         return $this->_customFields(
-            fn(CustomField $layoutElement) => $layoutElement->editable(),
+            fn(CustomField $layoutElement) => $layoutElement->editable($element),
             $element,
         );
     }
