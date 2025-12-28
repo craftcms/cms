@@ -630,12 +630,12 @@ JS, [
 
         $fieldLayout->setCardView(
             array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
+        );
 
         $fieldLayout->setCardThumbAlignment($thumbAlignment);
 
         return $this->asJson([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, showThumb: $showThumb),
         ]);
     }
 
