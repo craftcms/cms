@@ -266,6 +266,12 @@ class FieldLayout extends Model
     private array $_cardView;
 
     /**
+     * @var array
+     * @see cardAttributes()
+     */
+    private array $_cardAttributes;
+
+    /**
      * @var string
      * @see getCardThumbAlignment()
      * @see setCardThumbAlignment()
@@ -1043,6 +1049,7 @@ class FieldLayout extends Model
      *
      * @return array
      * @since 5.5.0
+     * @deprecated in 5.9.0
      */
     public function getCardBodyAttributes(): array
     {
@@ -1068,39 +1075,97 @@ class FieldLayout extends Model
      *
      * @param ElementInterface|null $element
      * @param array $cardElements (deprecated)
-     * @return array
+     * @return array<string,array{html:string}>
      * @since 5.5.0
      */
     public function getCardBodyElements(?ElementInterface $element = null, array $cardElements = []): array
     {
+        // todo: simplify further to only return key/html pairs
         $cardElements = [];
 
-        // get attributes that should show in a card
-        $attributes = $this->getCardBodyAttributes();
-
         foreach ($this->getCardView() as $key) {
-            $cardElement = null;
-            if (str_starts_with($key, 'layoutElement:')) {
-                $uid = StringHelper::removeLeft($key, 'layoutElement:');
-                $cardElement = $this->getElementByUid($uid);
-            } elseif (str_starts_with($key, 'generatedField:')) {
-                $uid = StringHelper::removeLeft($key, 'generatedField:');
-                $field = $this->getGeneratedFieldByUid($uid);
-                if ($field) {
-                    $cardElement = [
-                        'html' => $element ? ($element->getGeneratedFieldValues()[$uid] ?? '') : Html::encode($field['name']),
-                    ];
-                }
-            } else {
-                $cardElement = $attributes[$key] ?? null;
-            }
+            $html = match (true) {
+                str_starts_with($key, 'layoutElement:') => $this->cardHtmlForLayoutElement($key, $element),
+                str_starts_with($key, 'generatedField:') => $this->cardHtmlForGeneratedField($key, $element),
+                default => $this->cardHtmlForAttribute($key, $element),
+            };
 
-            if ($cardElement) {
-                $cardElements[$key] = $cardElement;
+            if ($html) {
+                $cardElements[$key] = ['html' => $html];
             }
         }
 
         return $cardElements;
+    }
+
+    private function cardHtmlForLayoutElement(string $key, ?ElementInterface $element): ?string
+    {
+        $uid = StringHelper::removeLeft($key, 'layoutElement:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof BaseField) {
+            return null;
+        }
+
+        if ($element) {
+            return $layoutElement->previewHtml($element);
+        }
+
+        if ($layoutElement instanceof CustomField) {
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                return null;
+            }
+            return $field->previewPlaceholderHtml(null, null);
+        }
+
+        return $layoutElement->previewPlaceholderHtml(null, $element);
+    }
+
+    private function cardHtmlForGeneratedField(string $key, ?ElementInterface $element): ?string
+    {
+        $uid = StringHelper::removeLeft($key, 'generatedField:');
+        $field = $this->getGeneratedFieldByUid($uid);
+
+        if (!$field) {
+            return null;
+        }
+
+        if ($element) {
+            return $element->getGeneratedFieldValues()[$uid] ?? null;
+        }
+
+        return Html::encode($field['name'] ?? '');
+    }
+
+    private function cardHtmlForAttribute(string $key, ?ElementInterface $element): ?string
+    {
+        if ($element) {
+            return $element->getAttributeHtml($key);
+        }
+
+        $attribute = $this->cardAttributes()[$key] ?? null;
+
+        if (!$attribute) {
+            return null;
+        }
+
+        $html = $this->type::attributePreviewHtml([
+            ...$attribute,
+            'value' => $key,
+        ]);
+
+        if (is_callable($html)) {
+            return $html();
+        }
+
+        return $html;
+    }
+
+    private function cardAttributes(): array
+    {
+        return $this->_cardAttributes ??= $this->type::cardAttributes($this);
     }
 
     /**

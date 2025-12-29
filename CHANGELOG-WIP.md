@@ -120,6 +120,7 @@
 - `craft\helpers\ElementHelper::findSource()` now has `$withDisabled` and `$page` arguments.
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
+- `craft\models\FieldLayout::getCardBodyElements()` now always returns an array of arrays with `html` keys.
 - `craft\services\ElementSources::getSources()` now has a `$page` argument. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - `craft\services\ElementSources::sourceExists()` now has a `$page` argument. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
@@ -130,6 +131,7 @@
 - Deprecated `craft\helpers\StringHelper::capitalizePersonalName()`. `toPascalCase()` should be used instead.
 - Deprecated `craft\helpers\StringHelper::isWhitespace()`. `isBlank()` should be used instead.
 - Deprecated `craft\helpers\StringHelper::upperCamelize()`. `toPascalCase()` should be used instead.
+- Deprecated `craft\models\FieldLayout::getCardBodyAttributes()`.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\web\CsvResponseResponseFormatter::$escapeChar`.

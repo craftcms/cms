@@ -2979,24 +2979,9 @@ JS, [
         $cardElements = $fieldLayout->getCardBodyElements();
 
         foreach ($cardElements as $cardElement) {
-            if ($cardElement instanceof CustomField) {
-                try {
-                    $field = $cardElement->getField();
-                } catch (FieldNotFoundException) {
-                    continue;
-                }
-                $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
-            } elseif ($cardElement instanceof BaseField) {
-                $previewHtml .= Html::tag('div', $cardElement->previewPlaceholderHtml(null, null));
-            } elseif (is_array($cardElement) && isset($cardElement['html'])) {
-                $previewHtml .= Html::tag('div', $cardElement['html']);
-            } else {
-                $html = $fieldLayout->type::attributePreviewHtml($cardElement);
-                if (is_callable($html)) {
-                    $html = $html();
-                }
-                $previewHtml .= Html::tag('div', $html);
-            }
+            $previewHtml .= Html::tag('div', $cardElement['html'], [
+                'class' => 'card-attribute-preview',
+            ]);
         }
 
         if (!empty(array_filter($labels))) {
