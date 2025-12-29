@@ -324,14 +324,6 @@ abstract class BaseField extends FieldLayoutElement
             ];
         }
 
-        if ($this->previewable() && $this->includeInCards) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'eye',
-                'iconColor' => 'blue',
-            ];
-        }
-
         return $indicators;
     }
 
