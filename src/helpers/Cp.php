@@ -2935,7 +2935,7 @@ JS, [
      * Returns HTML for the card preview based on selected fields and attributes.
      *
      * @param FieldLayout $fieldLayout
-     * @param array $cardElements
+     * @param array $cardElements (deprecated)
      * @return string
      * @throws \Throwable
      */
@@ -2976,7 +2976,7 @@ JS, [
             Html::beginTag('div', ['class' => 'card-body']);
 
         // get body elements (fields and attributes)
-        $cardElements = $fieldLayout->getCardBodyElements(null, $cardElements);
+        $cardElements = $fieldLayout->getCardBodyElements();
 
         foreach ($cardElements as $cardElement) {
             if ($cardElement instanceof CustomField) {

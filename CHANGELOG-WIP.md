@@ -136,6 +136,8 @@
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
+- Deprecated the `$cardElements` argument in `craft\helpers\Cp::cardPreviewHtml()`.
+- Deprecated the `$cardElements` argument in `craft\models\FieldLayout::getCardBodyElements()`.
 
 ### System
 - GraphQL API responses now set their `Content-Type` header to `application/graphql-response+json`.
