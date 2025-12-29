@@ -1033,6 +1033,7 @@ class FieldLayout extends Model
      * @param ElementInterface|null $element
      * @return BaseField[]
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public function getCardBodyFields(?ElementInterface $element): array
     {

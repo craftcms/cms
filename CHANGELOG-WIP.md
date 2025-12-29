@@ -132,6 +132,7 @@
 - Deprecated `craft\helpers\StringHelper::isWhitespace()`. `isBlank()` should be used instead.
 - Deprecated `craft\helpers\StringHelper::upperCamelize()`. `toPascalCase()` should be used instead.
 - Deprecated `craft\models\FieldLayout::getCardBodyAttributes()`.
+- Deprecated `craft\models\FieldLayout::getCardBodyFields()`.
 - Deprecated `craft\services\Structure::EVENT_AFTER_MOVE_ELEMENT`. `EVENT_AFTER_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\services\Structure::EVENT_BEFORE_MOVE_ELEMENT`. `EVENT_BEFORE_UPDATE_ELEMENT` should be used instead.
 - Deprecated `craft\web\CsvResponseResponseFormatter::$escapeChar`.
