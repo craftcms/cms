@@ -1428,13 +1428,14 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   destroy: function () {
     if (this.tab.designer.settings.withCardViewDesigner) {
       let cvd = this.tab.designer.$cvd?.data('cvd');
-      cvd.removeCheckbox(this.uid);
 
       if (this.config.providesThumbs) {
         cvd.showThumb = false;
+        // this needs to be called before removeCheckbox()
         cvd.updateThumbnailsDropdown(this, 'remove');
       }
 
+      cvd.removeCheckbox(this.uid);
       cvd.updatePreview();
     }
 
