@@ -529,15 +529,7 @@ class FieldLayout extends Model
      */
     public function setCardView(?array $items): void
     {
-        $this->_cardView = [];
-
-        if ($items !== null) {
-            foreach ($items as $item) {
-                $this->_cardView[] = $item;
-            }
-        }
-
-        // Clear caches
+        $this->_cardView = array_values($items ?? []);
         $this->reset();
     }
 
