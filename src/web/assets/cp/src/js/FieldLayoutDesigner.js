@@ -1417,15 +1417,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       const cvd = this.tab.designer.$cvd?.data('cvd');
       const previewOptions = this.$container.data('preview-options');
 
+      if (this.config.providesThumbs) {
+        cvd.showThumb = false;
+        // this needs to be called before removeCheckbox()
+        cvd.updateThumbnailsDropdown(this, 'remove');
+      }
+
       if (previewOptions?.length) {
         previewOptions.forEach((option) => {
           cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
         });
-      }
-
-      if (this.config.providesThumbs) {
-        cvd.showThumb = false;
-        cvd.updateThumbnailsDropdown(this, 'remove');
       }
 
       cvd.updatePreview();
