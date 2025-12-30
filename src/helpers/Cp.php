@@ -2855,7 +2855,7 @@ JS, [
                 if ($field instanceof ContentBlock) {
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
-                        "{$keyPrefix}contentBlock:$layoutElement->uid/",
+                        "{$keyPrefix}contentBlock:$layoutElement->uid.",
                         sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
                         false,
                     );

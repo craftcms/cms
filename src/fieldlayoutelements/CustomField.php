@@ -231,7 +231,7 @@ class CustomField extends BaseField
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
                     'label' => "$label - {$option['label']}",
-                    'value' => "contentBlock:{uid}/$key",
+                    'value' => "contentBlock:{uid}.$key",
                 ];
             }
             return $options;

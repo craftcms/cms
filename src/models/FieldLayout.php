@@ -1133,7 +1133,7 @@ class FieldLayout extends Model
     private function cardHtmlForContentBlock(string $key, ?ElementInterface $element): ?string
     {
         // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
-        $keyParts = explode('/', $key);
+        $keyParts = explode('.', $key);
         $key = array_shift($keyParts);
 
         // get the Content Block field
@@ -1155,7 +1155,7 @@ class FieldLayout extends Model
         }
 
         return $field->getFieldLayout()->getCardBodyHtmlForElement(
-            implode('/', $keyParts),
+            implode('.', $keyParts),
             $element?->getFieldValue($field->handle),
         );
     }
