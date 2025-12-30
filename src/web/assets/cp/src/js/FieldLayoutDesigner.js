@@ -838,7 +838,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   attribute: null,
   requirable: false,
   thumbable: false,
-  previewable: false,
   hasCustomWidth: false,
   hasSettings: false,
   settingsNamespace: null,
@@ -896,7 +895,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.isField) {
       this.requirable = Garnish.hasAttr(this.$container, 'data-requirable');
       this.thumbable = Garnish.hasAttr(this.$container, 'data-thumbable');
-      this.previewable = Garnish.hasAttr(this.$container, 'data-previewable');
       this.attribute = this.$container.data('attribute');
       this.defaultHandle = this.$container.data('default-handle');
     }
@@ -1085,17 +1083,15 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   onSelect() {
     this.$container.attr('data-uid', this.uid);
 
-    if (Garnish.hasAttr(this.$container, 'data-previewable')) {
+    const previewOptions = this.$container.data('preview-options');
+    if (previewOptions) {
       const cvd = this.tab.designer.$cvd?.data('cvd');
       if (cvd) {
-        const label = this.getLabel();
-        cvd.addCheckbox({
-          value: `layoutElement:${this.uid}`,
-          label: label,
-          data: {
-            'field-id': this.fieldId,
-            'field-label': label,
-          },
+        previewOptions.forEach((option) => {
+          cvd.addCheckbox({
+            value: option.value.replace(/\{uid}/g, this.uid),
+            label: option.label,
+          });
         });
         cvd.updateThumbnailsDropdown(this, 'add');
       }
@@ -1235,20 +1231,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     });
   },
 
-  async showInCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = true;
-      return config;
-    });
-  },
-
-  async omitFromCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = false;
-      return config;
-    });
-  },
-
   moveUp() {
     const $prev = this.$container.prev('.fld-element');
     if ($prev.length) {
@@ -1325,8 +1307,13 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.tab.designer.settings.withCardViewDesigner) {
       const cvd = this.tab.designer.$cvd.data('cvd');
       if (cvd) {
-        // update label in cvd checkboxes
-        cvd.updateCheckboxLabel(this.$container.data('uid'), this.getLabel());
+        // update labels in cvd checkboxes
+        $newContainer.data('preview-options').forEach((option) => {
+          cvd.updateCheckboxLabel(
+            option.value.replace(/\{uid}/g, this.uid),
+            option.label
+          );
+        });
 
         // update label in the element thumbnails dropdown
         cvd.updateThumbnailsDropdownOptionLabel(this.$container);
@@ -1427,8 +1414,14 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
   destroy: function () {
     if (this.tab.designer.settings.withCardViewDesigner) {
-      let cvd = this.tab.designer.$cvd?.data('cvd');
-      cvd.removeCheckbox(this.uid);
+      const cvd = this.tab.designer.$cvd?.data('cvd');
+      const previewOptions = this.$container.data('preview-options');
+
+      if (previewOptions?.length) {
+        previewOptions.forEach((option) => {
+          cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
+        });
+      }
 
       if (this.config.providesThumbs) {
         cvd.showThumb = false;
@@ -2029,33 +2022,10 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       }
     );
 
-    // when checkbox is checked or unchecked - apply config & update preview
-    this.sortableCheckboxSelect?.$container.on(
-      'checked unchecked',
-      function (ev) {
-        let val = $(ev.target).find('input.checkbox').val();
-        if (!val.startsWith('layoutElement:')) {
-          return;
-        }
-
-        val = val.substring(14);
-
-        let $fld = cvd.designer.$tabContainer.find(
-          '.fld-field[data-uid="' + val + '"]'
-        );
-        if ($fld.length > 0) {
-          let fldElement = $fld.data('fld-element');
-
-          if (ev.type == 'checked') {
-            fldElement.showInCards();
-          } else {
-            fldElement.omitFromCards();
-          }
-        }
-
-        cvd.updatePreview();
-      }
-    );
+    // when checkbox is checked or unchecked - update preview
+    this.sortableCheckboxSelect?.$container.on('checked unchecked', () => {
+      cvd.updatePreview();
+    });
   },
 
   updatePreview: function () {
@@ -2146,16 +2116,15 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.initDrag($draggable);
   },
 
-  updateCheckboxLabel: function (uid, label) {
-    const $draggable = this.findCheckboxByUid(uid);
+  updateCheckboxLabel: function (value, label) {
+    const $draggable = this.findCheckboxByValue(value);
     if ($draggable?.length) {
-      $draggable.find('input').attr('data-field-label', label);
       $draggable.find('label').text(label);
     }
   },
 
-  removeCheckbox: function (uid) {
-    let $draggable = this.findCheckboxByUid(uid);
+  removeCheckbox: function (value) {
+    let $draggable = this.findCheckboxByValue(value);
     if ($draggable?.length) {
       $draggable.find('input[type="checkbox"]').prop('checked', false);
       $draggable.remove();
@@ -2165,13 +2134,13 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     }
   },
 
-  findCheckboxByUid: function (uid) {
+  findCheckboxByValue: function (value) {
     if (!this.$libraryContainer.length) {
       return null;
     }
 
     return this.$libraryContainer
-      .find(`input[value$=":${uid}"]`)
+      .find(`input[value="${value}"]`)
       .parents('.checkbox-select-item');
   },
 

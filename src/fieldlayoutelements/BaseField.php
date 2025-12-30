@@ -66,6 +66,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field’s contents should be included in element cards.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $includeInCards = false;
 
@@ -167,6 +168,26 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the card preview options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    public function getPreviewOptions(): ?array
+    {
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => "layoutElement:{uid}",
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -244,7 +265,7 @@ abstract class BaseField extends FieldLayoutElement
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
                 'thumbable' => $this->thumbable(),
-                'previewable' => $this->previewable(),
+                'preview-options' => $this->getPreviewOptions(),
             ],
         ];
     }

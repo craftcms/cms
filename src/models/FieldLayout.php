@@ -28,6 +28,7 @@ use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -1085,11 +1086,7 @@ class FieldLayout extends Model
         $cardElements = [];
 
         foreach ($this->getCardView() as $key) {
-            $html = match (true) {
-                str_starts_with($key, 'layoutElement:') => $this->cardHtmlForLayoutElement($key, $element),
-                str_starts_with($key, 'generatedField:') => $this->cardHtmlForGeneratedField($key, $element),
-                default => $this->cardHtmlForAttribute($key, $element),
-            };
+            $html = $this->getCardBodyHtmlForElement($key, $element);
 
             if ($html) {
                 $cardElements[$key] = ['html' => $html];
@@ -1097,6 +1094,23 @@ class FieldLayout extends Model
         }
 
         return $cardElements;
+    }
+
+    /**
+     * Returns the card body HTML for a given card element key.
+     *
+     * @param string $key
+     * @param ElementInterface|null $element
+     * @since 5.9.0
+     */
+    public function getCardBodyHtmlForElement(string $key, ?ElementInterface $element = null): ?string
+    {
+        return match (true) {
+            str_starts_with($key, 'layoutElement:') => $this->cardHtmlForLayoutElement($key, $element),
+            str_starts_with($key, 'contentBlock:') => $this->cardHtmlForContentBlock($key, $element),
+            str_starts_with($key, 'generatedField:') => $this->cardHtmlForGeneratedField($key, $element),
+            default => $this->cardHtmlForAttribute($key, $element),
+        };
     }
 
     private function cardHtmlForLayoutElement(string $key, ?ElementInterface $element): ?string
@@ -1122,6 +1136,36 @@ class FieldLayout extends Model
         }
 
         return $layoutElement->previewPlaceholderHtml(null, $element);
+    }
+
+    private function cardHtmlForContentBlock(string $key, ?ElementInterface $element): ?string
+    {
+        // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
+        $keyParts = explode('/', $key);
+        $key = array_shift($keyParts);
+
+        // get the Content Block field
+        $uid = StringHelper::removeLeft($key, 'contentBlock:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (!$field instanceof ContentBlock) {
+            return null;
+        }
+
+        return $field->getFieldLayout()->getCardBodyHtmlForElement(
+            implode('/', $keyParts),
+            $element?->getFieldValue($field->handle),
+        );
     }
 
     private function cardHtmlForGeneratedField(string $key, ?ElementInterface $element): ?string

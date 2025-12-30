@@ -37,6 +37,7 @@ use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
@@ -2766,30 +2767,7 @@ JS, [
             'disabled' => false,
         ];
 
-        $allOptions = $fieldLayout->type::cardAttributes($fieldLayout);
-
-        foreach ($fieldLayout->getAllElements() as $layoutElement) {
-            if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
-                $allOptions["layoutElement:$layoutElement->uid"] = [
-                    'label' => $layoutElement->label(),
-                ];
-            }
-        }
-
-        foreach ($fieldLayout->getGeneratedFields() as $field) {
-            if (($field['name'] ?? '') !== '') {
-                $allOptions["generatedField:{$field['uid']}"] = [
-                    'label' => $field['name'],
-                ];
-            }
-        }
-
-        foreach ($allOptions as $key => &$option) {
-            if (!isset($option['value'])) {
-                $option['value'] = $key;
-            }
-        }
-
+        $allOptions = self::cardPreviewOptions($fieldLayout);
         $selectedOptions = [];
         $remainingOptions = [...$allOptions];
 
@@ -2840,6 +2818,73 @@ JS, [
             Html::endTag('div') . // .cvd-container
             self::_thumbManagementHtml($fieldLayout, $config) .
             Html::endTag('div'); // .card-view-designer
+    }
+
+    /**
+     * Returns an array of available card preview options for the given field layout.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return array{label:string,value:string}[]
+     * @since 5.9.0
+     */
+    public static function cardPreviewOptions(FieldLayout $fieldLayout, bool $withAttributes = true): array
+    {
+        return self::cardPreviewOptionsInternal($fieldLayout, '', '', $withAttributes);
+    }
+
+    private static function cardPreviewOptionsInternal(
+        FieldLayout $fieldLayout,
+        string $keyPrefix,
+        string $labelPrefix,
+        bool $withAttributes,
+    ): array {
+        $allOptions = [];
+
+        if ($withAttributes) {
+            foreach ($fieldLayout->type::cardAttributes($fieldLayout) as $key => $attribute) {
+                $allOptions[$keyPrefix . $key] = [
+                    'label' => $labelPrefix . $attribute['label'],
+                    'placeholder' => $attribute['placeholder'],
+                ];
+            }
+        }
+
+        foreach ($fieldLayout->getAllElements() as $layoutElement) {
+            if ($layoutElement instanceof CustomField) {
+                $field = $layoutElement->getField();
+                if ($field instanceof ContentBlock) {
+                    $allOptions += self::cardPreviewOptionsInternal(
+                        $field->getFieldLayout(),
+                        "{$keyPrefix}contentBlock:$layoutElement->uid/",
+                        sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
+                        false,
+                    );
+                    continue;
+                }
+            }
+
+            if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
+                $allOptions["{$keyPrefix}layoutElement:$layoutElement->uid"] = [
+                    'label' => sprintf('%s%s', $labelPrefix, $layoutElement->label()),
+                ];
+            }
+        }
+
+        foreach ($fieldLayout->getGeneratedFields() as $field) {
+            if (($field['name'] ?? '') !== '') {
+                $allOptions["generatedField:{$field['uid']}"] = [
+                    'label' => $field['name'],
+                ];
+            }
+        }
+
+        foreach ($allOptions as $key => &$option) {
+            if (!isset($option['value'])) {
+                $option['value'] = $key;
+            }
+        }
+
+        return $allOptions;
     }
 
     /**

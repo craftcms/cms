@@ -18,6 +18,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -210,6 +211,33 @@ class CustomField extends BaseField
         }
 
         return $field instanceof PreviewableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewOptions(): ?array
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if ($field instanceof ContentBlock) {
+            $options = [];
+            $label = $this->selectorLabel();
+            $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
+            foreach ($nestedOptions as $key => $option) {
+                $options[] = [
+                    'label' => "$label - {$option['label']}",
+                    'value' => "contentBlock:{uid}/$key",
+                ];
+            }
+            return $options;
+        }
+
+        return parent::getPreviewOptions();
     }
 
     /**
