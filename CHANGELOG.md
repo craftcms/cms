@@ -15,6 +15,7 @@
 - Fixed a JavaScript error that could occur if two control panel animations were triggered simultaneously.
 - Fixed a bug where it wasn’t possible to copy/paste nested entries within Matrix fields set to the inline-editable blocks view mode, for unpublished owner elements. ([#18185](https://github.com/craftcms/cms/pull/18185))
 - Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
+- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
 
 ## 5.8.21 - 2025-12-04
 
