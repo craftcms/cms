@@ -2784,7 +2784,6 @@ JS, [
         $checkboxSelect = self::checkboxSelectFieldHtml([
             'label' => Craft::t('app', 'Card Attributes'),
             'id' => $config['id'],
-            'name' => 'cardView',
             'options' => [...$selectedOptions, ...$remainingOptions],
             'values' => array_keys($selectedOptions),
             'sortable' => true,
@@ -2938,7 +2937,6 @@ JS, [
         $thumbHtml .= self::selectFieldHtml([
             'label' => Craft::t('app', 'Thumbnail Source'),
             'id' => 'thumb-source',
-            'name' => 'thumbSource',
             'options' => $options,
             'value' => $fieldLayout->thumbFieldKey,
             'disabled' => $config['disabled'],
@@ -2950,7 +2948,6 @@ JS, [
             'label' => Craft::t('app', 'Thumbnail Alignment'),
             'id' => 'thumb-alignment',
             'fieldClass' => $fieldLayout->getThumbField() === null ? 'hidden' : false,
-            'name' => 'thumbAlignment',
             'options' => [
                 [
                     'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',

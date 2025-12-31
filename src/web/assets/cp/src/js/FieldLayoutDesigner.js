@@ -2010,7 +2010,6 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       .createCheckbox(
         Object.assign(
           {
-            name: 'cardView[]',
             checked: false,
           },
           config
