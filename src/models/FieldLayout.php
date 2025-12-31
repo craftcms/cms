@@ -1080,7 +1080,7 @@ class FieldLayout extends Model
             $this->thumbField = $field;
         }
 
-        return $this->thumbField;
+        return $this->thumbField ?: null;
     }
 
     /**
