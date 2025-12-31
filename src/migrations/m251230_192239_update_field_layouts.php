@@ -82,15 +82,21 @@ class m251230_192239_update_field_layouts extends Migration
                 continue;
             }
 
-            foreach ($tab['elements'] as $element) {
+            foreach ($tab['elements'] as &$element) {
                 if (isset($element['uid'])) {
-                    if ($updateCardView && ($element['includeInCards'] ?? false)) {
-                        $config['cardView'][] = "layoutElement:{$element['uid']}";
+                    if (isset($element['includeInCards'])) {
+                        if ($updateCardView && $element['includeInCards']) {
+                            $config['cardView'][] = "layoutElement:{$element['uid']}";
+                        }
+                        unset($element['includeInCards']);
                         $updated = true;
                     }
 
-                    if ($updateThumbField && ($element['providesThumbs'] ?? false)) {
-                        $config['thumbFieldKey'] = "layoutElement:{$element['uid']}";
+                    if (isset($element['providesThumbs'])) {
+                        if ($updateThumbField && $element['providesThumbs']) {
+                            $config['thumbFieldKey'] = "layoutElement:{$element['uid']}";
+                        }
+                        unset($element['providesThumbs']);
                         $updated = true;
                     }
                 }

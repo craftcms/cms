@@ -84,6 +84,16 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['includeInCards'], $fields['providesThumbs']);
+        return $fields;
+    }
+
+    /**
      * Returns the element attribute this field is for.
      *
      * @return string
