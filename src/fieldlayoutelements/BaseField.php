@@ -60,6 +60,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field should be used to define element thumbnails.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $providesThumbs = false;
 
@@ -88,6 +89,17 @@ abstract class BaseField extends FieldLayoutElement
      * @return string
      */
     abstract public function attribute(): string;
+
+    /**
+     * Returns the key for this field.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function key(): string
+    {
+        return $this->attribute();
+    }
 
     /**
      * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
@@ -182,7 +194,7 @@ abstract class BaseField extends FieldLayoutElement
         return [
             [
                 'label' => $this->selectorLabel() ?? $this->attribute(),
-                'value' => "layoutElement:{uid}",
+                'value' => $this->attribute(),
             ],
         ];
     }
@@ -334,14 +346,6 @@ abstract class BaseField extends FieldLayoutElement
                 'label' => Craft::t('app', 'This field is conditional'),
                 'icon' => 'diamond',
                 'iconColor' => 'orange',
-            ];
-        }
-
-        if ($this->thumbable() && $this->providesThumbs) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'image',
-                'iconColor' => 'violet',
             ];
         }
 

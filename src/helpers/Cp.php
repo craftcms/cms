@@ -2851,7 +2851,11 @@ JS, [
 
         foreach ($fieldLayout->getAllElements() as $layoutElement) {
             if ($layoutElement instanceof CustomField) {
-                $field = $layoutElement->getField();
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
                 if ($field instanceof ContentBlock) {
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
@@ -2864,7 +2868,7 @@ JS, [
             }
 
             if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
-                $allOptions["{$keyPrefix}layoutElement:$layoutElement->uid"] = [
+                $allOptions[$keyPrefix . $layoutElement->key()] = [
                     'label' => sprintf('%s%s', $labelPrefix, $layoutElement->label()),
                 ];
             }
@@ -2910,16 +2914,20 @@ JS, [
                 ['label' => Craft::t('app', 'None'), 'value' => '__none__'],
             ];
         }
-        $elementThumbnail = $fieldLayout->getThumbField()?->uid;
+
         $thumbnailAlignment = $fieldLayout->getCardThumbAlignment();
 
+        /** @var BaseField[] $thumbableElements */
         $thumbableElements = array_filter(
             $fieldLayout->getAllElements(),
             fn($element) => $element instanceof BaseField && $element->thumbable()
         );
 
         foreach ($thumbableElements as $thumbableElement) {
-            $options[] = ['label' => $thumbableElement->label(), 'value' => $thumbableElement->uid];
+            $options[] = [
+                'label' => $thumbableElement->label(),
+                'value' => $thumbableElement->key(),
+            ];
         }
 
         $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']) .
@@ -2932,7 +2940,7 @@ JS, [
             'id' => 'thumb-source',
             'name' => 'thumbSource',
             'options' => $options,
-            'value' => $elementThumbnail,
+            'value' => $fieldLayout->thumbFieldKey,
             'disabled' => $config['disabled'],
         ]);
 
@@ -2941,7 +2949,7 @@ JS, [
         $thumbHtml .= self::buttonGroupFieldHtml([
             'label' => Craft::t('app', 'Thumbnail Alignment'),
             'id' => 'thumb-alignment',
-            'fieldClass' => $elementThumbnail === null ? 'hidden' : false,
+            'fieldClass' => $fieldLayout->getThumbField() === null ? 'hidden' : false,
             'name' => 'thumbAlignment',
             'options' => [
                 [
@@ -2981,12 +2989,13 @@ JS, [
      *
      * @param FieldLayout $fieldLayout
      * @param array $cardElements (deprecated)
+     * @param bool|null $showThumb
      * @return string
      * @throws \Throwable
      */
-    public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], $showThumb = false): string
+    public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], ?bool $showThumb = null): string
     {
-        $hasThumb = $showThumb ?? ($fieldLayout->getThumbField() !== null || $fieldLayout->type::hasThumbs());
+        $showThumb ??= $fieldLayout->getThumbField() !== null || $fieldLayout->type::hasThumbs();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
@@ -3009,7 +3018,7 @@ JS, [
                 'class' => array_filter([
                     'element',
                     'card',
-                    $hasThumb ? "thumb-$thumbAlignment" : null,
+                    $showThumb ? "thumb-$thumbAlignment" : null,
                 ]),
             ]);
 
@@ -3041,7 +3050,7 @@ JS, [
             Html::endTag('div'); // .card-content
 
         // get thumb placeholder
-        if ($hasThumb) {
+        if ($showThumb) {
             $previewThumb = Html::tag('div',
                 Html::tag('div', Cp::iconSvg('image'), ['class' => 'cp-icon']),
                 ['class' => 'cvd-thumbnail']

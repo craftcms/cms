@@ -222,6 +222,17 @@ class FieldLayout extends Model
     public ?array $reservedFieldHandles = null;
 
     /**
+     * @var string|null The element key that provides thumbnails for this layout
+     * @since 5.9.0
+     */
+    public ?string $thumbFieldKey = null;
+
+    /**
+     * @see getThumbField()
+     */
+    private BaseField|false $thumbField;
+
+    /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
@@ -780,6 +791,7 @@ class FieldLayout extends Model
             'tabs' => $tabConfigs,
             'generatedFields' => $generatedFields,
             'cardView' => $cardViewConfig,
+            'thumbFieldKey' => $this->thumbFieldKey,
             'cardThumbAlignment' => $cardThumbAlignment,
         ];
     }
@@ -825,6 +837,48 @@ class FieldLayout extends Model
     {
         $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement->uid === $uid;
         return $this->_element($filter);
+    }
+
+    /**
+     * Returns a layout element by its `layoutElement:<UUID>` key.
+     *
+     * @param string $key
+     * @return FieldLayoutElement|null
+     * @since 5.9.0
+     */
+    public function getElementByKey(string $key): ?FieldLayoutElement
+    {
+        if (str_starts_with($key, 'layoutElement:')) {
+            $uid = StringHelper::removeLeft($key, 'layoutElement:');
+            return $this->getElementByUid($uid);
+        }
+
+        if (!str_starts_with($key, 'contentBlock:')) {
+            return null;
+        }
+
+        $keyParts = explode('.', $key);
+        $key = array_shift($keyParts);
+
+        // get the Content Block field
+        $uid = StringHelper::removeLeft($key, 'contentBlock:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (!$field instanceof ContentBlock) {
+            return null;
+        }
+
+        return $field->getFieldLayout()->getElementByKey(implode('.', $keyParts));
     }
 
     /**
@@ -1012,12 +1066,21 @@ class FieldLayout extends Model
      */
     public function getThumbField(): ?BaseField
     {
-        /** @var BaseField|null */
-        return $this->_element(fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof BaseField &&
-            $layoutElement->thumbable() &&
-            $layoutElement->providesThumbs
-        ));
+        if (!isset($this->thumbField)) {
+            if (!isset($this->thumbFieldKey)) {
+                return null;
+            }
+
+            $field = $this->getElementByKey($this->thumbFieldKey);
+            if (!$field instanceof BaseField || !$field->thumbable()) {
+                $this->thumbField = false;
+                return null;
+            }
+
+            $this->thumbField = $field;
+        }
+
+        return $this->thumbField;
     }
 
     /**
@@ -1030,11 +1093,12 @@ class FieldLayout extends Model
      */
     public function getCardBodyFields(?ElementInterface $element): array
     {
+        $cardViewItems = array_flip($this->getCardView());
         /** @var BaseField[] */
         return iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
             $layoutElement instanceof BaseField &&
             $layoutElement->previewable() &&
-            $layoutElement->includeInCards
+            (isset($cardViewItems[$layoutElement->attribute()]) || isset($cardViewItems["layoutElement:$layoutElement->uid"]))
         ), $element));
     }
 
@@ -1047,12 +1111,12 @@ class FieldLayout extends Model
      */
     public function getCardBodyAttributes(): array
     {
-        $cardViewValues = $this->getCardView();
+        $cardViewItems = array_flip($this->getCardView());
 
         // filter only the selected attributes
         $attributes = array_filter(
             $this->type::cardAttributes($this),
-            fn($cardAttribute, $key) => in_array($key, $cardViewValues),
+            fn($cardAttribute, $key) => isset($cardViewItems[$key]),
             ARRAY_FILTER_USE_BOTH
         );
 
@@ -1107,8 +1171,7 @@ class FieldLayout extends Model
 
     private function cardHtmlForLayoutElement(string $key, ?ElementInterface $element): ?string
     {
-        $uid = StringHelper::removeLeft($key, 'layoutElement:');
-        $layoutElement = $this->getElementByUid($uid);
+        $layoutElement = $this->getElementByKey($key);
 
         if (!$layoutElement instanceof BaseField) {
             return null;

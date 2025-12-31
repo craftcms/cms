@@ -147,6 +147,22 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    public function key(): string
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            $field = null;
+        }
+
+        $prefix = $field instanceof ContentBlock ? 'contentBlock' : 'layoutElement';
+        $uid = $this->uid ?? '{uid}';
+        return "$prefix:$uid";
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function showAttribute(): bool
     {
         return true;
@@ -237,7 +253,16 @@ class CustomField extends BaseField
             return $options;
         }
 
-        return parent::getPreviewOptions();
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
     }
 
     /**
