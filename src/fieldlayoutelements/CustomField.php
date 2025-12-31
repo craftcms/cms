@@ -18,6 +18,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -146,6 +147,22 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    public function key(): string
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            $field = null;
+        }
+
+        $prefix = $field instanceof ContentBlock ? 'contentBlock' : 'layoutElement';
+        $uid = $this->uid ?? '{uid}';
+        return "$prefix:$uid";
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function showAttribute(): bool
     {
         return true;
@@ -210,6 +227,42 @@ class CustomField extends BaseField
         }
 
         return $field instanceof PreviewableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewOptions(): ?array
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if ($field instanceof ContentBlock) {
+            $options = [];
+            $label = $this->selectorLabel();
+            $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
+            foreach ($nestedOptions as $key => $option) {
+                $options[] = [
+                    'label' => "$label - {$option['label']}",
+                    'value' => "contentBlock:{uid}.$key",
+                ];
+            }
+            return $options;
+        }
+
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
     }
 
     /**

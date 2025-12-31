@@ -610,32 +610,10 @@ JS, [
         $this->requireAcceptsJson();
 
         $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
-        $cardElements = $this->request->getRequiredBodyParam('cardElements');
-        $showThumb = $this->request->getBodyParam('showThumb', false);
-        $thumbAlignment = $this->request->getBodyParam('thumbAlignment', false);
-
-        if (!isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...Component::cleanseConfig($fieldLayoutConfig),
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        if (!$fieldLayout) {
-            throw new BadRequestHttpException('Invalid field layout');
-        }
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        );
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = Craft::$app->getFields()->createLayout($fieldLayoutConfig);
 
         return $this->asJson([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, showThumb: $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 
