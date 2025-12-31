@@ -48,6 +48,7 @@
 - Drag-and-drop icons are now longer shown for devices that don’t support pointer events. ([#18067](https://github.com/craftcms/cms/pull/18067))
 - The Caches utility now keeps track of which options were previously selected. ([#9447](https://github.com/craftcms/cms/discussions/9447))
 - Field layouts can now set editability conditions on custom fields, based on the edited element. ([#18181](https://github.com/craftcms/cms/discussions/18181))
+- Element cards can now include fields nested within Content Block fields. ([#18206](https://github.com/craftcms/cms/pull/18206))
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -61,6 +62,10 @@
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
 - It’s now possible to modify the template path via `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE` and `EVENT_BEFORE_RENDER_PAGE_TEMPLATE`. ([#18125](https://github.com/craftcms/cms/issues/18125))
+- Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
+- Added `Craft.BaseElementIndex::asyncSelectSource()`.
+- Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
+- Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - Added `craft\base\ElementIndex::multiPageSources()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\base\ElementTrait::$applyingDraft`. ([#18057](https://github.com/craftcms/cms/pull/18057))
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
@@ -73,6 +78,8 @@
 - Added `craft\events\RegisterElementCardAttributesEvent::$fieldLayout`. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - Added `craft\fieldlayoutelements\BaseField::EVENT_DEFINE_ACTION_MENU_ITEMS`. ([#18037](https://github.com/craftcms/cms/issues/18037))
 - Added `craft\fieldlayoutelements\BaseField::copyAttributeAction()`. ([#18114](https://github.com/craftcms/cms/pull/18114))
+- Added `craft\fieldlayoutelements\BaseField::getPreviewOptions()`.
+- Added `craft\fieldlayoutelements\BaseField::key()`.
 - Added `craft\fieldlayoutelements\CustomField::getElementEditCondition()`.
 - Added `craft\fieldlayoutelements\CustomField::setElementEditCondition()`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
@@ -84,9 +91,13 @@
 - Added `craft\fields\data\LinkData::getAttributes()`. ([#18184](https://github.com/craftcms/cms/discussions/18184))
 - Added `craft\gql\base\ElementArguments::EVENT_DEFINE_ARGUMENTS`. ([#18062](https://github.com/craftcms/cms/discussions/18062))
 - Added `craft\helpers\Assets::resolveSubpath()`. ([#18103](https://github.com/craftcms/cms/pull/18103))
+- Added `craft\helpers\Cp::cardPreviewOptions()`.
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\helpers\UrlHelper::cpReferralUrl()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
+- Added `craft\models\FieldLayout::$thumbFieldKey`.
+- Added `craft\models\FieldLayout::getCardBodyHtmlForElement()`.
+- Added `craft\models\FieldLayout::getElementByKey()`.
 - Added `craft\models\Section::getCpIndexUri()`.
 - Added `craft\models\Section::getPage()`.
 - Added `craft\services\ElementSources::getFirstPage()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
@@ -106,10 +117,6 @@
 - Added `craft\web\XlsxResponseFormatter`.
 - Added `craft\web\YamlResponseFormatter`.
 - Added `craft\web\twig\nodes\BaseNode`.
-- Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
-- Added `Craft.BaseElementIndex::asyncSelectSource()`.
-- Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
-- Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - `craft\base\Element::EVENT_AFTER_MOVE_IN_STRUCTURE` is no longer deprecated.
 - `craft\base\Element::EVENT_BEFORE_MOVE_IN_STRUCTURE` is no longer deprecated.
 - `craft\base\ElementInterface::afterMoveInStructure()` is no longer deprecated.
@@ -126,6 +133,8 @@
 - `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
 - `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
 - Checkbox selects can now be configured with a `storageKey` setting.
+- Deprecated `craft\fieldlayoutelements\BaseField::$includeInCards`.
+- Deprecated `craft\fieldlayoutelements\BaseField::$providesThumbs`.
 - Deprecated `craft\fields\BaseRelationField::$showCardsInGrid`.
 - Deprecated `craft\fields\Matrix::$showCardsInGrid`.
 - Deprecated `craft\helpers\StringHelper::capitalizePersonalName()`. `toPascalCase()` should be used instead.
