@@ -398,7 +398,7 @@ class View extends \yii\web\View
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
         // Even an empty security policy will prevent non-closures from being allowed as arrow functions
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), true));
+        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), Craft::$app->getConfig()->getGeneral()->enableTwigSandbox));
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
