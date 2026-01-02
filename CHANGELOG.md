@@ -1,6 +1,13 @@
 # Release Notes for Craft CMS 4
 
-## 4.16.17 - 2025-12-04
+## Unreleased
+
+- The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
+- Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
+- Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
+- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
+
+## 4.16.17 - 2025-12-0421
 
 - Fixed a bug where remove buttons within multi-select Selectize inputs weren’t working if the input wasn’t focusend and fully in view. ([#18079](https://github.com/craftcms/cms/issues/18079))
 - Fixed an error that could occur when executing a GraphQL mutation when the `lazyGqlTypes` config setting was enabled. ([#18014](https://github.com/craftcms/cms/issues/18014))
