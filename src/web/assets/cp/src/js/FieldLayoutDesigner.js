@@ -2103,8 +2103,10 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       }
 
       // add option to the dropdown
+      // figure out the label
+      let label = element.$container.data('preview-options')[0]?.label ?? element.attribute;
       $(
-        '<option value="' + element.uid + '">' + element.attribute + '</option>'
+        '<option value="' + element.uid + '">' + label + '</option>'
       ).appendTo($select);
     } else if (action == 'remove') {
       if (!Garnish.hasAttr(element.$container, 'data-thumbable')) {
