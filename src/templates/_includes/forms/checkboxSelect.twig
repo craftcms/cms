@@ -37,7 +37,7 @@
             {% include "_includes/forms/checkbox" with {
                 describedBy: describedBy ?? false,
                 class: ['checkbox-select-item', 'all'],
-                label: raw("<b>#{allLabel}</b>"),
+                labelHtml: "<b>#{allLabel}</b>",
                 name: name ?? null,
                 value: allValue,
                 checked: allChecked,

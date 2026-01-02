@@ -1336,13 +1336,13 @@ JS, [
     public function getSourceOptions(): array
     {
         $options = array_map(fn($s) => [
-            'label' => $s['label'],
+            'labelHtml' => Html::encode($s['label']),
             'value' => $s['key'],
             'data' => [
                 'structure-id' => $s['structureId'] ?? null,
             ],
         ], $this->availableSources());
-        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
+        ArrayHelper::multisort($options, 'labelHtml', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
         return $options;
     }
 

@@ -3,6 +3,10 @@
 
 {% set id = id ?? "checkbox#{random()}" %}
 {% set label = checkboxLabel ?? label ?? null %}
+{% set label = labelHtml ?? checkboxLabel ?? label ?? null %}
+{% if labelHtml is not defined and label %}
+    {% set label = label|e %}
+{% endif %}
 {% set labelId = labelId ?? "#{id}-label" %}
 {% set color = color ?? null %}
 {% set icon = icon ?? null %}
