@@ -449,9 +449,17 @@ Craft.ui = {
       new Craft.FieldToggle($input);
     }
 
+    let labelText = null;
+    if (config.labelHtml) {
+      labelText = Craft.escapeHtml(config.labelHtml);
+    } else {
+      labelText = config.label;
+    }
+
     var $label = $('<label/>', {
       for: id,
       html: config.label,
+      html: labelText,
     });
 
     // Should we include a hidden input first?

@@ -1091,7 +1091,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         const label = this.getLabel();
         cvd.addCheckbox({
           value: `layoutElement:${this.uid}`,
-          label: label,
+          labelHtml: label,
           data: {
             'field-id': this.fieldId,
             'field-label': label,
@@ -2146,7 +2146,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     const $draggable = this.findCheckboxByUid(uid);
     if ($draggable?.length) {
       $draggable.find('input').attr('data-field-label', label);
-      $draggable.find('label').text(label);
+      $draggable.find('label').html(Craft.escapeHtml(label));
     }
   },
 
