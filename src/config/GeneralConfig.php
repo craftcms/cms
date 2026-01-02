@@ -1254,6 +1254,24 @@ class GeneralConfig extends BaseConfig
     public bool $enableTemplateCaching = true;
 
     /**
+     * @var bool Whether all Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=false
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     * @group Security
+     * @since 4.17.0
+     */
+    public bool $enableTwigSandbox = false;
+
+    /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
      *
      * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
@@ -4745,6 +4763,25 @@ class GeneralConfig extends BaseConfig
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
+        return $this;
+    }
+
+    /**
+     * Whether all Twig templates should be sandboxed.
+     *
+     * ```php
+     * ->enableTwigSandbox(false)
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableTwigSandbox
+     * @since 4.17.0
+     */
+    public function enableTwigSandbox(bool $value = true): self
+    {
+        $this->enableTwigSandbox = $value;
         return $this;
     }
 
