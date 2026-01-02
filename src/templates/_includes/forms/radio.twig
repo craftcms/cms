@@ -1,5 +1,8 @@
 {% set id = id ?? "radio#{random()}" %}
-{% set label = radioLabel ?? label ?? null %}
+{% set label = labelHtml ?? radioLabel ?? label ?? null %}
+{% if labelHtml is not defined and label %}
+    {% set label = label|e %}
+{% endif %}
 
 {% set containerAttributes = {
     for: id,
