@@ -2104,10 +2104,16 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
 
       // add option to the dropdown
       // figure out the label - it's okay to rely on the first label as only top-level fields can be used as thumbs
-      let label = element.$container.data('preview-options')[0]?.label ?? element.attribute;
+      let label =
+        element.$container.data('preview-options')[0]?.label ??
+        element.attribute;
       // it's okay to prepend with "layoutElement" as only top-level fields can be used as thumbs
       $(
-        '<option value="layoutElement:' + element.uid + '">' + label + '</option>'
+        '<option value="layoutElement:' +
+          element.uid +
+          '">' +
+          label +
+          '</option>'
       ).appendTo($select);
     } else if (action == 'remove') {
       if (!Garnish.hasAttr(element.$container, 'data-thumbable')) {
