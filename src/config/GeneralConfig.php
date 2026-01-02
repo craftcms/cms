@@ -1240,7 +1240,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @since 4.17.0
      */
-    public bool $enableTwigSandbox = true;
+    public bool $enableTwigSandbox = false;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
