@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
@@ -198,7 +199,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
             ->map(fn(UserGroup $group) => [
-                'label' => Craft::t('site', $group->name),
+                'label' => Html::encode(Craft::t('site', $group->name)),
                 'value' => $group->uid,
             ])
             ->all();
