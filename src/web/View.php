@@ -25,6 +25,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use Illuminate\Support\Collection;
@@ -35,6 +36,7 @@ use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\ExtensionInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
@@ -394,6 +396,9 @@ class View extends \yii\web\View
         }
 
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+
+        // Even an empty security policy will prevent non-closures from being allowed as arrow functions
+        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), Craft::$app->getConfig()->getGeneral()->enableTwigSandbox));
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
