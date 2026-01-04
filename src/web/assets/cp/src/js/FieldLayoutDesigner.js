@@ -2146,7 +2146,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     const $draggable = this.findCheckboxByUid(uid);
     if ($draggable?.length) {
       $draggable.find('input').attr('data-field-label', label);
-      $draggable.find('label').html(Craft.escapeHtml(label));
+      $draggable.find('label').text(label);
     }
   },
 
