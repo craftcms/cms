@@ -373,8 +373,8 @@ Craft.ui = {
             typeof option.disabled !== 'undefined' ? option.disabled : false,
         }).appendTo($optgroup || $select);
 
-        if (option.html) {
-          $option.html(option.html);
+        if (option.labelHtml) {
+          $option.html(option.labelHtml);
         } else if (option.label) {
           $option.text(option.label);
         }
@@ -425,8 +425,8 @@ Craft.ui = {
       for: id,
     });
 
-    if (config.html) {
-      $label.html(config.html);
+    if (config.labelHtml) {
+      $label.html(config.labelHtml);
     } else if (config.label) {
       $label.text(config.label);
     }
@@ -497,7 +497,8 @@ Craft.ui = {
           this.createCheckbox({
             id: config.id,
             class: 'all',
-            html: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+            labelHtml:
+              '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
             name: config.name,
             value: allValue,
             checked: allChecked,
