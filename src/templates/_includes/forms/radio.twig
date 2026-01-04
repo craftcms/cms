@@ -1,8 +1,5 @@
 {% set id = id ?? "radio#{random()}" %}
-{% set label = labelHtml ?? radioLabel ?? label ?? null %}
-{% if labelHtml is not defined and label %}
-    {% set label = label|e %}
-{% endif %}
+{% set labelHtml = labelHtml ?? (radioLabel ?? label ?? null)|e %}
 
 {% set containerAttributes = {
     for: id,
@@ -29,5 +26,5 @@
 {{ tag('input', inputAttributes) }}
 
 {% tag 'label' with containerAttributes %}
-    {{ label|raw }}
+    {{ labelHtml|raw }}
 {% endtag %}
