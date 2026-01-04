@@ -1,5 +1,5 @@
 {% set id = id ?? "radio#{random()}" %}
-{% set labelHtml = labelHtml ?? (radioLabel ?? label ?? null)|e %}
+{% set label = radioLabel ?? label ?? null %}
 
 {% set containerAttributes = {
     for: id,
@@ -26,5 +26,5 @@
 {{ tag('input', inputAttributes) }}
 
 {% tag 'label' with containerAttributes %}
-    {{ labelHtml|raw }}
+    {{ label }}
 {% endtag %}

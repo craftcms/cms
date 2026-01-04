@@ -3,7 +3,7 @@
 ## Unreleased
 
 - The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
-- The `_includes/forms/radio.twig` template now escapes the `label` variable. A raw HTML label can be passed via the `labelHtml` variable.
+- The `_includes/forms/radio.twig` template now escapes the `label` variable. A raw HTML label can be passed by wrapping the label value in `raw()` or `craft\helpers\Template::raw()`.
 - `Craft.ui.createCheckbox()` now escapes the `config.label` property. A raw HTML label can be passed via the `config.labelHtml` property.
 - `Craft.ui.createSelect()` now escapes options’ `label` properties. Raw HTML labels can be passed via `labelHtml` properties.
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
