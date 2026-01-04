@@ -3615,7 +3615,7 @@ const ViewMenu = Garnish.Base.extend({
           return o.optgroup
             ? o
             : {
-                label: Craft.escapeHtml(o.label),
+                label: o.label,
                 value: o.attr,
               };
         }),
