@@ -4526,7 +4526,7 @@ const ViewMenu = Garnish.Base.extend({
       .map((group) => [
         {optgroup: group.label},
         ...group.options.map((option) => ({
-          label: Craft.escapeHtml(option.label),
+          label: option.label,
           value: option.attr,
         })),
       ])
