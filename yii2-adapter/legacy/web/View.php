@@ -432,7 +432,7 @@ class View extends \yii\web\View
         $twig->getRuntime(EscaperRuntime::class)->addSafeClass($safeClass, ['html']);
 
         // Even an empty security policy will prevent non-closures from being allowed as arrow functions
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), Cms::config()->enableTwigSandbox));
+        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), true));
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
