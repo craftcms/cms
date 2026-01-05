@@ -81,10 +81,9 @@ import './Money.scss';
 
         this.$field.inputmask($.extend(this.settings.maskOptions, opts));
 
-        console.log('1');
-        // if (this.$field.val() === '') {
-        //   this.$field.addClass('money-placeholder');
-        // }
+        if (this.$field.val() === '') {
+          this.$field.addClass('money-placeholder');
+        }
       },
     },
     {
