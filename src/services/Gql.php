@@ -375,7 +375,7 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
@@ -1391,9 +1391,10 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
@@ -1401,10 +1402,13 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
             StripTags::class,
             Trim::class,
         ];
+
+        if (in_array('directive:parseRefs', $schema->scope)) {
+            $directiveClasses[] = ParseRefs::class;
+        }
 
         if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
             $directiveClasses[] = Transform::class;
