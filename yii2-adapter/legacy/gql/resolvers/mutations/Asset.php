@@ -243,12 +243,7 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
-            // make sure the hostname is alphanumeric and not an IP address
-            $hostname = parse_url($url, PHP_URL_HOST);
-            if (
-                !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
-                filter_var($hostname, FILTER_VALIDATE_IP)
-            ) {
+            if (!$this->validateHostname($url)) {
                 throw new UserError("$url contains an invalid hostname.");
             }
 
@@ -281,6 +276,46 @@ class Asset extends ElementMutationResolver
         }
         $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false));
         $asset->avoidFilenameConflicts = true;
+
+        return true;
+    }
+
+    private function validateHostname(string $url): bool
+    {
+        // make sure the hostname is alphanumeric and not an IP address
+        $hostname = parse_url($url, PHP_URL_HOST);
+        if (
+            !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
+            filter_var($hostname, FILTER_VALIDATE_IP)
+        ) {
+            return false;
+        }
+
+        // Check against well-known cloud metadata domains/IPs
+        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
+        if (in_array($hostname, [
+            'kubernetes.default',
+            'kubernetes.default.svc',
+            'kubernetes.default.svc.cluster.local',
+            'metadata',
+            'metadata.google.internal',
+            'metadata.packet.net',
+        ])) {
+            return false;
+        }
+
+        // make sure the hostname doesn’t resolve to a known cloud metadata IP
+        $ip = gethostbyname($hostname);
+
+        if (in_array($ip, [
+            '169.254.169.254',
+            '169.254.170.2',
+            '169.254.169.254',
+            '100.100.100.200',
+            '192.0.0.192',
+        ])) {
+            return false;
+        }
 
         return true;
     }
