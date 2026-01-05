@@ -13,10 +13,10 @@
 - Fixed an error that could occur when executing a GraphQL mutation when the `lazyGqlTypes` config setting was enabled. ([#18014](https://github.com/craftcms/cms/issues/18014))
 - Fixed a PHP error that could occur when creating a username that began or ended with an `@`. ([#18123](https://github.com/craftcms/cms/pull/18123))
 - Fixed a bug where assets with disallowed file extensions could be stored in the system’s temp directory. ([#18049](https://github.com/craftcms/cms/pull/18049))
-- Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
-- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
-- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
-- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
+- Fixed RCE vulnerabilities. ([GHSA-255j-qw47-wjh5](https://github.com/craftcms/cms/security/advisories/GHSA-255j-qw47-wjh5), [GHSA-742x-x762-7383](https://github.com/craftcms/cms/security/advisories/GHSA-742x-x762-7383))
+- Fixed an SSRF vulnerability. ([GHSA-x27p-wfqw-hfcc](https://github.com/craftcms/cms/security/advisories/GHSA-x27p-wfqw-hfcc))
+- Fixed a DoS vulnerability. ([GHSA-v64r-7wg9-23pr](https://github.com/craftcms/cms/security/advisories/GHSA-v64r-7wg9-23pr))
+- Fixed an information disclosure vulnerability. ([GHSA-53vf-c43h-j2x9](https://github.com/craftcms/cms/security/advisories/GHSA-53vf-c43h-j2x9))
 
 ## 4.16.16 - 2025-11-18
 
