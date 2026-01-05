@@ -1,6 +1,6 @@
 {% import "_includes/links" as links %}
 
-{% macro action(item, isSelected, showIcon) %}
+{% macro action(item, isSubnav, isSelected, showIcon) %}
     {% set showIcon = showIcon ?? true %}
     {% set selected = item.sel ?? isSelected ?? false %}
     {% set badgeCount = item.badgeCount ?? false %}
@@ -22,17 +22,15 @@
 
     {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
-            {% if showIcon %}
-                <span class="nav-icon" aria-hidden="true">
-                    {%- if item.icon is defined -%}
-                        {{ iconSvg(item.icon) }}
-                    {%- elseif item.fontIcon is defined -%}
-                        <span data-icon="{{ item.fontIcon }}"></span>
-                    {%- else -%}
-                        {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
-                    {%- endif -%}
-                </span>
-            {% endif %}
+            <span class="nav-icon" aria-hidden="true">
+                {%- if item.icon ?? false -%}
+                    {{ iconSvg(item.icon) }}
+                {%- elseif item.fontIcon ?? false -%}
+                    <span data-icon="{{ item.fontIcon }}"></span>
+                {%- else -%}
+                    <span class="nav-indicator"></span>
+                {%- endif -%}
+            </span>
         </span>
 
         <span class="sidebar-action__label">
@@ -42,20 +40,38 @@
             {% endif %}
         </span>
 
-        {%- if badgeCount -%}
-            <span class="sidebar-action__badge">
-                <span class="badge" aria-hidden="true">{{ item.badgeCount|number(decimals=0) }}</span>
-                {{ tag('span', {
-                    class: 'visually-hidden',
-                    data: {
-                        notification: true,
-                    },
-                    text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
-                        num: item.badgeCount,
-                    }),
-                }) }}
-            </span>
-        {%- endif -%}
+        <span class="sidebar-action__suffix">
+            {%- if badgeCount -%}
+                <span class="sidebar-action__badge">
+                    <span class="badge" aria-hidden="true">{{ item.badgeCount|number(decimals=0) }}</span>
+                    {{ tag('span', {
+                        class: 'visually-hidden',
+                        data: {
+                            notification: true,
+                        },
+                        text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                            num: item.badgeCount,
+                        }),
+                    }) }}
+                </span>
+            {%- endif -%}
+            {% if not isSubnav and (item.subnav ?? false) %}
+                <craft-disclosure
+                    class="nav-item__trigger"
+                    state="{{ item.sel ? 'expanded' : 'collapsed' }}"
+                >
+                    <button
+                        type="button"
+                        class="btn menubtn hairline"
+                        aria-controls="{{ item.id }}-subnav"
+                        aria-describedby="{{ item.id }}-link"
+                        aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                    >
+                        <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
+                    </button>
+                </craft-disclosure>
+            {% endif %}
+        </span>
     {% endtag %}
 {% endmacro %}
 
@@ -78,41 +94,28 @@
                         } %}
                         <li {{ attr(itemAttributes) }}>
                             <div class="nav-item {% if item.sel %}sel{% endif %}">
-                                {{ _self.action(item) }}
-
-                                {% if item.subnav %}
-                                    <craft-disclosure
-                                        class="nav-item__trigger"
-                                        state="{{ item.sel ? 'expanded' : 'collapsed' }}"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="btn menubtn hairline"
-                                            aria-controls="{{ item.id }}-subnav"
-                                            aria-describedby="{{ item.id }}-link"
-                                            aria-expanded="{{ item.sel ?  'true' : 'false' }}"
-                                        >
-                                            <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
-                                        </button>
-                                    </craft-disclosure>
-                                {% endif %}
+                                {{ _self.action(item, false) }}
                             </div>
 
                             {% if item.subnav %}
-                                <ul class="nav-item__subnav" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
-                                    {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId and item.url in craft.app.request.fullPath -%}
+                                <ul
+                                    class="nav-item__subnav"
+                                    id="{{ item.id }}-subnav"
+                                    data-state="{{ item.sel ?  'expanded' : 'collapsed' }}"
+                                >
+                                    {% for subItemId, subItem in item.subnav %}
+                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
 
                                         <li>
                                             <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
-                                                {{ _self.action(item|merge({
+                                                {{ _self.action(subItem|merge({
                                                     linkAttributes:  {
                                                         class: ['sidebar-action--sub'],
                                                         aria: {
                                                             current: itemIsSelected ? 'page' : false,
                                                         },
                                                     }
-                                                }, recursive=true), itemIsSelected, false) }}
+                                                }, recursive=true), true, itemIsSelected, false) }}
                                             </div>
                                         </li>
                                     {% endfor %}

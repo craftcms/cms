@@ -119,11 +119,35 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    protected static function defineCardAttributes(): array
+    {
+        return [
+            ...parent::defineCardAttributes(),
+            'address' => [
+                'label' => Craft::t('app', 'Address'),
+                'placeholder' => fn() => '123 Acme Ln.',
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
             'country' => ['label' => Craft::t('app', 'Country')],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'address',
+        ];
     }
 
     /**
@@ -582,6 +606,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
+     * Returns whether the element’s `title` attribute should be validated
+     * @return bool
+     */
+    protected function shouldValidateTitle(): bool
+    {
+        $titleField = $this->getFieldLayout()?->getField('title');
+        return $titleField->required && $titleField->showInForm($this);
+    }
+
+    /**
      * @inheritdoc
      */
     public function beforeValidate(): bool
@@ -698,6 +732,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return $this->title ?? '';
     }
 
     /**

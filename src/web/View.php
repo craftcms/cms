@@ -2139,7 +2139,7 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
@@ -2149,6 +2149,7 @@ JS;
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2188,16 +2189,17 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
-                'variables' => &$variables,
+                'variables' => $variables,
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2549,7 +2551,13 @@ JS;
 
         $context['title'] ??= $elementType::pluralDisplayName();
         $context['context'] = 'index';
-        $context['sources'] = Craft::$app->getElementSources()->getSources($elementType, withDisabled: true);
+
+        $elementSourcesService = Craft::$app->getElementSources();
+        $context['sources'] = $elementSourcesService->getSources(
+            $elementType,
+            withDisabled: true,
+            page: $context['page'] ?? null,
+        );
 
         $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
         if ($context['showSiteMenu'] === 'auto') {
@@ -2559,6 +2567,13 @@ JS;
         $context['elementDisplayName'] = $elementType::displayName();
         $context['elementPluralDisplayName'] = $elementType::pluralDisplayName();
         $context['canHaveDrafts'] ??= $elementType::hasDrafts();
+
+        if (isset($context['page'])) {
+            if (isset($context['sources'][0]['page'])) {
+                $context['title'] = Craft::t('site', $context['sources'][0]['page']);
+            }
+            $context['selectedSubnavItem'] = $elementSourcesService->pageNameId($context['page']);
+        }
 
         return null;
     }
@@ -2584,7 +2599,10 @@ JS;
         $context['idPrefix'] = sprintf('elementtoolbar%s-', mt_rand());
 
         if ($context['showStatusMenu']) {
-            $context['elementStatuses'] = $elementType::statuses();
+            $context['elementStatuses'] ??= $elementType::statuses();
+            if (count($context['elementStatuses']) < 2) {
+                $context['showStatusMenu'] = false;
+            }
         }
 
         return null;

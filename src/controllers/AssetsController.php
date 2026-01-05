@@ -348,6 +348,14 @@ class AssetsController extends Controller
             }
         }
 
+        // try to get uploaded asset's URL
+        $url = null;
+        try {
+            $url = $asset->getUrl();
+        } catch (Throwable) {
+            // do nothing
+        }
+
         if ($asset->conflictingFilename !== null) {
             $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
@@ -358,12 +366,14 @@ class AssetsController extends Controller
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                'url' => $url,
             ]);
         }
 
         return $this->asSuccess(data: [
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
+            'url' => $url,
         ]);
     }
 

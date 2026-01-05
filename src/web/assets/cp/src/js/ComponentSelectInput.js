@@ -123,7 +123,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     initComponentSort: function () {
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.componentSort = new Garnish.DragSort({
           container: this.$list,
           filter: this.settings.selectable
@@ -293,7 +293,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         });
       }
 
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         const $chipActions = $component.find('.chip-actions');
         if (!$chipActions.has('.move').length) {
           $('<button/>', {
@@ -581,7 +581,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       sortable: true,
       selectable: true,
       showActionMenus: true,
-      hyperlinks: true,
+      hyperlinks: false,
       createAction: null,
       addItemsToActionMenus: true,
     },

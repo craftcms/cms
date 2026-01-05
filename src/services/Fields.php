@@ -1128,8 +1128,6 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set

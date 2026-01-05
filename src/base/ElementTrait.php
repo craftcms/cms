@@ -59,6 +59,12 @@ trait ElementTrait
     public bool $isProvisionalDraft = false;
 
     /**
+     * @var bool Whether provisional changes have been loaded onto this element.
+     * @since 5.9.0
+     */
+    public bool $hasProvisionalChanges = false;
+
+    /**
      * @var string|null The element’s UID
      */
     public ?string $uid = null;
@@ -191,6 +197,13 @@ trait ElementTrait
     public bool $propagateAll = false;
 
     /**
+     * @var bool Whether all required element attributes should be propagated across all its supported sites, but only if otherwise
+     * they wouldn’t validate.
+     * @since 5.9.0
+     */
+    public bool $propagateRequired = false;
+
+    /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
      * @since 3.2.9
      */
@@ -224,6 +237,12 @@ trait ElementTrait
      * @since 3.7.5
      */
     public bool $firstSave = false;
+
+    /**
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     * @since 5.9.0
+     */
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
