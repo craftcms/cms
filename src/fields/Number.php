@@ -18,12 +18,14 @@ use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
+use yii\helpers\Markdown;
 
 /**
  * Number represents a Number field.
@@ -383,11 +385,11 @@ JS;
         };
 
         if ($this->prefix) {
-            $formatted = $this->prefix . $formatted;
+            $formatted = Markdown::processParagraph(Html::encode($this->prefix)) . $formatted;
         }
 
         if ($this->suffix) {
-            $formatted = $formatted . $this->suffix;
+            $formatted = $formatted . Markdown::processParagraph(Html::encode($this->suffix));
         }
 
         return $formatted;
