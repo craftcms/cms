@@ -8,6 +8,7 @@
 
 ### Development
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. (GHSA-94rc-cqvm-m4pw)
 - Added the `uuid()` Twig function.
 - The `@parseRefs` GraphQL directive is now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
 
