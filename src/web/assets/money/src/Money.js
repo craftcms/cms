@@ -24,9 +24,7 @@ import './Money.scss';
           this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
         }
 
-        if (this.$field.val() != '') {
-          this.updateInputMask();
-        }
+        this.updateInputMask();
 
         this.$field.data('money-input', this);
       },
@@ -83,9 +81,10 @@ import './Money.scss';
 
         this.$field.inputmask($.extend(this.settings.maskOptions, opts));
 
-        if (this.$field.val() === '') {
-          this.$field.addClass('money-placeholder');
-        }
+        console.log('1');
+        // if (this.$field.val() === '') {
+        //   this.$field.addClass('money-placeholder');
+        // }
       },
     },
     {
