@@ -206,7 +206,7 @@ abstract class BaseField extends FieldLayoutElement
         return [
             [
                 'label' => $this->selectorLabel() ?? $this->attribute(),
-                'value' => $this->attribute(),
+                'value' => 'layoutElement:{uid}',
             ],
         ];
     }
