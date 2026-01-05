@@ -24,6 +24,7 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -259,7 +260,10 @@ class Asset extends ElementMutationResolver
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $this->createGuzzleClient()->request('GET', $url, [
+                RequestOptions::ALLOW_REDIRECTS => false,
+                RequestOptions::SINK => $tempPath,
+            ]);
         }
 
         if (!$tempPath || !$filename) {
