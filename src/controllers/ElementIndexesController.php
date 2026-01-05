@@ -603,6 +603,23 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
+
+            // Remove unsupported criteria attributes
+            unset(
+                $criteria['where'],
+                $criteria['orderBy'],
+                $criteria['indexBy'],
+                $criteria['select'],
+                $criteria['selectOption'],
+                $criteria['from'],
+                $criteria['groupBy'],
+                $criteria['join'],
+                $criteria['having'],
+                $criteria['union'],
+                $criteria['withQueries'],
+                $criteria['params'],
+            );
+
             Craft::configure($query, Component::cleanseConfig($criteria));
         }
 

@@ -6,6 +6,7 @@
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
+- Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 
 ## 4.16.17 - 2025-12-0421
 
