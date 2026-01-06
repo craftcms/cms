@@ -1406,12 +1406,17 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if ($schema !== null && in_array('directive:parseRefs', $schema->scope)) {
-            $directiveClasses[] = ParseRefs::class;
-        }
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+            if (
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
         $event = new RegisterGqlDirectivesEvent([

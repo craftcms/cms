@@ -221,6 +221,7 @@ return [
     'Cache remote images' => 'Cache remote images',
     'Caches' => 'Caches',
     'Can be dismissed?' => 'Can be dismissed?',
+    'Can be exploited by DoS attacks.' => 'Can be exploited by DoS attacks.',
     'Can be exploited to reveal sensitive content by information disclosure attacks.' => 'Can be exploited to reveal sensitive content by information disclosure attacks.',
     'Can contain Markdown formatting.' => 'Can contain Markdown formatting.',
     'Cancel' => 'Cancel',
