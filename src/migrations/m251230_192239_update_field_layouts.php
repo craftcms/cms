@@ -25,7 +25,7 @@ class m251230_192239_update_field_layouts extends Migration
 
         foreach ($dbLayouts as $layout) {
             $config = is_string($layout['config']) ? Json::decode($layout['config']) : $layout['config'];
-            if ($this->updateLayoutConfig($config)) {
+            if ($config && $this->updateLayoutConfig($config)) {
                 $this->update(Table::FIELDLAYOUTS, [
                     'config' => $config,
                 ], ['id' => $layout['id']]);
