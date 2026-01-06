@@ -67,6 +67,55 @@ If you want to help improve Craft’s translations, [sign up to be a translator]
 
 If you would like to work on a new core feature or improvement, first create a [GitHub issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
 
+## Control Panel Front End
+
+In order to work on the control panel front end, we recommend opening two terminal windows.
+
+1. Run `npm run dev` in one window to start the Vite development server.
+2. Run `npm run dev:cp` in the other window to start the Vite process for the `@craftcms/cp` package.
+
+With both processes running, you'll be able to work on most aspects of the control panel. 
+
+If getting into the weeds is your thing, more detail on these pieces is provided below. 
+
+### Control Panel Assets
+
+The assets specific to the control panel live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the control panel, there are two commands:
+```shell
+# Run the Vite development server
+npm run dev
+
+# Build assets for production
+npm run build
+```
+
+### `@craftcms/cp` package
+
+The control panel is largely backed by web components that live in the `@craftcms/cp` package within the `packages/craftcms-cp` directory. Like other packages, it has its own build process that can be run independently of the control panel.
+```shell
+# Run the build in watch mode. Assets will be rebuilt on every change
+npm run dev:cp
+
+# Run the build for production
+npm run build:cp
+```
+
+In practice, you rarely work on one without the other, so we recommend having two terminal panes open. One running the main control panel assets build and another building the web components.
+
+### Legacy Bundles
+
+> [!NOTE]  
+> Updating the legacy bundles should be a rare occurrence. Avoid when possible.
+
+All the styles and scripts used to support the control panel up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
+```sh
+# Build assets for production
+npm run build:bundles
+
+# Run dev server to develop a specific package
+npm run dev:bundles -- -- --config-name=cp
+```
+
 ## Pull Requests
 
 Pull requests should clearly describe the problem and solution. Include the relevant issue number if there is one. If the pull request fixes a bug, it should include a new test case that demonstrates the issue, if possible.

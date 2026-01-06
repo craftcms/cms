@@ -239,27 +239,30 @@ trait FormatsResults
                 $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
-            $elementQuery->query->orderBy(new FixedOrderExpression('elements.id', $ids));
+            $elementQuery->orderBy(new FixedOrderExpression('elements.id', $ids));
 
             return;
         }
 
         if ($elementQuery->revisions) {
-            $elementQuery->query->orderByDesc('num');
+            $elementQuery->orderByDesc('num');
 
             return;
         }
 
         if ($elementQuery->shouldJoinStructureData()) {
-            $elementQuery->query->orderBy('structureelements.lft');
+            $elementQuery->orderBy('structureelements.lft');
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
-            $elementQuery->query->orderBy($column, match ($direction) {
+            $direction = match ($direction) {
                 SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
                 default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
-            });
+            };
+
+            $elementQuery->query->orderBy($column, $direction);
+            $elementQuery->subQuery->orderBy($column, $direction);
         }
     }
 
