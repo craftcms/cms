@@ -4,7 +4,7 @@
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
 - The `clear-cache` command now accepts a space-delimited list of cache IDs that should be cleared.
 - Compiled templates are now deleted by the `up` command rather than from `migrate` commands.
-- Added the `enableTwigSandbox` config setting. ([#18208](https://github.com/craftcms/cms/pull/18208))
+- Added the `enableTwigSandbox` config setting. ([#18208](https://github.com/craftcms/cms/pull/18208), [#18216](https://github.com/craftcms/cms/pull/18216))
 - The `disableGraphqlTransformDirective` config setting is now deprecated.
 
 ### Development
@@ -17,6 +17,10 @@
 - Added `craft\services\Search::deleteOrphanedIndexJobs()`.
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
+- Added `craft\web\View::renderSandboxedObjectTemplate()`.
+- Added `craft\web\View::renderSandboxedString()`.
+- Added `craft\web\View::renderSandboxedTemplate()`.
+- Added `craft\web\twig\SecurityPolicy`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
