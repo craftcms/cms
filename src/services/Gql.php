@@ -1406,7 +1406,7 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if (in_array('directive:parseRefs', $schema->scope)) {
+        if ($schema !== null && in_array('directive:parseRefs', $schema->scope)) {
             $directiveClasses[] = ParseRefs::class;
         }
 
