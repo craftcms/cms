@@ -3,7 +3,11 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
+  import {
+    createColumnHelper,
+    getCoreRowModel,
+    useVueTable,
+  } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {Site, SiteGroup, SuggestionGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -25,7 +29,6 @@
 
   const modalActive = ref(false);
   const columnHelper = createColumnHelper<Site>();
-  const flashError = computed(() => props.flash.error);
 
   const form = useForm({
     id: props.group?.id ?? null,
@@ -45,7 +48,7 @@
     if (mode === 'create') {
       form.name = '';
       form.id = null;
-    } else {
+    } else if (mode === 'update') {
       form.name = props.group?.rawName ?? props.group?.name ?? '';
       form.id = props.group?.id ?? null;
     }
@@ -160,6 +163,10 @@
 
     return t('Sites');
   });
+
+  function handleNameChange(event: Event) {
+    form.name = (event.target as CraftCombobox).modelValue;
+  }
 </script>
 
 <template>
@@ -252,10 +259,17 @@
     @submit="saveGroup"
     :loading="form.processing"
   >
+    <craft-input
+      name="id"
+      id="id"
+      v-model="form.id"
+      type="hidden"
+    ></craft-input>
     <Deferred data="nameSuggestions">
       <template #fallback>
         <craft-input
           readonly
+          name="readonly-name"
           :label="t('Group Name')"
           :help-text="t('What this group will be called in the control panel.')"
         >
@@ -276,16 +290,16 @@
         </craft-input>
       </template>
       <craft-combobox
+        .requireOptionMatch="false"
         :label="t('Group Name')"
         id="name"
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
-        .modelValue="form.name"
-        @model-value-changed="form.name = $event.target.modelValue"
         :has-feedback-for="form.errors?.name ? 'error' : ''"
-        :require-option-match="false"
         show-all-on-empty
+        v-model="form.name"
+        @model-value-changed="form.name = $event.target?.modelValue"
       >
         <template v-for="(group, idx) in nameSuggestions" :key="idx">
           <craft-option

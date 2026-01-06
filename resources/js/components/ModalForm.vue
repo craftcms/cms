@@ -15,11 +15,15 @@
     >(),
     {overlay: true, loading: false}
   );
+
+  function submitHandler() {
+    emit('submit');
+  }
 </script>
 
 <template>
   <Modal :isActive="isActive" :overlay="overlay" @close="emit('close')">
-    <form @submit.prevent="emit('submit')">
+    <form @submit.prevent="submitHandler">
       <Pane class="w-[60ch] mx-auto">
         <slot></slot>
         <template #secondary-action>
