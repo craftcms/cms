@@ -125,9 +125,9 @@ class Mailer extends \yii\symfonymailer\Mailer
 
             // Render the subject and body text
             $view = Craft::$app->getView();
-            $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
-            $textBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
-            $htmlBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE, true);
+            $subject = $view->renderSandboxedString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
+            $textBody = $view->renderSandboxedString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+            $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE, true);
 
             // Remove </> from around URLs, so they’re not interpreted as HTML tags
             $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
@@ -146,7 +146,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             try {
-                $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
+                $message->setHtmlBody($view->renderSandboxedTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($htmlBody)),
                 ]), $templateMode));
             } catch (Throwable $e) {
