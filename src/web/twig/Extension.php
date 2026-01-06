@@ -238,7 +238,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
-            new TwigFilter('find', [$this, 'findFilter'], ['needs_environment' => true]),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
@@ -661,15 +660,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (InvalidArgumentException) {
             return $value;
         }
-    }
-
-    /**
-     * @since 5.4.3
-     */
-    public function findFilter(TwigEnvironment $env, $array, $arrow): mixed
-    {
-        CoreExtension::checkArrow($env, $arrow, 'find', 'filter');
-        return CoreExtension::find($env, $array, $arrow);
     }
 
     /**
