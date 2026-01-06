@@ -2,12 +2,21 @@
 
 ## Unreleased
 
+- User queries now always return active, non-pending users first, unless otherwise specified by `orderBy`. ([#18148](https://github.com/craftcms/cms/issues/18148))
+- The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
+- Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
+- Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
 - Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
 - Fixed a bug where Content Block fields could appear to be missing their content when viewing a revision. ([#18149](https://github.com/craftcms/cms/issues/18149))
 - Fixed a bug where Dropdown and Radio Button fields weren’t handling `:empty:`/`:notempty:` element query params properly for options with blank values. ([#18156](https://github.com/craftcms/cms/issues/18156))
 - Fixed a bug where chip icons were getting rounded. ([#18163](https://github.com/craftcms/cms/pull/18163))
 - Fixed a bug where object templates that included another template were missing variables. ([#18165](https://github.com/craftcms/cms/issues/18165))
+- Fixed a JavaScript error that could occur if two control panel animations were triggered simultaneously.
+- Fixed a bug where it wasn’t possible to copy/paste nested entries within Matrix fields set to the inline-editable blocks view mode, for unpublished owner elements. ([#18185](https://github.com/craftcms/cms/pull/18185))
+- Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
+- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
+- Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
 
 ## 5.8.21 - 2025-12-04
 
@@ -20,10 +29,10 @@
 - Fixed a bug where relation fields weren’t handling `:empty:`/`:notempty:` element query params properly if the field had multiple instances within a field layout. ([#18092](https://github.com/craftcms/cms/pull/18092))
 - Fixed a bug where user preferences were being respected for users who formerly had access to the control panel.
 - Fixed a bug where nested entries could be reordered when their owner element was resaved programmatically. ([#18121](https://github.com/craftcms/cms/pull/18121))
-- Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
-- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
-- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
-- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
+- Fixed RCE vulnerabilities. ([GHSA-255j-qw47-wjh5](https://github.com/craftcms/cms/security/advisories/GHSA-255j-qw47-wjh5), [GHSA-742x-x762-7383](https://github.com/craftcms/cms/security/advisories/GHSA-742x-x762-7383))
+- Fixed an SSRF vulnerability. ([GHSA-x27p-wfqw-hfcc](https://github.com/craftcms/cms/security/advisories/GHSA-x27p-wfqw-hfcc))
+- Fixed a DoS vulnerability. ([GHSA-v64r-7wg9-23pr](https://github.com/craftcms/cms/security/advisories/GHSA-v64r-7wg9-23pr))
+- Fixed an information disclosure vulnerability. ([GHSA-53vf-c43h-j2x9](https://github.com/craftcms/cms/security/advisories/GHSA-53vf-c43h-j2x9))
 
 ## 5.8.20 - 2025-11-18
 

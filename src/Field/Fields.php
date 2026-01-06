@@ -908,8 +908,6 @@ final class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = Request::get("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Request::get($paramPrefix.'thumbAlignment');
 
         $layout = $this->createLayout($config);
 
