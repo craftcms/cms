@@ -577,12 +577,11 @@ class HtmlHelperTest extends TestCase
     {
         return [
             ['foo', '-foo-'],
-            ['foo-bar', 'foo--bar'],
+            ['foo--bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
             ['foo-bar', 'foo bar'],
-            ['foo--bar', 'foo--bar'],
             ['100', '100'],
             ['100-foo-bar', '100-foo-bar'],
             ['__FOO__ bar', '__FOO__ bar'],
