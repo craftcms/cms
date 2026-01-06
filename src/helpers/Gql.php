@@ -338,6 +338,7 @@ class Gql
         }
 
         $schema->scope[] = 'directive:parseRefs';
+        $schema->scope[] = 'directive:transform';
 
         return $schema;
     }

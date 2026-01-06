@@ -1050,7 +1050,7 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ::: code
      * ```php Static Config
@@ -1061,8 +1061,14 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
+     *
      * @group GraphQL
      * @since 3.6.0
+     * @deprecated in 5.9.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1267,7 +1273,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see enableTwigSandbox()
      * @group Security
-     * @since 4.17.0
+     * @since 5.9.0
      */
     public bool $enableTwigSandbox = false;
 
@@ -4543,11 +4549,16 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the `transform` directive should be disabled for the GraphQL API.
+     * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
+     *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
      *
      * @group GraphQL
      * @param bool $value
@@ -4777,7 +4788,7 @@ class GeneralConfig extends BaseConfig
      * @param bool $value
      * @return self
      * @see $enableTwigSandbox
-     * @since 4.17.0
+     * @since 5.9.0
      */
     public function enableTwigSandbox(bool $value = true): self
     {

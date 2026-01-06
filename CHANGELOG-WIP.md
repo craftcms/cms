@@ -45,6 +45,7 @@
 - Added the `enableTwigSandbox` config setting. ([#18208](https://github.com/craftcms/cms/pull/18208))
 - Added the `useIdnaNontransitionalToUnicode` config setting. ([#17946](https://github.com/craftcms/cms/pull/17946))
 - The `maxCachedCloudImageSize` config setting is now set to `0` by default. ([#17997](https://github.com/craftcms/cms/pull/17997))
+- The `disableGraphqlTransformDirective` config setting is now deprecated.
 - System message emails are now rendered using GitHub-flavored Markdown. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 - Drag-and-drop icons are now longer shown for devices that don’t support pointer events. ([#18067](https://github.com/craftcms/cms/pull/18067))
 - The Caches utility now keeps track of which options were previously selected. ([#9447](https://github.com/craftcms/cms/discussions/9447))
@@ -60,7 +61,7 @@
 - Added the `randomString()` Twig function. ([#18020](https://github.com/craftcms/cms/discussions/18020))
 - Added the `uuid()` Twig function.
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
-- The `@parseRefs` GraphQL directive is now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
 
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))

@@ -230,7 +230,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
-            new TwigFilter('group', [$this, 'groupFilter'], ['needs_environment' => true]),
+            new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
@@ -1145,8 +1145,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
-
         /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {
@@ -1154,6 +1152,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return array_filter($arr);
         }
+
+        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
 
         $filtered = CoreExtension::filter($env, $arr, $arrow);
 
@@ -1167,15 +1167,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Groups an array by the results of an arrow function, or value of a property.
      *
-     * @param TwigEnvironment $env
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
      * @return array[] The grouped items
      * @throws RuntimeError if $arr is not of type array or Traversable
      */
-    public function groupFilter(TwigEnvironment $env, iterable $arr, callable|string $arrow): array
+    public function groupFilter(iterable $arr, callable|string $arrow): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'group', 'filter');
+        // No need to call checkArrow() here since strings are always interpreted as nested fields,
+        // which should be passed to renderObjectTemplate() as `{name}`
 
         $groups = [];
 
