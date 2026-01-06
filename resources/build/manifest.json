@@ -8,11 +8,26 @@
     "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js",
-      "resources/js/legacy.ts"
+      "resources/js/legacy.ts",
+      "__plugin-vue_export-helper.js"
     ],
     "css": [
       "assets/CalloutReadOnly.css"
+    ]
+  },
+  "_Modal.css": {
+    "file": "assets/Modal.css",
+    "src": "_Modal.css"
+  },
+  "_Modal.js": {
+    "file": "Modal.js",
+    "name": "Modal",
+    "imports": [
+      "resources/js/cp.ts",
+      "__plugin-vue_export-helper.js"
+    ],
+    "css": [
+      "assets/Modal.css"
     ]
   },
   "__plugin-vue_export-helper.js": {
@@ -21,6 +36,10 @@
     "imports": [
       "resources/js/cp.ts"
     ]
+  },
+  "_index.js": {
+    "file": "index.js",
+    "name": "index"
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -673,7 +692,8 @@
     "dynamicImports": [
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
-      "resources/js/pages/SettingsIndexPage.vue"
+      "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSitesIndex.vue"
     ]
   },
   "resources/js/legacy.ts": {
@@ -779,7 +799,8 @@
     "imports": [
       "resources/js/cp.ts",
       "resources/js/legacy.ts",
-      "__plugin-vue_export-helper.js"
+      "__plugin-vue_export-helper.js",
+      "_Modal.js"
     ],
     "css": [
       "assets/Install.css"
@@ -800,6 +821,7 @@
       "resources/js/cp.ts",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_index.js",
       "resources/js/legacy.ts"
     ],
     "css": [
@@ -819,6 +841,23 @@
     ],
     "css": [
       "assets/SettingsIndexPage.css"
+    ]
+  },
+  "resources/js/pages/SettingsSitesIndex.vue": {
+    "file": "SettingsSitesIndex.js",
+    "name": "SettingsSitesIndex",
+    "src": "resources/js/pages/SettingsSitesIndex.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/cp.ts",
+      "resources/js/legacy.ts",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "__plugin-vue_export-helper.js",
+      "_Modal.js",
+      "_index.js"
+    ],
+    "css": [
+      "assets/SettingsSitesIndex.css"
     ]
   }
 }
