@@ -127,7 +127,7 @@ class UsersController extends Controller
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     /**
-     * @event DefineEditUserScreensEvent The event that is triggered when defining the screens that should be
+     * @event \craft\events\DefineEditUserScreensEvent The event that is triggered when defining the screens that should be
      * shown for the user being edited.
      * @since 5.1.0
      */

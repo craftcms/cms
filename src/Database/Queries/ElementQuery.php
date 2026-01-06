@@ -592,7 +592,10 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
             return $eagerResult->first();
         }
 
-        return $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
+        /** @var ?ElementInterface $element */
+        $element = $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
+
+        return $element;
     }
 
     /**

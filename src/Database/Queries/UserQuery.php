@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Queries\Concerns\FormatsResults;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAffiliatedSite;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAssetUploaders;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAuthors;
@@ -36,6 +38,8 @@ final class UserQuery extends ElementQuery
      */
     protected array $defaultOrderBy = [
         'users.username' => SORT_ASC,
+        'users.active' => SORT_DESC,
+        'users.pending' => SORT_DESC,
     ];
 
     public function __construct(array $config = [])
@@ -63,6 +67,39 @@ final class UserQuery extends ElementQuery
             'users.fullName',
             'users.rememberToken',
         ]);
+
+        $this->beforeQuery(function (self $userQuery) {
+            $orders = $userQuery->query->orders;
+
+            if (is_null($orders)) {
+                return;
+            }
+
+            $orders = array_filter(
+                array: $orders,
+                callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+            );
+
+            // Order by was not set so we can fall back to the applyDefaultOrder logic in FormatsResults
+            if (empty($orders)) {
+                return;
+            }
+
+            $orders = array_merge($orders, [
+                [
+                    'column' => 'users.active',
+                    'direction' => 'desc',
+                ],
+                [
+                    'column' => 'users.pending',
+                    'direction' => 'desc',
+                ],
+            ]);
+
+            // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
+            $userQuery->query->orders = $orders;
+            $userQuery->subQuery->orders = $orders;
+        });
     }
 
     /**

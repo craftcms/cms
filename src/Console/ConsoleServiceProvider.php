@@ -22,6 +22,7 @@ use CraftCms\Cms\Console\Commands\Utils\AsciiFilenamesCommand;
 use CraftCms\Cms\Console\Commands\Utils\DeleteEmptyVolumeFoldersCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -66,7 +67,7 @@ final class ConsoleServiceProvider extends ServiceProvider
         }
 
         $this->app->terminating(function () {
-            app('Craft')->getProjectConfig()->flush();
+            $this->app->make(ProjectConfig::class)->flush();
         });
 
         $this->commands($this->commands);

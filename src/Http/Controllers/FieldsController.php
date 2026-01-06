@@ -281,7 +281,7 @@ final class FieldsController
         ]);
     }
 
-    public function renderCardPreview(Request $request): JsonResponse
+    public function renderCardPreview(Request $request, Fields $fields): JsonResponse
     {
         $request->validate([
             'fieldLayoutConfig' => ['required', 'array'],
@@ -291,30 +291,10 @@ final class FieldsController
         ]);
 
         $fieldLayoutConfig = $request->input('fieldLayoutConfig');
-        $cardElements = $request->input('cardElements');
-        $showThumb = $request->input('showThumb', false);
-        $thumbAlignment = $request->input('thumbAlignment', false);
-
-        if (! isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...Component::cleanseConfig($fieldLayoutConfig),
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = $this->fieldsService->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        abort_if(! $fieldLayout, 400, 'Invalid field layout');
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 

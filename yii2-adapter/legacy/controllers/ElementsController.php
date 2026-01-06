@@ -382,7 +382,7 @@ class ElementsController extends Controller
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
-        } elseif ($element->getIsRevision()) {
+        } elseif ($isRevision) {
             $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
         }
 
@@ -2617,7 +2617,10 @@ JS, [
                     $preferSites,
                 );
                 if ($element && $elementsService->canView($element, $user)) {
-                    return $this->redirect($element->getCpEditUrl());
+                    if (!$this->request->getAcceptsJson()) {
+                        return $this->redirect($element->getCpEditUrl());
+                    }
+                    return $element;
                 }
                 throw new BadRequestHttpException($draftId ? "Invalid draft ID: $draftId" : "Invalid revision ID: $revisionId");
             }
@@ -2644,7 +2647,12 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
-        if (!$strictSite && isset($site) && $element->siteId !== $site->id) {
+        if (
+            !$strictSite &&
+            isset($site) &&
+            $element->siteId !== $site->id &&
+            !$this->request->getAcceptsJson()
+        ) {
             return $this->redirect($element->getCpEditUrl());
         }
 

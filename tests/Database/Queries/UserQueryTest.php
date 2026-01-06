@@ -12,6 +12,52 @@ it('sorts by username by default', function () {
     expect(userQuery()->pluck('id')->all())->toBe([$secondUser->id, $firstUser->id]);
 });
 
+test('gets active users first', function () {
+    $inactive = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+
+    $active = UserModel::factory()->create([
+        'active' => true,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+
+    expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($active->id);
+
+    // Even when sorting on something else
+    expect(userQuery()->email('john@example.com')->status(null)->orderBy('email')->pluck('id')->first())->toBe($active->id);
+});
+
+test('gets pending users first', function () {
+    $nonPending = UserModel::factory()->make([
+        'id' => null,
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($nonPending);
+
+    $pending = UserModel::factory()->make([
+        'id' => null,
+        'active' => false,
+        'pending' => true,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ])->asElement();
+    Craft::$app->elements->saveElement($pending);
+
+    expect(userQuery()->email('john')->status(null)->pluck('id')->first())->toBe($pending->id);
+
+    // Even when sorting on something else
+    expect(userQuery()->email('john')->status(null)->orderBy('email')->pluck('id')->first())->toBe($pending->id);
+});
+
 it('can query by status', function (string $status, array $attributes, int $expectedCount) {
     UserModel::factory()->create($attributes);
 
