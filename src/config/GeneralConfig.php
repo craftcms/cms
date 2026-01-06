@@ -1260,14 +1260,14 @@ class GeneralConfig extends BaseConfig
     public bool $enableTemplateCaching = true;
 
     /**
-     * @var bool Whether all Twig templates should be sandboxed.
+     * @var bool Whether user-defined Twig templates should be sandboxed.
      *
      * ::: code
      * ```php Static Config
-     * ->enableTwigSandbox(false)
+     * ->enableTwigSandbox()
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_TWIG_SANDBOX=false
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
      * ```
      * :::
      *
@@ -4778,10 +4778,10 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether all Twig templates should be sandboxed.
+     * Whether user-defined Twig templates should be sandboxed.
      *
      * ```php
-     * ->enableTwigSandbox(false)
+     * ->enableTwigSandbox()
      * ```
      *
      * @group Security
