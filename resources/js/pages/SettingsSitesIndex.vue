@@ -3,11 +3,7 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {Site, SiteGroup, SuggestionGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -163,10 +159,6 @@
 
     return t('Sites');
   });
-
-  function handleNameChange(event: Event) {
-    form.name = (event.target as CraftCombobox).modelValue;
-  }
 </script>
 
 <template>
