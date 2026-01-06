@@ -55,7 +55,7 @@ final readonly class SitesController
             'crumbs' => $crumbs,
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
-            'groups' => $this->siteGroups->getAllGroups(),
+            'groups' => $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values(),
             'sites' => $sites
                 ->sortBy([
                     ['id', 'asc'],
