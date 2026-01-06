@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\Cp as CpHelper;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Events\RegisterCpSettings;
+use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
-class Settings
+final readonly class Settings
 {
     public function __construct(
-        public Plugins $pluginsService
+        private GeneralConfig $generalConfig,
+        private Plugins $pluginsService
     ) {}
 
     /**
@@ -23,7 +25,7 @@ class Settings
      */
     public function all(): array
     {
-        $readOnly = ! Cms::config()->allowAdminChanges;
+        $readOnly = ! $this->generalConfig->allowAdminChanges;
         $settings = [];
 
         $label = t('System');
@@ -39,7 +41,7 @@ class Settings
             'label' => t('Sites'),
         ];
 
-        if (! Cms::config()->headlessMode) {
+        if (! $this->generalConfig->headlessMode) {
             $settings[$label]['routes'] = [
                 'icon' => 'light/signs-post',
                 'label' => t('Routes'),
@@ -51,7 +53,8 @@ class Settings
             // 'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
             'label' => t('Users'),
         ];
-        if (Cms::config()->allowAdminChanges) {
+
+        if ($this->generalConfig->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'icon' => 'light/map-location',
                 'label' => t('Addresses'),
@@ -104,15 +107,15 @@ class Settings
             }
         }
 
-        // @TODO ask Rias for help with this
-        // // Fire a 'registerCpSettings' event
-        // $eventName = $readOnly ? self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS : self::EVENT_REGISTER_CP_SETTINGS;
-        // if ($this->hasEventHandlers($eventName)) {
-        //     $event = new RegisterCpSettingsEvent(['settings' => $settings]);
-        //     $this->trigger($eventName, $event);
-        //
-        //     return $event->settings;
-        // }
+        $event = $readOnly
+            ? new RegisterReadonlyCpSettings($settings)
+            : new RegisterCpSettings($settings);
+
+        if (Event::hasListeners($event::class)) {
+            Event::dispatch($event);
+
+            return $event->settings;
+        }
 
         return $settings;
     }

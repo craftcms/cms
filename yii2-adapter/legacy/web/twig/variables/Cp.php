@@ -17,8 +17,9 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Events\RegisterCpSettings;
+use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\License\License;
@@ -34,6 +35,7 @@ use CraftCms\Cms\Utility\Utility;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
@@ -750,5 +752,24 @@ class Cp extends Component
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
         return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterCpSettings::class, function(RegisterCpSettings $event) {
+            if (\yii\base\Event::hasHandlers(Cp::class, self::EVENT_REGISTER_CP_SETTINGS)) {
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+
+                \yii\base\Event::trigger(Cp::class, self::EVENT_REGISTER_CP_SETTINGS, $yiiEvent);
+            }
+        });
+
+        Event::listen(RegisterReadonlyCpSettings::class, function(RegisterReadonlyCpSettings $event) {
+            if (\yii\base\Event::hasHandlers(Cp::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS)) {
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+
+                \yii\base\Event::trigger(Cp::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
+            }
+        });
     }
 }
