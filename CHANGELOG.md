@@ -17,6 +17,7 @@
 - Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
 - Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
 - Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
+- Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 
 ## 5.8.21 - 2025-12-04
 
