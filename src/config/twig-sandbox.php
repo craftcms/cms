@@ -38,7 +38,7 @@ return [
         'default',
         'diff',
         'duration',
-        'e', // ?
+        'e',
         'escape',
         'filesize',
         'filter',
