@@ -21,7 +21,7 @@ final readonly class SiteIdRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value && ! Sites::getAllSiteIds($this->allowDisabled)->contains($value)) {
+        if ($value && Sites::getAllSiteIds($this->allowDisabled)->doesntContain($value)) {
             $fail(t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $value]));
         }
     }
