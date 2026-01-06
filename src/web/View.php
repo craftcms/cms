@@ -397,9 +397,6 @@ class View extends \yii\web\View
 
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
-        // Even an empty security policy will prevent non-closures from being allowed as arrow functions
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), Craft::$app->getConfig()->getGeneral()->enableTwigSandbox));
-
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
@@ -420,6 +417,12 @@ class View extends \yii\web\View
             : $this->_siteTwigExtensions;
         foreach ($registeredExtensions as $extension) {
             $twig->addExtension($extension);
+        }
+
+        // Only register the SandboxExtension if something else hasn't already
+        if (!$twig->hasExtension(SandboxExtension::class)) {
+            // Even an empty security policy will prevent non-closures from being allowed as arrow functions
+            $twig->addExtension(new SandboxExtension(new SecurityPolicy(), Craft::$app->getConfig()->getGeneral()->enableTwigSandbox));
         }
 
         // Set our timezone
