@@ -737,7 +737,7 @@ class Html extends \yii\helpers\Html
             return $id;
         }
 
-        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        $id = trim(preg_replace('/[^A-Za-z0-9_.-]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
