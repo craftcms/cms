@@ -7,6 +7,7 @@
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
+- Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
 
 ## 4.16.17 - 2025-12-0421
 
