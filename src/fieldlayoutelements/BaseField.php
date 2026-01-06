@@ -423,6 +423,7 @@ abstract class BaseField extends FieldLayoutElement
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
+            'static' => $static,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'showAttribute' => $this->showAttribute(),
