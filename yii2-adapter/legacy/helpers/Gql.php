@@ -346,6 +346,8 @@ class Gql
             $traverser($group);
         }
 
+        $schema->scope[] = 'directive:parseRefs';
+
         return $schema;
     }
 

@@ -382,7 +382,7 @@ class ElementsController extends Controller
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
-        } elseif ($element->getIsRevision()) {
+        } elseif ($isRevision) {
             $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
         }
 

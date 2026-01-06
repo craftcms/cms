@@ -101,6 +101,7 @@ use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -1406,7 +1407,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
-            new TwigFunction('create', [Craft::class, 'createObject']),
+            new TwigFunction('create', [$this, 'createFunction']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
@@ -1510,6 +1511,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $collection;
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @template T of BaseObject
+     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>} $type
+     * @param array $params
+     * @return T
+     * @since 5.9.0
+     */
+    public function createFunction(string|array $type, array $params = []): BaseObject
+    {
+        $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
+        if (!is_subclass_of($class, BaseObject::class)) {
+            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
+        }
+
+        /** @var BaseObject */
+        return Craft::createObject($type, $params);
     }
 
     /**

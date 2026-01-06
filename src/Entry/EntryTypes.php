@@ -598,7 +598,7 @@ final class EntryTypes
         $usages = $this->allEntryTypeUsages();
 
         foreach ($entryTypes as $entryType) {
-            $label = $entryType->getUiLabel();
+            $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
                 Cp::chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
