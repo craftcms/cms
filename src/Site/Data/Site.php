@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Data;
 
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Models\Info;
@@ -50,16 +51,20 @@ final class Site extends Dto implements Chippable, Stringable
     public function __construct(
         public private(set) string $name,
         #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
+        #[AllowedInSandbox]
         public string $handle,
         public private(set) string $language,
         #[MapInputName('siteId')]
+        #[AllowedInSandbox]
         public ?int $id = null,
         #[MapInputName('group')]
         public ?int $groupId = null,
         ?string $baseUrl = null,
+        #[AllowedInSandbox]
         public ?bool $primary = false {
             get => (bool) $this->primary;
         },
+        #[AllowedInSandbox]
         public bool $hasUrls = true,
         public int $sortOrder = 1,
         public ?string $uid = null,
@@ -118,6 +123,7 @@ final class Site extends Dto implements Chippable, Stringable
     /**
      * @param  bool  $parse  Whether to parse the name for an environment variable
      */
+    #[AllowedInSandbox]
     public function getName(bool $parse = true): string
     {
         return ($parse ? Env::parse($this->name) : $this->name) ?? '';
@@ -133,6 +139,7 @@ final class Site extends Dto implements Chippable, Stringable
      *
      * @param  bool  $parse  Whether to parse the name for an alias or environment variable
      */
+    #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string
     {
         if (! $this->baseUrl) {
@@ -153,6 +160,7 @@ final class Site extends Dto implements Chippable, Stringable
         $this->baseUrl = $baseUrl;
     }
 
+    #[AllowedInSandbox]
     public function getEnabled(bool $parse = true): bool|string
     {
         if ($this->primary) {
@@ -176,6 +184,7 @@ final class Site extends Dto implements Chippable, Stringable
      *
      * @param  bool  $parse  Whether to parse the language for an environment variable
      */
+    #[AllowedInSandbox]
     public function getLanguage(bool $parse = true): string
     {
         return ($parse ? Env::parse($this->language) : $this->language) ?? '';
@@ -215,6 +224,7 @@ final class Site extends Dto implements Chippable, Stringable
         return $group;
     }
 
+    #[AllowedInSandbox]
     public function getLocale(): Locale
     {
         if ($this->language === app()->getLocale()) {

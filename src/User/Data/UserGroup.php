@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Data;
 
 use Craft;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -27,12 +28,16 @@ use function CraftCms\Cms\t;
 final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
     #[MapInputName('groupId')]
+    #[AllowedInSandbox]
     public ?int $id = null;
 
+    #[AllowedInSandbox]
     public ?string $name = null;
 
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
+    #[AllowedInSandbox]
     public ?string $description = null;
 
     public ?string $uid = null;

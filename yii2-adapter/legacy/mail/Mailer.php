@@ -179,9 +179,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $subject = $view->renderString($systemMessage->subject, $variables);
-                $textBody = $view->renderString($systemMessage->body, $variables);
-                $htmlBody = $view->renderString($systemMessage->body, $variables, escapeHtml: true);
+                $subject = $view->renderSandboxedString($systemMessage->subject, $variables);
+                $textBody = $view->renderSandboxedString($systemMessage->body, $variables);
+                $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);

@@ -102,6 +102,7 @@ use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -123,7 +124,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public static function arraySome(TwigEnvironment $env, $array, $arrow)
     {
-        self::checkArrowFunction($arrow, 'has some', 'operator');
+        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
         return CoreExtension::arraySome($env, $array, $arrow);
     }
 
@@ -132,36 +133,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public static function arrayEvery(TwigEnvironment $env, $array, $arrow)
     {
-        self::checkArrowFunction($arrow, 'has every', 'operator');
+        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
         return CoreExtension::arrayEvery($env, $array, $arrow);
-    }
-
-    /**
-     * Called by:
-     * - has every (operator)
-     * - has some (operator)
-     * - |filter
-     * - |find
-     * - |map
-     * - |reduce
-     * - |sort
-     */
-    private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
-    {
-        if (
-            is_string($arrow) &&
-            in_array(ltrim(strtolower($arrow), '\\'), [
-                'system',
-                'passthru',
-                'exec',
-                'file_get_contents',
-                'file_put_contents',
-                'popen',
-                'call_user_func',
-            ])
-        ) {
-            throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));
-        }
     }
 
     /**
@@ -287,7 +260,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
-            new TwigFilter('find', [$this, 'findFilter'], ['needs_environment' => true]),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
@@ -561,7 +533,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'sort', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'sort', 'filter');
         return CoreExtension::sort($env, $array, $arrow);
     }
 
@@ -578,7 +550,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        self::checkArrowFunction($arrow, 'reduce', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'reduce', 'filter');
         return CoreExtension::reduce($env, $array, $arrow, $initial);
     }
 
@@ -594,7 +566,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'map', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'map', 'filter');
         return CoreExtension::map($env, $array, $arrow);
     }
 
@@ -712,15 +684,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (Throwable) {
             return $value;
         }
-    }
-
-    /**
-     * @since 5.4.3
-     */
-    public function findFilter(TwigEnvironment $env, $array, $arrow): mixed
-    {
-        self::checkArrowFunction($arrow, 'find', 'filter');
-        return CoreExtension::find($env, $array, $arrow);
     }
 
     /**
@@ -1188,8 +1151,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'filter', 'filter');
-
         /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {
@@ -1197,6 +1158,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return array_filter($arr);
         }
+
+        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
 
         $filtered = CoreExtension::filter($env, $arr, $arrow);
 
@@ -1217,7 +1180,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function groupFilter(iterable $arr, callable|string $arrow): array
     {
-        self::checkArrowFunction($arrow, 'group', 'filter');
+        // No need to call checkArrow() here since strings are always interpreted as nested fields,
+        // which should be passed to renderObjectTemplate() as `{name}`
 
         $groups = [];
 
@@ -1434,7 +1398,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
-            new TwigFunction('create', [Craft::class, 'createObject']),
+            new TwigFunction('create', [$this, 'createFunction']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
@@ -1538,6 +1502,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $collection;
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @template T of BaseObject
+     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>} $type
+     * @param array $params
+     * @return T
+     * @since 5.9.0
+     */
+    public function createFunction(string|array $type, array $params = []): object
+    {
+        $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
+        if (!is_subclass_of($class, BaseObject::class) && !str_starts_with($class, '\\CraftCms\\Cms\\')) {
+            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
+        }
+
+        return Craft::createObject($type, $params);
     }
 
     /**

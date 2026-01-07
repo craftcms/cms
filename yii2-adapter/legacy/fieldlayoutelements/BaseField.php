@@ -63,12 +63,14 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field should be used to define element thumbnails.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $providesThumbs = false;
 
     /**
      * @var bool Whether this field’s contents should be included in element cards.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $includeInCards = false;
 
@@ -85,11 +87,32 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['includeInCards'], $fields['providesThumbs']);
+        return $fields;
+    }
+
+    /**
      * Returns the element attribute this field is for.
      *
      * @return string
      */
     abstract public function attribute(): string;
+
+    /**
+     * Returns the key for this field.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function key(): string
+    {
+        return $this->attribute();
+    }
 
     /**
      * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
@@ -170,6 +193,26 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the card preview options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    public function getPreviewOptions(): ?array
+    {
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => $this->attribute(),
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -247,7 +290,7 @@ abstract class BaseField extends FieldLayoutElement
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
                 'thumbable' => $this->thumbable(),
-                'previewable' => $this->previewable(),
+                'preview-options' => $this->getPreviewOptions(),
             ],
         ];
     }
@@ -316,22 +359,6 @@ abstract class BaseField extends FieldLayoutElement
                 'label' => t('This field is conditional'),
                 'icon' => 'diamond',
                 'iconColor' => 'orange',
-            ];
-        }
-
-        if ($this->thumbable() && $this->providesThumbs) {
-            $indicators[] = [
-                'label' => t('This field provides thumbnails for elements'),
-                'icon' => 'image',
-                'iconColor' => 'violet',
-            ];
-        }
-
-        if ($this->previewable() && $this->includeInCards) {
-            $indicators[] = [
-                'label' => t('This field is included in element cards'),
-                'icon' => 'eye',
-                'iconColor' => 'blue',
             ];
         }
 

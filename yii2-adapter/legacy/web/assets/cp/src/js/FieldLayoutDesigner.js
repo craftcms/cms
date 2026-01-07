@@ -25,6 +25,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     tabGrid: null,
     elementDrag: null,
 
+    cvd: null,
     $cvd: null,
 
     _config: null,
@@ -187,16 +188,13 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     },
 
     initCvd: function () {
-      let cvd = new Craft.FieldLayoutDesigner.CardViewDesigner(this, this.$cvd);
-
-      cvd.$libraryContainer
-        .data('sortableCheckboxSelect')
-        ?.dragSort?.on('dragStop', function () {
-          cvd.updatePreview();
-        });
+      this.cvd = new Craft.FieldLayoutDesigner.CardViewDesigner(
+        this,
+        this.$cvd
+      );
 
       // Add skip link
-      const skipLinkAnchor = cvd.$container.attr('id');
+      const skipLinkAnchor = this.cvd.$container.attr('id');
 
       if (skipLinkAnchor) {
         const $skipLink = $('<a/>', {
@@ -205,7 +203,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
           href: `#${skipLinkAnchor}`,
         });
 
-        cvd.$container.attr('tabindex', '-1');
+        this.cvd.$container.attr('tabindex', '-1');
         this.$innerContainer.prepend($skipLink);
       }
     },
@@ -838,7 +836,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   attribute: null,
   requirable: false,
   thumbable: false,
-  previewable: false,
   hasCustomWidth: false,
   hasSettings: false,
   settingsNamespace: null,
@@ -896,7 +893,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.isField) {
       this.requirable = Garnish.hasAttr(this.$container, 'data-requirable');
       this.thumbable = Garnish.hasAttr(this.$container, 'data-thumbable');
-      this.previewable = Garnish.hasAttr(this.$container, 'data-previewable');
       this.attribute = this.$container.data('attribute');
       this.defaultHandle = this.$container.data('default-handle');
     }
@@ -945,7 +941,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       .disclosureMenu()
       .data('disclosureMenu');
 
-    let makeRequiredBtn, dropRequiredBtn, makeThumbnailBtn, dropThumbnailBtn;
+    let makeRequiredBtn, dropRequiredBtn;
 
     this.hasSettings = Garnish.hasAttr(this.$container, 'data-has-settings');
 
@@ -989,31 +985,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             iconColor: 'gray',
             onActivate: () => {
               this.dropRequired();
-            },
-          },
-          actionUl
-        );
-      }
-
-      if (!this.tab.designer.settings.withCardViewDesigner && this.thumbable) {
-        makeThumbnailBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Use for element thumbnails'),
-            icon: async () => await Craft.ui.icon('image'),
-            iconColor: 'violet',
-            onActivate: () => {
-              this.makeThumbnail();
-            },
-          },
-          actionUl
-        );
-        dropThumbnailBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Don’t use for element thumbnails'),
-            icon: async () => await Craft.ui.icon('image-slash'),
-            iconColor: 'gray',
-            onActivate: () => {
-              this.dropThumbnail();
             },
           },
           actionUl
@@ -1063,14 +1034,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         disclosureMenu.toggleItem(dropRequiredBtn, this.config.required);
       }
 
-      if (!this.tab.designer.settings.withCardViewDesigner && this.thumbable) {
-        disclosureMenu.toggleItem(
-          makeThumbnailBtn,
-          !this.config.providesThumbs
-        );
-        disclosureMenu.toggleItem(dropThumbnailBtn, this.config.providesThumbs);
-      }
-
       disclosureMenu.toggleItem(
         moveUpBtn,
         this.$container.prev('.fld-element').length
@@ -1085,17 +1048,15 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   onSelect() {
     this.$container.attr('data-uid', this.uid);
 
-    if (Garnish.hasAttr(this.$container, 'data-previewable')) {
-      const cvd = this.tab.designer.$cvd?.data('cvd');
+    const previewOptions = this.$container.data('preview-options');
+    if (previewOptions) {
+      const cvd = this.tab.designer.cvd;
       if (cvd) {
-        const label = this.getLabel();
-        cvd.addCheckbox({
-          value: `layoutElement:${this.uid}`,
-          label: label,
-          data: {
-            'field-id': this.fieldId,
-            'field-label': label,
-          },
+        previewOptions.forEach((option) => {
+          cvd.addCheckbox({
+            value: option.value.replace(/\{uid}/g, this.uid),
+            label: option.label,
+          });
         });
         cvd.updateThumbnailsDropdown(this, 'add');
       }
@@ -1209,46 +1170,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     });
   },
 
-  async makeThumbnail() {
-    await this.applyConfig((config) => {
-      config.providesThumbs = true;
-      return config;
-    }).then(() => {
-      if (this.tab.designer.settings.withCardViewDesigner) {
-        let cvd = this.tab.designer.$cvd?.data('cvd');
-        cvd.showThumb = true;
-        cvd.updatePreview();
-      }
-    });
-  },
-
-  async dropThumbnail() {
-    await this.applyConfig((config) => {
-      config.providesThumbs = false;
-      return config;
-    }).then(() => {
-      if (this.tab.designer.settings.withCardViewDesigner) {
-        let cvd = this.tab.designer.$cvd?.data('cvd');
-        cvd.showThumb = false;
-        cvd.updatePreview();
-      }
-    });
-  },
-
-  async showInCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = true;
-      return config;
-    });
-  },
-
-  async omitFromCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = false;
-      return config;
-    });
-  },
-
   moveUp() {
     const $prev = this.$container.prev('.fld-element');
     if ($prev.length) {
@@ -1323,10 +1244,15 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.initUi();
 
     if (this.tab.designer.settings.withCardViewDesigner) {
-      const cvd = this.tab.designer.$cvd.data('cvd');
+      const cvd = this.tab.designer.cvd;
       if (cvd) {
-        // update label in cvd checkboxes
-        cvd.updateCheckboxLabel(this.$container.data('uid'), this.getLabel());
+        // update labels in cvd checkboxes
+        $newContainer.data('preview-options').forEach((option) => {
+          cvd.updateCheckboxLabel(
+            option.value.replace(/\{uid}/g, this.uid),
+            option.label
+          );
+        });
 
         // update label in the element thumbnails dropdown
         cvd.updateThumbnailsDropdownOptionLabel(this.$container);
@@ -1426,17 +1352,24 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   },
 
   destroy: function () {
-    if (
-      this.tab.designer.settings.withCardViewDesigner &&
-      this.config.providesThumbs
-    ) {
-      let cvd = this.tab.designer.$cvd?.data('cvd');
-      cvd.showThumb = false;
+    if (this.tab.designer.settings.withCardViewDesigner) {
+      const cvd = this.tab.designer.cvd;
+      if (cvd) {
+        const previewOptions = this.$container.data('preview-options');
 
-      cvd.removeCheckbox(this.uid);
-      cvd.updateThumbnailsDropdown(this, 'remove');
+        if (this.config.providesThumbs) {
+          // this needs to be called before removeCheckbox()
+          cvd.updateThumbnailsDropdown(this, 'remove');
+        }
 
-      cvd.updatePreview();
+        if (previewOptions?.length) {
+          previewOptions.forEach((option) => {
+            cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
+          });
+        }
+
+        cvd.updatePreview();
+      }
     }
 
     this.tab.updateConfig((config) => {
@@ -1948,10 +1881,8 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
   $container: null,
   $previewContainer: null,
   $libraryContainer: null,
-  showThumb: null,
   sortableCheckboxSelect: null,
   $thumbManagementContainer: null,
-  thumbAlignment: null,
   alwaysShowThumbAlignmentBtns: false,
 
   init: function (designer, container) {
@@ -1967,21 +1898,8 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       'sortableCheckboxSelect'
     );
     this.$thumbManagementContainer = this.$container.find('.thumb-management');
-    this.thumbAlignment = this.$thumbManagementContainer
-      .find('div.btngroup[id$="thumb-alignment"] .btn.active')
-      ?.data('value');
     this.alwaysShowThumbAlignmentBtns =
       designer.settings.alwaysShowThumbAlignmentBtns;
-
-    // trigger preview update when items are checked/unchecked
-    this.$libraryContainer.on('change', function (ev) {
-      if ($(ev.target).parents('.checkbox').length > 0) {
-        $(ev.target).prop('checked', true);
-      } else {
-        let cvd = $(this).parents('.card-view-designer').data('cvd');
-        cvd.updatePreview();
-      }
-    });
 
     let $thumbSelectDropdown = this.$thumbManagementContainer.find(
       'select[id$="thumb-source"]'
@@ -2002,7 +1920,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       this.manageThumbnailAlignment(ev.target);
     });
 
-    this.listenToSortableEvents();
+    this.listenToCheckboxEvents();
     this.disablePreviewLinks();
   },
 
@@ -2011,66 +1929,44 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.sortableCheckboxSelect.initItem($draggable);
 
     // trigger preview update when items are dragged into new position
-    let cvd = this.$container.data('cvd');
-    this.sortableCheckboxSelect.dragSort?.on('dragStop', function () {
-      cvd.updatePreview();
+    this.sortableCheckboxSelect.dragSort?.on('dragStop', () => {
+      this.updatePreview();
     });
 
-    this.listenToSortableEvents();
+    this.listenToCheckboxEvents();
   },
 
-  listenToSortableEvents: function () {
-    let cvd = this.$container.data('cvd');
+  listenToCheckboxEvents: function () {
+    // trigger preview update when items are checked/unchecked
+    this.$libraryContainer.on('checked unchecked', () => {
+      this.updateCardViewConfig();
+      this.updatePreview();
+    });
+    this.sortableCheckboxSelect.on('sortChange', () => {
+      this.updateCardViewConfig();
+      this.updatePreview();
+    });
+  },
 
-    // when item is moved up or down via disclosure menu - update preview
-    this.sortableCheckboxSelect?.$container.on(
-      'movedUp movedDown',
-      function () {
-        cvd.updatePreview();
-      }
-    );
-
-    // when checkbox is checked or unchecked - apply config & update preview
-    this.sortableCheckboxSelect?.$container.on(
-      'checked unchecked',
-      function (ev) {
-        let val = $(ev.target).find('input.checkbox').val();
-        if (!val.startsWith('layoutElement:')) {
-          return;
-        }
-
-        val = val.substring(14);
-
-        let $fld = cvd.designer.$tabContainer.find(
-          '.fld-field[data-uid="' + val + '"]'
-        );
-        if ($fld.length > 0) {
-          let fldElement = $fld.data('fld-element');
-
-          if (ev.type == 'checked') {
-            fldElement.showInCards();
-          } else {
-            fldElement.omitFromCards();
-          }
-        }
-
-        cvd.updatePreview();
-      }
-    );
+  updateCardViewConfig: function () {
+    this.designer.updateConfig((config) => {
+      // can't rely on :checked
+      config.cardView = this.$libraryContainer
+        .find('input[type=checkbox]')
+        .toArray()
+        .filter((el) => el.checked)
+        .map((e) => e.value);
+      return config;
+    });
   },
 
   updatePreview: function () {
     this.$previewContainer.addClass('loading');
     Craft.cp.announce(Craft.t('app', 'Loading'));
 
-    let cardElements = this.getCardElements();
-
     Craft.sendActionRequest('POST', 'fields/render-card-preview', {
       data: {
         fieldLayoutConfig: this.designer.config,
-        cardElements: cardElements,
-        showThumb: this.showThumb,
-        thumbAlignment: this.thumbAlignment,
       },
     })
       .then(({data}) => {
@@ -2099,25 +1995,6 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     });
   },
 
-  getCardElements: function () {
-    let checkedItems = this.$libraryContainer.find(
-      'input[name*="cardView"]:checked'
-    );
-    let cardElements = [];
-
-    for (let i = 0; i < checkedItems.length; i++) {
-      let element = {
-        value: $(checkedItems[i]).val(),
-        fieldId: $(checkedItems[i]).data('fieldId') ?? null,
-        fieldLabel: $(checkedItems[i]).data('fieldLabel') ?? null,
-      };
-
-      cardElements.push(element);
-    }
-
-    return cardElements;
-  },
-
   addCheckbox: function (config = {}) {
     if (!this.$libraryContainer.length) {
       return;
@@ -2133,7 +2010,6 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       .createCheckbox(
         Object.assign(
           {
-            name: 'cardView[]',
             checked: false,
           },
           config
@@ -2147,16 +2023,15 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.initDrag($draggable);
   },
 
-  updateCheckboxLabel: function (uid, label) {
-    const $draggable = this.findCheckboxByUid(uid);
+  updateCheckboxLabel: function (value, label) {
+    const $draggable = this.findCheckboxByValue(value);
     if ($draggable?.length) {
-      $draggable.find('input').attr('data-field-label', label);
       $draggable.find('label').text(label);
     }
   },
 
-  removeCheckbox: function (uid) {
-    let $draggable = this.findCheckboxByUid(uid);
+  removeCheckbox: function (value) {
+    let $draggable = this.findCheckboxByValue(value);
     if ($draggable?.length) {
       $draggable.find('input[type="checkbox"]').prop('checked', false);
       $draggable.remove();
@@ -2166,13 +2041,13 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     }
   },
 
-  findCheckboxByUid: function (uid) {
+  findCheckboxByValue: function (value) {
     if (!this.$libraryContainer.length) {
       return null;
     }
 
     return this.$libraryContainer
-      .find(`input[value$=":${uid}"]`)
+      .find(`input[value="${value}"]`)
       .parents('.checkbox-select-item');
   },
 
@@ -2181,50 +2056,39 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     let $btn = $(target);
     let alignment = $btn.data('value');
 
-    if (alignment !== this.thumbAlignment) {
-      this.thumbAlignment = alignment;
+    if (alignment !== this.designer.config.thumbAlignment) {
+      this.designer.updateConfig((config) => {
+        config.cardThumbAlignment = alignment;
+        return config;
+      });
       this.updatePreview();
     }
   },
 
   manageThumbnails: function (target) {
-    let $select = $(target);
+    const $select = $(target);
+    let thumbFieldKey = null;
 
-    if ($select.val() == '__none__' || $select.val() == '__default__') {
+    if ($select.val() === '__none__' || $select.val() === '__default__') {
       if (
-        $select.val() == '__none__' &&
+        $select.val() === '__none__' &&
         !this.designer.settings.alwaysShowThumbAlignmentBtns
       ) {
         // hide the alignment buttons
         this.hideThumbAlignment();
       }
-
-      // find the element that's currently a thumb and call dropThumbnail on it
-      // that will take care of updating the card preview too
-      const $fields = this.designer.$tabContainer.find('.fld-field');
-      for (let i = 0; i < $fields.length; i++) {
-        const $field = $fields.eq(i);
-        const element = $field.data('fld-element');
-        if (element && element.config.providesThumbs) {
-          element.dropThumbnail();
-          break;
-        }
-      }
     } else {
+      thumbFieldKey = $select.val();
       // show the alignment buttons
       this.showThumbAlignment();
+    }
 
-      // get the element that's supposed to become a new thumbnail and call makeThumbnail() on it;
-      // that will take care of updating the card preview too
-      const $fields = this.designer.$tabContainer.find('.fld-field');
-      for (let i = 0; i < $fields.length; i++) {
-        const $field = $fields.eq(i);
-        const element = $field.data('fld-element');
-        if (element && element.uid == $select.val()) {
-          element.makeThumbnail();
-          break;
-        }
-      }
+    if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
+      this.designer.updateConfig((config) => {
+        config.thumbFieldKey = thumbFieldKey;
+        return config;
+      });
+      this.updatePreview();
     }
   },
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Translation;
 
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use Exception;
 use Illuminate\Support\Collection;
@@ -117,6 +118,7 @@ final class Locale implements Stringable
     ];
 
     public function __construct(
+        #[AllowedInSandbox]
         public string $id,
 
         /** @var string|null The original locale ID, if this is an alias. */
@@ -145,6 +147,7 @@ final class Locale implements Stringable
         return $this->id;
     }
 
+    #[AllowedInSandbox]
     public function getLanguageID(): string
     {
         if (($pos = strpos($this->id, '-')) !== false) {
@@ -159,6 +162,7 @@ final class Locale implements Stringable
      *
      * A script ID consists of only the last four characters after a dash in the locale ID.
      */
+    #[AllowedInSandbox]
     public function getScriptID(): ?string
     {
         if (! str_contains($this->id, '-')) {
@@ -181,6 +185,7 @@ final class Locale implements Stringable
      *
      * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
      */
+    #[AllowedInSandbox]
     public function getTerritoryID(): ?string
     {
         if (! str_contains($this->id, '-')) {
@@ -208,6 +213,7 @@ final class Locale implements Stringable
      * If a custom display name has been set via [[setDisplayName()]],
      * that will be returned regardless of `$inLocale`.
      */
+    #[AllowedInSandbox]
     public function getDisplayName(?string $inLocale = null): string
     {
         if (isset($this->displayName)) {

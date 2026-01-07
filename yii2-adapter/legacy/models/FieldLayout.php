@@ -27,7 +27,9 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\validators\HandleValidator;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -222,6 +224,17 @@ class FieldLayout extends Model
     public ?array $reservedFieldHandles = null;
 
     /**
+     * @var string|null The element key that provides thumbnails for this layout
+     * @since 5.9.0
+     */
+    public ?string $thumbFieldKey = null;
+
+    /**
+     * @see getThumbField()
+     */
+    private BaseField|false $thumbField;
+
+    /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
@@ -265,6 +278,12 @@ class FieldLayout extends Model
      * @see setCardView()
      */
     private array $_cardView;
+
+    /**
+     * @var array
+     * @see cardAttributes()
+     */
+    private array $_cardAttributes;
 
     /**
      * @var string
@@ -524,15 +543,7 @@ class FieldLayout extends Model
      */
     public function setCardView(?array $items): void
     {
-        $this->_cardView = [];
-
-        if ($items !== null) {
-            foreach ($items as $item) {
-                $this->_cardView[] = $item;
-            }
-        }
-
-        // Clear caches
+        $this->_cardView = array_values($items ?? []);
         $this->reset();
     }
 
@@ -782,6 +793,7 @@ class FieldLayout extends Model
             'tabs' => $tabConfigs,
             'generatedFields' => $generatedFields,
             'cardView' => $cardViewConfig,
+            'thumbFieldKey' => $this->thumbFieldKey,
             'cardThumbAlignment' => $cardThumbAlignment,
         ];
     }
@@ -794,7 +806,7 @@ class FieldLayout extends Model
     public function resetUids(): void
     {
         $this->uid = Str::uuid()->toString();
-        $cardView = $this->getCardView();
+        $cardViewReplacements = [];
 
         foreach ($this->getTabs() as $tab) {
             $tab->uid = Str::uuid()->toString();
@@ -802,15 +814,19 @@ class FieldLayout extends Model
             foreach ($tab->getElements() as $element) {
                 $oldUid = $element->uid;
                 $element->uid = Str::uuid()->toString();
-
-                $cardViewPos = array_search("layoutElement:$oldUid", $cardView);
-                if ($cardViewPos !== false) {
-                    $cardView[$cardViewPos] = "layoutElement:$element->uid";
-                }
+                $cardViewReplacements["layoutElement:$oldUid"] = "layoutElement:$element->uid";
             }
         }
 
-        $this->setCardView($cardView);
+        // update the card view items
+        // (look for `layoutElement:x` anywhere in the item, in case it also
+        // includes a content block field UUID)
+        $cardViewItems = [];
+        foreach ($this->getCardView() as $item) {
+            $cardViewItems[] = strtr($item, $cardViewReplacements);
+        }
+
+        $this->setCardView($cardViewItems);
     }
 
     /**
@@ -824,6 +840,48 @@ class FieldLayout extends Model
     {
         $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement->uid === $uid;
         return $this->_element($filter);
+    }
+
+    /**
+     * Returns a layout element by its `layoutElement:<UUID>` key.
+     *
+     * @param string $key
+     * @return FieldLayoutElement|null
+     * @since 5.9.0
+     */
+    public function getElementByKey(string $key): ?FieldLayoutElement
+    {
+        if (str_starts_with($key, 'layoutElement:')) {
+            $uid = Str::after($key, 'layoutElement:');
+            return $this->getElementByUid($uid);
+        }
+
+        if (!str_starts_with($key, 'contentBlock:')) {
+            return null;
+        }
+
+        $keyParts = explode('.', $key);
+        $key = array_shift($keyParts);
+
+        // get the Content Block field
+        $uid = Str::after($key, 'contentBlock:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (!$field instanceof ContentBlock) {
+            return null;
+        }
+
+        return $field->getFieldLayout()->getElementByKey(implode('.', $keyParts));
     }
 
     /**
@@ -998,7 +1056,7 @@ class FieldLayout extends Model
     public function getEditableCustomFields(ElementInterface $element): array
     {
         return $this->_customFields(
-            fn(CustomField $layoutElement) => $layoutElement->editable(),
+            fn(CustomField $layoutElement) => $layoutElement->editable($element),
             $element,
         );
     }
@@ -1011,12 +1069,21 @@ class FieldLayout extends Model
      */
     public function getThumbField(): ?BaseField
     {
-        /** @var BaseField|null */
-        return $this->_element(fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof BaseField &&
-            $layoutElement->thumbable() &&
-            $layoutElement->providesThumbs
-        ));
+        if (!isset($this->thumbField)) {
+            if (!isset($this->thumbFieldKey)) {
+                return null;
+            }
+
+            $field = $this->getElementByKey($this->thumbFieldKey);
+            if (!$field instanceof BaseField || !$field->thumbable()) {
+                $this->thumbField = false;
+                return null;
+            }
+
+            $this->thumbField = $field;
+        }
+
+        return $this->thumbField ?: null;
     }
 
     /**
@@ -1025,14 +1092,16 @@ class FieldLayout extends Model
      * @param ElementInterface|null $element
      * @return BaseField[]
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public function getCardBodyFields(?ElementInterface $element): array
     {
+        $cardViewItems = array_flip($this->getCardView());
         /** @var BaseField[] */
         return iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
             $layoutElement instanceof BaseField &&
             $layoutElement->previewable() &&
-            $layoutElement->includeInCards
+            (isset($cardViewItems[$layoutElement->attribute()]) || isset($cardViewItems["layoutElement:$layoutElement->uid"]))
         ), $element));
     }
 
@@ -1041,15 +1110,16 @@ class FieldLayout extends Model
      *
      * @return array
      * @since 5.5.0
+     * @deprecated in 5.9.0
      */
     public function getCardBodyAttributes(): array
     {
-        $cardViewValues = $this->getCardView();
+        $cardViewItems = array_flip($this->getCardView());
 
         // filter only the selected attributes
         $attributes = array_filter(
             $this->type::cardAttributes($this),
-            fn($cardAttribute, $key) => in_array($key, $cardViewValues),
+            fn($cardAttribute, $key) => isset($cardViewItems[$key]),
             ARRAY_FILTER_USE_BOTH
         );
 
@@ -1065,88 +1135,145 @@ class FieldLayout extends Model
      * Returns the fields and attributes that should be used in element card bodies in the correct order.
      *
      * @param ElementInterface|null $element
-     * @return array
+     * @param array $cardElements (deprecated)
+     * @return array<string,array{html:string}>
      * @since 5.5.0
      */
     public function getCardBodyElements(?ElementInterface $element = null, array $cardElements = []): array
     {
-        // get attributes that should show in a card
-        $attributes = $this->getCardBodyAttributes();
+        // todo: simplify further to only return key/html pairs
+        $cardElements = [];
 
-        $layoutElements = [];
+        foreach ($this->getCardView() as $key) {
+            $html = $this->getCardBodyHtmlForElement($key, $element);
 
-        if (empty($cardElements)) {
-            // index field layout elements by prefix + uid
-            foreach ($this->getCardBodyFields($element) as $layoutElement) {
-                $layoutElements["layoutElement:$layoutElement->uid"] = $layoutElement;
-            }
-
-            foreach ($this->getGeneratedFields() as $field) {
-                if (($field['name'] ?? '') !== '') {
-                    $layoutElements["generatedField:{$field['uid']}"] = [
-                        'html' => $element ? ($element->getGeneratedFieldValues()[$field['uid']] ?? '') : Html::encode($field['name']),
-                    ];
-                }
-            }
-        } else {
-            // we only need to worry about body fields as the attributes are taken care of via getCardBodyAttributes()
-            foreach ($cardElements as $cardElement) {
-                if (str_starts_with($cardElement['value'], 'layoutElement:')) {
-                    $uid = str_replace('layoutElement:', '', $cardElement['value']);
-                    $layoutElement = $this->getElementByUid($uid);
-                    if ($layoutElement === null) {
-                        $fieldId = $cardElement['fieldId'];
-                        if ($fieldId) {
-                            $field = app(Fields::class)->getFieldById($fieldId);
-                            $layoutElement = new CustomField();
-                            $layoutElement->setField($field);
-                        } else {
-                            // this will kick in for native field that have just been dragged into the field layout designer
-                            $fieldLabel = $cardElement['fieldLabel'];
-                            if ($fieldLabel) {
-                                $layoutElement['value'] = $layoutElement;
-                                $layoutElement['label'] = $fieldLabel;
-                            }
-                        }
-                    }
-
-                    $layoutElements[$cardElement['value']] = $layoutElement;
-                } elseif (str_starts_with($cardElement['value'], 'generatedField:')) {
-                    $uid = str_replace('generatedField:', '', $cardElement['value']);
-                    $field = $this->getGeneratedFieldByUid($uid);
-                    if ($field) {
-                        $layoutElements[$cardElement['value']] = [
-                            'html' => $element ? ($element->getGeneratedFieldValues()[$uid] ?? '') : Html::encode($field['name']),
-                        ];
-                    } elseif (isset($cardElement['fieldLabel'])) {
-                        $layoutElements[$cardElement['value']] = [
-                            'html' => Html::encode($cardElement['fieldLabel']),
-                        ];
-                    }
-                }
+            if ($html) {
+                $cardElements[$key] = ['html' => $html];
             }
         }
 
-        // get the card view config - array of all the attributes, fields and generated fields that should be shown in the card
-        $cardViewValues = $this->getCardView();
+        return $cardElements;
+    }
 
-        // filter out any generated fields that shouldn't show in the card
-        $layoutElements = array_filter(
-            $layoutElements,
-            fn($key) => !str_starts_with($key, 'generatedField:') || in_array($key, $cardViewValues),
-            ARRAY_FILTER_USE_KEY
+    /**
+     * Returns the card body HTML for a given card element key.
+     *
+     * @param string $key
+     * @param ElementInterface|null $element
+     * @since 5.9.0
+     */
+    public function getCardBodyHtmlForElement(string $key, ?ElementInterface $element = null): ?string
+    {
+        return match (true) {
+            str_starts_with($key, 'layoutElement:') => $this->cardHtmlForLayoutElement($key, $element),
+            str_starts_with($key, 'contentBlock:') => $this->cardHtmlForContentBlock($key, $element),
+            str_starts_with($key, 'generatedField:') => $this->cardHtmlForGeneratedField($key, $element),
+            default => $this->cardHtmlForAttribute($key, $element),
+        };
+    }
+
+    private function cardHtmlForLayoutElement(string $key, ?ElementInterface $element): ?string
+    {
+        $layoutElement = $this->getElementByKey($key);
+
+        if (!$layoutElement instanceof BaseField) {
+            return null;
+        }
+
+        if ($element) {
+            return $layoutElement->previewHtml($element);
+        }
+
+        if ($layoutElement instanceof CustomField) {
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                return null;
+            }
+
+            if (!$field instanceof PreviewableFieldInterface) {
+                return null;
+            }
+
+            return $field->previewPlaceholderHtml(null, null);
+        }
+
+        return $layoutElement->previewPlaceholderHtml(null, $element);
+    }
+
+    private function cardHtmlForContentBlock(string $key, ?ElementInterface $element): ?string
+    {
+        // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
+        $keyParts = explode('.', $key);
+        $key = array_shift($keyParts);
+
+        // get the Content Block field
+        $uid = Str::after($key, 'contentBlock:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (!$field instanceof ContentBlock) {
+            return null;
+        }
+
+        return $field->getFieldLayout()->getCardBodyHtmlForElement(
+            implode('.', $keyParts),
+            $element?->getFieldValue($field->handle),
         );
+    }
 
-        $elements = array_merge($layoutElements, $attributes);
+    private function cardHtmlForGeneratedField(string $key, ?ElementInterface $element): ?string
+    {
+        $uid = Str::after($key, 'generatedField:');
+        $field = $this->getGeneratedFieldByUid($uid);
 
-        // make sure we don't have any cardViewValues that are no longer allowed to show in cards
-        $cardViewValues = array_filter($cardViewValues, fn($value) => isset($elements[$value]));
+        if (!$field) {
+            return null;
+        }
 
-        // return elements in the order specified in the config
-        return array_replace(
-            array_flip($cardViewValues),
-            $elements
-        );
+        if ($element) {
+            return $element->getGeneratedFieldValues()[$uid] ?? null;
+        }
+
+        return Html::encode($field['name'] ?? '');
+    }
+
+    private function cardHtmlForAttribute(string $key, ?ElementInterface $element): ?string
+    {
+        if ($element) {
+            return $element->getAttributeHtml($key);
+        }
+
+        $attribute = $this->cardAttributes()[$key] ?? null;
+
+        if (!$attribute) {
+            return null;
+        }
+
+        $html = $this->type::attributePreviewHtml([
+            ...$attribute,
+            'value' => $key,
+        ]);
+
+        if (is_callable($html)) {
+            return $html();
+        }
+
+        return $html;
+    }
+
+    private function cardAttributes(): array
+    {
+        return $this->_cardAttributes ??= $this->type::cardAttributes($this);
     }
 
     /**

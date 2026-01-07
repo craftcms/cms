@@ -203,7 +203,7 @@ final class ElementSources
                 continue;
             }
 
-            $source['sites'] = collect($source['sites'] ?? [])
+            $source['sites'] = collect($source['sites'])
                 ->map(function (int|string $siteId) {
                     if (! is_string($siteId)) {
                         return $siteId;
@@ -215,6 +215,7 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
+                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }

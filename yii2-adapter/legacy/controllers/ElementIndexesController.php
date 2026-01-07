@@ -706,6 +706,22 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
 
+            // Remove unsupported criteria attributes
+            unset(
+                $criteria['where'],
+                $criteria['orderBy'],
+                $criteria['indexBy'],
+                $criteria['select'],
+                $criteria['selectOption'],
+                $criteria['from'],
+                $criteria['groupBy'],
+                $criteria['join'],
+                $criteria['having'],
+                $criteria['union'],
+                $criteria['withQueries'],
+                $criteria['params'],
+            );
+
             Craft::configure($query, Component::cleanseConfig($criteria));
 
             return true;

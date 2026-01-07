@@ -14,7 +14,7 @@ use CraftCms\Cms\User\Elements\User;
  * Class DefineEditUserScreensEvent
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 5.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Events\DefineEditUserScreens} instead.
  */
 class DefineEditUserScreensEvent extends Event

@@ -12,12 +12,13 @@ use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Support\Html;
 use Spatie\LaravelData\Dto;
+use Stringable;
 use Twig\Markup;
 
 /**
  * Link field data class.
  */
-final class LinkData extends Dto implements \Stringable, Serializable
+final class LinkData extends Dto implements Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;
@@ -132,25 +133,44 @@ final class LinkData extends Dto implements \Stringable, Serializable
      */
     public function getLink(): Markup
     {
-        $url = $this->getUrl();
-        if ($url === '') {
+        $attributes = $this->getAttributes();
+
+        if ($attributes === null) {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
-                'target' => $this->target,
-                'title' => $this->title,
-                'class' => $this->class,
-                'id' => $this->id,
-                'rel' => $this->rel,
-                'aria' => [
-                    'label' => $this->ariaLabel,
-                ],
-                'download' => $this->download ? ($this->filename ?? true) : false,
-            ]);
+            if ($label === '') {
+                $label = $this->getUrl();
+            }
+            $html = Html::a(Html::encode($label), options: $attributes);
         }
 
         return Template::raw($html);
+    }
+
+    /**
+     * Returns the attributes that should be added to `<a>` tags for this link.
+     */
+    public function getAttributes(): ?array
+    {
+        $url = $this->getUrl();
+
+        if ($url === '') {
+            return null;
+        }
+
+        return [
+            'href' => $url,
+            'target' => $this->target,
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'aria' => [
+                'label' => $this->ariaLabel,
+            ],
+            'download' => $this->download && (bool) ($this->filename ?? true),
+        ];
     }
 
     /**

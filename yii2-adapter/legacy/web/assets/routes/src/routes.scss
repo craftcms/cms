@@ -35,6 +35,9 @@
   }
 
   .actions {
+    display: flex;
+    flex-direction: row;
+    gap: var(--2xs);
     padding-block: 4px;
   }
 

@@ -14,6 +14,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
@@ -776,6 +777,7 @@ interface ElementInterface extends
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -784,6 +786,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -838,6 +841,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -845,6 +849,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -852,6 +857,7 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**

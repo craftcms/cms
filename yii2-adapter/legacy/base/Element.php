@@ -3656,21 +3656,12 @@ abstract class Element extends Component implements ElementInterface
     {
         $this->viewMode = 'cards';
         $html = '';
+        $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
 
-        foreach ($this->getFieldLayout()?->getCardBodyElements($this) ?? [] as $item) {
-            if ($item instanceof BaseField) {
-                $itemHtml = $item->previewHtml($this);
-            } elseif (is_array($item) && isset($item['html'])) {
-                $itemHtml = $item['html'];
-            } else {
-                $itemHtml = $this->getAttributeHtml($item['value']);
-            }
-
-            if ($itemHtml !== '') {
-                $html .= Html::tag('div', $itemHtml, [
-                    'class' => 'card-attribute-preview',
-                ]);
-            }
+        foreach ($cardElements as $item) {
+            $html .= Html::tag('div', $item['html'], [
+                'class' => 'card-attribute-preview',
+            ]);
         }
 
         return $html;

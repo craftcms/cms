@@ -47,6 +47,7 @@ use craft\models\FieldLayout;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -875,6 +876,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * {{ entry.postDate|date('short') }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $postDate = null;
 
     /**
@@ -891,6 +893,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * {% endif %}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $expiryDate = null;
 
     /**
@@ -1697,6 +1700,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return int|null
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorId(): ?int
     {
         return $this->getAuthorIds()[0] ?? null;
@@ -1720,6 +1724,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return int[]
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorIds(): array
     {
         if (!isset($this->_authorIds)) {
@@ -1775,6 +1780,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
+    #[AllowedInSandbox]
     public function getAuthor(): ?User
     {
         return $this->getAuthors()[0] ?? null;
@@ -1806,6 +1812,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return User[]
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthors(): array
     {
         if (!isset($this->_authors)) {
