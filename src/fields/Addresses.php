@@ -852,6 +852,16 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return Type::listOf(AddressesInput::getType());

@@ -62,6 +62,7 @@
 - Added the `uuid()` Twig function.
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
 - The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
+- GraphQL API requests can now identify themselves as preview requests by passing an `X-Craft-Preview-Token` header, set to the `x-craft-preview`/`x-craft-live-preview` query param in the preview target URL.
 
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
@@ -176,6 +177,7 @@
 - Fixed a bug where titles, slugs, and required custom field values weren’t always getting propagated to other sites when creating a new element. ([#17955](https://github.com/craftcms/cms/issues/17955))
 - Fixed a bug where it was possible to create more than five users with the Team edition.
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
+- Fixed a bug where Matrix and Addresses fields weren’t loading provisional drafts for GraphQL preview requests.
 - Added the Illuminate Support library.
 - Added the PhpSpreadsheet library.
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))

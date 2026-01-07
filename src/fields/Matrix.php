@@ -1549,6 +1549,16 @@ JS,
 
     /**
      * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType(): Type|array
