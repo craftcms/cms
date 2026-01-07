@@ -123,6 +123,7 @@
 - Added `craft\web\View::renderSandboxedTemplate()`.
 - Added `craft\web\XlsxResponseFormatter`.
 - Added `craft\web\YamlResponseFormatter`.
+- Added `craft\web\twig\AllowedInSandbox`. ([#18219](https://github.com/craftcms/cms/pull/18219))
 - Added `craft\web\twig\SecurityPolicy`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - `craft\base\Element::EVENT_AFTER_MOVE_IN_STRUCTURE` is no longer deprecated.
