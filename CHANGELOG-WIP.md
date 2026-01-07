@@ -20,6 +20,7 @@
 - Added `craft\web\View::renderSandboxedObjectTemplate()`.
 - Added `craft\web\View::renderSandboxedString()`.
 - Added `craft\web\View::renderSandboxedTemplate()`.
+- Added `craft\web\twig\AllowedInSandbox`. ([#18219](https://github.com/craftcms/cms/pull/18219))
 - Added `craft\web\twig\SecurityPolicy`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
