@@ -15,6 +15,11 @@ final readonly class AnnouncementsController
 
     public function markRead(Request $request, Announcements $announcements): Response
     {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['int'],
+        ]);
+
         $announcements->markAsRead($request->array('ids'));
 
         return $this->asSuccess();
