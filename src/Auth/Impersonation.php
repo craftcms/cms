@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Session\SessionManager;
 
-#[Singleton]
+#[Scoped]
 final class Impersonation
 {
     private const string SESSION_KEY = '__impersonator_id';

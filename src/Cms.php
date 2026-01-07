@@ -41,14 +41,4 @@ final readonly class Cms
 
         return $name ?: config('app.name', 'Craft');
     }
-
-    public static function envId(): string
-    {
-        return sprintf('%s--%s', self::systemName(), app()->environment());
-    }
-
-    public static function cookiePrefix(): string
-    {
-        return md5('CraftSession'.self::envId());
-    }
 }

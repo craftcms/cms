@@ -26,6 +26,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -825,7 +826,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'usernameCookie' => Craft::cookieConfig(['name' => Cms::cookiePrefix() . '_username']),
+            'usernameCookie' => Craft::cookieConfig(['name' => RememberedUsername::cookieName()]),
         ];
     }
 

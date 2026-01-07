@@ -10,23 +10,26 @@ use Illuminate\Support\Facades\Cookie;
 
 final readonly class RememberedUsername
 {
+    public static function cookieName(): string
+    {
+        return config('session.cookie').'_username';
+    }
+
     public static function get(): ?string
     {
-        return Cookie::get(Cms::cookiePrefix().'_username');
+        return Cookie::get(self::cookieName());
     }
 
     public static function set(User $user): void
     {
-        $prefix = Cms::cookiePrefix();
-
         if (Cms::config()->rememberUsernameDuration === 0) {
-            Cookie::forget("{$prefix}_username");
+            Cookie::forget(self::cookieName());
 
             return;
         }
 
         Cookie::queue(
-            name: "{$prefix}_username",
+            name: self::cookieName(),
             value: $user->username,
             minutes: floor(Cms::config()->rememberUsernameDuration / 60),
         );
