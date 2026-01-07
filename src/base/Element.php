@@ -6030,7 +6030,7 @@ JS, [
                             } catch (FieldNotFoundException) {
                             }
                         }
-                        $field = $field ?? $this->_getFieldFromAlternativeLayouts($uid) ?? null;
+                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -6123,7 +6123,7 @@ JS, [
                 }
             }
 
-            $field = $field ?? $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
+            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
         }
 
         if ($field !== null) {
