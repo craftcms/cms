@@ -146,7 +146,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             try {
-                $message->setHtmlBody($view->renderSandboxedTemplate($template, array_merge($variables, [
+                $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($htmlBody)),
                 ]), $templateMode));
             } catch (Throwable $e) {
