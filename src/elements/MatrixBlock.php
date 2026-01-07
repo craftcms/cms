@@ -22,6 +22,7 @@ use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\web\assets\matrix\MatrixAsset;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
@@ -166,22 +167,26 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**
      * @var int|null Primary owner ID
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public ?int $primaryOwnerId = null;
 
     /**
      * @var int|null Owner ID
      */
+    #[AllowedInSandbox]
     public ?int $ownerId = null;
 
     /**
      * @var int|null Type ID
      */
+    #[AllowedInSandbox]
     public ?int $typeId = null;
 
     /**

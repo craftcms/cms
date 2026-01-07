@@ -7,6 +7,9 @@
 
 namespace craft\web\twig;
 
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionProperty;
 use Twig\Markup;
 use Twig\Sandbox\SecurityNotAllowedFilterError;
 use Twig\Sandbox\SecurityNotAllowedFunctionError;
@@ -166,6 +169,15 @@ class SecurityPolicy implements SecurityPolicyInterface
             return;
         }
 
+        // see if the method has the AllowedInSandbox attribute
+        try {
+            $ref = new ReflectionMethod($obj, $method);
+            if (!empty($ref->getAttributes(AllowedInSandbox::class))) {
+                return;
+            }
+        } catch (ReflectionException) {
+        }
+
         $method = strtolower($method);
         foreach ($this->allowedMethods as $class => $methods) {
             if ($obj instanceof $class && in_array($method, $methods)) {
@@ -179,6 +191,15 @@ class SecurityPolicy implements SecurityPolicyInterface
 
     public function checkPropertyAllowed($obj, $property): void
     {
+        // see if the property has the AllowedInSandbox attribute
+        try {
+            $ref = new ReflectionProperty($obj, $property);
+            if (!empty($ref->getAttributes(AllowedInSandbox::class))) {
+                return;
+            }
+        } catch (ReflectionException) {
+        }
+
         foreach ($this->allowedProperties as $class => $properties) {
             if ($obj instanceof $class && in_array($property, $properties)) {
                 return;

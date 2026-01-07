@@ -51,6 +51,7 @@ use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
@@ -708,6 +709,7 @@ class Entry extends Element implements ExpirableElementInterface
      * {{ entry.postDate|date('short') }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $postDate = null;
 
     /**
@@ -724,6 +726,7 @@ class Entry extends Element implements ExpirableElementInterface
      * {% endif %}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $expiryDate = null;
 
     /**
@@ -1212,6 +1215,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return int|null
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorId(): ?int
     {
         return $this->_authorId;
@@ -1252,6 +1256,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
+    #[AllowedInSandbox]
     public function getAuthor(): ?User
     {
         if (!isset($this->_author)) {
