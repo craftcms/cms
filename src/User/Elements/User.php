@@ -36,6 +36,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\WebAuthn;
@@ -687,6 +688,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * @var int|null Photo asset ID
      */
+    #[AllowedInSandbox]
     public ?int $photoId = null;
 
     /**
@@ -694,36 +696,43 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
+    #[AllowedInSandbox]
     public bool $pending = false;
 
     /**
      * @var bool Locked
      */
+    #[AllowedInSandbox]
     public bool $locked = false;
 
     /**
      * @var bool Suspended
      */
+    #[AllowedInSandbox]
     public bool $suspended = false;
 
     /**
      * @var bool Admin
      */
+    #[AllowedInSandbox]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
+    #[AllowedInSandbox]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
+    #[AllowedInSandbox]
     public ?string $email = null;
 
     /**
@@ -736,11 +745,13 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?int $affiliatedSiteId = null;
 
     /**
      * @var DateTime|null Last login date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastLoginDate = null;
 
     /**
@@ -1183,6 +1194,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getHasPassword(): bool
     {
         if (isset($this->password)) {
@@ -1199,6 +1211,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 5.7.8
      */
+    #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
         if (Edition::get()->value < Edition::Enterprise->value) {
@@ -1260,6 +1273,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
     {
         if (! isset($this->_addresses)) {
@@ -1435,6 +1449,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @return UserGroup[]
      */
+    #[AllowedInSandbox]
     public function getGroups(): array
     {
         if (isset($this->_groups)) {
@@ -1465,6 +1480,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
      */
+    #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Edition::get() < Edition::Pro) {
@@ -1494,6 +1510,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 5.9.0
      */
+    #[AllowedInSandbox]
     public function isInGroups(array $groups, bool $all = false): bool
     {
         if (! $all) {
@@ -1507,6 +1524,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * Returns the user’s full name.
      */
     #[Deprecated(message: 'in 4.0.0. [[fullName]] should be used instead.')]
+    #[AllowedInSandbox]
     public function getFullName(): ?string
     {
         return $this->fullName;
@@ -1515,6 +1533,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * Returns the user’s full name or username.
      */
+    #[AllowedInSandbox]
     public function getName(): string
     {
         if (! isset($this->_name)) {
@@ -1551,6 +1570,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * Returns the user’s first name or username.
      */
+    #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
         if (! isset($this->_friendlyName)) {
@@ -1589,6 +1609,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      *
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getAffiliatedSite(): ?Site
     {
         if ($this->affiliatedSiteId === null || ! Sites::isMultiSite()) {
@@ -2302,6 +2323,7 @@ JS, [
     /**
      * Returns the user’s photo.
      */
+    #[AllowedInSandbox]
     public function getPhoto(): ?Asset
     {
         if (! isset($this->_photo)) {
