@@ -42,6 +42,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -579,42 +580,50 @@ class User extends Element implements IdentityInterface
     /**
      * @var int|null Photo asset ID
      */
+    #[AllowedInSandbox]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
+    #[AllowedInSandbox]
     public bool $pending = false;
 
     /**
      * @var bool Locked
      */
+    #[AllowedInSandbox]
     public bool $locked = false;
 
     /**
      * @var bool Suspended
      */
+    #[AllowedInSandbox]
     public bool $suspended = false;
 
     /**
      * @var bool Admin
      */
+    #[AllowedInSandbox]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
+    #[AllowedInSandbox]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
+    #[AllowedInSandbox]
     public ?string $email = null;
 
     /**
@@ -625,6 +634,7 @@ class User extends Element implements IdentityInterface
     /**
      * @var DateTime|null Last login date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastLoginDate = null;
 
     /**
@@ -996,6 +1006,7 @@ class User extends Element implements IdentityInterface
      * @return Address[]
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAddresses(): array
     {
         if (!isset($this->_addresses)) {
@@ -1129,6 +1140,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserGroup[]
      */
+    #[AllowedInSandbox]
     public function getGroups(): array
     {
         if (isset($this->_groups)) {
@@ -1160,6 +1172,7 @@ class User extends Element implements IdentityInterface
      * @param int|string|UserGroup $group The user group model, its handle, or ID.
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
@@ -1183,6 +1196,7 @@ class User extends Element implements IdentityInterface
      * @return string|null
      * @deprecated in 4.0.0. [[fullName]] should be used instead.
      */
+    #[AllowedInSandbox]
     public function getFullName(): ?string
     {
         return $this->fullName;
@@ -1193,6 +1207,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getName(): string
     {
         if (!isset($this->_name)) {
@@ -1233,6 +1248,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
         if (!isset($this->_friendlyName)) {
@@ -1628,6 +1644,7 @@ XML;
      *
      * @return Asset|null
      */
+    #[AllowedInSandbox]
     public function getPhoto(): ?Asset
     {
         if (!isset($this->_photo)) {
