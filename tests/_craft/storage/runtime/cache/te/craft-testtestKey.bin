@@ -1,0 +1,1 @@
+a:2:{i:0;a:1:{i:0;s:9:"testValue";}i:1;O:25:"yii\caching\TagDependency":3:{s:4:"data";a:1:{s:42:"craft-testd4723db6d7d718e0723c2aa1c773dc63";s:21:"0.10865700 1730462110";}s:8:"reusable";b:0;s:4:"tags";a:1:{i:0;s:7:"graphql";}}}
