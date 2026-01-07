@@ -16,7 +16,7 @@
 - Fixed a bug where it wasn’t possible to copy/paste nested entries within Matrix fields set to the inline-editable blocks view mode, for unpublished owner elements. ([#18185](https://github.com/craftcms/cms/pull/18185))
 - Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
 - Fixed a bug where consecutive hyphens (`-`) within Link fields’ “Class Name” values were getting removed. ([#18201](https://github.com/craftcms/cms/issues/18201))
-- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
+- Fixed SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
 - Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 - Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
