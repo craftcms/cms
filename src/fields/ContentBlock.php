@@ -16,7 +16,6 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\ContentBlock as ContentBlockElement;
 use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
@@ -777,41 +776,6 @@ JS, [
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
     }
-
-    /**
-     * @inheritdoc
-     */
-//    public function getEagerLoadingMap(array $sourceElements): array|null|false
-//    {
-//        // Get the source element IDs
-//        $sourceElementIds = array_map(fn(elementInterface $element) => $element->id, $sourceElements);
-//
-//        // Return any relation data on these elements, defined with this field
-//        $map = (new Query())
-//            ->select([
-//                'source' => 'elements_owners.ownerId',
-//                'target' => 'contentblocks.id',
-//            ])
-//            ->from(['contentblocks' => DbTable::CONTENTBLOCKS])
-//            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-//                'and',
-//                '[[elements_owners.elementId]] = [[contentblocks.id]]',
-//                ['elements_owners.ownerId' => $sourceElementIds],
-//            ])
-//            ->where(['contentblocks.fieldId' => $this->id])
-//            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
-//            ->all();
-//
-//        return [
-//            'elementType' => ContentBlockElement::class,
-//            'map' => $map,
-//            'criteria' => [
-//                'fieldId' => $this->id,
-//                'allowOwnerDrafts' => true,
-//                'allowOwnerRevisions' => true,
-//            ],
-//        ];
-//    }
 
     /**
      * @inheritdoc
