@@ -23,6 +23,7 @@ final readonly class RememberedUsername
     public static function set(User $user): void
     {
         if (Cms::config()->rememberUsernameDuration === 0) {
+            Cookie::unqueue(self::cookieName());
             Cookie::forget(self::cookieName());
 
             return;
