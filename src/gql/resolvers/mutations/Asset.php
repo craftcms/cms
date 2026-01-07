@@ -25,6 +25,7 @@ use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -284,8 +285,20 @@ class Asset extends ElementMutationResolver
 
     private function validateHostname(string $url): bool
     {
-        // make sure the hostname is alphanumeric and not an IP address
         $hostname = parse_url($url, PHP_URL_HOST);
+
+        // convert hex segments to decimal
+        $hostname = Collection::make(explode('.', $hostname))
+            ->map(function(string $chunk) {
+                if (str_starts_with(strtolower($chunk), '0x')) {
+                    $octets = str_split(substr($chunk, 2), 2);
+                    return implode('.', array_map('hexdec', $octets));
+                }
+                return $chunk;
+            })
+            ->join('.');
+
+        // make sure the hostname is alphanumeric and not an IP address
         if (
             !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
             filter_var($hostname, FILTER_VALIDATE_IP)
