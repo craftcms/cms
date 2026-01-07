@@ -286,7 +286,7 @@ class Asset extends ElementMutationResolver
         // convert hex segments to decimal
         $hostname = Collection::make(explode('.', $hostname))
             ->map(function(string $chunk) {
-                if (str_starts_with($chunk, '0x')) {
+                if (str_starts_with(strtolower($chunk), '0x')) {
                     $octets = str_split(substr($chunk, 2), 2);
                     return implode('.', array_map('hexdec', $octets));
                 }
