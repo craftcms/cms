@@ -335,6 +335,45 @@ class ElementSources extends Component
     }
 
     /**
+     * Saves an element’s source configs.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $sources
+     * @since 5.9.0
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = array_map(fn(array $s) => array_filter([
+            'type' => $s['type'] ?? self::TYPE_NATIVE,
+            'key' => $s['key'] ?? null,
+            'page' => $s['page'] ?? null,
+            'tableAttributes' => $s['tableAttributes'] ?? null,
+            'defaultSort' => $s['defaultSort'] ?? null,
+            'defaultViewMode' => $s['defaultViewMode'] ?? null,
+            ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                self::TYPE_CUSTOM => [
+                    'label' => $s['label'] ?? null,
+                    'condition' => ($s['condition'] ?? false)
+                        ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                        : null,
+                    'sites' => $s['sites'] ?? null,
+                    'userGroups' => $s['userGroups'] ?? null,
+                ],
+                self::TYPE_HEADING => [
+                    'heading' => $s['heading'] ?? null,
+                ],
+                default => [
+                    'disabled' => $s['disabled'] ?? null,
+                ],
+            },
+        ], fn($val) => $val !== null), $sources);
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $sources);
+    }
+
+    /**
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param class-string<ElementInterface> $elementType The element type class
@@ -687,8 +726,20 @@ class ElementSources extends Component
      */
     public function getPageSettings(string $elementType): array
     {
-        return Craft::$app->getProjectConfig()->get(
-            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
-        ) ?? [];
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        return Craft::$app->getProjectConfig()->get($path) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $pageSettings
+     * @since 5.9.0
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $pageSettings);
     }
 }

@@ -105,6 +105,8 @@
 - Added `craft\services\ElementSources::getPages()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::pageExists()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\services\ElementSources::pageNameId()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
+- Added `craft\services\ElementSources::savePageSettings()`.
+- Added `craft\services\ElementSources::saveSources()`.
 - Added `craft\services\Search::deleteOrphanedIndexJobs()`.
 - Added `craft\services\Structure::EVENT_AFTER_UPDATE_ELEMENT`.
 - Added `craft\services\Structure::EVENT_BEFORE_UPDATE_ELEMENT`.
