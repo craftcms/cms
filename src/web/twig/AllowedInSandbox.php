@@ -10,10 +10,10 @@ namespace craft\web\twig;
 use Attribute;
 
 /**
- * Attribute EnvName
+ * Attribute AllowedInSandbox
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.6.0
+ * @since 4.17.0
  */
 #[Attribute]
 class AllowedInSandbox
