@@ -21,7 +21,7 @@ use function CraftCms\Cms\cp_url;
 
 final readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request)
+    public function showLogin(Request $request): Response|\Illuminate\Contracts\View\View
     {
         // see if they're already logged in
         if ($user = $request->user()) {
@@ -34,6 +34,8 @@ final readonly class LoginController extends AuthenticationController
         }
 
         // TODO: _rerouteWithFallbackTemplate??
+        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+
         return view('craftcms::login');
     }
 

@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use IntlDateFormatter;
 use IntlException;
@@ -215,11 +217,11 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
-            $defaultUrl ??= Auth::guest()
+            $defaultUrl ??= Auth::guard('craft')->guest()
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 
-            $url = url()->previous($defaultUrl);
+            $url = Redirect::getIntendedUrl() ?? $defaultUrl;
 
             // Strip out any tags that may have gotten in there by accident
             // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,

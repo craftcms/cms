@@ -12,5 +12,5 @@ Route::middleware(['web', 'craft', 'craft.cp'])
     ->prefix(Cms::config()->cpTrigger)
     ->group(__DIR__.'/cp.php');
 
-Route::middleware(['web', 'craft'])
+Route::middleware(['web', 'craft', 'craft.web'])
     ->group(__DIR__.'/web.php');

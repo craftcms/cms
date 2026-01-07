@@ -87,9 +87,15 @@ foreach ([
     ]) => ['craft.cp'],
 ] as $prefix => $middleware) {
     Route::prefix($prefix)->middleware($middleware)->group(function () {
+        // Auth
+        Route::post('users/login', [LoginController::class, 'attemptLogin']);
+        Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+        Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
-        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
     });
 }
 
@@ -126,13 +132,6 @@ Route::prefix(implode('/', [
     Route::any('app/api-headers', [ApiController::class, 'headers']);
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
-
-    // Auth
-    Route::post('users/login', [LoginController::class, 'attemptLogin']);
-    Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
-    Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
-    Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
-    Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
 
     // Updater
     Route::prefix('updater')->group(function () {

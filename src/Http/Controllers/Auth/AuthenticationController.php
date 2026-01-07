@@ -33,6 +33,7 @@ abstract readonly class AuthenticationController
     protected function handleSuccessfulLogin(Request $request, User $user): Response
     {
         $returnUrl = URL::returnUrl();
+
         if ($request->wantsJson()) {
             return $this->asModelSuccess($user, modelName: 'user', data: [
                 'returnUrl' => $returnUrl,
