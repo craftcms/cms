@@ -5,6 +5,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
 
 if (Edition::get()->registersFrontendUserRoutes()) {
@@ -17,5 +18,15 @@ if (Edition::get()->registersFrontendUserRoutes()) {
         if (Cms::config()->logoutPath !== false) {
             Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
         }
+    });
+}
+
+if (! is_null(Cms::config()->setPasswordRequestPath)) {
+    Route::get('.well-known/change-password', function (Sites $sites) {
+        $uri = Cms::config()->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
+
+        abort_if(is_null($uri), 404);
+
+        return redirect($uri);
     });
 }
