@@ -1,7 +1,0 @@
-{
-  "name": "Forbidden",
-  "message": "Schema doesn’t have access to the “Craft test site” site.",
-  "code": 0,
-  "status": 403,
-  "type": "yii\\web\\ForbiddenHttpException"
-}
