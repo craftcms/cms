@@ -400,108 +400,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Sets a user’s password once they’ve verified they have access to their email.
-     *
-     * @return Response
-     */
-    public function actionSetPassword(): Response
-    {
-        // Set the default response format to HTML, in case it was set to JSON for headless mode
-        if (!$this->request->getAcceptsJson()) {
-            $this->response->format = Response::FORMAT_HTML;
-        }
-
-        // Have they just submitted a password, or are we just displaying the page?
-        if (!$this->request->getIsPost()) {
-            if (!is_array($info = $this->_processTokenRequest())) {
-                return $info;
-            }
-
-            /** @var User $user */
-            /** @var string $uid */
-            /** @var string $code */
-            [$user, $uid, $code] = $info;
-
-            RememberedUsername::set($user);
-
-            // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate([
-                'code' => $code,
-                'id' => $uid,
-                'newUser' => !$user->password,
-            ]);
-        }
-
-        // POST request. They've just set the password.
-        $code = $this->request->getRequiredBodyParam('code');
-        $uid = $this->request->getRequiredParam('id');
-        $user = User::find()
-            ->uid($uid)
-            ->status(null)
-            ->addSelect(['users.password'])
-            ->one();
-
-        if (!$user) {
-            throw new BadRequestHttpException("Invalid user UUID: $uid");
-        }
-
-        // Make sure we still have a valid token.
-        /** @var User $user */
-        if (!Users::isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken($user);
-        }
-
-        $user->newPassword = $this->request->getRequiredBodyParam('newPassword');
-        $user->setScenario(User::SCENARIO_PASSWORD);
-
-        if (!Craft::$app->getElements()->saveElement($user)) {
-            return $this->asFailure(
-                t('Couldn’t update password.'),
-                $user->getErrors('newPassword'),
-            ) ?? $this->_renderSetPasswordTemplate([
-                'errors' => $user->getErrors('newPassword'),
-                'code' => $code,
-                'id' => $uid,
-                'newUser' => !$user->password,
-            ]);
-        }
-
-        // If they're pending, try to activate them, and maybe treat this as an activation request
-        if ($user->getStatus() === User::STATUS_PENDING) {
-            try {
-                Users::activateUser($user);
-                $response = $this->_onAfterActivateUser($user);
-                if ($response !== null) {
-                    return $response;
-                }
-            } catch (InvalidElementException) {
-                // NBD
-            }
-        }
-
-        if ($this->request->getAcceptsJson()) {
-            $return = [
-                'status' => $user->getStatus(),
-            ];
-            if (!Auth::guest() && Cms::config()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
-            }
-            return $this->asSuccess(data: $return);
-        }
-
-        if ($this->request->getIsCpRequest()) {
-            // Send them to the control panel login page by default
-            $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
-        } else {
-            // Send them to the 'setPasswordSuccessPath' by default
-            $setPasswordSuccessPath = Cms::config()->getSetPasswordSuccessPath();
-            $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-        }
-
-        return $this->redirectToPostedUrl($user, $url);
-    }
-
-    /**
      * Verifies that a user has access to an email address.
      *
      * @return Response
@@ -1223,17 +1121,6 @@ class UsersController extends Controller
         }
 
         return $this->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
-    }
-
-    /**
-     * Renders the Set Password template for a given user.
-     *
-     * @param array $variables
-     * @return Response
-     */
-    private function _renderSetPasswordTemplate(array $variables): Response
-    {
-        return $this->_rerouteWithFallbackTemplate('set-password.twig', $variables);
     }
 
     private function _rerouteWithFallbackTemplate(string $cpTemplate, array $variables = []): ?Response

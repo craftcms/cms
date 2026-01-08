@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
@@ -44,6 +45,8 @@ Route::get('install', [InstallController::class, 'index'])
 
 Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
 Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
+Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
 
 /**
  * Admin requests that require a login
