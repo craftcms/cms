@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
+use Craft;
 use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -54,5 +57,16 @@ abstract readonly class AuthenticationController
         ));
 
         return $this->asFailure($message, ['errorCode' => $authError]);
+    }
+
+    protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
+    {
+        if (view()->exists(request()->path())) {
+            return view(request()->path(), $data);
+        }
+
+        Craft::$app->getView()->setTemplateMode(\craft\web\View::TEMPLATE_MODE_CP);
+
+        return view(Str::start($cpTemplate, 'craftcms::'), $data);
     }
 }

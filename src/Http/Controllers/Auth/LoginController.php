@@ -33,14 +33,7 @@ final readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        if (view()->exists($request->path())) {
-            return view($request->path());
-        }
-
-        // TODO: _rerouteWithFallbackTemplate??
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
-
-        return view('craftcms::login');
+        return $this->renderViewWithFallback('login');
     }
 
     public function showLoginModal(Request $request, Impersonation $impersonation): JsonResponse

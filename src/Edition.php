@@ -175,6 +175,11 @@ enum Edition: int implements Arrayable
         }
     }
 
+    public function registersFrontendUserRoutes(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
     public function toArray(): array
     {
         return [
