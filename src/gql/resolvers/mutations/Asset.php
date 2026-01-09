@@ -75,6 +75,10 @@ class Asset extends ElementMutationResolver
             if (!$asset) {
                 throw new Error('No such asset exists');
             }
+
+            if ($asset->volumeId !== $volume->id) {
+                $this->requireSchemaAction('volumes.' . $asset->getVolume()->uid, 'save');
+            }
         } else {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'create');
 

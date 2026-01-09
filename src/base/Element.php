@@ -6030,7 +6030,7 @@ JS, [
                             } catch (FieldNotFoundException) {
                             }
                         }
-                        $field ??= null;
+                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -6057,6 +6057,48 @@ JS, [
     }
 
     /**
+     * Find field instance that matches the instance UID from another layout.
+     *
+     * @param $layoutElementUid
+     * @return FieldInterface|null
+     */
+    private function _getFieldFromAlternativeLayouts($layoutElementUid): ?FieldInterface
+    {
+        $currentLayout = $this->getFieldLayout();
+
+        // get all field layouts for this element type sans the layout used by this element
+        $fieldLayouts = Collection::make(Craft::$app->getFields()->getLayoutsByType(static::class))
+            ->filter(fn($fieldLayout) => $fieldLayout->uid !== $currentLayout?->uid);
+
+        if ($fieldLayouts->isEmpty()) {
+            return null;
+        }
+
+        // find the layout that has this element UID and get its handle
+        $handle = null;
+        foreach ($fieldLayouts as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->uid === $layoutElementUid) {
+                    // get its handle
+                    $handle = $field->layoutElement->handle;
+                    break 2;
+                }
+            }
+        }
+
+        // and now find the layout element by handle in this element's layout
+        if ($handle) {
+            foreach ($currentLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->handle === $handle) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the HTML that should be shown for a given attribute’s inline input.
      *
      * @param string $attribute The attribute name.
@@ -6080,6 +6122,8 @@ JS, [
                 } catch (FieldNotFoundException) {
                 }
             }
+
+            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
         }
 
         if ($field !== null) {
