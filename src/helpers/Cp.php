@@ -1796,7 +1796,7 @@ JS, [
                             'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
-                    ($static ? Html::tag('span', 'Read Only', [
+                    ($static ? Html::tag('span', Craft::t('app', 'Read Only'), [
                         'class' => ['read-only-badge'],
                     ]) : '') .
                     ($showLabelExtra
