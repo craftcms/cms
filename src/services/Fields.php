@@ -1283,7 +1283,7 @@ class Fields extends Component
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
-        $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
+        $config = ComponentHelper::cleanseConfig(Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout')));
         return $this->createLayout($config);
     }
 
