@@ -6,6 +6,7 @@
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed an error that could occur when logging a deprecation warning, if the backtrace contained any non-UTF-8-encoded strings. ([#18218](https://github.com/craftcms/cms/issues/18218))
+- Fixed a bug where it wasn’t possible to view assets if they had exactly 50 subfolders alongside them. ([#18213](https://github.com/craftcms/cms/issues/18213))
 - Fixed SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 - Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
