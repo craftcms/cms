@@ -9,6 +9,7 @@
 - Fixed SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 - Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
+- Fixed a permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
 
 ## 4.16.17 - 2025-12-0421
 
