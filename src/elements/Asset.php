@@ -669,10 +669,10 @@ class Asset extends Element
      */
     protected static function defineCardAttributes(): array
     {
-        $attributes = array_merge(parent::defineCardAttributes(), [
+        $attributes = array_merge($parentAttributes = parent::defineCardAttributes(), [
             'dateCreated' => [
                 'label' => Craft::t('app', 'Date Uploaded'),
-                // placeholder will be merged from parent
+                'placeholder' => $parentAttributes['dateCreated']['placeholder'],
             ],
             'filename' => [
                 'label' => Craft::t('app', 'Filename'),

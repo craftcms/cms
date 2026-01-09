@@ -120,20 +120,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
-    protected static function defineCardAttributes(): array
-    {
-        return [
-            ...parent::defineCardAttributes(),
-            'address' => [
-                'label' => Craft::t('app', 'Address'),
-                'placeholder' => fn() => '123 Acme Ln.',
-            ],
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
@@ -141,15 +127,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected static function defineDefaultCardAttributes(): array
-    {
-        return [
-            'address',
-        ];
-    }
 
     /**
      * @inheritdoc

@@ -2843,7 +2843,7 @@ JS, [
             foreach ($fieldLayout->type::cardAttributes($fieldLayout) as $key => $attribute) {
                 $allOptions[$keyPrefix . $key] = [
                     'label' => $labelPrefix . $attribute['label'],
-                    'placeholder' => $attribute['placeholder'],
+                    'placeholder' => $attribute['placeholder'] ?? null,
                 ];
             }
         }
