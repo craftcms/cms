@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.22 - 2026-01-09
 
 - Improved keyboard control for Money fields. ([#18198](https://github.com/craftcms/cms/issues/18198), [#18212](https://github.com/craftcms/cms/pull/18212))
 - User queries now always return active, non-pending users first, unless otherwise specified by `orderBy`. ([#18148](https://github.com/craftcms/cms/issues/18148))
