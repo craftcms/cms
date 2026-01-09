@@ -24,6 +24,7 @@
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
 - Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
 - Fixed a permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
+- Fixed an RCE vulnerability. (GHSA-7jx7-3846-m7w7)
 
 ## 5.8.21 - 2025-12-04
 

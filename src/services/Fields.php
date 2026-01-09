@@ -1128,6 +1128,7 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
+        $config = ComponentHelper::cleanseConfig($config);
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
