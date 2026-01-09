@@ -25,7 +25,7 @@
 <div class="flex">
     {% if hasPrefix %}
         <div aria-hidden="true">
-            {{ prefix|t('site')|md(inlineOnly=true)|raw }}
+            {{ prefix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
     <div>
@@ -40,7 +40,7 @@
     </div>
     {% if hasSuffix %}
         <div aria-hidden="true">
-            {{ suffix|t('site')|md(inlineOnly=true)|raw }}
+            {{ suffix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
 </div>
