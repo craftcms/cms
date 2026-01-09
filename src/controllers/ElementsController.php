@@ -376,7 +376,7 @@ class ElementsController extends Controller
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
-        } elseif ($element->getIsRevision()) {
+        } elseif ($isRevision) {
             $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
         }
 
@@ -1518,7 +1518,11 @@ JS, [
             throw new BadRequestHttpException('The owner element must be a derivative.');
         }
         if ($owner->getCanonicalId() !== $element->getPrimaryOwnerId()) {
-            throw new BadRequestHttpException('The canonical owner element must be the primary owner of the nested element.');
+            // the owner might be a derivative of another canonical element
+            $canonicalOwner = $owner->getCanonical();
+            if ($canonicalOwner->getCanonicalId() !== $element->getPrimaryOwnerId()) {
+                throw new BadRequestHttpException('The canonical owner element must be the primary owner of the nested element.');
+            }
         }
         if (!$elementsService->canSave($owner, $user)) {
             throw new ForbiddenHttpException('User not authorized to save the owner element.');

@@ -340,7 +340,7 @@ class ElementSources extends Component
         }
 
         // Combine duplicate attributes. If any attributes map to multiple sort
-        // options and each option has a string orderBy value, cmobine them
+        // options and each option has a string orderBy value, combine them
         // with a CoalesceColumnsExpression.
         return Collection::make($sortOptions)
             ->groupBy('attribute')
@@ -432,6 +432,7 @@ class ElementSources extends Component
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
+        $groupedFieldInstances = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
@@ -460,10 +461,13 @@ class ElementSources extends Component
                             // where the handle also wasn't overridden
                             $groupedFieldElements[$field->id][] = $layoutElement;
                         } else {
-                            // The handle was overridden, so it gets its own table attribute
-                            $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $layoutElement->label()),
-                            ];
+                            // The handle was overridden, so we'll use a key consisting of
+                            // the global field uid and layout element label and handle
+                            // to check if a new table attribute should be added to the list
+                            $key = $field->uid . " - " . $layoutElement->label() . " - " . $layoutElement->handle;
+                            if (!isset($groupedFieldInstances[$key])) {
+                                $groupedFieldInstances[$key] = $layoutElement;
+                            }
                         }
                     }
                 }
@@ -475,6 +479,12 @@ class ElementSources extends Component
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+            ];
+        }
+
+        foreach ($groupedFieldInstances as $layoutElement) {
+            $attributes["fieldInstance:$layoutElement->uid"] = [
+                'label' => Craft::t('site', $layoutElement->label()),
             ];
         }
 
