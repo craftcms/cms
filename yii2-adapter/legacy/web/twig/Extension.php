@@ -251,7 +251,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
-            new TwigFilter('group', [$this, 'groupFilter'], ['needs_environment' => true]),
+            new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
@@ -259,7 +259,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
-            new TwigFilter('find', [$this, 'findFilter'], ['needs_environment' => true]),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
@@ -684,15 +683,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (Throwable) {
             return $value;
         }
-    }
-
-    /**
-     * @since 5.4.3
-     */
-    public function findFilter(TwigEnvironment $env, $array, $arrow): mixed
-    {
-        CoreExtension::checkArrow($env, $arrow, 'find', 'filter');
-        return CoreExtension::find($env, $array, $arrow);
     }
 
     /**
@@ -1160,8 +1150,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
-
         /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {
@@ -1169,6 +1157,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return array_filter($arr);
         }
+
+        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
 
         $filtered = CoreExtension::filter($env, $arr, $arrow);
 
@@ -1182,15 +1172,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Groups an array by the results of an arrow function, or value of a property.
      *
-     * @param TwigEnvironment $env
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
      * @return array[] The grouped items
      * @throws RuntimeError if $arr is not of type array or Traversable
      */
-    public function groupFilter(TwigEnvironment $env, iterable $arr, callable|string $arrow): array
+    public function groupFilter(iterable $arr, callable|string $arrow): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'group', 'filter');
+        // No need to call checkArrow() here since strings are always interpreted as nested fields,
+        // which should be passed to renderObjectTemplate() as `{name}`
 
         $groups = [];
 
@@ -1522,14 +1512,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return T
      * @since 5.9.0
      */
-    public function createFunction(string|array $type, array $params = []): BaseObject
+    public function createFunction(string|array $type, array $params = []): object
     {
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
-        if (!is_subclass_of($class, BaseObject::class)) {
+        if (!is_subclass_of($class, BaseObject::class) && !str_starts_with($class, '\\CraftCms\\Cms\\')) {
             throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
         }
 
-        /** @var BaseObject */
         return Craft::createObject($type, $params);
     }
 

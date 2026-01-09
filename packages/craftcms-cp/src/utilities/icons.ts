@@ -68,7 +68,11 @@ const LEGACY_NAMES: Record<string, string> = {
  *
  * https://github.com/shoelace-style/webawesome/blob/da206a87873e3ab43ded7466a05005225aa50e69/packages/webawesome/src/components/icon/library.default.ts
  */
-export function getIconUrl(name: string, family: string = 'classic', variant: string = 'regular') {
+export function getIconUrl(
+  name: string,
+  family: string = 'classic',
+  variant: string = 'regular'
+) {
   let folder = 'solid';
   let resolvedVariant = variant;
   let resolvedName = name.endsWith('.svg') ? name.split('.svg')[0]! : name;
@@ -110,6 +114,6 @@ export function configureIcons() {
     resolver: (name: string, family = 'classic', variant = 'solid') => {
       return getIconUrl(name, family, variant);
     },
-    mutator: (svg) => svg.setAttribute('fill', 'currentColor')
+    mutator: (svg) => svg.setAttribute('fill', 'currentColor'),
   });
 }

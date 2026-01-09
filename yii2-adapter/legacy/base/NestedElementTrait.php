@@ -10,6 +10,7 @@ namespace craft\base;
 
 use Craft;
 use craft\elements\db\EagerLoadPlan;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -79,6 +80,7 @@ trait NestedElementTrait
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**

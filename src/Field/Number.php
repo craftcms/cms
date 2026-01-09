@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use GraphQL\Type\Definition\Type;
@@ -24,6 +25,7 @@ use Illuminate\Validation\Rule;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
+use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
@@ -377,11 +379,11 @@ JS;
         };
 
         if ($this->prefix) {
-            $formatted = $this->prefix.$formatted;
+            $formatted = Markdown::processParagraph(Html::encode($this->prefix)).$formatted;
         }
 
         if ($this->suffix) {
-            $formatted .= $this->suffix;
+            $formatted .= Markdown::processParagraph(Html::encode($this->suffix));
         }
 
         return $formatted;
