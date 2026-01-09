@@ -79,7 +79,6 @@ import './Money.scss';
       },
 
       updateInputMask: function () {
-        console.log('updating mask');
         const opts = {
           digits: this.settings.decimals,
           placeholder: this.settings.placeholder,
@@ -89,9 +88,6 @@ import './Money.scss';
 
         this.$field.inputmask($.extend(this.settings.maskOptions, opts));
 
-        console.log({
-          value: this.$field.val(),
-        });
         if (this.$field.val() === '') {
           this.$field.addClass('money-placeholder');
         }
