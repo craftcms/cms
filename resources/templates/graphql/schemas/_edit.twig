@@ -122,9 +122,15 @@
         label: '{name} directive'|t('app', {
           name: '`@parseRefs`',
         }),
-        warning: 'Provides read-only access to user data and most content.',
+        warning: 'Can be exploited to reveal sensitive content by information disclosure attacks.'|t('app'),
       },
-    }) }}
+      'directive:transform': not craft.app.config.general.disableGraphqlTransformDirective ? {
+        label: '{name} directive'|t('app', {
+          name: '`@transform`',
+        }),
+        warning: 'Can be exploited by DoS attacks.'|t('app'),
+      },
+    }|filter) }}
   </div>
 
 {% endblock %}

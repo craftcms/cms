@@ -297,7 +297,7 @@ test('Id', function (?string $expected, string $id): void {
     }
 })->with([
     ['foo', '-foo-'],
-    ['foo-bar', 'foo--bar'],
+    ['foo--bar', 'foo--bar'],
     ['foo-bar-baz', 'foo[bar][baz]'],
     ['foo-bar-baz', 'foo bar baz'],
     ['foo.bar', 'foo.bar'],

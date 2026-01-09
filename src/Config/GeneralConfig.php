@@ -1039,7 +1039,7 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ::: code
      * ```php Static Config
@@ -1050,7 +1050,15 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
+     *
      * @group GraphQL
+     *
+     * @since 3.6.0
+     * @deprecated in 5.9.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1239,6 +1247,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $enableTemplateCaching = true;
+
+    /**
+     * @var bool Whether user-defined Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     *
+     * @group Security
+     */
+    public bool $enableTwigSandbox = false;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
@@ -4487,11 +4513,16 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the `transform` directive should be disabled for the GraphQL API.
+     * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
+     *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
      *
      * @group GraphQL
      *
@@ -4719,10 +4750,10 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether all Twig templates should be sandboxed.
+     * Whether user-defined Twig templates should be sandboxed.
      *
      * ```php
-     * ->enableTwigSandbox(false)
+     * ->enableTwigSandbox()
      * ```
      *
      * @group Security
@@ -4732,7 +4763,7 @@ class GeneralConfig extends BaseConfig
     #[Deprecated(message: 'in 6.0.0. Sandbox is always enabled.')]
     public function enableTwigSandbox(bool $value = true): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.enableTwigSandbox', 'Calling enableTwigSandbox() is deprecated. Sandbox is always enabled.'));
+        $this->enableTwigSandbox = $value;
 
         return $this;
     }

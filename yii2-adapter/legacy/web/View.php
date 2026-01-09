@@ -431,9 +431,6 @@ class View extends \yii\web\View
         /** @phpstan-ignore argument.type */
         $twig->getRuntime(EscaperRuntime::class)->addSafeClass($safeClass, ['html']);
 
-        // Even an empty security policy will prevent non-closures from being allowed as arrow functions
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy(), true));
-
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
@@ -453,6 +450,18 @@ class View extends \yii\web\View
             : $this->_siteTwigExtensions;
         foreach ($registeredExtensions as $extension) {
             $twig->addExtension($extension);
+        }
+
+        // Only register the SandboxExtension if something else hasn't already
+        if (!$twig->hasExtension(SandboxExtension::class)) {
+            $sandboxConfig = config('craft.twig-sandbox', []);
+            $twig->addExtension(new SandboxExtension(new SecurityPolicy(
+                $sandboxConfig['allowedTags'],
+                $sandboxConfig['allowedFilters'],
+                $sandboxConfig['allowedFunctions'],
+                $sandboxConfig['allowedMethods'],
+                $sandboxConfig['allowedProperties'],
+            )));
         }
 
         // Set our timezone
@@ -585,6 +594,25 @@ class View extends \yii\web\View
     }
 
     /**
+     * Renders a Twig template in a sandboxed environment.
+     *
+     * @param string $template The name of the template to load
+     * @param array $variables The variables that should be available to the template
+     * @param string|null $templateMode The template mode to use
+     * @return string the rendering result
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
+     * @throws Exception if $templateMode is invalid
+     * @see renderTemplate()
+     * @since 4.17.0
+     */
+    public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
+    {
+        return $this->sandbox(fn() => $this->renderTemplate($template, $variables, $templateMode));
+    }
+
+    /**
      * Returns whether a page template is currently being rendered.
      *
      * @return bool Whether a page template is currently being rendered.
@@ -640,7 +668,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a template defined in a string.
+     * Renders a template defined by a string.
      *
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
@@ -676,6 +704,24 @@ class View extends \yii\web\View
             }
             $this->setTemplateMode($oldTemplateMode);
         }
+    }
+
+    /**
+     * Renders a template defined by a string in a sandboxed environment.
+     *
+     * @param string $template The source template string.
+     * @param array $variables Any variables that should be available to the template.
+     * @param string $templateMode The template mode to use.
+     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @return string The rendered template.
+     * @throws TwigLoaderError
+     * @throws TwigSyntaxError
+     * @see renderString()
+     * @since 4.17.0
+     */
+    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    {
+        return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml));
     }
 
     /**
@@ -789,6 +835,28 @@ class View extends \yii\web\View
         }
 
         return $filtered;
+    }
+
+    /**
+     * Renders an object template in a sandboxed environment.
+     *
+     * @param string $template the source template string
+     * @param mixed $object the object that should be passed into the template
+     * @param array $variables any additional variables that should be available to the template
+     * @param string $templateMode The template mode to use.
+     * @return string The rendered template.
+     * @throws Exception in case of failure
+     * @throws Throwable in case of failure
+     * @see renderObjectTemplate()
+     * @since 4.17.0
+     */
+    public function renderSandboxedObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        string $templateMode = self::TEMPLATE_MODE_SITE,
+    ): string {
+        return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode));
     }
 
     /**
@@ -1855,7 +1923,7 @@ JS;
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
      * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
-     * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
+     * attributes will get namespaced as well, by prepending the namespace and a hyphens to their values.
      * For example, the following HTML:
      *
      * ```html
@@ -2235,6 +2303,26 @@ JS;
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
             $output = $event->output;
+        }
+    }
+
+    private function sandbox(callable $callback): string
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->enableTwigSandbox) {
+            return $callback();
+        }
+
+        $extension = $this->getTwig()->getExtension(SandboxExtension::class);
+
+        if ($extension->isSandboxed()) {
+            return $callback();
+        }
+
+        $extension->enableSandbox();
+        try {
+            return $callback();
+        } finally {
+            $extension->disableSandbox();
         }
     }
 
