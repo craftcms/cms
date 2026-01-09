@@ -427,11 +427,7 @@ class EntryQuery extends ElementQuery
                 $types = Craft::$app->getSections()->getEntryTypesByHandle($item);
 
                 if (!empty($types)) {
-                    if (count($types) == 1) {
-                        return $types[0]->id;
-                    }
-
-                    return Collection::make($types)->pluck('id')->toArray();
+                    return (count($types) == 1) ? $types[0]->id : Collection::make($types)->pluck('id')->toArray();
                 }
             } elseif ($item instanceof EntryType) {
                 // this will be the case if $value was an EntryType or array of those
