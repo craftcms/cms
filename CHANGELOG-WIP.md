@@ -125,6 +125,7 @@
 - Added `craft\web\twig\AllowedInSandbox`. ([#18219](https://github.com/craftcms/cms/pull/18219))
 - Added `craft\web\twig\SecurityPolicy`.
 - Added `craft\web\twig\nodes\BaseNode`.
+- Added `craft\models\FieldLayoutForm::getStaticElements()`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.

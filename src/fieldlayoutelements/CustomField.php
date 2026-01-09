@@ -740,8 +740,6 @@ class CustomField extends BaseField
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $static = $static || !$this->editable($element);
-
         $view = Craft::$app->getView();
         $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
         $view->setIsDeltaRegistrationActive(
