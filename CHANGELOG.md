@@ -18,6 +18,7 @@
 - Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
 - Fixed a bug where consecutive hyphens (`-`) within Link fields’ “Class Name” values were getting removed. ([#18201](https://github.com/craftcms/cms/issues/18201))
 - Fixed an error that could occur when saving a recursively-nested element. ([#18164](https://github.com/craftcms/cms/issues/18164))
+- Fixed a bug where element indexes could show muliple table columns for the same field/label/handle combinations. ([#18209](https://github.com/craftcms/cms/issues/18209))
 - Fixed SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
 - Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
 - Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
