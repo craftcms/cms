@@ -1350,6 +1350,7 @@ return [
     'Rating: {rating} out of {max} stars' => 'Rating: {rating} out of {max} stars',
     'Raw data (fastest)' => 'Raw data (fastest)',
     'Reactivate' => 'Reactivate',
+    'Read Only' => 'Read Only',
     'Ready to upgrade?' => 'Ready to upgrade?',
     'Ready' => 'Ready',
     'Really delete folder “{folder}”?' => 'Really delete folder “{folder}”?',
