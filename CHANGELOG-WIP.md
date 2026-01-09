@@ -186,5 +186,5 @@
 - Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
 - Added the Illuminate Support library.
 - Added the PhpSpreadsheet library.
-- Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
+- Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603), [#18225](https://github.com/craftcms/cms/issues/18225))
 - Removed the Stringy library. ([#16606](https://github.com/craftcms/cms/issues/16606))
