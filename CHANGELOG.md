@@ -7,6 +7,7 @@
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed an error that could occur when logging a deprecation warning, if the backtrace contained any non-UTF-8-encoded strings. ([#18218](https://github.com/craftcms/cms/issues/18218))
+- Fixed a bug where it wasn’t possible to view assets if they had exactly 50 subfolders alongside them. ([#18213](https://github.com/craftcms/cms/issues/18213))
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
 - Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
 - Fixed a bug where Content Block fields could appear to be missing their content when viewing a revision. ([#18149](https://github.com/craftcms/cms/issues/18149))
