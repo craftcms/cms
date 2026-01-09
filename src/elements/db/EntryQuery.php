@@ -423,11 +423,41 @@ class EntryQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getSections()->getEntryTypesByHandle($item);
+                // multiple entry types can have the same handle, so $types is always an array
+                $types = Craft::$app->getSections()->getEntryTypesByHandle($item);
+
+                if (!empty($types)) {
+                    if (count($types) == 1) {
+                        return $types[0]->id;
+                    }
+
+                    return Collection::make($types)->pluck('id')->toArray();
+                }
+            } elseif ($item instanceof EntryType) {
+                // this will be the case if $value was an EntryType or array of those
+                return $item->id;
             }
-            return $item instanceof EntryType ? $item->id : null;
+
+            return null;
         })) {
-            $this->typeId = $value;
+            // if $value is a multidimensional array
+            if (is_array($value) && count($value) !== count($value, COUNT_RECURSIVE)) {
+                $ids = [];
+                // get all the IDs from it
+                foreach ($value as $key => $item) {
+                    if (is_array($item)) {
+                        $ids = array_merge($ids, $item);
+                        unset($value[$key]);
+                    } elseif (is_numeric($item)) {
+                        $ids[] = $item;
+                        unset($value[$key]);
+                    }
+                }
+                // and merge them with whatever's left in $values (e.g. 'not' keyword can still be there)
+                $this->typeId = array_merge($value, array_unique($ids));
+            } else {
+                $this->typeId = $value;
+            }
         } else {
             $this->typeId = (new Query())
                 ->select(['id'])
