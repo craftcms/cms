@@ -178,6 +178,7 @@
 - Fixed a bug where it was possible to create more than five users with the Team edition.
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed a bug where Matrix and Addresses fields weren’t loading provisional drafts for GraphQL preview requests.
+- Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
 - Added the Illuminate Support library.
 - Added the PhpSpreadsheet library.
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
