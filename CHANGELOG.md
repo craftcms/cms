@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.18 - 2026-01-09
 
 - The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
