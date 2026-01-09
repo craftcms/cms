@@ -18,6 +18,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -122,7 +123,7 @@ class EntryTypesController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('entry-types/save')
-                ->redirectUrl('settings/entry-types')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/entry-types/{id}',
                     'shortcut' => true,
@@ -221,6 +222,7 @@ class EntryTypesController extends Controller
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $this->request->getBodyParam('uiLabelFormat', $entryType->uiLabelFormat);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);

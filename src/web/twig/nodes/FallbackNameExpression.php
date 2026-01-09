@@ -9,7 +9,7 @@ namespace craft\web\twig\nodes;
 
 use craft\helpers\Template;
 use Twig\Compiler;
-use Twig\Node\Expression\NameExpression;
+use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\Node;
 
 /**
@@ -18,7 +18,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-class FallbackNameExpression extends NameExpression
+class FallbackNameExpression extends ContextVariable
 {
     public function __construct(string $name, array $attributes = [], int $lineno = 0)
     {
@@ -34,7 +34,7 @@ class FallbackNameExpression extends NameExpression
     public function compile(Compiler $compiler): void
     {
         // no special handling for _self/etc.,or always-defined variables
-        if ($this->isSpecial() || $this->getAttribute('always_defined')) {
+        if (str_starts_with($this->getAttribute('name'), '_') || $this->getAttribute('always_defined')) {
             parent::compile($compiler);
             return;
         }
@@ -43,7 +43,7 @@ class FallbackNameExpression extends NameExpression
 
         $compiler->addDebugInfo($this);
 
-        if ($this->getAttribute('is_defined_test')) {
+        if ($this->isDefinedTestEnabled()) {
             $compiler
                 ->raw('(array_key_exists(')
                 ->string($name)

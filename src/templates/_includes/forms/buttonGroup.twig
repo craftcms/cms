@@ -50,15 +50,17 @@
   {{ hiddenInput(name, value, {
     id: inputId,
   }) }}
+{% endif %}
 
-  {% js %}
-  (() => {
-    new Craft.Listbox($('#{{ id|namespaceInputId }}'), {
+{% js %}
+(() => {
+  new Craft.Listbox($('#{{ id|namespaceInputId }}'), {
+    {% if name ?? false %}
       onChange: (selectedOption) => {
         $('#{{ inputId|namespaceInputId }}').val(selectedOption.data('value'));
       },
-      readOnly: {{ disabled ? 1 : 0 }}
-    });
-  })();
-  {% endjs %}
-{% endif %}
+    {% endif %}
+    readOnly: {{ disabled ? 1 : 0 }}
+  });
+})();
+{% endjs %}

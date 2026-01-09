@@ -60,33 +60,46 @@
         disabled: readOnly,
     }) }}
 
-    {% set modeInput %}
-        <div id="mode">
-            <label id="mode-crop">
-                <input type="radio" name="mode" value="crop"{% if transform.mode == 'crop' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
-                {{ "Crop"|t('app') }}
-            </label>
-
-            <label id="mode-fit">
-                <input type="radio" name="mode" value="fit"{% if transform.mode == 'fit' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
-                {{ "Fit"|t('app') }}
-            </label>
-
-            <label id="mode-letterbox">
-                <input type="radio" name="mode" value="letterbox"{% if transform.mode == 'letterbox' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
-                {{ "Letterbox"|t('app') }}
-            </label>
-
-            <label id="mode-stretch">
-                <input type="radio" name="mode" value="stretch"{% if transform.mode == 'stretch' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
-                {{ "Stretch"|t('app') }}
-            </label>
-        </div>
-    {% endset %}
-
-    {{ forms.field({
-        label: "Mode"|t('app')
-    }, modeInput) }}
+    {% embed '_includes/forms/field.twig' with {
+        label: 'Mode'|t('app')
+    } %}
+        {% block input %}
+            <div id="mode" class="flex items-start gap-l">
+                <label class="nowrap">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/crop.svg" width="80" height="60" alt="">
+                    {{ input('radio', 'mode', 'crop', {
+                        checked: transform.mode == 'crop',
+                        disabled: readOnly,
+                    }) }}
+                    {{ "Crop"|t('app') }}
+                </label>
+                <label class="nowrap">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/fit.svg" width="80" height="60" alt="">
+                    {{ input('radio', 'mode', 'fit', {
+                        checked: transform.mode == 'fit',
+                        disabled: readOnly,
+                    }) }}
+                    {{ "Fit"|t('app') }}
+                </label>
+                <label class="nowrap">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/letterbox.svg" width="80" height="60" alt="">
+                    {{ input('radio', 'mode', 'letterbox', {
+                        checked: transform.mode == 'letterbox',
+                        disabled: readOnly,
+                    }) }}
+                    {{ "Letterbox"|t('app') }}
+                </label>
+                <label class="nowrap">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/stretch.svg" width="80" height="60" alt="">
+                    {{ input('radio', 'mode', 'stretch', {
+                        checked: transform.mode == 'stretch',
+                        disabled: readOnly,
+                    }) }}
+                    {{ "Stretch"|t('app') }}
+                </label>
+            </div>
+        {% endblock %}
+    {% endembed %}
 
     <div id="fill-color" class="field {% if transform.mode != 'letterbox' or transform.fill is null %}hidden{% endif %}">
         {{ forms.colorField({

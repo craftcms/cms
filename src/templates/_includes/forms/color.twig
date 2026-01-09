@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms -%}
 
 {% set id = id ?? "color#{random()}" -%}
-{% set containerId = containerId ?? id~'-container' -%}
+{% set containerId = containerId ?? "#{id}-container" -%}
 {% set hexLabelId = "#{id}-label" %}
 {% set hexDescriptionId = "#{id}-desc" %}
 {% set name = name ?? null -%}
