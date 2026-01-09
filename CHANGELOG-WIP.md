@@ -52,6 +52,7 @@
 - The Caches utility now keeps track of which options were previously selected. ([#9447](https://github.com/craftcms/cms/discussions/9447))
 - Field layouts can now set editability conditions on custom fields, based on the edited element. ([#18181](https://github.com/craftcms/cms/discussions/18181))
 - Element cards can now include fields nested within Content Block fields. ([#18206](https://github.com/craftcms/cms/pull/18206))
+- Money fields’ icons now indicate their selected currency, for common currencies.
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -68,6 +69,7 @@
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
 - It’s now possible to modify the template path via `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE` and `EVENT_BEFORE_RENDER_PAGE_TEMPLATE`. ([#18125](https://github.com/craftcms/cms/issues/18125))
+- Custom fields’ icons can now be defined at the instance level, via a `getIcon()` method.
 - Added `craft\base\ElementIndex::multiPageSources()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - Added `craft\base\ElementTrait::$applyingDraft`. ([#18057](https://github.com/craftcms/cms/pull/18057))
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
@@ -96,6 +98,7 @@
 - Added `craft\helpers\Cp::cardPreviewOptions()`.
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\helpers\UrlHelper::cpReferralUrl()`.
+- Added `craft\i18n\Locale::getDefaultCurrency()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
 - Added `craft\models\FieldLayout::$thumbFieldKey`.
 - Added `craft\models\FieldLayout::getCardBodyHtmlForElement()`.

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -159,7 +160,9 @@ class EntryTypesController extends Controller
 
                         $labels = [];
                         $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
-                            $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                            $icon = $usage instanceof FieldInterface && !$usage instanceof Iconic
+                                ? $usage::icon()
+                                : $usage->getIcon();
                             $label = $labels[] = $usage->getUiLabel();
                             $labelHtml = Html::beginTag('span', [
                                     'class' => ['flex', 'flex-nowrap', 'gap-s'],

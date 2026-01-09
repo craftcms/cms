@@ -12,6 +12,7 @@ use craft\base\Actionable;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\Iconic;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
@@ -571,6 +572,10 @@ class CustomField extends BaseField
             $field = $this->getField();
         } catch (FieldNotFoundException) {
             return null;
+        }
+
+        if ($field instanceof Iconic) {
+            return $field->getIcon();
         }
 
         return $field::icon();
