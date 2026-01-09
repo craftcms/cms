@@ -100,6 +100,7 @@
 - Added `craft\models\FieldLayout::$thumbFieldKey`.
 - Added `craft\models\FieldLayout::getCardBodyHtmlForElement()`.
 - Added `craft\models\FieldLayout::getElementByKey()`.
+- Added `craft\models\FieldLayoutForm::getStaticElements()`.
 - Added `craft\models\Section::getCpIndexUri()`.
 - Added `craft\models\Section::getPage()`.
 - Added `craft\services\ElementSources::getFirstPage()`. ([#17779](https://github.com/craftcms/cms/pull/17779))
@@ -126,7 +127,6 @@
 - Added `craft\web\twig\AllowedInSandbox`. ([#18219](https://github.com/craftcms/cms/pull/18219))
 - Added `craft\web\twig\SecurityPolicy`.
 - Added `craft\web\twig\nodes\BaseNode`.
-- Added `craft\models\FieldLayoutForm::getStaticElements()`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
