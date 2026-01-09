@@ -4594,7 +4594,11 @@ const ViewMenu = Garnish.Base.extend({
       })
       .reduce(
         (groups, option) => {
-          const index = option.attr.startsWith('field:') ? 1 : 0;
+          const index =
+            option.attr.startsWith('field:') ||
+            option.attr.startsWith('fieldInstance:')
+              ? 1
+              : 0;
           groups[index].options.push(option);
           return groups;
         },

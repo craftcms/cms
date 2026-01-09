@@ -506,7 +506,7 @@ class ElementSources extends Component
         }
 
         // Combine duplicate attributes. If any attributes map to multiple sort
-        // options and each option has a string orderBy value, cmobine them
+        // options and each option has a string orderBy value, combine them
         // with a CoalesceColumnsExpression.
         return Collection::make($sortOptions)
             ->groupBy('attribute')

@@ -742,6 +742,7 @@ class Asset extends Element
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];
+        $originalLimit = $elementQuery->limit;
 
         // Include folders in the results?
         /** @var AssetQuery $elementQuery */
@@ -820,7 +821,7 @@ class Asset extends Element
         // return the folders directly
         if (
             self::isFolderIndex() ||
-            count($assets) === (int)$elementQuery->limit
+            count($assets) === (int)$originalLimit
         ) {
             return $assets;
         }
