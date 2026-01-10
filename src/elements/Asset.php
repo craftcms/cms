@@ -76,9 +76,7 @@ use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Throwable;
 use Twig\Markup;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
@@ -1225,12 +1223,11 @@ class Asset extends Element
      */
     public function __toString(): string
     {
-        try {
-            if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
+        if (isset($this->_transform)) {
+            $url = $this->getUrl();
+            if ($url) {
                 return $url;
             }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
         }
 
         return parent::__toString();

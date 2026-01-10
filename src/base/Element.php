@@ -97,12 +97,10 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
-use Throwable;
 use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ArrayableTrait;
-use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -2589,17 +2587,13 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        try {
-            if (!$this->id || $this->getIsUnpublishedDraft()) {
-                return Craft::t('app', 'New {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]);
-            }
-
-            return sprintf('%s %s', static::displayName(), $this->id);
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return Craft::t('app', 'New {type}', [
+                'type' => static::lowerDisplayName(),
+            ]);
         }
+
+        return sprintf('%s %s', static::displayName(), $this->id);
     }
 
     /**
@@ -4964,16 +4958,14 @@ JS, [
 
     /**
      * @inheritdoc
-     * @phpstan-ignore-next-line
+     * @param string|int $offset
      */
     public function offsetExists($offset): bool
     {
         return (
             $offset === 'title' ||
-            /** @phpstan-ignore-next-line */
             ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
             parent::offsetExists($offset) ||
-            /** @phpstan-ignore-next-line */
             $this->fieldByHandle($offset)
         );
     }

@@ -58,7 +58,6 @@ use DateTime;
 use DateTimeZone;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -870,12 +869,9 @@ class User extends Element implements IdentityInterface
      */
     public function __toString(): string
     {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        $name = $this->getName();
+        if ($name !== '') {
+            return $name;
         }
 
         return parent::__toString();

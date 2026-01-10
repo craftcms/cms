@@ -29,10 +29,8 @@ use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
-use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
-use yii\base\ErrorHandler;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
@@ -402,15 +400,10 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      * Use the translated field name as the string representation.
      *
      * @return string
-     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
-        try {
-            return Craft::t('site', $this->name) ?: static::class;
-        } catch (Exception $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
