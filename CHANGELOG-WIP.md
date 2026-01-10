@@ -176,6 +176,11 @@
 - Improved element query performance. ([#17850](https://github.com/craftcms/cms/pull/17850))
 - Reduced the number of queries executed when working with nested entries, addresses, and content blocks. ([#18142](https://github.com/craftcms/cms/issues/18142))
 - Session-based cookies no longer use colons (`:`) in their names. ([#18158](https://github.com/craftcms/cms/pull/18158))
+- Added the Illuminate Support library.
+- Added the PhpSpreadsheet library.
+- Updated Yii to 2.0.54.
+- Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603), [#18225](https://github.com/craftcms/cms/issues/18225))
+- Removed the Stringy library. ([#16606](https://github.com/craftcms/cms/issues/16606))
 - Fixed a bug where elements with unsaved changes could show outdated attribute/field values within element index tables, chips, and cards throughout the control panel. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
 - Fixed a bug where requests with invalid tokens would throw an exception before the application was fully initialized, which could lead to other errors. ([#18000](https://github.com/craftcms/cms/issues/18000))
@@ -184,8 +189,3 @@
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed a bug where Matrix and Addresses fields weren’t loading provisional drafts for GraphQL preview requests.
 - Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Added the Illuminate Support library.
-- Added the PhpSpreadsheet library.
-- Updated Yii to 2.0.54.
-- Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603), [#18225](https://github.com/craftcms/cms/issues/18225))
-- Removed the Stringy library. ([#16606](https://github.com/craftcms/cms/issues/16606))
