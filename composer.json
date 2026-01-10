@@ -56,7 +56,7 @@
     "twig/twig": "~3.19.0",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.11.10",
-    "yiisoft/yii2": "~2.0.52.0",
+    "yiisoft/yii2": "~2.0.54.0",
     "yiisoft/yii2-debug": "~2.1.27.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^2.0.0"
@@ -78,7 +78,7 @@
   "provide": {
     "bower-asset/inputmask": "5.0.9",
     "bower-asset/jquery": "3.6.1",
-    "bower-asset/punycode": "^1.4",
+    "bower-asset/punycode": "^2.2",
     "bower-asset/yii2-pjax": "~2.0.1",
     "yii2tech/ar-softdelete": "1.0.4"
   },

@@ -781,7 +781,12 @@ class User extends Element implements IdentityInterface
                 return $name;
             }
         } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+            if (PHP_VERSION_ID < 70400) {
+                trigger_error(ErrorHandler::convertExceptionToError($e), E_USER_ERROR);
+                /** @phpstan-ignore-next-line */
+                return '';
+            }
+            throw $e;
         }
 
         return parent::__toString();
