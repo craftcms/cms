@@ -5,6 +5,7 @@ use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -58,10 +59,82 @@ test('destroy deletes a user', function () {
     expect(new UserQuery()->count())->toBe(1);
 
     // Bulk op is causing issues here
-    \Illuminate\Support\Facades\DB::commit();
+    DB::commit();
 });
 
 test('edit shows a cp screen', function () {
     get(action([UsersController::class, 'edit']))
         ->assertSee(t('Profile'));
+});
+
+test('destroy validates required userId', function () {
+    postJson(action([UsersController::class, 'destroy']), [])
+        ->assertJsonValidationErrors(['userId']);
+});
+
+test('destroy can transfer content to another user', function () {
+    $user = \CraftCms\Cms\User\Models\User::factory()->create();
+    $transferTo = User::findOne();
+
+    postJson(action([UsersController::class, 'destroy']), [
+        'userId' => $user->id,
+        'transferContentTo' => $transferTo->id,
+    ])->assertOk();
+
+    // Verify user was deleted
+    expect(User::find()->id($user->id)->exists())->toBeFalse();
+
+    DB::commit();
+});
+
+test('destroy handles non-existent user gracefully', function () {
+    postJson(action([UsersController::class, 'destroy']), [
+        'userId' => 99999,
+    ])->assertStatus(400);
+});
+
+test('create redirects to edit screen for new user', function () {
+    get(action([UsersController::class, 'create']))
+        ->assertRedirectContains('users/');
+});
+
+test('edit can show specific user by ID', function () {
+    get(action([UsersController::class, 'edit'], ['userId' => User::findOne()->id]))->assertOk();
+});
+
+test('index shows users list', function () {
+    get(action([UsersController::class, 'index']))
+        ->assertOk()
+        ->assertSee(t('Users'));
+});
+
+test('destroy requires proper authorization', function () {
+    Gate::before(function ($user, $ability) {
+        if ($ability === 'deleteUsers') {
+            return false;
+        }
+
+        return null;
+    });
+
+    $user = \CraftCms\Cms\User\Models\User::factory()->create();
+
+    postJson(action([UsersController::class, 'destroy']), [
+        'userId' => $user->id,
+    ])->assertForbidden();
+
+    DB::commit();
+});
+
+test('create requires proper authorization', function () {
+    Gate::before(function ($user, $ability) {
+        if ($ability === 'registerUsers') {
+            return false;
+        }
+
+        return null;
+    });
+
+    get(action([UsersController::class, 'create']))
+        ->assertForbidden();
 });
