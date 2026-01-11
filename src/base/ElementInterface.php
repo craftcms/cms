@@ -1314,6 +1314,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 

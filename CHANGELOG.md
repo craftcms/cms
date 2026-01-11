@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where custom Login page logos could be sized incorrectly. ([#18229](https://github.com/craftcms/cms/pull/18229))
+
 ## 5.8.22 - 2026-01-09
 
 - Improved keyboard control for Money fields. ([#18198](https://github.com/craftcms/cms/issues/18198), [#18212](https://github.com/craftcms/cms/pull/18212))
