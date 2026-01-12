@@ -112,6 +112,10 @@ final readonly class TwoFactorAuthenticationController
 
     public function verify(Request $request): Response
     {
+        $request->validate([
+            'code' => ['required', 'string'],
+        ]);
+
         $code = $request->input('code');
 
         $authService = Craft::$app->getAuth();
@@ -125,6 +129,10 @@ final readonly class TwoFactorAuthenticationController
 
     public function verifyRecoveryCode(Request $request): Response
     {
+        $request->validate([
+            'code' => ['required', 'string'],
+        ]);
+
         $code = $request->input('code');
 
         $authService = Craft::$app->getAuth();

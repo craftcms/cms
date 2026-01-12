@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use IntlDateFormatter;
 use IntlException;
 use Override;
@@ -75,6 +76,14 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootAliases();
 
         $this->app->booted(function () {
+            /**
+             * Users can register their own password rules,
+             * but we provide a sensible default.
+             */
+            if (! Password::$defaultCallback) {
+                Password::defaults(fn () => Password::min(8)->max(255)->uncompromised());
+            }
+
             if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
                 app(GarbageCollection::class)->run();
