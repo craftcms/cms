@@ -322,6 +322,7 @@ Route::prefix(implode('/', [
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
+        Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
 
         // User groups
         Route::middleware([

@@ -4,6 +4,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -11,7 +12,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::findOne());
+    actingAs(User::find()->addSelect('password')->first());
 });
 
 it('requires login', function () {
@@ -95,4 +96,69 @@ test('removeResetRequirement sets passwordResetRequired to false', function () {
     ])->assertOk();
 
     expect(User::find()->id($userId)->status(null)->addSelect('passwordResetRequired')->first()->passwordResetRequired)->toBeFalse();
+});
+
+it('requires login for passwordResetUrl', function () {
+    auth()->logout();
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']))->assertUnauthorized();
+});
+
+it('requires administrateUsers permission for passwordResetUrl', function () {
+    Gate::before(function ($user, $ability) {
+        if ($ability === 'administrateUsers') {
+            return false;
+        }
+
+        return null;
+    });
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']), [
+        'userId' => auth()->id(),
+    ])->assertForbidden();
+});
+
+it('validates userId exists for passwordResetUrl', function () {
+    Session::passwordConfirmed();
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']), ['userId' => 999999])
+        ->assertJsonValidationErrorFor('userId');
+});
+
+it('validates userId is required for passwordResetUrl', function () {
+    Session::passwordConfirmed();
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']))
+        ->assertJsonValidationErrorFor('userId');
+});
+
+it('requires password confirmation for passwordResetUrl', function () {
+    Session::forget('auth.password_confirmed_at');
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']), [
+        'userId' => auth()->id(),
+    ])->assertStatus(400);
+});
+
+it('returns password reset URL when password is confirmed', function () {
+    Session::passwordConfirmed();
+
+    $user = User::findOne();
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']), [
+        'userId' => $user->id,
+    ])
+        ->assertOk()
+        ->assertJsonStructure(['url']);
+});
+
+it('returns password reset URL when current password is sent along', function () {
+    $user = User::findOne();
+
+    postJson(action([PasswordController::class, 'passwordResetUrl']), [
+        'userId' => $user->id,
+        'currentPassword' => 'craftcms2018!!',
+    ])
+        ->assertOk()
+        ->assertJsonStructure(['url']);
 });

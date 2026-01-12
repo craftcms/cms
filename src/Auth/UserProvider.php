@@ -29,7 +29,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
      */
     public function retrieveById($identifier): ?User
     {
-        return User::find()->id($identifier)->one();
+        return User::find()->addSelect('password')->id($identifier)->one();
     }
 
     /**

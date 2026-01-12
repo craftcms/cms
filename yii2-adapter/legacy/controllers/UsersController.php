@@ -285,47 +285,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Generates a new verification code for a given user, and returns its URL.
-     *
-     * @return Response
-     * @throws BadRequestHttpException if the existing password submitted with the request is invalid
-     */
-    public function actionGetPasswordResetUrl(): Response
-    {
-        $this->requirePermission('administrateUsers');
-
-        if (!$this->_verifyElevatedSession()) {
-            throw new BadRequestHttpException('Existing password verification failed');
-        }
-
-        $userId = $this->request->getRequiredParam('userId');
-        $user = Users::getUserById($userId);
-
-        if (!$user) {
-            $this->_noUserExists();
-        }
-
-        try {
-            $url = Users::getPasswordResetUrl($user);
-        } catch (InvalidElementException $e) {
-            if (in_array($user->getStatus(), [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
-                $message = t('Couldn’t generate an activation URL: {error}', [
-                    'error' => $e->getMessage(),
-                ]);
-            } else {
-                $message = t('Couldn’t generate a password reset URL: {error}', [
-                    'error' => $e->getMessage(),
-                ]);
-            }
-            return $this->asFailure($message);
-        }
-
-        return $this->asJson([
-            'url' => $url,
-        ]);
-    }
-
-    /**
      * Saves a user’s new password.
      *
      * @return Response|null
