@@ -993,8 +993,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'authorIds' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
                 'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
             ]),
-            'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'postDate' => Craft::t('app', 'Post Date'),
         ]);
     }
 
