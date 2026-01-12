@@ -90,7 +90,7 @@ final readonly class GeneralSettingsController
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         return back()
-            ->with('success', 'System settings saved.');
+            ->with('success', t('System settings saved.'));
     }
 
     /**
