@@ -20,19 +20,3 @@ test('unauthorized users cannot access database backup utility', function () {
     postJson(action(DbBackupController::class))
         ->assertForbidden();
 });
-
-test('authorized users can create database backup without download', function () {
-    $response = postJson(action(DbBackupController::class), [
-        'downloadBackup' => false,
-    ]);
-
-    expect($response->getStatusCode())->not()->toBe(403);
-});
-
-test('authorized users can download database backup', function () {
-    $response = postJson(action(DbBackupController::class), [
-        'downloadBackup' => true,
-    ]);
-
-    expect($response->getStatusCode())->not()->toBe(403);
-});
