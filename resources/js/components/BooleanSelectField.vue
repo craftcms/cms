@@ -38,7 +38,7 @@
           boolean: '0',
         },
       },
-      ...props.options,
+      ...props.options.filter((option) => Boolean(option.label)),
     ];
   });
 
