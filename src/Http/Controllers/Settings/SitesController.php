@@ -49,6 +49,7 @@ final readonly class SitesController
 
         $crumbs = [
             ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+            ['label' => isset($group) ? $group->getName() : t('All Sites')],
         ];
 
         return Inertia::render('SettingsSitesIndex', [
@@ -126,6 +127,9 @@ final readonly class SitesController
                 [
                     'label' => t('Sites'),
                     'url' => UrlHelper::url('settings/sites'),
+                ],
+                [
+                    'label' => $siteData->getName(),
                 ],
             ],
             'site' => $siteData,

@@ -161,7 +161,7 @@
       return props.group.name;
     }
 
-    return t('Sites');
+    return t('All Sites');
   });
 </script>
 

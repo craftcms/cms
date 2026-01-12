@@ -74,6 +74,9 @@
           ></craft-indicator>
           <span>{{ site.enabled ? t('Enabled') : t('Disabled') }}</span>
         </craft-callout>
+        <craft-callout v-if="site.primary" size="small" inline>
+          <span>{{ t('Primary') }}</span>
+        </craft-callout>
       </template>
 
       <template #actions>

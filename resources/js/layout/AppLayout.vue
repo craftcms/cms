@@ -6,6 +6,7 @@
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
+  import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
   withDefaults(
     defineProps<{
@@ -13,7 +14,7 @@
       debug?: any;
       fullWidth?: boolean;
     }>(),
-    {fullWidth: false}
+    {fullWidth: false, crumbs: () => []}
   );
 
   const page = usePage<{
@@ -21,9 +22,14 @@
       success: string | null;
       error: string | null;
     };
+    crumbs?: Array<{
+      url?: string;
+      label: string;
+    }> | null;
   }>();
   const errorFlash = computed(() => page.props.flash?.error);
   const successFlash = computed(() => page.props.flash?.success);
+  const crumbs = computed(() => page.props.crumbs ?? null);
 
   const state = reactive<{
     sidebar: {
@@ -119,6 +125,14 @@
     <div class="cp__main">
       <slot name="main">
         <main>
+          <slot name="breadcrumbs">
+            <div
+              class="px-4 py-2 border-b border-b-border-subtle"
+              v-if="crumbs"
+            >
+              <Breadcrumbs :items="crumbs" />
+            </div>
+          </slot>
           <slot name="header">
             <div :class="{container: true, 'container--full': fullWidth}">
               <div class="flex justify-between pt-4 pb-2 items-center gap-2">
