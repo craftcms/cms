@@ -84,10 +84,6 @@ final class Env extends \Illuminate\Support\Env
             function ($m) {
                 $result = self::get($m[1]);
 
-                if ($result === null) {
-                    return $m[0]; // keep original if not set
-                }
-
                 if (is_bool($result)) {
                     return $result ? 'true' : 'false';
                 }
