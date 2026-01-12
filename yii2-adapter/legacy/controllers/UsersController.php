@@ -52,10 +52,8 @@ use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Throwable;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -173,7 +171,6 @@ class UsersController extends Controller
     protected array|bool|int $allowAnonymous = [
         'auth-form' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
-        'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -198,87 +195,6 @@ class UsersController extends Controller
     public function actionRedirect(): Response
     {
         return $this->redirect(URL::defaultReturnUrl());
-    }
-
-    /**
-     * Sends a password reset email.
-     *
-     * @return Response|null
-     * @throws NotFoundHttpException if the requested user cannot be found
-     */
-    public function actionSendPasswordResetEmail(): ?Response
-    {
-        $this->requirePostRequest();
-        $errors = [];
-        $loginName = null;
-
-        // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
-        if (Gate::check('editUsers')) {
-            $userId = $this->request->getBodyParam('userId');
-
-            if ($userId) {
-                $user = Users::getUserById($userId);
-
-                if (!$user) {
-                    throw new NotFoundHttpException('User not found');
-                }
-            }
-        }
-
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (!isset($user)) {
-            $loginName = $this->request->getBodyParam('loginName');
-
-            if (!$loginName) {
-                // If they didn't even enter a username/email, just bail now.
-                $errors[] = Cms::config()->useEmailAsUsername
-                    ? t('Email is required.')
-                    : t('Username or email is required.');
-
-                return $this->_handleSendPasswordResetError($errors);
-            }
-
-            $user = Users::getUserByUsernameOrEmail($loginName);
-
-            if (
-                !$user?->getIsCredentialed() ||
-                (!$user->getHasPassword() && $user->getHasSsoIdentity())
-            ) {
-                $errors[] = Cms::config()->useEmailAsUsername
-                    ? t('Invalid email.')
-                    : t('Invalid username or email.');
-            }
-        }
-
-        // keep track of how long email sending takes
-        $time = microtime(true);
-
-        // Don't try to send the email if there are already error or there is no user
-        try {
-            if (empty($errors) && !empty($user) && !Users::sendPasswordResetEmail($user)) {
-                throw new Exception();
-            }
-        } catch (Exception) {
-            $errors[] = t('There was a problem sending the password reset email.');
-        }
-
-        if (Cms::config()->preventUserEnumeration) {
-            // Randomly delay the response
-            $this->_randomlyDelayResponse(microtime(true) - $time);
-
-            if (!empty($errors)) {
-                $list = implode("\n", array_map(fn(string $error) => sprintf('- %s', $error), $errors));
-                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-                $errors = [];
-            }
-        }
-
-        if (empty($errors)) {
-            return $this->asSuccess(t('Password reset email sent.'));
-        }
-
-        // Handle the errors.
-        return $this->_handleSendPasswordResetError($errors, $loginName);
     }
 
     /**
@@ -879,16 +795,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Throws a "no user exists" exception
-     *
-     * @throws BadRequestHttpException
-     */
-    private function _noUserExists(): void
-    {
-        throw new BadRequestHttpException('User not found');
-    }
-
-    /**
      * Verifies that the user has an elevated session, or that their current password was submitted with the request.
      *
      * @return bool
@@ -1038,37 +944,6 @@ class UsersController extends Controller
         $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
         return $this->redirectToPostedUrl($user, $url);
-    }
-
-    /**
-     * @param string[] $errors
-     * @param string|null $loginName
-     * @return Response|null
-     * @throws \Exception
-     */
-    private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
-    {
-        $errorString = implode(', ', $errors);
-
-        return $this->asFailure(
-            $errorString,
-            [
-                'errors' => $errors,
-            ],
-            [
-                'loginName' => $loginName,
-                'errors' => $errors,
-            ]
-        );
-    }
-
-    private function _randomlyDelayResponse(float $maxOffset = 0)
-    {
-        // Delay randomly between 0.5 and 1.5 seconds.
-        $max = 1500000 - (int)($maxOffset * 1000000);
-        if ($max > 500000) {
-            usleep(random_int(500000, $max));
-        }
     }
 
     private function populateNameAttributes(object $model): void

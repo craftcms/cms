@@ -7,14 +7,19 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use Craft;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use yii\base\InvalidArgumentException;
@@ -128,5 +133,85 @@ final readonly class PasswordController
         return $this->asSuccess(t('{type} saved.', [
             'type' => User::displayName(),
         ]));
+    }
+
+    public function sendPasswordResetEmail(Request $request, Users $users): Response
+    {
+        $errors = [];
+        $loginName = null;
+
+        // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
+        if (Gate::check('editUsers')) {
+            $userId = $request->integer('userId');
+
+            if ($userId) {
+                abort_if(! $user = $users->getUserById($userId), 400, 'User not found');
+            }
+        }
+
+        if (! isset($user)) {
+            $loginName = $request->input('loginName');
+
+            if (! $loginName) {
+                // If they didn't even enter a username/email, just bail now.
+                $errors[] = Cms::config()->useEmailAsUsername
+                    ? t('Email is required.')
+                    : t('Username or email is required.');
+
+                return $this->handleSendPasswordResetError($errors);
+            }
+
+            $user = $users->getUserByUsernameOrEmail($loginName);
+
+            if (
+                ! $user?->getIsCredentialed() ||
+                (! $user->getHasPassword() && $user->getHasSsoIdentity())
+            ) {
+                $errors[] = Cms::config()->useEmailAsUsername
+                    ? t('Invalid email.')
+                    : t('Invalid username or email.');
+            }
+        }
+
+        return new Timebox()->call(function (Timebox $timebox) use ($loginName, &$errors, $user, $users): Response {
+            // Don't try to send the email if there are already errors or there is no user
+            try {
+                if (empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
+                    throw new Exception;
+                }
+            } catch (Exception) {
+                $errors[] = t('There was a problem sending the password reset email.');
+            }
+
+            if (Cms::config()->preventUserEnumeration) {
+                if (! empty($errors)) {
+                    $list = implode("\n", array_map(fn (string $error) => sprintf('- %s', $error), $errors));
+                    Log::warning(sprintf("Password reset email not sent:\n%s", $list), [__METHOD__]);
+                    $errors = [];
+                }
+            } else {
+                $timebox->returnEarly();
+            }
+
+            if (empty($errors)) {
+                return $this->asSuccess(t('Password reset email sent.'));
+            }
+
+            // Handle the errors.
+            return $this->handleSendPasswordResetError($errors, $loginName);
+        }, 100_000);
+    }
+
+    private function handleSendPasswordResetError(array $errors, ?string $loginName = null): \Symfony\Component\HttpFoundation\Response
+    {
+        $errorString = implode(', ', $errors);
+
+        return $this->asFailure(
+            $errorString,
+            [
+                'errors' => $errors,
+                'loginName' => $loginName,
+            ],
+        );
     }
 }

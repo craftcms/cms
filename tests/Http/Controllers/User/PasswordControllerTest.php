@@ -1,7 +1,9 @@
 <?php
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -161,4 +163,42 @@ it('returns password reset URL when current password is sent along', function ()
     ])
         ->assertOk()
         ->assertJsonStructure(['url']);
+});
+
+it('allows anonymous access for sendPasswordResetEmail', function () {
+    auth()->logout();
+
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'test@example.com',
+    ]);
+
+    expect($response->status())->not()->toBe(401);
+});
+
+it('requires loginName when not providing userId for sendPasswordResetEmail', function () {
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), []);
+
+    expect($response->json('message'))->toContain('Username or email is required.');
+});
+
+it('returns error for invalid loginName on sendPasswordResetEmail', function () {
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'nonexistent@example.com',
+    ]);
+
+    expect($response->json('message'))->toContain('Invalid username or email.');
+});
+
+it('returns error for non-existent userId when logged in with editUsers for sendPasswordResetEmail', function () {
+    Edition::set(Edition::Pro);
+
+    $user = User::find()->addSelect('password')->first();
+    UserPermissions::saveUserPermissions($user->id, [
+        'viewUsers',
+        'editUsers',
+    ]);
+
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'userId' => 999999,
+    ])->assertStatus(400);
 });

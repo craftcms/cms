@@ -97,6 +97,7 @@ foreach ([
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
+        Route::post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
     });
 }
 
