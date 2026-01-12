@@ -800,8 +800,8 @@ class Entry extends Element implements ExpirableElementInterface
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'postDate' => Craft::t('app', 'Post Date'),
         ]);
     }
 
