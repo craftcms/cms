@@ -121,10 +121,13 @@
         <main>
           <slot name="header">
             <div :class="{container: true, 'container--full': fullWidth}">
-              <div class="flex justify-between items-center pt-4 pb-2">
+              <div class="flex justify-between pt-4 pb-2 items-center gap-2">
                 <slot name="title">
                   <h1 class="text-xl">{{ title }}</h1>
                 </slot>
+                <slot name="title-badge"></slot>
+
+                <div class="flex-1"></div>
 
                 <div class="flex gap-2 items-center">
                   <slot name="actions"></slot>

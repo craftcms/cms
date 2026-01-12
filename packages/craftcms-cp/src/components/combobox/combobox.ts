@@ -30,6 +30,14 @@ export default class CraftCombobox extends LionCombobox {
     `;
   }
 
+  override parser(value: string | Array<string>) {
+    if (value !== '') {
+      return value;
+    }
+
+    return super.parser(value);
+  }
+
   /**
    * Override to use the option's text content instead of choiceValue
    */

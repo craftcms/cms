@@ -2,7 +2,7 @@
   <div class="status-message">
     <div>
       <template v-if="error">
-        <c-icon icon="exclamation-triangle" />
+        <c-icon icon="triangle-exclamation" />
       </template>
       <template v-else>
         <c-spinner size="lg" />

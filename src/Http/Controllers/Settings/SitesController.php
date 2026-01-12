@@ -103,7 +103,7 @@ final readonly class SitesController
         ]);
     }
 
-    public function edit(SiteModel $site): View
+    public function edit(SiteModel $site, Sites $sitesService)
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -111,9 +111,13 @@ final readonly class SitesController
 
         $siteData = new Site(...$site->except('dateDeleted'));
 
-        return view('craftcms::settings/sites/_edit', [
-            'brandNewSite' => false,
+        return Inertia::render('SettingsSitesEdit', [
+            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
+            'languageOptions' => SelectOptions::getLanguageOptions(true),
+            'booleanEnvOptions' => SelectOptions::getBooleanEnvOptions(),
+            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true),
             'title' => trim($siteData->getName()) ?: t('Edit Site'),
+            'isMultisite' => $sitesService->isMultiSite(),
             'crumbs' => [
                 [
                     'label' => t('Settings'),
@@ -127,7 +131,7 @@ final readonly class SitesController
             'site' => $siteData,
             'groupId' => $siteData->groupId,
             'groupOptions' => $allGroups->map(fn ($group) => [
-                'label' => $group->name,
+                'label' => $group->getName(),
                 'value' => $group->id,
             ])->all(),
             'readOnly' => $this->readOnly,
@@ -151,10 +155,11 @@ final readonly class SitesController
         }
 
         if (! $this->sites->saveSite($siteData)) {
-            return $this->asModelFailure($siteData, t('Couldn’t save the site.'));
+            return back();
         }
 
-        return $this->asModelSuccess($siteData, t('Site saved.'));
+        return back()
+            ->with('success', t('Site saved.'));
     }
 
     public function reorder(Request $request): JsonResponse

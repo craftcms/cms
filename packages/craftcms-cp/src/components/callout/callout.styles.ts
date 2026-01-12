@@ -37,6 +37,21 @@ export default css`
     align-items: center;
   }
 
+  ::slotted(code) {
+    font-size: 0.9em;
+    display: inline-flex;
+    padding: 0 var(--c-spacing-sm);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: var(--c-radius-sm);
+  }
+
+  :host([inline]) {
+    display: inline-flex;
+    padding: var(--c-spacing-xs) var(--c-spacing-sm);
+    font-size: 0.9em;
+  }
+
   :host([rounded~='all']) {
     border-radius: var(--_radius);
   }
@@ -55,7 +70,7 @@ export default css`
     border-end-end-radius: var(--_radius);
   }
 
-  :host([]) :host([appearance~='accent']) {
+  :host([appearance~='accent']) {
     --c-fg-link: var(--c-color-on-emphasis);
     background-color: var(--c-color-bg-emphasis);
     color: var(--c-color-on-emphasis);

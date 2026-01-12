@@ -250,7 +250,6 @@ Route::prefix(implode('/', [
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::post('sites/save-site', [SitesController::class, 'store']);
             Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
             Route::post('sites/delete-site', [SitesController::class, 'destroy']);
         });
