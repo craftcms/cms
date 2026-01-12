@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,16 +33,16 @@ final class FilesystemsController
         app('Craft');
     }
 
-    public function index(): string
+    public function index(): View
     {
         $variables = [];
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
         $variables['readOnly'] = $this->readOnly;
 
-        return Craft::$app->getView()->renderPageTemplate('settings/filesystems/_index.twig', $variables);
+        return view('craftcms::settings/filesystems/_index', $variables);
     }
 
-    public function create()
+    public function create(): CpScreenResponse
     {
         return $this->edit();
     }
