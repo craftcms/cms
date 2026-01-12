@@ -23,10 +23,10 @@ test('unauthorized users cannot access migrations utility', function () {
 
 test('successful migration', function () {
     post(action(MigrationsController::class))
-        ->assertRedirect('admin/utilities/migrations');
+        ->assertRedirect(Cms::config()->cpTrigger.'/utilities/migrations');
 });
 
 test('migration handles exceptions', function () {
     post(action(MigrationsController::class))
-        ->assertRedirect('admin/utilities/migrations');
+        ->assertRedirect(Cms::config()->cpTrigger.'/utilities/migrations');
 });
