@@ -25,7 +25,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
-use craft\web\Application;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use craft\web\Request;
@@ -50,9 +49,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
-use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
-use CraftCms\Cms\User\Events\VerifyingEmail;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -65,7 +62,6 @@ use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use function CraftCms\Cms\t;
@@ -1047,38 +1043,6 @@ class UsersController extends Controller
         return $this->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
     }
 
-    private function _rerouteWithFallbackTemplate(string $cpTemplate, array $variables = []): ?Response
-    {
-        // If this is a site request, try handling the request like normal
-        if ($this->request->getIsSiteRequest()) {
-            // No special handling for Craft < Pro
-            if (Edition::get()->value < Edition::Pro->value) {
-                return null;
-            }
-
-            try {
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'variables' => $variables,
-                ]);
-
-                // Avoid re-routing to the same action again
-                $this->request->checkIfActionRequest(true, true, false);
-                if (($this->request->getActionSegments()[0] ?? null) === $this->id) {
-                    $this->request->setIsActionRequest(false);
-                }
-
-                /** @var Application $app */
-                $app = Craft::$app;
-                return $app->handleRequest($this->request, true);
-            } catch (NotFoundHttpException) {
-                // Just go with the control panel template
-            }
-        }
-
-        // Otherwise go with the control panel’s template
-        return $this->renderTemplate($cpTemplate, $variables, View::TEMPLATE_MODE_CP);
-    }
-
     /**
      * Throws a "no user exists" exception
      *
@@ -1193,94 +1157,6 @@ class UsersController extends Controller
     }
 
     /**
-     * @return array|Response
-     */
-    private function _processTokenRequest(): Response|array
-    {
-        $uid = $this->request->getRequiredParam('id');
-        $code = $this->request->getRequiredParam('code');
-
-        /** @var User|null $user */
-        $user = User::find()
-            ->uid($uid)
-            ->status(null)
-            ->addSelect(['users.password'])
-            ->one();
-
-        if (!$user) {
-            return $this->_processInvalidToken();
-        }
-
-        // If someone is logged in and it’s not this person, log them out
-        if (!Auth::guest() && Auth::id() !== $user->id) {
-            Auth::logout();
-        }
-
-        if (Event::hasListeners(VerifyingEmail::class)) {
-            Event::dispatch(new VerifyingEmail($user));
-        }
-
-        if (!Users::isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken($user);
-        }
-
-        if (Event::hasListeners(EmailVerified::class)) {
-            Event::dispatch(new EmailVerified($user));
-        }
-
-        return [$user, $uid, $code];
-    }
-
-    /**
-     * @param User|null $user
-     * @return Response
-     * @throws HttpException if the verification code is invalid
-     */
-    private function _processInvalidToken(?User $user = null): Response
-    {
-        $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
-            'user' => $user,
-        ]));
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asFailure('InvalidVerificationCode');
-        }
-
-        // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && !$user->verificationCode) {
-            if (!Auth::guest()) {
-                return $this->redirect(URL::returnUrl());
-            }
-        }
-
-        // If the invalidUserTokenPath config setting is set, send them there
-        if ($this->request->getIsSiteRequest()) {
-            $generalConfig = Cms::config();
-            $url = $generalConfig->getInvalidUserTokenPath() ?? $generalConfig->getLoginPath();
-            return $this->redirect(UrlHelper::siteUrl($url));
-        }
-
-        return $this->redirect(Request::CP_PATH_LOGIN);
-    }
-
-    /**
-     * Takes over after a user has been activated.
-     *
-     * @param User $user The user that was just activated
-     * @return Response|null
-     */
-    private function _onAfterActivateUser(User $user): ?Response
-    {
-        $this->_maybeLoginUserAfterAccountActivation($user);
-
-        if (!$this->request->getAcceptsJson()) {
-            return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
-        }
-
-        return null;
-    }
-
-    /**
      * Possibly log a user in right after they activated their account (not when they reset their password),
      * if Craft is configured to do so.
      *
@@ -1326,19 +1202,6 @@ class UsersController extends Controller
     {
         $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
-        return $this->redirectToPostedUrl($user, $url);
-    }
-
-    /**
-     * Redirect the browser after a user has verified their new email address
-     *
-     * @param User $user The user that just verified their email
-     * @return Response
-     */
-    private function _redirectUserAfterEmailVerification(User $user): Response
-    {
-        $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
-        $url = UrlHelper::siteUrl($verifyEmailSuccessPath);
         return $this->redirectToPostedUrl($user, $url);
     }
 

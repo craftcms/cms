@@ -93,7 +93,7 @@ test('showForm handles JSON requests', function () {
     $user = User::findOne();
     Authenticator::create([
         'userId' => $user->id,
-        'auth2fasecret' => 'secret',
+        'auth2faSecret' => 'secret',
     ]);
 
     withSession(['user.id' => $user->id]);
