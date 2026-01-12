@@ -5,6 +5,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,11 @@ if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->loginPath !== false) {
         Route::get(Cms::config()->loginPath, [LoginController::class, 'showLogin']);
         Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+    }
+
+    if (Cms::config()->verifyEmailPath !== false) {
+        Route::get(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'show']);
+        Route::post(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'store']);
     }
 
     Route::middleware('auth:craft')->group(function () {

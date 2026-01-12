@@ -47,7 +47,6 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
@@ -190,7 +189,6 @@ class UsersController extends Controller
         'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -397,80 +395,6 @@ class UsersController extends Controller
         return $this->asSuccess(t('{type} saved.', [
             'type' => User::displayName(),
         ]));
-    }
-
-    /**
-     * Verifies that a user has access to an email address.
-     *
-     * @return Response
-     */
-    public function actionVerifyEmail(): Response
-    {
-        // Set the default response format to HTML, in case it was set to JSON for headless mode
-        if (!$this->request->getAcceptsJson()) {
-            $this->response->format = Response::FORMAT_HTML;
-        }
-
-        if (!$this->request->getIsPost()) {
-            if (!is_array($info = $this->_processTokenRequest())) {
-                return $info;
-            }
-
-            /** @var User $user */
-            /** @var string $uid */
-            /** @var string $code */
-            [$user, $uid, $code] = $info;
-
-            RememberedUsername::set($user);
-
-            // Send them to the set verify-email template
-            return $this->_rerouteWithFallbackTemplate('verify-email.twig', [
-                'id' => $uid,
-                'code' => $code,
-            ]);
-        }
-
-        // POST request
-        $code = $this->request->getRequiredBodyParam('code');
-        $uid = $this->request->getRequiredParam('uid');
-        $user = Users::getUserByUid($uid);
-
-        if (!$user) {
-            throw new BadRequestHttpException("Invalid user UUID: $uid");
-        }
-
-        // Make sure we still have a valid token.
-        if (!Users::isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken($user);
-        }
-
-        $pending = $user->pending;
-
-        // Do they have an unverified email?
-        if ($user->unverifiedEmail) {
-            try {
-                Users::verifyEmailForUser($user);
-            } catch (InvalidElementException) {
-                return $this->renderTemplate('_special/emailtaken.twig', [
-                    'email' => $user->unverifiedEmail,
-                ]);
-            }
-        } elseif ($pending) {
-            // No unverified email so just get on with activating their account
-            Users::activateUser($user);
-        }
-
-        // If they're logged in, give them a success notice
-        if (!Auth::guest()) {
-            $this->setSuccessFlash(t('Email verified'));
-        }
-
-        // Were they just activated?
-        if ($pending && ($response = $this->_onAfterActivateUser($user)) !== null) {
-            return $response;
-        }
-
-        return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterEmailVerification($user);
     }
 
     /**

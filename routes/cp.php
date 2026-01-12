@@ -7,6 +7,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
@@ -47,6 +48,8 @@ Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
 Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
 Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
 Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
+Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
+Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
 
 /**
  * Admin requests that require a login

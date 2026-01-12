@@ -179,4 +179,12 @@ abstract readonly class AuthenticationController
 
         return $this->redirectToPostedUrl($user, $url);
     }
+
+    protected function redirectUserAfterEmailVerification(User $user): Response
+    {
+        $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
+        $url = UrlHelper::siteUrl($verifyEmailSuccessPath);
+
+        return $this->redirectToPostedUrl($user, $url);
+    }
 }
