@@ -81,7 +81,20 @@ final class Env extends \Illuminate\Support\Env
         // …/$VAR/…
         $value = preg_replace_callback(
             '/(?<=^|\/)\$(\w+)(?=$|\/)?/',
-            fn ($m) => self::get($m[1]), $value
+            function ($m) {
+                $result = self::get($m[1]);
+
+                if ($result === null) {
+                    return $m[0]; // keep original if not set
+                }
+
+                if (is_bool($result)) {
+                    return $result ? 'true' : 'false';
+                }
+
+                return (string) $result;
+            },
+            $value
         );
 
         if ($value === '') {

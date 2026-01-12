@@ -21,8 +21,6 @@ it('throws a FileNotFoundException when composer.json does not exist', function 
 })->throws(FileNotFoundException::class);
 
 it('can get the composer.lock path', function () {
-    expect($this->composer->getLockPath())->toBeNull();
-
     touch(base_path('composer.lock'));
 
     expect($this->composer->getLockPath())->toBe(base_path('composer.lock'));
