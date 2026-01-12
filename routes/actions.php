@@ -41,6 +41,7 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
+use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
@@ -319,6 +320,8 @@ Route::prefix(implode('/', [
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
+        Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
+        Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
 
         // User groups
         Route::middleware([

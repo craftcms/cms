@@ -173,18 +173,10 @@ class UsersController extends Controller
      */
     protected array|bool|int $allowAnonymous = [
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'login-modal' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'get-user-for-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'auth-form' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'login-with-passkey' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
         'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -331,66 +323,6 @@ class UsersController extends Controller
         return $this->asJson([
             'url' => $url,
         ]);
-    }
-
-    /**
-     * Requires a user to reset their password on next login.
-     *
-     * @return Response|null
-     * @since 5.0.0
-     */
-    public function actionRequirePasswordReset(): ?Response
-    {
-        $this->requirePermission('administrateUsers');
-
-        $userId = $this->request->getRequiredParam('userId');
-        $user = Users::getUserById($userId);
-
-        if (!$user) {
-            $this->_noUserExists();
-        }
-
-        $user->passwordResetRequired = true;
-
-        if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
-                'type' => User::lowerDisplayName(),
-            ])));
-        }
-
-        return $this->asSuccess(t('{type} saved.', [
-            'type' => User::displayName(),
-        ]));
-    }
-
-    /**
-     * Removes the requirement for a user to reset their password on next login.
-     *
-     * @return Response|null
-     * @since 5.0.0
-     */
-    public function actionRemovePasswordResetRequirement(): ?Response
-    {
-        $this->requirePermission('administrateUsers');
-
-        $userId = $this->request->getRequiredParam('userId');
-        $user = Users::getUserById($userId);
-
-        if (!$user) {
-            $this->_noUserExists();
-        }
-
-        $user->passwordResetRequired = false;
-
-        if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
-                'type' => User::lowerDisplayName(),
-            ])));
-        }
-
-        return $this->asSuccess(t('{type} saved.', [
-            'type' => User::displayName(),
-        ]));
     }
 
     /**
