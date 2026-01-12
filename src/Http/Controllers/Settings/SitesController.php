@@ -47,10 +47,11 @@ final readonly class SitesController
             ? $this->sites->getSitesByGroupId($groupId)
             : $this->sites->getAllSites()->values();
 
-        $crumbs = [
+        $crumbs = array_filter([
             ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
-            ['label' => isset($group) ? $group->getName() : t('All Sites')],
-        ];
+            ['label' => t('Sites'), 'url' => isset($group) ? UrlHelper::cpUrl('settings/sites') : null],
+            (isset($group) ? ['label' => $group->getName()] : null),
+        ]);
 
         return Inertia::render('SettingsSitesIndex', [
             'crumbs' => $crumbs,
@@ -111,6 +112,7 @@ final readonly class SitesController
         abort_if($allGroups->isEmpty(), 500, 'No site groups exist.');
 
         $siteData = new Site(...$site->except('dateDeleted'));
+        $siteGroup = $siteData->getGroup();
 
         return Inertia::render('SettingsSitesEdit', [
             'nameSuggestions' => SelectOptions::getEnvSuggestions(),
@@ -127,6 +129,10 @@ final readonly class SitesController
                 [
                     'label' => t('Sites'),
                     'url' => UrlHelper::url('settings/sites'),
+                ],
+                [
+                    'label' => $siteData->getGroup()->getName(),
+                    'url' => UrlHelper::url('settings/sites', ['groupId' => $siteGroup->id]),
                 ],
                 [
                     'label' => $siteData->getName(),

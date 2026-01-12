@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\Assets;
+use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
+
+use function CraftCms\Cms\t;
 
 final readonly class GeneralSettingsController
 {
@@ -39,6 +42,10 @@ final readonly class GeneralSettingsController
             'timezoneOptions' => [
                 ...SelectOptions::getTimeZoneOptions(),
                 ...SelectOptions::getEnvOptions(),
+            ],
+            'crumbs' => [
+                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('General Settings')],
             ],
             'siteIcon' => $this->rebrand->getImage('icon') ? Arr::only($this->rebrand->getImage('icon'), ['url', 'name']) : null,
             'siteLogo' => $this->rebrand->getImage('logo') ? Arr::only($this->rebrand->getImage('logo'), ['url', 'name']) : null,

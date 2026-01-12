@@ -3,11 +3,7 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {Site, SiteGroup, SuggestionGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -161,7 +157,7 @@
       return props.group.name;
     }
 
-    return t('All Sites');
+    return t('Sites');
   });
 </script>
 
