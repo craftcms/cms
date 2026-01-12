@@ -107,6 +107,12 @@
       >
       </craft-callout>
     </div>
+
+    <div slot="feedback">
+      <ul class="error-list" v-if="error">
+        <li>{{ error }}</li>
+      </ul>
+    </div>
   </craft-combobox>
 </template>
 
