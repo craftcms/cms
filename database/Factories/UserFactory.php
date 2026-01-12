@@ -18,6 +18,9 @@ final class UserFactory extends Factory
     {
         return [
             'id' => Element::factory(),
+            'fullName' => $this->faker->name(),
+            'firstName' => $this->faker->firstName(),
+            'lastName' => $this->faker->lastName(),
             'username' => $this->faker->userName(),
             'email' => $this->faker->email(),
         ];

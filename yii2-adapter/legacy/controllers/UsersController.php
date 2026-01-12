@@ -37,7 +37,6 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -172,10 +171,8 @@ class UsersController extends Controller
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
-        'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'auth-form' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
-        'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
@@ -682,59 +679,6 @@ class UsersController extends Controller
         }
 
         return $this->redirectToPostedUrl($user);
-    }
-
-    /**
-     * Sends a new activation email to a user.
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException if the user is not pending
-     */
-    public function actionSendActivationEmail(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $userId = $this->request->getRequiredBodyParam('userId');
-
-        /** @var User|null $user */
-        $user = User::find()
-            ->id($userId)
-            ->status(null)
-            ->addSelect(['users.password'])
-            ->one();
-
-        if (!$user) {
-            $this->_noUserExists();
-        }
-
-        // Only allow activation emails to be sent to inactive/pending users.
-        /** @var User $user */
-        $status = $user->getStatus();
-        if (!in_array($status, [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
-            throw new BadRequestHttpException('Activation emails can only be sent to inactive or pending users');
-        }
-
-        if (!$user->pending) {
-            $this->requirePermission('moderateUsers');
-        }
-
-        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
-
-        try {
-            $emailSent = Users::sendActivationEmail($user);
-        } catch (InvalidElementException $e) {
-            return $this->asModelFailure(
-                $user,
-                t('Couldn’t send the activation email: {error}', [
-                    'error' => $e->getMessage(),
-                ]),
-                $userVariable,
-            );
-        }
-
-        return $emailSent ?
-            $this->asSuccess(t('Activation email sent.')) :
-            $this->asFailure(t('Couldn’t send activation email. Check your email settings.'));
     }
 
     /**
