@@ -65,7 +65,6 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
-use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -989,12 +988,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributeLabels(): array
     {
+        $authorLabel = Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+            'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
+        ]);
+
         return array_merge(parent::attributeLabels(), [
-            'authorIds' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
-                'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
-            ]),
+            'authorId' => $authorLabel,
+            'authorIds' => $authorLabel,
             'expiryDate' => Craft::t('app', 'Expiry Date'),
             'postDate' => Craft::t('app', 'Post Date'),
+            'typeId' => Craft::t('app', 'Entry Type'),
         ]);
     }
 
@@ -1012,6 +1015,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'required',
             'when' => fn() => !isset($this->fieldId),
         ];
+        $rules[] = [['typeId'], 'required'];
         $rules[] = [
             ['typeId'],
             function(string $attribute) {
@@ -1040,21 +1044,51 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'when' => fn() => $this->postDate && $this->expiryDate,
             'on' => self::SCENARIO_LIVE,
         ];
-
-        $section = $this->getSection();
-        if ($section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0) {
-            $rules[] = [['authorIds'], 'required', 'on' => self::SCENARIO_LIVE];
-            if (isset($section->maxAuthors)) {
-                $rules[] = [
-                    ['authorIds'],
-                    ArrayValidator::class,
-                    'max' => $section->maxAuthors,
-                    'tooMany' => Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
+        $rules[] = [
+            ['authorIds'],
+            'required',
+            'when' => function() {
+                $section = $this->getSection();
+                return $section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0;
+            },
+            'on' => self::SCENARIO_LIVE,
+        ];
+        $rules[] = [
+            ['typeId'],
+            function(string $attribute) {
+                $typeId = $this->getTypeId();
+                foreach ($this->getAvailableEntryTypes() as $entryType) {
+                    if ($entryType->id === $typeId) {
+                        return;
+                    }
+                }
+                $this->addError($attribute, Craft::t('yii', '{attribute} is invalid.', [
+                    'attribute' => $this->getAttributeLabel($attribute),
+                ]));
+            },
+        ];
+        $rules[] = [
+            ['authorIds'],
+            function(string $attribute) {
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                if (count($authors) > $section->maxAuthors) {
+                    $this->addError($attribute, Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
                         'num' => $section->maxAuthors,
-                    ]),
-                ];
-            }
-        }
+                    ]));
+                }
+                foreach ($authors as $author) {
+                    if (!$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
+                        $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
+                        break;
+                    }
+                }
+            },
+            'when' => function() {
+                $section = $this->getSection();
+                return $section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0;
+            },
+        ];
 
         return $rules;
     }
@@ -1064,7 +1098,24 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function setAttributesFromRequest(array $values): void
     {
+        $authorIds = ArrayHelper::remove($values, 'authorIds');
+        $authorId = ArrayHelper::remove($values, 'authorId');
+
         parent::setAttributesFromRequest($values);
+
+        // Only set the author if the user has permission to change it
+        if (
+            ($authorIds !== null || $authorId !== null) &&
+            isset($this->sectionId)
+        ) {
+            $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            if (
+                $authorIds !== $this->getAuthorIds() &&
+                Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+            ) {
+                $this->setAuthorIds($authorIds);
+            }
+        }
 
         // Did the entry type just change?
         if (isset($this->_typeId, $this->_oldTypeId) && $this->_typeId !== $this->_oldTypeId) {
