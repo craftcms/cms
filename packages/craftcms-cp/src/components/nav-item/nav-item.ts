@@ -2,6 +2,7 @@ import {html, LitElement, css, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import styles from './nav-item.styles';
+import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
 
 /**
  *
@@ -130,7 +131,7 @@ export default class CraftNavItem extends LitElement {
             ${this.indicator ? html`<span class="indicator"></span>` : nothing}
           </slot>
         </span>
-        <slot></slot>
+        <slot id="${this.id}-label"></slot>
 
         <div class="nav-item__suffix">
           <slot name="suffix">
@@ -144,12 +145,15 @@ export default class CraftNavItem extends LitElement {
                     aria-expanded="${this.subnavState === 'open'
                       ? 'true'
                       : 'false'}"
+                    aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
                   >
                     <craft-icon
+                      id="${this.id}-toggle-icon""
                       name="${this.subnavState === 'closed'
                         ? 'chevron-down'
                         : 'chevron-up'}"
                       style="font-size: calc(10rem / 16)"
+                      label="${t('app', 'Toggle subnavigation')}"
                     ></craft-icon>
                   </craft-button>
                 `

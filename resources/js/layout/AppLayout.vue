@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import SystemInfo from '@/components/SystemInfo.vue';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, reactive, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
@@ -71,13 +72,13 @@
           @click="toggleSidebar"
           v-if="!isLargeScreen"
         >
-          <craft-icon :name="sidebarIcon"></craft-icon>
+          <craft-icon :name="sidebarIcon" :label="t('app', 'Toggle menu')"></craft-icon>
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
         <craft-button icon appearance="plain">
-          <craft-icon name="search"></craft-icon>
+          <craft-icon name="search" :label="t('app', 'Search')"></craft-icon>
         </craft-button>
       </div>
     </div>

@@ -27,12 +27,18 @@ export default class CraftButton extends LionButtonSubmit {
     return [...super.styles, styles];
   }
 
-  override firstUpdated() {
+  override async firstUpdated() {
     super.firstUpdated();
+
+    await this.updateComplete;
+
+    const childComponents = this.querySelectorAll('craft-icon, craft-spinner');
+    await Promise.all(
+      Array.from(childComponents).map((child: any) => child.updateComplete)
+    );
 
     if (!this.accessibleName) {
       this.accessibleName = computeAccessibleName(this);
-      console.log(this.accessibleName);
     }
 
     this._hasAccessibilityError = !this.accessibleName || this.accessibleName.trim() === '';
