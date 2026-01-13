@@ -37,3 +37,4 @@
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
+- Fixed a permission escalation vulnerability. (GHSA-jxm3-pmm2-9gf6)
