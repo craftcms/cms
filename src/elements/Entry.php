@@ -854,9 +854,7 @@ class Entry extends Element implements ExpirableElementInterface
             ['authorId'],
             function($attribute) {
                 if (!$this->getAuthor()->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
-                    $this->addError($attribute, Craft::t('yii', '{attribute} is invalid.', [
-                        'attribute' => $this->getAttributeLabel($attribute),
-                    ]));
+                    $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
                 }
             },
             'when' => fn() => $this->getSection()->type !== Section::TYPE_SINGLE,
