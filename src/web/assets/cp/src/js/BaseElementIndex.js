@@ -275,6 +275,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $('.body, .content', this.$container).removeClass('has-sidebar');
       }
 
+      // Get the request query params before we start changing anything
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
+
       // Find the sources
       // ---------------------------------------------------------------------
 
@@ -440,43 +444,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.filterHuds = {};
       this.addListener(this.$filterBtn, 'click', 'showFilterHud');
 
-      // Set the default status
-      // ---------------------------------------------------------------------
-
-      const queryParams =
-        this.settings.context === 'index' ? Craft.getQueryParams() : {};
-
-      if (queryParams.status) {
-        let selector;
-        switch (queryParams.status) {
-          case 'trashed':
-            selector = '[data-trashed]';
-            break;
-          case 'drafts':
-            selector = '[data-drafts]';
-            break;
-          default:
-            selector = `[data-status="${queryParams.status}"]`;
-        }
-
-        const $option = this.statusMenu.$options.filter(selector);
-        if ($option.length) {
-          this.statusMenu.selectOption($option[0]);
-        } else {
-          Craft.setQueryParam('status', null);
-        }
-      }
-
       // Initialize the Export button
       // ---------------------------------------------------------------------
 
       this.addListener(this.$exportBtn, 'click', '_showExportHud');
-
-      // Let everyone know that the UI is initialized
-      // ---------------------------------------------------------------------
-
-      this.initialized = true;
-      this.afterInit();
 
       // Select the initial source + source path
       // ---------------------------------------------------------------------
@@ -607,6 +578,36 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.setSelectedSortAttribute(attr, dir);
         }
       }
+
+      // Set the default status
+      // ---------------------------------------------------------------------
+
+      if (queryParams.status) {
+        let selector;
+        switch (queryParams.status) {
+          case 'trashed':
+            selector = '[data-trashed]';
+            break;
+          case 'drafts':
+            selector = '[data-drafts]';
+            break;
+          default:
+            selector = `[data-status="${queryParams.status}"]`;
+        }
+
+        const $option = this.statusMenu.$options.filter(selector);
+        if ($option.length) {
+          this.statusMenu.selectOption($option[0]);
+        } else {
+          Craft.setQueryParam('status', null);
+        }
+      }
+
+      // Let everyone know that the UI is initialized
+      // ---------------------------------------------------------------------
+
+      this.initialized = true;
+      this.afterInit();
 
       // Load the first batch of elements!
       // ---------------------------------------------------------------------
@@ -3078,7 +3079,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         Craft.setQueryParam('status', queryParam);
       }
 
-      this.updateElements();
+      if (this.initialized) {
+        this.updateElements();
+      }
     },
 
     _handleSiteChange: function (ev) {

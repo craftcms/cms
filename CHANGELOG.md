@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where custom Login page logos could be sized incorrectly. ([#18229](https://github.com/craftcms/cms/pull/18229))
+- Fixed a bug where element index pages weren’t preserving “Trashed” status selections between page loads. ([#18230](https://github.com/craftcms/cms/issues/18230))
 
 ## 5.8.22 - 2026-01-09
 
