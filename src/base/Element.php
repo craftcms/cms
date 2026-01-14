@@ -4011,6 +4011,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function setAttributesFromRequest(array $values): void
+    {
+        $this->setAttributes($values);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeStatus(string $attribute): ?array
     {
         if ($this->isAttributeModified($attribute)) {
