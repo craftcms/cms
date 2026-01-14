@@ -393,13 +393,9 @@ class Yii2ServiceProvider extends ServiceProvider
         ));
 
         /**
-         * Load Craft when necessary
+         * Load legacy Craft
          */
-        spl_autoload_register(function($class) {
-            if ($class === 'Craft' || $class === 'Yii') {
-                app('Craft');
-            }
-        });
+        app('Craft');
 
         $this->ensureNewMigrationTable();
         $this->ensureNewSessionsTable();
@@ -413,6 +409,13 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function bootLegacyCommands(): void
     {
+        /**
+         * Don't need these for Laravel tests.
+         */
+        if (app()->environment('testing')) {
+            return;
+        }
+
         /** @var \craft\console\Application $app */
         $app = app('Craft');
 
