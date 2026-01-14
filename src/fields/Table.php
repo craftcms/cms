@@ -17,6 +17,7 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -137,13 +138,22 @@ class Table extends Field
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (!empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
                             $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        }
+                    }
+                }
+                // encode the default cell values for html-type cells
+                if ($col['type'] == 'html') {
+                    foreach ($config['defaults'] as &$row) {
+                        if (isset($row[$colId])) {
+                            $row[$colId] = Html::encode($row[$colId]);
                         }
                     }
                 }
