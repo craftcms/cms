@@ -673,9 +673,6 @@ class Table extends Field
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
-                
-            case 'heading':
-                return Html::encode($value);
         }
 
         return $value;
@@ -754,7 +751,10 @@ class Table extends Field
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
-                        'value' => $row[$colId],
+                        'value' => match ($col['type']) {
+                            'heading' => Html::encode($row[$colId]),
+                            default => $row[$colId],
+                        },
                         'hasErrors' => $hasErrors,
                     ];
                 }
