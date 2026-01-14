@@ -16,7 +16,6 @@ use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
@@ -26,10 +25,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -199,36 +196,7 @@ class Application extends \yii\web\Application
 
             $isCpRequest = $request->getIsCpRequest();
             $response = $this->getResponse();
-            $headers = $response->getHeaders();
             $generalConfig = Cms::config();
-
-            // Set no-cache headers for all action and CP requests
-            if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
-                $response->setNoCacheHeaders();
-            }
-
-            // Set the permissions policy
-            if ($generalConfig->permissionsPolicyHeader && $request->getIsSiteRequest()) {
-                $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
-            }
-
-            // Tell bots not to index/follow control panel and tokenized pages
-            if (
-                $generalConfig->disallowRobots ||
-                $isCpRequest ||
-                $request->getToken() !== null ||
-                $request->getIsPreview() ||
-                ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
-            ) {
-                $headers->set('X-Robots-Tag', 'none');
-            }
-
-            // Prevent some possible XSS attack vectors
-            if ($isCpRequest) {
-                $headers->add('Content-Security-Policy', "frame-ancestors 'self'");
-                $headers->set('X-Frame-Options', 'SAMEORIGIN');
-                $headers->set('X-Content-Type-Options', 'nosniff');
-            }
 
             // Process install requests
             if (($response = $this->_processInstallRequest($request)) !== null) {
@@ -261,20 +229,6 @@ class Application extends \yii\web\Application
                             return $this->runAction('users/setup-2fa');
                         }
                     }
-
-                    if ($isCpRequest && !Edition::canTest()) {
-                        // Are there are any licensing issues cached?
-                        $licenseIssues = app(License::class)->issues(false);
-                        if (!empty($licenseIssues)) {
-                            $hash = app(License::class)->issuesHash($licenseIssues);
-                            if ($this->_showLicensingIssuesScreen($hash)) {
-                                return $this->runAction('app/licensing-issues', [
-                                    'issues' => $licenseIssues,
-                                    'hash' => $hash,
-                                ]);
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -291,23 +245,6 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
             throw $e;
         }
-    }
-
-    private function _showLicensingIssuesScreen(string $hash = null): bool
-    {
-        $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
-        if (!$cookie) {
-            return true;
-        }
-
-        // the cookie is only valid if it's for the same set of issues we're currently seeing
-        $data = Json::decode($cookie->value);
-        if ($data['hash'] !== $hash) {
-            return true;
-        }
-
-        // if the cookie was created earlier today, let them pass
-        return !DateTimeHelper::isToday($data['timestamp']);
     }
 
     /**
