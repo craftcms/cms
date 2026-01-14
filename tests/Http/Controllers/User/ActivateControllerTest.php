@@ -74,7 +74,7 @@ it('requires login for sendActivationEmail', function () {
 
 test('sendActivationEmail works for pending users without moderateUsers permission', function () {
     $this->partialMock(Users::class)
-        ->shouldReceive('sendActivationMail')
+        ->shouldReceive('sendActivationEmail')
         ->andReturnTrue();
 
     Edition::set(Edition::Pro);
@@ -94,7 +94,7 @@ test('sendActivationEmail works for pending users without moderateUsers permissi
 
 test('sendActivationEmail requires moderateUsers for inactive (non-pending) users', function () {
     $this->partialMock(Users::class)
-        ->shouldReceive('sendActivationMail')
+        ->shouldReceive('sendActivationEmail')
         ->andReturnTrue();
 
     Edition::set(Edition::Pro);
