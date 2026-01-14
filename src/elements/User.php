@@ -1435,7 +1435,8 @@ XML;
 
         return (
             $user->id !== $this->id &&
-            $user->can('deleteUsers')
+            $user->can('deleteUsers') &&
+            (!$this->admin || $user->admin)
         );
     }
 
