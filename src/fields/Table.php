@@ -17,6 +17,7 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -672,6 +673,9 @@ class Table extends Field
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
+                
+            case 'heading':
+                return Html::encode($value);
         }
 
         return $value;

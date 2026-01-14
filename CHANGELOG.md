@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an XSS vulnerability. (GHSA-6j87-m5qx-9fqp)
+
 ## 4.16.18 - 2026-01-09
 
 - The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
