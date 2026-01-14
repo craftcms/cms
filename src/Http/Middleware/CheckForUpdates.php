@@ -25,7 +25,7 @@ final readonly class CheckForUpdates
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! Craft::$app->getIsInstalled()) {
+        if (! Cms::isInstalled()) {
             return $next($request);
         }
 

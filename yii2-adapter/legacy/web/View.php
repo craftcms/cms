@@ -26,6 +26,7 @@ use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -436,7 +437,7 @@ class View extends \yii\web\View
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
-        } elseif (Craft::$app->getIsInstalled()) {
+        } elseif (Cms::isInstalled()) {
             $twig->addExtension(new FeExtension());
 
             if (Cms::config()->preloadSingles) {
@@ -1064,7 +1065,7 @@ class View extends \yii\web\View
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
+        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Cms::isInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
             $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
             if (is_dir($sitePath)) {

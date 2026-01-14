@@ -91,6 +91,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -2713,7 +2714,7 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if (!isset($this->siteId) && Craft::$app->getIsInstalled()) {
+        if (!isset($this->siteId) && Cms::isInstalled()) {
             $this->siteId = Sites::getPrimarySite()->id;
         }
 
@@ -2901,7 +2902,7 @@ abstract class Element extends Component implements ElementInterface
             'uri' => t('URI'),
         ];
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Cms::isInstalled()) {
             $layout = $this->getFieldLayout();
 
             if ($layout !== null) {
@@ -3020,7 +3021,7 @@ abstract class Element extends Component implements ElementInterface
     public function afterValidate(): void
     {
         if (
-            Craft::$app->getIsInstalled() &&
+            Cms::isInstalled() &&
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();

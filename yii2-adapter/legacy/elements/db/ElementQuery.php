@@ -28,6 +28,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -1621,7 +1622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && !Updates::isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !Updates::isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }

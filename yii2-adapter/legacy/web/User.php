@@ -497,7 +497,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (!Craft::$app->getIsInstalled()) {
+        if (!Cms::isInstalled()) {
             return;
         }
 

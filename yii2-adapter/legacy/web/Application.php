@@ -490,7 +490,7 @@ class Application extends \yii\web\Application
     private function _processInstallRequest(Request $request): ?BaseResponse
     {
         $isCpRequest = $request->getIsCpRequest();
-        $isInstalled = $this->getIsInstalled();
+        $isInstalled = Cms::isInstalled();
 
         if (!$isInstalled) {
             $this->_unregisterDebugModule();

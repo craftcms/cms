@@ -12,7 +12,6 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
@@ -79,7 +78,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootAliases();
 
         $this->app->booted(function () {
-            if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+            if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
                 app(GarbageCollection::class)->run();
             }

@@ -327,7 +327,7 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, $this->handleChangeEvent(...));
         Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
-        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
+        $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
     }
 
@@ -1659,7 +1659,7 @@ final class ProjectConfig
      */
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
@@ -1938,7 +1938,7 @@ final class ProjectConfig
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             try {
                 $storedConfigVersion = DB::table(Table::INFO)->value('configVersion');
             } catch (Throwable) {
