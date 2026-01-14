@@ -88,9 +88,9 @@ final readonly class Cms
             return $isInstalled;
         } catch (Throwable $e) {
             Log::error('There was a problem fetching the info row: '.$e->getMessage(), [__METHOD__]);
-            report($e);
-
             Context::addHidden('craft.isInstalled', false);
+
+            report($e);
 
             return false;
         }

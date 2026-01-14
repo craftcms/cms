@@ -26,6 +26,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
     public function __construct(
         private HasherContract $hasher,
         private Users $users,
+        private Auth $auth,
     ) {}
 
     /**
@@ -105,7 +106,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
      */
     public function validateCredentials(Authenticatable $user, #[SensitiveParameter] array $credentials): bool
     {
-        return app(Auth::class)->authenticate($user, $credentials);
+        return $this->auth->authenticate($user, $credentials);
     }
 
     /**
@@ -127,6 +128,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
 
     public function getAuthError(): ?AuthError
     {
-        return app(Auth::class)->authError;
+        return $this->auth->authError;
     }
 }
