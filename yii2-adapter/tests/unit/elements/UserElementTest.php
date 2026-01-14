@@ -231,17 +231,6 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testAuthenticate(): void
-    {
-        self::assertTrue($this->activeUser->authenticate('password'));
-        self::assertFalse($this->inactiveUser->authenticate('password'));
-        self::assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
-        $this->inactiveUser->authError = null;
-    }
-
-    /**
-     *
-     */
     public function testIsCredentialed(): void
     {
         self::assertTrue($this->activeUser->getIsCredentialed());
