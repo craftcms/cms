@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed an XSS vulnerability. (GHSA-3jh3-prx3-w6wc)
+- Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
 
 ## 4.16.18 - 2026-01-09
 
