@@ -51,7 +51,7 @@
   <div class="grid grid-cols-5 gap-2">
     <div class="col-span-2">
       <craft-select
-        :label="t('app', 'Driver')"
+        :label="t('Driver')"
         name="driver"
         id="db-driver"
         .modelValue="model.driver"
@@ -75,7 +75,7 @@
     </div>
     <div class="col-span-2">
       <craft-input
-        :label="t('app', 'Host')"
+        :label="t('Host')"
         name="host"
         id="db-host"
         v-model="model.host"
@@ -88,7 +88,7 @@
     </div>
     <div>
       <craft-input
-        :label="t('app', 'Port')"
+        :label="t('Port')"
         name="port"
         id="db-port"
         v-model="model.port"
@@ -110,7 +110,7 @@
   <div class="grid grid-cols-2 gap-2">
     <div>
       <craft-input
-        :label="t('app', 'Username')"
+        :label="t('Username')"
         name="username"
         id="db-username"
         v-model="model.username"
@@ -124,7 +124,7 @@
 
     <div>
       <craft-input-password
-        :label="t('app', 'Password')"
+        :label="t('Password')"
         name="password"
         id="db-password"
         v-model="model.password"
@@ -145,7 +145,7 @@
   <div class="grid grid-cols-4 gap-2">
     <div class="col-span-2">
       <craft-input
-        :label="t('app', 'Database Name')"
+        :label="t('Database Name')"
         name="name"
         id="db-database"
         v-model="model.database"
@@ -158,7 +158,7 @@
 
     <div>
       <craft-input
-        :label="t('app', 'Prefix')"
+        :label="t('Prefix')"
         name="prefix"
         id="db-prefix"
         v-model="model.prefix"

@@ -384,7 +384,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (!Craft::$app->getIsInstalled()) {
+        if (!Cms::isInstalled()) {
             return;
         }
 
@@ -448,7 +448,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     private function _clearOtherSessionParams(): void
     {
         // Make sure 2FA data doesn't bleed over
-        auth()->logout();
+        app(\CraftCms\Cms\Auth\Auth::class)->setUser(null);
         SessionHelper::remove(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

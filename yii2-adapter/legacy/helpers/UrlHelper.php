@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Request as ConsoleRequest;
 use craft\web\Request as WebRequest;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -509,7 +510,7 @@ class UrlHelper
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw $e;
             }
         }

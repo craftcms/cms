@@ -131,7 +131,7 @@ it('determines if the edition can be upgraded', function () {
 it('can require a certain edition', function (Edition $edition, Edition|int $requiredEdition, bool $orBetter, bool $throws) {
     Edition::set($edition);
 
-    Craft::$app->setIsInstalled();
+    Cms::setIsInstalled();
     ProjectConfig::reset();
 
     $thrown = false;

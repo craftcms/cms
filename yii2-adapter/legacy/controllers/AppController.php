@@ -7,6 +7,7 @@
 
 namespace craft\controllers;
 
+use Carbon\CarbonInterval;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
@@ -190,6 +191,7 @@ class AppController extends Controller
      * @param string $hash
      * @return Response
      * @internal
+     * @deprecated 6.0.0 {@see \CraftCms\Cms\Http\Middleware\EnforceLicenses}
      */
     public function actionLicensingIssues(array $issues, string $hash): Response
     {
@@ -237,20 +239,19 @@ class AppController extends Controller
     public function actionSetLicenseShunCookie(): Response
     {
         $cookieName = app(License::class)->shunCookieName();
-        $oldCookie = $this->request->getCookies()->get($cookieName);
-        $data = $oldCookie ? Json::decode($oldCookie->value) : [];
+        $oldCookie = \Illuminate\Support\Facades\Cookie::get($cookieName);
+        $data = $oldCookie ? Json::decode($oldCookie) : [];
 
-        $newCookie = new Cookie(Craft::cookieConfig([
-            'name' => $cookieName,
-            'value' => Json::encode([
+        \Illuminate\Support\Facades\Cookie::queue(
+            $cookieName,
+            Json::encode([
                 'hash' => $this->request->getRequiredBodyParam('hash'),
                 'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
                 'count' => ($data['count'] ?? 0) + 1,
             ]),
-            'expire' => DateTimeHelper::now()->modify('+1 year')->getTimestamp(),
-        ], $this->request));
+            CarbonInterval::year()->totalMinutes,
+        );
 
-        $this->response->getCookies()->add($newCookie);
         return $this->asSuccess();
     }
 

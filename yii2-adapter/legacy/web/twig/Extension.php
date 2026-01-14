@@ -1802,7 +1802,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getGlobals(): array
     {
-        $isInstalled = Craft::$app->getIsInstalled();
+        $isInstalled = Cms::isInstalled();
         $generalConfig = Cms::config();
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
         $updates = app(Updates::class);

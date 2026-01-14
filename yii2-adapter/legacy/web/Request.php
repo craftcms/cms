@@ -237,7 +237,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn’t installed yet or is in the middle of updating
-            if (Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -1422,7 +1422,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             } else {
                 $site = Sites::getSiteByHandle($siteId, false);
             }
-            if (!$site && Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (!$site && Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
             return $site;

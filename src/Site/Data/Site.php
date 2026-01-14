@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Site\Data;
 
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Support\Env;
@@ -94,12 +94,12 @@ final class Site extends Dto implements Chippable, Stringable
                 'required',
                 'string',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Info::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
+                Cms::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
             'name' => array_filter([
                 'required',
                 'string',
-                Info::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
+                Cms::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
         ];
     }

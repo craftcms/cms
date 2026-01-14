@@ -9,11 +9,11 @@ use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\helpers\Queue;
 use craft\queue\jobs\PropagateElements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
 use CraftCms\Cms\Site\Events\DeletingSite;
@@ -211,7 +211,7 @@ final class Sites
         // Did something go wrong?
         if (! $this->currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && ! $this->updates->isCraftUpdatePending()) {
+            if (Cms::isInstalled() && ! $this->updates->isCraftUpdatePending()) {
                 throw new InvalidArgumentException('Invalid site: '.$site);
             }
 
@@ -817,7 +817,7 @@ final class Sites
         $this->allSitesById = collect();
         $this->enabledSitesById = collect();
 
-        if (! Info::isInstalled(true)) {
+        if (! Cms::isInstalled(true)) {
             return;
         }
 

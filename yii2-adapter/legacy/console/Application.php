@@ -13,6 +13,7 @@ use craft\console\controllers\HelpController;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if ($this->_requireInfoTable($route, $params) && !$this->getIsInstalled(true)) {
+        if ($this->_requireInfoTable($route, $params) && !Cms::isInstalled(true)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');

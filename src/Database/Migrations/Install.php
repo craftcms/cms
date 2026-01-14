@@ -1099,7 +1099,7 @@ class Install extends Migration
         $projectConfig->flush();
 
         // Craft, you are installed now.
-        Info::setIsInstalled();
+        Cms::setIsInstalled();
 
         Sites::refreshSites();
 

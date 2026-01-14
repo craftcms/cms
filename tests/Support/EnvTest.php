@@ -127,7 +127,10 @@ test('parse', function () {
     }
 });
 
-test('parseBoolean', function (?bool $expected, mixed $value) {
+test('parseBoolean', function (?bool $expected, mixed $value, array $values = []) {
+    foreach ($values as $name => $v) {
+        putenv("$name=$v");
+    }
     expect(Env::parseBoolean($value))->toBe($expected);
 })->with([
     [true, true],
@@ -146,6 +149,16 @@ test('parseBoolean', function (?bool $expected, mixed $value) {
     [false, 0],
     [null, 2],
     [null, '$TEST_MISSING'],
+    [
+        false,
+        '$TEST_FALSE',
+        ['TEST_FALSE' => 'false'],
+    ],
+    [
+        true,
+        '$TEST_TRUE',
+        ['TEST_TRUE' => 'true'],
+    ],
 ]);
 
 test('config', function (mixed $expected, string $paramName, string $overrideName, mixed $overrideValue) {
