@@ -189,4 +189,4 @@
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed a bug where Matrix and Addresses fields weren’t loading provisional drafts for GraphQL preview requests.
 - Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Fixed a permission escalation vulnerability. (GHSA-jxm3-pmm2-9gf6)
+- Fixed permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
