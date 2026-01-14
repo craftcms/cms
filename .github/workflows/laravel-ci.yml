@@ -127,7 +127,7 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: php -d memory_limit=2048M ./vendor/bin/pest
+        run: vendor/bin/pest
 
       - name: Set version
         run: composer config version "6.x-dev"
