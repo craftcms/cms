@@ -199,7 +199,7 @@ class ElementsController extends Controller
         if ($this->_siteId) {
             $element->siteId = $this->_siteId;
         }
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         $user = static::currentUser();
 
@@ -2113,7 +2113,7 @@ JS, [
 
         $scenario = $element->getScenario();
         $element->setScenario(Element::SCENARIO_LIVE);
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         if ($this->_slug !== null) {
             $element->slug = $this->_slug;
