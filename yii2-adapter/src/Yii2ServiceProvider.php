@@ -358,13 +358,9 @@ class Yii2ServiceProvider extends ServiceProvider
         ));
 
         /**
-         * Load Craft when necessary
+         * Load legacy Craft
          */
-        spl_autoload_register(function($class) {
-            if ($class === 'Craft' || $class === 'Yii') {
-                app('Craft');
-            }
-        });
+        app('Craft');
 
         $this->ensureNewMigrationTable();
 
