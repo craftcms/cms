@@ -40,6 +40,8 @@ use yii\validators\EmailValidator;
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface
 {
+    private static array $typeOptions;
+
     /**
      * @inheritdoc
      */
@@ -62,6 +64,31 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (!isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => Craft::t('app', 'Checkbox'),
+                'color' => Craft::t('app', 'Color'),
+                'date' => Craft::t('app', 'Date'),
+                'select' => Craft::t('app', 'Dropdown'),
+                'email' => Craft::t('app', 'Email'),
+                'heading' => Craft::t('app', 'Row heading'),
+                'lightswitch' => Craft::t('app', 'Lightswitch'),
+                'multiline' => Craft::t('app', 'Multi-line text'),
+                'number' => Craft::t('app', 'Number'),
+                'singleline' => Craft::t('app', 'Single-line text'),
+                'time' => Craft::t('app', 'Time'),
+                'url' => Craft::t('app', 'URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -149,9 +176,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (!empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
@@ -203,7 +231,13 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
      */
     public function validateColumns(): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (!isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if ($col['handle']) {
                 $error = null;
 
@@ -262,24 +296,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
     private function settingsHtml(bool $readOnly): string
     {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
-
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -301,7 +317,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
