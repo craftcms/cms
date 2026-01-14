@@ -1834,6 +1834,7 @@ return [
     'This tab is conditional' => 'This tab is conditional',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.',
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
+    'This user doesn’t have permission to author entries in this section.' => 'This user doesn’t have permission to author entries in this section.',
     'This week' => 'This week',
     'This year' => 'This year',
     'This {type} doesn’t have revisions.' => 'This {type} doesn’t have revisions.',

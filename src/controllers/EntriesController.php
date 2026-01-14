@@ -569,14 +569,14 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author') ?? $entry->getAuthorId() ?? static::currentUser()->id,
+            'expiryDate' => $this->request->getBodyParam('expiryDate'),
+            'postDate' => $this->request->getBodyParam('postDate'),
+            'slug' => $this->request->getBodyParam('slug'),
+            'title' => $this->request->getBodyParam('title'),
+            'typeId' => $this->request->getBodyParam('typeId'),
+        ], fn($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -586,7 +586,6 @@ class EntriesController extends BaseEntriesController
             $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
@@ -594,10 +593,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Authors
-        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (!$entry->id) {
+        if (empty($entry->getAuthorIds()) && !$entry->id) {
             $entry->setAuthor(static::currentUser());
         }
 
