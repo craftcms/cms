@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\View;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Timebox;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,7 +60,7 @@ final readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, Auth $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'loginName' => ['required', 'string'],
@@ -68,20 +68,21 @@ final readonly class LoginController extends AuthenticationController
             'rememberMe' => ['nullable'],
         ]);
 
-        /** @var \Illuminate\Auth\SessionGuard $guard */
-        $guard = Auth::guard('craft');
-        /** @var \CraftCms\Cms\Auth\UserProvider $provider */
-        $provider = $guard->getProvider();
+        /**
+         * @var \CraftCms\Cms\Auth\UserProvider $provider
+         * @phpstan-ignore method.notFound
+         */
+        $provider = auth('craft')->getProvider();
 
         $user = $provider->retrieveByCredentials($request->only('loginName', 'password'));
 
-        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
+        return new Timebox()->call(function () use ($request, $auth, $provider, $user, $impersonation) {
             if (! $user || $user->password === null) {
-                return $this->handleLoginFailure($request, User::AUTH_INVALID_CREDENTIALS);
+                return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
             }
 
             if (! $provider->validateCredentials($user, ['password' => $request->input('password')])) {
-                return $this->handleLoginFailure($request, $user->authError, $user);
+                return $this->handleLoginFailure($request, $provider->getAuthError(), $user);
             }
 
             // Valid credentials
@@ -89,9 +90,8 @@ final readonly class LoginController extends AuthenticationController
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
-            $authService = Craft::$app->getAuth();
-            if (! $this->generalConfig->disable2fa && $authService->hasActiveMethod($user)) {
-                $request->session()->put('user.id', $user->id);
+            if (! $this->generalConfig->disable2fa && $auth->hasActiveMethod($user)) {
+                $auth->setUser($user);
 
                 if (! $request->isCpRequest() && ! $request->wantsJson()) {
                     $loginPath = $this->generalConfig->getLoginPath();
@@ -112,7 +112,7 @@ final readonly class LoginController extends AuthenticationController
 
             // if we're impersonating, pass the user we're impersonating to the complete method
             if ($impersonation->isImpersonating()) {
-                $user = Auth::user() ?? $user;
+                $user = $request->user() ?? $user;
             }
 
             return $this->completeLogin($request, $user, $request->boolean('rememberMe'));
@@ -121,7 +121,7 @@ final readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
-        Auth::guard('craft')->logout();
+        auth('craft')->logout();
 
         if ($request->wantsJson()) {
             return $this->asSuccess();

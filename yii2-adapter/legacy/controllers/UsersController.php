@@ -240,6 +240,7 @@ class UsersController extends Controller
      *
      * @return Response
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Http\Middleware\Enforce2fa} instead.
      */
     public function actionSetup2fa(): Response
     {
@@ -717,9 +718,7 @@ class UsersController extends Controller
     public function actionAuthForm(): Response
     {
         // If the current user is being impersonated, use the impersonator
-        $userSession = Craft::$app->getUser();
-        $authService = Craft::$app->getAuth();
-        $user = app(Impersonation::class)->getImpersonator() ?? Auth::user();
+        $user = app(Impersonation::class)->getImpersonator() ?? app(\CraftCms\Cms\Auth\Auth::class)->getUser();
 
         if (!$user) {
             if ($this->request->getIsSiteRequest()) {
@@ -733,24 +732,24 @@ class UsersController extends Controller
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
-        $activeMethods = $authService->getActiveMethods($user);
+        $activeMethods = app(\CraftCms\Cms\Auth\Auth::class)->getActiveMethods($user);
         $methodClass = $this->request->getParam('method');
 
         if ($methodClass) {
             /** @var AuthMethodInterface|null $method */
-            $method = Arr::first(
-                $activeMethods,
+            $method = $activeMethods->first(
                 fn(AuthMethodInterface $method) => $method::class === $methodClass,
             );
+
             if (!$method) {
                 throw new BadRequestHttpException("Invalid method class: $methodClass");
             }
-            $activeMethods = array_values(array_filter($activeMethods, fn($m) => $m !== $method));
+            $activeMethods = $activeMethods->filter(fn($m) => $m !== $method)->values();
         } else {
-            if (empty($activeMethods)) {
+            if ($activeMethods->isEmpty()) {
                 throw new BadRequestHttpException('User has no active two-step verification methods.');
             }
-            $method = array_shift($activeMethods);
+            $method = $activeMethods->first();
         }
 
         $view = $this->getView();
@@ -775,10 +774,10 @@ class UsersController extends Controller
 
         $authFormData = [
             'authMethod' => $method::class,
-            'otherMethods' => array_map(fn(AuthMethodInterface $method) => [
+            'otherMethods' => $activeMethods->map(fn(AuthMethodInterface $method) => [
                 'name' => $method::displayName(),
                 'class' => $method::class,
-            ], $activeMethods),
+            ])->all(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,
         ];

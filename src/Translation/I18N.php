@@ -290,6 +290,14 @@ final class I18N
             $translation = $char.$translation.$char;
         }
 
+        /**
+         * If we don't have a translation for the message.
+         * Translate it using Laravel's translations.
+         */
+        if ($translation === (string) $message) {
+            return __($message, $parameters, $locale);
+        }
+
         return $translation;
     }
 

@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
+use Craft;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use SensitiveParameter;
 
+#[Scoped]
 final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
 {
     /**
      * Create a new Craft user provider.
      */
     public function __construct(
-        private HasherContract $hasher
+        private HasherContract $hasher,
+        private Users $users,
+        private Auth $auth,
     ) {}
 
     /**
@@ -83,7 +89,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
             $user = $event->user;
         }
 
-        $user ??= Users::getUserByUsernameOrEmail($loginName);
+        $user ??= $this->users->getUserByUsernameOrEmail($loginName);
 
         if (Event::hasListeners(LoginUserRetrieved::class)) {
             Event::dispatch($event = new LoginUserRetrieved($loginName, $user));
@@ -96,18 +102,12 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
 
     /**
      * {@inheritDoc}
+     *
+     * @param  User  $user
      */
     public function validateCredentials(Authenticatable $user, #[SensitiveParameter] array $credentials): bool
     {
-        if (is_null($plain = $credentials['password'])) {
-            return false;
-        }
-
-        if (is_null($hashed = $user->getAuthPassword())) {
-            return false;
-        }
-
-        return $this->hasher->check($plain, $hashed);
+        return $this->auth->authenticate($user, $credentials);
     }
 
     /**
@@ -125,5 +125,10 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         DB::table(Table::USERS)
             ->where('id', $user->getAuthIdentifier())
             ->update([$user->getAuthPasswordName() => $this->hasher->make($credentials['password'])]);
+    }
+
+    public function getAuthError(): ?AuthError
+    {
+        return $this->auth->authError;
     }
 }

@@ -81,7 +81,7 @@ final class AppServiceProvider extends ServiceProvider
              * but we provide a sensible default.
              */
             if (! Password::$defaultCallback) {
-                Password::defaults(fn () => Password::min(8)->max(255)->uncompromised());
+                Password::defaults(fn () => Password::min(8)->max(255));
             }
 
             if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {

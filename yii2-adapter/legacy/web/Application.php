@@ -122,7 +122,6 @@ class Application extends \yii\web\Application
         // Process resource requests before we do anything to establish the user session
         $this->_processResourceRequest();
 
-        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -253,15 +252,6 @@ class Application extends \yii\web\Application
                 }
 
                 if (!Auth::guest()) {
-                    // See if the user is expected to have 2FA enabled
-                    if (!$generalConfig->disable2fa) {
-                        $auth = $this->getAuth();
-                        $user = Auth::user();
-                        if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
-                            return $this->runAction('users/setup-2fa');
-                        }
-                    }
-
                     if ($isCpRequest && !Edition::canTest()) {
                         // Are there are any licensing issues cached?
                         $licenseIssues = app(License::class)->issues(false);
@@ -366,38 +356,6 @@ class Application extends \yii\web\Application
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
-    }
-
-    /**
-     * Authenticates the request.
-     *
-     * @throws UnauthorizedHttpException
-     * @since 3.5.0
-     */
-    protected function authenticate(): void
-    {
-        if (!Cms::config()->enableBasicHttpAuth) {
-            return;
-        }
-
-        // Did the request include user credentials?
-        [$username, $password] = $this->getRequest()->getAuthCredentials();
-
-        if (!$username || !$password) {
-            return;
-        }
-
-        $user = Users::getUserByUsernameOrEmail(Db::escapeParam($username));
-
-        if (!$user) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        if (!$user->authenticate($password)) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        $this->getUser()->setIdentity(new IdentityWrapper($user));
     }
 
     /**

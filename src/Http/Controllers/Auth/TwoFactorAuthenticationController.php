@@ -10,11 +10,11 @@ use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\UrlHelper;
 use craft\web\View;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +32,7 @@ final readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request, Impersonation $impersonation): Response|string
+    public function showForm(Request $request, Auth $auth, Impersonation $impersonation): Response|string
     {
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
@@ -49,23 +49,22 @@ final readonly class TwoFactorAuthenticationController
             return redirect(CpAuthPath::Login->value);
         }
 
-        $activeMethods = Craft::$app->getAuth()->getActiveMethods($user);
+        $activeMethods = $auth->getActiveMethods($user);
         $methodClass = $request->input('method');
 
         if ($methodClass) {
             /** @var AuthMethodInterface|null $method */
-            $method = Arr::first(
-                $activeMethods,
+            $method = $activeMethods->first(
                 fn (AuthMethodInterface $method) => $method::class === $methodClass,
             );
 
             abort_if(! $method, 400, 'Invalid method class: '.$methodClass);
 
-            $activeMethods = array_values(array_filter($activeMethods, fn ($m) => $m !== $method));
+            $activeMethods = $activeMethods->filter(fn ($m) => $m !== $method)->values();
         } else {
-            abort_if(empty($activeMethods), 400, 'User has no active two-step verification methods.');
+            abort_if($activeMethods->isEmpty(), 400, 'User has no active two-step verification methods.');
 
-            $method = array_shift($activeMethods);
+            $method = $activeMethods->first();
         }
 
         $view = Craft::$app->getView();
@@ -91,10 +90,10 @@ final readonly class TwoFactorAuthenticationController
 
         $authFormData = [
             'authMethod' => $method::class,
-            'otherMethods' => array_map(fn (AuthMethodInterface $method) => [
+            'otherMethods' => $activeMethods->map(fn (AuthMethodInterface $method) => [
                 'name' => $method::displayName(),
                 'class' => $method::class,
-            ], $activeMethods),
+            ])->all(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,
         ];
@@ -110,7 +109,7 @@ final readonly class TwoFactorAuthenticationController
         return $view->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
     }
 
-    public function verify(Request $request): Response
+    public function verify(Request $request, Auth $auth): Response
     {
         $request->validate([
             'code' => ['required', 'string'],
@@ -118,16 +117,14 @@ final readonly class TwoFactorAuthenticationController
 
         $code = $request->input('code');
 
-        $authService = Craft::$app->getAuth();
-
-        if (! $authService->verify(TOTP::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage());
+        if (! $auth->verifyMethod(TOTP::class, $code)) {
+            return $this->asFailure($auth->getAuthMethodErrorMessage());
         }
 
         return $this->asSuccess(t('Verification successful.'));
     }
 
-    public function verifyRecoveryCode(Request $request): Response
+    public function verifyRecoveryCode(Request $request, Auth $auth): Response
     {
         $request->validate([
             'code' => ['required', 'string'],
@@ -135,10 +132,8 @@ final readonly class TwoFactorAuthenticationController
 
         $code = $request->input('code');
 
-        $authService = Craft::$app->getAuth();
-
-        if (! $authService->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage(t('Invalid recovery code.')));
+        if (! $auth->verifyMethod(RecoveryCodes::class, $code)) {
+            return $this->asFailure($auth->getAuthMethodErrorMessage(t('Invalid recovery code.')));
         }
 
         return $this->asSuccess(t('Verification successful.'));

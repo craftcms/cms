@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Route;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
+use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
@@ -79,6 +80,7 @@ final class RouteServiceProvider extends ServiceProvider
             CheckForUpdates::class,
             SendPoweredByHeader::class,
             FlushProjectConfig::class,
+            Enforce2fa::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

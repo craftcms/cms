@@ -12,9 +12,9 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
@@ -448,8 +448,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     private function _clearOtherSessionParams(): void
     {
         // Make sure 2FA data doesn't bleed over
-        $authService = Craft::$app->getAuth();
-        $authService->setUser(null);
-        SessionHelper::remove($authService->passkeyCreationOptionsParam);
+        auth()->logout();
+        SessionHelper::remove(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

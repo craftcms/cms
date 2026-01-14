@@ -6,7 +6,8 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
 use craft\helpers\UrlHelper;
-use craft\helpers\User as UserHelper;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
 use CraftCms\Cms\Cms;
@@ -20,7 +21,6 @@ use CraftCms\Cms\User\Events\VerifyingEmail;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,11 +31,12 @@ abstract readonly class AuthenticationController
 
     public function __construct(
         protected GeneralConfig $generalConfig,
+        protected Auth $auth,
     ) {}
 
     protected function completeLogin(Request $request, User $user, bool $remember): Response
     {
-        Auth::guard('craft')->login($user, $remember);
+        auth('craft')->login($user, $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }
@@ -53,9 +54,9 @@ abstract readonly class AuthenticationController
         return $this->redirectToPostedUrl($user, $returnUrl);
     }
 
-    protected function handleLoginFailure(Request $request, ?string $authError = null, ?User $user = null): Response
+    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
     {
-        [$authError, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         Event::dispatch(new Failed(
             guard: 'craft',
@@ -63,7 +64,7 @@ abstract readonly class AuthenticationController
             credentials: $request->only('loginName', 'password'),
         ));
 
-        return $this->asFailure($message, ['errorCode' => $authError]);
+        return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
     protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
@@ -97,7 +98,7 @@ abstract readonly class AuthenticationController
 
         // If someone is logged in and it’s not this person, log them out
         if ($request->user() && $request->user()->id !== $user->id) {
-            Auth::logout();
+            auth('craft')->logout();
         }
 
         if (Event::hasListeners(VerifyingEmail::class)) {
@@ -124,7 +125,7 @@ abstract readonly class AuthenticationController
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && ! $user->verificationCode && ! Auth::guest()) {
+        if ($user && ! $user->verificationCode && ! auth('craft')->guest()) {
             return redirect(URL::returnUrl());
         }
 
@@ -155,7 +156,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        Auth::login($user);
+        auth('craft')->login($user);
 
         return true;
     }

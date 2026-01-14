@@ -1079,25 +1079,6 @@ class GeneralConfig extends BaseConfig
     public bool $asyncCsrfInputs = false;
 
     /**
-     * @var bool Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableBasicHttpAuth(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @since 3.5.0
-     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
-     */
-    public bool $enableBasicHttpAuth = false;
-
-    /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
      *           stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
      *           it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
@@ -4551,25 +4532,6 @@ class GeneralConfig extends BaseConfig
     public function asyncCsrfInputs(bool $value = true): self
     {
         $this->asyncCsrfInputs = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ```php
-     * ->enableBasicHttpAuth(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $enableBasicHttpAuth
-     * @since 4.2.0
-     */
-    public function enableBasicHttpAuth(bool $value = true): self
-    {
-        $this->enableBasicHttpAuth = $value;
 
         return $this;
     }

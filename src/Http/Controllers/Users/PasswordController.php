@@ -114,11 +114,11 @@ final readonly class PasswordController
     {
         $this->requirePermission('administrateUsers');
 
-        $validated = $request->validate([
+        $request->validate([
             'userId' => ['required', 'int', Rule::exists(Table::USERS, 'id')],
         ]);
 
-        $user = $users->getUserById($validated['userId']);
+        $user = $users->getUserById($request->integer('userId'));
 
         abort_if(is_null($user), 400, 'User not found');
 
@@ -202,7 +202,7 @@ final readonly class PasswordController
         }, 100_000);
     }
 
-    private function handleSendPasswordResetError(array $errors, ?string $loginName = null): \Symfony\Component\HttpFoundation\Response
+    private function handleSendPasswordResetError(array $errors, ?string $loginName = null): Response
     {
         $errorString = implode(', ', $errors);
 

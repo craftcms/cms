@@ -11,8 +11,8 @@ use Craft;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
@@ -159,9 +159,8 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $message =
-                UserHelper::getAuthFailureMessage($exception->identity) ??
-                $message;
+            $info = app(\CraftCms\Cms\Auth\Auth::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $message = $info[1] ?? $message;
         }
 
         // Log some context around the error

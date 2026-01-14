@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 final readonly class PasskeyController extends AuthenticationController
 {
-    public function requestOptions(): JsonResponse
+    public function requestOptions(Passkeys $passkeys): JsonResponse
     {
         return new JsonResponse([
-            'options' => Craft::$app->getAuth()->getPasskeyRequestOptions(),
+            'options' => $passkeys->getPasskeyRequestOptions(),
         ]);
     }
 
-    public function login(Request $request, Impersonation $impersonation): Response
+    public function login(Request $request, Auth $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'requestOptions' => ['required'],
@@ -46,13 +46,13 @@ final readonly class PasskeyController extends AuthenticationController
             return $this->handleLoginFailure($request);
         }
 
-        if (! $user->authenticateWithPasskey($requestOptions, $response)) {
-            return $this->handleLoginFailure($request, $user->authError, $user);
+        if (! $auth->authenticateWithPasskey($user, $requestOptions, $response)) {
+            return $this->handleLoginFailure($request, $auth->authError, $user);
         }
 
         // if we're impersonating, pass the user we're impersonating to the complete method
         if ($impersonation->isImpersonating()) {
-            $user = Auth::user();
+            $user = $request->user();
         }
 
         return $this->completeLogin($request, $user, true);

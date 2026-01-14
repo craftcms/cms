@@ -54,7 +54,7 @@ Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'stor
 /**
  * Admin requests that require a login
  */
-Route::middleware('auth:craft')->group(function () {
+Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
     Route::get('dashboard', DashboardController::class);
 

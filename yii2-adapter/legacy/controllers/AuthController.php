@@ -11,6 +11,7 @@ use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -54,7 +55,7 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $class = $this->request->getRequiredBodyParam('method');
-        $method = Craft::$app->getAuth()->getMethod($class);
+        $method = app(\CraftCms\Cms\Auth\Auth::class)->getMethod($class);
         $containerId = sprintf('auth-method-setup-%s', mt_rand());
         $displayName = $method::displayName();
         $view = Craft::$app->getView();
@@ -117,12 +118,12 @@ class AuthController extends Controller
 
         $methodClass = $this->request->getRequiredBodyParam('method');
 
-        $auth = Craft::$app->getAuth();
+        $auth = app(\CraftCms\Cms\Auth\Auth::class);
         $method = $auth->getMethod($methodClass);
         $method->remove();
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
-        if (empty($auth->getActiveMethods())) {
+        if ($auth->getActiveMethods()->isEmpty()) {
             $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
             if ($recoveryCodes->isActive()) {
                 $recoveryCodes->remove();
@@ -144,10 +145,8 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
-
         return $this->asJson([
-            'options' => $options,
+            'options' => app(Passkeys::class)->getPasskeyCreationOptions(static::currentUser()),
         ]);
     }
 
@@ -166,7 +165,7 @@ class AuthController extends Controller
         $credentials = $this->request->getRequiredBodyParam('credentials');
         $credentialName = $this->request->getBodyParam('credentialName');
 
-        $verified = Craft::$app->getAuth()->verifyPasskeyCreationResponse($credentials, $credentialName);
+        $verified = app(Passkeys::class)->verifyPasskeyCreationResponse($credentials, $credentialName);
 
         if (!$verified) {
             return $this->asFailure(t('Passkey creation failed.'));
@@ -189,7 +188,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
 
         $uid = $this->request->getRequiredBodyParam('uid');
-        Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);
+        app(Passkeys::class)->deletePasskey(static::currentUser(), $uid);
 
         return $this->asSuccess(t('Passkey deleted.'), [
             'tableHtml' => $this->passkeyTableHtml(),
@@ -199,7 +198,7 @@ class AuthController extends Controller
     private function passkeyTableHtml(): string
     {
         return $this->getView()->renderTemplate('users/_passkeys-table.twig', [
-            'passkeys' => Craft::$app->getAuth()->getPasskeys(static::currentUser()),
+            'passkeys' => app(Passkeys::class)->getPasskeys(static::currentUser())->all(),
         ]);
     }
 
@@ -214,7 +213,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        $recoveryCodes = app(\CraftCms\Cms\Auth\Auth::class)->getMethod(RecoveryCodes::class);
         $codes = $recoveryCodes->generateRecoveryCodes();
 
         return $this->asSuccess(t('Recovery codes generated.'), [
@@ -238,7 +237,7 @@ class AuthController extends Controller
         $this->requireLogin();
         $this->requireElevatedSession();
 
-        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        $recoveryCodes = app(\CraftCms\Cms\Auth\Auth::class)->getMethod(RecoveryCodes::class);
         [$codes, $dateCreated] = $recoveryCodes->getRecoveryCodes();
 
         if (empty($codes)) {

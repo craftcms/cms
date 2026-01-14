@@ -12,7 +12,6 @@ use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -260,10 +259,10 @@ class Sso extends Component
             return true;
         }
 
-        $user->authError = UserHelper::getAuthStatus($user);
+        $authError = app(\CraftCms\Cms\Auth\Auth::class)->getAuthError($user);
 
-        if (!empty($user->authError)) {
-            throw new SsoFailedException($provider, $user, $user->authError);
+        if ($authError !== null) {
+            throw new SsoFailedException($provider, $user, $authError->value);
         }
 
         // Try logging them in

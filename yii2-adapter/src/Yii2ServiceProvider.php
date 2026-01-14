@@ -75,6 +75,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -94,6 +95,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -119,7 +121,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use SensitiveParameter;
 use Symfony\Component\Finder\Finder;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Event as YiiEvent;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
@@ -242,6 +246,35 @@ class Yii2ServiceProvider extends ServiceProvider
 
             return $this->get();
         });
+
+        User::macro(
+            'authenticate',
+            function (#[SensitiveParameter] string $password) {
+                Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
+
+                return app(Auth::class)->authenticate($this, [
+                    'password' => $password,
+                ]);
+            },
+        );
+
+        User::macro(
+            'authenticateWithPasskey',
+            function (PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
+                Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
+
+                return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
+            },
+        );
+
+        User::macro(
+            'handleInvalidLoginParam',
+            function (): void {
+                Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
+
+                app(Auth::class)->handleInvalidLogin($this);
+            },
+        );
     }
 
     protected function registerLegacyApp(): void
@@ -484,6 +517,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        \craft\services\Auth::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
