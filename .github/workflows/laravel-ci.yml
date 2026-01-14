@@ -67,7 +67,7 @@ jobs:
     services:
       # Install Postgres
       pgsql:
-        image: ${{ (matrix.db == 'postgres') && 'postgres:latest' || '' }}
+        image: ${{ (matrix.db == 'pgsql') && 'postgres:latest' || '' }}
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: mysecretpassword
