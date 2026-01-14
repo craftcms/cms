@@ -345,6 +345,20 @@ class Asset extends ElementMutationResolver
             return false;
         }
 
+        $v6Prefixes = [
+            'fd00:ec2::', // AWS IMDS, DNS, NTP
+            'fd20:ce::', // GCP
+            '::1', // Loopback
+            'fe80:', // Link-local
+            '::ffff:', // IPv4-mapped IPv6
+        ];
+
+        foreach ($v6Prefixes as $prefix) {
+            if (str_starts_with($ip, $prefix)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
