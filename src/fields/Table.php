@@ -39,6 +39,8 @@ use yii\validators\EmailValidator;
  */
 class Table extends Field
 {
+    private static array $typeOptions;
+
     /**
      * @inheritdoc
      */
@@ -53,6 +55,31 @@ class Table extends Field
     public static function valueType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (!isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => Craft::t('app', 'Checkbox'),
+                'color' => Craft::t('app', 'Color'),
+                'date' => Craft::t('app', 'Date'),
+                'select' => Craft::t('app', 'Dropdown'),
+                'email' => Craft::t('app', 'Email'),
+                'heading' => Craft::t('app', 'Row heading'),
+                'lightswitch' => Craft::t('app', 'Lightswitch'),
+                'multiline' => Craft::t('app', 'Multi-line text'),
+                'number' => Craft::t('app', 'Number'),
+                'singleline' => Craft::t('app', 'Single-line text'),
+                'time' => Craft::t('app', 'Time'),
+                'url' => Craft::t('app', 'URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -149,14 +176,6 @@ class Table extends Field
                         }
                     }
                 }
-                // encode the default cell values for html-type cells
-                if ($col['type'] == 'html') {
-                    foreach ($config['defaults'] as &$row) {
-                        if (isset($row[$colId])) {
-                            $row[$colId] = Html::encode($row[$colId]);
-                        }
-                    }
-                }
             }
         }
 
@@ -198,7 +217,13 @@ class Table extends Field
      */
     public function validateColumns(): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (!isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if ($col['handle']) {
                 $error = null;
 
@@ -252,24 +277,6 @@ class Table extends Field
      */
     public function getSettingsHtml(): ?string
     {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
-
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -291,7 +298,7 @@ class Table extends Field
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
