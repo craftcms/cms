@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
-use Craft;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
@@ -27,7 +26,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
     public function __construct(
         private HasherContract $hasher,
         private Users $users,
-        private Auth $auth,
     ) {}
 
     /**
@@ -107,7 +105,7 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
      */
     public function validateCredentials(Authenticatable $user, #[SensitiveParameter] array $credentials): bool
     {
-        return $this->auth->authenticate($user, $credentials);
+        return app(Auth::class)->authenticate($user, $credentials);
     }
 
     /**
@@ -129,6 +127,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
 
     public function getAuthError(): ?AuthError
     {
-        return $this->auth->authError;
+        return app(Auth::class)->authError;
     }
 }

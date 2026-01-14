@@ -61,7 +61,6 @@ final class AuthServiceProvider extends ServiceProvider
         AuthFacade::provider('craft', fn (Application $app) => new UserProvider(
             $app->make(Hasher::class),
             $app->make(Users::class),
-            $app->make(Auth::class),
         ));
 
         if (! Config::has('auth.guards.craft')) {
