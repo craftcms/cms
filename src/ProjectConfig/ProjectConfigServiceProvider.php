@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
 use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
@@ -22,6 +23,8 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Support\Facades\Users;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
@@ -58,9 +61,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
 
         $projectConfig
             // Address field layout
-            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
-            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
-            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
+            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
+            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
             // Fields
             ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
@@ -82,17 +85,17 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleChangedSite($event))
             ->onRemove(ProjectConfig::PATH_SITES.'.{uid}', fn (ConfigEvent $event) => Sites::handleDeletedSite($event))
             // User group permissions
-            ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', $this->proxy('userPermissions', 'handleChangedGroupPermissions'))
+            ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', fn (ConfigEvent $event) => UserPermissions::handleChangedGroupPermissions($event))
+            ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', fn (ConfigEvent $event) => UserPermissions::handleChangedGroupPermissions($event))
+            ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}.permissions', fn (ConfigEvent $event) => UserPermissions::handleChangedGroupPermissions($event))
             // User groups
             ->onAdd(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleChangedUserGroup($event))
             ->onUpdate(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleChangedUserGroup($event))
             ->onRemove(ProjectConfig::PATH_USER_GROUPS.'.{uid}', fn (ConfigEvent $event) => UserGroups::handleDeletedUserGroup($event))
             // User field layout
-            ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
-            ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
-            ->onRemove(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->proxy('users', 'handleChangedUserFieldLayout'))
+            ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, fn (ConfigEvent $event) => Users::handleChangedUserFieldLayout($event))
+            ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, fn (ConfigEvent $event) => Users::handleChangedUserFieldLayout($event))
+            ->onRemove(ProjectConfig::PATH_USER_FIELD_LAYOUTS, fn (ConfigEvent $event) => Users::handleChangedUserFieldLayout($event))
             // Sections
             ->onAdd(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))
             ->onUpdate(ProjectConfig::PATH_SECTIONS.'.{uid}', fn (ConfigEvent $event) => Sections::handleChangedSection($event))

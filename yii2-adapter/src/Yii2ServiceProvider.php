@@ -249,7 +249,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         User::macro(
             'authenticate',
-            function (#[SensitiveParameter] string $password) {
+            function(#[SensitiveParameter] string $password) {
                 Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
 
                 return app(Auth::class)->authenticate($this, [
@@ -260,7 +260,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         User::macro(
             'authenticateWithPasskey',
-            function (PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
+            function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
                 Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
 
                 return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
@@ -269,7 +269,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         User::macro(
             'handleInvalidLoginParam',
-            function (): void {
+            function(): void {
                 Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
 
                 app(Auth::class)->handleInvalidLogin($this);
@@ -1229,16 +1229,16 @@ class Yii2ServiceProvider extends ServiceProvider
     private function ensureNewMigrationTable(): void
     {
         try {
+            if (app()->environment('workbench') || app()->environment('testing')) {
+                return;
+            }
+
             if (Schema::hasColumn(Table::MIGRATIONS, 'migration')) {
                 return;
             }
 
             if (!Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
-            }
-
-            if (app()->environment('workbench')) {
-                return;
             }
 
             Artisan::call('craft:migrate:migration-table', [
@@ -1256,16 +1256,16 @@ class Yii2ServiceProvider extends ServiceProvider
     private function ensureNewSessionsTable(): void
     {
         try {
+            if (app()->environment('workbench') || app()->environment('testing')) {
+                return;
+            }
+
             if (Schema::hasColumn(Table::SESSIONS, 'payload')) {
                 return;
             }
 
             if (!Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
-            }
-
-            if (app()->environment('workbench')) {
-                return;
             }
 
             Artisan::call('craft:migrate:sessions-table', [
