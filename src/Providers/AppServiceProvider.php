@@ -10,8 +10,8 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -77,7 +78,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootAliases();
 
         $this->app->booted(function () {
-            if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+            if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
                 app(GarbageCollection::class)->run();
             }
@@ -150,6 +151,24 @@ final class AppServiceProvider extends ServiceProvider
         Request::macro('isSiteRequest', fn (): bool => ! $this->isCpRequest());
 
         Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
+
+        Request::macro('isPreview', function () {
+            $previewParamValue = $this->input('x-craft-preview') ?? $this->input('x-craft-live-preview');
+
+            if (! $previewParamValue) {
+                return false;
+            }
+
+            if (! Craft::$app->getSecurity()->validateData($previewParamValue)) {
+                return false;
+            }
+
+            if (! Context::hasHidden(HandleTokenRequest::TOKEN_KEY)) {
+                return false;
+            }
+
+            return true;
+        });
 
         Request::macro('actionSegments', function (): array {
             $actionTrigger = Cms::config()->actionTrigger;

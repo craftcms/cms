@@ -120,13 +120,13 @@ class ExtensionTest extends TestCase
      */
     public function test_globals_with_uninstalled_craft(): void
     {
-        $installed = Craft::$app->getIsInstalled();
-        Craft::$app->setIsInstalled(false);
+        $installed = Cms::isInstalled();
+        Cms::setIsInstalled(false);
         $this->testRenderResult(
             ' |  |  | ',
             '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}'
         );
-        Craft::$app->setIsInstalled($installed);
+        Cms::setIsInstalled($installed);
     }
 
     /**

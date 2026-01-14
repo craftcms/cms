@@ -317,7 +317,7 @@ class Craft extends Yii2
             }
 
             // Ready to rock.
-            \Craft::$app->setIsInstalled();
+            Cms::setIsInstalled();
 
             // Add any plugins
             if ($plugins = $this->_getConfig('plugins')) {

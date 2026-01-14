@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
+use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
@@ -15,9 +17,9 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -52,7 +54,7 @@ final class RouteServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
         $this->app->booted(function () use ($routes, $router): void {
-            if (! Info::isInstalled()) {
+            if (! Cms::isInstalled()) {
                 return;
             }
 
@@ -79,12 +81,14 @@ final class RouteServiceProvider extends ServiceProvider
             CheckForUpdates::class,
             SendPoweredByHeader::class,
             FlushProjectConfig::class,
+            SetHeaders::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
+            EnforceLicenses::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([

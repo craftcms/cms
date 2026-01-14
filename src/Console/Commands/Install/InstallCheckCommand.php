@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Install;
 
-use craft\console\Application;
+use CraftCms\Cms\Cms;
 use Illuminate\Console\Command;
-use Illuminate\Container\Attributes\Give;
 
 final class InstallCheckCommand extends Command
 {
@@ -16,9 +15,9 @@ final class InstallCheckCommand extends Command
 
     protected $aliases = ['install/check'];
 
-    public function handle(#[Give('Craft')] Application $craft): int
+    public function handle(): int
     {
-        if (! $craft->getIsInstalled(true)) {
+        if (! Cms::isInstalled(true)) {
             $this->components->warn('Craft is not installed yet.');
 
             return self::FAILURE;

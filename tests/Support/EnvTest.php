@@ -151,13 +151,13 @@ test('parseBoolean', function (?bool $expected, mixed $value, array $values = []
     [null, '$TEST_MISSING'],
     [
         false,
-        '$FALSY_VALUE',
-        ['FALSY_VALUE' => 'false'],
+        '$TEST_FALSE',
+        ['TEST_FALSE' => 'false'],
     ],
     [
         true,
-        '$TRUTHY_VALUE',
-        ['TRUTHY_VALUE' => 'true'],
+        '$TEST_TRUE',
+        ['TEST_TRUE' => 'true'],
     ],
 ]);
 

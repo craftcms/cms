@@ -17,6 +17,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Addresses as AddressesField;
@@ -750,7 +751,7 @@ final class Fields
             return $this->_layouts;
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             $layoutConfigs = $this->_createLayoutQuery()->get()->all();
         } else {
             $layoutConfigs = [];

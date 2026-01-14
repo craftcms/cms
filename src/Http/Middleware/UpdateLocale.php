@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Updates\Updates;
@@ -35,7 +35,7 @@ final readonly class UpdateLocale
 
     private function getTargetLocale(Request $request): string
     {
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return $this->getFallbackLocale($request);
         }
 
