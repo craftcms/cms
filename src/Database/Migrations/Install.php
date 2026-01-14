@@ -961,7 +961,7 @@ class Install extends Migration
             $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
         });
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (DB::getDriverName() === 'mysql') {
             Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
@@ -971,16 +971,16 @@ class Install extends Migration
             });
         } else {
             // Postgres is case-sensitive
-            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.Craft::$app->getDb()->tablePrefix.Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
-            DB::statement('CREATE INDEX users_email_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(email))');
-            DB::statement('CREATE INDEX users_username_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(username))');
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
+            DB::statement('CREATE INDEX users_email_index ON '.DB::getTablePrefix().Table::USERS.' (lower(email))');
+            DB::statement('CREATE INDEX users_username_index ON '.DB::getTablePrefix().Table::USERS.' (lower(username))');
 
             Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->rawColumn('keywords_vector', 'tsvector');
             });
 
-            DB::statement('CREATE INDEX keywords_gin ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
-            DB::statement('CREATE INDEX keywords_index ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING btree(keywords)');
+            DB::statement('CREATE INDEX keywords_gin ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
+            DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         }
     }
 
