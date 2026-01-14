@@ -72,9 +72,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
@@ -2441,15 +2441,15 @@ JS, [
         $model->unverifiedEmail = $this->unverifiedEmail;
 
         if ($changePassword = (isset($this->newPassword))) {
-            $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
-            $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
+            $hash = Hash::make($this->newPassword);
+            $this->lastPasswordChangeDate = now();
 
             $model->password = $this->password = $hash;
             $model->invalidLoginWindowStart = null;
             $model->invalidLoginCount = $this->invalidLoginCount = null;
             $model->verificationCode = null;
             $model->verificationCodeIssuedDate = null;
-            $model->lastPasswordChangeDate = Date::parse($this->lastPasswordChangeDate);
+            $model->lastPasswordChangeDate = $this->lastPasswordChangeDate;
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false
             if (! $isNew && $model->getOriginal('passwordResetRequired')) {
