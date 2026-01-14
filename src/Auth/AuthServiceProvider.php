@@ -6,9 +6,10 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
+use CraftCms\Cms\User\Users;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -18,7 +19,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth as AuthFacade;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -57,7 +58,11 @@ final class AuthServiceProvider extends ServiceProvider
 
     private function registerGuard(): void
     {
-        Auth::provider('craft', fn (Application $app) => new UserProvider($app->make(Hasher::class)));
+        AuthFacade::provider('craft', fn (Application $app) => new UserProvider(
+            $app->make(Hasher::class),
+            $app->make(Users::class),
+            $app->make(Auth::class),
+        ));
 
         if (! Config::has('auth.guards.craft')) {
             Config::set('auth.guards.craft', [
@@ -71,6 +76,15 @@ final class AuthServiceProvider extends ServiceProvider
             Config::set('auth.providers.craft', [
                 'driver' => 'craft',
                 'model' => User::class,
+            ]);
+        }
+
+        if (! Config::has('auth.passwords.craft')) {
+            Config::set('auth.passwords.craft', [
+                'provider' => 'craft',
+                'table' => 'password_reset_tokens',
+                'expire' => 60,
+                'throttle' => 60,
             ]);
         }
     }
@@ -120,7 +134,7 @@ final class AuthServiceProvider extends ServiceProvider
                 return;
             }
 
-            Users::handleValidLogin($event->user);
+            UsersFacade::handleValidLogin($event->user);
 
             RememberedUsername::set($event->user);
 
@@ -132,7 +146,7 @@ final class AuthServiceProvider extends ServiceProvider
                 return;
             }
 
-            Users::handleInvalidLogin($event->user);
+            UsersFacade::handleInvalidLogin($event->user);
         });
 
         Event::listen(Logout::class, function () {
