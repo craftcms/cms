@@ -9,7 +9,6 @@ if (false) {
      */
     class WebauthnServer
     {
-
     }
 }
 

@@ -17,7 +17,6 @@ use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
@@ -28,9 +27,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -56,7 +53,6 @@ use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
-use yii\web\UnauthorizedHttpException;
 use function CraftCms\Cms\t;
 
 /**

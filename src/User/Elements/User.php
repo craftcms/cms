@@ -39,7 +39,6 @@ use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;

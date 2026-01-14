@@ -70,6 +70,7 @@ final readonly class LoginController extends AuthenticationController
 
         /**
          * @var \CraftCms\Cms\Auth\UserProvider $provider
+         *
          * @phpstan-ignore method.notFound
          */
         $provider = auth('craft')->getProvider();
