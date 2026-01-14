@@ -396,7 +396,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         if (
-            !Craft::$app->getIsInstalled() ||
+            !Cms::isInstalled() ||
             !$request->getIsSiteRequest() ||
             Cms::config()->headlessMode
         ) {

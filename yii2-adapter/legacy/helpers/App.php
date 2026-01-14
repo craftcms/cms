@@ -30,6 +30,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
@@ -778,7 +779,7 @@ class App
     {
         return [
             'class' => \craft\services\ProjectConfig::class,
-            'readOnly' => Craft::$app->getIsInstalled() && !Cms::config()->allowAdminChanges,
+            'readOnly' => Cms::isInstalled() && !Cms::config()->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }

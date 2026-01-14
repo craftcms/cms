@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -16,7 +17,6 @@ use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -51,7 +51,7 @@ final class RouteServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
         $this->app->booted(function () use ($routes, $router): void {
-            if (! Info::isInstalled()) {
+            if (! Cms::isInstalled()) {
                 return;
             }
 

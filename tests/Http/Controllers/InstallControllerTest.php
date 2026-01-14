@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
-use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -13,17 +12,17 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    Info::setIsInstalled(false);
+    Cms::setIsInstalled(false);
 });
 
 it('aborts when Craft is already installed', function () {
-    Info::setIsInstalled();
+    Cms::setIsInstalled();
 
     get(action([InstallController::class, 'index']))->assertNotFound();
 });
 
 it('shows the install page', function () {
-    Info::setIsInstalled(false);
+    Cms::setIsInstalled(false);
 
     get(action([InstallController::class, 'index']))
         ->assertInertia(function (AssertableInertia $page) {

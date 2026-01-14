@@ -11,9 +11,9 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
@@ -63,7 +63,7 @@ class Craft extends Yii
      */
     public static function t($category, $message, $params = [], $language = null): string
     {
-        return \CraftCms\Cms\Support\Facades\I18N::translate($message, $params, $category, $language);
+        return I18N::translate($message, $params, $category, $language);
     }
 
     /**
@@ -227,7 +227,7 @@ class Craft extends Yii
             return;
         }
 
-        if (!Info::isInstalled()) {
+        if (!Cms::isInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], [], [], null, false, true);
             return;

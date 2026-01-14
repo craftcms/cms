@@ -331,7 +331,7 @@ trait ApplicationTrait
         // Use the fallback language for console requests, or if Craft isn't installed or is updating
         if (
             $this instanceof ConsoleApplication ||
-            !$this->getIsInstalled() ||
+            !Cms::isInstalled() ||
             app(Updates::class)->isCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
@@ -364,20 +364,22 @@ trait ApplicationTrait
      *
      * @param bool $strict Whether to ignore the cached value and explicitly check from the default schema.
      * @return bool
+     * @deprecated 6.0.0 use {@see Cms::isInstalled()} instead.
      */
     public function getIsInstalled(bool $strict = false): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::isInstalled($strict);
+        return Cms::isInstalled($strict);
     }
 
     /**
      * Sets Craft's record of whether it's installed
      *
      * @param bool|null $value
+     * @deprecated 6.0.0 use {@see Cms::setIsInstalled()} instead.
      */
     public function setIsInstalled(?bool $value = true): void
     {
-        \CraftCms\Cms\Shared\Models\Info::setIsInstalled($value);
+        Cms::setIsInstalled($value);
     }
 
     /**
@@ -731,7 +733,7 @@ trait ApplicationTrait
             $attributes,
         );
 
-        $this->setIsInstalled();
+        Cms::setIsInstalled();
 
         return true;
     }
