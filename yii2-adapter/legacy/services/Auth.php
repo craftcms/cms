@@ -16,7 +16,6 @@ use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth as AuthFacade;
 use Illuminate\Support\Facades\Event;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -45,27 +44,11 @@ class Auth extends Component
      *
      * @param int|null $sessionDuration
      * @return User|null
-     * @deprecated 6.0.0 use {@see AuthFacade::user()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getUser()} instead.
      */
     public function getUser(?int &$sessionDuration = null): ?User
     {
-        if (!isset($this->_user)) {
-            $this->_user = false;
-            $this->_sessionDuration = false;
-            $session = Craft::$app->getSession();
-            $userId = $session->get('user.id');
-
-            if ($userId) {
-                $user = User::findOne($userId);
-                if ($user) {
-                    $this->_user = $user;
-                    $this->_sessionDuration = $session->get($this->sessionDurationParam) ?? false;
-                }
-            }
-        }
-
-        $sessionDuration = $this->_sessionDuration ?: null;
-        return $this->_user ?: null;
+        return app(\CraftCms\Cms\Auth\Auth::class)->getUser();
     }
 
     /**
@@ -73,19 +56,11 @@ class Auth extends Component
      *
      * @param User|null $user
      * @param int|null $sessionDuration
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::setUser()} instead.
      */
     public function setUser(?User $user, ?int $sessionDuration = null): void
     {
-        $this->_user = $user ?? false;
-        $this->_sessionDuration = $user ? ($sessionDuration ?? Cms::config()->userSessionDuration) : false;
-
-        if ($user) {
-            SessionHelper::set($this->userIdParam, $user->id);
-            SessionHelper::set($this->sessionDurationParam, $this->_sessionDuration);
-        } else {
-            SessionHelper::remove($this->userIdParam);
-            SessionHelper::remove($this->sessionDurationParam);
-        }
+        app(\CraftCms\Cms\Auth\Auth::class)->setUser($user);
     }
 
     /**
@@ -320,7 +295,7 @@ class Auth extends Component
         Event::listen(RegisterAuthMethods::class, function(RegisterAuthMethods $event) {
             if (Craft::$app->getAuth()->hasEventHandlers(self::EVENT_REGISTER_METHODS)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->methods->all()]);
-                $this->trigger(self::EVENT_REGISTER_METHODS, $yiiEvent);
+                Craft::$app->getAuth()->trigger(self::EVENT_REGISTER_METHODS, $yiiEvent);
                 $event->methods = new Collection($yiiEvent->types);
             }
         });
