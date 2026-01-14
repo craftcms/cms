@@ -2284,12 +2284,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return false;
       }
 
+      // if newly selected source is the same as the one that's currently selected
       if (
         this.$source &&
         this.$source[0] &&
         this.$source[0] === $source[0] &&
         $source.data('key') === this.sourceKey
       ) {
+        this.trigger('selectSource', {sourceKey: this.sourceKey});
         return false;
       }
 
