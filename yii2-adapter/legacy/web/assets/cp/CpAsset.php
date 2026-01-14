@@ -520,7 +520,7 @@ JS;
 
     private function _craftData(): array
     {
-        $upToDate = Craft::$app->getIsInstalled() && !app(Updates::class)->areMigrationsPending();
+        $upToDate = Cms::isInstalled() && !app(Updates::class)->areMigrationsPending();
         $request = Craft::$app->getRequest();
         $generalConfig = Cms::config();
         $formattingLocale = I18N::getFormattingLocale();

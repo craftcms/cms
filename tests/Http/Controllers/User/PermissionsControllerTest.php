@@ -59,3 +59,111 @@ it('can store permissions and groups', function () {
     expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeTrue();
     expect(UserGroups::getGroupsByUserId($user->id))->toHaveCount(1);
 });
+
+test('store validates required userId', function () {
+    Edition::set(Edition::Pro);
+
+    postJson(action([PermissionsController::class, 'store']), [])
+        ->assertJsonValidationErrors(['userId']);
+});
+
+test('store validates userId exists in database', function () {
+    Edition::set(Edition::Pro);
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => 99999,
+    ])->assertJsonValidationErrors(['userId']);
+});
+
+test('store can assign multiple groups', function () {
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = Auth::user();
+    $group1 = UserGroup::factory()->create();
+    $group2 = UserGroup::factory()->create();
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+        'groups' => [
+            $group1->id,
+            $group2->id,
+        ],
+    ])->assertOk();
+
+    expect(UserGroups::getGroupsByUserId($user->id))->toHaveCount(2);
+});
+
+test('store can remove all permissions', function () {
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = Auth::user();
+
+    // First assign some permissions
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+        'permissions' => ['accessCp'],
+    ])->assertOk();
+
+    // Then remove them
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+        'permissions' => [],
+    ])->assertOk();
+
+    expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeFalse();
+});
+
+test('store can remove all groups', function () {
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = Auth::user();
+    $group = UserGroup::factory()->create();
+
+    // First assign a group
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+        'groups' => [$group->id],
+    ])->assertOk();
+
+    // Then remove it
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+        'groups' => [],
+    ])->assertOk();
+
+    expect(UserGroups::getGroupsByUserId($user->id))->toHaveCount(0);
+});
+
+test('index shows permissions page for own account', function () {
+    Edition::set(Edition::Pro);
+
+    $response = get(cp_url('myaccount/permissions'));
+
+    $response->assertOk();
+});
+
+test('index shows permissions page for other users', function () {
+    Edition::set(Edition::Pro);
+
+    $otherUser = User::find()->one();
+
+    $response = get(cp_url("users/{$otherUser->id}/permissions"));
+
+    $response->assertOk();
+});
+
+test('store returns success message', function () {
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = Auth::user();
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $user->id,
+    ])
+        ->assertOk()
+        ->assertJsonStructure(['message']);
+});

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use Illuminate\Http\Request;
 
 final readonly class FlushProjectConfig
@@ -17,7 +17,7 @@ final readonly class FlushProjectConfig
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return $next($request);
         }
 

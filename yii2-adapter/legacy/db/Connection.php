@@ -150,7 +150,7 @@ class Connection extends DatabaseConnection
     public function getSupportsMb4(): bool
     {
         if (!isset($this->_supportsMb4)) {
-            if (!Craft::$app->getIsInstalled()) {
+            if (!Cms::isInstalled()) {
                 return false;
             }
 
@@ -406,7 +406,7 @@ class Connection extends DatabaseConnection
     public function tableExists(string $table, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
+        if ($refresh || ($refresh === null && !Cms::isInstalled())) {
             $this->getSchema()->refresh();
         }
 
@@ -427,7 +427,7 @@ class Connection extends DatabaseConnection
     public function columnExists(string $table, string $column, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
+        if ($refresh || ($refresh === null && !Cms::isInstalled())) {
             $this->getSchema()->refresh();
         }
 
