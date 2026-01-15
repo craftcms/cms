@@ -1,20 +1,24 @@
 <?php
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->addSelect('password')->first());
+    Session::passwordConfirmed();
 });
 
 it('requires login', function () {
@@ -201,4 +205,56 @@ it('returns error for non-existent userId when logged in with editUsers for send
     postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'userId' => 999999,
     ])->assertStatus(400);
+});
+
+it('requires login for store', function () {
+    auth()->logout();
+
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => 'validPassword123!',
+    ])->assertRedirect(Cms::config()->cpTrigger.'/'.CpAuthPath::Login->value);
+});
+
+it('requires password confirmation for store', function () {
+    Session::forget('auth.password_confirmed_at');
+
+    postJson(action([PasswordController::class, 'store']), [
+        'newPassword' => 'validPassword123!',
+    ])->assertStatus(423);
+});
+
+it('aborts for users without current password', function () {
+    UserModel::first()->update(['password' => null]);
+
+    actingAs(User::find()->addSelect('password')->first());
+
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => 'validPassword123!',
+    ])->assertStatus(400);
+});
+
+it('returns to previous page when newPassword is empty', function () {
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => '',
+    ])->assertRedirect();
+});
+
+it('validates newPassword meets requirements', function () {
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => 'short',
+    ])->assertSessionHasErrors('newPassword');
+});
+
+it('successfully saves password', function () {
+    $newPassword = 'NewValidPassword123!';
+
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => $newPassword,
+    ])->assertRedirectBack()->assertSessionHasNoErrors();
+});
+
+it('returns failure when save fails', function () {
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => 'short',
+    ])->assertSessionHasErrors('newPassword');
 });

@@ -306,6 +306,7 @@ Route::prefix(implode('/', [
         Route::middleware('password.confirm')->group(function () {
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+            Route::post('users/save-password', [PasswordController::class, 'store']);
         });
         Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
 

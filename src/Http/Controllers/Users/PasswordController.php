@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
 use yii\base\InvalidArgumentException;
 
@@ -44,6 +45,36 @@ final readonly class PasswordController
         $response->contentTemplate('users/_password', compact('user'));
 
         return $response;
+    }
+
+    public function store(Request $request): Response
+    {
+        $this->requireConfirmedPassword('An elevated session is required to change your password.');
+
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_if(! $user->getHasPassword(), 400, 'Only users with current passwords can set new ones.');
+
+        $validated = $request->validate([
+            'newPassword' => ['nullable', 'string', Password::default()],
+        ]);
+
+        if (! $request->input('newPassword')) {
+            return back();
+        }
+
+        $user->newPassword = $validated['newPassword'];
+        $user->setScenario(User::SCENARIO_PASSWORD);
+
+        if (! Craft::$app->getElements()->saveElement($user)) {
+            return $this->asFailure(
+                t('Couldn’t save password.'),
+                $user->getErrors('newPassword'),
+            );
+        }
+
+        return $this->asSuccess(t('Password saved.'));
     }
 
     public function passwordResetUrl(Request $request, Users $users): Response

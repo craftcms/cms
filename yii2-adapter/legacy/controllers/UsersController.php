@@ -197,44 +197,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Saves a user’s new password.
-     *
-     * @return Response|null
-     * @since 5.0.0
-     */
-    public function actionSavePassword(): ?Response
-    {
-        $this->requireCpRequest();
-
-        $this->requireConfirmedPassword(message: 'An elevated session is required to change your password.');
-
-        $user = static::currentUser();
-
-        if (!$user->getHasPassword()) {
-            throw new BadRequestHttpException('Only users with current passwords can set new ones.');
-        }
-
-        $newPassword = $this->request->getRequiredBodyParam('newPassword');
-
-        if ($newPassword === '') {
-            return null;
-        }
-
-        $user->newPassword = $newPassword;
-        $user->setScenario(User::SCENARIO_PASSWORD);
-
-        if (!Craft::$app->getElements()->saveElement($user)) {
-            return $this->asFailure(
-                t('Couldn’t save password.'),
-                $user->getErrors('newPassword'),
-                ['user' => $user],
-            );
-        }
-
-        return $this->asSuccess(t('Password saved.'));
-    }
-
-    /**
      * Returns a 2FA setup screen, for users who require a 2FA method.
      *
      * @return Response

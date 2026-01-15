@@ -2456,6 +2456,7 @@ JS, [
                 $model->passwordResetRequired = $this->passwordResetRequired = false;
             }
 
+            $newPassword = $this->newPassword;
             $this->newPassword = null;
         }
 
@@ -2481,8 +2482,8 @@ JS, [
             }
         }
 
-        if (! $isNew && $changePassword && ! app()->runningInConsole()) {
-            Auth::logoutOtherDevices($this->newPassword);
+        if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
+            Auth::logoutOtherDevices($newPassword);
         }
     }
 
