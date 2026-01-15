@@ -19,10 +19,8 @@ final class WebAuthnFactory extends Factory
         return [
             'userId' => User::factory(),
             'credentialId' => $this->faker->uuid(),
-            'publicKey' => $this->faker->sha256(),
-            'counter' => 0,
-            'credentialBackedUp' => false,
-            'transports' => [],
+            'dateCreated' => now(),
+            'dateUpdated' => now(),
         ];
     }
 }

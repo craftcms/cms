@@ -16,6 +16,7 @@ final class UserGroupFactory extends Factory
     public function definition(): array
     {
         return [
+            'uid' => fake()->uuid(),
             'name' => fake()->words(asText: true),
             'handle' => fake()->slug(),
             'description' => fake()->paragraph(),

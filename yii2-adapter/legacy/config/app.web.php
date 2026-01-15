@@ -37,10 +37,10 @@ return [
             $config = App::userConfig();
             return Craft::createObject($config);
         },
-        'errorHandler' => [
+        /*'errorHandler' => [
             'class' => ErrorHandler::class,
             'errorAction' => 'templates/render-error',
-        ],
+        ],*/
     ],
     'controllerNamespace' => 'craft\\controllers',
 ];

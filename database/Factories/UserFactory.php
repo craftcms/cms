@@ -37,10 +37,10 @@ final class UserFactory extends Factory
         ];
     }
 
-    public function admin(): self
+    public function admin(bool $admin = true): self
     {
         return $this->state(fn () => [
-            'admin' => true,
+            'admin' => $admin,
         ]);
     }
 
@@ -84,7 +84,6 @@ final class UserFactory extends Factory
         return $this->afterCreating(fn (User $user) => WebAuthn::factory()->create([
             'userId' => $user->id,
             'credentialId' => $credentialId,
-            'publicKey' => 'test-public-key',
         ]));
     }
 
@@ -109,8 +108,12 @@ final class UserFactory extends Factory
 
             $this->createChildren($model);
 
+            // Ensure any password is set to the element as well.
+            $element->password = $model->password;
+
             $model->refresh();
             $model->uid = $element->uid;
+            $model->password = $element->password;
         });
     }
 }

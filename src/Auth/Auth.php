@@ -216,7 +216,8 @@ final class Auth
         }
 
         if (is_array($require2fa)) {
-            $groups = Arr::pluck(array: $user->getGroups(), value: '', key: 'uid');
+            $groups = Arr::pluck(array: $user->getGroups(), value: 'uid', key: 'uid');
+
             foreach ($require2fa as $group) {
                 if ($group === 'admins') {
                     if ($user->admin) {
@@ -378,10 +379,6 @@ final class Auth
                 // Is a password reset required?
                 if ($user->passwordResetRequired) {
                     return AuthError::PasswordResetRequired;
-                }
-
-                if (app()->runningInConsole()) {
-                    return null;
                 }
 
                 if (request()->isCpRequest()) {
