@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
-- Fixed an SSRF vulnerability. (GHSA-gp2f-7wcm-5fhx)
+- Fixed SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
 
 ## 4.16.18 - 2026-01-09
 

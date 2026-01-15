@@ -337,11 +337,31 @@ class Asset extends ElementMutationResolver
         // make sure the hostname doesn’t resolve to a known cloud metadata IP
         // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
         if (in_array($ip, [
+            '100.100.100.200', // Alibaba
             '169.254.169.254', // AWS, GCP, DO, Azure, Oracle, OpenStack/RackSpace
             '169.254.170.2', // ECS
-            '100.100.100.200', // Alibaba
             '192.0.0.192', // Oracle
         ])) {
+            return false;
+        }
+
+        $v6Prefixes = [
+            '::1', // Loopback
+            '::ffff:', // IPv4-mapped IPv6
+            'fd00:ec2::', // AWS IMDS, DNS, NTP
+            'fd20:ce::', // GCP
+            'fe80:', // Link-local
+        ];
+
+        foreach ($v6Prefixes as $prefix) {
+            if (str_starts_with($ip, $prefix)) {
+                return false;
+            }
+        }
+
+        // Only allow publicly-routable IPs
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
             return false;
         }
 
