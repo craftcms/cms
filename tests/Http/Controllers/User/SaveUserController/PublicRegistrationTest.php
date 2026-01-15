@@ -20,8 +20,6 @@ beforeEach(function () {
     Edition::set(Edition::Team);
 
     ProjectConfig::set('users.allowPublicRegistration', true);
-    ProjectConfig::set('users.requireEmailVerification', false);
-    ProjectConfig::set('users.deactivateByDefault', false);
 });
 
 it('succeeds with valid data', function () {

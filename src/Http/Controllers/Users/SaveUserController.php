@@ -360,13 +360,11 @@ final readonly class SaveUserController
             return $this->redirectUserToCp($user) ?? $this->redirectUserAfterAccountActivation($user);
         }
 
-        if (! $request->wantsJson()) {
-            // Tell all browser windows about the draft deletion
-            Craft::$app->getSession()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $user->id,
-            ]);
-        }
+        // Tell all browser windows about the draft deletion
+        Craft::$app->getSession()->broadcastToJs([
+            'event' => 'saveElement',
+            'id' => $user->id,
+        ]);
 
         return $this->redirectToPostedUrl($user);
     }

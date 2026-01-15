@@ -23,10 +23,6 @@ beforeEach(function () {
     actingAs($this->admin);
 
     Edition::set(Edition::Team);
-
-    ProjectConfig::set('users.allowPublicRegistration', false);
-    ProjectConfig::set('users.requireEmailVerification', false);
-    ProjectConfig::set('users.deactivateByDefault', false);
 });
 
 it('succeeds when authenticated admin registers a new user', function () {

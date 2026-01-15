@@ -12,10 +12,6 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     Edition::set(Edition::Team);
-
-    ProjectConfig::set('users.allowPublicRegistration', false);
-    ProjectConfig::set('users.requireEmailVerification', false);
-    ProjectConfig::set('users.deactivateByDefault', false);
 });
 
 it('succeeds when user edits their own profile without changing email or password', function () {
