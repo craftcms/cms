@@ -1784,6 +1784,7 @@ class Elements extends Component
      * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
      * @param bool $checkAuthorization whether to ensure the current user is authorized to save the new element,
      * once its new attributes have been applied to it
+     * @param bool $copyModifiedFields whether to copy modified attribute/field data over to the duplicated element
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1796,6 +1797,7 @@ class Elements extends Component
         bool $placeInStructure = true,
         bool $asUnpublishedDraft = false,
         bool $checkAuthorization = false,
+        bool $copyModifiedFields = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1922,6 +1924,7 @@ class Elements extends Component
             $mainClone,
             $supportedSites,
             $element,
+            $copyModifiedFields,
             $placeInStructure,
             $newAttributes,
             $behaviors,
@@ -1933,6 +1936,10 @@ class Elements extends Component
                 // Start with $element’s site
                 if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
                     throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
+                }
+
+                if ($copyModifiedFields) {
+                    $this->copyModifiedFields($element, $mainClone);
                 }
 
                 // Should we add the clone to the source element’s structure?
@@ -2026,6 +2033,10 @@ class Elements extends Component
                             throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                         }
 
+                        if ($copyModifiedFields) {
+                            $this->copyModifiedFields($siteElement, $siteClone);
+                        }
+
                         $propagatedTo[$siteClone->siteId] = true;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
@@ -2067,6 +2078,89 @@ class Elements extends Component
         });
 
         return $mainClone;
+    }
+
+    private function copyModifiedFields(ElementInterface $from, ElementInterface $to): void
+    {
+        $modifiedAttributes = [
+            ...$from->getModifiedAttributes(),
+            ...$from->getDirtyAttributes(),
+        ];
+        $modifiedFields = [
+            ...$from->getModifiedFields(),
+            ...$from->getDirtyFields(),
+        ];
+
+        if ($from->duplicateOf?->getIsDraft()) {
+            $modifiedAttributes += [
+                ...$from->duplicateOf->getModifiedAttributes(),
+                ...$from->duplicateOf->getDirtyAttributes(),
+            ];
+            $modifiedFields += [
+                ...$from->duplicateOf->getModifiedFields(),
+                ...$from->duplicateOf->getDirtyFields(),
+            ];
+        }
+
+        $modifiedAttributes = array_unique($modifiedAttributes);
+        $modifiedFields = array_unique($modifiedFields);
+
+        $timestamp = Db::prepareDateForDb($to->dateUpdated);
+        $userId = Craft::$app->getUser()->getId();
+
+        if (!empty($modifiedAttributes)) {
+            $data = [];
+
+            foreach ($modifiedAttributes as $attribute) {
+                $data[] = [
+                    $to->id,
+                    $to->siteId,
+                    $attribute,
+                    $timestamp,
+                    false,
+                    $userId,
+                ];
+            }
+
+            Db::batchInsert(Table::CHANGEDATTRIBUTES, [
+                'elementId',
+                'siteId',
+                'attribute',
+                'dateUpdated',
+                'propagated',
+                'userId',
+            ], $data);
+        }
+
+        if (!empty($modifiedFields)) {
+            $data = [];
+            $fieldLayout = $to->getFieldLayout();
+
+            foreach ($modifiedFields as $handle) {
+                $field = $fieldLayout->getFieldByHandle($handle);
+                if ($field) {
+                    $data[] = [
+                        $to->id,
+                        $to->siteId,
+                        $field->id,
+                        $field->layoutElement->uid,
+                        $timestamp,
+                        false,
+                        $userId,
+                    ];
+                }
+            }
+
+            Db::batchInsert(Table::CHANGEDFIELDS, [
+                'elementId',
+                'siteId',
+                'fieldId',
+                'layoutElementUid',
+                'dateUpdated',
+                'propagated',
+                'userId',
+            ], $data);
+        }
     }
 
     /**

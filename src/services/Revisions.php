@@ -174,7 +174,11 @@ class Revisions extends Component
                     $newAttributes['dateCreated'] = $canonical->dateUpdated;
                 }
 
-                $revision = $elementsService->duplicateElement($canonical, $newAttributes);
+                $revision = $elementsService->duplicateElement(
+                    $canonical,
+                    $newAttributes,
+                    copyModifiedFields: true,
+                );
 
                 $transaction->commit();
             } catch (Throwable $e) {
