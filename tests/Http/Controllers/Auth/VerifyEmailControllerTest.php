@@ -76,23 +76,21 @@ test('store returns invalid token response for invalid code', function () {
 });
 
 test('store verifies email when user has unverified email and is active', function () {
-    $userModel = UserModel::factory()->create([
+    $user = UserModel::factory()->createElement([
         'active' => true,
         'pending' => false,
     ]);
-
-    $user = User::find()
-        ->id($userModel->id)
-        ->status(null)
-        ->first();
 
     expect($user)->not->toBeNull();
     expect($user->uid)->not->toBeNull();
 
     $code = Users::setVerificationCodeOnUser($user);
 
-    $userModel->unverifiedEmail = 'new.'.$userModel->email;
-    $userModel->save();
+    $unverifiedEmail = 'new.'.$user->email;
+
+    UserModel::where('id', $user->id)->update([
+        'unverifiedEmail' => $unverifiedEmail,
+    ]);
 
     postJson(action([VerifyEmailController::class, 'store']), [
         'uid' => $user->uid,
@@ -100,11 +98,11 @@ test('store verifies email when user has unverified email and is active', functi
     ])->assertRedirect();
 
     $refreshedUser = User::find()
-        ->id($userModel->id)
+        ->id($user->id)
         ->status(null)
         ->first();
 
-    expect($refreshedUser->email)->toBe($userModel->unverifiedEmail);
+    expect($refreshedUser->email)->toBe($unverifiedEmail);
     expect($refreshedUser->unverifiedEmail)->toBeNull();
     expect($refreshedUser->active)->toBeTrue();
 });

@@ -82,6 +82,8 @@ class User extends BaseModel
 
         $element->password = $this->password;
 
+        unset($this->uid);
+
         return $element;
     }
 
