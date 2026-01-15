@@ -359,6 +359,12 @@ class Asset extends ElementMutationResolver
             }
         }
 
+        // Only allow publicly-routable IPs
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
+            return false;
+        }
+
         return true;
     }
 
