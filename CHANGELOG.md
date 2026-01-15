@@ -6,7 +6,7 @@
 - Fixed a bug where element index pages weren’t preserving “Trashed” status selections between page loads. ([#18230](https://github.com/craftcms/cms/issues/18230))
 - Fixed a bug where it was possible to suspend SSO-based user accounts.
 - Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
-- Fixed an SSRF vulnerability. (GHSA-gp2f-7wcm-5fhx)
+- Fixed SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
 
 ## 5.8.22 - 2026-01-09
 
