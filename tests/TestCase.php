@@ -37,7 +37,7 @@ class TestCase extends Orchestra
         app()->setLocale('en-US');
         Config::set('app.timezone', 'America/Los_Angeles');
 
-        Edition::set(Edition::Solo);
+        Edition::set(Edition::Pro);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));

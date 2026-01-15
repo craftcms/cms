@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -34,31 +35,29 @@ test('gets active users first', function () {
 });
 
 test('gets pending users first', function () {
-    $nonPending = UserModel::factory()->make([
-        'id' => null,
+    $nonPending = UserModel::factory()->create([
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
     ])->asElement();
-    Craft::$app->elements->saveElement($nonPending);
 
-    $pending = UserModel::factory()->make([
-        'id' => null,
+    $pending = UserModel::factory()->create([
         'active' => false,
         'pending' => true,
         'username' => 'john',
         'email' => 'john@example.com',
     ])->asElement();
-    Craft::$app->elements->saveElement($pending);
 
-    expect(userQuery()->email('john')->status(null)->pluck('id')->first())->toBe($pending->id);
+    expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($pending->id);
 
     // Even when sorting on something else
-    expect(userQuery()->email('john')->status(null)->orderBy('email')->pluck('id')->first())->toBe($pending->id);
+    expect(userQuery()->email('john@example.com')->status(null)->orderBy('email')->pluck('id')->first())->toBe($pending->id);
 });
 
 it('can query by status', function (string $status, array $attributes, int $expectedCount) {
+    Cms::config()->cooldownDuration = 0;
+
     UserModel::factory()->create($attributes);
 
     expect(userQuery()->status($status)->count())->toBe($expectedCount);

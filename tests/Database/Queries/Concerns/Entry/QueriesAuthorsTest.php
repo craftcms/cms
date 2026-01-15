@@ -2,11 +2,13 @@
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
+use Illuminate\Support\Str;
 
 it('can query entries by authors', function () {
-    $author1 = \CraftCms\Cms\User\Models\User::factory()->create();
-    $author2 = \CraftCms\Cms\User\Models\User::factory()->create();
+    $author1 = User::factory()->create();
+    $author2 = User::factory()->create();
 
     Entry::factory()
         ->hasAttached($author1, ['sortOrder' => 0], 'authors')
@@ -17,6 +19,8 @@ it('can query entries by authors', function () {
         ->create();
 
     expect(entryQuery()->count())->toBe(2);
+
+    Edition::set(Edition::Solo);
 
     // Does nothing when edition is solo
     expect(entryQuery()->authorId($author1->id)->count())->toBe(2);
@@ -31,18 +35,18 @@ it('can query entries by authors', function () {
 });
 
 it('can query entries by author groups', function () {
-    $author1 = \CraftCms\Cms\User\Models\User::factory()
+    $author1 = User::factory()
         ->hasAttached(
             $userGroup1 = UserGroup::factory()->create(),
-            ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => \Illuminate\Support\Str::uuid()->toString()],
+            ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => Str::uuid()->toString()],
             'userGroups',
         )
         ->create();
 
-    $author2 = \CraftCms\Cms\User\Models\User::factory()
+    $author2 = User::factory()
         ->hasAttached(
             $userGroup2 = UserGroup::factory()->create(),
-            ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => \Illuminate\Support\Str::uuid()->toString()],
+            ['dateCreated' => now(), 'dateUpdated' => now(), 'uid' => Str::uuid()->toString()],
             'userGroups',
         )
         ->create();
@@ -56,6 +60,8 @@ it('can query entries by author groups', function () {
         ->create();
 
     expect(entryQuery()->count())->toBe(2);
+
+    Edition::set(Edition::Solo);
 
     // Does nothing when edition is solo
     expect(entryQuery()->authorGroupId($userGroup1->id)->count())->toBe(2);
