@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that could occur if the `purgeStaleUserSessionDuration` config setting was set to a duration interval string. ([#18238](https://github.com/craftcms/cms/issues/18238))
 - Fixed a bug where custom Login page logos could be sized incorrectly. ([#18229](https://github.com/craftcms/cms/pull/18229))
 - Fixed a bug where element index pages weren’t preserving “Trashed” status selections between page loads. ([#18230](https://github.com/craftcms/cms/issues/18230))
 - Fixed a bug where it was possible to suspend SSO-based user accounts.
