@@ -396,7 +396,7 @@ class Gc extends Component
         }
 
         $this->_stdout('    > deleting stale user sessions ... ');
-        $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
+        $interval = DateTimeHelper::toDateInterval($this->_generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
