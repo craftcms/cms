@@ -10,6 +10,7 @@ use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 trait RespondsWithFlash
@@ -24,7 +25,7 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
-        return back()->with($data);
+        return back()->with($data)->withErrors($data['errors'] ?? []);
     }
 
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
@@ -88,9 +89,9 @@ trait RespondsWithFlash
         return $this->asSuccess($message, $data, $redirect);
     }
 
-    public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): Response
+    public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): RedirectResponse
     {
-        return redirect($this->getPostedRedirectUrl($object) ?? $redirect);
+        return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect);
     }
 
     protected function getPostedRedirectUrl(?object $object = null): ?string

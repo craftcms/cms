@@ -8,10 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Event as YiiEvent;
 use craft\base\ModelInterface;
-use craft\base\NameTrait;
 use craft\elements\Entry;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
@@ -19,31 +17,20 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
-use craft\helpers\Assets;
-use craft\helpers\Db;
-use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use craft\web\Request;
-use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
-use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
@@ -52,13 +39,10 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
-use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use function CraftCms\Cms\t;
 
@@ -209,354 +193,6 @@ class UsersController extends Controller
 
         $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/setup-2fa.twig', templateMode: View::TEMPLATE_MODE_CP);
-    }
-
-    /**
-     * Provides an endpoint for saving a user account.
-     *
-     * This action accounts for the following scenarios:
-     * - An admin registering a new user account.
-     * - An admin editing an existing user account.
-     * - A normal user with user-administration permissions registering a new user account.
-     * - A normal user with user-administration permissions editing an existing user account.
-     * - A guest registering a new user account ("public registration").
-     * This action behaves the same regardless of whether it was requested from the control panel or the front-end site.
-     *
-     * @return Response|null
-     * @throws NotFoundHttpException if the requested user cannot be found
-     * @throws BadRequestHttpException if attempting to create a client account, and one already exists
-     * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
-     */
-    public function actionSaveUser(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $userSession = Craft::$app->getUser();
-        $currentUser = Auth::user();
-        $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
-        $generalConfig = Cms::config();
-        $userSettings = app(ProjectConfig::class)->get('users') ?? [];
-        $requireEmailVerification = (
-            Edition::get()->value >= Edition::Pro->value &&
-            ($userSettings['requireEmailVerification'] ?? true)
-        );
-        $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
-        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
-        $returnCsrfToken = false;
-
-        // Get the user being edited
-        // ---------------------------------------------------------------------
-
-        $userId = $this->request->getBodyParam('userId');
-        $isNewUser = !$userId;
-        $newEmail = trim($this->request->getBodyParam('email') ?? '') ?: null;
-
-        $isPublicRegistration = false;
-
-        // Are we editing an existing user?
-        if ($userId) {
-            /** @var User|null $user */
-            $user = User::find()
-                ->id($userId)
-                ->status(null)
-                ->addSelect(['users.password', 'users.passwordResetRequired'])
-                ->one();
-
-            if (!$user) {
-                throw new NotFoundHttpException('User not found');
-            }
-
-            /** @var User $user */
-            if (!$user->getIsCurrent()) {
-                // Make sure they have permission to edit other users
-                $this->requirePermission('editUsers');
-            }
-        } else {
-            // Make sure this is Craft Pro, since that's required for having multiple user accounts
-            Edition::require(Edition::Team);
-
-            // Is someone logged in?
-            if ($currentUser) {
-                // Make sure they have permission to register users
-                $this->requirePermission('registerUsers');
-            } else {
-                // Make sure public registration is allowed
-                $allowPublicRegistration = $userSettings['allowPublicRegistration'] ?? false;
-                if (!$allowPublicRegistration) {
-                    throw new ForbiddenHttpException('Public registration is not allowed');
-                }
-
-                $isPublicRegistration = true;
-
-                // See if there's an inactive user with the same email
-                if ($newEmail) {
-                    $user = User::find()
-                        ->email(Db::escapeParam($newEmail))
-                        ->status(User::STATUS_INACTIVE)
-                        ->one();
-                }
-            }
-
-            $user ??= new User();
-        }
-
-        $isCurrentUser = $user->getIsCurrent();
-
-        if ($isCurrentUser) {
-            // Remember the old username in case it changes
-            $oldUsername = $user->username;
-        }
-
-        // Handle secure properties (email and password)
-        // ---------------------------------------------------------------------
-
-        $sendActivationEmail = false;
-
-        // Are they allowed to set the email address?
-        if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
-            // Make sure it actually changed
-            if (!$isNewUser && $newEmail && $newEmail === $user->email) {
-                $newEmail = null;
-            }
-
-            if ($newEmail) {
-                // Should we be sending a verification email now?
-                // Even if verification isn't required, send one out on account creation if we don't have a password yet
-                $sendActivationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
-                        (
-                            $requireEmailVerification && (
-                                $isPublicRegistration ||
-                                ($isCurrentUser && !$canAdministrateUsers) ||
-                                ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
-                            )
-                        ) ||
-                        (
-                            !$requireEmailVerification && $isNewUser && (
-                                ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                                ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
-                            )
-                        )
-                    );
-
-                if ($sendActivationEmail) {
-                    $user->unverifiedEmail = $newEmail;
-
-                    // Mark them as pending
-                    if (!$user->active) {
-                        $user->pending = true;
-                    }
-                } else {
-                    // Clear out the unverified email if there is one,
-                    // so it doesn't overwrite the new email later on
-                    $user->unverifiedEmail = null;
-                }
-
-                if (!$sendActivationEmail || $isNewUser) {
-                    $user->email = $newEmail;
-                }
-            }
-        } else {
-            // Discard the new email if it was posted
-            $newEmail = null;
-        }
-
-        // Are they allowed to set a new password?
-        if ($isPublicRegistration) {
-            if (!$generalConfig->deferPublicRegistrationPassword) {
-                $user->newPassword = $this->request->getBodyParam('password', '');
-            }
-        } else {
-            if ($isCurrentUser) {
-                // If there was a newPassword input but it was empty, pretend it didn't exist
-                $user->newPassword = $this->request->getBodyParam('newPassword') ?: null;
-                $returnCsrfToken = $user->newPassword !== null;
-            }
-        }
-
-        // If editing an existing user and either of these properties are being changed,
-        // require the user’s current password for additional security
-        if (
-            !$isNewUser &&
-            (!empty($newEmail) || $user->newPassword !== null) &&
-            !$this->_verifyElevatedSession()
-        ) {
-            Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
-            $user->addError('currentPassword', t('Incorrect current password.'));
-        }
-
-        // Handle the rest of the user properties
-        // ---------------------------------------------------------------------
-
-        // Is the site set to use email addresses as usernames?
-        if ($generalConfig->useEmailAsUsername) {
-            $user->username = $user->email;
-        } elseif ($isNewUser || $currentUser->admin || $isCurrentUser) {
-            $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
-        }
-
-        $this->populateNameAttributes($user);
-
-        // New users should always be initially saved in a pending state,
-        // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser && !$deactivateByDefault) {
-            $user->pending = true;
-        }
-
-        if ($canAdministrateUsers) {
-            $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
-        }
-
-        if ($isPublicRegistration) {
-            // set the default group on the user, so that any content
-            // based on user group condition can be validated and saved against them
-            $groups = Users::getDefaultUserGroups($user);
-            if (!empty($groups)) {
-                $user->setGroups($groups);
-            }
-
-            // keep track of which site they registered from
-            // (do this even if it's not a multi-site install, in case it becomes one later.)
-            $user->affiliatedSiteId = Sites::getCurrentSite()->id;
-        }
-
-        // If this is Craft Pro, grab any profile content from post
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $user->setFieldValuesFromRequest($fieldsLocation);
-
-        // Validate and save!
-        // ---------------------------------------------------------------------
-
-        $photo = UploadedFile::getInstanceByName('photo');
-
-        if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
-            $user->addError('photo', t('The user photo provided is not an image.'));
-        }
-
-        // Don't validate required custom fields if it's public registration
-        if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
-            $user->setScenario(Element::SCENARIO_LIVE);
-        } elseif ($isPublicRegistration) {
-            $user->setScenario(User::SCENARIO_REGISTRATION);
-        }
-
-        // Manually validate the user so we can pass $clearErrors=false
-        $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
-
-        if (!$success) {
-            Craft::info('User not saved due to validation error.', __METHOD__);
-
-            if ($isPublicRegistration) {
-                // Move any 'newPassword' errors over to 'password'
-                $user->addErrors(['password' => $user->getErrors('newPassword')]);
-                $user->clearErrors('newPassword');
-            }
-
-            // Copy any 'unverifiedEmail' errors to 'email'
-            if (!$user->hasErrors('email')) {
-                $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
-                $user->clearErrors('unverifiedEmail');
-            }
-
-            return $this->asModelFailure(
-                $user,
-                mb_ucfirst(t('Couldn’t save {type}.', [
-                    'type' => User::lowerDisplayName(),
-                ])),
-                $userVariable
-            );
-        }
-
-        // If this is a new user and email verification isn't required,
-        // go ahead and activate them now.
-        if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault) {
-            Users::activateUser($user);
-        }
-
-        // Is this the current user, and did their username just change?
-        // todo: remove comment when WI-51866 is fixed
-        /** @noinspection PhpUndefinedVariableInspection */
-        if ($isCurrentUser && $user->username !== $oldUsername) {
-            // Update the username cookie
-            RememberedUsername::set($user);
-        }
-
-        // Save the user’s photo, if it was submitted
-        $this->_processUserPhoto($user);
-
-        if (Edition::get()->value >= Edition::Pro->value) {
-            // If this is public registration, assign the user to the default user group
-            if ($isPublicRegistration) {
-                // Assign them to the default user group
-                Users::assignUserToDefaultGroup($user);
-            }
-        }
-
-        // Do we need to send a verification email out?
-        if ($sendActivationEmail) {
-            // Temporarily set the unverified email on the User so the verification email goes to the
-            // right place
-            $originalEmail = $user->email;
-            $user->email = $user->unverifiedEmail;
-
-            if ($isNewUser) {
-                // Send the activation email
-                Users::sendActivationEmail($user);
-            } else {
-                // Send the standard verification email
-                Users::sendNewEmailVerifyEmail($user);
-            }
-
-            // Put the original email back into place
-            $user->email = $originalEmail;
-        }
-
-        // Is this public registration, and was the user going to be activated automatically?
-        $publicActivation = $isPublicRegistration && $user->getStatus() === User::STATUS_ACTIVE;
-        $loggedIn = $publicActivation && $this->_maybeLoginUserAfterAccountActivation($user);
-        $returnCsrfToken = $returnCsrfToken || $loggedIn;
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asModelSuccess(
-                $user,
-                t('{type} saved.', ['type' => User::displayName()]),
-                $userVariable,
-                array_filter([
-                    'id' => $user->id, // todo: remove
-                    'csrfTokenValue' => $returnCsrfToken && $generalConfig->enableCsrfProtection
-                        ? $this->request->getCsrfToken()
-                        : null,
-                ]),
-            );
-        }
-
-        if ($isPublicRegistration) {
-            if (($message = $this->request->getParam('userRegisteredNotice')) !== null) {
-                $default = Html::encode($message);
-                Deprecator::log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
-            } else {
-                $default = t('User registered.');
-            }
-            $this->setSuccessFlash($default);
-        } else {
-            $this->setSuccessFlash(t('{type} saved.', [
-                'type' => User::displayName(),
-            ]));
-        }
-
-        // Is this public registration, and is the user going to be activated automatically?
-        if ($publicActivation) {
-            return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
-        }
-
-        if (!$this->request->getAcceptsJson()) {
-            // Tell all browser windows about the draft deletion
-            Craft::$app->getSession()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $user->id,
-            ]);
-        }
-
-        return $this->redirectToPostedUrl($user);
     }
 
     /**
@@ -755,16 +391,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Verifies that the user has an elevated session, or that their current password was submitted with the request.
-     *
-     * @return bool
-     */
-    private function _verifyElevatedSession(): bool
-    {
-        return ($this->isPasswordConfirmed() || $this->_verifyExistingPassword());
-    }
-
-    /**
      * Verifies that the current user’s password was submitted with the request.
      *
      * @return bool
@@ -788,146 +414,6 @@ class UsersController extends Controller
             return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
         } catch (InvalidArgumentException) {
             return false;
-        }
-    }
-
-    /**
-     * @param User $user
-     * @throws Throwable if reasons
-     */
-    private function _processUserPhoto(User $user): void
-    {
-        // Delete their photo?
-        if ($this->request->getBodyParam('deletePhoto')) {
-            Users::deleteUserPhoto($user);
-            $user->photoId = null;
-            Craft::$app->getElements()->saveElement($user);
-        }
-
-        $newPhoto = false;
-        $fileLocation = null;
-        $filename = null;
-        $mimeType = null;
-
-        // Did they upload a new one?
-        if ($photo = UploadedFile::getInstanceByName('photo')) {
-            $fileLocation = Assets::tempFilePath($photo->getExtension());
-            move_uploaded_file($photo->tempName, $fileLocation);
-            $filename = $photo->name;
-            $mimeType = $photo->type;
-            $newPhoto = true;
-        } elseif (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
-            // base64-encoded photo
-            $matches = [];
-
-            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+]+);)?base64,(?<data>.+)/i', $photo['data'] ?? '', $matches)) {
-                $filename = $photo['filename'] ?? null;
-                $extension = $filename ? pathinfo($filename, PATHINFO_EXTENSION) : null;
-                $mimeType = $matches['type'] ?: null;
-
-                if (!$extension && $mimeType) {
-                    try {
-                        $extension = FileHelper::getExtensionByMimeType($mimeType);
-                    } catch (InvalidArgumentException) {
-                    }
-                }
-
-                if (!$extension) {
-                    Craft::warning('Could not determine file extension for user photo.', __METHOD__);
-                    return;
-                }
-
-                $fileLocation = Assets::tempFilePath($extension);
-                $data = base64_decode($matches['data']);
-                FileHelper::writeToFile($fileLocation, $data);
-                $newPhoto = true;
-            }
-        }
-
-        if ($newPhoto) {
-            try {
-                Users::saveUserPhoto($fileLocation, $user, $filename, $mimeType);
-            } catch (Throwable $e) {
-                if (file_exists($fileLocation)) {
-                    FileHelper::unlink($fileLocation);
-                }
-
-                throw $e;
-            }
-        }
-    }
-
-    /**
-     * Possibly log a user in right after they activated their account (not when they reset their password),
-     * if Craft is configured to do so.
-     *
-     * @param User $user The user that was just activated
-     * @return bool Whether the user was logged in
-     */
-    private function _maybeLoginUserAfterAccountActivation(User $user): bool
-    {
-        if (!Cms::config()->autoLoginAfterAccountActivation) {
-            return false;
-        }
-
-        Auth::login($user);
-
-        return true;
-    }
-
-    /**
-     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the control panel.
-     *
-     * @param User $user The user to redirect
-     * @return Response|null
-     */
-    private function _redirectUserToCp(User $user): ?Response
-    {
-        // Can they access the control panel?
-        if ($user->can('accessCp')) {
-            $postCpLoginRedirect = Cms::config()->getPostCpLoginRedirect();
-            $url = UrlHelper::cpUrl($postCpLoginRedirect);
-            return $this->redirect($url);
-        }
-
-        return null;
-    }
-
-    /**
-     * Redirect the browser after a user’s account has been activated.
-     *
-     * @param User $user The user that was just activated
-     * @return Response
-     */
-    private function _redirectUserAfterAccountActivation(User $user): Response
-    {
-        $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
-        $url = UrlHelper::siteUrl($activateAccountSuccessPath);
-        return $this->redirectToPostedUrl($user, $url);
-    }
-
-    private function populateNameAttributes(object $model): void
-    {
-        /** @var object|NameTrait $model */
-        $fullName = $this->request->getBodyParam('fullName');
-
-        if ($fullName !== null) {
-            $model->fullName = $fullName;
-
-            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
-            $model->firstName = $model->lastName = null;
-        } else {
-            // Still check for firstName/lastName in case a front-end form is still posting them
-            $firstName = $this->request->getBodyParam('firstName');
-            $lastName = $this->request->getBodyParam('lastName');
-
-            if ($firstName !== null || $lastName !== null) {
-                $model->firstName = $firstName ?? $model->firstName;
-                $model->lastName = $lastName ?? $model->lastName;
-
-                // Unset fullName so NameTrait::prepareNamesForSave() can set it
-                $model->fullName = null;
-            }
         }
     }
 

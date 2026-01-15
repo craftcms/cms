@@ -11,8 +11,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 
 use function CraftCms\Cms\t;
 
@@ -158,6 +160,23 @@ trait EditUserTrait
         }
 
         return $response;
+    }
+
+    protected function existingPasswordVerified(Request $request): bool
+    {
+        if (! $request->user()) {
+            return false;
+        }
+
+        $currentPassword = $request->input('currentPassword') ?? $request->input('password');
+
+        if (is_null($currentPassword)) {
+            return false;
+        }
+
+        $currentHashedPassword = $request->user()->password;
+
+        return Hash::check($currentPassword, $currentHashedPassword);
     }
 
     private function showPermissionsScreen(): bool

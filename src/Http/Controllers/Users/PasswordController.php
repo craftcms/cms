@@ -23,7 +23,6 @@ use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -108,27 +107,6 @@ final readonly class PasswordController
         return new JsonResponse([
             'url' => $url,
         ]);
-    }
-
-    private function existingPasswordVerified(Request $request): bool
-    {
-        if (! $request->user()) {
-            return false;
-        }
-
-        $currentPassword = $request->input('currentPassword') ?? $request->input('password');
-
-        if (is_null($currentPassword)) {
-            return false;
-        }
-
-        $currentHashedPassword = $request->user()->password;
-
-        try {
-            return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
-        } catch (InvalidArgumentException) {
-            return false;
-        }
     }
 
     public function requireReset(Request $request, Users $users): Response
