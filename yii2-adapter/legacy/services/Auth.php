@@ -8,10 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\auth\methods\AuthMethodInterface;
 use craft\events\RegisterComponentTypesEvent;
 use craft\web\View;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\User\Elements\User;
 use DateTime;

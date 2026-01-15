@@ -35,7 +35,7 @@ test('ensureUserByEmail', function () {
 });
 
 test('retrieval', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getUserById($user->id))->toBeInstanceOf(User::class);
     expect($this->users->getUserByUid($user->uid))->toBeInstanceOf(User::class);
@@ -44,21 +44,21 @@ test('retrieval', function () {
 });
 
 test('getUserByUserNameOrEmail gets active users first', function () {
-    $inactive = UserModel::factory()->create([
+    $inactive = UserModel::factory()->createElement([
         'id' => null,
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
-    $active = UserModel::factory()->create([
+    $active = UserModel::factory()->createElement([
         'id' => null,
         'active' => true,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
     expect($this->users->getUserByUsernameOrEmail('john')->id)->toBe($active->id);
 });
@@ -83,7 +83,7 @@ test('getUserByUserNameOrEmail gets pending users first', function () {
 });
 
 test('userPreferences', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getUserPreferences($user->id))->toBeEmpty();
 
@@ -94,25 +94,25 @@ test('userPreferences', function () {
 });
 
 test('getActivationUrl', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getActivationUrl($user))->toBeUrl();
 });
 
 test('getEmailVerifyUrl', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getEmailVerifyUrl($user))->toBeUrl();
 });
 
 test('getPasswordResetUrl', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getPasswordResetUrl($user))->toBeUrl();
 });
 
 test('removeCredentials', function () {
-    $userElement = UserModel::factory()->create()->asElement();
+    $userElement = UserModel::factory()->createElement();
 
     $user = UserModel::findOrFail($userElement->id);
     $user->update([
@@ -138,7 +138,7 @@ test('removeCredentials', function () {
 });
 
 test('user activation', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($user->getStatus())->toBe(User::STATUS_PENDING);
 
@@ -150,7 +150,7 @@ test('user activation', function () {
 });
 
 test('user activation email as username with an unverified email', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     // Set useEmailAsUsername to true and add an unverified email.
     Cms::config()->useEmailAsUsername = true;
@@ -166,7 +166,7 @@ test('user activation email as username with an unverified email', function () {
 });
 
 test('user activation email as username with no unverified email', function () {
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     // Run the same test as above but without an unverified email.
     Cms::config()->useEmailAsUsername = true;
@@ -183,7 +183,7 @@ test('user activation email as username with no unverified email', function () {
 });
 
 test('unlock', function () {
-    $user = UserModel::factory()->locked()->create()->asElement();
+    $user = UserModel::factory()->locked()->createElement();
 
     expect($user->locked)->toBeTrue();
 
@@ -197,7 +197,7 @@ test('unlock', function () {
 });
 
 test('suspend', function () {
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     expect($user->suspended)->toBeFalse();
     expect($user->getStatus())->toBe(User::STATUS_ACTIVE);
@@ -211,7 +211,7 @@ test('suspend', function () {
 });
 
 test('unsuspend', function () {
-    $user = UserModel::factory()->suspended()->create()->asElement();
+    $user = UserModel::factory()->suspended()->createElement();
 
     expect($user->suspended)->toBeTrue();
     expect($user->getStatus())->toBe(User::STATUS_SUSPENDED);
@@ -249,7 +249,7 @@ test('shunned messages', function () {
 test('set verification code', function () {
     Date::setTestNow(now('UTC'));
 
-    $user = UserModel::factory()->pending()->create()->asElement();
+    $user = UserModel::factory()->pending()->createElement();
 
     $verificationCode = $this->users->setVerificationCodeOnUser($user);
 
@@ -263,7 +263,7 @@ test('set verification code', function () {
 test('assignUserToGroups', function () {
     Edition::set(Edition::Pro);
 
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     $group1 = UserGroup::factory()->create();
     $group2 = UserGroup::factory()->create();
@@ -285,7 +285,7 @@ test('assignUserToGroups', function () {
 });
 
 test('assignUserToDefaultGroup', function () {
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     $group = UserGroup::factory()->create();
 
@@ -302,7 +302,7 @@ test('assignUserToDefaultGroup', function () {
 test('handleInvalidLogin', function () {
     Date::setTestNow(now('UTC'));
 
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -317,7 +317,7 @@ test('handleInvalidLogin', function () {
 test('handleInvalidLogin stores ip', function () {
     Cms::config()->storeUserIps = true;
 
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -330,7 +330,7 @@ test('handleInvalidLogin without limit', function () {
     Cms::config()->maxInvalidLogins = false;
     Cms::config()->storeUserIps = true;
 
-    $user = UserModel::factory()->active()->create()->asElement();
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -346,9 +346,9 @@ test('handleInvalidLogin without limit', function () {
 test('handleInvalidLogin with max outside window', function () {
     Date::setTestNow(now('UTC'));
 
-    $user = UserModel::factory()->active()->create([
+    $user = UserModel::factory()->active()->createElement([
         'invalidLoginWindowStart' => null,
-    ])->asElement();
+    ]);
 
     Cms::config()->maxInvalidLogins = 1;
 
@@ -366,7 +366,7 @@ test('handleInvalidLogin inside window', function () {
     Event::fake();
     Date::setTestNow(now('UTC'));
 
-    $activeUser = UserModel::factory()->active()->create()->asElement();
+    $activeUser = UserModel::factory()->active()->createElement();
 
     UserModel::findOrFail($activeUser->id)->update([
         'invalidLoginWindowStart' => now(),
@@ -398,7 +398,7 @@ test('handleInvalidLogin inside window', function () {
 });
 
 test('handleValidLogin', function () {
-    $activeUser = UserModel::factory()->active()->create()->asElement();
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
 
@@ -413,7 +413,7 @@ test('handleValidLogin', function () {
 test('handleValidLogin with ip collection', function () {
     Cms::config()->storeUserIps = true;
 
-    $activeUser = UserModel::factory()->active()->create()->asElement();
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
 
@@ -425,7 +425,7 @@ test('handleValidLogin with ip collection', function () {
 });
 
 test('handleValidLogin clears values', function () {
-    $activeUser = UserModel::factory()->active()->create()->asElement();
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
     $user->update([
@@ -447,10 +447,10 @@ test('sendActivationEmail', function () {})->todo('Add test after Mails are port
 test('canImpersonate', function () {
     Edition::set(Edition::Pro);
 
-    $admin1 = UserModel::factory()->active()->create(['admin' => true])->asElement();
-    $admin2 = UserModel::factory()->active()->create(['admin' => true])->asElement();
-    $user1 = UserModel::factory()->active()->create()->asElement();
-    $user2 = UserModel::factory()->active()->create()->asElement();
+    $admin1 = UserModel::factory()->active()->admin()->createElement();
+    $admin2 = UserModel::factory()->active()->admin()->createElement();
+    $user1 = UserModel::factory()->active()->createElement();
+    $user2 = UserModel::factory()->active()->createElement();
 
     // Admins can impersonate anyone
     expect($this->users->canImpersonate($admin1, $user1))->toBeTrue();

@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +35,13 @@ final class UserFactory extends Factory
             'locked' => false,
             'suspended' => false,
         ];
+    }
+
+    public function admin(): self
+    {
+        return $this->state(fn () => [
+            'admin' => true,
+        ]);
     }
 
     public function pending(): self
@@ -66,6 +74,11 @@ final class UserFactory extends Factory
         ]);
     }
 
+    public function createElement(array $attributes = [], ?Model $parent = null): \CraftCms\Cms\User\Elements\User
+    {
+        return $this->create($attributes, $parent)->asElement();
+    }
+
     public function withPasskey(string $credentialId): self
     {
         return $this->afterCreating(fn (User $user) => WebAuthn::factory()->create([
@@ -75,7 +88,7 @@ final class UserFactory extends Factory
         ]));
     }
 
-    #[\Override]
+    #[Override]
     protected function store(Collection $results): void
     {
         $results->each(function (User $model) {

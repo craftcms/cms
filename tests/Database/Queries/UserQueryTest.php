@@ -14,19 +14,19 @@ it('sorts by username by default', function () {
 });
 
 test('gets active users first', function () {
-    $inactive = UserModel::factory()->create([
+    $inactive = UserModel::factory()->createElement([
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
-    $active = UserModel::factory()->create([
+    $active = UserModel::factory()->createElement([
         'active' => true,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
     expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($active->id);
 
@@ -35,19 +35,19 @@ test('gets active users first', function () {
 });
 
 test('gets pending users first', function () {
-    $nonPending = UserModel::factory()->create([
+    $nonPending = UserModel::factory()->createElement([
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
-    $pending = UserModel::factory()->create([
+    $pending = UserModel::factory()->createElement([
         'active' => false,
         'pending' => true,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
+    ]);
 
     expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($pending->id);
 

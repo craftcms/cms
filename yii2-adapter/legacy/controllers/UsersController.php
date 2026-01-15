@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\methods\AuthMethodInterface;
 use craft\base\Element;
 use craft\base\Event as YiiEvent;
 use craft\base\ModelInterface;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;

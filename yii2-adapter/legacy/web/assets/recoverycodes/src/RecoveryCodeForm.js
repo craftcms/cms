@@ -40,7 +40,7 @@
       },
     },
     {
-      METHOD: 'craft\\auth\\methods\\RecoveryCodes',
+      METHOD: 'CraftCms\\Cms\\Auth\\Methods\\RecoveryCodes',
     }
   );
 

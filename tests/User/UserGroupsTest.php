@@ -43,7 +43,7 @@ it('can get assignable groups', function () {
     expect(UserGroups::getAssignableGroups())->toHaveCount(1);
 
     // No group when user has no permissions to assign groups
-    actingAs(\CraftCms\Cms\User\Models\User::factory()->create()->asElement());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 });
 

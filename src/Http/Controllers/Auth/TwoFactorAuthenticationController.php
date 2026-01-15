@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
-use craft\auth\methods\AuthMethodInterface;
-use craft\auth\methods\RecoveryCodes;
-use craft\auth\methods\TOTP;
 use craft\helpers\UrlHelper;
 use craft\web\View;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
+use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;

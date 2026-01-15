@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
-use craft\auth\methods\AuthMethodInterface;
-use craft\auth\methods\RecoveryCodes;
-use craft\auth\methods\TOTP;
-use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
+use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
@@ -27,6 +26,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
+use RuntimeException;
 use SensitiveParameter;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -58,7 +58,7 @@ final class Auth
     }
 
     /**
-     * @return \Illuminate\Support\Collection<\craft\auth\methods\AuthMethodInterface>
+     * @return \Illuminate\Support\Collection<AuthMethodInterface>
      */
     public function getAllMethods(?User $user = null): Collection
     {
@@ -81,10 +81,17 @@ final class Auth
             Event::dispatch(new RegisterAuthMethods($methods));
         }
 
-        $this->methods[$user->id] = $methods->map(fn (string $class) => ComponentHelper::createComponent([
-            'type' => $class,
-            'user' => $user,
-        ], AuthMethodInterface::class));
+        $this->methods[$user->id] = $methods->map(function (string $class) use ($user) {
+            if (! is_subclass_of($class, AuthMethodInterface::class)) {
+                throw new RuntimeException("$class must implement ".AuthMethodInterface::class);
+            }
+
+            /** @var AuthMethodInterface $method */
+            $method = app()->make($class);
+            $method->setUser($user);
+
+            return $method;
+        });
 
         $this->methods[$user->id] = $this->methods[$user->id]->sort(function (AuthMethodInterface $a, AuthMethodInterface $b) {
             // place Recovery Codes at the end

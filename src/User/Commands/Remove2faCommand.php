@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use craft\auth\methods\AuthMethodInterface;
-use craft\auth\methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;

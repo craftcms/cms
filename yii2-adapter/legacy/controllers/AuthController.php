@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\methods\RecoveryCodes;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;

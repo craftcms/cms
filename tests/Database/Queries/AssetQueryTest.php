@@ -16,7 +16,7 @@ test('editable/savable returns 0 when having no access', function (string $metho
 
     expect(assetQuery()->$method()->count())->toBe(1);
 
-    actingAs(\CraftCms\Cms\User\Models\User::factory()->create()->asElement());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
 
     // Access to nothing
     expect(assetQuery()->$method()->count())->toBe(0);
