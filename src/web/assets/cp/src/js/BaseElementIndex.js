@@ -449,6 +449,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.addListener(this.$exportBtn, 'click', '_showExportHud');
 
+      // Let everyone know that the UI is initialized
+      // ---------------------------------------------------------------------
+
+      this.initialized = true;
+      this.afterInit();
+
       // Select the initial source + source path
       // ---------------------------------------------------------------------
 
@@ -602,12 +608,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.setQueryParam('status', null);
         }
       }
-
-      // Let everyone know that the UI is initialized
-      // ---------------------------------------------------------------------
-
-      this.initialized = true;
-      this.afterInit();
 
       // Load the first batch of elements!
       // ---------------------------------------------------------------------
@@ -2284,6 +2284,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return false;
       }
 
+      // if newly selected source is the same as the one that's currently selected
       if (
         this.$source &&
         this.$source[0] &&
