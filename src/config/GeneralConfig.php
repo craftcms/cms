@@ -3341,6 +3341,7 @@ class GeneralConfig extends BaseConfig
             ->softDeleteDuration($this->softDeleteDuration)
             ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
+            ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -5857,7 +5858,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
-        $this->purgeStaleUserSessionDuration = $value;
+        $this->purgeStaleUserSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
