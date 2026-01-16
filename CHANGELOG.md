@@ -5,6 +5,7 @@
 - Fixed an error that could occur if the `purgeStaleUserSessionDuration` config setting was set to a duration interval string. ([#18238](https://github.com/craftcms/cms/issues/18238))
 - Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
 - Fixed SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
+- Fixed a TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
 
 ## 4.16.18 - 2026-01-09
 
