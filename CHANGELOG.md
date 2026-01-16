@@ -8,6 +8,7 @@
 - Fixed a bug where it was possible to suspend SSO-based user accounts.
 - Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
 - Fixed SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
+- Fixed a TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
 
 ## 5.8.22 - 2026-01-09
 
