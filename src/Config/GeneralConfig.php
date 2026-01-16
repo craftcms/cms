@@ -552,7 +552,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      * ```shell Environment Override
      * CRAFT_BUILD_ID=$GIT_SHA
@@ -3917,7 +3917,7 @@ class GeneralConfig extends BaseConfig
      * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
      *
      * ```php
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      *
      * @group Environment
