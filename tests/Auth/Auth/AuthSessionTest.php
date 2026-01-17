@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
     $this->auth = app(Auth::class);
+});
+
+afterEach(function () {
     Session::flush();
 });
 
