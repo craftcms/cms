@@ -14,7 +14,6 @@ use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -62,7 +61,7 @@ final class Auth
     }
 
     /**
-     * @return \Illuminate\Support\Collection<AuthMethodInterface>
+     * @return Collection<AuthMethodInterface>
      */
     public function getAllMethods(?User $user = null): Collection
     {
@@ -114,7 +113,7 @@ final class Auth
     }
 
     /**
-     * @return \Illuminate\Support\Collection<AuthMethodInterface>
+     * @return Collection<AuthMethodInterface>
      */
     public function getAvailableMethods(?User $user = null): Collection
     {
@@ -373,7 +372,7 @@ final class Auth
             case User::STATUS_ACTIVE:
                 if ($user->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Cms::config()->cooldownDuration) {
+                    if ($this->generalConfig->cooldownDuration) {
                         return AuthError::AccountCooldown;
                     }
 
@@ -434,7 +433,7 @@ final class Auth
      */
     public function getLoginFailureInfo(?AuthError $authError, ?User $user): array
     {
-        if (Cms::config()->preventUserEnumeration && in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])) {
+        if ($this->generalConfig->preventUserEnumeration && in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])) {
             $authError = AuthError::InvalidCredentials;
         }
 
@@ -451,7 +450,7 @@ final class Auth
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
             AuthError::NoCpOfflineAccess => t('You cannot access the control panel while the system is offline with that account.'),
             AuthError::NoSiteOfflineAccess => t('You cannot access the site while the system is offline with that account.'),
-            default => Cms::config()->useEmailAsUsername
+            default => $this->generalConfig->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),
         };
@@ -464,7 +463,7 @@ final class Auth
         $this->users->handleInvalidLogin($user);
 
         // Was that one bad password/2fa code/passkey too many?
-        if ($user->locked && ! Cms::config()->preventUserEnumeration) {
+        if ($user->locked && ! $this->generalConfig->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->getAuthError($user);
         } else {
