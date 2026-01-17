@@ -3785,6 +3785,7 @@ class Elements extends Component
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     * @param Element_SiteSettingsRecord|null $siteSettingsRecord
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3799,6 +3800,7 @@ class Elements extends Component
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
         bool $saveContent = false,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
         /** @var ElementInterface&DraftBehavior $element */
         $isNewElement = !$element->id;
@@ -3888,8 +3890,6 @@ class Elements extends Component
                 'elementId' => $element->id,
                 'siteId' => $element->siteId,
             ]);
-        } else {
-            $siteSettingsRecord = null;
         }
 
         $element->isNewForSite = empty($siteSettingsRecord);
@@ -4078,7 +4078,6 @@ class Elements extends Component
                     }
 
                     $content = [];
-                    $view = Craft::$app->getView();
 
                     if ($fieldLayout) {
                         $validUids = [];
@@ -4104,21 +4103,13 @@ class Elements extends Component
                             }
                         }
 
-                        $generatedFieldValues = [];
-                        foreach ($generatedFields as $field) {
-                            $validUids[$field['uid']] = true;
-
-                            $value = $view->renderObjectTemplate($field['template'] ?? '', $element);
-                            if ($value !== '') {
-                                $content[$field['uid']] = $value;
-                                if (($field['handle'] ?? '') !== '') {
-                                    $generatedFieldValues[$field['handle']] = $value;
+                        if ($oldContent) {
+                            foreach ($generatedFields as $field) {
+                                if (isset($oldContent[$field['uid']])) {
+                                    $content[$field['uid']] = $oldContent[$field['uid']];
                                 }
-                            } elseif (!$saveContent) {
-                                unset($oldContent[$field['uid']]);
                             }
                         }
-                        $element->setGeneratedFieldValues($generatedFieldValues);
                     }
 
                     // if we're only saving dirty fields, merge in the existing values,
@@ -4156,6 +4147,11 @@ class Elements extends Component
                 // Update the list of dirty attributes
                 $dirtyAttributes = $element->getDirtyAttributes();
 
+                /** @var array<int,ElementInterface> $siteElements */
+                $siteElements = [];
+                /** @var array<int,Element_SiteSettingsRecord> $siteSettingsRecords */
+                $siteSettingsRecords = [];
+
                 // Update the element across the other sites?
                 if ($propagate) {
                     $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
@@ -4167,27 +4163,70 @@ class Elements extends Component
                                 ->status(null)
                                 ->indexBy('siteId')
                                 ->all();
-                        } else {
-                            $siteElements = [];
                         }
 
                         foreach (array_keys($supportedSites) as $siteId) {
                             // Skip the initial site
                             if ($siteId != $element->siteId) {
                                 $siteElement = $siteElements[$siteId] ?? false;
+                                $siteElementRecord = null;
                                 if (!$this->_propagateElement(
                                     $element,
                                     $supportedSites,
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: true,
+                                    siteSettingsRecord: $siteElementRecord,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
+                                $siteElements[$siteId] = $siteElement;
+                                $siteSettingsRecords[$siteId] = $siteElementRecord;
                             }
                         }
                     }
+                }
+
+                // Save the generated fields after the element has been fully propagated,
+                // so Matrix/CB/etc. have had a chance to save their data via afterElementPropagate()
+                // (see https://github.com/craftcms/cms/issues/17938)
+                if (!$element->propagating && !empty($generatedFields)) {
+                    $siteElements[$element->siteId] = $element;
+                    $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
+
+                    $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
+                        foreach ($siteElements as $siteId => $siteElement) {
+                            $siteSettingsRecord = $siteSettingsRecords[$siteId];
+                            $content = $siteSettingsRecord->content ?? [];
+                            if (is_string($content)) {
+                                $content = $content !== '' ? Json::decode($content) : [];
+                            }
+                            $view = Craft::$app->getView();
+                            $generatedFieldValues = [];
+                            $updated = false;
+
+                            foreach ($generatedFields as $field) {
+                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                if ($value !== ($content[$field['uid']] ?? '')) {
+                                    $updated = true;
+                                }
+                                if ($value !== '') {
+                                    $content[$field['uid']] = $value;
+                                    if (($field['handle'] ?? '') !== '') {
+                                        $generatedFieldValues[$field['handle']] = $value;
+                                    }
+                                } else {
+                                    unset($content[$field['uid']]);
+                                }
+                            }
+
+                            if ($updated) {
+                                $siteSettingsRecord->content = $content;
+                                $siteSettingsRecord->save(false, ['content']);
+                                $siteElement->setGeneratedFieldValues($generatedFieldValues);
+                            }
+                        }
+                    });
                 }
 
                 // It's now fully saved and propagated
@@ -4357,6 +4396,7 @@ class Elements extends Component
      * @param-out ElementInterface $siteElement
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether the element’s content should be saved
+     * @param Element_SiteSettingsRecord|null $siteSettingsRecord
      * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
@@ -4367,6 +4407,7 @@ class Elements extends Component
         ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
         bool $saveContent = true,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
@@ -4514,7 +4555,8 @@ class Elements extends Component
             $crossSiteValidate,
             false,
             supportedSites: $supportedSites,
-            saveContent: $saveContent
+            saveContent: $saveContent,
+            siteSettingsRecord: $siteSettingsRecord,
         );
 
         if (!$success) {
