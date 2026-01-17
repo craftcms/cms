@@ -40,6 +40,7 @@ use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
@@ -1420,7 +1421,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
         // Validate the security key
         try {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+            $keyValid = app(Passkeys::class)->verifyPasskey($this, $requestOptions, $response);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }

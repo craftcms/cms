@@ -12,6 +12,7 @@ use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -187,7 +188,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
+        $options = app(Passkeys::class)->getPasskeyCreationOptions(static::currentUser());
 
         return $this->asJson([
             'options' => $options,
@@ -204,7 +205,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+        $options = app(Passkeys::class)->getPasskeyRequestOptions();
 
         return $this->asJson([
             'options' => $options,
@@ -226,7 +227,7 @@ class AuthController extends Controller
         $credentials = $this->request->getRequiredBodyParam('credentials');
         $credentialName = $this->request->getBodyParam('credentialName');
 
-        $verified = Craft::$app->getAuth()->verifyPasskeyCreationResponse($credentials, $credentialName);
+        $verified = app(Passkeys::class)->verifyPasskeyCreationResponse($credentials, $credentialName);
 
         if (!$verified) {
             return $this->asFailure(t('Passkey creation failed.'));
@@ -249,7 +250,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
 
         $uid = $this->request->getRequiredBodyParam('uid');
-        Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);
+        app(Passkeys::class)->deletePasskey(static::currentUser(), $uid);
 
         return $this->asSuccess(t('Passkey deleted.'), [
             'tableHtml' => $this->passkeyTableHtml(),
@@ -259,7 +260,7 @@ class AuthController extends Controller
     private function passkeyTableHtml(): string
     {
         return $this->getView()->renderTemplate('users/_passkeys-table.twig', [
-            'passkeys' => Craft::$app->getAuth()->getPasskeys(static::currentUser()),
+            'passkeys' => app(Passkeys::class)->getPasskeys(static::currentUser())->all(),
         ]);
     }
 

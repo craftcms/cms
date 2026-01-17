@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\web\assets\passkeysetup\PasskeySetupAsset;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use Illuminate\Http\Request;
 
@@ -13,7 +14,7 @@ final readonly class PasskeysController
 {
     use EditUserTrait;
 
-    public function index(Request $request): CpScreenResponse
+    public function index(Request $request, Passkeys $passkeys): CpScreenResponse
     {
         $user = $request->user();
 
@@ -25,10 +26,9 @@ final readonly class PasskeysController
 new Craft.PasskeySetup();
 JS);
 
-        $passkeys = Craft::$app->getAuth()->getPasskeys($user);
         $response->contentTemplate('users/_passkeys', [
             'user' => $user,
-            'passkeys' => $passkeys,
+            'passkeys' => $passkeys->getPasskeys($user)->all(),
         ]);
 
         return $response;

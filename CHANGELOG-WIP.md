@@ -148,6 +148,20 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
     - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 
+### Passkeys
+
+- Added `CraftCms\Cms\Auth\Passkeys\Passkeys`.
+- Deprecated `craft\services\Auth` passkey methods. The following should be used instead:
+  - `Auth::hasPasskeys()` -> `app(Passkeys::class)->hasPasskeys()`
+  - `Auth::getPasskeys()` -> `app(Passkeys::class)->getPasskeys()`
+  - `Auth::getPasskeyCreationOptions()` -> `app(Passkeys::class)->getPasskeyCreationOptions()`
+  - `Auth::verifyPasskeyCreationResponse()` -> `app(Passkeys::class)->verifyPasskeyCreationResponse()`
+  - `Auth::getPasskeyRequestOptions()` -> `app(Passkeys::class)->getPasskeyRequestOptions()`
+  - `Auth::verifyPasskey()` -> `app(Passkeys::class)->verifyPasskey()`
+  - `Auth::deletePasskey()` -> `app(Passkeys::class)->deletePasskey()`
+- Deprecated `craft\auth\passkeys\CredentialRepository`. `CraftCms\Cms\Auth\Passkeys\CredentialRepository` should be used instead.
+- Deprecated `craft\auth\passkeys\WebauthnServer`. `CraftCms\Cms\Auth\Passkeys\WebauthnServer` should be used instead.
+
 ## Drafts
 
 - Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.

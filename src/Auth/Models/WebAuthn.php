@@ -16,12 +16,9 @@ final class WebAuthn extends BaseModel
 
     protected $table = Table::WEBAUTHN;
 
-    protected function casts(): array
-    {
-        return [
-            'dateLastUsed' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'dateLastUsed' => 'datetime',
+    ];
 
     /**
      * @return BelongsTo<User, $this>
