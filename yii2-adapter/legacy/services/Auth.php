@@ -18,7 +18,6 @@ use craft\helpers\User as UserHelper;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -77,12 +76,6 @@ class Auth extends Component
      * @see setUser()
      */
     private User|false $_user;
-
-    /**
-     * @var WebauthnServer
-     * @see webauthnServer()
-     */
-    private WebauthnServer $_webauthnServer;
 
     /**
      * @var int|false The session duration for the user being authenticated.
