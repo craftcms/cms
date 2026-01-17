@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Passkeys;
 
-use craft\helpers\Session as SessionHelper;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
@@ -99,7 +98,7 @@ final class Passkeys
             excludeCredentials: $excludeCredentials
         );
 
-        SessionHelper::set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
+        Session::put($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
 
         return $publicKeyCredentialCreationOptions;
     }
