@@ -8,10 +8,12 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class WebAuthn extends BaseModel
 {
+    use HasFactory;
     use HasUid;
 
     protected $table = Table::WEBAUTHN;
