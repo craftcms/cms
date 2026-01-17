@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use craft\helpers\DateTimeHelper;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -23,6 +25,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
@@ -48,6 +51,7 @@ final class Auth
     private ?User $user = null;
 
     public function __construct(
+        private readonly GeneralConfig $generalConfig,
         private readonly Users $users,
         private readonly Hasher $hasher,
         private readonly Passkeys $passkeys,
@@ -466,5 +470,32 @@ final class Auth
         } else {
             $this->authError = AuthError::InvalidCredentials;
         }
+    }
+
+    public function rememberedUsernameCookie(): string
+    {
+        return config('session.cookie').'_username';
+    }
+
+    #[AllowedInSandbox]
+    public function getRememberedUsername(): ?string
+    {
+        return Cookie::get($this->rememberedUsernameCookie());
+    }
+
+    public function setRememberedUsername(User $user): void
+    {
+        if ($this->generalConfig->rememberUsernameDuration === 0) {
+            Cookie::unqueue($this->rememberedUsernameCookie());
+            Cookie::forget($this->rememberedUsernameCookie());
+
+            return;
+        }
+
+        Cookie::queue(
+            name: $this->rememberedUsernameCookie(),
+            value: $user->username,
+            minutes: floor($this->generalConfig->rememberUsernameDuration / 60),
+        );
     }
 }

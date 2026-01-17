@@ -115,12 +115,4 @@ class UserTest extends TestCase
     {
         return Craft::$app->getUsers()->getUserById(1);
     }
-
-    /**
-     * @return mixed
-     */
-    private function _getUsernameCookieName(): mixed
-    {
-        return Craft::$app->getUser()->usernameCookie['name'];
-    }
 }

@@ -11,8 +11,8 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
-use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -297,7 +297,7 @@ final readonly class SaveUserController
         // Is this the current user, and did their username just change?
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
-            RememberedUsername::set($user);
+            app(Auth::class)->setRememberedUsername($user);
         }
 
         // Save the user’s photo, if it was submitted

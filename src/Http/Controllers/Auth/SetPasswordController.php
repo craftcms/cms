@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
-use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\User\Elements\User;
@@ -34,7 +34,7 @@ final readonly class SetPasswordController extends AuthenticationController
          */
         [$user, $uid, $code] = $info;
 
-        RememberedUsername::set($user);
+        app(Auth::class)->setRememberedUsername($user);
 
         // Send them to the set password template.
         return $this->renderViewWithFallback('set-password', [

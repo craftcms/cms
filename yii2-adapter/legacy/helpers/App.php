@@ -26,12 +26,10 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
-use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
@@ -39,7 +37,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
-use Illuminate\Support\Facades\Cookie;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -827,7 +824,6 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'usernameCookie' => Craft::cookieConfig(['name' => RememberedUsername::cookieName()]),
         ];
     }
 

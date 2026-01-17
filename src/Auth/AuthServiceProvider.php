@@ -136,7 +136,7 @@ final class AuthServiceProvider extends ServiceProvider
 
             UsersFacade::handleValidLogin($event->user);
 
-            RememberedUsername::set($event->user);
+            app(Auth::class)->setRememberedUsername($event->user);
 
             Session::passwordConfirmed();
         });

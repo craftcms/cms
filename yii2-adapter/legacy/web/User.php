@@ -13,14 +13,12 @@ use craft\helpers\Session as SessionHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Auth\RememberedUsername;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
-use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
 use function CraftCms\Cms\t;
@@ -51,12 +49,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public string $tokenParam = '__token';
 
-    /**
-     * @var array The configuration of the username cookie.
-     * @see Cookie
-     */
-    public array $usernameCookie;
-
     // Authentication
     // -------------------------------------------------------------------------
 
@@ -83,10 +75,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @param UserElement $user
      * @see afterLogin()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::setRememberedUsername()} instead.
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        RememberedUsername::set($user);
+        app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername($user);
     }
 
     /**
@@ -155,11 +148,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * ```
      *
      * @return string|null
-     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Cookie::getRememberedUsername()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getRememberedUsername()} instead.
      */
     public function getRememberedUsername(): ?string
     {
-        return RememberedUsername::get();
+        return app(\CraftCms\Cms\Auth\Auth::class)->getRememberedUsername();
     }
 
     /**
@@ -359,7 +352,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
-            RememberedUsername::set(UserElement::find()->id($identity->getId())->firstOrFail());
+            app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
