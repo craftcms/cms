@@ -2862,7 +2862,7 @@ JS, [
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
                         "{$keyPrefix}contentBlock:$layoutElement->uid.",
-                        sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                         false,
                     );
                     continue;

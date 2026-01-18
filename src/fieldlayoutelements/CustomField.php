@@ -247,7 +247,7 @@ class CustomField extends BaseField
             $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
-                    'label' => "$label - {$option['label']}",
+                    'label' => "$label → {$option['label']}",
                     'value' => "contentBlock:{uid}.$key",
                 ];
             }
