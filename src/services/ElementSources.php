@@ -535,6 +535,7 @@ class ElementSources extends Component
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
         $sortOptions = [];
+        $qb = null;
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
@@ -548,6 +549,17 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $qb ??= Craft::$app->getDb()->getQueryBuilder();
+                    $sortOptions[] = [
+                        'label' => Craft::t('site', $field['name']),
+                        'attribute' => "generatedField:{$field['uid']}",
+                        'orderBy' => $qb->jsonExtract('elements_sites.content', [$field['uid']]),
+                    ];
                 }
             }
         }
