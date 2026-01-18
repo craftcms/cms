@@ -812,6 +812,11 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_RENDER = 'render';
 
     /**
+     * @see sources()
+     */
+    private static array $sources = [];
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -979,19 +984,22 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources(string $context): array
     {
-        $sources = static::defineSources($context);
+        if (!isset(self::$sources[$context])) {
+            // Memoize the results immediately, in case sources() gets called again via the event
+            self::$sources[$context] = static::defineSources($context);
 
-        // Fire a 'registerSources' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
-            $event = new RegisterElementSourcesEvent([
-                'context' => $context,
-                'sources' => $sources,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
-            return $event->sources;
+            // Fire a 'registerSources' event
+            if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+                $event = new RegisterElementSourcesEvent([
+                    'context' => $context,
+                    'sources' => self::$sources[$context],
+                ]);
+                Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+                self::$sources[$context] = $event->sources;
+            }
         }
 
-        return $sources;
+        return self::$sources[$context];
     }
 
     /**
