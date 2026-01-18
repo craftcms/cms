@@ -11,39 +11,24 @@ use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
-use craft\auth\passkeys\CredentialRepository;
-use craft\auth\passkeys\WebauthnServer;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Component as ComponentHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\User as UserHelper;
 use craft\web\Session;
 use craft\web\View;
-use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateTime;
-use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth as AuthFacade;
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use Psr\Http\Message\ServerRequestInterface;
-use Throwable;
-use Webauthn\AuthenticatorAssertionResponse;
-use Webauthn\AuthenticatorAttestationResponse;
-use Webauthn\PublicKeyCredential;
-use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource;
-use Webauthn\PublicKeyCredentialUserEntity;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
@@ -91,12 +76,6 @@ class Auth extends Component
      * @see setUser()
      */
     private User|false $_user;
-
-    /**
-     * @var WebauthnServer
-     * @see webauthnServer()
-     */
-    private WebauthnServer $_webauthnServer;
 
     /**
      * @var int|false The session duration for the user being authenticated.
@@ -420,73 +399,37 @@ class Auth extends Component
      *
      * @param User $user
      * @return bool
+     * @deprecated 6.0.0 use {@see Passkeys::hasPasskeys} instead.
      */
     public function hasPasskeys(User $user): bool
     {
-        if (!$user->id) {
-            return false;
-        }
-
-        return WebAuthn::where('userId', $user->id)->exists();
+        return app(Passkeys::class)->hasPasskeys($user);
     }
 
     /**
      * Returns info about the given user’s saved passkeys.
      *
      * @param User $user
+     *
      * @return array{credentialName:string, dateLastUsed:DateTime|null, uid:string}[]
+     * @deprecated 6.0.0 use {@see Passkeys::getPasskeys} instead.
      */
     public function getPasskeys(User $user): array
     {
-        if (!$user->id) {
-            return [];
-        }
-
-        return WebAuthn::query()
-            ->select(['credentialName', 'dateLastUsed', 'uid'])
-            ->where('userId', $user->id)
-            ->get()
-            ->map(function(WebAuthn $passkey) {
-                if ($passkey->dateLastUsed) {
-                    $dateLastUsed = DateTimeHelper::toDateTime($passkey->dateLastUsed);
-                }
-
-                return [
-                    'credentialName' => $passkey->credentialName,
-                    'dateLastUsed' => $dateLastUsed ?? null,
-                    'uid' => $passkey->uid,
-                ];
-            })->all();
+        return app(Passkeys::class)->getPasskeys($user)->all();
     }
 
     /**
      * Generates new passkey credential creation options for the given user.
      *
      * @param User $user
+     *
      * @return PublicKeyCredentialOptions
+     * @deprecated 6.0.0 use {@see Passkeys::getPasskeyCreationOptions} instead.
      */
     public function getPasskeyCreationOptions(User $user): PublicKeyCredentialOptions
     {
-        $userEntity = $this->passkeyUserEntity($user);
-
-        $excludeCredentials = array_map(
-            fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-            (new CredentialRepository())->findAllForUserEntity($userEntity),
-        );
-
-        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
-            rp: $this->passkeyRpEntity(),
-            user: $userEntity,
-            challenge: random_bytes(16),
-            pubKeyCredParams: $this->webauthnServer()->getPublicKeyCredentialParametersList(),
-            authenticatorSelection: $this->webauthnServer()->getPasskeyAuthenticatorSelectionCriteria(),
-            attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-            excludeCredentials: $excludeCredentials
-        );
-
-        SessionHelper::set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
-
-        return $publicKeyCredentialCreationOptions;
+        return app(Passkeys::class)->getPasskeyCreationOptions($user);
     }
 
     /**
@@ -494,59 +437,24 @@ class Auth extends Component
      *
      * @param string $credentials
      * @param string|null $credentialName
+     *
      * @return bool
+     * @deprecated 6.0.0 use {@see Passkeys::verifyPasskeyCreationResponse} instead.
      */
     public function verifyPasskeyCreationResponse(string $credentials, ?string $credentialName = null): bool
     {
-        $optionsJson = Craft::$app->getSession()->get($this->passkeyCreationOptionsParam);
-
-        if (!$optionsJson) {
-            return false;
-        }
-
-        $serializer = $this->webauthnServer()->getSerializer();
-
-        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
-        $publicKeyCredential = $serializer->deserialize(
-            $credentials,
-            PublicKeyCredential::class,
-            'json',
-        );
-        $authenticatorAttestationResponse = $publicKeyCredential->response;
-
-        if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {
-            Craft::warning('Authenticator Attestation Response was not of AuthenticatorAttestationResponse type.');
-            return false;
-        }
-
-        try {
-            $publicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
-                $authenticatorAttestationResponse,
-                $publicKeyCredentialCreationOptions,
-                Craft::$app->getRequest()->getHostName(),
-            );
-        } catch (Throwable $e) {
-            Craft::warning('Authenticator Attestation Response Validation failed: ' . $e->getMessage());
-            return false;
-        }
-
-        $credentialRepository = new CredentialRepository();
-        $credentialRepository->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
-
-        return true;
+        return app(Passkeys::class)->verifyPasskeyCreationResponse($credentials, $credentialName);
     }
 
     /**
      * Returns the public key credential request options.
      *
      * @return PublicKeyCredentialRequestOptions
+     * @deprecated 6.0.0 use {@see Passkeys::getPasskeyRequestOptions} instead.
      */
     public function getPasskeyRequestOptions(): PublicKeyCredentialRequestOptions
     {
-        return PublicKeyCredentialRequestOptions::create(
-            challenge: random_bytes(32),
-            userVerification: PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
-        );
+        return app(Passkeys::class)->getPasskeyRequestOptions();
     }
 
     /**
@@ -556,42 +464,14 @@ class Auth extends Component
      * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
      * @param string $response The authentication response data
      * @return bool
+     * @deprecated 6.0.0 use {@see Passkeys::verifyPasskey} instead.
      */
     public function verifyPasskey(
         User $user,
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
         string $response,
     ): bool {
-        if (is_array($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromArray($requestOptions);
-        } elseif (is_string($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
-        }
-
-        $userEntity = $this->passkeyUserEntity($user);
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($response);
-        $authenticatorAssertionResponse = $publicKeyCredential->response;
-
-        if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
-            Craft::warning('Authenticator Assertion Response was not of AuthenticatorAssertionResponse type.');
-            return false;
-        }
-
-        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
-        try {
-            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
-                $publicKeyCredential->rawId,
-                $authenticatorAssertionResponse,
-                $requestOptions,
-                $serverRequest,
-                $userEntity->id,
-            );
-        } catch (Throwable $e) {
-            Craft::warning('Authenticator Assertion Response Validation failed: ' . $e->getMessage());
-            return false;
-        }
-
-        return true;
+        return app(Passkeys::class)->verifyPasskey($user, $requestOptions, $response);
     }
 
     /**
@@ -599,82 +479,10 @@ class Auth extends Component
      *
      * @param User $user
      * @param string $uid
+     * @deprecated 6.0.0 use {@see Passkeys::deletePasskey} instead.
      */
     public function deletePasskey(User $user, string $uid): void
     {
-        WebAuthn::where('userId', $user->id)->where('uid', $uid)->delete();
-    }
-
-    /**
-     * Return WebauthnServer
-     *
-     * @return WebauthnServer
-     */
-    private function webauthnServer(): WebauthnServer
-    {
-        if (!isset($this->_webauthnServer)) {
-            $this->_webauthnServer = new WebauthnServer();
-        }
-
-        return $this->_webauthnServer;
-    }
-
-    /**
-     * Returns User Entity for given User element
-     *
-     * @param User $user
-     * @return PublicKeyCredentialUserEntity
-     */
-    private function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
-    {
-        $data = [
-            'name' => $user->email,
-            'id' => Base64UrlSafe::encodeUnpadded($user->uid),
-            'displayName' => $user->getName(),
-        ];
-
-        return PublicKeyCredentialUserEntity::createFromArray($data);
-    }
-
-    /**
-     * Returns RP Entity (i.e. the application)
-     *
-     * @return PublicKeyCredentialRpEntity
-     */
-    private function passkeyRpEntity(): PublicKeyCredentialRpEntity
-    {
-        return PublicKeyCredentialRpEntity::createFromArray([
-            'name' => Cms::systemName(),
-            'id' => Craft::$app->getRequest()->getHostName(),
-        ]);
-    }
-
-    /**
-     * Builds server request using the Craft-provided data, e.g. host name.
-     *
-     *
-     * @param ServerRequestInterface $defaultServerRequest
-     * @return ServerRequestInterface
-     */
-    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
-    {
-        $uri = $defaultServerRequest->getUri();
-        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
-
-        $serverRequest = new ServerRequest(
-            $defaultServerRequest->getMethod(),
-            $uri,
-            $defaultServerRequest->getHeaders(),
-            $defaultServerRequest->getBody(),
-            $defaultServerRequest->getProtocolVersion(),
-            $_SERVER
-        );
-
-
-        return $serverRequest
-            ->withCookieParams($_COOKIE)
-            ->withQueryParams($_GET)
-            ->withParsedBody($_POST)
-            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
+        app(Passkeys::class)->deletePasskey($user, $uid);
     }
 }

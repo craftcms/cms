@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
@@ -38,7 +37,7 @@ class TestCase extends Orchestra
         app()->setLocale('en-US');
         Config::set('app.timezone', 'America/Los_Angeles');
 
-        Edition::set(Edition::Solo);
+        Edition::set(Edition::Pro);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -76,15 +75,9 @@ class TestCase extends Orchestra
         parent::tearDown();
     }
 
-    protected function migrateDatabases()
+    protected function migrateDatabases(): void
     {
-        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
-
-        /** Drop Laravel migrations */
-        Schema::drop('migrations');
-        Schema::drop('cache');
-        Schema::drop('sessions');
-        Schema::drop('users');
+        $this->artisan('db:wipe');
 
         $site = new Site(
             name: 'Craft test site',
