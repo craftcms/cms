@@ -972,81 +972,20 @@ JS, [
             $view->namespaceInputId($this->getInputId()),
         ]);
 
-        // Copy
+        // Copy, Duplicate, Delete
         if ($this->maxEntries !== 1) {
             $items[] = ['type' => 'hr'];
 
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
+            $type = mb_strtolower(Craft::t('app', 'Blocks'));
+            $entrySelector = ' > .blocks > .matrixblock';
 
-            $baseInfo = Json::encode([
-                'type' => Entry::class,
-                'fieldId' => $this->id,
-            ]);
-
-            $view->registerJsWithVars(fn($copyAllId, $fieldId, $type) => <<<JS
-(() => {
-  const copyBtn = $('#' + $copyAllId);
-  const field = $('#' + $fieldId);
-  const menu = copyBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
-  
-  if (field.length) {
-    copyBtn.on('activate', () => {
-      const elementInfo = [];
-      getBlocks().each((i, element) => {
-        element = $(element);
-        elementInfo.push(Object.assign({
-            id: element.data('id'),
-            draftId: element.data('draftId'),
-            revisionId: element.data('revisionId'),
-            ownerId: element.data('ownerId'),
-            siteId: element.data('siteId'),
-          }, $baseInfo));
-      });
-      Craft.cp.copyElements(elementInfo);
-    });
-  } else {
-    setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(copyBtn[0]);
-    }, 1);
-  }
-  
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
-      let blocks = getBlocks();
-      let copyLabel;
-      if (blocks.is('.sel')) {
-        copyLabel = Craft.t('app', 'Copy selected {type}', {
-          type: $type,
-        });
-      } else {
-        copyLabel = Craft.t('app', 'Copy all {type}', {
-          type: $type,
-        });
-      }
-      copyBtn.find('.menu-item-label').text(copyLabel);
-      disclosureMenu.toggleItem(copyBtn[0], !!blocks.length);
-    });
-  }, 1);
-})();
-JS, [
-                $view->namespaceInputId($copyAllId),
-                $view->namespaceInputId($this->getInputId()),
-                Entry::pluralLowerDisplayName(),
-            ]);
+            $items[] = $this->copyAction($type, $entrySelector);
+            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
+field.data('matrix').duplicateSelectedEntries();
+JS);
+            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
+field.data('matrix').deleteSelectedEntries();
+JS);
         }
 
         return $items;
@@ -1055,43 +994,174 @@ JS, [
     private function cardViewActionMenuItems(): array
     {
         $items = [];
-        $view = Craft::$app->getView();
 
-        // Copy all
+        // Copy, Duplicate, Delete
         if ($this->maxEntries !== 1) {
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
+            $type = Entry::pluralLowerDisplayName();
+            $entrySelector = ' > .nested-element-cards > .elements > li > .element';
 
-
-            $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
-(() => {
-  const copyBtn = $('#' + $copyAllId);
-  const field = $('#' + $fieldId);
-  if (field.length) {
-    copyBtn.on('activate', () => {
-      Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
-    });
-  } else {
-    setTimeout(() => {
-      const menu = copyBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyBtn[0]);
-    }, 1);
-  }
-})();
-JS, [
-                $view->namespaceInputId($copyAllId),
-                $view->namespaceInputId($this->getInputId()),
-            ]);
+            $items[] = $this->copyAction($type, $entrySelector);
+            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
+field.children('.nested-element-cards').data('nestedElementManager').duplicateElements(getEntries());
+JS);
+            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
+field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
+JS);
         }
 
         return $items;
+    }
+
+    private function copyAction(string $type, string $entrySelector): array
+    {
+        $view = Craft::$app->getView();
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        $baseInfo = Json::encode([
+            'type' => Entry::class,
+            'fieldId' => $this->id,
+        ]);
+
+        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector, $type) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu').removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getEntries = () => {
+    const entries = field.find($entrySelector);
+    const selectedEntries = entries.filter('.sel');
+    return (selectedEntries.length ? selectedEntries : entries).toArray();
+  };
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getEntries().map((element) => {
+      element = $(element);
+      return {
+          ... $baseInfo,
+          id: element.data('id'),
+          draftId: element.data('draftId'),
+          revisionId: element.data('revisionId'),
+          ownerId: element.data('ownerId'),
+          siteId: element.data('siteId'),
+        };
+    }));
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
+      const entries = getEntries();
+      let copyLabel;
+      if ($(entries).is('.sel')) {
+        copyLabel = Craft.t('app', 'Copy selected {type}', {
+          type: $type,
+        });
+      } else {
+        copyLabel = Craft.t('app', 'Copy all {type}', {
+          type: $type,
+        });
+      }
+      btn.find('.menu-item-label').text(copyLabel);
+      disclosureMenu.toggleItem(btn[0], !!entries.length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+            $entrySelector,
+            $type,
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => \craft\enums\Color::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => $type,
+            ])),
+        ];
+    }
+
+    private function duplicateAction(string $type, string $entrySelector, string $activateJs): array
+    {
+        return $this->bulkAction($entrySelector, $activateJs, [
+            'icon' => 'clone',
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Duplicate selected {type}', [
+                'type' => $type,
+            ])),
+        ]);
+    }
+
+    private function deleteAction(string $type, string $entrySelector, string $activateJs): array
+    {
+        $typeJs = Json::encode($type);
+        $activateJs = <<<JS
+if (confirm(Craft.t('app', 'Are you sure you want to delete the selected {type}?', {
+  type: $typeJs,
+}))) {
+  $activateJs
+}
+JS;
+
+        return $this->bulkAction($entrySelector, $activateJs, [
+            'icon' => 'trash',
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete selected {type}', [
+                'type' => $type,
+            ])),
+            'destructive' => true,
+        ]);
+    }
+
+    private function bulkAction(string $entrySelector, string $activateJs, array $item): array
+    {
+        $view = Craft::$app->getView();
+        $id = sprintf('action-%s', mt_rand());
+
+        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu').removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getEntries = () => field.find($entrySelector).filter('.sel').toArray();
+
+  btn.on('activate', () => {
+    $activateJs
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu.on('show', () => {
+      disclosureMenu.toggleItem(btn[0], !!getEntries().length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+            $entrySelector,
+        ]);
+
+        return [
+            ...$item,
+            'id' => $id,
+        ];
     }
 
     /**
@@ -1261,6 +1331,7 @@ JS;
         if (!$static) {
             $entryTypeIdsJs = Json::encode(array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes));
             $config += [
+                'selectable' => true,
                 'sortable' => true,
                 'canCreate' => true,
                 'canPaste' => <<<JS

@@ -14,6 +14,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     // cards
     $elements: null,
     elementSort: null,
+    elementSelect: null,
 
     // index
     elementIndex: null,
@@ -247,10 +248,42 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$container.children('.zilch').addClass('hidden');
       }
 
+      if (this.settings.selectable) {
+        this.elementSelect = new Garnish.Select(
+          this.$elements,
+          this.$elements.children().children('.element'),
+          {
+            multi: true,
+            vertical: !this.settings.showInGrid,
+            filter: (target) => {
+              return !$(target).closest(
+                'a[href],.toggle,.btn,[role=button],.move,craft-copy-attribute'
+              ).length;
+            },
+            checkboxMode: true,
+            waitForDoubleClicks: true,
+          }
+        );
+      }
+
       // only initialise drag-sorting if the device has mouse events
       if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elements,
+          filter: this.settings.selectable
+            ? () => {
+                // Only return all the selected items if the target item is selected
+                if (
+                  this.elementSort.$targetItem
+                    .children('.element')
+                    .hasClass('sel')
+                ) {
+                  return this.elementSelect.getSelectedItems().parent('li');
+                } else {
+                  return this.elementSort.$targetItem;
+                }
+              }
+            : null,
           handle:
             '> .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn',
           ignoreHandleSelector: null,
@@ -587,7 +620,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
-    duplicateElement: async function ($element) {
+    async duplicateElement(element) {
+      const $element = $(element);
+
       Craft.cp.announce(Craft.t('app', 'Loading'));
       await this.markAsDirty();
 
@@ -617,6 +652,16 @@ Craft.NestedElementManager = Garnish.Base.extend(
       await this.updateSortOrder(data.element.id);
       // save the element in case any conditional fields should be shown/hidden
       this.elementEditor?.checkForm(true);
+    },
+
+    async duplicateElements(elements) {
+      if (elements instanceof jQuery) {
+        elements = elements.toArray();
+      }
+
+      for (const element of elements) {
+        await this.duplicateElement(element);
+      }
     },
 
     async pasteElements() {
@@ -659,6 +704,10 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
     initElement($element) {
       setTimeout(() => {
+        if (this.settings.selectable) {
+          this.elementSelect.addItems($element);
+        }
+
         const editable = Garnish.hasAttr($element, 'data-editable');
 
         if (editable) {
@@ -883,7 +932,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
       });
     },
 
-    async deleteElement($element) {
+    async deleteElement(element) {
+      const $element = $(element);
+
       const data = Object.assign(await this.getBaseActionData(), {
         elementId: $element.data('id'),
       });
@@ -924,6 +975,16 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
+    async deleteElements(elements) {
+      if (elements instanceof jQuery) {
+        elements = elements.toArray();
+      }
+
+      for (const element of elements) {
+        await this.deleteElement(element);
+      }
+    },
+
     async addElementCard(element) {
       return await this.addElementCards([element]);
     },
@@ -951,6 +1012,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
                     context: 'field',
                     ui: 'card',
                     sortable: this.settings.sortable,
+                    selectable: this.settings.selectable,
                     showActionMenu: true,
                     hyperlink: false,
                   },
@@ -1002,6 +1064,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       ownerId: null,
       ownerSiteId: null,
       attribute: null,
+      selectable: false,
       sortable: false,
       indexSettings: {},
       canCreate: false,
