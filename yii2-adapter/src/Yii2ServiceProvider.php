@@ -148,7 +148,7 @@ class Yii2ServiceProvider extends ServiceProvider
             return;
         }
 
-        $files = new Finder()->files()->in(config_path('craft'))->name('*.php');
+        $files = new Finder()->files()->in(config_path('craft'))->depth(0)->name('*.php');
         $environment = $this->app->environment();
 
         foreach ($files as $file) {

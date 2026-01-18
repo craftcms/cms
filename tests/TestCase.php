@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
+use DG\BypassFinals;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -40,7 +41,8 @@ class TestCase extends Orchestra
 
         Edition::set(Edition::Pro);
 
-        File::cleanDirectory(config_path('craft/project'));
+        $token = env('TEST_TOKEN');
+        File::cleanDirectory(config_path("craft/project{$token}"));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
 
         Factory::guessFactoryNamesUsing(
@@ -114,13 +116,23 @@ class TestCase extends Orchestra
     #[Override]
     protected function getEnvironmentSetUp($app)
     {
+        BypassFinals::denyPaths([
+            'craft/project*',
+        ]);
+
+        $token = env('TEST_TOKEN');
+
         $config = $app->make(ConfigRepository::class);
 
         $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
         $config->set('auth.defaults.guard', 'craft');
 
-        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(config_path("craft/project{$token}"));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
+
+        $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($token) {
+            $projectConfig->folderName = "project{$token}";
+        });
 
         if (! file_exists(__DIR__.'/.env')) {
             return;
@@ -131,12 +143,17 @@ class TestCase extends Orchestra
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
 
+        $database = env('DB_DATABASE');
+        if ($token) {
+            $database .= "_test_{$token}";
+        }
+
         $config->set($configKey, array_merge(
             Config::array($configKey, []),
             [
                 'host' => env('DB_HOST'),
                 'port' => env('DB_PORT'),
-                'database' => env('DB_DATABASE'),
+                'database' => $database,
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
                 'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
