@@ -19,6 +19,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
@@ -619,10 +620,14 @@ class ElementSources extends Component
                     }
 
                     if (
-                        $field instanceof PreviewableFieldInterface &&
+                        ($field instanceof PreviewableFieldInterface || $field instanceof ContentBlock) &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        if ($layoutElement->handle === null) {
+                        if ($field instanceof ContentBlock) {
+                            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
+                                $attributes["contentBlock:{$field->layoutElement->uid}.$key"] = $attribute;
+                            }
+                        } elseif ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
                             // where the handle also wasn't overridden
                             $groupedFieldElements[$field->id][] = $layoutElement;
