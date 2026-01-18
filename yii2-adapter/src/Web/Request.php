@@ -10,6 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -159,7 +160,7 @@ class Request extends \yii\web\Request
     {
         $cookies = [];
 
-        $this->enableCookieValidation = !empty(app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey);
+        $this->enableCookieValidation = !empty(app(GeneralConfig::class)->securityKey);
 
         if ($this->enableCookieValidation && $this->cookieValidationKey !== '') {
             foreach ($this->getIlluminateRequest()->cookies as $name => $value) {
@@ -203,16 +204,9 @@ class Request extends \yii\web\Request
     /**
      * {@inheritdoc}
      */
-    public function getCsrfToken($regenerate = false): string
+    public function getCsrfToken($regenerate = false): ?string
     {
-        // Ensure the response is not cached by the browser or static cache proxies.
-        Craft::$app->getResponse()->setNoCacheHeaders();
-
-        if ($regenerate) {
-            return $this->generateCsrfToken();
-        }
-
-        return $this->loadCsrfToken();
+        return csrf_token();
     }
 
     /**
