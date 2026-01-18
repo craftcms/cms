@@ -72,6 +72,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -5885,6 +5886,10 @@ JS, [
      */
     protected function attributeHtml(string $attribute): string
     {
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            return $this->contentBlockAttributeHtml($attribute);
+        }
+
         switch ($attribute) {
             case 'id':
                 return (string)$this->getCanonicalId();
@@ -6049,6 +6054,30 @@ JS, [
 
                 return ElementHelper::attributeHtml($this->$attribute);
         }
+    }
+
+    private function contentBlockAttributeHtml(string $attribute): string
+    {
+        $parts = explode('.', $attribute);
+        $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
+        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return '';
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return '';
+        }
+
+        if (!$field instanceof ContentBlockField) {
+            return '';
+        }
+
+        $block = $this->getFieldValue($field->handle);
+        return $block->getAttributeHtml(implode('.', $parts));
     }
 
     /**
