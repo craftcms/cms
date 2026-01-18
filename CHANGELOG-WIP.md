@@ -2,7 +2,8 @@
 
 ### Content Management
 - Matrix fields set to the “Cards” or “Blocks” view modes now show an “Add” button per entry type group, when the viewport is wide enough to support it. ([#17731](https://github.com/craftcms/cms/pull/17731))
-- Matrix fields set to the “Blocks” view mode now have “Expand/collapse selected blocks” and “Copy selected blocks” field-level actions, if any blocks are selected. ([#18001](https://github.com/craftcms/cms/discussions/18001))
+- Matrix fields set to the “Cards” view mode now have “Copy selected entries”, “Duplicate selected entries”, and “Delete selected entries” field-level actions, if any entries are selected. ([#18251](https://github.com/craftcms/cms/pull/18251))
+- Matrix fields set to the “Blocks” view mode now have a “Expand/collapse selected blocks”, “Copy selected blocks”, “Duplicate selected blocks”, and “Delete selected blocks” field-level actions, if any entries are selected. ([#18001](https://github.com/craftcms/cms/discussions/18001), [#18251](https://github.com/craftcms/cms/pull/18251))
 - Matrix fields set to the “Blocks” view mode now have block action menus with “Expand/Collapse”, “Entry type settings”, and “Copy” actions, even if the field isn’t editable. ([#18013](https://github.com/craftcms/cms/discussions/18013)) 
 - Chips and cards are generally no longer hyperlinked. ([#17591](https://github.com/craftcms/cms/pull/17591))
 - Entry revision menus now always include a “View all revisions” link. ([#18050](https://github.com/craftcms/cms/pull/18050))
