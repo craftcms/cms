@@ -31,4 +31,9 @@
         <env name="APP_URL" value="http://localhost" />
         <env name="APP_KEY" value="base64:6BDzvwO4hrN7Twv6/gaQ6oZMB/CvpUArZXho189U75E=" />
     </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
 </phpunit>
