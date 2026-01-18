@@ -643,6 +643,14 @@ class ElementSources extends Component
                     }
                 }
             }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $attributes["generatedField:{$field['uid']}"] = [
+                        'label' => Craft::t('site', $field['name']),
+                    ];
+                }
+            }
         }
 
         foreach ($groupedFieldElements as $fieldElements) {

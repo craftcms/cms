@@ -5890,6 +5890,10 @@ JS, [
             return $this->contentBlockAttributeHtml($attribute);
         }
 
+        if (str_starts_with($attribute, 'generatedField:')) {
+            return $this->generatedFieldAttributeHtml($attribute);
+        }
+
         switch ($attribute) {
             case 'id':
                 return (string)$this->getCanonicalId();
@@ -6078,6 +6082,12 @@ JS, [
 
         $block = $this->getFieldValue($field->handle);
         return $block->getAttributeHtml(implode('.', $parts));
+    }
+
+    private function generatedFieldAttributeHtml(string $attribute): string
+    {
+        $uid = StringHelper::removeLeft($attribute, 'generatedField:');
+        return $this->getGeneratedFieldValues()[$uid] ?? '';
     }
 
     /**
