@@ -127,7 +127,7 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: vendor/bin/pest --parallel
+        run: vendor/bin/pest
 
       - name: Set version
         run: composer config version "6.x-dev"
