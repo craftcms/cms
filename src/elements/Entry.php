@@ -1086,7 +1086,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             },
             'when' => function() {
                 $section = $this->getSection();
-                return $section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0;
+                return (
+                    $section &&
+                    $section->type !== Section::TYPE_SINGLE &&
+                    isset($section->maxAuthors) &&
+                    $section->maxAuthors !== 0
+                );
             },
         ];
 
