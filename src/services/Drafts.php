@@ -166,8 +166,8 @@ class Drafts extends Component
                 'trackChanges' => $canonical::trackChanges(),
                 'markAsSaved' => $markAsSaved,
             ];
-            $newAttributes['behaviors']['duplicateOwnershipAfterSave'] = new EventBehavior([
-                Element::EVENT_AFTER_SAVE => function(ModelEvent $event) use ($canonical) {
+            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
+                Element::EVENT_AFTER_PROPAGATE => function(ModelEvent $event) use ($canonical) {
                     /** @var ElementInterface $draft */
                     $draft = $event->sender;
 
