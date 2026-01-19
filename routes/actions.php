@@ -106,6 +106,7 @@ Route::prefix(implode('/', [
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
     Route::any('app/icon-svg', [IconController::class, 'svg']);
+    Route::any('app/icon-picker-options', [IconController::class, 'pickerOptions']);
 
     // Updater
     Route::prefix('updater')->group(function () {
