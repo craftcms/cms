@@ -47,8 +47,6 @@ test('create makes a user draft and redirects to it', function () {
 });
 
 test('destroy deletes a user', function () {
-    $this->markTestSkipped('Run once bulk ops are ported.');
-
     $user = \CraftCms\Cms\User\Models\User::factory()->create();
 
     expect(new UserQuery()->count())->toBe(2);
@@ -71,8 +69,6 @@ test('destroy validates required userId', function () {
 });
 
 test('destroy can transfer content to another user', function () {
-    $this->markTestSkipped('Run once bulk ops are ported.');
-
     $user = \CraftCms\Cms\User\Models\User::factory()->create();
     $transferTo = User::findOne();
 
@@ -120,8 +116,6 @@ test('destroy requires proper authorization', function () {
     postJson(action([UsersController::class, 'destroy']), [
         'userId' => $user->id,
     ])->assertForbidden();
-
-    $this->markTestSkipped('Run once bulk ops are ported.');
 });
 
 test('create requires proper authorization', function () {
