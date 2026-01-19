@@ -336,6 +336,7 @@ Route::prefix(implode('/', [
         Route::post('users/enable-user', EnableController::class);
         Route::post('users/unlock-user', UnlockController::class);
         Route::post('users/delete-user', [UsersController::class, 'destroy']);
+        Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);

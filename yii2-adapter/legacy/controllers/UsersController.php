@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Event as YiiEvent;
 use craft\base\ModelInterface;
-use craft\elements\Entry;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
@@ -25,13 +24,14 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -179,60 +179,6 @@ class UsersController extends Controller
 
         $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/setup-2fa.twig', templateMode: View::TEMPLATE_MODE_CP);
-    }
-
-    /**
-     * Returns a summary of the content that is owned by a given user ID(s).
-     *
-     * @return Response
-     * @since 3.0.13
-     */
-    public function actionUserContentSummary(): Response
-    {
-        $this->requirePostRequest();
-
-        $userId = $this->request->getRequiredBodyParam('userId');
-
-        if (is_array($userId)) {
-            $userId = array_map(fn($id) => (int)$id, $userId);
-        } else {
-            $userId = (int)$userId;
-        }
-
-        if ($userId !== static::currentUser()?->id) {
-            $this->requirePermission('deleteUsers');
-        }
-
-        $summary = [];
-
-        foreach (Sections::getAllSections() as $section) {
-            $entryCount = Entry::find()
-                ->sectionId($section->id)
-                ->authorId($userId)
-                ->site('*')
-                ->unique()
-                ->status(null)
-                ->count();
-
-            if ($entryCount) {
-                $summary[] = t('{num, number} {section} {num, plural, =1{entry} other{entries}}', [
-                    'num' => $entryCount,
-                    'section' => t($section->name, category: 'site'),
-                ]);
-            }
-        }
-
-        // Fire a 'defineContentSummary' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_CONTENT_SUMMARY)) {
-            $event = new DefineUserContentSummaryEvent([
-                'userId' => $userId,
-                'contentSummary' => $summary,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
-            $summary = $event->contentSummary;
-        }
-
-        return $this->asJson($summary);
     }
 
     /**
@@ -427,6 +373,18 @@ class UsersController extends Controller
                 ]);
 
                 YiiEvent::trigger(UsersController::class, UsersController::EVENT_LOGIN_FAILURE, $yiiEvent);
+            }
+        });
+
+        Event::listen(DefineUserContentSummary::class, function(DefineUserContentSummary $event) {
+            // Fire a 'defineContentSummary' event
+            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY)) {
+                $yiiEvent = new DefineUserContentSummaryEvent([
+                    'userId' => $event->userId,
+                    'contentSummary' => $event->contentSummary->all(),
+                ]);
+                $this->trigger(UsersController::EVENT_DEFINE_CONTENT_SUMMARY, $yiiEvent);
+                $event->contentSummary = new Collection($event->contentSummary);
             }
         });
     }
