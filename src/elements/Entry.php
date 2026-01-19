@@ -44,8 +44,8 @@ use craft\elements\db\EntryQuery;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
-use craft\events\DefineEntryMetaFields;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Matrix;
@@ -120,9 +120,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
 
     /**
-     * @event DefineEntryMetaFields The event that is triggered when defining the meta fields.
+     * @event DefineMetaFields The event that is triggered when defining the meta fields.
      * @see metaFieldsHtml()
-     * @since 5.8.18
+     * @since 5.9.0
      */
     public const EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
@@ -2539,7 +2539,7 @@ JS, [
         $this->_applyActionBtnEntryTypeCompatibility();
 
         // Type
-        $fields[] = (function() use ($static) {
+        $fields['type'] = (function() use ($static) {
             $entryTypes = $this->getAvailableEntryTypes();
             if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
                 $entryTypes[] = $this->getType();
@@ -2569,12 +2569,12 @@ JS, [
 
         // Slug
         if ($this->getType()->showSlugField) {
-            $fields[] = $this->slugFieldHtml($static);
+            $fields['slug'] = $this->slugFieldHtml($static);
         }
 
         // Parent
         if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
-            $fields[] = (function() use ($static, $section) {
+            $fields['parent'] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
                     $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
@@ -2617,7 +2617,7 @@ JS, [
                 Craft::$app->edition !== CmsEdition::Solo &&
                 $user->can("viewPeerEntries:$section->uid")
             ) {
-                $fields[] = (function() use ($static, $section) {
+                $fields['authors'] = (function() use ($static, $section) {
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
@@ -2648,7 +2648,7 @@ JS, [
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
             // Post Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['postDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
@@ -2659,7 +2659,7 @@ JS, [
             ]);
 
             // Expiry Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['expiryDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
@@ -2672,16 +2672,15 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-         // Fire a 'defineEntryMetaFields' event
+        // Fire a 'defineEntryMetaFields' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
-            $event = new DefineEntryMetaFields([
-                'entry' => $this,
+            $event = new DefineMetaFields([
+                'element' => $this,
                 'static' => $static,
-                'fields' => $fields
+                'fields' => $fields,
             ]);
             $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
-            
-            return implode("\n", $event->fields);
+            $fields = $event->fields;
         }
 
         return implode("\n", $fields);

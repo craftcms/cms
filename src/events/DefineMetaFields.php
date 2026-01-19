@@ -8,23 +8,22 @@
 
 namespace craft\events;
 
-
-use craft\elements\Entry;
+use craft\base\ElementInterface;
 use craft\base\Event;
 
 /**
  * class DefineEntryMetaFields
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.18
+ * @since 5.9.0
  */
 
-class DefineEntryMetaFields extends Event
+class DefineMetaFields extends Event
 {
     /**
-     * @var Entry The current entry
+     * @var ElementInterface The element the meta fields are for
      */
-    public Entry $entry;
+    public ElementInterface $element;
 
     /**
      * @var bool Whether the fields should be static (non-interactive)
@@ -32,7 +31,7 @@ class DefineEntryMetaFields extends Event
     public bool $static;
 
     /**
-     * @var array array of all meta fields
+     * @var array The meta fields
      */
     public array $fields;
 }
