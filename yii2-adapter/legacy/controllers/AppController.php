@@ -22,7 +22,6 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -42,7 +41,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
-use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -239,53 +237,6 @@ class AppController extends Controller
         return $this->asSuccess();
     }
 
-    /**
-     * Tries a Craft edition on for size.
-     *
-     * @return Response
-     * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
-     */
-    public function actionTryEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-        $this->requireAdmin();
-
-        $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Edition::getLicensed() ?? Edition::Solo;
-
-        try {
-            $edition = Edition::fromHandle($edition);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage(), previous: $e);
-        }
-
-        // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition->value > $licensedEdition->value && !Edition::canTest()) {
-            throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
-        }
-
-        Edition::set($edition);
-
-        return $this->asSuccess();
-    }
-
-    /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Edition::isWrong()) {
-            Edition::set(Edition::getLicensed());
-        }
-
-        return $this->asSuccess();
-    }
 
     /**
      * Fetches plugin license statuses.

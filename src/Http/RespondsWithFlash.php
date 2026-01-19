@@ -17,9 +17,7 @@ trait RespondsWithFlash
     public function asFailure(?string $message = null, array $data = []): Response
     {
         if (request()->expectsJson()) {
-            return new JsonResponse($data + array_filter([
-                'message' => $message,
-            ]), 400);
+            return $this->asJsonFailure($message, $data);
         }
 
         Flash::fail($message);
@@ -27,12 +25,17 @@ trait RespondsWithFlash
         return back()->with($data);
     }
 
+    public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
+    {
+        return new JsonResponse($data + array_filter([
+            'message' => $message,
+        ]), 400);
+    }
+
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
     {
         if (request()->expectsJson()) {
-            return new JsonResponse($data + array_filter([
-                'message' => $message,
-            ]), 200);
+            return $this->asJsonSuccess($message, $data);
         }
 
         Flash::success($message);
@@ -44,6 +47,13 @@ trait RespondsWithFlash
         }
 
         return back()->with($data);
+    }
+
+    public function asJsonSuccess(?string $message = null, array $data = []): JsonResponse
+    {
+        return new JsonResponse($data + array_filter([
+            'message' => $message,
+        ]), 200);
     }
 
     public function asModelFailure(
