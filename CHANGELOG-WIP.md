@@ -151,6 +151,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
     - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+- Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
+    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 
 ### Passkeys
 

@@ -39,12 +39,15 @@ use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
+use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
@@ -159,6 +162,18 @@ Route::prefix(implode('/', [
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+
+        // Auth methods
+        Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
+        Route::post('auth/method-listing-html', [AuthMethodController::class, 'listingHtml']);
+        Route::post('auth/remove-method', [AuthMethodController::class, 'destroy']);
+
+        Route::post('auth/passkey-creation-options', [UserPasskeysController::class, 'creationOptions']);
+        Route::post('auth/verify-passkey-creation', [UserPasskeysController::class, 'verifyCreation']);
+        Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
+
+        Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
+        Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
 
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
