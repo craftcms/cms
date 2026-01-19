@@ -953,6 +953,7 @@ final class Users
     public function setVerificationCodeOnUser(User $user): string
     {
         $userModel = UserModel::findOrFail($user->id);
+
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
         $broker = Password::broker('craft');
         $token = $broker->createToken($user);
