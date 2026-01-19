@@ -871,9 +871,10 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      */
     public function sendEmailVerificationNotification(): void
     {
-        $token = Password::broker('craft')->createToken($this);
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
 
-        $this->notify(new VerifyEmailNotification($token));
+        $this->notify(new VerifyEmailNotification($broker->createToken($this)));
     }
 
     /**
