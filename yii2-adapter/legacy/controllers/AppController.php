@@ -132,22 +132,6 @@ class AppController extends Controller
     }
 
     /**
-     * Returns the HTML for a control panel icon.
-     *
-     * @return Response
-     * @since 5.7.0
-     */
-    public function actionIconSvg(): Response
-    {
-        $this->requireCpRequest();
-        $this->requireAcceptsJson();
-
-        return $this->asJson([
-            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
-        ]);
-    }
-
-    /**
      * Returns any alerts that should be displayed in the control panel.
      *
      * @return Response
