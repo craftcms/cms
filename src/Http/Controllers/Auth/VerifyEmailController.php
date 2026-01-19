@@ -11,6 +11,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -48,7 +49,9 @@ final readonly class VerifyEmailController extends AuthenticationController
 
         abort_if(! $user, 400, 'Invalid user UUID: '.$request->input('uid'));
 
-        if (! $users->isVerificationCodeValidForUser($user, $request->input('code'))) {
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
+        if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
 

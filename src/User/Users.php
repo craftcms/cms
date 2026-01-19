@@ -59,6 +59,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -168,60 +169,6 @@ final class Users
     }
 
     /**
-     * Returns whether a verification code is valid for the given user.
-     *
-     * This method first checks if the code has expired past the
-     * <config5:verificationCodeDuration> config setting. If it is still valid,
-     * then, the checks the validity of the contents of the code.
-     *
-     * @param  User  $user  The user to check the code for.
-     * @param  string  $code  The verification code to check for.
-     * @return bool Whether the code is still valid.
-     */
-    public function isVerificationCodeValidForUser(User $user, string $code): bool
-    {
-        if (! $user->verificationCode || ! $user->verificationCodeIssuedDate) {
-            // Fetch from the DB
-            $userModel = $this->getUserModelById($user->id);
-            $user->verificationCode = $userModel->verificationCode;
-            $user->verificationCodeIssuedDate = $userModel->verificationCodeIssuedDate?->setTimezone('UTC')->toDateTime();
-
-            if (! $user->verificationCode || ! $user->verificationCodeIssuedDate) {
-                return false;
-            }
-        }
-
-        // Make sure the verification code isn't expired
-        $minCodeIssueDate = now()->subSeconds(Cms::config()->verificationCodeDuration)->toDateTime();
-
-        // Make sure it’s not expired
-        if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
-            $userModel ??= $this->getUserModelById($user->id);
-            $userModel->verificationCode = $user->verificationCode = null;
-            $userModel->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
-            $userModel->save();
-
-            Log::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', [__METHOD__]);
-
-            return false;
-        }
-
-        try {
-            $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
-        } catch (InvalidArgumentException) {
-            $valid = false;
-        }
-
-        if (! $valid) {
-            Log::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', [__METHOD__]);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Returns a user’s preferences.
      *
      * @param  int  $userId  The user’s ID
@@ -324,8 +271,6 @@ final class Users
     /**
      * Sends a password reset email to a user.
      *
-     * A new verification code be will generated for the user, overwriting any existing one.
-     *
      * @param  User  $user  The user to send the forgot password email to.
      * @return bool Whether the email was sent successfully.
      *
@@ -333,12 +278,7 @@ final class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        $url = $this->getPasswordResetUrl($user);
-
-        return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
-            ->setTo($user)
-            ->send();
+        return Password::broker('craft')->sendResetLink(['loginName' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -376,15 +316,16 @@ final class Users
      * Sets a new verification code on a user, and returns their new Password Reset URL.
      *
      * @param  User  $user  The user that should get the new Password Reset URL
+     * @param  string|null  $token  The password reset token.
      * @return string The new Password Reset URL.
      *
      * @throws InvalidElementException if the user doesn't validate
      */
-    public function getPasswordResetUrl(User $user): string
+    public function getPasswordResetUrl(User $user, ?string $token = null): string
     {
         $fePath = Cms::config()->getSetPasswordPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
+        return $this->getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD, $token);
     }
 
     /**
@@ -396,11 +337,10 @@ final class Users
      */
     public function removeCredentials(User $user): void
     {
-        $userModel = $this->getUserModelById($user->id);
+        $userModel = UserModel::findOrFail($user->id);
         $userModel->active = false;
         $userModel->pending = false;
         $userModel->password = null;
-        $userModel->verificationCode = null;
 
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
@@ -411,7 +351,6 @@ final class Users
         $user->active = false;
         $user->pending = false;
         $user->password = null;
-        $user->verificationCode = null;
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -581,7 +520,7 @@ final class Users
         $now = now('UTC');
 
         // Update the User record
-        $userModel = $this->getUserModelById($user->id);
+        $userModel = UserModel::findOrFail($user->id);
         $userModel->lastLoginDate = $now;
         $userModel->invalidLoginWindowStart = null;
         $userModel->invalidLoginCount = null;
@@ -609,7 +548,7 @@ final class Users
      */
     public function handleInvalidLogin(User $user): void
     {
-        $userModel = $this->getUserModelById($user->id);
+        $userModel = UserModel::findOrFail($user->id);
         $now = now('UTC');
 
         $userModel->lastInvalidLoginDate = $now;
@@ -683,8 +622,6 @@ final class Users
         $user->pending = false;
         $user->locked = false;
         $user->suspended = false;
-        $user->verificationCode = null;
-        $user->verificationCodeIssuedDate = null;
         $user->invalidLoginCount = null;
         $user->lastInvalidLoginDate = null;
         $user->lockoutDate = null;
@@ -694,8 +631,6 @@ final class Users
             $user->pending = $originalUser->pending;
             $user->locked = $originalUser->locked;
             $user->suspended = $originalUser->suspended;
-            $user->verificationCode = $originalUser->verificationCode;
-            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
             $user->invalidLoginCount = $originalUser->invalidLoginCount;
             $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
             $user->lockoutDate = $originalUser->lockoutDate;
@@ -704,13 +639,11 @@ final class Users
 
         DB::beginTransaction();
         try {
-            $userModel = $this->getUserModelById($user->id);
+            $userModel = UserModel::findOrFail($user->id);
             $userModel->active = true;
             $userModel->pending = false;
             $userModel->locked = false;
             $userModel->suspended = false;
-            $userModel->verificationCode = null;
-            $userModel->verificationCodeIssuedDate = null;
             $userModel->invalidLoginWindowStart = null;
             $userModel->invalidLoginCount = null;
             $userModel->lastInvalidLoginDate = null;
@@ -756,13 +689,11 @@ final class Users
 
         DB::beginTransaction();
         try {
-            $userModel = $this->getUserModelById($user->id);
+            $userModel = UserModel::findOrFail($user->id);
             $userModel->active = false;
             $userModel->pending = false;
             $userModel->locked = false;
             $userModel->suspended = false;
-            $userModel->verificationCode = null;
-            $userModel->verificationCodeIssuedDate = null;
             $userModel->invalidLoginWindowStart = null;
             $userModel->invalidLoginCount = null;
             $userModel->lastInvalidLoginDate = null;
@@ -775,8 +706,6 @@ final class Users
             $user->pending = false;
             $user->locked = false;
             $user->suspended = false;
-            $user->verificationCode = null;
-            $user->verificationCodeIssuedDate = null;
             $user->invalidLoginCount = null;
             $user->lastInvalidLoginDate = null;
             $user->lockoutDate = null;
@@ -810,7 +739,7 @@ final class Users
             return;
         }
 
-        $userModel = $this->getUserModelById($user->id);
+        $userModel = UserModel::findOrFail($user->id);
         $userModel->email = $user->unverifiedEmail;
         $userModel->unverifiedEmail = null;
 
@@ -850,7 +779,7 @@ final class Users
 
         DB::beginTransaction();
         try {
-            $userModel = $this->getUserModelById($user->id);
+            $userModel = UserModel::findOrFail($user->id);
             $userModel->locked = false;
             $userModel->invalidLoginCount = null;
             $userModel->invalidLoginWindowStart = null;
@@ -895,7 +824,7 @@ final class Users
             }
         }
 
-        $userModel = $this->getUserModelById($user->id);
+        $userModel = UserModel::findOrFail($user->id);
         $userModel->suspended = true;
         $user->suspended = true;
 
@@ -935,7 +864,7 @@ final class Users
         DB::beginTransaction();
 
         try {
-            $userModel = $this->getUserModelById($user->id);
+            $userModel = UserModel::findOrFail($user->id);
             $userModel->suspended = false;
 
             $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
@@ -1023,49 +952,33 @@ final class Users
      */
     public function setVerificationCodeOnUser(User $user): string
     {
-        $userModel = $this->getUserModelById($user->id);
-
-        $securityService = Craft::$app->getSecurity();
-        $unhashedCode = $securityService->generateRandomString(32);
-
-        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
-        $unhashedCode = str_replace('_', Str::random(1), $unhashedCode);
-        $issueDate = now('UTC');
-
-        $hashedCode = $securityService->hashPassword($unhashedCode);
-        $userModel->verificationCode = $hashedCode;
-        $userModel->verificationCodeIssuedDate = $issueDate;
+        $userModel = UserModel::findOrFail($user->id);
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
+        $token = $broker->createToken($user);
 
         // Make sure they are set to pending, if not already active
         if (! $userModel->active) {
             $userModel->pending = true;
         }
 
-        DB::beginTransaction();
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
         $userModel->save();
 
         $originalUser = clone $user;
         $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userModel->pending;
-        $user->verificationCode = $hashedCode;
-        $user->verificationCodeIssuedDate = $issueDate->toDateTime();
 
         if (! $user->validate()) {
-            DB::rollBack();
             $user->pending = $originalUser->pending;
-            $user->verificationCode = $originalUser->verificationCode;
-            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
             throw new InvalidElementException($user);
         }
-
-        DB::commit();
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
 
-        return $unhashedCode;
+        return $token;
     }
 
     /**
@@ -1355,11 +1268,6 @@ final class Users
         return true;
     }
 
-    private function getUserModelById(int $userId): UserModel
-    {
-        return UserModel::findOrFail($userId);
-    }
-
     /**
      * Determines if a user is within their invalid login window.
      */
@@ -1381,18 +1289,19 @@ final class Users
      * @param  User  $user  The user that should get the new Password Reset URL
      * @param  string  $fePath  The URL or path to use if we end up linking to the front end
      * @param  string  $cpPath  The path to use if we end up linking to the control panel
+     * @param  string|null  $token  The password reset token.
      *
      * @throws InvalidElementException if the user doesn't validate
      *
      * @see getEmailVerifyUrl()
      * @see getPasswordResetUrl()
      */
-    private function getUserUrl(User $user, string $fePath, string $cpPath): string
+    private function getUserUrl(User $user, string $fePath, string $cpPath, ?string $token = null): string
     {
-        $unhashedVerificationCode = $this->setVerificationCodeOnUser($user);
+        $token ??= $this->setVerificationCodeOnUser($user);
 
         $params = [
-            'code' => $unhashedVerificationCode,
+            'code' => $token,
             'id' => $user->uid,
         ];
 

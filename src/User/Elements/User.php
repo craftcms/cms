@@ -61,15 +61,19 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Deprecated;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
@@ -106,13 +110,15 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
-final class User extends Element implements AuthenticatableContract, AuthorizableContract
+final class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
     use Authenticatable;
     use Authorizable;
+    use CanResetPassword;
     use ConfirmsPasswords;
     use Macroable;
     use NameTrait;
+    use Notifiable;
 
     /**
      * @since 5.0.0
@@ -836,6 +842,14 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private ?array $_groups = null;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 
     /**
      * {@inheritdoc}
@@ -2447,8 +2461,6 @@ JS, [
             $model->password = $this->password = $hash;
             $model->invalidLoginWindowStart = null;
             $model->invalidLoginCount = $this->invalidLoginCount = null;
-            $model->verificationCode = null;
-            $model->verificationCodeIssuedDate = null;
             $model->lastPasswordChangeDate = $this->lastPasswordChangeDate;
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false

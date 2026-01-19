@@ -13,7 +13,6 @@ use CraftCms\Cms\Auth\Events\InvalidUserToken;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
@@ -22,6 +21,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -105,7 +105,9 @@ abstract readonly class AuthenticationController
             Event::dispatch(new VerifyingEmail($user));
         }
 
-        if (! Users::isVerificationCodeValidForUser($user, $request->input('code'))) {
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
+        if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
 
@@ -125,7 +127,7 @@ abstract readonly class AuthenticationController
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && ! $user->verificationCode && ! auth('craft')->guest()) {
+        if ($user && ! auth('craft')->guest()) {
             return redirect(URL::returnUrl());
         }
 

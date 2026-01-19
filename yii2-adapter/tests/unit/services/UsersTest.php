@@ -13,7 +13,6 @@ use craft\helpers\Db;
 use craft\mail\Message;
 use craft\services\Users;
 use craft\test\TestCase;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\UserGroupsFixture;
@@ -67,34 +66,6 @@ class UsersTest extends TestCase
                 'class' => UserGroupsFixture::class,
             ],
         ];
-    }
-
-    public function testIsVerificationCodeValidForUser(): void
-    {
-        // Ensure password validation is irrelevant
-        $this->ensurePasswordValidationReturns(true);
-        Cms::config()->verificationCodeDuration = 172800;
-
-        $this->updateUser([
-            // The past.
-            'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
-            'verificationCode' => 'irrelevant_code',
-        ], ['id' => $this->activeUser->id]);
-
-        self::assertFalse(
-            $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
-        );
-
-        // Now the code should be present - within 2 day window
-        $this->updateUser([
-            // The present.
-            'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
-            'verificationCode' => 'irrelevant_code',
-        ], ['id' => $this->activeUser->id]);
-
-        self::assertTrue(
-            $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
-        );
     }
 
     public function testSendActivationEmail(): void

@@ -276,8 +276,6 @@ abstract class BaseExternalProvider extends BaseProvider
         $user->pending = false;
         $user->locked = false;
         $user->suspended = false;
-        $user->verificationCode = null;
-        $user->verificationCodeIssuedDate = null;
         $user->invalidLoginCount = null;
         $user->lastInvalidLoginDate = null;
         $user->lockoutDate = null;

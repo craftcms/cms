@@ -11,16 +11,19 @@ use Craft;
 use craft\events\RegisterComponentTypesEvent;
 use craft\web\View;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Password;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * User authentication service.
@@ -298,6 +301,27 @@ class Auth extends Component
                 Craft::$app->getAuth()->trigger(self::EVENT_REGISTER_METHODS, $yiiEvent);
                 $event->methods = new Collection($yiiEvent->types);
             }
+        });
+
+        Event::listen(SettingPassword::class, function(SettingPassword $event) {
+            if ($event->status === Password::PASSWORD_RESET) {
+                return;
+            }
+
+            if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($event->user, $event->code)) {
+                return;
+            }
+
+            $user = $event->user;
+            $user->newPassword = $event->newPassword;
+            $user->setScenario(User::SCENARIO_PASSWORD);
+
+            if (!Craft::$app->getElements()->saveElement($user)) {
+                $event->status = 'password.save_failed';
+                return;
+            }
+
+            $event->status = Password::PASSWORD_RESET;
         });
     }
 }
