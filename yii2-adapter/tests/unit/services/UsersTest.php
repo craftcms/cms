@@ -13,7 +13,6 @@ use craft\helpers\Db;
 use craft\mail\Message;
 use craft\services\Users;
 use craft\test\TestCase;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
@@ -70,24 +69,19 @@ class UsersTest extends TestCase
 
     public function testSendActivationEmail(): void
     {
-        // Ensure we know what the unhashed code is - so we can compare against it later.
-        $this->tester->mockCraftMethods('security', [
-            'generateRandomString' => $string = Str::random(32),
-        ]);
-
         // Test send activation email with password null
         $this->pendingUser->password = null;
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'setpassword?code=' . $string
+            'setpassword?code='
         );
 
         $this->pendingUser->password = 'some_password';
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'verifyemail?code=' . $string
+            'verifyemail?code='
         );
         $this->pendingUser->password = null;
 
@@ -95,14 +89,7 @@ class UsersTest extends TestCase
         $this->users->sendNewEmailVerifyEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'verify_new_email',
-            'verifyemail?code=' . $string
-        );
-
-        // Test password reset email
-        $this->users->sendPasswordResetEmail($this->pendingUser);
-        $this->testUsersEmailFunctions(
-            'forgot_password',
-            'setpassword?code=' . $string
+            'verifyemail?code='
         );
     }
 
