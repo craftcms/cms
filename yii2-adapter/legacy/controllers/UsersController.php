@@ -224,7 +224,7 @@ class UsersController extends Controller
                     'userId' => $event->userId,
                     'contentSummary' => $event->contentSummary->all(),
                 ]);
-                $this->trigger(UsersController::EVENT_DEFINE_CONTENT_SUMMARY, $yiiEvent);
+                YiiEvent::trigger(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY, $yiiEvent);
                 $event->contentSummary = new Collection($event->contentSummary);
             }
         });
