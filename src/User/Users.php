@@ -12,7 +12,6 @@ use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
@@ -229,46 +228,6 @@ final class Users
     }
 
     /**
-     * Sends a new account activation email for a user, regardless of their status.
-     *
-     * A new verification code will generated for the user overwriting any existing one.
-     *
-     * @param  User  $user  The user to send the activation email to.
-     * @return bool Whether the email was sent successfully.
-     *
-     * @throws InvalidElementException if the user doesn't validate
-     */
-    public function sendActivationEmail(User $user): bool
-    {
-        $url = $this->getActivationUrl($user);
-
-        return Craft::$app->getMailer()
-            ->composeFromKey('account_activation', ['link' => Template::raw($url)])
-            ->setTo($user)
-            ->send();
-    }
-
-    /**
-     * Sends a new email verification email to a user, regardless of their status.
-     *
-     * A new verification code will generated for the user overwriting any existing one.
-     *
-     * @param  User  $user  The user to send the activation email to.
-     * @return bool Whether the email was sent successfully.
-     *
-     * @throws InvalidElementException if the user doesn't validate
-     */
-    public function sendNewEmailVerifyEmail(User $user): bool
-    {
-        $url = $this->getEmailVerifyUrl($user);
-
-        return Craft::$app->getMailer()
-            ->composeFromKey('verify_new_email', ['link' => Template::raw($url)])
-            ->setTo($user)
-            ->send();
-    }
-
-    /**
      * Sends a password reset email to a user.
      *
      * @param  User  $user  The user to send the forgot password email to.
@@ -301,15 +260,16 @@ final class Users
      * Sets a new verification code on a user, and returns their new Email Verification URL.
      *
      * @param  User  $user  The user that should get the new Email Verification URL.
+     * @param  string|null  $token  The verification token.
      * @return string The new Email Verification URL.
      *
      * @throws InvalidElementException if the user doesn't validate
      */
-    public function getEmailVerifyUrl(User $user): string
+    public function getEmailVerifyUrl(User $user, ?string $token = null): string
     {
         $fePath = Cms::config()->getVerifyEmailPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
+        return $this->getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL, $token);
     }
 
     /**
@@ -999,7 +959,11 @@ final class Users
 
         User::find()
             ->status('pending')
-            ->where('users.verificationCodeIssuedDate', '<', now()->subMinutes(Cms::config()->purgePendingUsersDuration))
+            ->whereNotExists(function (Builder $query) {
+                $query->from(Table::PASSWORD_RESET_TOKENS, 'password_reset_tokens')
+                    ->whereColumn('password_reset_tokens.email', 'users.email')
+                    ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
+            })
             ->each(function (User $user) {
                 try {
                     Craft::$app->getElements()->deleteElement($user);

@@ -448,7 +448,11 @@ Moved the following controllers:
 
 ## Users
 
-- `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable` and `Illuminate\Contracts\Auth\Access\Authorizable`.
+- `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable`, `Illuminate\Contracts\Auth\Access\Authorizable`, `Illuminate\Contracts\Auth\CanResetPassword`, and `Illuminate\Contracts\Auth\MustVerifyEmail`.
+- Added `CraftCms\Cms\User\Notifications\VerifyEmailNotification`.
+- `Users::purgeExpiredPendingUsers()` now joins the `password_reset_tokens` table to find expired pending users.
+- Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Removed `craft\controllers\UsersController` in favor of:
   - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
   - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.

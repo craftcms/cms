@@ -12,12 +12,14 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use SensitiveParameter;
 
-final class ResetPasswordNotification extends Notification implements ShouldQueue
+final class VerifyEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
+        #[SensitiveParameter]
         public string $token,
     ) {}
 
@@ -28,10 +30,11 @@ final class ResetPasswordNotification extends Notification implements ShouldQueu
 
     public function toCraft(User $user): bool
     {
-        $url = Users::getPasswordResetUrl($user);
+        $url = Users::getEmailVerifyUrl($user, $this->token);
+        $key = $user->pending ? 'account_activation' : 'verify_new_email';
 
         return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
+            ->composeFromKey($key, ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }

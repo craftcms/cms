@@ -316,13 +316,7 @@ final readonly class SaveUserController
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            if ($isNewUser) {
-                // Send the activation email
-                $this->users->sendActivationEmail($user);
-            } else {
-                // Send the standard verification email
-                $this->users->sendNewEmailVerifyEmail($user);
-            }
+            $user->sendEmailVerificationNotification();
 
             // Put the original email back into place
             $user->email = $originalEmail;

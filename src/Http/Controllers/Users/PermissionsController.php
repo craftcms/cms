@@ -8,7 +8,6 @@ use Craft;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -20,11 +19,11 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -105,10 +104,8 @@ final readonly class PermissionsController
             $request->boolean('sendActivationEmail')
         ) {
             try {
-                if (! Users::sendActivationEmail($user)) {
-                    Flash::fail(t('Couldn’t send activation email. Check your email settings.'));
-                }
-            } catch (InvalidElementException $e) {
+                $user->sendEmailVerificationNotification();
+            } catch (Throwable $e) {
                 Flash::fail(t('Couldn’t send the activation email: {error}', [
                     'error' => $e->getMessage(),
                 ]));

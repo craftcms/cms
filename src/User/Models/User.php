@@ -53,7 +53,6 @@ class User extends BaseModel
         'lastInvalidLoginDate' => 'datetime',
         'lockoutDate' => 'datetime',
         'hasDashboard' => 'bool',
-        'verificationCodeIssuedDate' => 'datetime',
         'passwordResetRequired' => 'bool',
         'lastPasswordChangeDate' => 'datetime',
     ];

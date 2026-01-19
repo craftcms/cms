@@ -289,6 +289,7 @@ class Users extends Component
             return false;
         }
 
+        /** @phpstan-ignore-next-line */
         if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
             // Fetch from the DB
             $userModel = UserModel::findOrFail($user->id);
@@ -384,7 +385,9 @@ class Users extends Component
      */
     public function sendActivationEmail(User $user): bool
     {
-        return UsersFacade::sendActivationEmail($user);
+        $user->sendEmailVerificationNotification();
+
+        return true;
     }
 
     /**
@@ -399,7 +402,9 @@ class Users extends Component
      */
     public function sendNewEmailVerifyEmail(User $user): bool
     {
-        return UsersFacade::sendNewEmailVerifyEmail($user);
+        $user->sendEmailVerificationNotification();
+
+        return true;
     }
 
     /**

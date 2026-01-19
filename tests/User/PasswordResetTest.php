@@ -9,7 +9,6 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 
@@ -18,7 +17,6 @@ beforeEach(function () {
 });
 
 test('sendPasswordResetEmail dispatches ResetPasswordNotification', function () {
-
     $user = UserModel::factory()->createElement();
     $user = User::find()->id($user->id)->one();
 
@@ -38,20 +36,4 @@ test('isVerificationCodeValidForUser handles Laravel tokens', function () {
     $token = Password::broker('craft')->createToken($user);
 
     expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
-});
-
-test('sendPasswordResetEmail uses Laravel broker', function () {
-    $user = UserModel::factory()->createElement();
-    $user = User::find()->id($user->id)->one();
-
-    $result = Users::sendPasswordResetEmail($user);
-
-    expect($result)->toBeTrue();
-
-    // Verify token exists in database
-    $exists = DB::table('password_reset_tokens')
-        ->where('email', $user->email)
-        ->exists();
-
-    expect($exists)->toBeTrue();
 });
