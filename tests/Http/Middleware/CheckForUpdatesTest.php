@@ -74,7 +74,7 @@ it('renders db update page for cp request when craft update pending', function (
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/admin');
+    $request = Request::create(Cms::config()->cpTrigger);
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -90,7 +90,7 @@ it('renders db update page for cp request when plugin update pending', function 
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/admin');
+    $request = Request::create(Cms::config()->cpTrigger);
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -176,7 +176,7 @@ it('allows users login action when update pending', function () {
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/admin/actions/users/login');
+    $request = Request::create(Cms::config()->cpTrigger.'/actions/users/login');
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -199,7 +199,7 @@ it('throws exception when craft breakpoint was skipped', function () {
     $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/admin');
+    $request = Request::create(Cms::config()->cpTrigger);
     $request->attributes->set('isCpRequest', true);
 
     $middleware->handle($request, fn () => 'passed');

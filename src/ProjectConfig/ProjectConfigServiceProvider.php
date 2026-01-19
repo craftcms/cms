@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
 use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
@@ -17,7 +18,6 @@ use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -34,12 +34,25 @@ final class ProjectConfigServiceProvider extends ServiceProvider
     public function register(): void
     {
         Event::listen(RequestHandled::class, function () {
-            ProjectConfigFacade::flush();
+            $this->flushProjectConfig();
         });
 
         Event::listen(CommandFinished::class, function () {
-            ProjectConfigFacade::flush();
+            $this->flushProjectConfig();
         });
+    }
+
+    private function flushProjectConfig(): void
+    {
+        if (! Cms::isInstalled()) {
+            return;
+        }
+
+        app(ProjectConfig::class)->flush();
+
+        if (app(ProjectConfig::class)->waitingToUpdateParsedConfigTimes) {
+            app(ProjectConfig::class)->updateParsedConfigTimes();
+        }
     }
 
     public function boot(ProjectConfig $projectConfig): void
