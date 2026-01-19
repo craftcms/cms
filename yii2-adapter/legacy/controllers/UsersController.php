@@ -18,7 +18,6 @@ use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
-use craft\web\Request;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
@@ -35,7 +34,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
-use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\web\Response;
 use function CraftCms\Cms\t;
@@ -226,49 +224,6 @@ class UsersController extends Controller
 
         $this->setSuccessFlash(t('User fields saved.'));
         return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * Verifies a password for a user.
-     *
-     * @return Response|null
-     */
-    public function actionVerifyPassword(): ?Response
-    {
-        $this->requireAcceptsJson();
-
-        if ($this->_verifyExistingPassword()) {
-            return $this->asSuccess();
-        }
-
-        return $this->asFailure(t('Invalid password.'));
-    }
-
-    /**
-     * Verifies that the current user’s password was submitted with the request.
-     *
-     * @return bool
-     */
-    private function _verifyExistingPassword(): bool
-    {
-        $currentUser = static::currentUser();
-
-        if (!$currentUser) {
-            return false;
-        }
-
-        $currentPassword = $this->request->getParam('currentPassword') ?? $this->request->getParam('password');
-        if ($currentPassword === null) {
-            return false;
-        }
-
-        $currentHashedPassword = $currentUser->password;
-
-        try {
-            return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
-        } catch (InvalidArgumentException) {
-            return false;
-        }
     }
 
     public function asModelSuccess(

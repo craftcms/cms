@@ -119,6 +119,15 @@ final readonly class PasswordController
         return $this->togglePasswordResetRequirement($request, $users, required: false);
     }
 
+    public function verifyPassword(Request $request): Response
+    {
+        if ($this->existingPasswordVerified($request)) {
+            return $this->asSuccess();
+        }
+
+        return $this->asFailure(t('Invalid password.'));
+    }
+
     private function togglePasswordResetRequirement(Request $request, Users $users, bool $required): Response
     {
         $this->requirePermission('administrateUsers');

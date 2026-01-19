@@ -343,6 +343,7 @@ Route::prefix(implode('/', [
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+        Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
 
         // User groups
