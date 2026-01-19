@@ -17,7 +17,6 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
-use craft\helpers\UrlHelper;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use craft\web\Request;
@@ -25,9 +24,6 @@ use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
-use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Users;
@@ -40,9 +36,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\Model;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use function CraftCms\Cms\t;
 
@@ -147,14 +141,6 @@ class UsersController extends Controller
      * @since 3.6.5
      */
     public const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
-
-    /**
-     * @inheritdoc
-     */
-    protected array|bool|int $allowAnonymous = [
-        'auth-form' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'save-user' => self::ALLOW_ANONYMOUS_LIVE,
-    ];
 
     /**
      * @inheritdoc
@@ -310,84 +296,6 @@ class UsersController extends Controller
         }
 
         return $this->asFailure(t('Invalid password.'));
-    }
-
-    public function actionAuthForm(): Response
-    {
-        // If the current user is being impersonated, use the impersonator
-        $user = app(Impersonation::class)->getImpersonator() ?? app(\CraftCms\Cms\Auth\Auth::class)->getUser();
-
-        if (!$user) {
-            if ($this->request->getIsSiteRequest()) {
-                $loginPath = Cms::config()->getLoginPath();
-                if (!$loginPath) {
-                    throw new InvalidConfigException('The loginPath config setting is disabled.');
-                }
-                return $this->redirect($loginPath);
-            }
-
-            return $this->redirect(Request::CP_PATH_LOGIN);
-        }
-
-        $activeMethods = app(\CraftCms\Cms\Auth\Auth::class)->getActiveMethods($user);
-        $methodClass = $this->request->getParam('method');
-
-        if ($methodClass) {
-            /** @var AuthMethodInterface|null $method */
-            $method = $activeMethods->first(
-                fn(AuthMethodInterface $method) => $method::class === $methodClass,
-            );
-
-            if (!$method) {
-                throw new BadRequestHttpException("Invalid method class: $methodClass");
-            }
-            $activeMethods = $activeMethods->filter(fn($m) => $m !== $method)->values();
-        } else {
-            if ($activeMethods->isEmpty()) {
-                throw new BadRequestHttpException('User has no active two-step verification methods.');
-            }
-            $method = $activeMethods->first();
-        }
-
-        $view = $this->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-        try {
-            $html = $method->getAuthFormHtml();
-        } finally {
-            $view->setTemplateMode($templateMode);
-        }
-
-        $returnUrl = $this->request->getQueryParam('returnUrl');
-        if (!$returnUrl) {
-            if ($this->request->getIsCpRequest()) {
-                // explicitly set the default return URL here, since checkPermission('accessCp') will be false
-                $defaultReturnUrl = UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
-            } else {
-                $defaultReturnUrl = UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
-            }
-            $returnUrl = URL::returnUrl($defaultReturnUrl);
-        }
-
-        $authFormData = [
-            'authMethod' => $method::class,
-            'otherMethods' => $activeMethods->map(fn(AuthMethodInterface $method) => [
-                'name' => $method::displayName(),
-                'class' => $method::class,
-            ])->all(),
-            'authForm' => $html,
-            'returnUrl' => $returnUrl,
-        ];
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson([
-                ...$authFormData,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
-            ]);
-        }
-
-        return $this->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
     }
 
     /**
