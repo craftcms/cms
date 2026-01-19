@@ -33,6 +33,7 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -648,7 +649,7 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
-            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
+            'userHasPasskeys' => app(Passkeys::class)->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
             'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
