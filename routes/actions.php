@@ -49,6 +49,7 @@ use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
+use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -99,6 +100,7 @@ foreach ([
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+        Route::any('users/redirect', [LoginController::class, 'redirect']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -345,6 +347,7 @@ Route::prefix(implode('/', [
         Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
+        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // User groups
         Route::middleware([

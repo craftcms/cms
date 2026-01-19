@@ -7,23 +7,17 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\Event as YiiEvent;
-use craft\base\ModelInterface;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
-use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use craft\web\View;
-use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
-use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
@@ -31,12 +25,8 @@ use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\URL;
-use yii\base\Model;
 use yii\web\Response;
-use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -50,12 +40,10 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class UsersController extends Controller
 {
-    use ConfirmsPasswords;
-    use EditUserTrait;
-
     /**
      * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
      *
@@ -141,30 +129,6 @@ class UsersController extends Controller
     public const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
 
     /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        // Don't enable CSRF validation for login requests if the user is already logged-in.
-        // (Guards against double-clicking a Login button.)
-        if ($action->id === 'login' && !Auth::guest()) {
-            $this->enableCsrfValidation = false;
-        }
-
-        return parent::beforeAction($action);
-    }
-
-    /**
-     * Redirects the user to the default post-login URL.
-     *
-     * @return Response
-     */
-    public function actionRedirect(): Response
-    {
-        return $this->redirect(URL::defaultReturnUrl());
-    }
-
-    /**
      * Returns a 2FA setup screen, for users who require a 2FA method.
      *
      * @return Response
@@ -177,84 +141,6 @@ class UsersController extends Controller
 
         $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/setup-2fa.twig', templateMode: View::TEMPLATE_MODE_CP);
-    }
-
-    /**
-     * Saves the user field layout.
-     *
-     * @return Response|null
-     */
-    public function actionSaveFieldLayout(): ?Response
-    {
-        $this->requirePostRequest();
-        $this->requireAdmin();
-
-        // Set the field layout
-        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
-        $fieldLayout->type = User::class;
-        $fieldLayout->reservedFieldHandles = [
-            'active',
-            'addresses',
-            'admin',
-            'affiliatedSiteId',
-            'email',
-            'firstName',
-            'friendlyName',
-            'fullName',
-            'groups',
-            'lastName',
-            'locked',
-            'name',
-            'password',
-            'pending',
-            'photo',
-            'suspended',
-            'username',
-        ];
-
-        if (!Users::saveLayout($fieldLayout)) {
-            Craft::$app->getUrlManager()->setRouteParams([
-                'variables' => [
-                    'fieldLayout' => $fieldLayout,
-                ],
-            ]);
-            $this->setFailFlash(t('Couldn’t save user fields.'));
-            return null;
-        }
-
-        $this->setSuccessFlash(t('User fields saved.'));
-        return $this->redirectToPostedUrl();
-    }
-
-    public function asModelSuccess(
-        mixed $model,
-        ?string $message = null,
-        ?string $modelName = null,
-        array $data = [],
-        ?string $redirect = null,
-    ): Response {
-        $this->clearPassword($model);
-        return parent::asModelSuccess($model, $message, $modelName, $data, $redirect);
-    }
-
-    public function asModelFailure(
-        mixed $model,
-        ?string $message = null,
-        ?string $modelName = null,
-        array $data = [],
-        array $routeParams = [],
-    ): ?Response {
-        $this->clearPassword($model);
-        return parent::asModelFailure($model, $message, $modelName, $data, $routeParams);
-    }
-
-    private function clearPassword(ModelInterface|Model $model): void
-    {
-        if ($model instanceof User) {
-            $model->password = null;
-            $model->newPassword = null;
-            $model->currentPassword = null;
-        }
     }
 
     public static function registerEvents(): void
