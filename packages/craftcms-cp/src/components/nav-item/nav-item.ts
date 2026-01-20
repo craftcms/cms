@@ -153,7 +153,7 @@ export default class CraftNavItem extends LitElement {
                         ? 'chevron-down'
                         : 'chevron-up'}"
                       style="font-size: calc(10rem / 16)"
-                      label="${t('app', 'Toggle subnavigation')}"
+                      label="${t('Toggle subnavigation')}"
                     ></craft-icon>
                   </craft-button>
                 `
