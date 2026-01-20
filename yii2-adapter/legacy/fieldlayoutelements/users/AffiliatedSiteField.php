@@ -7,13 +7,13 @@
 
 namespace craft\fieldlayoutelements\users;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -113,7 +113,7 @@ class AffiliatedSiteField extends BaseNativeField
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction([
                 'attribute' => 'affiliatedSite',
             ]);

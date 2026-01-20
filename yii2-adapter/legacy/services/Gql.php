@@ -94,6 +94,7 @@ use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -469,7 +470,7 @@ class Gql extends Component
             }
         }
 
-        if (!$generalConfig->enableGraphqlIntrospection && Craft::$app->getUser()->getIsGuest()) {
+        if (!$generalConfig->enableGraphqlIntrospection && Auth::guest()) {
             $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 

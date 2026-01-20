@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
@@ -54,11 +55,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 
-    public const CP_PATH_LOGIN = 'login';
-    public const CP_PATH_LOGOUT = 'logout';
-    public const CP_PATH_SET_PASSWORD = 'set-password';
-    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    public const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = CpAuthPath::Login->value;
+    public const CP_PATH_LOGOUT = CpAuthPath::Logout->value;
+    public const CP_PATH_SET_PASSWORD = CpAuthPath::SetPassword->value;
+    public const CP_PATH_VERIFY_EMAIL = CpAuthPath::VerifyEmail->value;
+    public const CP_PATH_UPDATE = CpAuthPath::Update->value;
 
     /**
      * @inheritdoc

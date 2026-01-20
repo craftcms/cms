@@ -41,7 +41,7 @@
       },
     },
     {
-      METHOD: 'craft\\auth\\methods\\TOTP',
+      METHOD: 'CraftCms\\Cms\\Auth\\Methods\\TOTP',
     }
   );
 

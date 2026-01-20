@@ -138,6 +138,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Auth
 
+- Refactored the authentication system to use Laravel’s authentication system.
+- Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
+- Deprecated `craft\web\User`. `auth('craft')->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
+- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\Authenticating` should be used instead.
 - Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
 - Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
 - Deprecated `\craft\records\SsoIdentity`. `\CraftCms\Cms\Auth\Models\SsoIdentity` should be used instead.
@@ -442,6 +446,11 @@ Moved the following controllers:
 
 ## Users
 
+- `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable` and `Illuminate\Contracts\Auth\Access\Authorizable`.
+- Removed `craft\controllers\UsersController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
+  - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
+  - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
   - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
   - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`

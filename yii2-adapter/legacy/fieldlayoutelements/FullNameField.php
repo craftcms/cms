@@ -7,11 +7,11 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Html as HtmlHelper;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -83,7 +83,7 @@ class FullNameField extends TextField
         $statusClass = $this->statusClass($element);
         $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
         $required = !$static && $this->required;
-        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $isAdmin = Auth::user()?->isAdmin();
 
         return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]) .
             Cp::textFieldHtml([

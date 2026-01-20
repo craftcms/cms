@@ -1718,10 +1718,9 @@ JS, [
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
 
-        $userSessionService = Craft::$app->getUser();
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            $userSessionService->getIsAdmin() &&
+            Auth::user()->isAdmin() &&
             Auth::user()->getPreference('showFieldHandles')
         );
         $showActionMenu = (

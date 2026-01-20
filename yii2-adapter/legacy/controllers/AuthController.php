@@ -8,10 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\methods\RecoveryCodes;
-use craft\auth\methods\TOTP;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -43,8 +42,6 @@ class AuthController extends Controller
      */
     protected array|bool|int $allowAnonymous = [
         'passkey-request-options' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-recovery-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-totp' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -58,7 +55,7 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $class = $this->request->getRequiredBodyParam('method');
-        $method = Craft::$app->getAuth()->getMethod($class);
+        $method = app(\CraftCms\Cms\Auth\Auth::class)->getMethod($class);
         $containerId = sprintf('auth-method-setup-%s', mt_rand());
         $displayName = $method::displayName();
         $view = Craft::$app->getView();
@@ -121,12 +118,12 @@ class AuthController extends Controller
 
         $methodClass = $this->request->getRequiredBodyParam('method');
 
-        $auth = Craft::$app->getAuth();
+        $auth = app(\CraftCms\Cms\Auth\Auth::class);
         $method = $auth->getMethod($methodClass);
         $method->remove();
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
-        if (empty($auth->getActiveMethods())) {
+        if ($auth->getActiveMethods()->isEmpty()) {
             $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
             if ($recoveryCodes->isActive()) {
                 $recoveryCodes->remove();
@@ -134,46 +131,6 @@ class AuthController extends Controller
         }
 
         return $this->asSuccess(t('Authentication method removed.'));
-    }
-
-    /**
-     * Verifies a TOTP code.
-     *
-     * @return Response
-     */
-    public function actionVerifyTotp(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $code = $this->request->getRequiredBodyParam('code');
-        $authService = Craft::$app->getAuth();
-
-        if (!$authService->verify(TOTP::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage());
-        }
-
-        return $this->asSuccess(t('Verification successful.'));
-    }
-
-    /**
-     * Verifies a recovery code.
-     *
-     * @return Response
-     */
-    public function actionVerifyRecoveryCode(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $code = $this->request->getRequiredBodyParam('code');
-        $authService = Craft::$app->getAuth();
-
-        if (!$authService->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure($authService->getAuthErrorMessage(t('Invalid recovery code.')));
-        }
-
-        return $this->asSuccess(t('Verification successful.'));
     }
 
     /**
@@ -188,27 +145,8 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = app(Passkeys::class)->getPasskeyCreationOptions(static::currentUser());
-
         return $this->asJson([
-            'options' => $options,
-        ]);
-    }
-
-    /**
-     * Returns the available passkey options.
-     *
-     * @return Response
-     */
-    public function actionPasskeyRequestOptions(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $options = app(Passkeys::class)->getPasskeyRequestOptions();
-
-        return $this->asJson([
-            'options' => $options,
+            'options' => app(Passkeys::class)->getPasskeyCreationOptions(static::currentUser()),
         ]);
     }
 
@@ -275,7 +213,7 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        $recoveryCodes = app(\CraftCms\Cms\Auth\Auth::class)->getMethod(RecoveryCodes::class);
         $codes = $recoveryCodes->generateRecoveryCodes();
 
         return $this->asSuccess(t('Recovery codes generated.'), [
@@ -299,7 +237,7 @@ class AuthController extends Controller
         $this->requireLogin();
         $this->requireElevatedSession();
 
-        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        $recoveryCodes = app(\CraftCms\Cms\Auth\Auth::class)->getMethod(RecoveryCodes::class);
         [$codes, $dateCreated] = $recoveryCodes->getRecoveryCodes();
 
         if (empty($codes)) {

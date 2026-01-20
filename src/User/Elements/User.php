@@ -22,7 +22,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
-use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\Cp;
@@ -39,8 +38,7 @@ use craft\validators\UserPasswordValidator;
 use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
-use CraftCms\Cms\Auth\Models\WebAuthn;
-use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
@@ -58,7 +56,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
@@ -75,16 +72,15 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 use yii\validators\RequiredValidator;
@@ -114,6 +110,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     use Authenticatable;
     use Authorizable;
     use ConfirmsPasswords;
+    use Macroable;
     use NameTrait;
 
     /**
@@ -187,27 +184,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     public const string STATUS_SUSPENDED = 'suspended';
 
     public const string STATUS_LOCKED = 'locked';
-
-    // Authentication error codes
-    // -------------------------------------------------------------------------
-
-    public const string AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
-
-    public const string AUTH_PENDING_VERIFICATION = 'pending_verification';
-
-    public const string AUTH_ACCOUNT_LOCKED = 'account_locked';
-
-    public const string AUTH_ACCOUNT_COOLDOWN = 'account_cooldown';
-
-    public const string AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
-
-    public const string AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
-
-    public const string AUTH_NO_CP_ACCESS = 'no_cp_access';
-
-    public const string AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
-
-    public const string AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -822,11 +798,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     public ?string $remember_token = null;
 
     /**
-     * @var string|null Auth error
-     */
-    public ?string $authError = null;
-
-    /**
      * @var self|null The user who should take over the user’s content if the user is deleted.
      */
     public ?User $inheritorOnDelete = null;
@@ -1326,114 +1297,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     }
 
     /**
-     * Handles an invalid login for a user and sets the authError param.
-     */
-    public function handleInvalidLoginParam(): void
-    {
-        Users::handleInvalidLogin($this);
-        // Was that one bad password/2fa code/passkey too many?
-        if ($this->locked && ! Cms::config()->preventUserEnumeration) {
-            // Will set the authError to either AccountCooldown or AccountLocked
-            $this->authError = $this->_getAuthError();
-        } else {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
-        }
-    }
-
-    /**
-     * Determines whether the user is allowed to be logged in with a given password.
-     *
-     * @param  string  $password  The user’s plain text password.
-     */
-    public function authenticate(string $password): bool
-    {
-        $this->authError = null;
-
-        // Fire a 'beforeAuthenticate' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
-            $event = new AuthenticateUserEvent(['password' => $password]);
-            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-            if (isset($this->authError)) {
-                return false;
-            }
-            if (! $event->performAuthentication) {
-                return true;
-            }
-        }
-
-        // Validate the password
-        try {
-            $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-        } catch (InvalidArgumentException) {
-            $passwordValid = false;
-        }
-
-        if (! $passwordValid) {
-            $this->handleInvalidLoginParam();
-
-            return false;
-        }
-
-        $this->authError = $this->_getAuthError();
-
-        return ! isset($this->authError);
-    }
-
-    /**
-     * Determines whether the user is allowed to be logged in with a security key.
-     *
-     * @param  PublicKeyCredentialRequestOptions|array|string  $requestOptions  The public key credential request options
-     * @param  string  $response  The authentication response data
-     *
-     * @since 5.0.0
-     */
-    public function authenticateWithPasskey(
-        PublicKeyCredentialRequestOptions|array|string $requestOptions,
-        string $response,
-    ): bool {
-        $this->authError = null;
-
-        // Fire a 'beforeAuthenticate' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
-            $event = new AuthenticateUserEvent;
-            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-
-            if (isset($this->authError)) {
-                return false;
-            }
-
-            if (! $event->performAuthentication) {
-                return true;
-            }
-        }
-
-        // make sure the passkey exists and belongs to this user
-        $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
-        if (! $credential || $credential->userId != $this->id) {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-            return false;
-        }
-
-        // Validate the security key
-        try {
-            $keyValid = app(Passkeys::class)->verifyPasskey($this, $requestOptions, $response);
-        } catch (InvalidArgumentException) {
-            $keyValid = false;
-        }
-
-        if (! $keyValid) {
-            $this->handleInvalidLoginParam();
-
-            return false;
-        }
-
-        $this->authError = $this->_getAuthError();
-
-        return ! isset($this->authError);
-    }
-
-    /**
      * Returns the reference string to this element.
      */
     public function getRef(): ?string
@@ -1914,7 +1777,7 @@ XML;
 
         $currentUser = Auth::user();
         $view = Craft::$app->getView();
-        $userSession = Craft::$app->getUser();
+        Craft::$app->getUser();
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
@@ -1990,7 +1853,7 @@ XML;
                             ($currentUser->admin || ! $this->admin) &&
                             $canModerateUsers &&
                             (
-                                ($impersonatorId = $userSession->getImpersonatorId()) === null ||
+                                ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
                                 $this->id !== $impersonatorId
                             )
                         ) {
@@ -2371,7 +2234,7 @@ JS, [
                 return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
 
             case 'is2faEnabled':
-                $enabled = Craft::$app->getAuth()->hasActiveMethod($this);
+                $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
                     return Cp::statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
@@ -2575,21 +2438,22 @@ JS, [
         $model->unverifiedEmail = $this->unverifiedEmail;
 
         if ($changePassword = (isset($this->newPassword))) {
-            $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
-            $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
+            $hash = Hash::make($this->newPassword);
+            $this->lastPasswordChangeDate = now();
 
             $model->password = $this->password = $hash;
             $model->invalidLoginWindowStart = null;
             $model->invalidLoginCount = $this->invalidLoginCount = null;
             $model->verificationCode = null;
             $model->verificationCodeIssuedDate = null;
-            $model->lastPasswordChangeDate = Date::parse($this->lastPasswordChangeDate);
+            $model->lastPasswordChangeDate = $this->lastPasswordChangeDate;
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false
             if (! $isNew && $model->getOriginal('passwordResetRequired')) {
                 $model->passwordResetRequired = $this->passwordResetRequired = false;
             }
 
+            $newPassword = $this->newPassword;
             $this->newPassword = null;
         }
 
@@ -2615,17 +2479,8 @@ JS, [
             }
         }
 
-        if (! $isNew && $changePassword && ! app()->runningInConsole()) {
-            $token = Craft::$app->getUser()->getToken();
-
-            // Destroy all other sessions for this user
-            DbFacade::table(Table::SESSIONS)
-                ->where('userId', $this->id)
-                ->when(
-                    value: $this->getIsCurrent() && $token,
-                    callback: fn ($query) => $query->where('token', '!=', $token),
-                )
-                ->delete();
+        if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
+            Auth::logoutOtherDevices($newPassword);
         }
     }
 
@@ -2690,59 +2545,5 @@ JS, [
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
-    }
-
-    /**
-     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWithPasskey()]].
-     *
-     * @todo Nate! Duplicate of UserHelper::getAuthStatus()
-     *
-     * @return self::AUTH_*|null
-     */
-    private function _getAuthError(): ?string
-    {
-        switch ($this->getStatus()) {
-            case self::STATUS_INACTIVE:
-            case self::STATUS_ARCHIVED:
-                return self::AUTH_INVALID_CREDENTIALS;
-            case self::STATUS_PENDING:
-                return self::AUTH_PENDING_VERIFICATION;
-            case self::STATUS_SUSPENDED:
-                return self::AUTH_ACCOUNT_SUSPENDED;
-            case self::STATUS_ACTIVE:
-                if ($this->locked) {
-                    // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Cms::config()->cooldownDuration) {
-                        return self::AUTH_ACCOUNT_COOLDOWN;
-                    }
-
-                    return self::AUTH_ACCOUNT_LOCKED;
-                }
-                // Is a password reset required?
-                if ($this->passwordResetRequired) {
-                    return self::AUTH_PASSWORD_RESET_REQUIRED;
-                }
-                $request = Craft::$app->getRequest();
-                if (! $request->getIsConsoleRequest()) {
-                    if ($request->getIsCpRequest()) {
-                        if (! $this->can('accessCp')) {
-                            return self::AUTH_NO_CP_ACCESS;
-                        }
-                        if (
-                            app()->isLive() === false &&
-                            $this->can('accessCpWhenSystemIsOff') === false
-                        ) {
-                            return self::AUTH_NO_CP_OFFLINE_ACCESS;
-                        }
-                    } elseif (
-                        app()->isLive() === false &&
-                        $this->can('accessSiteWhenSystemIsOff') === false
-                    ) {
-                        return self::AUTH_NO_SITE_OFFLINE_ACCESS;
-                    }
-                }
-        }
-
-        return null;
     }
 }

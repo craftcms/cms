@@ -24,6 +24,8 @@ use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -187,6 +189,11 @@ class CraftVariable extends ServiceLocator
         return $query;
     }
 
+    public function auth(): Auth
+    {
+        return app(Auth::class);
+    }
+
     /**
      * Returns a new [category query](https://craftcms.com/docs/5.x/reference/element-types/categories.html#querying-categories).
      *
@@ -315,7 +322,7 @@ class CraftVariable extends ServiceLocator
      * @param array $criteria
      * @return \CraftCms\Cms\Database\Queries\UserQuery
      */
-    public function users(array $criteria = []): \CraftCms\Cms\Database\Queries\UserQuery
+    public function users(array $criteria = []): UserQuery
     {
         $query = User::find();
         Craft::configure($query, $criteria);

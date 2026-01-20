@@ -5,7 +5,12 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
+use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
@@ -39,9 +44,11 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
+use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -59,6 +66,7 @@ use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -72,6 +80,31 @@ VerifyCsrfToken::except(collect([
     Cms::config()->actionTrigger.Str::start($route, '/'),
     Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
 ])->all());
+
+/**
+ * Actions that are accessible both with and without CP can be registered here.
+ */
+foreach ([
+    Cms::config()->actionTrigger => [],
+    implode('/', [
+        Cms::config()->cpTrigger,
+        Cms::config()->actionTrigger,
+    ]) => ['craft.cp'],
+] as $prefix => $middleware) {
+    Route::prefix($prefix)->middleware($middleware)->group(function () {
+        // Auth
+        Route::post('users/login', [LoginController::class, 'attemptLogin']);
+        Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+        Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+        Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
+        Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
+        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::post('users/save-user', SaveUserController::class);
+    });
+}
 
 /**
  * Actions that are accessible without CP can be registered here.
@@ -287,7 +320,9 @@ Route::prefix(implode('/', [
         Route::middleware('password.confirm')->group(function () {
             Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
             Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+            Route::post('users/save-password', [PasswordController::class, 'store']);
         });
+        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);
@@ -301,6 +336,10 @@ Route::prefix(implode('/', [
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
+        Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
+        Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
+        Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+        Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
 
         // User groups
         Route::middleware([
