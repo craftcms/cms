@@ -20,6 +20,7 @@
 - Added support for exporting elements as XLSX and YAML files. ([#18160](https://github.com/craftcms/cms/pull/18160))
 - Non-editable fields now have “Read Only” badges. ([#18215](https://github.com/craftcms/cms/pull/18215))
 - Revisions now keep track of which element attributes/fields were modified for the revision.
+- Improved the styling of tips and warnings in field layouts. ([#18261](https://github.com/craftcms/cms/discussions/18261))
 
 ### Accessibility
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
