@@ -5,7 +5,8 @@
     "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./resources/js/*"],
-      "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"]
+      "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
+      "@routes/*": ["./resources/js/routes/craft/*"]
     },
     "types": ["vite/client", "./resources/js/types"]
   },

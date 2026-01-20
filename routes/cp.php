@@ -153,9 +153,13 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
             ->name('settings.sites.index');
+        Route::middleware(RequireAdminChanges::class)
+            ->get('settings/sites/new', [SitesController::class, 'create']);
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/sites/new', [SitesController::class, 'create']);
-        Route::middleware(RequireAdminChanges::class)->post('settings/sites/{site}', [SitesController::class, 'store']);
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/sites', [SitesController::class, 'store']);
+        Route::middleware(RequireAdminChanges::class)
+            ->delete('settings/sites/{site}', [SitesController::class, 'destroy']);
 
         // Site Groups
         Route::post('settings/site-groups', [SiteGroupsController::class, 'store']);

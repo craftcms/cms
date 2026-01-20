@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@craftcms/cp": "file:packages/craftcms-cp",
+    "@headlessui/vue": "^1.7.23",
     "@inertiajs/vue3": "^2.2.7",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.0.0",

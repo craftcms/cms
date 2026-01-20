@@ -15,13 +15,18 @@ export default class CraftIndicator extends LitElement {
         border-radius: var(--c-radius-full);
         color: var(--c-color-on-emphasis);
         background-color: var(--c-color-bg-emphasis);
-        border: 1px solid var(--c-color-bg-emphasis);
+        border: 1px solid var(--c-color-border-emphasis);
+      }
+
+      .indicator--empty {
+        background-color: var(--c-color-neutral-bg-faint);
+        border: 1px solid var(--c-color-neutral-border-normal);
       }
     `,
   ];
 
   @property({reflect: true})
-  variant: VariantKey = Variant.Default;
+  variant: VariantKey | 'empty' = Variant.Default;
 
   @property()
   label: string | null = null;
@@ -34,6 +39,7 @@ export default class CraftIndicator extends LitElement {
         'indicator--danger': this.variant === Variant.Danger,
         'indicator--warning': this.variant === Variant.Warning,
         'indicator--info': this.variant === Variant.Info,
+        'indicator--empty': this.variant === 'empty',
       })}"
     ></span>`;
   }

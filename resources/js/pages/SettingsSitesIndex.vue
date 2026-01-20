@@ -3,13 +3,21 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
+  import {
+    createColumnHelper,
+    getCoreRowModel,
+    useVueTable,
+  } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {Site, SiteGroup, SuggestionGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import SiteGroupActions from '@/components/SiteGroupActions.vue';
+  import {
+    create,
+    destroy as destroySite,
+  } from '@actions/Settings/SitesController';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -52,6 +60,18 @@
     modalActive.value = true;
   }
 
+  function deleteSite({id, name}: Site) {
+    if (
+      confirm(
+        t('Are you sure you want to delete the site "{siteName}"?', {
+          siteName: name,
+        })
+      )
+    ) {
+      router.delete(destroySite({site: id}));
+    }
+  }
+
   const columns = ref([
     columnHelper.accessor('name', {
       header: () => t('Name'),
@@ -80,6 +100,10 @@
       header: () => t('Handle'),
       cell: (info) => h('code', info.getValue()),
     }),
+    columnHelper.accessor('enabled', {
+      header: () => t('Status'),
+      cell: (info) => h('div', info.getValue()),
+    }),
     columnHelper.accessor('language', {
       header: () => t('Language'),
       cell: (info) => h('code', info.getValue()),
@@ -102,7 +126,7 @@
     }),
     columnHelper.display({
       id: 'delete',
-      cell: () =>
+      cell: ({row}) =>
         h(
           'div',
           {
@@ -114,8 +138,13 @@
               size: 'small',
               icon: true,
               type: 'button',
+              variant: 'danger',
               appearance: 'plain',
-              '@click': () => alert('To do'),
+              disabled: row.original.primary,
+              onClick: (e) => {
+                e.preventDefault();
+                deleteSite(row.original);
+              },
             },
             h('craft-icon', {
               name: 'x',
@@ -177,7 +206,10 @@
       </div>
     </template>
     <template #actions>
-      <craft-button variant="primary">
+      <a :href="create({query: {groupId: group?.id}}).url">{{
+        t('New Site')
+      }}</a>
+      <craft-button variant="primary" :href="create().url">
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New site') }}
       </craft-button>
@@ -202,41 +234,41 @@
           </craft-nav-list>
         </nav>
 
-        <div class="mt-4 flex gap-2 border-t border-t-border-subtle pt-2">
+        <div class="mt-4 flex gap-2">
           <craft-button type="button" @click="openModal('create')" size="small">
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('New Group') }}
           </craft-button>
         </div>
       </div>
-      <div>
-        <div
-          class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-hidden"
-        >
-          <div>
-            <template v-if="readOnly">
-              <CalloutReadOnly />
-            </template>
+      <div
+        class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-auto"
+      >
+        <div>
+          <template v-if="readOnly">
+            <CalloutReadOnly />
+          </template>
 
-            <AdminTable :table="sitesTable" v-if="sites.length"></AdminTable>
-            <template v-else>
-              <div class="py-20">
-                <div
-                  class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
-                >
-                  <craft-icon
-                    name="light/earth-americas"
-                    style="font-size: calc(48rem / 16)"
-                  ></craft-icon>
-                  <p>{{ t('No sites exist for this group yet.') }}</p>
-                  <craft-button>
-                    <craft-icon name="plus" slot="prefix"></craft-icon>
-                    {{ t('New site') }}
-                  </craft-button>
-                </div>
+          <template v-if="sites.length">
+            <AdminTable :table="sitesTable"></AdminTable>
+          </template>
+          <template v-else>
+            <div class="py-20">
+              <div
+                class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
+              >
+                <craft-icon
+                  name="light/earth-americas"
+                  style="font-size: calc(48rem / 16)"
+                ></craft-icon>
+                <p>{{ t('No sites exist for this group yet.') }}</p>
+                <craft-button>
+                  <craft-icon name="plus" slot="prefix"></craft-icon>
+                  {{ t('New site') }}
+                </craft-button>
               </div>
-            </template>
-          </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>

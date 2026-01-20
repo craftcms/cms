@@ -48,5 +48,6 @@ export {t, formatMessage} from './utilities/translate.js';
 export {formatNumber} from './utilities/format.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
+export * from './utilities/string.js';
 
 configureIcons();

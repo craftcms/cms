@@ -1,19 +1,17 @@
 export interface SelectOption<T = Record<string, any> | null | undefined> {
-  label?: string;
-  value?: string;
-  optgroup?: string;
-  data?: T
-}
-
-export interface Suggestion {
-  name: string;
-  hint: string;
-}
-
-export interface SuggestionGroup {
+  type?: 'option';
   label: string;
-  data: Array<Suggestion>;
+  value: string;
+  data?: T;
 }
+
+export interface SelectOptGroup {
+  type: 'optgroup';
+  label: string;
+  options: Array<SelectOption>;
+}
+
+export type SelectItem = SelectOption | SelectOptGroup;
 
 export interface SiteGroup {
   id: number;

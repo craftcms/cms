@@ -72,6 +72,7 @@
   }
 
   .cell {
+    white-space: nowrap;
     padding: var(--c-spacing-md);
   }
 

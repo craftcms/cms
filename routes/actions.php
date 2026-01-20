@@ -318,7 +318,6 @@ Route::prefix(implode('/', [
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
-            Route::post('sites/delete-site', [SitesController::class, 'destroy']);
         });
 
         // Structures

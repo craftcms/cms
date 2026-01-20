@@ -14,7 +14,7 @@ use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -55,6 +55,7 @@ final readonly class SitesController
 
         return Inertia::render('SettingsSitesIndex', [
             'crumbs' => $crumbs,
+            'newSiteUrl' => UrlHelper::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
             'groups' => $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values(),
@@ -67,7 +68,7 @@ final readonly class SitesController
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, Sites $sitesService): \Inertia\Response
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -78,9 +79,10 @@ final readonly class SitesController
             'Site group not found'
         );
 
-        return view('craftcms::settings/sites/_edit', [
-            'brandNewSite' => true,
+        return Inertia::render('SettingsSitesEdit', [
+            ...$this->getViewData(),
             'title' => t('Create a new site'),
+            'isMultisite' => $sitesService->isMultiSite(),
             'crumbs' => [
                 [
                     'label' => t('Settings'),
@@ -90,11 +92,17 @@ final readonly class SitesController
                     'label' => t('Sites'),
                     'url' => UrlHelper::url('settings/sites'),
                 ],
+                [
+                    'label' => t('Create site'),
+                    'url' => UrlHelper::url('settings/sites/new'),
+                    'active' => true,
+                ],
             ],
             'site' => new Site(
                 name: '',
                 handle: '',
                 language: $this->sites->getPrimarySite()->getLanguage(false),
+                groupId: $request->integer('groupId'),
             ),
             'groupId' => $request->input('groupId', $allGroups->first()->id),
             'groupOptions' => $allGroups->map(fn ($group) => [
@@ -115,10 +123,7 @@ final readonly class SitesController
         $siteGroup = $siteData->getGroup();
 
         return Inertia::render('SettingsSitesEdit', [
-            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
-            'languageOptions' => SelectOptions::getLanguageOptions(true),
-            'booleanEnvOptions' => SelectOptions::getBooleanEnvOptions(),
-            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true),
+            ...$this->getViewData(),
             'title' => trim($siteData->getName()) ?: t('Edit Site'),
             'isMultisite' => $sitesService->isMultiSite(),
             'crumbs' => [
@@ -155,6 +160,7 @@ final readonly class SitesController
             'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
         ]);
 
+        $isNew = $siteData->id === null;
         $siteId = $request->input('siteId');
         if ($siteId) {
             $siteId = (int) $siteId;
@@ -166,6 +172,10 @@ final readonly class SitesController
 
         if (! $this->sites->saveSite($siteData)) {
             return back();
+        }
+
+        if ($isNew) {
+            return to_route('craft.cp.settings.sites.index')->with('success', t('Site created'));
         }
 
         return back()
@@ -185,10 +195,13 @@ final readonly class SitesController
         return new JsonResponse;
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, Site $siteData): \Illuminate\Http\RedirectResponse
     {
+        if (! $siteData) {
+            abort(404, t('Site not found.'));
+        }
+
         $data = $request->validate([
-            'id' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
             'transferContentTo' => ['nullable', 'integer', Rule::exists(Table::SITES, 'id')],
         ]);
 
@@ -197,6 +210,37 @@ final readonly class SitesController
             transferContentTo: $data['transferContentTo'] ?? null,
         );
 
-        return new JsonResponse;
+        return to_route('craft.cp.settings.sites.index')->with('success', t('Site deleted.'));
+    }
+
+    private function getViewData()
+    {
+        $isValidUrl = fn ($value) => Str::isUrl($value);
+
+        return [
+            'languageOptions' => [
+                ...SelectOptions::getLanguageOptions(true),
+                ...SelectOptions::getLanguageEnvOptions(),
+            ],
+            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
+            'booleanEnvOptions' => [
+                [
+                    'label' => t('Enabled'),
+                    'value' => '1',
+                    'data' => [
+                        'boolean' => '1',
+                    ],
+                ],
+                [
+                    'label' => t('Disabled'),
+                    'value' => '0',
+                    'data' => [
+                        'boolean' => '0',
+                    ],
+                ],
+                ...SelectOptions::getBooleanEnvOptions(),
+            ],
+            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, $isValidUrl),
+        ];
     }
 }
