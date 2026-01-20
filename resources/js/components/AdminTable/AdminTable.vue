@@ -36,7 +36,10 @@
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
               :style="{width: `${cell.column.getSize()}px`}"
-              class="cell"
+              :class="{
+                cell: true,
+                'cell--wrap': cell.column.columnDef.meta?.wrap,
+              }"
             >
               <FlexRender
                 :render="cell.column.columnDef.cell"
@@ -72,8 +75,12 @@
   }
 
   .cell {
-    white-space: nowrap;
     padding: var(--c-spacing-md);
+    white-space: nowrap;
+  }
+
+  .cell--wrap {
+    white-space: normal;
   }
 
   thead tr {

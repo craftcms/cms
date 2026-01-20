@@ -37,7 +37,7 @@ final readonly class SitesController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request)
+    public function index(Request $request, Sites $sitesService)
     {
         if (($groupId = $request->integer('groupId')) && ! $group = $this->siteGroups->getGroupById($groupId)) {
             abort(404, 'Invalid site group ID: '.$groupId);
@@ -65,6 +65,7 @@ final readonly class SitesController
                     ['sortOrder', 'asc'],
                 ])->values()->toArray(),
             'readOnly' => $this->readOnly,
+            'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
         ]);
     }
 
@@ -195,22 +196,27 @@ final readonly class SitesController
         return new JsonResponse;
     }
 
-    public function destroy(Request $request, Site $siteData): \Illuminate\Http\RedirectResponse
+    public function destroy(Request $request, SiteModel $siteData): \Illuminate\Http\RedirectResponse
     {
         if (! $siteData) {
             abort(404, t('Site not found.'));
         }
 
         $data = $request->validate([
-            'transferContentTo' => ['nullable', 'integer', Rule::exists(Table::SITES, 'id')],
+            'id' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
+            'contentDestination' => ['required', 'in:transfer,delete'],
+            'transferContentTo' => Rule::when(
+                $request->get('contentDestination') === 'transfer',
+                ['required', 'integer', Rule::exists(Table::SITES, 'id')]),
         ]);
 
         $this->sites->deleteSiteById(
             siteId: (int) $data['id'],
-            transferContentTo: $data['transferContentTo'] ?? null,
+            transferContentTo: (int) $data['transferContentTo'] ?? null,
         );
 
-        return to_route('craft.cp.settings.sites.index')->with('success', t('Site deleted.'));
+        return to_route('craft.cp.settings.sites.index')
+            ->with('success', t('Site deleted.'));
     }
 
     private function getViewData()

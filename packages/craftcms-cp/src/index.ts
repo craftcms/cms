@@ -41,6 +41,8 @@ export {default as CraftActionMenu} from './components/action-menu/action-menu.j
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
+export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
+export {default as CraftRadio} from './components/radio/radio.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';

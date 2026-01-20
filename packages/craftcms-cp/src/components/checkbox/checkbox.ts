@@ -6,6 +6,7 @@ export default class CraftCheckbox extends LionCheckbox {
     return [
       ...LionCheckbox.styles,
       css`
+        /* same as radio, potentially consolidate */
         :host {
           display: flex;
           gap: var(--c-spacing-sm);

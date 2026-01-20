@@ -14,10 +14,8 @@
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import SiteGroupActions from '@/components/SiteGroupActions.vue';
-  import {
-    create,
-    destroy as destroySite,
-  } from '@actions/Settings/SitesController';
+  import {create} from '@actions/Settings/SitesController';
+  import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -58,18 +56,6 @@
     }
 
     modalActive.value = true;
-  }
-
-  function deleteSite({id, name}: Site) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the site "{siteName}"?', {
-          siteName: name,
-        })
-      )
-    ) {
-      router.delete(destroySite({site: id}));
-    }
   }
 
   const columns = ref([
@@ -127,31 +113,13 @@
     columnHelper.display({
       id: 'delete',
       cell: ({row}) =>
-        h(
-          'div',
-          {
-            class: 'flex justify-end gap-2',
-          },
-          h(
-            'craft-button',
-            {
-              size: 'small',
-              icon: true,
-              type: 'button',
-              variant: 'danger',
-              appearance: 'plain',
-              disabled: row.original.primary,
-              onClick: (e) => {
-                e.preventDefault();
-                deleteSite(row.original);
-              },
-            },
-            h('craft-icon', {
-              name: 'x',
-              label: t('Delete site'),
-            })
-          )
-        ),
+        h(DeleteSiteButton, {
+          site: row.original,
+          class: 'whitespace-normal',
+        }),
+      meta: {
+        wrap: true,
+      },
     }),
   ]);
 
@@ -364,6 +332,7 @@
     display: grid;
     grid-template-columns: minmax(calc(120rem / 16), 16%) 1fr;
     gap: var(--c-spacing-md);
+    align-items: start;
   }
 
   .title {

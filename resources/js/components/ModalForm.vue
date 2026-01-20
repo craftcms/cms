@@ -11,9 +11,16 @@
     defineProps<
       ModalProps & {
         loading?: boolean;
+        resetLabel?: string;
+        submitLabel?: string;
       }
     >(),
-    {overlay: true, loading: false}
+    {
+      overlay: true,
+      loading: false,
+      resetLabel: t('Cancel'),
+      submitLabel: t('Save'),
+    }
   );
 
   function submitHandler() {
@@ -28,12 +35,12 @@
         <slot></slot>
         <template #secondary-action>
           <craft-button type="reset" @click="emit('close')" appearance="plain">
-            {{ t('Cancel') }}
+            {{ resetLabel }}
           </craft-button>
         </template>
         <template #primary-action>
           <craft-button type="submit" variant="primary" :loading="loading">
-            {{ t('Save') }}
+            {{ submitLabel }}
           </craft-button>
         </template>
       </Pane>
