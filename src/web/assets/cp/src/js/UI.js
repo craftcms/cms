@@ -366,13 +366,18 @@ Craft.ui = {
           label: option.optgroup,
         }).appendTo($select);
       } else {
-        $('<option/>', {
+        const $option = $('<option/>', {
           value: option.value,
           selected: option.value == config.value,
           disabled:
             typeof option.disabled !== 'undefined' ? option.disabled : false,
-          html: option.label,
         }).appendTo($optgroup || $select);
+
+        if (option.labelHtml) {
+          $option.html(option.labelHtml);
+        } else if (option.label) {
+          $option.text(option.label);
+        }
       }
     }
 
@@ -418,8 +423,13 @@ Craft.ui = {
 
     var $label = $('<label/>', {
       for: id,
-      html: config.label,
     });
+
+    if (config.labelHtml) {
+      $label.html(config.labelHtml);
+    } else if (config.label) {
+      $label.text(config.label);
+    }
 
     // Should we include a hidden input first?
     if (
@@ -487,7 +497,8 @@ Craft.ui = {
           this.createCheckbox({
             id: config.id,
             class: 'all',
-            label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+            labelHtml:
+              '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
             name: config.name,
             value: allValue,
             checked: allChecked,

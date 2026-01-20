@@ -3615,7 +3615,7 @@ const ViewMenu = Garnish.Base.extend({
           return o.optgroup
             ? o
             : {
-                label: Craft.escapeHtml(o.label),
+                label: o.label,
                 value: o.attr,
               };
         }),
@@ -3721,7 +3721,7 @@ const ViewMenu = Garnish.Base.extend({
         .append('<div class="icon move"/>')
         .append(
           Craft.ui.createCheckbox({
-            label: Craft.escapeHtml(column.label),
+            label: column.label,
             value: column.attr,
           })
         )
