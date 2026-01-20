@@ -64,6 +64,7 @@ use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -2312,7 +2313,7 @@ JS,[
     protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
-            return file_get_contents(Craft::getAlias('@app/elements/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
         }
 
         return Assets::iconSvg($this->getExtension());
@@ -3692,8 +3693,8 @@ JS;
             [$pathService->getTempPath(), true],
             [$pathService->getTempAssetUploadsPath(), true],
             [sys_get_temp_dir(), true],
-            [Craft::getAlias('@root', false), false],
-            [Craft::getAlias('@storage', false), false],
+            [Aliases::get('@root', false), false],
+            [Aliases::get('@storage', false), false],
         ];
 
         $inAllowedRoot = false;

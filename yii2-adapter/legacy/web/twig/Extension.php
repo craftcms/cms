@@ -53,6 +53,7 @@ use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\AddressQuery;
@@ -1389,7 +1390,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('app', [$this, 'appFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
-            new TwigFunction('alias', [Craft::class, 'getAlias']),
+            new TwigFunction('alias', [Aliases::class, 'get']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
@@ -1539,7 +1540,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return $file->getDataUrl();
             }
 
-            return Html::dataUrl(Craft::getAlias($file), $mimeType);
+            return Html::dataUrl(Aliases::get($file), $mimeType);
         } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return '';

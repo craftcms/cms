@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use CraftCms\Aliases\Aliases;
 use yii\base\Exception;
 
 /**
@@ -84,7 +85,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     {
         // Save the current base path to restore later.
         $oldBasePath = $this->basePath;
-        $this->basePath = Craft::getAlias('@translations');
+        $this->basePath = Aliases::get('@translations');
 
         // Code adapted from yii\i18n\PhpMessageSource, minus the error logging
         $messageFile = $this->getMessageFilePath($category, $language);

@@ -20,6 +20,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -278,7 +279,7 @@ class Application extends \yii\web\Application
     {
         $generalConfig = Cms::config();
 
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath);
 
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
@@ -372,7 +373,7 @@ class Application extends \yii\web\Application
         $request = $this->getRequest();
 
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
@@ -393,7 +394,7 @@ class Application extends \yii\web\Application
         }
 
         // Publish the directory
-        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+        [$publishedDir] = $this->getAssetManager()->publish(Aliases::get($sourcePath));
 
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {

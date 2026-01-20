@@ -19,6 +19,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -363,7 +364,7 @@ class AppController extends Controller
     public function actionBrokenImage(): Response
     {
         $generalConfig = Cms::config();
-        $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
+        $imagePath = Aliases::get($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
         }
