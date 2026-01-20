@@ -486,11 +486,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $user->can("saveEntries:$section->uid")
             ) {
                 // Duplicate
-                $actions[] = Duplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'asDrafts' => true,
+                ];
 
                 if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
                     $actions[] = [
                         'type' => Duplicate::class,
+                        'asDrafts' => true,
                         'deep' => true,
                     ];
                 }

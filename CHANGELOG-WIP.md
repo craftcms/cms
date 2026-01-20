@@ -9,6 +9,7 @@
 - Entry revision menus now always include a “View all revisions” link. ([#18050](https://github.com/craftcms/cms/pull/18050))
 - Timestamps within entry revision menus now have tooltips that reveal the full date and time. ([#18050](https://github.com/craftcms/cms/pull/18050))
 - It’s now possible to add new sites to entries via their slideout editors. ([#17795](https://github.com/craftcms/cms/issues/17795))
+- Entry “Duplicate” bulk actions now duplicate entries as drafts. ([#18260](https://github.com/craftcms/cms/issues/18260))
 - Elements created via “Save as a new…” actions now initially have an empty slug. ([#17932](https://github.com/craftcms/cms/pull/17932))
 - The control panel is no longer scrollable when a menu is expanded. ([#17960](https://github.com/craftcms/cms/issues/17960))
 - Most site breadcrumbs no longer include selection menus if there’s only one selectable site. ([#16526](https://github.com/craftcms/cms/discussions/16526))
@@ -83,6 +84,7 @@
 - Added `craft\base\FieldInterface::propagateValue()`.
 - Added `craft\elements\Entry::EVENT_DEFINE_META_FIELDS`. ([#17996](https://github.com/craftcms/cms/pull/17996))
 - Added `craft\elements\User::isInGroups()`. ([#17989](https://github.com/craftcms/cms/discussions/17989))
+- Added `craft\elements\actions\Duplicate::$asDrafts`.
 - Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
 - Added `craft\events\DefineFieldActionsEvent`.
 - Added `craft\events\DefineGqlArgumentsEvent`.
