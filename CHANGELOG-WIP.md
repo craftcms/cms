@@ -154,6 +154,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
     - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+- Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
+    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
 
 ### Passkeys

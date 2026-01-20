@@ -42,13 +42,17 @@ use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
+use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
+use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -99,6 +103,7 @@ foreach ([
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+        Route::any('users/redirect', [LoginController::class, 'redirect']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -164,6 +169,23 @@ Route::prefix(implode('/', [
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+
+        // Auth methods
+        Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
+        Route::post('auth/method-listing-html', [AuthMethodController::class, 'listingHtml']);
+        Route::post('auth/remove-method', [AuthMethodController::class, 'destroy']);
+
+        Route::post('auth/passkey-creation-options', [UserPasskeysController::class, 'creationOptions']);
+        Route::post('auth/verify-passkey-creation', [UserPasskeysController::class, 'verifyCreation']);
+        Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
+
+        Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
+        Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
+
+        // DeprecationErrors
+        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
+        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
+        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
 
         // ClearCaches
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
@@ -333,13 +355,16 @@ Route::prefix(implode('/', [
         Route::post('users/enable-user', EnableController::class);
         Route::post('users/unlock-user', UnlockController::class);
         Route::post('users/delete-user', [UsersController::class, 'destroy']);
+        Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+        Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
+        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // User groups
         Route::middleware([

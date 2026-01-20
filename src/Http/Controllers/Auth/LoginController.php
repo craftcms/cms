@@ -13,6 +13,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,6 +35,14 @@ final readonly class LoginController extends AuthenticationController
         }
 
         return $this->renderViewWithFallback('login');
+    }
+
+    /**
+     * Redirects the user to the default post-login URL.
+     */
+    public function redirect(): Response
+    {
+        return redirect(URL::defaultReturnUrl());
     }
 
     public function showLoginModal(Request $request, Impersonation $impersonation): JsonResponse

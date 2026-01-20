@@ -258,3 +258,41 @@ it('returns failure when save fails', function () {
         'newPassword' => 'short',
     ])->assertSessionHasErrors('newPassword');
 });
+
+describe('verifyPassword', function () {
+    beforeEach(function () {
+        actingAs(User::find()->addSelect('password')->first());
+    });
+
+    test('verifyPassword requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasswordController::class, 'verifyPassword']))
+            ->assertUnauthorized();
+    });
+
+    test('verifyPassword succeeds with correct password', function () {
+        postJson(action([PasswordController::class, 'verifyPassword']), [
+            'currentPassword' => 'craftcms2018!!',
+        ])->assertOk();
+    });
+
+    test('verifyPassword accepts password parameter as fallback', function () {
+        postJson(action([PasswordController::class, 'verifyPassword']), [
+            'password' => 'craftcms2018!!',
+        ])->assertOk();
+    });
+
+    test('verifyPassword fails with incorrect password', function () {
+        postJson(action([PasswordController::class, 'verifyPassword']), [
+            'currentPassword' => 'wrong-password',
+        ])->assertStatus(400)
+            ->assertJsonFragment(['message' => t('Invalid password.')]);
+    });
+
+    test('verifyPassword fails when no password provided', function () {
+        postJson(action([PasswordController::class, 'verifyPassword']), [])
+            ->assertStatus(400)
+            ->assertJsonFragment(['message' => t('Invalid password.')]);
+    });
+});
