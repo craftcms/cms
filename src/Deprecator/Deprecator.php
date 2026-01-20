@@ -306,7 +306,7 @@ final class Deprecator
                 $value = match (true) {
                     is_object($value) => $value::class,
                     is_bool($value) => $value ? 'true' : 'false',
-                    is_string($value) => Str::limit($value, 64),
+                    is_string($value) => mb_convert_encoding(Str::limit($value, 64), 'UTF-8'),
                     is_array($value) => '['.$this->argsToString($value).']',
                     is_null($value) => 'null',
                     is_resource($value) => 'resource',

@@ -27,6 +27,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -1660,7 +1661,8 @@ JS, [
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
-        $disabled = $config['disabled'] ?? $config['static'] ?? false;
+        $disabled = $config['disabled'] ?? false;
+        $static = $config['static'] ?? false;
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
@@ -1717,10 +1719,9 @@ JS, [
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
 
-        $userSessionService = Craft::$app->getUser();
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            $userSessionService->getIsAdmin() &&
+            Auth::user()->isAdmin() &&
             Auth::user()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
@@ -1811,6 +1812,9 @@ JS, [
                             'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
+                    ($static ? Html::tag('span', Craft::t('app', 'Read Only'), [
+                        'class' => ['read-only-badge'],
+                    ]) : '') .
                     ($showLabelExtra
                         ? Html::tag('div', '', ['class' => 'flex-grow']) .
                         ($showActionMenu ? static::disclosureMenu($config['actionMenuItems'], [
@@ -2858,7 +2862,7 @@ JS, [
             foreach ($fieldLayout->type::cardAttributes($fieldLayout) as $key => $attribute) {
                 $allOptions[$keyPrefix . $key] = [
                     'label' => $labelPrefix . $attribute['label'],
-                    'placeholder' => $attribute['placeholder'],
+                    'placeholder' => $attribute['placeholder'] ?? null,
                 ];
             }
         }
@@ -2874,7 +2878,7 @@ JS, [
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
                         "{$keyPrefix}contentBlock:$layoutElement->uid.",
-                        sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                         false,
                     );
                     continue;
@@ -3875,8 +3879,8 @@ JS, [
                     'slideout-right',
                     'thumb-left',
                     'thumb-right',
-                    => Craft::getAlias("@craftcms/resources/icons/custom-icons/$icon.svg"),
-                    default => Craft::getAlias("@appicons/$icon.svg"),
+                    => Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg"),
+                    default => Aliases::get("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {
                     throw new InvalidArgumentException("Invalid system icon: $icon");

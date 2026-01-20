@@ -15,6 +15,7 @@ use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use crafttests\fixtures\SitesFixture;
@@ -77,7 +78,7 @@ class ViewTest extends TestCase
         Sites::setCurrentSite(Sites::getSiteByHandle('testSite3'));
 
         self::assertSame(
-            Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
+            Aliases::get('@craftunittemplates/testSite3/craft.twig'),
             CraftTest::normalizePathSeparators($this->view->resolveTemplate('craft'))
         );
     }
@@ -98,7 +99,7 @@ class ViewTest extends TestCase
         }
 
         if ($expected !== false) {
-            $expected = CraftTest::normalizePathSeparators(Craft::getAlias($expected));
+            $expected = CraftTest::normalizePathSeparators(Aliases::get($expected));
         }
 
         self::assertSame($expected, CraftTest::normalizePathSeparators($this->view->resolveTemplate($name)));
@@ -132,10 +133,10 @@ class ViewTest extends TestCase
 
         // Lets test stuff.
         if ($expected !== null) {
-            $expected = CraftTest::normalizePathSeparators(Craft::getAlias($expected));
+            $expected = CraftTest::normalizePathSeparators(Aliases::get($expected));
         }
 
-        self::assertSame($expected, $this->_resolveTemplate(Craft::getAlias($basePath), $name));
+        self::assertSame($expected, $this->_resolveTemplate(Aliases::get($basePath), $name));
     }
 
     /**
@@ -195,7 +196,7 @@ class ViewTest extends TestCase
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         self::assertSame(
-            Craft::getAlias('@crafttestsfolder/templates'),
+            Aliases::get('@crafttestsfolder/templates'),
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(

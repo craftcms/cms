@@ -25,14 +25,14 @@ it('can get the handle', function () {
 });
 
 it('can get the current edition', function () {
-    expect(Edition::get())->toBe(Edition::Solo); // Default
+    expect(Edition::get())->toBe(Edition::Pro); // Default
 
     /**
      * It gets from project config
      */
     Context::forgetHidden(Edition::class);
-    ProjectConfig::set('system.edition', 'pro');
-    expect(Edition::get())->toBe(Edition::Pro);
+    ProjectConfig::set('system.edition', 'solo');
+    expect(Edition::get())->toBe(Edition::Solo);
 
     ProjectConfig::reset();
 
@@ -46,7 +46,7 @@ it('can get the current edition', function () {
 });
 
 it('can set the current edition', function () {
-    expect(Edition::get())->toBe(Edition::Solo);
+    expect(Edition::get())->toBe(Edition::Pro);
 
     Edition::set(Edition::Enterprise);
 
@@ -101,6 +101,8 @@ it('can determine if the edition can be tested', function () {
 });
 
 it('determines if the edition can be upgraded', function () {
+    Edition::set(Edition::Solo);
+
     // Not logged in
     expect(Edition::canUpgrade())->toBefalse();
 
@@ -131,7 +133,7 @@ it('determines if the edition can be upgraded', function () {
 it('can require a certain edition', function (Edition $edition, Edition|int $requiredEdition, bool $orBetter, bool $throws) {
     Edition::set($edition);
 
-    Craft::$app->setIsInstalled();
+    Cms::setIsInstalled();
     ProjectConfig::reset();
 
     $thrown = false;

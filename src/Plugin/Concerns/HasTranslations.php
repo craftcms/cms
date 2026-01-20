@@ -29,6 +29,7 @@ trait HasTranslations
         $basePath = $plugin->getBasePath();
         $translationsPath = match (true) {
             // Laravel Convention - /lang
+            /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
             is_dir($baseDir = dirname($basePath).'/lang') => $baseDir,
             // Craft 5 and earlier - src/translations
             default => $basePath.'/translations',

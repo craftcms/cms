@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\helpers\Cp;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use Illuminate\Foundation\ViteException;
@@ -68,7 +69,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft'): string
     {
         try {
-            return Vite::useHotFile(Craft::getAlias('@resources/hot'))
+            return Vite::useHotFile(Aliases::get('@resources/hot'))
                 ->withEntryPoints($entryPoints)
                 ->useBuildDirectory($buildDirectory)
                 ->toHtml();

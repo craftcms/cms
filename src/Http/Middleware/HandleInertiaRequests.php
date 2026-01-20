@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Http\Middleware;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
@@ -50,7 +50,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $currentSite = Sites::getCurrentSite();
-        $isInstalled = Info::isInstalled();
+        $isInstalled = Cms::isInstalled();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
 

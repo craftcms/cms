@@ -1,8 +1,8 @@
 <?php
 
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 test('whereParam', function (string $column, mixed $param, array $expected) {
@@ -68,41 +68,24 @@ test('whereBooleanParam', function () {
 });
 
 test('whereDateParam', function (string $param, array $expected) {
-    DB::table(Table::SESSIONS)->delete();
-
-    DB::table(Table::SESSIONS)->insert([
-        'userId' => 1,
-        'token' => 'test-today',
+    Volume::factory()->create([
+        'name' => 'test-today',
         'dateCreated' => today(),
-        'dateUpdated' => today(),
-        'uid' => Str::uuid()->toString(),
     ]);
 
-    DB::table(Table::SESSIONS)->insert([
-        'userId' => 1,
-        'token' => 'test-yesterday',
+    Volume::factory()->create([
+        'name' => 'test-yesterday',
         'dateCreated' => now()->subDay()->startOfDay(),
-        'dateUpdated' => now()->subDay()->startOfDay(),
-        'uid' => Str::uuid()->toString(),
     ]);
 
-    DB::table(Table::SESSIONS)->insert([
-        'userId' => 1,
-        'token' => 'test-tomorrow',
+    Volume::factory()->create([
+        'name' => 'test-tomorrow',
         'dateCreated' => now()->addDay()->startOfDay(),
-        'dateUpdated' => now()->addDay()->startOfDay(),
-        'uid' => Str::uuid()->toString(),
     ]);
 
-    $query = DB::table(Table::SESSIONS)->whereDateParam('dateCreated', $param);
+    $query = DB::table(Table::VOLUMES)->whereDateParam('dateCreated', $param);
 
-    expect(
-        $query
-            ->pluck('token')
-            // Trim because on pgsql these are fixed length
-            ->map(fn ($token) => trim((string) $token))
-            ->all()
-    )->toEqual($expected);
+    expect($query->pluck('name')->all())->toEqual($expected);
 })->with([
     ['today', ['test-today']],
     ['tomorrow', ['test-tomorrow']],

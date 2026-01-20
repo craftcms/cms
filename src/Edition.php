@@ -7,7 +7,6 @@ namespace CraftCms\Cms;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Support\Arrayable;
@@ -159,7 +158,7 @@ enum Edition: int implements Arrayable
             $edition = self::from($edition);
         }
 
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return;
         }
 
@@ -173,6 +172,11 @@ enum Edition: int implements Arrayable
         }) {
             throw new WrongEditionException("Craft $edition->name is required for this.");
         }
+    }
+
+    public function registersFrontendUserRoutes(): bool
+    {
+        return $this->value >= self::Pro->value;
     }
 
     public function toArray(): array

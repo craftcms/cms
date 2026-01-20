@@ -11,12 +11,12 @@ namespace CraftCms\Yii2Adapter\Http;
 
 use Closure;
 use Craft;
+use craft\helpers\App;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use yii\base\ExitException as YiiExitException;
 use yii\web\HttpException as YiiHttpException;
 
@@ -62,7 +62,7 @@ class LegacyMiddleware
             /**
              * Reset the user as it could have been set before.
              */
-            Craft::$app->set('user', Craft::createObject(\craft\helpers\App::userConfig()));
+            Craft::$app->set('user', Craft::createObject(App::userConfig()));
             Craft::$app->run();
 
             return $this->createResponse();
@@ -74,7 +74,7 @@ class LegacyMiddleware
                 return $next($request);
             }
 
-            throw new HttpException($e->statusCode, $e->getMessage(), $e, [], $e->getCode());
+            throw $e;
         } catch (YiiExitException $e) {
             // In case Yii requests application termination - request is considered handled
             return $this->createResponse();

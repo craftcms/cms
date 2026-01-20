@@ -28,10 +28,13 @@ trait HasViews
              */
             $baseDir = match (true) {
                 // Laravel Convention
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                 is_dir($baseDir = dirname($basePath).'/resources/views') => $baseDir,
                 // Laravel Convention for resources, Twig convention for templates
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                 is_dir($baseDir = dirname($basePath).'/resources/templates') => $baseDir,
                 // Craft 5 and earlier
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                 is_dir($baseDir = $basePath.'/templates') => $baseDir,
                 default => false,
             };

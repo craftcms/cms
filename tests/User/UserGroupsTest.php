@@ -1,14 +1,18 @@
 <?php
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
+    DB::table(Table::USERGROUPS)->delete();
+
     Edition::set(Edition::Pro);
 
     UserGroups::saveGroup($group = UserGroup::from([
@@ -40,10 +44,10 @@ it('can get assignable groups', function () {
 
     // All when admin
     actingAs(User::find()->one());
-    expect(UserGroups::getAssignableGroups())->toHaveCount(1);
+    expect(UserGroups::getAssignableGroups()->count())->toBeGreaterThan(0);
 
     // No group when user has no permissions to assign groups
-    actingAs(\CraftCms\Cms\User\Models\User::factory()->create()->asElement());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 });
 

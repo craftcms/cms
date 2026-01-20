@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Queries\AssetQuery;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
@@ -12,6 +13,10 @@ use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
 
 uses(TestCase::class)->in(__DIR__);
+
+beforeEach(function () {
+    app()->forgetInstance(GeneralConfig::class);
+});
 
 function loadTestPlugin(): void
 {

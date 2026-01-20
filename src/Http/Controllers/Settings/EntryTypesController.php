@@ -11,6 +11,7 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -157,7 +158,9 @@ final class EntryTypesController
                                 $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (
                                     &$labels
                                 ) {
-                                    $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                                        ? $usage::icon()
+                                        : $usage->getIcon();
                                     $label = $labels[] = $usage->getUiLabel();
                                     $labelHtml = Html::beginTag('span', [
                                         'class' => ['flex', 'flex-nowrap', 'gap-s'],

@@ -17,6 +17,7 @@ use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
@@ -71,11 +72,12 @@ class ExtensionTest extends TestCase
     {
         // We want web for this part.
         Craft::$app->getRequest()->setIsConsoleRequest(false);
-        $user = new User([
+        $user = \CraftCms\Cms\User\Models\User::create([
+            'id' => Element::create(['type' => User::class])->id,
             'active' => true,
             'firstName' => 'John',
             'lastName' => 'Smith',
-        ]);
+        ])->asElement();
         Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 
@@ -120,13 +122,13 @@ class ExtensionTest extends TestCase
      */
     public function test_globals_with_uninstalled_craft(): void
     {
-        $installed = Craft::$app->getIsInstalled();
-        Craft::$app->setIsInstalled(false);
+        $installed = Cms::isInstalled();
+        Cms::setIsInstalled(false);
         $this->testRenderResult(
             ' |  |  | ',
             '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}'
         );
-        Craft::$app->setIsInstalled($installed);
+        Cms::setIsInstalled($installed);
     }
 
     /**

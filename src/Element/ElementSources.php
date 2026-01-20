@@ -337,6 +337,45 @@ final class ElementSources
     }
 
     /**
+     * Saves an element’s source configs.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = new Collection($sources)
+            ->map(fn (array $s) => array_filter([
+                'type' => $s['type'] ?? self::TYPE_NATIVE,
+                'key' => $s['key'] ?? null,
+                'page' => $s['page'] ?? null,
+                'tableAttributes' => $s['tableAttributes'] ?? null,
+                'defaultSort' => $s['defaultSort'] ?? null,
+                'defaultViewMode' => $s['defaultViewMode'] ?? null,
+                ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                    self::TYPE_CUSTOM => [
+                        'label' => $s['label'] ?? null,
+                        'condition' => ($s['condition'] ?? false)
+                            ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                            : null,
+                        'sites' => $s['sites'] ?? null,
+                        'userGroups' => $s['userGroups'] ?? null,
+                    ],
+                    self::TYPE_HEADING => [
+                        'heading' => $s['heading'] ?? null,
+                    ],
+                    default => [
+                        'disabled' => $s['disabled'] ?? null,
+                    ],
+                },
+            ], fn ($val) => $val !== null))
+            ->all();
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        $this->projectConfig->set($path, $sources);
+    }
+
+    /**
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
@@ -683,5 +722,16 @@ final class ElementSources
         return $this->projectConfig->get(
             sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
         ) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        $this->projectConfig->set($path, $pageSettings);
     }
 }

@@ -8,13 +8,13 @@
 namespace craft\fieldlayoutelements\addresses;
 
 use CommerceGuys\Addressing\Country\Country;
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -141,7 +141,7 @@ class CountryCodeField extends BaseNativeField
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

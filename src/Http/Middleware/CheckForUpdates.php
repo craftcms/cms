@@ -25,7 +25,7 @@ final readonly class CheckForUpdates
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! Craft::$app->getIsInstalled()) {
+        if (! Cms::isInstalled()) {
             return $next($request);
         }
 
@@ -60,7 +60,7 @@ final readonly class CheckForUpdates
 
             File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
 
-            return response(Craft::$app->getView()->renderPageTemplate('_special/dbupdate.twig'));
+            return response()->view('craftcms::_special/dbupdate');
         }
 
         if ($request->isActionRequest()) {

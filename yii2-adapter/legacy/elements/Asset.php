@@ -64,6 +64,7 @@ use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -85,9 +86,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
-use Throwable;
 use Twig\Markup;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
@@ -681,10 +680,10 @@ class Asset extends Element
      */
     protected static function defineCardAttributes(): array
     {
-        $attributes = array_merge(parent::defineCardAttributes(), [
+        $attributes = array_merge($parentAttributes = parent::defineCardAttributes(), [
             'dateCreated' => [
                 'label' => t('Date Uploaded'),
-                // placeholder will be merged from parent
+                'placeholder' => $parentAttributes['dateCreated']['placeholder'],
             ],
             'filename' => [
                 'label' => t('Filename'),
@@ -754,6 +753,7 @@ class Asset extends Element
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];
+        $originalLimit = $elementQuery->limit;
 
         // Include folders in the results?
         /** @var AssetQuery $elementQuery */
@@ -831,7 +831,7 @@ class Asset extends Element
         // return the folders directly
         if (
             self::isFolderIndex() ||
-            count($assets) === (int)$elementQuery->limit
+            count($assets) === (int)$originalLimit
         ) {
             return $assets;
         }
@@ -1235,12 +1235,11 @@ class Asset extends Element
      */
     public function __toString(): string
     {
-        try {
-            if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
+        if (isset($this->_transform)) {
+            $url = $this->getUrl();
+            if ($url) {
                 return $url;
             }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
         }
 
         return parent::__toString();
@@ -2314,7 +2313,7 @@ JS,[
     protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
-            return file_get_contents(Craft::getAlias('@app/elements/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
         }
 
         return Assets::iconSvg($this->getExtension());
@@ -3494,7 +3493,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile) {
+        if ($this->dateDeleted && $this->keptFile && Craft::$app->getElements()->canSave($this)) {
             $attributes['data']['restorable'] = true;
         }
 
@@ -3694,8 +3693,8 @@ JS;
             [$pathService->getTempPath(), true],
             [$pathService->getTempAssetUploadsPath(), true],
             [sys_get_temp_dir(), true],
-            [Craft::getAlias('@root', false), false],
-            [Craft::getAlias('@storage', false), false],
+            [Aliases::get('@root', false), false],
+            [Aliases::get('@storage', false), false],
         ];
 
         $inAllowedRoot = false;

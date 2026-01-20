@@ -17,6 +17,8 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Addresses as AddressesField;
@@ -750,7 +752,7 @@ final class Fields
             return $this->_layouts;
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             $layoutConfigs = $this->_createLayoutQuery()->get()->all();
         } else {
             $layoutConfigs = [];
@@ -908,7 +910,7 @@ final class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-
+        $config = ComponentHelper::cleanseConfig($config);
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -1274,7 +1276,7 @@ final class Fields
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [

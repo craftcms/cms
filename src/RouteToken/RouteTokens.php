@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\RouteToken;
 
+use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
@@ -11,6 +12,8 @@ use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +60,7 @@ final class RouteTokens
         }
 
         $tokenModel = new RouteToken;
-        $tokenModel->token = $token ?? \Craft::$app->getSecurity()->generateRandomString();
+        $tokenModel->token = $token ?? Craft::$app->getSecurity()->generateRandomString();
         $tokenModel->route = $route;
         $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
 
@@ -95,30 +98,36 @@ final class RouteTokens
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
 
-        $result = RouteToken::where('token', $token)->first();
+        try {
+            return Cache::lock("token:$token")->block(5, function () use ($token) {
+                $result = RouteToken::where('token', $token)->first();
 
-        if (! $result) {
-            // Remove it from the request  so it doesn’t get added to generated URLs
-            \Craft::$app->getRequest()->setToken(null);
+                if (! $result) {
+                    // Remove it from the request so it doesn’t get added to generated URLs
+                    Craft::$app->getRequest()->setToken(null);
 
+                    return false;
+                }
+
+                // Usage limit enforcement (for future requests)
+                if ($result->usageLimit) {
+                    // Does it have any more life after this?
+                    if ($result->usageCount < $result->usageLimit - 1) {
+                        // Increment its count
+                        $this->incrementTokenUsageCountById($result->id);
+                    } else {
+                        // Just delete it
+                        $this->deleteTokenById($result->id);
+
+                        Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
+                    }
+                }
+
+                return (array) Json::decodeIfJson($result->route);
+            });
+        } catch (LockTimeoutException) {
             return false;
         }
-
-        // Usage limit enforcement (for future requests)
-        if ($result->usageLimit) {
-            // Does it have any more life after this?
-            if ($result->usageCount < $result->usageLimit - 1) {
-                // Increment its count
-                $this->incrementTokenUsageCountById($result->id);
-            } else {
-                // Just delete it
-                $this->deleteTokenById($result->id);
-
-                Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
-            }
-        }
-
-        return (array) Json::decodeIfJson($result->route);
     }
 
     public function incrementTokenUsageCountById(int $tokenId): bool

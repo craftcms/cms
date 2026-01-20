@@ -53,7 +53,6 @@ class User extends BaseModel
         'lastInvalidLoginDate' => 'datetime',
         'lockoutDate' => 'datetime',
         'hasDashboard' => 'bool',
-        'verificationCodeIssuedDate' => 'datetime',
         'passwordResetRequired' => 'bool',
         'lastPasswordChangeDate' => 'datetime',
     ];
@@ -76,9 +75,15 @@ class User extends BaseModel
 
     public function asElement(): \CraftCms\Cms\User\Elements\User
     {
-        return new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
+        $element = new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
             'invalidLoginWindowStart',
         ]));
+
+        $element->password = $this->password;
+
+        unset($this->uid);
+
+        return $element;
     }
 
     /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
@@ -70,7 +70,7 @@ final class I18N
             return $this->getLocale();
         }
 
-        if (Info::isInstalled() && $user = Auth::user()) {
+        if (Cms::isInstalled() && $user = Auth::user()) {
             // If they have a preferred locale, use it
             if (($locale = Users::getUserPreference($user->id, 'locale')) !== null) {
                 return $this->getLocaleById($locale);
@@ -288,6 +288,14 @@ final class I18N
             };
 
             $translation = $char.$translation.$char;
+        }
+
+        /**
+         * If we don't have a translation for the message.
+         * Translate it using Laravel's translations.
+         */
+        if ($translation === (string) $message) {
+            return __($message, $parameters, $locale);
         }
 
         return $translation;

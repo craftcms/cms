@@ -43,7 +43,7 @@ declare var Craft: {
   csrfTokenValue?: string;
   ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
-  t(category: string, message: string, params?: object): string;
+  t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
   expandPostArray(arr: object): any;

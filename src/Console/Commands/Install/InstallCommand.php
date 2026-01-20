@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Install;
 
-use craft\console\Application;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrations\Install;
@@ -14,7 +14,6 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Console\Command;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use PDOException;
@@ -47,9 +46,8 @@ final class InstallCommand extends Command
         GeneralConfig $generalConfig,
         I18N $i18n,
         Migrator $migrator,
-        #[Give('Craft')] Application $craft
     ): int {
-        if ($craft->getIsInstalled(true)) {
+        if (Cms::isInstalled(true)) {
             $this->components->warn('Craft is already installed!');
 
             return self::SUCCESS;

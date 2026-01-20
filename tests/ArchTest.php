@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\web\twig\Extension;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
@@ -46,4 +47,9 @@ arch('Don\'t use default migrator')
     ->expect(\Illuminate\Database\Migrations\Migrator::class)
     ->not
     ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Database\Migrator::class);
+    ->ignoring(Migrator::class);
+
+arch('Don\'t use legacy aliases')
+    ->expect(['Craft::getAlias', 'Craft::setAlias', 'Craft::getRootAlias'])
+    ->not()
+    ->toBeUsed();
