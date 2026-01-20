@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
 use ReflectionException;
@@ -1588,10 +1589,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(
+            Log::warning(
                 "Element query executed before Craft is fully initialized.\nStack trace:\n" .
                 backTraceAsString(),
-                __METHOD__
+                [__METHOD__]
             );
         }
 

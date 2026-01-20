@@ -30,6 +30,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 
 use function CraftCms\Cms\t;
 
@@ -271,7 +272,7 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     public function saveFieldLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && ! $layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            Log::info('Field layout not saved due to validation error.', [__METHOD__]);
 
             return false;
         }

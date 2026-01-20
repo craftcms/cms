@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -288,7 +289,7 @@ class FieldLayoutTab extends FieldLayoutComponent
                     // Skip quietly
                     continue;
                 } catch (InvalidArgumentException|InvalidConfigException $e) {
-                    Craft::warning('Invalid field layout element config: ' . $e->getMessage(), __METHOD__);
+                    Log::warning('Invalid field layout element config: ' . $e->getMessage(), [__METHOD__]);
                     Craft::$app->getErrorHandler()->logException($e);
                     continue;
                 }

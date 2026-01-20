@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -1497,7 +1498,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     private function _scoreUrl(string $url): int
     {
         if (($parsed = parse_url($url)) === false) {
-            Craft::warning("Unable to parse the URL: $url");
+            Log::info("Unable to parse the URL: $url");
             return 0;
         }
 

@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -128,7 +129,7 @@ class MigrationManager extends Component
         $migrationNames = $this->getNewMigrations();
 
         if (empty($migrationNames)) {
-            Craft::info('No new migration found. Your system is up to date.', __METHOD__);
+            Log::info('No new migration found. Your system is up to date.', [__METHOD__]);
             return;
         }
 
@@ -150,18 +151,18 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage, __METHOD__);
+        Log::info($logMessage, [__METHOD__]);
 
         foreach ($migrationNames as $migrationName) {
             try {
                 $this->migrateUp($migrationName);
             } catch (MigrationException $e) {
-                Craft::error('Migration failed. The rest of the migrations are cancelled.', __METHOD__);
+                Log::error('Migration failed. The rest of the migrations are cancelled.', [__METHOD__]);
                 throw $e;
             }
         }
 
-        Craft::info('Migrated up successfully.', __METHOD__);
+        Log::info('Migrated up successfully.', [__METHOD__]);
     }
 
     /**
@@ -180,7 +181,7 @@ class MigrationManager extends Component
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
-            Craft::info('No migration has been done before.', __METHOD__);
+            Log::info('No migration has been done before.', [__METHOD__]);
             return;
         }
 
@@ -191,18 +192,18 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage, __METHOD__);
+        Log::info($logMessage, [__METHOD__]);
 
         foreach ($migrationNames as $migrationName) {
             try {
                 $this->migrateDown($migrationName);
             } catch (MigrationException $e) {
-                Craft::error('Migration failed. The rest of the migrations are cancelled.', __METHOD__);
+                Log::error('Migration failed. The rest of the migrations are cancelled.', [__METHOD__]);
                 throw $e;
             }
         }
 
-        Craft::info('Migrated down successfully.', __METHOD__);
+        Log::info('Migrated down successfully.', [__METHOD__]);
     }
 
     /**
@@ -229,7 +230,7 @@ class MigrationManager extends Component
         $schema = $this->db->getSchema();
         $schema->refresh();
 
-        Craft::info("Applying $migrationName", __METHOD__);
+        Log::info("Applying $migrationName", [__METHOD__]);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -260,11 +261,11 @@ class MigrationManager extends Component
         }
 
         if (!$success) {
-            Craft::error($log, __METHOD__);
+            Log::error($log, [__METHOD__]);
             throw new MigrationException($migration, $output ?? null, null, 0, $e ?? null);
         }
 
-        Craft::info($log, __METHOD__);
+        Log::info($log, [__METHOD__]);
         $this->addMigrationHistory($migrationName);
     }
 
@@ -292,7 +293,7 @@ class MigrationManager extends Component
         $schema = $this->db->getSchema();
         $schema->refresh();
 
-        Craft::info("Reverting $migrationName", __METHOD__);
+        Log::info("Reverting $migrationName", [__METHOD__]);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -323,11 +324,11 @@ class MigrationManager extends Component
         }
 
         if (!$success) {
-            Craft::error($log, __METHOD__);
+            Log::error($log, [__METHOD__]);
             throw new MigrationException($migration, $output ?? null, null, 0, $e ?? null);
         }
 
-        Craft::info($log, __METHOD__);
+        Log::info($log, [__METHOD__]);
         $this->removeMigrationHistory($migrationName);
     }
 

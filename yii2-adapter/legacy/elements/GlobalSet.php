@@ -7,7 +7,6 @@
 
 namespace craft\elements;
 
-use Craft;
 use craft\base\Element;
 use craft\base\FieldLayoutProviderInterface;
 use craft\behaviors\FieldLayoutBehavior;
@@ -19,6 +18,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -330,7 +330,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             $this->fieldLayoutId &&
             !app(Fields::class)->restoreLayoutById($this->fieldLayoutId)
         ) {
-            Craft::warning("Global set $this->id restored, but its field layout ($this->fieldLayoutId) was not.");
+            Log::info("Global set $this->id restored, but its field layout ($this->fieldLayoutId) was not.");
         }
 
         parent::afterRestore();

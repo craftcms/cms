@@ -7,7 +7,6 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use yii\base\Exception;
 
 /**
@@ -56,7 +56,7 @@ class Announcement extends BaseJob
         if (isset($this->pluginHandle)) {
             $pluginInfo = app(Plugins::class)->getStoredPluginInfo($this->pluginHandle);
             if ($pluginInfo === null) {
-                Craft::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", __METHOD__);
+                Log::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", [__METHOD__]);
                 return;
             }
             $pluginId = $pluginInfo['id'];

@@ -22,6 +22,7 @@ use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
@@ -406,7 +407,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
-            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
+            Log::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', [__METHOD__]);
             return false;
         }
 
@@ -504,7 +505,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         if (!$this->_validateUserAgentAndIp()) {
             // Only log a warning if a PHP session exists
             if (Craft::$app->getSession()->getHasSessionId()) {
-                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
+                Log::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', [__METHOD__]);
             }
             return;
         }

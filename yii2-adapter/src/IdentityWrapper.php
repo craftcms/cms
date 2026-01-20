@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Traits\ForwardsCalls;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
@@ -153,7 +154,7 @@ final class IdentityWrapper implements IdentityInterface
         }
 
         if (!hash_equals($userAgent, md5($requestUserAgent))) {
-            Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+            Log::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', [__METHOD__]);
 
             return false;
         }

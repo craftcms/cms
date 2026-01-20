@@ -58,6 +58,7 @@ use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use thamtech\ratelimiter\Context;
 use thamtech\ratelimiter\handlers\TooManyRequestsHttpExceptionHandler;
 use thamtech\ratelimiter\limit\RateLimit;
@@ -604,7 +605,7 @@ class UsersController extends Controller
 
             if (!empty($errors)) {
                 $list = implode("\n", array_map(fn(string $error) => sprintf('- %s', $error), $errors));
-                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                Log::warning(sprintf("Password reset email not sent:\n%s", $list), [__METHOD__]);
                 $errors = [];
             }
         }
@@ -1115,7 +1116,7 @@ class UsersController extends Controller
             (!empty($newEmail) || $user->newPassword !== null) &&
             !$this->_verifyElevatedSession()
         ) {
-            Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
+            Log::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', [__METHOD__]);
             $user->addError('currentPassword', t('Incorrect current password.'));
         }
 
@@ -1178,7 +1179,7 @@ class UsersController extends Controller
         $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
 
         if (!$success) {
-            Craft::info('User not saved due to validation error.', __METHOD__);
+            Log::info('User not saved due to validation error.', [__METHOD__]);
 
             if ($isPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
@@ -1745,7 +1746,7 @@ class UsersController extends Controller
                 }
 
                 if (!$extension) {
-                    Craft::warning('Could not determine file extension for user photo.', __METHOD__);
+                    Log::warning('Could not determine file extension for user photo.', [__METHOD__]);
                     return;
                 }
 

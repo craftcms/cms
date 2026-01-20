@@ -38,6 +38,7 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -554,7 +555,7 @@ final class Assets extends BaseRelationField
                         if (Craft::$app->getElements()->saveElement($asset)) {
                             $assetIds[] = $asset->id;
                         } else {
-                            Craft::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), __METHOD__);
+                            Log::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), [__METHOD__]);
                         }
                     }
 
@@ -644,7 +645,7 @@ final class Assets extends BaseRelationField
                                 $assetsService->moveAsset($asset, $uploadFolder);
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
-                                Craft::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
+                                Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
                                 Craft::$app->getErrorHandler()->logException($e);
                             }
                         }
