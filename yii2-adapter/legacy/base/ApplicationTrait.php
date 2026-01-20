@@ -104,6 +104,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Yii;
 use yii\base\Application;
@@ -775,7 +776,7 @@ trait ApplicationTrait
 
             // Only log for web requests
             if ($this instanceof WebApplication) {
-                Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+                Log::error('There was a problem connecting to the database: ' . $e->getMessage(), [__METHOD__]);
                 /** @var ErrorHandler $errorHandler */
                 $errorHandler = $this->getErrorHandler();
                 $errorHandler->logException($e);

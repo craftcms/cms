@@ -16,6 +16,7 @@ use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\I18N;
+use Illuminate\Support\Facades\Log;
 use yii\queue\Queue;
 
 /**
@@ -119,7 +120,7 @@ class UpdateElementSlugsAndUris extends BaseJob
             try {
                 $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
             } catch (OperationAbortedException $e) {
-                Craft::warning("Couldn’t update slug and URI for element $element->id: {$e->getMessage()}");
+                Log::info("Couldn’t update slug and URI for element $element->id: {$e->getMessage()}");
                 continue;
             }
 

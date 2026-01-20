@@ -97,6 +97,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -916,7 +917,7 @@ class Gql extends Component
         }
 
         if ($runValidation && !$token->validate()) {
-            Craft::info('Token not saved due to validation error.', __METHOD__);
+            Log::info('Token not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -988,7 +989,7 @@ class Gql extends Component
         $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
-            Craft::info('Schema not saved due to validation error.', __METHOD__);
+            Log::info('Schema not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

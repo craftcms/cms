@@ -14,6 +14,7 @@ use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use CraftCms\Cms\Cms;
+use Illuminate\Support\Facades\Log;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
@@ -96,7 +97,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if (in_array($e->getCode(), ['25P01', '3B001'], true)) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }
@@ -116,7 +117,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }

@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -1734,7 +1735,7 @@ JS, [
                     $element = $this->_element($info);
 
                     if (!$element instanceof ElementInterface) {
-                        Craft::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), __METHOD__);
+                        Log::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), [__METHOD__]);
                         continue;
                     }
 
@@ -1950,7 +1951,7 @@ JS, [
                 ->one();
 
             if ($existingProvisionalDraft) {
-                Craft::warning("Overwriting an existing provisional draft for element/user $element->id/$user->id", __METHOD__);
+                Log::warning("Overwriting an existing provisional draft for element/user $element->id/$user->id", [__METHOD__]);
                 $elementsService->deleteElement($existingProvisionalDraft, true);
             }
         }

@@ -39,6 +39,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
@@ -345,7 +346,7 @@ class AssetIndexer extends Component
                     ->count();
 
                 if ($count === 0) {
-                    Craft::warning('The assetindexdata table is empty; Can’t proceed with indexing.');
+                    Log::info('The assetindexdata table is empty; Can’t proceed with indexing.');
                     $indexingSession->forceStop = true;
                 }
             }
@@ -859,7 +860,7 @@ class AssetIndexer extends Component
                                 fclose($stream);
                             }
                         } catch (VolumeException $e) {
-                            Craft::info($e->getMessage());
+                            Log::info($e->getMessage());
                         }
                     }
 
@@ -896,7 +897,7 @@ class AssetIndexer extends Component
             }
         } catch (Throwable $exception) {
             // Log an exception and pretend we're cool
-            Craft::warning($exception->getMessage());
+            Log::info($exception->getMessage());
         }
 
         return $asset;

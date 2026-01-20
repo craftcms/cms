@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use DateTimeZone;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -326,7 +327,7 @@ class GraphqlController extends Controller
         try {
             $token = $gqlService->getPublicToken();
         } catch (Throwable $e) {
-            Craft::warning('Could not obtain the public token: ' . $e->getMessage());
+            Log::info('Could not obtain the public token: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
             return null;
         }

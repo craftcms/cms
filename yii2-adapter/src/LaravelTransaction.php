@@ -3,7 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Illuminate\Support\Facades\DB;
-use Yii;
+use Illuminate\Support\Facades\Log;
 use yii\db\Connection;
 use yii\db\Transaction;
 
@@ -16,7 +16,7 @@ final class LaravelTransaction extends Transaction
 
     public function begin($isolationLevel = null)
     {
-        Yii::debug('Begin transaction' . ($isolationLevel ? ' with isolation level ' . $isolationLevel : ''), __METHOD__);
+        Log::debug('Begin transaction' . ($isolationLevel ? ' with isolation level ' . $isolationLevel : ''), [__METHOD__]);
         $this->db->trigger(Connection::EVENT_BEGIN_TRANSACTION);
         DB::beginTransaction();
     }

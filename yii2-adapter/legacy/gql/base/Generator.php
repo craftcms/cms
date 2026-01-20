@@ -13,6 +13,7 @@ use craft\errors\GqlException;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Field\Field;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class Generator
@@ -34,7 +35,7 @@ abstract class Generator
         try {
             $schema = Craft::$app->getGql()->getActiveSchema();
         } catch (GqlException $e) {
-            Craft::warning("Could not get the active GraphQL schema: {$e->getMessage()}", __METHOD__);
+            Log::warning("Could not get the active GraphQL schema: {$e->getMessage()}", [__METHOD__]);
             Craft::$app->getErrorHandler()->logException($e);
             return [];
         }

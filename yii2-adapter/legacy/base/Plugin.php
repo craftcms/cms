@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
@@ -166,7 +167,7 @@ class Plugin extends Module implements PluginInterface
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
-            Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
+            Log::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
             return;
         }
 

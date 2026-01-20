@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -211,7 +212,7 @@ class ImageTransforms extends Component
         }
 
         if ($runValidation && !$transform->validate()) {
-            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
+            Log::info('Asset transform not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -521,13 +522,13 @@ class ImageTransforms extends Component
                 $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
 
                 if (!is_array($files)) {
-                    Craft::warning('Could not list files in ' . $dir . ' when deleting resized asset versions.');
+                    Log::info('Could not list files in ' . $dir . ' when deleting resized asset versions.');
                     continue;
                 }
 
                 foreach ($files as $path) {
                     if (!FileHelper::unlink($path)) {
-                        Craft::warning("Unable to delete the asset thumbnail \"$path\".", __METHOD__);
+                        Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
                     }
                 }
             }

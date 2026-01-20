@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -155,7 +156,7 @@ class Application extends \yii\web\Application
             try {
                 new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
-                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
+                Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -499,7 +500,7 @@ class Application extends \yii\web\Application
             $route = implode('/', $request->getActionSegments());
 
             try {
-                Craft::debug("Route requested: '$route'", __METHOD__);
+                Log::debug("Route requested: '$route'", [__METHOD__]);
                 $this->requestedRoute = $route;
                 $response = $this->runAction($route, $_GET);
 
