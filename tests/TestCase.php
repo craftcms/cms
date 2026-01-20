@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\User\Models\User;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,8 +20,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
@@ -38,7 +39,7 @@ class TestCase extends Orchestra
         app()->setLocale('en-US');
         Config::set('app.timezone', 'America/Los_Angeles');
 
-        Edition::set(Edition::Solo);
+        Edition::set(Edition::Pro);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -50,6 +51,9 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
 
         $this->withoutVite();
+
+        // Always start with an admin user
+        User::first()->update(['admin' => true]);
     }
 
     protected function connectionsToTransact(): array
@@ -60,7 +64,11 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
+        Gate::clearResolvedInstances();
+
         app(ProjectConfig::class)->reset();
+
+        DB::rollBack(0);
 
         if (Craft::$app) {
             Craft::$app->getDb()->close();
@@ -76,15 +84,9 @@ class TestCase extends Orchestra
         parent::tearDown();
     }
 
-    protected function migrateDatabases()
+    protected function migrateDatabases(): void
     {
-        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
-
-        /** Drop Laravel migrations */
-        Schema::drop('migrations');
-        Schema::drop('cache');
-        Schema::drop('sessions');
-        Schema::drop('users');
+        $this->artisan('db:wipe');
 
         $site = new Site(
             name: 'Craft test site',

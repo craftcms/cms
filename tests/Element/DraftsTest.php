@@ -26,7 +26,7 @@ it('can get editable drafts', function () {
 
     $element = EntryElement::findOne();
 
-    $this->drafts->createDraft($element, User::find()->one()->id);
+    $this->drafts->createDraft($element, User::findOne()->id);
 
     expect($this->drafts->getEditableDrafts($element))->toBeEmpty();
 
@@ -36,6 +36,8 @@ it('can get editable drafts', function () {
 });
 
 it('can create a draft', function () {
+    actingAs(User::findOne());
+
     Event::fake([
         CreatingDraft::class,
         DraftCreated::class,
@@ -83,6 +85,8 @@ it('can save an element as draft', function () {
 });
 
 it('can apply a draft', function () {
+    actingAs(User::findOne());
+
     Event::fake([
         ApplyingDraft::class,
         DraftApplied::class,
@@ -91,9 +95,8 @@ it('can apply a draft', function () {
     Event::listen(ApplyingDraft::class, fn () => true);
     Event::listen(DraftApplied::class, fn () => true);
 
-    $entry = Entry::factory()->create();
+    Entry::factory()->create();
     $element = EntryElement::findOne();
-    $entry->section->entryTypes()->attach($entry->entryType, ['sortOrder' => 1]);
 
     $draft = $this->drafts->createDraft(
         canonical: $element,
@@ -114,6 +117,8 @@ it('can apply a draft', function () {
 });
 
 it('can remove draft data from an element', function () {
+    actingAs(User::findOne());
+
     Entry::factory()->create();
     $element = EntryElement::findOne();
 

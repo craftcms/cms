@@ -1094,14 +1094,14 @@ final class Plugins
             $basePath = $plugin->getBasePath();
         } else {
             if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-                $basePath = Craft::getAlias($basePath);
+                $basePath = Aliases::get($basePath);
             }
         }
 
         $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
         if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
-            $iconPath = Craft::getAlias('@appicons/default-plugin.svg');
+            $iconPath = Aliases::get('@appicons/default-plugin.svg');
         }
 
         return file_get_contents($iconPath);

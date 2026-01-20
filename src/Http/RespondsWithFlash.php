@@ -10,6 +10,7 @@ use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 trait RespondsWithFlash
@@ -17,22 +18,25 @@ trait RespondsWithFlash
     public function asFailure(?string $message = null, array $data = []): Response
     {
         if (request()->expectsJson()) {
-            return new JsonResponse($data + array_filter([
-                'message' => $message,
-            ]), 400);
+            return $this->asJsonFailure($message, $data);
         }
 
         Flash::fail($message);
 
-        return back()->with($data);
+        return back()->with($data)->withErrors($data['errors'] ?? []);
+    }
+
+    public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
+    {
+        return new JsonResponse($data + array_filter([
+            'message' => $message,
+        ]), 400);
     }
 
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
     {
         if (request()->expectsJson()) {
-            return new JsonResponse($data + array_filter([
-                'message' => $message,
-            ]), 200);
+            return $this->asJsonSuccess($message, $data);
         }
 
         Flash::success($message);
@@ -44,6 +48,13 @@ trait RespondsWithFlash
         }
 
         return back()->with($data);
+    }
+
+    public function asJsonSuccess(?string $message = null, array $data = []): JsonResponse
+    {
+        return new JsonResponse($data + array_filter([
+            'message' => $message,
+        ]), 200);
     }
 
     public function asModelFailure(
@@ -88,9 +99,9 @@ trait RespondsWithFlash
         return $this->asSuccess($message, $data, $redirect);
     }
 
-    public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): Response
+    public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): RedirectResponse
     {
-        return redirect($this->getPostedRedirectUrl($object) ?? $redirect);
+        return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect);
     }
 
     protected function getPostedRedirectUrl(?object $object = null): ?string

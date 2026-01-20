@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 return [
     '(blank)' => '(blank)',
     '(included)' => '(included)',
@@ -148,7 +146,6 @@ return [
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Are you sure you want to close this screen? Any changes will be lost.',
     'Are you sure you want to delete the logo?' => 'Are you sure you want to delete the logo?',
-    'Are you sure you want to delete the selected entries?' => 'Are you sure you want to delete the selected entries?',
     'Are you sure you want to delete the selected {type} along with their descendants?' => 'Are you sure you want to delete the selected {type} along with their descendants?',
     'Are you sure you want to delete the selected {type} for this site?' => 'Are you sure you want to delete the selected {type} for this site?',
     'Are you sure you want to delete the selected {type}?' => 'Are you sure you want to delete the selected {type}?',
@@ -556,6 +553,7 @@ return [
     'Delete photo' => 'Delete photo',
     'Delete row {index}' => 'Delete row {index}',
     'Delete selected group' => 'Delete selected group',
+    'Delete selected {type}' => 'Delete selected {type}',
     'Delete their content' => 'Delete their content',
     'Delete them' => 'Delete them',
     'Delete users' => 'Delete users',
@@ -614,6 +612,7 @@ return [
     'Dropdown Options' => 'Dropdown Options',
     'Dropdown' => 'Dropdown',
     'Duplicate (with descendants)' => 'Duplicate (with descendants)',
+    'Duplicate selected {type}' => 'Duplicate selected {type}',
     'Duplicate' => 'Duplicate',
     'Edit Entry Type' => 'Edit Entry Type',
     'Edit Field' => 'Edit Field',
@@ -1298,6 +1297,7 @@ return [
     'Rating: {rating} out of {max} stars' => 'Rating: {rating} out of {max} stars',
     'Raw data (fastest)' => 'Raw data (fastest)',
     'Reactivate' => 'Reactivate',
+    'Read Only' => 'Read Only',
     'Ready to upgrade?' => 'Ready to upgrade?',
     'Ready' => 'Ready',
     'Really delete folder “{folder}”?' => 'Really delete folder “{folder}”?',
@@ -1773,6 +1773,7 @@ return [
     'This tab is conditional' => 'This tab is conditional',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.',
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
+    'This user doesn’t have permission to author entries in this section.' => 'This user doesn’t have permission to author entries in this section.',
     'This week' => 'This week',
     'This year' => 'This year',
     'This {type} doesn’t have revisions.' => 'This {type} doesn’t have revisions.',

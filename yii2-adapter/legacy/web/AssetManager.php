@@ -12,6 +12,7 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -69,7 +70,7 @@ class AssetManager extends \yii\web\AssetManager
 
             // Should we append a timestamp?
             if ($this->appendTimestamp) {
-                $fullPath = FileHelper::normalizePath(Craft::getAlias($path) . DIRECTORY_SEPARATOR . $filePath);
+                $fullPath = FileHelper::normalizePath(Aliases::get($path) . DIRECTORY_SEPARATOR . $filePath);
                 if (($timestamp = @filemtime($fullPath)) > 0) {
                     $url .= '?v=' . $timestamp;
                 }

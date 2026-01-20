@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\gql\types\generators\IconDataType;
 use craft\helpers\Cp;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -79,7 +79,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     {
         if (! isset(self::$_icons)) {
             $indexPath = '@craftcms/resources/icons/index.php';
-            self::$_icons = require Craft::getAlias($indexPath);
+            self::$_icons = require Aliases::get($indexPath);
         }
 
         return self::$_icons[$name]['styles'] ?? [];

@@ -13,7 +13,6 @@ use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
@@ -346,36 +345,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetCsrfToken(): void
-    {
-        $token = $this->request->getCsrfToken(true);
-
-        $otherToken = $this->request->getCsrfToken();
-        self::assertSame($token, $otherToken);
-
-        self::assertNotSame($token, $this->request->getCsrfToken(true));
-    }
-
-    /**
-     *
-     */
-    public function testGenerateCsrfToken(): void
-    {
-        $token = $this->_generateCsrfToken();
-        self::assertSame(40, strlen($token));
-
-        $this->_setMockUser();
-        $newToken = $this->_generateCsrfToken();
-
-        self::assertNotSame($newToken, $token);
-
-        // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame(40, strlen($newToken));
-    }
-
-    /**
      * @dataProvider getParamDataProvider
      * @param mixed $expected
      * @param mixed $defaultValue
@@ -551,24 +520,5 @@ class RequestTest extends TestCase
     private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
-    }
-
-    /**
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _generateCsrfToken(): mixed
-    {
-        return $this->invokeMethod($this->request, 'generateCsrfToken');
-    }
-
-    /**
-     *
-     */
-    private function _setMockUser()
-    {
-        Craft::$app->getUser()->setIdentity(
-            new IdentityWrapper(Craft::$app->getUsers()->getUserById(1))
-        );
     }
 }

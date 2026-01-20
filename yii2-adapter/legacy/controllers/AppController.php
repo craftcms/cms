@@ -19,10 +19,10 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -31,18 +31,12 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
-use CraftCms\DependencyAwareCache\Dependency\FileDependency;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
-use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -129,22 +123,6 @@ class AppController extends Controller
         $this->response->setCacheHeaders();
         $this->response->getHeaders()->set('content-type', 'application/javascript');
         return $this->asRaw($response->getBody());
-    }
-
-    /**
-     * Returns the HTML for a control panel icon.
-     *
-     * @return Response
-     * @since 5.7.0
-     */
-    public function actionIconSvg(): Response
-    {
-        $this->requireCpRequest();
-        $this->requireAcceptsJson();
-
-        return $this->asJson([
-            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
-        ]);
     }
 
     /**
@@ -255,53 +233,6 @@ class AppController extends Controller
         return $this->asSuccess();
     }
 
-    /**
-     * Tries a Craft edition on for size.
-     *
-     * @return Response
-     * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
-     */
-    public function actionTryEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-        $this->requireAdmin();
-
-        $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Edition::getLicensed() ?? Edition::Solo;
-
-        try {
-            $edition = Edition::fromHandle($edition);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage(), previous: $e);
-        }
-
-        // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition->value > $licensedEdition->value && !Edition::canTest()) {
-            throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
-        }
-
-        Edition::set($edition);
-
-        return $this->asSuccess();
-    }
-
-    /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Edition::isWrong()) {
-            Edition::set(Edition::getLicensed());
-        }
-
-        return $this->asSuccess();
-    }
 
     /**
      * Fetches plugin license statuses.
@@ -433,7 +364,7 @@ class AppController extends Controller
     public function actionBrokenImage(): Response
     {
         $generalConfig = Cms::config();
-        $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
+        $imagePath = Aliases::get($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
         }
@@ -578,101 +509,5 @@ class AppController extends Controller
         }
 
         return $this->asJson($data);
-    }
-
-    /**
-     * Returns icon picker options.
-     *
-     * @return Response
-     * @since 5.0.0
-     */
-    public function actionIconPickerOptions(): Response
-    {
-        $this->requireCpRequest();
-        $this->requireAcceptsJson();
-
-        $search = $this->request->getRequiredBodyParam('search');
-        $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
-        $noSearch = $search === '';
-
-        $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
-
-        if ($noSearch) {
-            $listHtml = Cache::get($cacheKey);
-            if ($listHtml !== false) {
-                return $this->asJson([
-                    'listHtml' => $listHtml,
-                ]);
-            }
-            $searchTerms = null;
-        } else {
-            $searchTerms = explode(' ', Search::normalizeKeywords($search));
-        }
-
-        $indexPath = '@craftcms/resources/icons/index.php';
-        $icons = require Craft::getAlias($indexPath);
-        $output = [];
-        $scores = [];
-
-        foreach ($icons as $name => $icon) {
-            if ($freeOnly && $icon['pro']) {
-                continue;
-            }
-
-            if ($searchTerms) {
-                $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
-                if ($score === 0) {
-                    continue;
-                }
-                $scores[] = $score;
-            }
-
-            $file = Craft::getAlias("@appicons/$name.svg");
-            $output[] = Html::beginTag('li') .
-                Html::button(file_get_contents($file), [
-                    'class' => 'icon-picker--icon',
-                    'title' => $name,
-                    'aria' => [
-                        'label' => $name,
-                    ],
-                ])->encode(false) .
-                Html::endTag('li');
-        }
-
-        if ($searchTerms) {
-            array_multisort($scores, SORT_DESC, $output);
-        }
-
-        $listHtml = implode('', $output);
-
-        if ($noSearch) {
-            DependencyCache::put(
-                key: $cacheKey,
-                value: $listHtml,
-                dependency: new FileDependency($indexPath),
-            );
-        }
-
-        return $this->asJson([
-            'listHtml' => $listHtml,
-        ]);
-    }
-
-    private function matchTerms(array $searchTerms, string $indexTerms): int
-    {
-        $score = 0;
-
-        foreach ($searchTerms as $searchTerm) {
-            // extra points for whole word matches
-            if (str_contains($indexTerms, " $searchTerm ")) {
-                $score += 10;
-            } elseif (str_contains($indexTerms, " $searchTerm")) {
-                $score += 1;
-            } else {
-                return 0;
-            }
-        }
-
-        return $score;
     }
 }

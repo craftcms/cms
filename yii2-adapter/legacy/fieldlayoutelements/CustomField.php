@@ -14,6 +14,7 @@ use craft\elements\conditions\users\UserCondition;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -250,7 +251,7 @@ class CustomField extends BaseField
             $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
-                    'label' => "$label - {$option['label']}",
+                    'label' => "$label → {$option['label']}",
                     'value' => "contentBlock:{uid}.$key",
                 ];
             }
@@ -578,6 +579,10 @@ class CustomField extends BaseField
             return null;
         }
 
+        if ($field instanceof Iconic) {
+            return $field->getIcon();
+        }
+
         return $field::icon();
     }
 
@@ -745,8 +750,6 @@ class CustomField extends BaseField
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $static = $static || !$this->editable($element);
-
         $view = Craft::$app->getView();
         $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
         $view->setIsDeltaRegistrationActive(

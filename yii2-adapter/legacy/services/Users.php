@@ -16,6 +16,8 @@ use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\events\UserPhotoEvent;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -44,11 +46,16 @@ use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\User\Models\User as UserModel;
 use DateTime;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -267,10 +274,66 @@ class Users extends Component
      * @param string $code The verification code to check for.
      *
      * @return bool Whether the code is still valid.
+     * @deprecated 6.0.0. Use `Password::broker('craft')->tokenExists($user, $code)`
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
-        return UsersFacade::isVerificationCodeValidForUser($user, $code);
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
+
+        if ($broker->tokenExists($user, $code)) {
+            return true;
+        }
+
+        if (!Schema::hasColumn(Table::USERS, 'verificationCode')) {
+            return false;
+        }
+
+        /** @phpstan-ignore-next-line */
+        if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
+            // Fetch from the DB
+            $userModel = UserModel::findOrFail($user->id);
+
+            /** @phpstan-ignore-next-line */
+            $user->verificationCode = $userModel->verificationCode;
+            /** @phpstan-ignore-next-line */
+            $user->verificationCodeIssuedDate = $userModel->verificationCodeIssuedDate?->setTimezone('UTC')->toDateTime();
+
+            if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
+                return false;
+            }
+        }
+
+        // Make sure the verification code isn't expired
+        $minCodeIssueDate = now()->subSeconds(Cms::config()->verificationCodeDuration)->toDateTime();
+
+        // Make sure it’s not expired
+        if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
+            $userModel ??= UserModel::findOrFail($user->id);
+            /** @phpstan-ignore-next-line */
+            $userModel->verificationCode = $user->verificationCode = null;
+            /** @phpstan-ignore-next-line */
+            $userModel->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
+            $userModel->save();
+
+            Log::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', [__METHOD__]);
+
+            return false;
+        }
+
+        try {
+            $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
+        } catch (InvalidArgumentException) {
+            $valid = false;
+        }
+
+        if (!$valid) {
+            Log::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', [__METHOD__]);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -322,7 +385,9 @@ class Users extends Component
      */
     public function sendActivationEmail(User $user): bool
     {
-        return UsersFacade::sendActivationEmail($user);
+        $user->sendEmailVerificationNotification();
+
+        return true;
     }
 
     /**
@@ -337,7 +402,9 @@ class Users extends Component
      */
     public function sendNewEmailVerifyEmail(User $user): bool
     {
-        return UsersFacade::sendNewEmailVerifyEmail($user);
+        $user->sendEmailVerificationNotification();
+
+        return true;
     }
 
     /**

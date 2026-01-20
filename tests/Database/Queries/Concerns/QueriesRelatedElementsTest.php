@@ -8,8 +8,13 @@ use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\User\Elements\User;
+
+use function Pest\Laravel\actingAs;
 
 test('related elements', function () {
+    actingAs(User::findOne());
+
     $field = Field::factory()->create([
         'handle' => 'entriesField',
         'type' => Entries::class,

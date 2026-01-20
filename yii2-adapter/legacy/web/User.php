@@ -10,19 +10,15 @@ namespace craft\web;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use yii\web\Cookie;
+use Illuminate\Support\Facades\URL;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
 use function CraftCms\Cms\t;
@@ -53,23 +49,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public string $tokenParam = '__token';
 
-    /**
-     * @var array The configuration of the username cookie.
-     * @see Cookie
-     */
-    public array $usernameCookie;
-
-    /**
-     * @var string The session variable name used to store the original user ID, when impersonating another user.
-     * @since 5.6.0
-     */
-    public string $impersonatorIdParam = '__impersonator_id';
-
-    /**
-     * @see getImpersonator()
-     */
-    private UserElement|false $impersonator;
-
     // Authentication
     // -------------------------------------------------------------------------
 
@@ -85,13 +64,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
     {
-        $user = Users::getUserById($userId);
-
-        if (!$user) {
-            return false;
-        }
-
-        return $this->login(new IdentityWrapper($user), $duration);
+        return Auth::loginUsingId($userId, $duration > 0) !== false;
     }
 
     /**
@@ -102,42 +75,20 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @param UserElement $user
      * @see afterLogin()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::setRememberedUsername()} instead.
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        $generalConfig = Cms::config();
-
-        if ($generalConfig->rememberUsernameDuration !== 0) {
-            $cookie = new Cookie($this->usernameCookie);
-            $cookie->value = $user->username;
-            $seconds = Config::durationInSeconds($generalConfig->rememberUsernameDuration);
-            $cookie->expire = DateTimeHelper::currentTimeStamp() + $seconds;
-            Craft::$app->getResponse()->getCookies()->add($cookie);
-        } else {
-            Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
-        }
+        app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername($user);
     }
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see URL::returnUrl()} instead.
      */
     public function getReturnUrl($defaultUrl = null): string
     {
-        // Set the default based on the config, if it’s not specified
-        if ($defaultUrl === null) {
-            if ($this->getIsGuest()) {
-                $defaultUrl = UrlHelper::actionUrl('users/redirect');
-            } else {
-                $defaultUrl = $this->getDefaultReturnUrl();
-            }
-        }
-
-        $url = parent::getReturnUrl($defaultUrl);
-
-        // Strip out any tags that may have gotten in there by accident
-        // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
-        // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
-        return str_replace(['{', '}'], '', $url);
+        return URL::returnUrl($defaultUrl);
     }
 
     /**
@@ -145,25 +96,22 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return string
      * @since 5.6.2
+     * @deprecated 6.0.0 use {@see URL::defaultReturnUrl()} instead.
      */
     public function getDefaultReturnUrl(): string
     {
-        // Is this a control panel request and can they access the control panel?
-        if (Craft::$app->getRequest()->getIsCpRequest() && Gate::check('accessCp')) {
-            return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
-        }
-
-        return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+        return URL::defaultReturnUrl();
     }
 
     /**
      * Removes the stored return URL, if there is one.
      *
      * @see getReturnUrl()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session::forget('_previous.url')} instead.
      */
     public function removeReturnUrl(): void
     {
-        SessionHelper::remove($this->returnUrlParam);
+        \Illuminate\Support\Facades\Session::forget('_previous.url');
     }
 
     /**
@@ -200,10 +148,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * ```
      *
      * @return string|null
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getRememberedUsername()} instead.
      */
     public function getRememberedUsername(): ?string
     {
-        return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
+        return app(\CraftCms\Cms\Auth\Auth::class)->getRememberedUsername();
     }
 
     /**
@@ -230,7 +179,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsGuest(): bool
     {
-        return parent::getIsGuest();
+        return Auth::guest();
     }
 
     /**
@@ -239,13 +188,14 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * @return Response the redirection response
      * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
      * @since 3.4.0
+     * @deprecated 6.0.0 use the "guest" middleware instead.
      */
     public function guestRequired(): Response
     {
         if (!$this->checkRedirectAcceptable()) {
             throw new ForbiddenHttpException(t('Guest Required'));
         }
-        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
+        return Craft::$app->getResponse()->redirect(URL::returnUrl());
     }
 
     /**
@@ -256,7 +206,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getRemainingSessionTime(): int
     {
         // Are they logged in?
-        if (!$this->getIsGuest()) {
+        if (!Auth::guest()) {
             if (!isset($this->authTimeout)) {
                 // The session duration must have been empty (expire when the HTTP session ends)
                 return -1;
@@ -278,25 +228,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return UserElement|null
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::getImpersonator()} instead.
      */
     public function getImpersonator(): ?UserElement
     {
-        if (!isset($this->impersonator)) {
-            $impersonatorId = SessionHelper::get($this->impersonatorIdParam);
-            if (!$impersonatorId) {
-                return null;
-            }
-
-            $impersonator = UserElement::find()
-                ->id($impersonatorId)
-                ->one();
-
-            $this->impersonator = $impersonator?->can('impersonateUsers')
-                ? $impersonator
-                : false;
-        }
-
-        return $this->impersonator ?: null;
+        return app(Impersonation::class)->getImpersonator();
     }
 
     /**
@@ -304,25 +240,24 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      *
      * @return int|null
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::getImpersonatorId()} instead.
      */
     public function getImpersonatorId(): ?int
     {
-        return $this->getImpersonator()?->id;
+        return app(Impersonation::class)->getImpersonatorId();
     }
 
     /**
      * Sets the ID of the original user, if the current user is being impersonated.
      *
      * @param int|null $id
+     *
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Impersonation::setImpersonatorId()} instead.
      */
     public function setImpersonatorId(?int $id): void
     {
-        if ($id) {
-            SessionHelper::set($this->impersonatorIdParam, $id);
-        } else {
-            SessionHelper::remove($this->impersonatorIdParam);
-        }
+        app(Impersonation::class)->setImpersonatorId($id);
     }
 
     // Authorization
@@ -332,6 +267,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * Returns whether the current user is an admin.
      *
      * @return bool Whether the current user is an admin.
+     * @deprecated 6.0.0 use `Auth::user()?->isAdmin()` instead.
      */
     public function getIsAdmin(): bool
     {
@@ -402,20 +338,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogin($identity, $cookieBased, $duration): bool
-    {
-        // Only allow the login if the request meets our user agent and IP requirements
-        if (!$this->_validateUserAgentAndIp()) {
-            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
-            return false;
-        }
-
-        return parent::beforeLogin($identity, $cookieBased, $duration);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function afterLogin($identity, $cookieBased, $duration): void
     {
         if ($duration > 0) {
@@ -428,9 +350,9 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         $this->_clearOtherSessionParams();
 
         // Save the username cookie if they're not being impersonated
-        $impersonator = $this->getImpersonator();
+        $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
-            $this->sendUsernameCookie(UserElement::find()->id($identity->getId())->firstOrFail());
+            app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
@@ -439,48 +361,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         }
 
         parent::afterLogin($identity, $cookieBased, $duration);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function switchIdentity($identity, $duration = 0): void
-    {
-        if ($this->enableSession) {
-            SessionHelper::remove($this->tokenParam);
-
-            if ($identity) {
-                /** @var UserElement $identity */
-                // Generate a new session token
-                $this->generateToken($identity->id);
-            }
-        }
-
-        $this->_clearOtherSessionParams();
-
-        parent::switchIdentity($identity, $duration);
-    }
-
-    /**
-     * Generates a new user session token.
-     *
-     * @param int $userId
-     * @since 3.1.1
-     */
-    public function generateToken(int $userId): void
-    {
-        $token = Craft::$app->getSecurity()->generateRandomString(100);
-
-        DB::table(Table::SESSIONS)
-            ->insert([
-                'userId' => $userId,
-                'token' => $token,
-                'dateCreated' => $now = now(),
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ]);
-
-        SessionHelper::set($this->tokenParam, $token);
     }
 
     /**
@@ -498,14 +378,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         // Only renew if the request meets our user agent and IP requirements
         if (!Cms::isInstalled()) {
-            return;
-        }
-
-        if (!$this->_validateUserAgentAndIp()) {
-            // Only log a warning if a PHP session exists
-            if (Craft::$app->getSession()->getHasSessionId()) {
-                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
-            }
             return;
         }
 
@@ -548,17 +420,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Stop keeping track of the session duration specified on login
         SessionHelper::remove($this->authDurationParam);
 
-        // Delete the session token in the database
-        $token = $this->getToken();
-        if ($token !== null) {
-            SessionHelper::remove($this->tokenParam);
-
-            DB::table(Table::SESSIONS)
-                ->where('token', $token)
-                ->where('userId', $identity->getId())
-                ->delete();
-        }
-
         return true;
     }
 
@@ -567,10 +428,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     protected function afterLogout($identity): void
     {
-        // Delete the impersonation session, if there is one
-        SessionHelper::remove($this->impersonatorIdParam);
-        $this->impersonator = false;
-
         $this->_clearOtherSessionParams();
 
         if (Cms::config()->enableCsrfProtection) {
@@ -581,28 +438,10 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         parent::afterLogout($identity);
     }
 
-    /**
-     * Validates that the request has a user agent and IP associated with it,
-     * if the 'requireUserAgentAndIpForSession' config setting is enabled.
-     *
-     * @return bool
-     */
-    private function _validateUserAgentAndIp(): bool
-    {
-        if (!Cms::config()->requireUserAgentAndIpForSession) {
-            return true;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        return $request->getUserAgent() !== null && $request->getUserIP() !== null;
-    }
-
     private function _clearOtherSessionParams(): void
     {
         // Make sure 2FA data doesn't bleed over
-        $authService = Craft::$app->getAuth();
-        $authService->setUser(null);
-        SessionHelper::remove($authService->passkeyCreationOptionsParam);
+        app(\CraftCms\Cms\Auth\Auth::class)->setUser(null);
+        SessionHelper::remove(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

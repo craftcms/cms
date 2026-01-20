@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Flash;
@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -28,6 +29,7 @@ final readonly class ImpersonationController
     public function __construct(
         private Request $request,
         private Users $users,
+        private Impersonation $impersonation,
     ) {}
 
     public function impersonate(): Response
@@ -46,10 +48,10 @@ final readonly class ImpersonationController
 
         $this->enforceImpersonatePermission($user);
 
-        Craft::$app->getUser()->setImpersonatorId($this->request->user()->id);
+        $this->impersonation->setImpersonatorId($this->request->user()->id);
 
         try {
-            Auth::login($user);
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 
@@ -97,10 +99,10 @@ final readonly class ImpersonationController
         /** @var User $user */
         $user = $this->users->getUserById($userId);
 
-        Craft::$app->getUser()->setImpersonatorId($prevUserId);
+        $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            Auth::login($user);
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 
@@ -113,11 +115,7 @@ final readonly class ImpersonationController
     private function handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->wantsJson()) {
