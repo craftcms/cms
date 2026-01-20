@@ -38,5 +38,5 @@
 - Updated Twig to 3.19. ([#17603](https://github.com/craftcms/cms/discussions/17603))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
-- Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Fixed permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-v47q-jxvr-p68x)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
