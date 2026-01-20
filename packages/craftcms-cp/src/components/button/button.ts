@@ -27,8 +27,8 @@ export default class CraftButton extends LionButtonSubmit {
     return [...super.styles, styles];
   }
 
-  override async firstUpdated() {
-    super.firstUpdated();
+  override async firstUpdated(changedProperties: Map<string, any>) {
+    super.firstUpdated(changedProperties);
 
     await this.updateComplete;
 
