@@ -106,6 +106,7 @@ class ElementsController extends Controller
     private bool $_dropProvisional;
     private bool $_addAnother;
     private array $_visibleLayoutElements;
+    private array $_staticLayoutElements;
     private ?string $_selectedTab = null;
     private bool $_applyParams;
     private bool $_prevalidate;
@@ -149,6 +150,7 @@ class ElementsController extends Controller
         $this->_dropProvisional = (bool)$this->_param('dropProvisional');
         $this->_addAnother = (bool)$this->_param('addAnother');
         $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
+        $this->_staticLayoutElements = $this->_param('staticLayoutElements') ?? [];
         $this->_selectedTab = $this->_param('selectedTab');
         $this->_applyParams = $this->_param('applyParams', true) || !$this->request->getIsPost();
         $this->_prevalidate = (bool)$this->_param('prevalidate');
@@ -466,7 +468,8 @@ class ElementsController extends Controller
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? $security->hashData((string)$element->siteId) : null,
-                        'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'visibleLayoutElements' => $form?->getVisibleElements() ?? [],
+                        'staticLayoutElements' => $form?->getStaticElements() ?? [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
                         'isStatic' => $isRevision || !$canSave,
@@ -1545,7 +1548,11 @@ JS, [
             throw new BadRequestHttpException('The owner element must be a derivative.');
         }
         if ($owner->getCanonicalId() !== $element->getPrimaryOwnerId()) {
-            throw new BadRequestHttpException('The canonical owner element must be the primary owner of the nested element.');
+            // the owner might be a derivative of another canonical element
+            $canonicalOwner = $owner->getCanonical();
+            if ($canonicalOwner->getCanonicalId() !== $element->getPrimaryOwnerId()) {
+                throw new BadRequestHttpException('The canonical owner element must be the primary owner of the nested element.');
+            }
         }
         if (!$elementsService->canSave($owner, $user)) {
             throw new ForbiddenHttpException('User not authorized to save the owner element.');
@@ -2403,6 +2410,7 @@ JS, [
             'namespace' => $namespace,
             'registerDeltas' => false,
             'visibleElements' => $this->_visibleLayoutElements,
+            'staticElements' => $this->_staticLayoutElements,
         ]);
         $missingElements = [];
         foreach ($form->tabs as $tab) {
@@ -2412,14 +2420,16 @@ JS, [
 
             $elementInfo = [];
 
-            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
                 /** @var FieldLayoutComponent $layoutElement */
                 /** @var bool $isConditional */
                 /** @var string|bool $elementHtml */
+                /** @var bool $isStatic */
                 if ($isConditional) {
                     $elementInfo[] = [
                         'uid' => $layoutElement->uid,
                         'html' => $elementHtml,
+                        'static' => $isStatic,
                     ];
                 }
             }

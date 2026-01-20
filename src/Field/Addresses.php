@@ -872,6 +872,17 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
+    #[\Override]
+    public function getEagerLoadingGqlConditions(): array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {

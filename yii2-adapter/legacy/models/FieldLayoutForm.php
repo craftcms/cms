@@ -113,11 +113,43 @@ class FieldLayoutForm extends Model
         foreach ($this->tabs as $tab) {
             if ($tab->getUid()) {
                 $elementUids = [];
-                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
                     /** @var FieldLayoutComponent $layoutElement */
                     /** @var bool $isConditional */
                     /** @var string|bool $elementHtml */
+                    /** @var bool $isStatic */
                     if ($isConditional && $elementHtml) {
+                        $elementUids[] = $layoutElement->uid;
+                    }
+                }
+                if ($elementUids) {
+                    $response[$tab->getUid()] = $elementUids;
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Returns lists of visible but static layout elements’ UUIDs, indexed by their tabs’ UUIDs.
+     *
+     * @return array
+     * @since 5.9.0
+     */
+    public function getStaticElements(): array
+    {
+        $response = [];
+
+        foreach ($this->tabs as $tab) {
+            if ($tab->getUid()) {
+                $elementUids = [];
+                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
+                    /** @var FieldLayoutComponent $layoutElement */
+                    /** @var bool $isConditional */
+                    /** @var string|bool $elementHtml */
+                    /** @var bool $isStatic */
+                    if ($isConditional && $elementHtml && $isStatic) {
                         $elementUids[] = $layoutElement->uid;
                     }
                 }

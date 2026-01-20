@@ -47,7 +47,6 @@ class MatrixAsset extends AssetBundle
                 'Actions',
                 'Add an entry',
                 'Add {type} above',
-                'Are you sure you want to delete the selected entries?',
                 'Collapse',
                 'Disable',
                 'Disabled',

@@ -14,7 +14,6 @@ use craft\elements\Entry;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
-use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\helpers\UrlHelper;
