@@ -54,6 +54,7 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -4207,6 +4208,10 @@ class Elements extends Component
 
                             foreach ($generatedFields as $field) {
                                 $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                // handle 'true'/'false'/'null'/int/float values
+                                $value = App::normalizeValue($value) ?? '';
+
                                 if ($value !== ($content[$field['uid']] ?? '')) {
                                     $updated = true;
                                 }
