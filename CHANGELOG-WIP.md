@@ -182,6 +182,7 @@
 - Improved element query performance. ([#17850](https://github.com/craftcms/cms/pull/17850))
 - Reduced the number of queries executed when working with nested entries, addresses, and content blocks. ([#18142](https://github.com/craftcms/cms/issues/18142))
 - Session-based cookies no longer use colons (`:`) in their names. ([#18158](https://github.com/craftcms/cms/pull/18158))
+- A rate limit is now enforced for `users/send-password-reset-email` requests. ([#17337](https://github.com/craftcms/cms/issues/17337))
 - Added the Illuminate Support library.
 - Added the PhpSpreadsheet library.
 - Updated Yii to 2.0.54.
