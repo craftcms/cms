@@ -54,7 +54,22 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public static function icon(): string
     {
-        return 'dollar-sign';
+        return self::currencyIcon(Craft::$app->getLocale()->getDefaultCurrency());
+    }
+
+    private static function currencyIcon(string $currency): string
+    {
+        return match ($currency) {
+            'CHF' => 'franc-sign',
+            'EUR' => 'euro-sign',
+            'GBP' => 'sterling-sign',
+            'INR' => 'indian-rupee-sign',
+            'JPY', 'CNY' => 'yen-sign',
+            'KRW' => 'won-sign',
+            'RUB' => 'ruble-sign',
+            'TRY' => 'turkish-lira-sign',
+            default => 'dollar-sign',
+        };
     }
 
     /**
@@ -141,6 +156,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
         ];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return self::currencyIcon($this->currency);
     }
 
     /**

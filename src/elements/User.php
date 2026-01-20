@@ -51,13 +51,13 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -657,42 +657,50 @@ class User extends Element implements IdentityInterface
     /**
      * @var int|null Photo asset ID
      */
+    #[AllowedInSandbox]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
+    #[AllowedInSandbox]
     public bool $pending = false;
 
     /**
      * @var bool Locked
      */
+    #[AllowedInSandbox]
     public bool $locked = false;
 
     /**
      * @var bool Suspended
      */
+    #[AllowedInSandbox]
     public bool $suspended = false;
 
     /**
      * @var bool Admin
      */
+    #[AllowedInSandbox]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
+    #[AllowedInSandbox]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
+    #[AllowedInSandbox]
     public ?string $email = null;
 
     /**
@@ -704,11 +712,13 @@ class User extends Element implements IdentityInterface
      * @var int|null Affiliated site ID
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?int $affiliatedSiteId = null;
 
     /**
      * @var DateTime|null Last login date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastLoginDate = null;
 
     /**
@@ -818,6 +828,12 @@ class User extends Element implements IdentityInterface
     private ?array $_groups = null;
 
     /**
+     * @see setAttributesFromRequest()
+     * @see afterSave()
+     */
+    private bool $sendVerificationEmailAfterRequest = false;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -859,12 +875,9 @@ class User extends Element implements IdentityInterface
      */
     public function __toString(): string
     {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        $name = $this->getName();
+        if ($name !== '') {
+            return $name;
         }
 
         return parent::__toString();
@@ -1097,6 +1110,7 @@ class User extends Element implements IdentityInterface
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                        $this->sendVerificationEmailAfterRequest = true;
                     }
                 } else {
                     unset($values['email']);
@@ -1140,6 +1154,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getHasPassword(): bool
     {
         if (isset($this->password)) {
@@ -1159,6 +1174,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 5.7.8
      */
+    #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
         if (Craft::$app->edition->value < CmsEdition::Enterprise->value) {
@@ -1229,6 +1245,7 @@ class User extends Element implements IdentityInterface
      * @return ElementCollection<Address>
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
     {
         if (!isset($this->_addresses)) {
@@ -1463,6 +1480,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserGroup[]
      */
+    #[AllowedInSandbox]
     public function getGroups(): array
     {
         if (isset($this->_groups)) {
@@ -1494,6 +1512,7 @@ class User extends Element implements IdentityInterface
      * @param int|string|UserGroup $group The user group model, its handle, or ID.
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Craft::$app->edition < CmsEdition::Pro) {
@@ -1522,6 +1541,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 5.9.0
      */
+    #[AllowedInSandbox]
     public function isInGroups(array $groups, bool $all = false): bool
     {
         if (!$all) {
@@ -1547,6 +1567,7 @@ class User extends Element implements IdentityInterface
      * @return string|null
      * @deprecated in 4.0.0. [[fullName]] should be used instead.
      */
+    #[AllowedInSandbox]
     public function getFullName(): ?string
     {
         return $this->fullName;
@@ -1557,6 +1578,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getName(): string
     {
         if (!isset($this->_name)) {
@@ -1599,6 +1621,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
         if (!isset($this->_friendlyName)) {
@@ -1642,6 +1665,7 @@ class User extends Element implements IdentityInterface
      * @return Site|null
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getAffiliatedSite(): ?Site
     {
         if ($this->affiliatedSiteId === null || !Craft::$app->getIsMultiSite()) {
@@ -1810,7 +1834,8 @@ XML;
 
         return (
             $user->id !== $this->id &&
-            $user->can('deleteUsers')
+            $user->can('deleteUsers') &&
+            (!$this->admin || $user->admin)
         );
     }
 
@@ -2377,6 +2402,7 @@ JS, [
      *
      * @return Asset|null
      */
+    #[AllowedInSandbox]
     public function getPhoto(): ?Asset
     {
         if (!isset($this->_photo)) {
@@ -2669,6 +2695,25 @@ JS, [
                 $condition = ['and', $condition, ['not', ['token' => $token]]];
             }
             Db::delete(Table::SESSIONS, $condition);
+        }
+
+        if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
+            // Temporarily set the unverified email on the User so the verification email goes to the right place
+            $originalEmail = $this->email;
+            $this->email = $this->unverifiedEmail;
+
+            try {
+                if ($isNew) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($this);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($this);
+                }
+            } finally {
+                // Put the original email back into place
+                $this->email = $originalEmail;
+            }
         }
     }
 

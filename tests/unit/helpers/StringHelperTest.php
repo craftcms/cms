@@ -250,6 +250,17 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider convertLineBreaksDataProvider
+     * @param string $expected
+     * @param string $string
+     */
+    public function testConvertLineBreaks(string $expected, string $string): void
+    {
+        $actual = StringHelper::convertLineBreaks($string);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
      *
      */
     public function testCount(): void
@@ -1973,6 +1984,19 @@ class StringHelperTest extends TestCase
             ['😂😁', '😂😁'],
             ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
             ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function convertLineBreaksDataProvider(): array
+    {
+        return [
+            ['foo bar', 'foo bar'],
+            ["foo\nbar", "foo\nbar"],
+            ["foo\nbar", "foo\rbar"],
+            ["foo\nbar", "foo\r\nbar"],
         ];
     }
 

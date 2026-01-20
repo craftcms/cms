@@ -1050,7 +1050,7 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ::: code
      * ```php Static Config
@@ -1061,8 +1061,14 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
+     *
      * @group GraphQL
      * @since 3.6.0
+     * @deprecated in 5.9.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1252,6 +1258,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $enableTemplateCaching = true;
+
+    /**
+     * @var bool Whether user-defined Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     * @group Security
+     * @since 5.9.0
+     */
+    public bool $enableTwigSandbox = false;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
@@ -3477,6 +3501,7 @@ class GeneralConfig extends BaseConfig
             ->softDeleteDuration($this->softDeleteDuration)
             ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
+            ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -4525,11 +4550,16 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the `transform` directive should be disabled for the GraphQL API.
+     * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
+     *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
      *
      * @group GraphQL
      * @param bool $value
@@ -4745,6 +4775,25 @@ class GeneralConfig extends BaseConfig
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
+        return $this;
+    }
+
+    /**
+     * Whether user-defined Twig templates should be sandboxed.
+     *
+     * ```php
+     * ->enableTwigSandbox()
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableTwigSandbox
+     * @since 5.9.0
+     */
+    public function enableTwigSandbox(bool $value = true): self
+    {
+        $this->enableTwigSandbox = $value;
         return $this;
     }
 
@@ -6048,7 +6097,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
-        $this->purgeStaleUserSessionDuration = $value;
+        $this->purgeStaleUserSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 

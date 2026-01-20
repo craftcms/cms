@@ -24,6 +24,9 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -72,6 +75,10 @@ class Asset extends ElementMutationResolver
 
             if (!$asset) {
                 throw new Error('No such asset exists');
+            }
+
+            if ($asset->volumeId !== $volume->id) {
+                $this->requireSchemaAction('volumes.' . $asset->getVolume()->uid, 'save');
             }
         } else {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'create');
@@ -259,7 +266,15 @@ class Asset extends ElementMutationResolver
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $this->createGuzzleClient()->request('GET', $url, [
+                RequestOptions::ALLOW_REDIRECTS => false,
+                RequestOptions::SINK => $tempPath,
+                RequestOptions::ON_STATS => function(TransferStats $stats) use ($url) {
+                    if (!$this->validateIp($stats->getHandlerStat('primary_ip'))) {
+                        throw new UserError("$url resolves to an invalid IP address.");
+                    }
+                },
+            ]);
         }
 
         if (!$tempPath || !$filename) {
@@ -281,8 +296,20 @@ class Asset extends ElementMutationResolver
 
     private function validateHostname(string $url): bool
     {
-        // make sure the hostname is alphanumeric and not an IP address
         $hostname = parse_url($url, PHP_URL_HOST);
+
+        // convert hex segments to decimal
+        $hostname = Collection::make(explode('.', $hostname))
+            ->map(function(string $chunk) {
+                if (str_starts_with(strtolower($chunk), '0x')) {
+                    $octets = str_split(substr($chunk, 2), 2);
+                    return implode('.', array_map('hexdec', $octets));
+                }
+                return $chunk;
+            })
+            ->join('.');
+
+        // make sure the hostname is alphanumeric and not an IP address
         if (
             !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
             filter_var($hostname, FILTER_VALIDATE_IP)
@@ -290,7 +317,7 @@ class Asset extends ElementMutationResolver
             return false;
         }
 
-        // Check against well-known cloud metadata domains/IPs
+        // Check against well-known cloud metadata domains
         // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
         if (in_array($hostname, [
             'kubernetes.default',
@@ -303,16 +330,39 @@ class Asset extends ElementMutationResolver
             return false;
         }
 
-        // make sure the hostname doesn’t resolve to a known cloud metadata IP
-        $ip = gethostbyname($hostname);
+        return true;
+    }
 
+    private function validateIp(string $ip): bool
+    {
+        // make sure the hostname doesn’t resolve to a known cloud metadata IP
+        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
         if (in_array($ip, [
-            '169.254.169.254',
-            '169.254.170.2',
-            '169.254.169.254',
-            '100.100.100.200',
-            '192.0.0.192',
+            '100.100.100.200', // Alibaba
+            '169.254.169.254', // AWS, GCP, DO, Azure, Oracle, OpenStack/RackSpace
+            '169.254.170.2', // ECS
+            '192.0.0.192', // Oracle
         ])) {
+            return false;
+        }
+
+        $v6Prefixes = [
+            '::1', // Loopback
+            '::ffff:', // IPv4-mapped IPv6
+            'fd00:ec2::', // AWS IMDS, DNS, NTP
+            'fd20:ce::', // GCP
+            'fe80:', // Link-local
+        ];
+
+        foreach ($v6Prefixes as $prefix) {
+            if (str_starts_with($ip, $prefix)) {
+                return false;
+            }
+        }
+
+        // Only allow publicly-routable IPs
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
             return false;
         }
 

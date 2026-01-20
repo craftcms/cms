@@ -12,6 +12,7 @@ use craft\base\Actionable;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\Iconic;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
@@ -246,7 +247,7 @@ class CustomField extends BaseField
             $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
-                    'label' => "$label - {$option['label']}",
+                    'label' => "$label → {$option['label']}",
                     'value' => "contentBlock:{uid}.$key",
                 ];
             }
@@ -573,6 +574,10 @@ class CustomField extends BaseField
             return null;
         }
 
+        if ($field instanceof Iconic) {
+            return $field->getIcon();
+        }
+
         return $field::icon();
     }
 
@@ -740,8 +745,6 @@ class CustomField extends BaseField
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $static = $static || !$this->editable($element);
-
         $view = Craft::$app->getView();
         $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
         $view->setIsDeltaRegistrationActive(

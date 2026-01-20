@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use craft\assetpreviews\Text;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
@@ -1080,6 +1079,7 @@ JS, [
                     'editable' => $editable,
                     'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
                     'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
+                    'duplicatable-as-draft' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
                     'copyable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
                     'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
                     'deletable-for-site' => (
@@ -1645,7 +1645,8 @@ JS, [
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
-        $disabled = $config['disabled'] ?? $config['static'] ?? false;
+        $disabled = $config['disabled'] ?? false;
+        $static = $config['static'] ?? false;
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
@@ -1796,6 +1797,9 @@ JS, [
                             'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
+                    ($static ? Html::tag('span', Craft::t('app', 'Read Only'), [
+                        'class' => ['read-only-badge'],
+                    ]) : '') .
                     ($showLabelExtra
                         ? Html::tag('div', '', ['class' => 'flex-grow']) .
                         ($showActionMenu ? static::disclosureMenu($config['actionMenuItems'], [
@@ -2843,7 +2847,7 @@ JS, [
             foreach ($fieldLayout->type::cardAttributes($fieldLayout) as $key => $attribute) {
                 $allOptions[$keyPrefix . $key] = [
                     'label' => $labelPrefix . $attribute['label'],
-                    'placeholder' => $attribute['placeholder'],
+                    'placeholder' => $attribute['placeholder'] ?? null,
                 ];
             }
         }
@@ -2859,7 +2863,7 @@ JS, [
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
                         "{$keyPrefix}contentBlock:$layoutElement->uid.",
-                        sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                         false,
                     );
                     continue;

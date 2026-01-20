@@ -19,6 +19,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
@@ -335,6 +336,45 @@ class ElementSources extends Component
     }
 
     /**
+     * Saves an element’s source configs.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $sources
+     * @since 5.9.0
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = array_map(fn(array $s) => array_filter([
+            'type' => $s['type'] ?? self::TYPE_NATIVE,
+            'key' => $s['key'] ?? null,
+            'page' => $s['page'] ?? null,
+            'tableAttributes' => $s['tableAttributes'] ?? null,
+            'defaultSort' => $s['defaultSort'] ?? null,
+            'defaultViewMode' => $s['defaultViewMode'] ?? null,
+            ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                self::TYPE_CUSTOM => [
+                    'label' => $s['label'] ?? null,
+                    'condition' => ($s['condition'] ?? false)
+                        ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                        : null,
+                    'sites' => $s['sites'] ?? null,
+                    'userGroups' => $s['userGroups'] ?? null,
+                ],
+                self::TYPE_HEADING => [
+                    'heading' => $s['heading'] ?? null,
+                ],
+                default => [
+                    'disabled' => $s['disabled'] ?? null,
+                ],
+            },
+        ], fn($val) => $val !== null), $sources);
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $sources);
+    }
+
+    /**
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param class-string<ElementInterface> $elementType The element type class
@@ -467,7 +507,7 @@ class ElementSources extends Component
         }
 
         // Combine duplicate attributes. If any attributes map to multiple sort
-        // options and each option has a string orderBy value, cmobine them
+        // options and each option has a string orderBy value, combine them
         // with a CoalesceColumnsExpression.
         return Collection::make($sortOptions)
             ->groupBy('attribute')
@@ -495,6 +535,7 @@ class ElementSources extends Component
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
         $sortOptions = [];
+        $qb = null;
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
@@ -508,6 +549,17 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $qb ??= Craft::$app->getDb()->getQueryBuilder();
+                    $sortOptions[] = [
+                        'label' => Craft::t('site', $field['name']),
+                        'attribute' => "generatedField:{$field['uid']}",
+                        'orderBy' => $qb->jsonExtract('elements_sites.content', [$field['uid']]),
+                    ];
                 }
             }
         }
@@ -559,6 +611,7 @@ class ElementSources extends Component
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
+        $groupedFieldInstances = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
@@ -579,20 +632,35 @@ class ElementSources extends Component
                     }
 
                     if (
-                        $field instanceof PreviewableFieldInterface &&
+                        ($field instanceof PreviewableFieldInterface || $field instanceof ContentBlock) &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        if ($layoutElement->handle === null) {
+                        if ($field instanceof ContentBlock) {
+                            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
+                                $attributes["contentBlock:{$field->layoutElement->uid}.$key"] = $attribute;
+                            }
+                        } elseif ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
                             // where the handle also wasn't overridden
                             $groupedFieldElements[$field->id][] = $layoutElement;
                         } else {
-                            // The handle was overridden, so it gets its own table attribute
-                            $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $layoutElement->label()),
-                            ];
+                            // The handle was overridden, so we'll use a key consisting of
+                            // the global field uid and layout element label and handle
+                            // to check if a new table attribute should be added to the list
+                            $key = $field->uid . " - " . $layoutElement->label() . " - " . $layoutElement->handle;
+                            if (!isset($groupedFieldInstances[$key])) {
+                                $groupedFieldInstances[$key] = $layoutElement;
+                            }
                         }
                     }
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $attributes["generatedField:{$field['uid']}"] = [
+                        'label' => Craft::t('site', $field['name']),
+                    ];
                 }
             }
         }
@@ -602,6 +670,12 @@ class ElementSources extends Component
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+            ];
+        }
+
+        foreach ($groupedFieldInstances as $layoutElement) {
+            $attributes["fieldInstance:$layoutElement->uid"] = [
+                'label' => Craft::t('site', $layoutElement->label()),
             ];
         }
 
@@ -687,8 +761,20 @@ class ElementSources extends Component
      */
     public function getPageSettings(string $elementType): array
     {
-        return Craft::$app->getProjectConfig()->get(
-            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
-        ) ?? [];
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        return Craft::$app->getProjectConfig()->get($path) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $pageSettings
+     * @since 5.9.0
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $pageSettings);
     }
 }

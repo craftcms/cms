@@ -1246,13 +1246,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.tab.designer.settings.withCardViewDesigner) {
       const cvd = this.tab.designer.cvd;
       if (cvd) {
-        // update labels in cvd checkboxes
-        $newContainer.data('preview-options').forEach((option) => {
-          cvd.updateCheckboxLabel(
-            option.value.replace(/\{uid}/g, this.uid),
-            option.label
-          );
-        });
+        const previewOptions = $newContainer.data('preview-options');
+        if (previewOptions) {
+          // update labels in cvd checkboxes
+          previewOptions.forEach((option) => {
+            cvd.updateCheckboxLabel(
+              option.value.replace(/\{uid}/g, this.uid),
+              option.label
+            );
+          });
+        }
 
         // update label in the element thumbnails dropdown
         cvd.updateThumbnailsDropdownOptionLabel(this.$container);
@@ -2103,8 +2106,17 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       }
 
       // add option to the dropdown
+      // figure out the label - it's okay to rely on the first label as only top-level fields can be used as thumbs
+      let label =
+        element.$container.data('preview-options')[0]?.label ??
+        element.attribute;
+      // it's okay to prepend with "layoutElement" as only top-level fields can be used as thumbs
       $(
-        '<option value="' + element.uid + '">' + element.attribute + '</option>'
+        '<option value="layoutElement:' +
+          element.uid +
+          '">' +
+          label +
+          '</option>'
       ).appendTo($select);
     } else if (action == 'remove') {
       if (!Garnish.hasAttr(element.$container, 'data-thumbable')) {

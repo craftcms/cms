@@ -50,6 +50,10 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use thamtech\ratelimiter\Context;
+use thamtech\ratelimiter\handlers\TooManyRequestsHttpExceptionHandler;
+use thamtech\ratelimiter\limit\RateLimit;
+use thamtech\ratelimiter\RateLimiter;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -179,6 +183,39 @@ class UsersController extends Controller
         'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return parent::behaviors() + [
+            'rateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['send-password-reset-email'],
+                'components' => [
+                    'rateLimit' => [
+                        'definitions' => [
+                            'reset-password' => [
+                                'class' => RateLimit::class,
+                                'limit' => 1,
+                                'window' => 1,
+                                'identifier' => fn(Context $context, $rateLimitId) => sprintf(
+                                    '%s:%s',
+                                    $rateLimitId,
+                                    $context->request->getUserIP(),
+                                ),
+                            ],
+                        ],
+                    ],
+                    'allowanceStorage' => [
+                        'cache' => 'cache',
+                    ],
+                ],
+                'as tooManyRequestsException' => TooManyRequestsHttpExceptionHandler::class,
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -1780,16 +1817,18 @@ JS);
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            if ($isNewUser) {
-                // Send the activation email
-                Craft::$app->getUsers()->sendActivationEmail($user);
-            } else {
-                // Send the standard verification email
-                Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+            try {
+                if ($isNewUser) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($user);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+                }
+            } finally {
+                // Put the original email back into place
+                $user->email = $originalEmail;
             }
-
-            // Put the original email back into place
-            $user->email = $originalEmail;
         }
 
         // Is this public registration, and was the user going to be activated automatically?

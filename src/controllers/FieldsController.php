@@ -152,7 +152,7 @@ class FieldsController extends Controller
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {

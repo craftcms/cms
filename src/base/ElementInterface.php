@@ -17,6 +17,7 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
@@ -772,6 +773,7 @@ interface ElementInterface extends
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -780,6 +782,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -834,6 +837,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -841,6 +845,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -848,6 +853,7 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -1308,6 +1314,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 
