@@ -1301,7 +1301,7 @@ class AssetsController extends Controller
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+            throw new AssetDisallowedExtensionException(Craft::t('app', '“{$extension}” is not an allowed file extension.'));
         }
 
         // Move the uploaded file to the temp folder
