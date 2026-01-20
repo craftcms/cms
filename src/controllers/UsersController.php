@@ -1591,16 +1591,18 @@ JS,
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            if ($isNewUser) {
-                // Send the activation email
-                Craft::$app->getUsers()->sendActivationEmail($user);
-            } else {
-                // Send the standard verification email
-                Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+            try {
+                if ($isNewUser) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($user);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+                }
+            } finally {
+                // Put the original email back into place
+                $user->email = $originalEmail;
             }
-
-            // Put the original email back into place
-            $user->email = $originalEmail;
         }
 
         // Is this public registration, and was the user going to be activated automatically?
