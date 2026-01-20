@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * TextField represents a text field that can be included in field layouts.
@@ -190,7 +191,7 @@ class TextField extends BaseNativeField
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

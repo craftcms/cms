@@ -1,41 +1,19 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\auth\methods;
 
-use craft\base\Component;
-use CraftCms\Cms\User\Elements\User;
-
-/**
- * BaseAuthMethod provides a base implementation of an authentication method.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-abstract class BaseAuthMethod extends Component implements AuthMethodInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var User The current user
+     * BaseAuthMethod provides a base implementation of an authentication method.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.0.0
+     * @deprecated 6.0.0
      */
-    protected User $user;
-
-    /**
-     * @inheritdoc
-     */
-    public function setUser(User $user): void
+    abstract class BaseAuthMethod
     {
-        $this->user = $user;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionMenuItems(): array
-    {
-        return [];
     }
 }
+
+class_alias(\CraftCms\Cms\Auth\Methods\BaseAuthMethod::class, BaseAuthMethod::class);

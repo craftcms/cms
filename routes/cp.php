@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
@@ -39,10 +44,18 @@ use Illuminate\Support\Facades\Storage;
 Route::get('install', [InstallController::class, 'index'])
     ->middleware([HandleInertiaRequests::class]);
 
+Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
+Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
+Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
+Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
+Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
+
 /**
  * Admin requests that require a login
  */
-Route::middleware('auth:craft')->group(function () {
+Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
     Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);

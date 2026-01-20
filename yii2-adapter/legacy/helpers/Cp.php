@@ -27,6 +27,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -1719,10 +1720,9 @@ JS, [
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
 
-        $userSessionService = Craft::$app->getUser();
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            $userSessionService->getIsAdmin() &&
+            Auth::user()->isAdmin() &&
             Auth::user()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
@@ -3880,8 +3880,8 @@ JS, [
                     'slideout-right',
                     'thumb-left',
                     'thumb-right',
-                    => Craft::getAlias("@craftcms/resources/icons/custom-icons/$icon.svg"),
-                    default => Craft::getAlias("@appicons/$icon.svg"),
+                    => Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg"),
+                    default => Aliases::get("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {
                     throw new InvalidArgumentException("Invalid system icon: $icon");

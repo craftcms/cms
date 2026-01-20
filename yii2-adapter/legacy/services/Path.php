@@ -102,7 +102,7 @@ class Path extends Component
     public function getStoragePath(bool $create = true): string
     {
         if (!isset($this->_storagePath)) {
-            $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
+            $this->_storagePath = FileHelper::normalizePath(Aliases::get('@storage'));
         }
 
         if ($create) {
@@ -121,7 +121,7 @@ class Path extends Component
      */
     public function getTestsPath(): string
     {
-        return $this->_testsPath ?? $this->_testsPath = FileHelper::normalizePath(Craft::getAlias('@tests'));
+        return $this->_testsPath ?? $this->_testsPath = FileHelper::normalizePath(Aliases::get('@tests'));
     }
 
     /**
@@ -212,7 +212,7 @@ class Path extends Component
      */
     public function getVendorPath(): string
     {
-        return $this->_vendorPath ?? $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
+        return $this->_vendorPath ?? $this->_vendorPath = FileHelper::normalizePath(Aliases::get('@vendor'));
     }
 
     /**
@@ -425,7 +425,7 @@ class Path extends Component
      */
     public function getSiteTranslationsPath(): string
     {
-        return $this->_siteTranslationsPath ?? $this->_siteTranslationsPath = Craft::getAlias('@translations');
+        return $this->_siteTranslationsPath ?? $this->_siteTranslationsPath = Aliases::get('@translations');
     }
 
     /**
@@ -446,7 +446,7 @@ class Path extends Component
      */
     public function getSiteTemplatesPath(): string
     {
-        return FileHelper::normalizePath(Craft::getAlias('@templates'));
+        return FileHelper::normalizePath(Aliases::get('@templates'));
     }
 
     /**
@@ -539,8 +539,8 @@ class Path extends Component
     public function getSystemPaths(): array
     {
         return [
-            Craft::getAlias('@contentMigrations'),
-            Craft::getAlias('@lib'),
+            Aliases::get('@contentMigrations'),
+            Aliases::get('@lib'),
             $this->getComposerBackupsPath(false),
             $this->getConfigBackupPath(false),
             $this->getConfigDeltaPath(false),

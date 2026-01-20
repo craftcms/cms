@@ -22,6 +22,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use function CraftCms\Cms\t;
 
@@ -140,7 +141,7 @@ class CategoryGroup extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (!$this->id || !Auth::user()?->isAdmin()) {
             return null;
         }
         return UrlHelper::cpUrl("settings/categories/$this->id");

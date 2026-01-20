@@ -13,6 +13,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
     $this->users = app(Users::class);
@@ -33,8 +34,7 @@ test('ensureUserByEmail', function () {
 });
 
 test('retrieval', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getUserById($user->id))->toBeInstanceOf(User::class);
     expect($this->users->getUserByUid($user->uid))->toBeInstanceOf(User::class);
@@ -43,52 +43,46 @@ test('retrieval', function () {
 });
 
 test('getUserByUserNameOrEmail gets active users first', function () {
-    $inactive = UserModel::factory()->make([
+    $inactive = UserModel::factory()->createElement([
         'id' => null,
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
-    Craft::$app->elements->saveElement($inactive);
+    ]);
 
-    $active = UserModel::factory()->make([
+    $active = UserModel::factory()->createElement([
         'id' => null,
         'active' => true,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
-    Craft::$app->elements->saveElement($active);
+    ]);
 
     expect($this->users->getUserByUsernameOrEmail('john')->id)->toBe($active->id);
 });
 
 test('getUserByUserNameOrEmail gets pending users first', function () {
-    $nonPending = UserModel::factory()->make([
-        'id' => null,
+    $nonPending = UserModel::factory()->create([
         'active' => false,
         'pending' => false,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
-    Craft::$app->elements->saveElement($nonPending);
+    ]);
 
-    $pending = UserModel::factory()->make([
+    $pending = UserModel::factory()->create([
         'id' => null,
         'active' => false,
         'pending' => true,
         'username' => 'john',
         'email' => 'john@example.com',
-    ])->asElement();
-    Craft::$app->elements->saveElement($pending);
+    ]);
 
     expect($this->users->getUserByUsernameOrEmail('john')->id)->toBe($pending->id);
 });
 
 test('userPreferences', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getUserPreferences($user->id))->toBeEmpty();
 
@@ -99,44 +93,36 @@ test('userPreferences', function () {
 });
 
 test('getActivationUrl', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getActivationUrl($user))->toBeUrl();
 });
 
 test('getEmailVerifyUrl', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getEmailVerifyUrl($user))->toBeUrl();
 });
 
 test('getPasswordResetUrl', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($this->users->getPasswordResetUrl($user))->toBeUrl();
 });
 
 test('removeCredentials', function () {
-    $userElement = UserModel::factory()->make([
-        'id' => null,
-    ])->asElement();
-    Craft::$app->elements->saveElement($userElement);
+    $userElement = UserModel::factory()->createElement();
 
     $user = UserModel::findOrFail($userElement->id);
     $user->update([
         'active' => true,
         'pending' => true,
-        'password' => \Illuminate\Support\Facades\Hash::make('password'),
-        'verificationCode' => \CraftCms\Cms\Support\Str::random(32),
+        'password' => Hash::make('password'),
     ]);
 
     expect($user->active)->toBeTrue();
     expect($user->pending)->toBeTrue();
     expect($user->password)->not()->toBeNull();
-    expect($user->verificationCode)->not()->toBeNull();
 
     $this->users->removeCredentials($userElement);
 
@@ -145,12 +131,10 @@ test('removeCredentials', function () {
     expect($user->active)->toBeFalse();
     expect($user->pending)->toBeFalse();
     expect($user->password)->toBeNull();
-    expect($user->verificationCode)->toBeNull();
 });
 
 test('user activation', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     expect($user->getStatus())->toBe(User::STATUS_PENDING);
 
@@ -162,8 +146,7 @@ test('user activation', function () {
 });
 
 test('user activation email as username with an unverified email', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     // Set useEmailAsUsername to true and add an unverified email.
     Cms::config()->useEmailAsUsername = true;
@@ -179,8 +162,7 @@ test('user activation email as username with an unverified email', function () {
 });
 
 test('user activation email as username with no unverified email', function () {
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     // Run the same test as above but without an unverified email.
     Cms::config()->useEmailAsUsername = true;
@@ -197,8 +179,7 @@ test('user activation email as username with no unverified email', function () {
 });
 
 test('unlock', function () {
-    $user = UserModel::factory()->locked()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->locked()->createElement();
 
     expect($user->locked)->toBeTrue();
 
@@ -212,8 +193,7 @@ test('unlock', function () {
 });
 
 test('suspend', function () {
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->active()->createElement();
 
     expect($user->suspended)->toBeFalse();
     expect($user->getStatus())->toBe(User::STATUS_ACTIVE);
@@ -227,8 +207,7 @@ test('suspend', function () {
 });
 
 test('unsuspend', function () {
-    $user = UserModel::factory()->suspended()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->suspended()->createElement();
 
     expect($user->suspended)->toBeTrue();
     expect($user->getStatus())->toBe(User::STATUS_SUSPENDED);
@@ -264,23 +243,17 @@ test('shunned messages', function () {
 });
 
 test('set verification code', function () {
-    Date::setTestNow(now('UTC'));
-
-    $user = UserModel::factory()->pending()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->pending()->createElement();
 
     $verificationCode = $this->users->setVerificationCodeOnUser($user);
 
-    $model = UserModel::findOrFail($user->id);
-
-    expect(strlen((string) $verificationCode))->toBe(32);
-    expect($model->verificationCode)->not()->toBeNull();
-    expect($model->verificationCodeIssuedDate)->toEqualCanonicalizing(now('UTC')->startOfSecond());
+    expect(strlen((string) $verificationCode))->toBe(64);
 });
 
 test('assignUserToGroups', function () {
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    Edition::set(Edition::Pro);
+
+    $user = UserModel::factory()->active()->createElement();
 
     $group1 = UserGroup::factory()->create();
     $group2 = UserGroup::factory()->create();
@@ -302,8 +275,7 @@ test('assignUserToGroups', function () {
 });
 
 test('assignUserToDefaultGroup', function () {
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->active()->createElement();
 
     $group = UserGroup::factory()->create();
 
@@ -320,8 +292,7 @@ test('assignUserToDefaultGroup', function () {
 test('handleInvalidLogin', function () {
     Date::setTestNow(now('UTC'));
 
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -336,8 +307,7 @@ test('handleInvalidLogin', function () {
 test('handleInvalidLogin stores ip', function () {
     Cms::config()->storeUserIps = true;
 
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -350,8 +320,7 @@ test('handleInvalidLogin without limit', function () {
     Cms::config()->maxInvalidLogins = false;
     Cms::config()->storeUserIps = true;
 
-    $user = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($user);
+    $user = UserModel::factory()->active()->createElement();
 
     $this->users->handleInvalidLogin($user);
 
@@ -367,11 +336,9 @@ test('handleInvalidLogin without limit', function () {
 test('handleInvalidLogin with max outside window', function () {
     Date::setTestNow(now('UTC'));
 
-    $user = UserModel::factory()->active()->make([
-        'id' => null,
+    $user = UserModel::factory()->active()->createElement([
         'invalidLoginWindowStart' => null,
-    ])->asElement();
-    Craft::$app->elements->saveElement($user);
+    ]);
 
     Cms::config()->maxInvalidLogins = 1;
 
@@ -389,8 +356,7 @@ test('handleInvalidLogin inside window', function () {
     Event::fake();
     Date::setTestNow(now('UTC'));
 
-    $activeUser = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($activeUser);
+    $activeUser = UserModel::factory()->active()->createElement();
 
     UserModel::findOrFail($activeUser->id)->update([
         'invalidLoginWindowStart' => now(),
@@ -422,8 +388,7 @@ test('handleInvalidLogin inside window', function () {
 });
 
 test('handleValidLogin', function () {
-    $activeUser = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($activeUser);
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
 
@@ -438,8 +403,7 @@ test('handleValidLogin', function () {
 test('handleValidLogin with ip collection', function () {
     Cms::config()->storeUserIps = true;
 
-    $activeUser = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($activeUser);
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
 
@@ -451,8 +415,7 @@ test('handleValidLogin with ip collection', function () {
 });
 
 test('handleValidLogin clears values', function () {
-    $activeUser = UserModel::factory()->active()->make(['id' => null])->asElement();
-    Craft::$app->elements->saveElement($activeUser);
+    $activeUser = UserModel::factory()->active()->createElement();
 
     $user = UserModel::findOrFail($activeUser->id);
     $user->update([
@@ -474,10 +437,10 @@ test('sendActivationEmail', function () {})->todo('Add test after Mails are port
 test('canImpersonate', function () {
     Edition::set(Edition::Pro);
 
-    $admin1 = UserModel::factory()->active()->create(['admin' => true])->asElement();
-    $admin2 = UserModel::factory()->active()->create(['admin' => true])->asElement();
-    $user1 = UserModel::factory()->active()->create()->asElement();
-    $user2 = UserModel::factory()->active()->create()->asElement();
+    $admin1 = UserModel::factory()->active()->admin()->createElement();
+    $admin2 = UserModel::factory()->active()->admin()->createElement();
+    $user1 = UserModel::factory()->active()->createElement();
+    $user2 = UserModel::factory()->active()->createElement();
 
     // Admins can impersonate anyone
     expect($this->users->canImpersonate($admin1, $user1))->toBeTrue();

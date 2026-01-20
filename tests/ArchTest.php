@@ -53,3 +53,8 @@ arch('Don\'t use default migrator')
     ->not
     ->toBeUsed()
     ->ignoring(Migrator::class);
+
+arch('Don\'t use legacy aliases')
+    ->expect(['Craft::getAlias', 'Craft::setAlias', 'Craft::getRootAlias'])
+    ->not()
+    ->toBeUsed();

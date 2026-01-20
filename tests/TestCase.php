@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\User\Models\User;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -50,6 +51,9 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
 
         $this->withoutVite();
+
+        // Always start with an admin user
+        User::first()->update(['admin' => true]);
     }
 
     protected function connectionsToTransact(): array

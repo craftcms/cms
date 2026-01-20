@@ -16,7 +16,6 @@ use Craft;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\web\View;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -51,25 +50,6 @@ class CraftConnector extends Yii2
     public function getEmails(): array
     {
         return $this->emails;
-    }
-
-    /**
-     * We override to prevent a bug with the matching of user agent and session.
-     *
-     * @throws ConfigurationException
-     */
-    public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
-    {
-        $oldRequirement = Cms::config()->requireUserAgentAndIpForSession;
-        if ($disableRequiredUserAgent) {
-            Cms::config()->requireUserAgentAndIpForSession = false;
-        }
-
-        parent::findAndLoginUser($user);
-
-        if ($disableRequiredUserAgent) {
-            Cms::config()->requireUserAgentAndIpForSession = $oldRequirement;
-        }
     }
 
     /**

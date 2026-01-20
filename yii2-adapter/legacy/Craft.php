@@ -8,6 +8,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -47,6 +48,7 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see Aliases::get()} instead.
      */
     public static function getAlias($alias, $throwException = true)
     {
@@ -55,7 +57,7 @@ class Craft extends Yii
             $alias = "@appicons/$match[1]";
         }
 
-        return parent::getAlias($alias, $throwException);
+        return Aliases::get($alias, $throwException);
     }
 
     /**

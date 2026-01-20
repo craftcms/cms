@@ -11,14 +11,15 @@ use Craft;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -120,11 +121,7 @@ class SsoController extends Controller
     protected function handleSuccessfulResponse(): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
@@ -163,9 +160,8 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $message =
-                UserHelper::getAuthFailureMessage($exception->identity) ??
-                $message;
+            $info = app(\CraftCms\Cms\Auth\Auth::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $message = $info[1] ?? $message;
         }
 
         // Log some context around the error

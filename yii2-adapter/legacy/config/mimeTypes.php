@@ -1,6 +1,8 @@
 <?php
 
-$mimeTypes = require Craft::getAlias('@yii/helpers/mimeTypes.php');
+use CraftCms\Aliases\Aliases;
+
+$mimeTypes = require Aliases::get('@yii/helpers/mimeTypes.php');
 
 return array_merge($mimeTypes, [
     'avif' => 'image/avif',
