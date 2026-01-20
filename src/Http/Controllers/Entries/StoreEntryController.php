@@ -15,7 +15,6 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\User\Users;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -34,7 +33,6 @@ final readonly class StoreEntryController
         private Request $request,
         private Entries $entries,
         private Sites $sites,
-        private Users $users,
     ) {}
 
     public function __invoke(): Response
@@ -218,16 +216,14 @@ final readonly class StoreEntryController
     private function populateEntry(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->input('typeId', $entry->typeId);
-        $entry->slug = $this->request->input('slug', $entry->slug);
-
-        if (($postDate = $this->request->input('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-
-        if (($expiryDate = $this->request->input('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $this->request->user()->id,
+            'expiryDate' => $this->request->input('expiryDate'),
+            'postDate' => $this->request->input('postDate'),
+            'slug' => $this->request->input('slug'),
+            'title' => $this->request->input('title'),
+            'typeId' => $this->request->input('typeId'),
+        ], fn ($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -238,7 +234,6 @@ final readonly class StoreEntryController
         }
 
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->input('title', $entry->title);
 
         if (! $entry->typeId) {
             // Default to the section's first entry type
@@ -246,12 +241,8 @@ final readonly class StoreEntryController
         }
 
         // Authors
-        $authorIds = $this->request->input('authors') ?? $this->request->input('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (! $entry->id) {
-            $craftUser = $this->users->getUserById($this->request->user()->id);
-            $entry->setAuthor($craftUser);
+        if (empty($entry->getAuthorIds()) && ! $entry->id) {
+            $entry->setAuthor($this->request->user());
         }
 
         // Parent

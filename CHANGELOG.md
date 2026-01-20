@@ -2,10 +2,26 @@
 
 ## Unreleased
 
+- Fixed an error that could occur if the `purgeStaleUserSessionDuration` config setting was set to a duration interval string. ([#18238](https://github.com/craftcms/cms/issues/18238))
+- Fixed a bug where image transforms weren’t getting regenerated on Local filesystems, if the transform params changed and the asset transform index had been cleared. ([#18249](https://github.com/craftcms/cms/issues/18249))
+- Fixed a bug where custom Login page logos could be sized incorrectly. ([#18229](https://github.com/craftcms/cms/pull/18229))
+- Fixed a bug where element index pages weren’t preserving “Trashed” status selections between page loads. ([#18230](https://github.com/craftcms/cms/issues/18230))
+- Fixed a bug where it was possible to suspend SSO-based user accounts.
+- Fixed an error that could occur a nested element’s field layout no longer existed. ([#18246](https://github.com/craftcms/cms/issues/18246))
+- Fixed a bug where selecting new elements within relation fields could cause multiple draft saves in quick succession.
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
+
+## 5.8.22 - 2026-01-09
+
+- Improved keyboard control for Money fields. ([#18198](https://github.com/craftcms/cms/issues/18198), [#18212](https://github.com/craftcms/cms/pull/18212))
 - User queries now always return active, non-pending users first, unless otherwise specified by `orderBy`. ([#18148](https://github.com/craftcms/cms/issues/18148))
 - The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
+- Fixed an error that could occur when logging a deprecation warning, if the backtrace contained any non-UTF-8-encoded strings. ([#18218](https://github.com/craftcms/cms/issues/18218))
+- Fixed a bug where it wasn’t possible to view assets if they had exactly 50 subfolders alongside them. ([#18213](https://github.com/craftcms/cms/issues/18213))
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
 - Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
 - Fixed a bug where Content Block fields could appear to be missing their content when viewing a revision. ([#18149](https://github.com/craftcms/cms/issues/18149))
@@ -16,10 +32,15 @@
 - Fixed a bug where it wasn’t possible to copy/paste nested entries within Matrix fields set to the inline-editable blocks view mode, for unpublished owner elements. ([#18185](https://github.com/craftcms/cms/pull/18185))
 - Fixed a bug where custom fields’ checkboxes weren’t getting removed from field layouts’ “Card Attributes” lists when removed from the layout.
 - Fixed a bug where consecutive hyphens (`-`) within Link fields’ “Class Name” values were getting removed. ([#18201](https://github.com/craftcms/cms/issues/18201))
-- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
-- Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
-- Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
-- Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
+- Fixed an error that could occur when saving a recursively-nested element. ([#18164](https://github.com/craftcms/cms/issues/18164))
+- Fixed a bug where element indexes could show muliple table columns for the same field/label/handle combinations. ([#18209](https://github.com/craftcms/cms/issues/18209))
+- Fixed a bug where element indexes’ “View” menus could list some custom fields under “Attributes”. ([#18221](https://github.com/craftcms/cms/pull/18221))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-2453-mppf-46cj)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-7jx7-3846-m7w7)
 
 ## 5.8.21 - 2025-12-04
 

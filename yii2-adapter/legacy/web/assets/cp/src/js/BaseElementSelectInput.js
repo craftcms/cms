@@ -869,6 +869,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.modal?.disableSelectBtn();
       this.modal?.showFooterSpinner();
 
+      // Pause the element editor so we aren’t causing multiple draft saves
+      this.elementEditor?.pause();
+
       if (this._$replaceElement) {
         this.removeElement(this._$replaceElement);
         this._$replaceElement = null;
@@ -942,6 +945,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+
+      this.elementEditor?.resume();
     },
 
     onModalHide: function () {

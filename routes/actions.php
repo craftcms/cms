@@ -15,7 +15,9 @@ use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
+use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -104,7 +106,7 @@ foreach ([
         Route::any('users/redirect', [LoginController::class, 'redirect']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
-        Route::post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
     });
 }
@@ -143,6 +145,7 @@ Route::prefix(implode('/', [
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
     Route::any('app/icon-svg', [IconController::class, 'svg']);
+    Route::any('app/icon-picker-options', [IconController::class, 'pickerOptions']);
 
     // Updater
     Route::prefix('updater')->group(function () {
@@ -190,6 +193,17 @@ Route::prefix(implode('/', [
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
+
+        // DeprecationErrors
+        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
+        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
+        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
+
+        // Edition
+        Route::middleware([RequireAdmin::class])->group(function () {
+            Route::post('app/try-edition', [EditionController::class, 'tryEdition']);
+            Route::post('app/switch-to-licensed-edition', [EditionController::class, 'switchToLicensedEdition']);
+        });
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);
@@ -242,6 +256,7 @@ Route::prefix(implode('/', [
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
+        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
 
         // Filesystems
         Route::middleware([RequireAdminChanges::class])->group(function () {

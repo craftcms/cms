@@ -62,6 +62,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -112,13 +113,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
 use Stringable;
-use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ArrayableTrait;
-use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -833,6 +832,11 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_RENDER = 'render';
 
     /**
+     * @see sources()
+     */
+    private static array $sources = [];
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -993,19 +997,22 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources(string $context): array
     {
-        $sources = static::defineSources($context);
+        if (!isset(self::$sources[$context])) {
+            // Memoize the results immediately, in case sources() gets called again via the event
+            self::$sources[$context] = static::defineSources($context);
 
-        // Fire a 'registerSources' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
-            $event = new RegisterElementSourcesEvent([
-                'context' => $context,
-                'sources' => $sources,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
-            return $event->sources;
+            // Fire a 'registerSources' event
+            if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+                $event = new RegisterElementSourcesEvent([
+                    'context' => $context,
+                    'sources' => self::$sources[$context],
+                ]);
+                Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+                self::$sources[$context] = $event->sources;
+            }
         }
 
-        return $sources;
+        return self::$sources[$context];
     }
 
     /**
@@ -2598,17 +2605,13 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        try {
-            if (!$this->id || $this->getIsUnpublishedDraft()) {
-                return t('New {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]);
-            }
-
-            return sprintf('%s %s', static::displayName(), $this->id);
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return t('New {type}', [
+                'type' => static::lowerDisplayName(),
+            ]);
         }
+
+        return sprintf('%s %s', static::displayName(), $this->id);
     }
 
     /**
@@ -4943,16 +4946,14 @@ JS, [
 
     /**
      * @inheritdoc
-     * @phpstan-ignore-next-line
+     * @param string|int $offset
      */
     public function offsetExists($offset): bool
     {
         return (
             $offset === 'title' ||
-            /** @phpstan-ignore-next-line */
             ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
             parent::offsetExists($offset) ||
-            /** @phpstan-ignore-next-line */
             $this->fieldByHandle($offset)
         );
     }
@@ -5813,6 +5814,14 @@ JS, [
      */
     protected function attributeHtml(string $attribute): string|Stringable
     {
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            return $this->contentBlockAttributeHtml($attribute);
+        }
+
+        if (str_starts_with($attribute, 'generatedField:')) {
+            return $this->generatedFieldAttributeHtml($attribute);
+        }
+
         switch ($attribute) {
             case 'id':
                 return (string)$this->getCanonicalId();
@@ -5943,7 +5952,7 @@ JS, [
                             } catch (FieldNotFoundException) {
                             }
                         }
-                        $field ??= null;
+                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -5967,6 +5976,78 @@ JS, [
 
                 return ElementHelper::attributeHtml($this->$attribute);
         }
+    }
+
+    private function contentBlockAttributeHtml(string $attribute): string
+    {
+        $parts = explode('.', $attribute);
+        $uid = Str::after(array_shift($parts), 'contentBlock:');
+        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return '';
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return '';
+        }
+
+        if (!$field instanceof ContentBlockField) {
+            return '';
+        }
+
+        $block = $this->getFieldValue($field->handle);
+        return $block->getAttributeHtml(implode('.', $parts));
+    }
+
+    private function generatedFieldAttributeHtml(string $attribute): string
+    {
+        $uid = Str::after($attribute, 'generatedField:');
+        return $this->getGeneratedFieldValues()[$uid] ?? '';
+    }
+
+    /**
+     * Find field instance that matches the instance UID from another layout.
+     *
+     * @param $layoutElementUid
+     * @return FieldInterface|null
+     */
+    private function _getFieldFromAlternativeLayouts($layoutElementUid): ?FieldInterface
+    {
+        $currentLayout = $this->getFieldLayout();
+
+        // get all field layouts for this element type sans the layout used by this element
+        $fieldLayouts = Collection::make(Craft::$app->getFields()->getLayoutsByType(static::class))
+            ->filter(fn($fieldLayout) => $fieldLayout->uid !== $currentLayout?->uid);
+
+        if ($fieldLayouts->isEmpty()) {
+            return null;
+        }
+
+        // find the layout that has this element UID and get its handle
+        $handle = null;
+        foreach ($fieldLayouts as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->uid === $layoutElementUid) {
+                    // get its handle
+                    $handle = $field->layoutElement->handle;
+                    break 2;
+                }
+            }
+        }
+
+        // and now find the layout element by handle in this element's layout
+        if ($handle) {
+            foreach ($currentLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->handle === $handle) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -5994,6 +6075,8 @@ JS, [
                 } catch (FieldNotFoundException) {
                 }
             }
+
+            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
         }
 
         if ($field !== null) {

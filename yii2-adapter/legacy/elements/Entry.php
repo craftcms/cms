@@ -35,6 +35,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -44,7 +45,6 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -134,6 +134,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @since 4.4.0
      */
     public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
+
+    /**
+     * @event DefineMetaFields The event that is triggered when defining the meta fields.
+     * @see metaFieldsHtml()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
     /**
      * @inheritdoc
@@ -1008,12 +1015,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributeLabels(): array
     {
+        $authorLabel = t('{max, plural, =1{Author} other {Authors}}', [
+            'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
+        ]);
+
         return array_merge(parent::attributeLabels(), [
-            'authorIds' => t('{max, plural, =1{Author} other {Authors}}', [
-                'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
-            ]),
-            'postDate' => t('Post Date'),
+            'authorId' => $authorLabel,
+            'authorIds' => $authorLabel,
             'expiryDate' => t('Expiry Date'),
+            'postDate' => t('Post Date'),
+            'typeId' => t('Entry Type'),
         ]);
     }
 
@@ -1031,6 +1042,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'required',
             'when' => fn() => !isset($this->fieldId),
         ];
+        $rules[] = [['typeId'], 'required'];
         $rules[] = [
             ['typeId'],
             function(string $attribute) {
@@ -1059,21 +1071,56 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'when' => fn() => $this->postDate && $this->expiryDate,
             'on' => self::SCENARIO_LIVE,
         ];
-
-        $section = $this->getSection();
-        if ($section && $section->type !== SectionType::Single && $section->maxAuthors !== 0) {
-            $rules[] = [['authorIds'], 'required', 'on' => self::SCENARIO_LIVE];
-            if (isset($section->maxAuthors)) {
-                $rules[] = [
-                    ['authorIds'],
-                    ArrayValidator::class,
-                    'max' => $section->maxAuthors,
-                    'tooMany' => t('{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
+        $rules[] = [
+            ['authorIds'],
+            'required',
+            'when' => function() {
+                $section = $this->getSection();
+                return $section && $section->type !== SectionType::Single && $section->maxAuthors !== 0;
+            },
+            'on' => self::SCENARIO_LIVE,
+        ];
+        $rules[] = [
+            ['typeId'],
+            function(string $attribute) {
+                $typeId = $this->getTypeId();
+                foreach ($this->getAvailableEntryTypes() as $entryType) {
+                    if ($entryType->id === $typeId) {
+                        return;
+                    }
+                }
+                $this->addError($attribute, t('{attribute} is invalid.', [
+                    'attribute' => $this->getAttributeLabel($attribute),
+                ]));
+            },
+        ];
+        $rules[] = [
+            ['authorIds'],
+            function(string $attribute) {
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                if (count($authors) > $section->maxAuthors) {
+                    $this->addError($attribute, t('{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
                         'num' => $section->maxAuthors,
-                    ]),
-                ];
-            }
-        }
+                    ]));
+                }
+                foreach ($authors as $author) {
+                    if (!$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
+                        $this->addError($attribute, t('This user doesn’t have permission to author entries in this section.'));
+                        break;
+                    }
+                }
+            },
+            'when' => function() {
+                $section = $this->getSection();
+                return (
+                    $section &&
+                    $section->type !== SectionType::Single &&
+                    isset($section->maxAuthors) &&
+                    $section->maxAuthors !== 0
+                );
+            },
+        ];
 
         return $rules;
     }
@@ -1083,7 +1130,24 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function setAttributesFromRequest(array $values): void
     {
+        $authorIds = Arr::pull($values, 'authorIds');
+        $authorId = Arr::pull($values, 'authorId');
+
         parent::setAttributesFromRequest($values);
+
+        // Only set the author if the user has permission to change it
+        if (
+            ($authorIds !== null || $authorId !== null) &&
+            isset($this->sectionId)
+        ) {
+            $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            if (
+                $authorIds !== $this->getAuthorIds() &&
+                Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+            ) {
+                $this->setAuthorIds($authorIds);
+            }
+        }
 
         // Did the entry type just change?
         if (isset($this->_typeId, $this->_oldTypeId) && $this->_typeId !== $this->_oldTypeId) {
@@ -2474,7 +2538,7 @@ JS, [
         $this->_applyActionBtnEntryTypeCompatibility();
 
         // Type
-        $fields[] = (function() use ($static) {
+        $fields['type'] = (function() use ($static) {
             $entryTypes = $this->getAvailableEntryTypes();
             if (!Collection::make($entryTypes)->contains(fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
                 $entryTypes[] = $this->getType();
@@ -2504,12 +2568,12 @@ JS, [
 
         // Slug
         if ($this->getType()->showSlugField) {
-            $fields[] = $this->slugFieldHtml($static);
+            $fields['slug'] = $this->slugFieldHtml($static);
         }
 
         // Parent
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
-            $fields[] = (function() use ($static, $section) {
+            $fields['parent'] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
                     $parent = Entries::getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
@@ -2552,7 +2616,7 @@ JS, [
                 Edition::get() !== Edition::Solo &&
                 $user->can("viewPeerEntries:$section->uid")
             ) {
-                $fields[] = (function() use ($static, $section) {
+                $fields['authors'] = (function() use ($static, $section) {
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
@@ -2583,7 +2647,7 @@ JS, [
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
             // Post Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['postDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => t('Post Date'),
                 'id' => 'postDate',
@@ -2594,7 +2658,7 @@ JS, [
             ]);
 
             // Expiry Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['expiryDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => t('Expiry Date'),
                 'id' => 'expiryDate',
@@ -2606,6 +2670,17 @@ JS, [
         }
 
         $fields[] = parent::metaFieldsHtml($static);
+
+        // Fire a 'defineEntryMetaFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
+            $event = new DefineMetaFields([
+                'element' => $this,
+                'static' => $static,
+                'fields' => $fields,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
+            $fields = $event->fields;
+        }
 
         return implode("\n", $fields);
     }

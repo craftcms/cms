@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -25,7 +26,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Button Group');
@@ -34,7 +35,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'hand-pointer';
@@ -48,7 +49,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return parent::getSettingsHtml().
@@ -63,7 +64,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
@@ -72,22 +73,22 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->_inputHtml($value, $element);
+        return $this->_inputHtml($value, $element, false);
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return $this->_inputHtml($value, $element);
+        return $this->_inputHtml($value, $element, true);
     }
 
-    private function _inputHtml(SingleOptionFieldData $value, ?ElementInterface $element): string
+    private function _inputHtml(SingleOptionFieldData $value, ?ElementInterface $element, bool $static): string
     {
         if (! $value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
@@ -108,6 +109,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
         return Cp::buttonGroupHtml([
             'id' => $id,
             'name' => $this->handle,
+            'static' => $static,
             'options' => $options,
             'value' => $this->encodeValue($value),
         ]);

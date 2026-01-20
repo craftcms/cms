@@ -80,7 +80,6 @@ use Override;
 use Stringable;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
@@ -879,12 +878,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     #[Override]
     public function __toString(): string
     {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        $name = $this->getName();
+        if ($name !== '') {
+            return $name;
         }
 
         return parent::__toString();
@@ -1647,7 +1643,8 @@ XML;
 
         return
             $user->id !== $this->id &&
-            $user->can('deleteUsers');
+            $user->can('deleteUsers') &&
+            (! $this->admin || $user->admin);
     }
 
     /**
