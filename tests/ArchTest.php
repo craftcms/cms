@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\web\twig\Extension;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
@@ -11,6 +12,11 @@ use Illuminate\Support\Str;
 arch()
     ->expect('cms')
     ->not->toUse(['die', 'dd', 'dump', 'env']);
+
+arch('Don\'t use legacy logging')
+    ->expect(['Craft::info', 'Craft::warning', 'Craft::debug', 'Craft::error', 'Craft::trace'])
+    ->not()
+    ->toBeUsed();
 
 /**
  * We only want our own Env helpers to be used.
@@ -46,4 +52,4 @@ arch('Don\'t use default migrator')
     ->expect(\Illuminate\Database\Migrations\Migrator::class)
     ->not
     ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Database\Migrator::class);
+    ->ignoring(Migrator::class);
