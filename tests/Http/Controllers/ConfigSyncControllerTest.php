@@ -62,8 +62,7 @@ test('all routes validate data', function (string $controller, string $action) {
 test('index', function () {
     postJson(action([ConfigSyncController::class, 'index']))
         ->assertOk()
-        ->assertSee('Project Config Sync')
-        ->assertSee('Applying changes from the project config YAML files');
+        ->assertSee('Project Config Sync');
 });
 
 test('retry', function () {

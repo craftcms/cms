@@ -61,7 +61,7 @@ final class RouteTokens
         }
 
         $tokenModel = new RouteToken;
-        $tokenModel->token = $token ?? Str::random(extendedChars: true);
+        $tokenModel->token = $token ?? Str::random(32, extendedChars: true);
         $tokenModel->route = $route;
         $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
 

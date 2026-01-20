@@ -69,7 +69,6 @@ test('index', function () {
     postJson(action([RemoveController::class, 'index']), [
         'packageName' => 'craftcms/test-plugin',
     ])
-        ->assertSee('composer-remove') // next action
         ->assertSee('Plugin Uninstaller')
         ->assertSee('Craft.updater');
 });

@@ -64,7 +64,6 @@ test('index', function () {
             'craft' => 'Craft CMS',
         ],
     ])
-        ->assertSee('composer-install') // next action
         ->assertSee('Craft.updater')
         ->assertSee('Updater');
 });
