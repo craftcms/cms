@@ -605,6 +605,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $labels[] = array_pop($options)['label'];
         }
 
+        $labels = array_map(fn($label) => Html::encode($label), $labels);
+
         return implode(', ', $labels);
     }
 
