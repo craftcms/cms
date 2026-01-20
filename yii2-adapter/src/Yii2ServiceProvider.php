@@ -65,6 +65,7 @@ use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
+use craft\services\Users;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -74,6 +75,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -93,6 +95,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
@@ -101,9 +105,11 @@ use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
+use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -115,9 +121,12 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use SensitiveParameter;
 use Symfony\Component\Finder\Finder;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Event as YiiEvent;
 use yii\BaseYii;
+use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
@@ -237,6 +246,35 @@ class Yii2ServiceProvider extends ServiceProvider
 
             return $this->get();
         });
+
+        User::macro(
+            'authenticate',
+            function(#[SensitiveParameter] string $password) {
+                Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
+
+                return app(Auth::class)->authenticate($this, [
+                    'password' => $password,
+                ]);
+            },
+        );
+
+        User::macro(
+            'authenticateWithPasskey',
+            function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
+                Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
+
+                return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
+            },
+        );
+
+        User::macro(
+            'handleInvalidLoginParam',
+            function(): void {
+                Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
+
+                app(Auth::class)->handleInvalidLogin($this);
+            },
+        );
     }
 
     protected function registerLegacyApp(): void
@@ -318,6 +356,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
+            MigrateSessionsTableCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
 
@@ -354,15 +393,12 @@ class Yii2ServiceProvider extends ServiceProvider
         ));
 
         /**
-         * Load Craft when necessary
+         * Load legacy Craft
          */
-        spl_autoload_register(function($class) {
-            if ($class === 'Craft') {
-                app('Craft');
-            }
-        });
+        app('Craft');
 
         $this->ensureNewMigrationTable();
+        $this->ensureNewSessionsTable();
 
         if (!$this->app->runningInConsole()) {
             return;
@@ -373,6 +409,13 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function bootLegacyCommands(): void
     {
+        /**
+         * Don't need these for Laravel tests.
+         */
+        if (app()->environment('testing')) {
+            return;
+        }
+
         /** @var \craft\console\Application $app */
         $app = app('Craft');
 
@@ -477,6 +520,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        \craft\services\Auth::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
@@ -492,6 +536,7 @@ class Yii2ServiceProvider extends ServiceProvider
         SystemMessages::registerEvents();
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
+        Users::registerEvents();
 
         /**
          * Controllers
@@ -519,14 +564,24 @@ class Yii2ServiceProvider extends ServiceProvider
             ]));
         });
 
-        Event::listen(Login::class, function(Login $event) {
-            $user = app('Craft')->getUsers()->getUserById($event->user->getAuthIdentifier());
+        Event::listen(Authenticated::class, function(Authenticated $event) {
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
+        });
 
-            app('Craft')->getUser()->setIdentity($user);
+        Event::listen(Login::class, function(Login $event) {
+            /** @var \CraftCms\Cms\User\Elements\User $user */
+            $user = $event->user;
+            app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
         Event::listen(Logout::class, function() {
             app('Craft')->getUser()->setIdentity(null);
+        });
+
+        Event::listen(TagsInvalidated::class, function(TagsInvalidated $event) {
+            YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
         /**
@@ -1177,6 +1232,10 @@ class Yii2ServiceProvider extends ServiceProvider
     private function ensureNewMigrationTable(): void
     {
         try {
+            if (app()->environment('workbench') || app()->environment('testing')) {
+                return;
+            }
+
             if (Schema::hasColumn(Table::MIGRATIONS, 'migration')) {
                 return;
             }
@@ -1185,11 +1244,34 @@ class Yii2ServiceProvider extends ServiceProvider
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
             }
 
-            if (app()->environment('workbench')) {
+            Artisan::call('craft:migrate:migration-table', [
+                '--force' => true,
+            ]);
+        } catch (PDOException) {
+            // No database connection
+        }
+    }
+
+    /**
+     * Check if we're dealing with an older sessions table.
+     * In that case we'll need to migrate this on the fly.
+     */
+    private function ensureNewSessionsTable(): void
+    {
+        try {
+            if (app()->environment('workbench') || app()->environment('testing')) {
                 return;
             }
 
-            Artisan::call('craft:migrate:migration-table', [
+            if (Schema::hasColumn(Table::SESSIONS, 'payload')) {
+                return;
+            }
+
+            if (!Cms::config()->allowAdminChanges) {
+                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
+            }
+
+            Artisan::call('craft:migrate:sessions-table', [
                 '--force' => true,
             ]);
         } catch (PDOException) {

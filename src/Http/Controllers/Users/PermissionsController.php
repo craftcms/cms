@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\errors\InvalidElementException;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -13,27 +13,29 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
-use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
 final readonly class PermissionsController
 {
+    use ConfirmsPasswords;
     use EditUserTrait;
     use RespondsWithFlash;
 
-    public function index(Request $request, ?User $user = null): CpScreenResponse
+    public function index(Request $request, ?int $userId = null): CpScreenResponse
     {
-        $user = $this->editedUser($user?->id);
+        $user = $this->editedUser($userId);
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
         $response->action('users/save-permissions');
@@ -65,7 +67,7 @@ final readonly class PermissionsController
             'sendActivationMail' => ['nullable', 'boolean'],
         ]);
 
-        $currentUser = $request->user()->asElement();
+        $currentUser = $request->user();
         $user = $this->editedUser($request->integer('userId'));
 
         // Is their admin status changing?
@@ -74,7 +76,7 @@ final readonly class PermissionsController
 
             if ($adminParam !== $user->admin) {
                 if ($adminParam) {
-                    $this->requireElevatedSession();
+                    $this->requireConfirmedPassword();
                 }
 
                 $user->admin = $adminParam;
@@ -102,10 +104,8 @@ final readonly class PermissionsController
             $request->boolean('sendActivationEmail')
         ) {
             try {
-                if (! Craft::$app->getUsers()->sendActivationEmail($user)) {
-                    Flash::fail(t('Couldn’t send activation email. Check your email settings.'));
-                }
-            } catch (InvalidElementException $e) {
+                $user->sendEmailVerificationNotification();
+            } catch (Throwable $e) {
                 Flash::fail(t('Couldn’t send the activation email: {error}', [
                     'error' => $e->getMessage(),
                 ]));
@@ -150,10 +150,10 @@ final readonly class PermissionsController
         }
 
         if ($hasNewGroups) {
-            $this->requireElevatedSession();
+            $this->requireConfirmedPassword();
         }
 
-        Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        Users::assignUserToGroups($user->id, $groupIds);
 
         $user->setGroups($newGroups);
     }
@@ -197,7 +197,7 @@ final readonly class PermissionsController
         }
 
         if ($hasNewPermissions) {
-            $this->requireElevatedSession();
+            $this->requireConfirmedPassword();
         }
 
         UserPermissions::saveUserPermissions($user->id, $permissions);

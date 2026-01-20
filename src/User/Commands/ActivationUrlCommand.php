@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
@@ -22,7 +22,7 @@ final class ActivationUrlCommand extends Command implements PromptsForMissingInp
 
     protected $aliases = ['users/activation-url', 'users:activationUrl', 'users/activationUrl'];
 
-    public function handle(): int
+    public function handle(Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -34,7 +34,7 @@ final class ActivationUrlCommand extends Command implements PromptsForMissingInp
             return self::FAILURE;
         }
 
-        info("Activation URL for “{$user->username}”:".Craft::$app->getUsers()->getActivationUrl($user));
+        info("Activation URL for “{$user->username}”:".$users->getActivationUrl($user));
 
         return self::SUCCESS;
     }

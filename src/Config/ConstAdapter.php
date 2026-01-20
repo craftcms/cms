@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use Dotenv\Repository\Adapter\AdapterInterface;
+use Override;
 use PhpOption\Option;
 use PhpOption\Some;
 
@@ -12,8 +13,6 @@ final class ConstAdapter implements AdapterInterface
 {
     /**
      * Create a new array adapter instance.
-     *
-     * @return void
      */
     private function __construct() {}
 
@@ -22,8 +21,8 @@ final class ConstAdapter implements AdapterInterface
      *
      * @return Option<AdapterInterface>
      */
-    #[\Override]
-    public static function create()
+    #[Override]
+    public static function create(): Option
     {
         /** @var Option<AdapterInterface> */
         return Some::create(new self);
@@ -35,8 +34,8 @@ final class ConstAdapter implements AdapterInterface
      * @param  non-empty-string  $name
      * @return Option<string>
      */
-    #[\Override]
-    public function read(string $name)
+    #[Override]
+    public function read(string $name): Option
     {
         return Option::fromValue(defined($name) ? constant($name) : null);
     }
@@ -45,10 +44,9 @@ final class ConstAdapter implements AdapterInterface
      * Write to an environment variable, if possible.
      *
      * @param  non-empty-string  $name
-     * @return bool
      */
-    #[\Override]
-    public function write(string $name, string $value)
+    #[Override]
+    public function write(string $name, string $value): bool
     {
         define($name, $value);
 
@@ -59,10 +57,9 @@ final class ConstAdapter implements AdapterInterface
      * Delete an environment variable, if possible.
      *
      * @param  non-empty-string  $name
-     * @return bool
      */
-    #[\Override]
-    public function delete(string $name)
+    #[Override]
+    public function delete(string $name): bool
     {
         return false;
     }

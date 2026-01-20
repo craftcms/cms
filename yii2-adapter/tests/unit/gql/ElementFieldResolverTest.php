@@ -14,7 +14,6 @@ use craft\elements\Category as CategoryElement;
 use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
-use craft\elements\User as UserElement;
 use craft\errors\GqlException;
 use craft\fs\Local;
 use craft\gql\base\ObjectType;
@@ -28,7 +27,6 @@ use craft\imagetransforms\ImageTransformer;
 use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
 use craft\models\ImageTransform;
-use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
@@ -36,6 +34,8 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
@@ -247,9 +247,9 @@ class ElementFieldResolverTest extends TestCase
                     'timeZone' => 'Fiji',
                 ],
                 'getGroups' => fn() => [
-                    new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
-                    new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
-                    new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
+                    UserGroup::from(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
+                    UserGroup::from(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
+                    UserGroup::from(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
                 ],
             ]
         );

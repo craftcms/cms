@@ -142,7 +142,7 @@ trait QueriesAffiliatedSite
             array_shift($value);
 
             $this->affiliatedSiteId = Sites::getAllSites()
-                ->filter(fn (Site $site) => ! in_array($site->id, $value))
+                ->reject(fn (Site $site): bool => in_array($site->id, $value))
                 ->pluck('id')
                 ->all();
 

@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Override;
 use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -60,6 +61,11 @@ final class UpdaterController extends BaseUpdaterController
 
     public function backup(): Response
     {
+        // make sure migrations are pending
+        if (! $this->updates->areMigrationsPending()) {
+            return $this->sendFinished();
+        }
+
         try {
             app('Craft')->getDb()->backup();
         } catch (Throwable $e) {
@@ -163,7 +169,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Updater');
@@ -172,7 +178,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $data = [];
@@ -229,7 +235,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         // Is there anything to install/update?
@@ -271,7 +277,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a revert?
@@ -287,7 +293,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * Returns the return URL that should be passed with a finished state.
      */
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
@@ -296,7 +302,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -312,7 +318,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function sendFinished(array $state = []): Response
     {
         // Disable maintenance mode

@@ -9,6 +9,7 @@ use craft\base\Plugin;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -152,7 +153,7 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Info::isInstalled()) {
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Cms::isInstalled()) {
             return;
         }
 
@@ -1093,14 +1094,14 @@ final class Plugins
             $basePath = $plugin->getBasePath();
         } else {
             if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-                $basePath = Craft::getAlias($basePath);
+                $basePath = Aliases::get($basePath);
             }
         }
 
         $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
         if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
-            $iconPath = Craft::getAlias('@appicons/default-plugin.svg');
+            $iconPath = Aliases::get('@appicons/default-plugin.svg');
         }
 
         return file_get_contents($iconPath);

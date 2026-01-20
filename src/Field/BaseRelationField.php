@@ -512,20 +512,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes['allowSelfRelations'] = $this->allowSelfRelations;
-        $attributes['branchLimit'] = $this->branchLimit;
-        $attributes['defaultPlacement'] = $this->defaultPlacement;
-        $attributes['maintainHierarchy'] = $this->maintainHierarchy;
-        $attributes['maxRelations'] = $this->maxRelations;
-        $attributes['minRelations'] = $this->minRelations;
-        $attributes['selectionLabel'] = $this->selectionLabel;
-        $attributes['showSearchInput'] = $this->showSearchInput;
-        $attributes['showSiteMenu'] = $this->showSiteMenu;
-        $attributes['source'] = $this->source;
-        $attributes['sources'] = $this->sources;
-        $attributes['targetSiteId'] = $this->targetSiteId;
-        $attributes['validateRelatedElements'] = $this->validateRelatedElements;
-        $attributes['viewMode'] = $this->viewMode;
+        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
+        $attributes[] = 'defaultPlacement';
+        $attributes[] = 'maintainHierarchy';
+        $attributes[] = 'maxRelations';
+        $attributes[] = 'minRelations';
+        $attributes[] = 'selectionLabel';
+        $attributes[] = 'showSearchInput';
+        $attributes[] = 'showSiteMenu';
+        $attributes[] = 'source';
+        $attributes[] = 'sources';
+        $attributes[] = 'targetSiteId';
+        $attributes[] = 'validateRelatedElements';
+        $attributes[] = 'viewMode';
 
         return $attributes;
     }
@@ -657,7 +657,6 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
-                /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -709,7 +708,7 @@ JS, [
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
-        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
 
@@ -726,7 +725,7 @@ JS, [
         // only save relations to elements in the current site.
         // (see https://github.com/craftcms/cms/issues/15459)
         if (
-            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
+            $value instanceof ElementQueryInterface &&
             $element?->propagating &&
             $element->isNewForSite &&
             ! $element->resaving &&
@@ -739,7 +738,7 @@ JS, [
                 ->ids();
         }
 
-        if ($value instanceof \CraftCms\Cms\Database\Queries\ElementQuery || $value instanceof ElementCollection) {
+        if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
             return $value;
         }
 
@@ -748,8 +747,8 @@ JS, [
         $query = new EntryQuery()
             ->siteId($this->targetSiteId($element));
 
-        if (is_array($value)) {
-            $value = array_values(array_filter($value));
+        if (is_array($value) || is_int($value)) {
+            $value = collect($value)->filter()->values()->all();
             $query->whereIn('elements.id', $value);
             if (! empty($value)) {
                 $query->orderBy(new FixedOrderExpression('elements.id', $value));
@@ -903,6 +902,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
+            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1028,7 +1028,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->get();
+            $value = $this->_all($value, $element)->all();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
@@ -1087,8 +1087,12 @@ JS, [
 
         foreach ($sourceElements as $sourceElement) {
             $rawValue = $sourceElement->getBehavior('customFields')->{$this->handle} ?? null;
-            if ($rawValue instanceof ElementQueryInterface) {
+            if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
+            }
+            if ($rawValue instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+                $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
+                $rawValue = $where['value'] ?? null;
             }
             if (is_array($rawValue)) {
                 foreach ($rawValue as $targetElementId) {
@@ -1225,7 +1229,7 @@ JS, [
      */
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1242,12 +1246,18 @@ JS, [
             Arr::isNumeric($where['values'])
         ) {
             $targetIds = $where['values'] ?? [];
+        } elseif (
+            $value instanceof ElementQuery &&
+            isset($value->where['elements.id']) &&
+            Arr::isNumeric($value->where['elements.id'])
+        ) {
+            $targetIds = $value->where['elements.id'] ?: [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->get()
-                ->map(fn (ElementInterface $element) => $element->id)
+                ->collect()
+                ->pluck('id')
                 ->all();
         }
 
@@ -1785,7 +1795,7 @@ JS, [
     /**
      * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      */
-    private function _all(\CraftCms\Cms\Database\Queries\ElementQuery|ElementQueryInterface $query, ?ElementInterface $element = null): \CraftCms\Cms\Database\Queries\ElementQuery
+    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
         $clone = (clone $query)
             ->drafts(null)

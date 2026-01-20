@@ -20,6 +20,7 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
@@ -34,6 +35,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -71,6 +73,11 @@ class NestedElementManager extends Component
      * @see createRevisions()
      */
     public const EVENT_AFTER_CREATE_REVISIONS = 'afterCreateRevisions';
+
+    /**
+     * @see getSupportedSiteIds()
+     */
+    private static array $renderedPropagationFormats = [];
 
     /**
      * Constructor
@@ -200,8 +207,10 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
+        /** @phpstan-ignore function.alreadyNarrowedType */
         $result = method_exists($query, 'getCachedResult')
             ? $query->getCachedResult()
+            /** @phpstan-ignore method.notFound */
             : $query->getResultOverride();
 
         if ($fetchAll && $result === null) {
@@ -331,7 +340,11 @@ class NestedElementManager extends Component
         $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
-            $propagationKey = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
+            if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                self::$renderedPropagationFormats[$cacheKey] = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            }
+            $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
 
         foreach ($ownerSiteIds as $siteId) {
@@ -349,8 +362,14 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
-                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
+                        $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $siteId);
+                        if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                            $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                            self::$renderedPropagationFormats[$cacheKey] = $siteOwner
+                                ? $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
+                                : false;
+                        }
+                        $include = $propagationKey === self::$renderedPropagationFormats[$cacheKey];
                     }
                     break;
                 default:
@@ -378,6 +397,7 @@ class NestedElementManager extends Component
         $config += [
             'showInGrid' => false,
             'prevalidate' => false,
+            'selectable' => false,
         ];
 
         return $this->createView(
@@ -393,6 +413,7 @@ class NestedElementManager extends Component
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
                     'showInGrid' => $config['showInGrid'],
+                    'selectable' => $config['selectable'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -432,6 +453,7 @@ class NestedElementManager extends Component
                         fn(ElementInterface $element) => Html::li(Cp::elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
+                            'selectable' => $config['selectable'],
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
                         ]))->encode(false),
@@ -590,12 +612,12 @@ class NestedElementManager extends Component
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
             /** @var ElementInterface $owner */
-            if ($owner->draftCreatorId === Craft::$app->getUser()->getIdentity()?->id) {
+            if ($owner->draftCreatorId === Auth::user()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
-        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use (
@@ -677,7 +699,7 @@ JS, [
         $resetValue = false;
 
         if ($owner->duplicateOf !== null) {
-            // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
+            // If this is a draft, its nested element ownership should have already been duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
             // getIsUnpublishedDraft is needed for "save as new" duplication
@@ -797,8 +819,10 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
+            /** @phpstan-ignore function.alreadyNarrowedType */
             $elements = method_exists($value, 'getCachedResult')
                 ? $value->getCachedResult()
+                /** @phpstan-ignore method.notFound */
                 : $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);
@@ -835,6 +859,7 @@ JS, [
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
+                    $element->resaving = $owner->resaving;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is

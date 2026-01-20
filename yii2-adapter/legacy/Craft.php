@@ -8,12 +8,13 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
@@ -47,6 +48,7 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see Aliases::get()} instead.
      */
     public static function getAlias($alias, $throwException = true)
     {
@@ -55,7 +57,7 @@ class Craft extends Yii
             $alias = "@appicons/$match[1]";
         }
 
-        return parent::getAlias($alias, $throwException);
+        return Aliases::get($alias, $throwException);
     }
 
     /**
@@ -63,14 +65,13 @@ class Craft extends Yii
      */
     public static function t($category, $message, $params = [], $language = null): string
     {
-        return \CraftCms\Cms\Support\Facades\I18N::translate($message, $params, $category, $language);
+        return I18N::translate($message, $params, $category, $language);
     }
 
     /**
      * @inheritdoc
      * @template T
-     * @param class-string<T>|array|callable $type
-     * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
+     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>}|callable():T $type
      * @param array $params
      * @return T
      */
@@ -228,7 +229,7 @@ class Craft extends Yii
             return;
         }
 
-        if (!Info::isInstalled()) {
+        if (!Cms::isInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], [], [], null, false, true);
             return;

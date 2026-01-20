@@ -2388,7 +2388,7 @@ $.extend(Craft, {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
     return document.cookie.replace(
       new RegExp(
-        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
+        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}.${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
       ),
       '$1'
     );
@@ -2410,7 +2410,7 @@ $.extend(Craft, {
    */
   setCookie: function (name, value, options) {
     options = $.extend({}, this.defaultCookieOptions, options);
-    let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(
+    let cookie = `Craft-${Craft.systemUid}.${name}=${encodeURIComponent(
       value
     )}`;
     if (options.path) {
@@ -2902,45 +2902,53 @@ $.extend(Craft, {
     await this.animateAll([[element, css]]);
   },
 
+  transitionQueue: null,
+
   animateAll: function (animations) {
-    return new Promise((resolve, reject) => {
-      for (let i = 0; i < animations.length; i++) {
-        if ((!animations[i][0]) instanceof jQuery) {
-          animations[i][0] = $(animations[i][0]);
-        }
-      }
+    if (!Craft.transitionQueue) {
+      Craft.transitionQueue = new Craft.Queue();
+    }
 
-      if (!document.startViewTransition) {
-        // fallback to Velocity
+    return Craft.transitionQueue.push(() => {
+      return new Promise((resolve, reject) => {
         for (let i = 0; i < animations.length; i++) {
-          const [$element, css] = animations[i];
-          $element.velocity(
-            css,
-            Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
-            i === animations.length - 1 ? resolve : null
-          );
+          if ((!animations[i][0]) instanceof jQuery) {
+            animations[i][0] = $(animations[i][0]);
+          }
         }
-        return;
-      }
 
-      for (const [$element] of animations) {
-        if ($element.css('view-transition-name') === 'none') {
-          $element.css(
-            'view-transition-name',
-            `vt-${Math.floor(Math.random() * 100000)}`
-          );
+        if (!document.startViewTransition) {
+          // fallback to Velocity
+          for (let i = 0; i < animations.length; i++) {
+            const [$element, css] = animations[i];
+            $element.velocity(
+              css,
+              Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
+              i === animations.length - 1 ? resolve : null
+            );
+          }
+          return;
         }
-      }
 
-      const transition = document.startViewTransition(() => {
-        for (const [$element, css] of animations) {
-          $element.css(css);
+        for (const [$element] of animations) {
+          if ($element.css('view-transition-name') === 'none') {
+            $element.css(
+              'view-transition-name',
+              `vt-${Math.floor(Math.random() * 100000)}`
+            );
+          }
         }
-      });
 
-      transition.finished.then(resolve).catch((e) => {
-        console.warn(e);
-        resolve();
+        const transition = document.startViewTransition(() => {
+          for (const [$element, css] of animations) {
+            $element.css(css);
+          }
+        });
+
+        transition.finished.then(resolve).catch((e) => {
+          console.warn(e);
+          resolve();
+        });
       });
     });
   },
@@ -3089,7 +3097,9 @@ $.extend($.fn, {
   checkboxselect: function () {
     return this.each(function () {
       if (!$.data(this, 'checkboxSelect')) {
-        new Garnish.CheckboxSelect(this);
+        new Garnish.CheckboxSelect(this, {
+          storageKey: this.getAttribute('data-storage-key'),
+        });
       }
     });
   },

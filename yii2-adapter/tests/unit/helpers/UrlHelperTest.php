@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use UnitTester;
 use yii\base\Exception;
@@ -260,7 +261,7 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = Craft::getAlias('@web/actions/endpoint');
+        $expected = Aliases::get('@web/actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
     }
 

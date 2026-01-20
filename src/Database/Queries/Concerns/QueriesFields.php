@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Query;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -88,11 +89,15 @@ trait QueriesFields
     protected function initQueriesFields(): void
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
-            if ($elementQuery->id) {
+            if (! is_null($elementQuery->id)) {
+                throw_if(empty($elementQuery->id), QueryAbortedException::class);
+
                 $elementQuery->subQuery->whereNumericParam('elements.id', $elementQuery->id);
             }
 
-            if ($elementQuery->uid) {
+            if (! is_null($elementQuery->uid)) {
+                throw_if(empty($elementQuery->uid), QueryAbortedException::class);
+
                 $elementQuery->subQuery->whereParam('elements.uid', $elementQuery->uid);
             }
 

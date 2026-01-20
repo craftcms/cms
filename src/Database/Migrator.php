@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use Override;
 
 /**
  * @internal
@@ -33,6 +34,11 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
         return $this;
     }
 
+    public function getTrack(): ?string
+    {
+        return $this->repository->getTrack();
+    }
+
     public function setPaths(array $paths): self
     {
         $this->paths = $paths;
@@ -40,7 +46,7 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     public function run($paths = [], array $options = []): array
     {
         if (empty($paths)) {
@@ -56,13 +62,13 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
         return parent::run($paths, $options);
     }
 
-    #[\Override]
+    #[Override]
     public function runMigration($migration, $method): void
     {
         parent::runMigration($migration, $method);
     }
 
-    #[\Override]
+    #[Override]
     public function resetMigrations(array $migrations, array $paths, $pretend = false): array
     {
         return parent::resetMigrations($migrations, $paths, $pretend);

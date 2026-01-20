@@ -138,10 +138,41 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Auth
 
+- Refactored the authentication system to use Laravel’s authentication system.
+- Added `CraftCms\Cms\Auth\Events\SettingPassword`.
+- Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
+- Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
+- Deprecated `craft\web\User`. `auth('craft')->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
+- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\Authenticating` should be used instead.
 - Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
 - Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
 - Deprecated `\craft\records\SsoIdentity`. `\CraftCms\Cms\Auth\Models\SsoIdentity` should be used instead.
 - Deprecated `\craft\records\WebAuthn`. `\CraftCms\Cms\Auth\Models\WebAuthn` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::authorize`. `CraftCms\Cms\Auth\SessionAuth::authorize` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::deauthorize`. `CraftCms\Cms\Auth\SessionAuth::deauthorize` should be used instead.
+- Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
+- Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
+    - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+- Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
+    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
+- Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+
+### Passkeys
+
+- Added `CraftCms\Cms\Auth\Passkeys\Passkeys`.
+- Deprecated `craft\services\Auth` passkey methods. The following should be used instead:
+  - `Auth::hasPasskeys()` -> `app(Passkeys::class)->hasPasskeys()`
+  - `Auth::getPasskeys()` -> `app(Passkeys::class)->getPasskeys()`
+  - `Auth::getPasskeyCreationOptions()` -> `app(Passkeys::class)->getPasskeyCreationOptions()`
+  - `Auth::verifyPasskeyCreationResponse()` -> `app(Passkeys::class)->verifyPasskeyCreationResponse()`
+  - `Auth::getPasskeyRequestOptions()` -> `app(Passkeys::class)->getPasskeyRequestOptions()`
+  - `Auth::verifyPasskey()` -> `app(Passkeys::class)->verifyPasskey()`
+  - `Auth::deletePasskey()` -> `app(Passkeys::class)->deletePasskey()`
+- Deprecated `craft\auth\passkeys\CredentialRepository`. `CraftCms\Cms\Auth\Passkeys\CredentialRepository` should be used instead.
+- Deprecated `craft\auth\passkeys\WebauthnServer`. `CraftCms\Cms\Auth\Passkeys\WebauthnServer` should be used instead.
 
 ## Drafts
 
@@ -193,6 +224,14 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 - Deprecated `\craft\records\GqlSchema`. `\CraftCms\Cms\Gql\Models\GqlSchema` should be used instead.
 - Deprecated `\craft\records\GqlToken`. `\CraftCms\Cms\Gql\Models\GqlToken` should be used instead.
+
+## HTTP
+
+- Deprecated `craft\controllers\AppController::actionLicensingIssues()`. `CraftCms\Cms\Http\Middleware\EnforceLicenses` should be used instead.
+- Removed `craft\controllers\AppController::actionIconPickerOptions()`. Use `CraftCms\Cms\Http\Controllers\IconController::pickerOptions()` instead.
+- Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.
+- Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
+- Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
 
 ## Migrations
 
@@ -251,6 +290,10 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
   - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
   - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
+
+## Request
+
+- Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
 
 ## Updates
 
@@ -411,6 +454,15 @@ Moved the following controllers:
 
 ## Users
 
+- `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable`, `Illuminate\Contracts\Auth\Access\Authorizable`, `Illuminate\Contracts\Auth\CanResetPassword`, and `Illuminate\Contracts\Auth\MustVerifyEmail`.
+- Added `CraftCms\Cms\User\Notifications\VerifyEmailNotification`.
+- `Users::purgeExpiredPendingUsers()` now joins the `password_reset_tokens` table to find expired pending users.
+- Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
+- Removed `craft\controllers\UsersController` in favor of:
+  - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
+  - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
+  - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
   - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
   - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`

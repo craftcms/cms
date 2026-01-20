@@ -32,16 +32,13 @@ use yii\validators\UrlValidator;
  * }
  * ```
  *
+ * @template T of Model
+ * @extends Behavior<T>
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
  */
 class EnvAttributeParserBehavior extends Behavior
 {
-    /**
-     * @var Model
-     */
-    public $owner;
-
     /**
      * @var string[]|callable[] The attributes names that can be set to environment
      * variables (`$VARIABLE_NAME`) and/or aliases (`@aliasName`).

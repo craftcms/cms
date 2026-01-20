@@ -66,8 +66,8 @@ class AppHelperTest extends TestCase
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
             ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
             ['cacheConfig', ['class', 'keyPrefix', 'defaultDuration']],
-            ['sessionConfig', ['class', 'as session', 'authAccessParam', 'flashParam']],
-            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'usernameCookie']],
+            ['sessionConfig', ['class', 'as session', 'flashParam']],
+            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout']],
         ];
     }
 

@@ -9,8 +9,8 @@ namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\base\Component;
-use craft\elements\User;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Set a value from the IdP as a User's attribute

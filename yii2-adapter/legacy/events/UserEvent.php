@@ -7,13 +7,14 @@
 
 namespace craft\events;
 
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * User event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class UserEvent extends CancelableEvent
 {

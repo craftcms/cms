@@ -8,7 +8,6 @@
 namespace craft\mail;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
+use CraftCms\Cms\User\Elements\User;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -179,9 +179,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $subject = $view->renderString($systemMessage->subject, $variables);
-                $textBody = $view->renderString($systemMessage->body, $variables);
-                $htmlBody = $view->renderString($systemMessage->body, $variables, escapeHtml: true);
+                $subject = $view->renderSandboxedString($systemMessage->subject, $variables);
+                $textBody = $view->renderSandboxedString($systemMessage->body, $variables);
+                $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);

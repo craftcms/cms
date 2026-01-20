@@ -8,7 +8,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\models\UserGroup;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use function CraftCms\Cms\t;
 
@@ -68,7 +68,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
     {
         /** @var Entry $element */
         $groups = $element->getAuthor()?->getGroups() ?? [];
-        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $groups);
+        $groupUids = Arr::pluck($groups, 'uid');
         return $this->matchValue($groupUids);
     }
 }

@@ -9,7 +9,6 @@ namespace CraftCms\Cms\Database\Migrations;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
@@ -31,8 +30,11 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
@@ -74,6 +76,7 @@ class Install extends Migration
                 $this->insertDefaultData();
             } catch (Throwable $e) {
                 $this->components->error("Error inserting default data: {$e->getMessage()}");
+                $this->getOutput()->info($e->getTraceAsString());
             }
         });
 
@@ -620,14 +623,16 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('userId');
-            $table->char('token', 100);
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
-        });
+        if (! Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->longText('payload');
+                $table->integer('last_activity')->index();
+            });
+        }
 
         Schema::create('shunnedmessages', function (Blueprint $table) {
             $table->integer('id', true);
@@ -769,12 +774,10 @@ class Install extends Migration
             $table->dateTime('lastInvalidLoginDate')->nullable();
             $table->dateTime('lockoutDate')->nullable();
             $table->boolean('hasDashboard')->default(false);
-            $table->string('verificationCode')->nullable();
-            $table->dateTime('verificationCodeIssuedDate')->nullable();
             $table->string('unverifiedEmail')->nullable();
             $table->boolean('passwordResetRequired')->default(false);
             $table->dateTime('lastPasswordChangeDate')->nullable();
-            $table->rememberToken();
+            $table->string('rememberToken', 100)->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
 
@@ -810,6 +813,12 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);
             $table->char('uid', 36)->default('0');
+        });
+
+        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
+            $table->string('email')->index();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
         });
 
         Schema::create('webauthn', function (Blueprint $table) {
@@ -909,10 +918,6 @@ class Install extends Migration
         Schema::createIndex(Table::SECTIONS, ['dateDeleted']);
         Schema::createIndex(Table::SECTIONS_SITES, ['sectionId', 'siteId'], unique: true);
         Schema::createIndex(Table::SECTIONS_SITES, ['siteId']);
-        Schema::createIndex(Table::SESSIONS, ['uid']);
-        Schema::createIndex(Table::SESSIONS, ['token']);
-        Schema::createIndex(Table::SESSIONS, ['dateUpdated']);
-        Schema::createIndex(Table::SESSIONS, ['userId']);
         Schema::createIndex(Table::SHUNNEDMESSAGES, ['userId', 'message'], unique: true);
         Schema::createIndex(Table::SITES, ['dateDeleted']);
         Schema::createIndex(Table::SITES, ['handle']);
@@ -940,7 +945,6 @@ class Install extends Migration
         Schema::createIndex(Table::USERS, ['locked']);
         Schema::createIndex(Table::USERS, ['pending']);
         Schema::createIndex(Table::USERS, ['suspended']);
-        Schema::createIndex(Table::USERS, ['verificationCode']);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], unique: true);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['parentId']);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['volumeId']);
@@ -960,7 +964,7 @@ class Install extends Migration
             $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
         });
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (DB::getDriverName() === 'mysql') {
             Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
@@ -970,16 +974,16 @@ class Install extends Migration
             });
         } else {
             // Postgres is case-sensitive
-            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.Craft::$app->getDb()->tablePrefix.Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
-            DB::statement('CREATE INDEX users_email_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(email))');
-            DB::statement('CREATE INDEX users_username_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(username))');
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
+            DB::statement('CREATE INDEX users_email_index ON '.DB::getTablePrefix().Table::USERS.' (lower(email))');
+            DB::statement('CREATE INDEX users_username_index ON '.DB::getTablePrefix().Table::USERS.' (lower(username))');
 
             Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->rawColumn('keywords_vector', 'tsvector');
             });
 
-            DB::statement('CREATE INDEX keywords_gin ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
-            DB::statement('CREATE INDEX keywords_index ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING btree(keywords)');
+            DB::statement('CREATE INDEX keywords_gin ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
+            DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         }
     }
 
@@ -1037,14 +1041,12 @@ class Install extends Migration
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('creatorId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
-        Schema::table(Table::SEARCHINDEXQUEUE, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::SEARCHINDEXQUEUE_FIELDS, fn (Blueprint $table) => $table->foreign('jobId')->references('id')->on(Table::SEARCHINDEXQUEUE)->cascadeOnDelete());
         Schema::table(Table::SECTIONS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->nullOnDelete());
         Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
         Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('typeId')->references('id')->on(Table::ENTRYTYPES)->cascadeOnDelete());
         Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
-        Schema::table(Table::SESSIONS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::SHUNNEDMESSAGES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::SITEGROUPS)->cascadeOnDelete());
         Schema::table(Table::SSO_IDENTITIES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
@@ -1100,7 +1102,7 @@ class Install extends Migration
         $projectConfig->flush();
 
         // Craft, you are installed now.
-        Info::setIsInstalled();
+        Cms::setIsInstalled();
 
         Sites::refreshSites();
 
@@ -1126,12 +1128,12 @@ class Install extends Migration
             ]);
             Craft::$app->getElements()->saveElement($user);
 
-            Craft::$app->getUsers()->saveUserPreferences($user, [
+            Users::saveUserPreferences($user, [
                 'language' => $this->site->getLanguage(),
             ]);
 
-            if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getUser()->login($user, Cms::config()->userSessionDuration);
+            if (! app()->runningInConsole()) {
+                Auth::guard('craft')->loginUsingId($user->id);
             }
         });
     }

@@ -35,7 +35,7 @@ final readonly class UserSettingsController
         $request->validate([
             'photoVolumeId' => ['nullable', 'integer'],
             'photoSubpath' => ['nullable', 'string'],
-            'require2fa' => ['nullable', 'boolean'],
+            'require2fa' => ['nullable'],
             'requireEmailVerification' => ['nullable', 'boolean'],
             'validateOnPublicRegistration' => ['nullable', 'boolean'],
             'allowPublicRegistration' => ['nullable', 'boolean'],
@@ -45,7 +45,7 @@ final readonly class UserSettingsController
 
         $settings = $this->projectConfig->get('users') ?? [];
         $settings['photoVolumeUid'] = $request->input('photoVolumeId')
-            ? Craft::$app->getVolumes()->getVolumeById($request->input('photoVolumeId'))?->uid
+            ? Craft::$app->getVolumes()->getVolumeById($request->integer('photoVolumeId'))?->uid
             : null;
         $settings['photoSubpath'] = $request->input('photoSubpath');
 
@@ -59,6 +59,7 @@ final readonly class UserSettingsController
             $settings['allowPublicRegistration'] = $request->boolean('allowPublicRegistration');
             $settings['deactivateByDefault'] = $request->boolean('deactivateByDefault');
             $settings['defaultGroup'] = $request->input('defaultGroup');
+            $settings['require2fa'] = $request->input('require2fa');
         }
 
         $this->projectConfig->set('users', $settings, 'Update user settings.');

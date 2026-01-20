@@ -6,17 +6,16 @@ namespace CraftCms\Cms\Providers;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
-use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
-use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -25,17 +24,25 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use IntlDateFormatter;
 use IntlException;
 use Override;
 use ReflectionClass;
 use RuntimeException;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
 final class AppServiceProvider extends ServiceProvider
@@ -46,24 +53,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerMacros();
-
-        /**
-         * Make sure we're using Craft's User model
-         *
-         * @var class-string<\Illuminate\Contracts\Auth\Authenticatable> $model
-         */
-        $model = Config::get('auth.providers.users.model');
-        if (! class_exists($model) || ! is_a($model, User::class, true)) {
-            Config::set('auth.providers.users.model', User::class);
-        }
-
-        Authenticate::redirectUsing(function () {
-            if (\request()->isCpRequest()) {
-                return Cms::config()->cpTrigger.'/login';
-            }
-
-            return Cms::config()->loginPath;
-        });
     }
 
     public function boot(): void
@@ -88,7 +77,15 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootAliases();
 
         $this->app->booted(function () {
-            if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+            /**
+             * Users can register their own password rules,
+             * but we provide a sensible default.
+             */
+            if (! Password::$defaultCallback) {
+                Password::defaults(fn () => Password::min(8)->max(255));
+            }
+
+            if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
                 app(GarbageCollection::class)->run();
             }
@@ -97,6 +94,22 @@ final class AppServiceProvider extends ServiceProvider
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft'),
         ], ['craftcms', 'craftcms-assets']);
+
+        // @TODO Remove when rebrand assets are refactored
+        config([
+            'filesystems.disks.rebrand' => [
+                'driver' => 'local',
+                'root' => storage_path('rebrand'),
+                'url' => implode('/', [
+                    config('app.url'),
+                    Cms::config()->cpTrigger,
+                    'rebrand',
+                ]),
+                'visibility' => 'public',
+                'throw' => false,
+                'report' => false,
+            ],
+        ]);
     }
 
     private function registerMacros(): void
@@ -141,7 +154,27 @@ final class AppServiceProvider extends ServiceProvider
             // NOT /adminsarefun
         ));
 
+        Request::macro('isSiteRequest', fn (): bool => ! $this->isCpRequest());
+
         Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
+
+        Request::macro('isPreview', function () {
+            $previewParamValue = $this->input('x-craft-preview') ?? $this->input('x-craft-live-preview') ?? $this->header('X-Craft-Preview-Token');
+
+            if (! $previewParamValue) {
+                return false;
+            }
+
+            if (! Craft::$app->getSecurity()->validateData($previewParamValue)) {
+                return false;
+            }
+
+            if (! Context::hasHidden(HandleTokenRequest::TOKEN_KEY)) {
+                return false;
+            }
+
+            return true;
+        });
 
         Request::macro('actionSegments', function (): array {
             $actionTrigger = Cms::config()->actionTrigger;
@@ -201,6 +234,27 @@ final class AppServiceProvider extends ServiceProvider
             $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
 
             return $this;
+        });
+
+        UrlGenerator::macro('defaultReturnUrl', function (): string {
+            if (request()->isCpRequest() && Gate::check('accessCp')) {
+                return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
+            }
+
+            return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+        });
+
+        UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
+            $defaultUrl ??= Auth::guard('craft')->guest()
+                ? action_url('users/redirect')
+                : $this->defaultReturnUrl();
+
+            $url = Redirect::getIntendedUrl() ?? $defaultUrl;
+
+            // Strip out any tags that may have gotten in there by accident
+            // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
+            // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
+            return str_replace(['{', '}'], '', $url);
         });
 
         Factory::macro('create', fn (array $options = []) => $this->throw()

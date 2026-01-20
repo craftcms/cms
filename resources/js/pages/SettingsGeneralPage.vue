@@ -44,6 +44,7 @@
   function handleUpdate(event: CustomEvent) {
     const target = event.target as HTMLSelectElement & {modelValue: string};
     if (target) {
+      // @ts-ignore we're just going to trust that `name` is a key of `form` for now
       form[target.name] = target.modelValue;
     }
   }
@@ -91,7 +92,7 @@
 
 <template>
   <form @submit.prevent="save">
-    <AppLayout :title="t('app', 'General Settings')">
+    <AppLayout :title="t('General Settings')">
       <template #actions>
         <TransitionFade>
           <template v-if="form.recentlySuccessful && flash?.success">
@@ -109,7 +110,7 @@
                 name="exclamation-triangle"
                 style="color: var(--c-color-danger-bg-emphasis)"
               ></craft-icon>
-              {{ t('app', 'Could not save settings') }}
+              {{ t('Could not save settings') }}
             </div>
           </template>
         </TransitionFade>
@@ -120,36 +121,57 @@
             variant="primary"
             :loading="form.processing"
           >
-            {{ t('app', 'Save') }}
+            {{ t('Save') }}
           </craft-button>
           <craft-action-menu>
-            <craft-button
-              slot="invoker"
-              variant="primary"
-              type="button"
-              icon
-              @click="console.error('TODO: Not yet implemented')"
-            >
+            <craft-button slot="invoker" variant="primary" type="button" icon>
               <craft-icon name="chevron-down"></craft-icon>
             </craft-button>
 
             <div slot="content">
               <craft-action-item @click="save">
-                {{ t('app', 'Save and continue editing') }}
-                <span slot="suffix"><code>⌘</code>+<code>s</code></span>
+                {{ t('Save and continue editing') }}
+                <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
             </div>
           </craft-action-menu>
         </craft-button-group>
       </template>
+
       <div
         class="bg-white border border-border-subtle mx-4 rounded-sm shadow-sm"
       >
-        <div class="grid gap-3 p-4">
+        <template v-if="readOnly">
+          <craft-callout
+            appearance="fill"
+            rounded="start"
+            class="border border-b-border-subtle"
+          >
+            <span slot="icon" class="c-icon">
+              <!-- @TODO replace this once we have our own icon system in place -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 512"
+                width="1em"
+                height="1em"
+              >
+                <path
+                  d="M630.8 469.1l-95.4-74.8c1.4-2.1 2.7-4.3 4-6.5l4.7-8.1c6.1-11 11.4-22.4 15.8-34.3c3.2-8.7 .5-18.4-6.4-24.6l-43.3-39.4c1.1-8.3 1.7-16.8 1.7-25.4s-.6-17.1-1.7-25.4l43.3-39.4c6.9-6.2 9.6-15.9 6.4-24.6h.1c-4.4-12-9.7-23.4-15.8-34.4l-4.7-8.1c-6.6-11-14-21.4-22.1-31.2c-5.9-7.1-15.7-9.6-24.5-6.8l-55.7 17.7c-13.4-10.3-28.2-18.9-44-25.4l-12.5-57.1c-2-9.1-9-16.3-18.2-17.8C348.8 1.2 334.5 0 320 0s-28.7 1.2-42.5 3.6c-9.2 1.5-16.2 8.7-18.2 17.8l-12.5 57.1c-15.8 6.5-30.6 15.1-44 25.4l-55.7-17.7c-2-.6-4.1-1-6.2-1.1L38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7zM320 176c44.2 0 80 35.8 80 80s-1.8 19.4-5.1 28.2l-120.1-94.1c12.9-8.8 28.4-14 45.2-14zM247.4 289.6L82.5 160.3c-.8 2.1-1.7 4.2-2.4 6.3c-3.2 8.7-.5 18.4 6.4 24.6l43.3 39.4c-1.1 8.3-1.7 16.8-1.7 25.4s.6 17.1 1.7 25.5l-43.3 39.4c-6.9 6.2-9.6 15.9-6.4 24.6c4.4 11.9 9.7 23.3 15.8 34.3l4.7 8.1c6.6 11 14 21.4 22.1 31.2c5.9 7.1 15.7 9.6 24.5 6.8l55.6-17.8c13.4 10.3 28.2 18.9 44 25.4l12.5 57.1c2 9.1 9 16.3 18.2 17.8c13.8 2.3 28 3.5 42.5 3.5s28.7-1.2 42.5-3.5c9.2-1.5 16.2-8.7 18.2-17.8l12.5-57.1c8-3.3 15.8-7.2 23.3-11.5l-111.6-87.5c-25.5-4.9-46.7-22-57.4-45z"
+                />
+              </svg>
+            </span>
+            {{
+              t(
+                'Changes to these settings arenʼt permitted in this environment.'
+              )
+            }}
+          </craft-callout>
+        </template>
+        <div class="grid gap-3 p-3">
           <template v-if="form.hasErrors">
             <craft-callout variant="danger" icon="exclamation-triangle">
               <div slot="title" class="tw:font-bold">
-                Could not save settings
+                {{ t('Could not save settings') }}
               </div>
               <ul>
                 <li v-for="(error, key) in errors">
@@ -159,7 +181,7 @@
             </craft-callout>
           </template>
           <craft-combobox
-            :label="t('app', 'System Name')"
+            :label="t('System Name')"
             id="name"
             name="name"
             v-model="form.name"
@@ -184,10 +206,10 @@
                 class="p-0"
                 icon="lightbulb"
               >
-                This can begin with an environment variable.
+                {{ t('This can begin with an environment variable.') }}
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >Learn more</a
+                  >{{ t('Learn more') }}</a
                 >
               </craft-callout>
             </div>
@@ -200,7 +222,7 @@
           </craft-combobox>
 
           <craft-combobox
-            :label="t('app', 'System Status')"
+            :label="t('System Status')"
             id="live"
             name="live"
             .modelValue="system.live ? '1' : '0'"
@@ -212,13 +234,13 @@
             <craft-option .choiceValue="'1'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="success"></craft-indicator>
-                <span>Online</span>
+                <span>{{ t('Online') }}</span>
               </div>
             </craft-option>
             <craft-option .choiceValue="'0'">
               <div class="tw:flex tw:items-center tw:gap-1">
                 <craft-indicator variant="danger"></craft-indicator>
-                <span>Offline</span>
+                <span>{{ t('Offline') }}</span>
               </div>
             </craft-option>
 
@@ -242,9 +264,16 @@
               appearance="plain"
               class="p-0"
               icon="lightbulb"
+              v-html="
+                t(
+                  'This can be set to an environment variable with a boolean value ({examples})',
+                  {
+                    examples:
+                      '<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>',
+                  }
+                )
+              "
             >
-              This can be set to an environment variable with a boolean value
-              (<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>).
             </craft-callout>
 
             <div slot="feedback">
@@ -255,7 +284,7 @@
           </craft-combobox>
 
           <craft-input
-            :label="t('app', 'Retry Duration')"
+            :label="t('Retry Duration')"
             id="retry-duration"
             name="retryDuration"
             v-model="form.retryDuration"
@@ -264,19 +293,21 @@
             size="4"
             :disabled="readOnly"
           >
-            <div slot="help-text">
-              The number of seconds that the <code>Retry-After</code> HTTP
-              header should be set to for 503 responses when the system is
-              offline.
-              <!--              {{ t('app', `The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.`) }}-->
-            </div>
+            <div
+              slot="help-text"
+              v-html="
+                t(
+                  'The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.'
+                )
+              "
+            ></div>
             <ul class="error-list" v-if="errors?.retryDuration" slot="feedback">
               <li>{{ errors.retryDuration }}</li>
             </ul>
           </craft-input>
 
           <craft-combobox
-            :label="t('app', 'Time Zone')"
+            :label="t('Time Zone')"
             id="time-zone"
             name="timeZone"
             .modelValue="form.timeZone"
@@ -318,12 +349,11 @@
           <hr />
           <div class="p-4 grid gap-3">
             <FileUpload
-              :label="t('app', 'Site Icon')"
+              :label="t('Site Icon')"
               name="siteIcon"
               v-model="form.siteIcon"
               :help-text="
                 t(
-                  'app',
                   'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
                   {size: '32px'}
                 )
@@ -334,12 +364,11 @@
             />
 
             <FileUpload
-              :label="t('app', 'Login Page Logo')"
+              :label="t('Login Page Logo')"
               v-model="form.siteLogo"
               name="siteLogo"
               :help-text="
                 t(
-                  'app',
                   'SVG file recommended. The logo will be displayed at {size} wide.',
                   {size: '288px'}
                 )

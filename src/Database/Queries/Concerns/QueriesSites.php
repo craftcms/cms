@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
@@ -43,7 +43,7 @@ trait QueriesSites
                 }
             } catch (SiteNotFoundException $e) {
                 // Fail silently if Craft isn't installed yet or is in the middle of updating
-                if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+                if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
                     throw $e;
                 }
 

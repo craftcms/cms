@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\elements\User;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Actions\GetImpersonationUrlAction;
-use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -27,6 +28,8 @@ final readonly class ImpersonationController
 
     public function __construct(
         private Request $request,
+        private Users $users,
+        private Impersonation $impersonation,
     ) {}
 
     public function impersonate(): Response
@@ -38,17 +41,17 @@ final readonly class ImpersonationController
         $userId = $this->request->integer('userId');
 
         abort_if(
-            is_null($user = Craft::$app->getUsers()->getUserById($userId)),
+            is_null($user = $this->users->getUserById($userId)),
             400,
             "Invalid user ID: $userId",
         );
 
         $this->enforceImpersonatePermission($user);
 
-        Craft::$app->getUser()->setImpersonatorId($this->request->user()->id);
+        $this->impersonation->setImpersonatorId($this->request->user()->id);
 
         try {
-            Auth::login(UserModel::findOrFail($userId));
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 
@@ -69,14 +72,14 @@ final readonly class ImpersonationController
         $userId = $this->request->integer('userId');
 
         abort_if(
-            is_null($user = Craft::$app->getUsers()->getUserById($userId)),
+            is_null($user = $this->users->getUserById($userId)),
             400,
             "Invalid user ID: $userId",
         );
 
         $this->enforceImpersonatePermission($user);
 
-        $url = $getImpersonationUrlAction(UserModel::findOrFail($user->id));
+        $url = $getImpersonationUrlAction($user);
 
         abort_if($url === false, 500, 'Unable to generate impersonation URL.');
 
@@ -93,29 +96,26 @@ final readonly class ImpersonationController
         $userId = $this->request->integer('userId');
         $prevUserId = $this->request->integer('prevUserId');
 
-        $user = UserModel::findOrFail($userId);
+        /** @var User $user */
+        $user = $this->users->getUserById($userId);
 
-        Craft::$app->getUser()->setImpersonatorId($prevUserId);
+        $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            Auth::login(UserModel::findOrFail($userId));
+            Auth::guard('craft')->login($user);
         } catch (Throwable) {
             Flash::fail(t('There was a problem impersonating this user.'));
 
             return back();
         }
 
-        return $this->handleSuccessfulLogin(Craft::$app->getUsers()->getUserById($user->id));
+        return $this->handleSuccessfulLogin($user);
     }
 
     private function handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->wantsJson()) {
@@ -127,15 +127,15 @@ final readonly class ImpersonationController
             return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
-        return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
+        return $this->redirectToPostedUrl($this->request->user(), $returnUrl);
     }
 
     private function enforceImpersonatePermission(User $user): void
     {
-        $yiiCurrentUser = Craft::$app->getUsers()->getUserById($this->request->user()->id);
+        $currentUser = $this->request->user();
 
         abort_unless(
-            Craft::$app->getUsers()->canImpersonate($yiiCurrentUser, $user),
+            $this->users->canImpersonate($currentUser, $user),
             403,
             t('You do not have sufficient permissions to impersonate this user'),
         );

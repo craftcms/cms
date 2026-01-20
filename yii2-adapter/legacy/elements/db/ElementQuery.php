@@ -20,7 +20,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
@@ -29,6 +28,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -40,6 +40,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use ReflectionClass;
@@ -959,6 +960,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this;
     }
 
+    public function getLimit(): int|null|ExpressionInterface
+    {
+        return $this->limit;
+    }
+
+    public function getOffset(): int|null|ExpressionInterface
+    {
+        return $this->offset;
+    }
+
     /**
      * @inheritdoc
      * @uses $orderBy
@@ -1611,7 +1622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && !Updates::isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !Updates::isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }

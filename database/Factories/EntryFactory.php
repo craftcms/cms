@@ -32,14 +32,16 @@ final class EntryFactory extends Factory
     #[Override]
     public function configure(): self
     {
-        $this->afterCreating(function (Entry $entry) {
-            $entry->element->update([
+        return $this->afterCreating(function (Entry $entry) {
+            $entry->element?->update([
                 'dateCreated' => $entry->postDate,
                 'dateUpdated' => $entry->postDate,
             ]);
-        });
 
-        return $this;
+            if (! $entry->section->entryTypes()->where('id', $entry->entryType->id)->exists()) {
+                $entry->section->entryTypes()->attach($entry->entryType, ['sortOrder' => 1]);
+            }
+        });
     }
 
     public function trashed(bool $trashed = true): self

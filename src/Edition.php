@@ -126,7 +126,7 @@ enum Edition: int implements Arrayable
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::getUser()?->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return false;
         }
 
@@ -141,10 +141,10 @@ enum Edition: int implements Arrayable
             ($licensedEdition !== null && $licensedEdition->value < self::Pro->value);
     }
 
-    public static function isAtLeast(Edition|int $edition): bool
+    public static function isAtLeast(Edition|int $edition, bool $orBetter = true): bool
     {
         try {
-            self::require($edition);
+            self::require($edition, $orBetter);
 
             return true;
         } catch (WrongEditionException) {
@@ -158,7 +158,7 @@ enum Edition: int implements Arrayable
             $edition = self::from($edition);
         }
 
-        if (! \Craft::$app->getIsInstalled()) {
+        if (! Cms::isInstalled()) {
             return;
         }
 
@@ -172,6 +172,11 @@ enum Edition: int implements Arrayable
         }) {
             throw new WrongEditionException("Craft $edition->name is required for this.");
         }
+    }
+
+    public function registersFrontendUserRoutes(): bool
+    {
+        return $this->value >= self::Pro->value;
     }
 
     public function toArray(): array

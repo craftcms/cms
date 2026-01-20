@@ -6,13 +6,15 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 
 use function CraftCms\Cms\t;
 
@@ -49,7 +51,7 @@ trait EditUserTrait
             ->id($userId)
             ->drafts(null)
             ->status(null)
-            ->one();
+            ->first();
 
         abort_if(is_null($user), 400, 'No user was identified by the request.');
 
@@ -77,7 +79,7 @@ trait EditUserTrait
 
         $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
 
-        $currentUser = Auth::user()->asElement();
+        $currentUser = Auth::user();
 
         if (Event::hasListeners(DefineEditUserScreens::class)) {
             Event::dispatch($event = new DefineEditUserScreens($currentUser, $user, $screens));
@@ -160,9 +162,26 @@ trait EditUserTrait
         return $response;
     }
 
+    protected function existingPasswordVerified(Request $request): bool
+    {
+        if (! $request->user()) {
+            return false;
+        }
+
+        $currentPassword = $request->input('currentPassword') ?? $request->input('password');
+
+        if (is_null($currentPassword)) {
+            return false;
+        }
+
+        $currentHashedPassword = $request->user()->password;
+
+        return Hash::check($currentPassword, $currentHashedPassword);
+    }
+
     private function showPermissionsScreen(): bool
     {
-        $currentUser = Auth::user()->asElement();
+        $currentUser = Auth::user();
 
         return
             Edition::get()->value >= Edition::Team->value &&

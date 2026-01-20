@@ -203,7 +203,7 @@ final class ElementSources
                 continue;
             }
 
-            $source['sites'] = collect($source['sites'] ?? [])
+            $source['sites'] = collect($source['sites'])
                 ->map(function (int|string $siteId) {
                     if (! is_string($siteId)) {
                         return $siteId;
@@ -215,6 +215,7 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
+                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }
@@ -330,9 +331,48 @@ final class ElementSources
         }
 
         return array_any(
-            $user->getGroups()->all(),
+            $user->getGroups(),
             fn ($group) => in_array($group->uid, $source['userGroups'], true)
         );
+    }
+
+    /**
+     * Saves an element’s source configs.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = new Collection($sources)
+            ->map(fn (array $s) => array_filter([
+                'type' => $s['type'] ?? self::TYPE_NATIVE,
+                'key' => $s['key'] ?? null,
+                'page' => $s['page'] ?? null,
+                'tableAttributes' => $s['tableAttributes'] ?? null,
+                'defaultSort' => $s['defaultSort'] ?? null,
+                'defaultViewMode' => $s['defaultViewMode'] ?? null,
+                ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                    self::TYPE_CUSTOM => [
+                        'label' => $s['label'] ?? null,
+                        'condition' => ($s['condition'] ?? false)
+                            ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                            : null,
+                        'sites' => $s['sites'] ?? null,
+                        'userGroups' => $s['userGroups'] ?? null,
+                    ],
+                    self::TYPE_HEADING => [
+                        'heading' => $s['heading'] ?? null,
+                    ],
+                    default => [
+                        'disabled' => $s['disabled'] ?? null,
+                    ],
+                },
+            ], fn ($val) => $val !== null))
+            ->all();
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        $this->projectConfig->set($path, $sources);
     }
 
     /**
@@ -548,7 +588,6 @@ final class ElementSources
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
         $user = Auth::user();
-        $userElement = Craft::$app->getUsers()->getUserById($user->id);
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
@@ -557,7 +596,7 @@ final class ElementSources
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Factor in the user condition for non-admins
-                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($userElement) ?? true)) {
+                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($user) ?? true)) {
                     continue;
                 }
 
@@ -574,7 +613,7 @@ final class ElementSources
 
                     if (
                         $field instanceof PreviewableFieldInterface &&
-                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($userElement) ?? true))
+                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
                         if ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
@@ -683,5 +722,16 @@ final class ElementSources
         return $this->projectConfig->get(
             sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
         ) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        $this->projectConfig->set($path, $pageSettings);
     }
 }

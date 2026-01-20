@@ -32,8 +32,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -202,7 +205,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("viewCategories:$group->uid"),
+                'structureEditable' => app()->runningInConsole() || Gate::check("viewCategories:$group->uid"),
             ];
         }
 
@@ -494,7 +497,7 @@ class Category extends Element
         ];
 
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         $ancestors = $this->getAncestors();
         if ($ancestors instanceof ElementQueryInterface) {

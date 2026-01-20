@@ -104,7 +104,7 @@ class TemplatesController extends Controller
         /** @var Application $app */
         $app = Craft::$app;
         $routeParams = $app->getUrlManager()->getRouteParams();
-        unset($routeParams['template'], $routeParams['template']);
+        unset($routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 
         return $this->renderTemplate($template, $variables);

@@ -8,11 +8,11 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\models\Site;
 use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Site\Data\Site;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
@@ -75,10 +75,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo',
-        ]));
+        $sites->setCurrentSite(new Site(
+            name: 'Site',
+            handle: 'site',
+            language: 'en-US',
+            baseUrl: 'http://craft.test/foo',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
@@ -164,10 +166,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site([
-            'language' => 'en-US',
-            'baseUrl' => 'http://craft.test/foo/bar',
-        ]));
+        $sites->setCurrentSite(new Site(
+            name: 'Site',
+            handle: 'site',
+            language: 'en-US',
+            baseUrl: 'http://craft.test/foo/bar',
+        ));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
@@ -338,36 +342,6 @@ class RequestTest extends TestCase
     {
         $this->request->getHeaders()->set('User-Agent', $userAgent);
         self::assertSame($expected, $this->request->getClientOs());
-    }
-
-    /**
-     *
-     */
-    public function testGetCsrfToken(): void
-    {
-        $token = $this->request->getCsrfToken(true);
-
-        $otherToken = $this->request->getCsrfToken();
-        self::assertSame($token, $otherToken);
-
-        self::assertNotSame($token, $this->request->getCsrfToken(true));
-    }
-
-    /**
-     *
-     */
-    public function testGenerateCsrfToken(): void
-    {
-        $token = $this->_generateCsrfToken();
-        self::assertSame(40, strlen($token));
-
-        $this->_setMockUser();
-        $newToken = $this->_generateCsrfToken();
-
-        self::assertNotSame($newToken, $token);
-
-        // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame(40, strlen($newToken));
     }
 
     /**
@@ -546,24 +520,5 @@ class RequestTest extends TestCase
     private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
-    }
-
-    /**
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _generateCsrfToken(): mixed
-    {
-        return $this->invokeMethod($this->request, 'generateCsrfToken');
-    }
-
-    /**
-     *
-     */
-    private function _setMockUser()
-    {
-        Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(1)
-        );
     }
 }

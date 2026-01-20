@@ -28,8 +28,10 @@ use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -122,6 +124,12 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
+            if (!Yii2ServiceProvider::supportsCategories()) {
+                $this->_groups = new MemoizableArray([]);
+
+                return $this->_groups;
+            }
+
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
@@ -157,7 +165,7 @@ class Categories extends Component
             return $this->getAllGroups();
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if (!$user) {
             return [];

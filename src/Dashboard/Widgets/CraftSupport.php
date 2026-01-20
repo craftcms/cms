@@ -12,6 +12,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
@@ -29,7 +30,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Craft Support');
@@ -38,17 +39,17 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
-        return parent::isSelectable() && Auth::user()->isAdmin();
+        return parent::isSelectable() && Auth::user()?->isAdmin();
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
@@ -57,7 +58,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'life-ring';
@@ -66,7 +67,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
         return null;
@@ -75,11 +76,11 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
-        if (! Auth::user()->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return null;
         }
 
@@ -126,7 +127,7 @@ final class CraftSupport extends Widget
 EOD;
 
         $view->registerJsWithVars(fn ($id, $settings) => <<<JS
-new Craft.CraftSupportWidget($id, $settings);
+new Craft.CraftSupportWidget($id, $settings)
 JS, [
             $this->id,
             [

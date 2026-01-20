@@ -10,7 +10,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
@@ -43,7 +42,7 @@ final readonly class InstallController
     public function __construct()
     {
         // Return a 404 if Craft is already installed
-        if (! app()->hasDebugModeEnabled() && Info::isInstalled()) {
+        if (! app()->hasDebugModeEnabled() && Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
         }
     }
@@ -133,7 +132,7 @@ final readonly class InstallController
         $request->validate([
             'email' => ['required', 'email:strict'],
             'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
-            'password' => Password::required(),
+            'password' => ['required', Password::default()],
         ]);
 
         return new JsonResponse;

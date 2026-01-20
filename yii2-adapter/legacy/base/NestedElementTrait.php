@@ -10,6 +10,7 @@ namespace craft\base;
 
 use Craft;
 use craft\elements\db\EagerLoadPlan;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -79,6 +80,7 @@ trait NestedElementTrait
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**
@@ -369,8 +371,8 @@ trait NestedElementTrait
         $field = null;
 
         try {
-            $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId);
-        } catch (InvalidConfigException $e) {
+            $field = $this->getOwner()?->getFieldLayout()?->getFieldById($this->fieldId);
+        } catch (InvalidConfigException) {
             // carry on as we might still be able to get the field by ID
         }
 
@@ -465,7 +467,7 @@ trait NestedElementTrait
      */
     private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
     {
-        if (!$this->saveOwnership || !isset($this->fieldId)) {
+        if (!$this->saveOwnership || !isset($this->fieldId) || $this->resaving) {
             return;
         }
 

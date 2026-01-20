@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection;
 
+use Craft;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\ContentBlock;
 use craft\elements\Entry;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
@@ -16,6 +16,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedRelations;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexes;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexJobs;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedStructureElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
@@ -32,6 +33,7 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 
@@ -111,6 +113,7 @@ final class GarbageCollection
             DeleteOrphanedDraftsAndRevisions::class,
             DeleteOrphanedSearchIndexes::class,
             DeleteOrphanedRelations::class,
+            DeleteOrphanedSearchIndexJobs::class,
             DeleteOrphanedStructureElements::class,
             DeleteOrphanedForeignKeyRows::class,
             DeletePointlessChangeData::class,
@@ -124,7 +127,7 @@ final class GarbageCollection
         ]);
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
-        \Craft::$app->getElements()->invalidateAllCaches();
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**

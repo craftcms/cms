@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Queries\Concerns\FormatsResults;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAffiliatedSite;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAssetUploaders;
 use CraftCms\Cms\Database\Queries\Concerns\User\QueriesAuthors;
@@ -17,6 +19,8 @@ use Illuminate\Database\Query\Builder;
 
 /**
  * @extends ElementQuery<User>
+ *
+ * @phpstan-ignore class.missingExtends
  */
 final class UserQuery extends ElementQuery
 {
@@ -34,6 +38,8 @@ final class UserQuery extends ElementQuery
      */
     protected array $defaultOrderBy = [
         'users.username' => SORT_ASC,
+        'users.active' => SORT_DESC,
+        'users.pending' => SORT_DESC,
     ];
 
     public function __construct(array $config = [])
@@ -43,23 +49,57 @@ final class UserQuery extends ElementQuery
         $this->joinElementTable(Table::USERS);
 
         $this->query->addSelect([
-            'users.photoId as photoId',
-            'users.pending as pending',
-            'users.locked as locked',
-            'users.suspended as suspended',
-            'users.admin as admin',
-            'users.username as username',
-            'users.firstName as firstName',
-            'users.lastName as lastName',
-            'users.email as email',
-            'users.unverifiedEmail as unverifiedEmail',
-            'users.lastLoginDate as lastLoginDate',
-            'users.lockoutDate as lockoutDate',
-            'users.hasDashboard as hasDashboard',
-            'users.affiliatedSiteId as affiliatedSiteId',
-            'users.active as active',
-            'users.fullName as fullName',
+            'users.photoId',
+            'users.pending',
+            'users.locked',
+            'users.suspended',
+            'users.admin',
+            'users.username',
+            'users.firstName',
+            'users.lastName',
+            'users.email',
+            'users.unverifiedEmail',
+            'users.lastLoginDate',
+            'users.lockoutDate',
+            'users.hasDashboard',
+            'users.affiliatedSiteId',
+            'users.active',
+            'users.fullName',
+            'users.rememberToken',
         ]);
+
+        $this->beforeQuery(function (self $userQuery) {
+            $orders = $userQuery->query->orders;
+
+            if (is_null($orders)) {
+                return;
+            }
+
+            $orders = array_filter(
+                array: $orders,
+                callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+            );
+
+            // Order by was not set so we can fall back to the applyDefaultOrder logic in FormatsResults
+            if (empty($orders)) {
+                return;
+            }
+
+            $orders = array_merge($orders, [
+                [
+                    'column' => 'users.active',
+                    'direction' => 'desc',
+                ],
+                [
+                    'column' => 'users.pending',
+                    'direction' => 'desc',
+                ],
+            ]);
+
+            // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
+            $userQuery->query->orders = $orders;
+            $userQuery->subQuery->orders = $orders;
+        });
     }
 
     /**

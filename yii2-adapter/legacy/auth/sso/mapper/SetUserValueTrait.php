@@ -8,9 +8,9 @@
 namespace craft\auth\sso\mapper;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

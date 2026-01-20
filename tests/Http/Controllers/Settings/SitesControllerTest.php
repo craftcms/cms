@@ -11,7 +11,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -21,7 +21,7 @@ use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     $this->sites = app(Sites::class);
     $this->siteGroups = app(SiteGroups::class);

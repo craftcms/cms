@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use Craft;
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Cms;
@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
@@ -116,7 +117,7 @@ final readonly class Revisions
                 $canonical = $event->canonical;
             }
 
-            $elementsService = \Craft::$app->getElements();
+            $elementsService = Craft::$app->getElements();
 
             DB::beginTransaction();
             try {
@@ -138,7 +139,11 @@ final readonly class Revisions
                     $newAttributes['dateCreated'] = $canonical->dateUpdated;
                 }
 
-                $revision = $elementsService->duplicateElement($canonical, $newAttributes);
+                $revision = $elementsService->duplicateElement(
+                    $canonical,
+                    $newAttributes,
+                    copyModifiedFields: true,
+                );
 
                 DB::commit();
             } catch (Throwable $e) {
@@ -197,7 +202,7 @@ final readonly class Revisions
         }
 
         // "Duplicate" the revision with the source element’s ID and UID
-        $newSource = \Craft::$app->getElements()->updateCanonicalElement($revision, [
+        $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);

@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -552,7 +553,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (!app()->hasDebugModeEnabled() && !Craft::$app->getUser()->getIsAdmin()) {
+            if (!app()->hasDebugModeEnabled() && !Auth::user()?->isAdmin()) {
                 $result['error'] = t('A server error occurred.');
             }
 
@@ -626,7 +627,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 (function(){
   try {
     var req = new XMLHttpRequest();
-    req.open('GET', $url, true);
+    req.open('GET', $url, true)
     req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     if (req.readyState === 4) return;
     req.send();

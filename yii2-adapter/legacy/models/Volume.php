@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -204,7 +205,7 @@ class Volume extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (!$this->id || !Auth::user()?->isAdmin()) {
             return null;
         }
         return UrlHelper::cpUrl("settings/assets/volumes/$this->id");

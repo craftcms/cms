@@ -10,8 +10,10 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\User;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -80,14 +82,14 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         }
 
         Craft::$app->getView()->registerJsWithVars(
-            fn($type, $undeletableIds, $redirect) => <<<JS
+            fn($type, $redirect) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
         validateSelection: (selectedItems, elementIndex) => {
             for (let i = 0; i < selectedItems.length; i++) {
-                if ($.inArray(selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
                 }
             }
@@ -102,23 +104,22 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                     const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: () => {
-                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
+                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container))
                             modal.hide();
                             return false;
                         },
                         redirect: $redirect
-                    });
+                    })
                 })
                 .finally(() => {
                     elementIndex.setIndexAvailable();
                 });
         },
-    });
+    })
 })();
 JS,
             [
                 static::class,
-                $this->_getUndeletableUserIds(),
                 Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
             ]);
 
@@ -146,7 +147,6 @@ JS,
     {
         /** @var User[] $users */
         $users = $query->all();
-        $undeletableIds = $this->_getUndeletableUserIds();
 
         // Are we transferring the user’s content to a different user?
         if (is_array($this->transferContentTo)) {
@@ -154,7 +154,7 @@ JS,
         }
 
         if ($this->transferContentTo) {
-            $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
+            $transferContentTo = Users::getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {
                 throw new Exception("No user exists with the ID “{$this->transferContentTo}”");
@@ -165,9 +165,11 @@ JS,
 
         // Delete the users
         $elementsService = Craft::$app->getElements();
+        $currentUser = Auth::user();
         $deletedCount = 0;
+
         foreach ($users as $user) {
-            if (!in_array($user->id, $undeletableIds, false)) {
+            if ($elementsService->canDelete($user, $currentUser)) {
                 $user->inheritorOnDelete = $transferContentTo;
                 if ($elementsService->deleteElement($user, $this->hard)) {
                     $deletedCount++;
@@ -194,21 +196,5 @@ JS,
         ]));
 
         return true;
-    }
-
-    /**
-     * Returns a list of the user IDs that can't be deleted.
-     *
-     * @return array
-     */
-    private function _getUndeletableUserIds(): array
-    {
-        if (!Craft::$app->getUser()->getIsAdmin()) {
-            // Only admins can delete other admins
-            return User::find()->admin()->ids();
-        }
-
-        // Can't delete your own account from here
-        return [Craft::$app->getUser()->getIdentity()->id];
     }
 }

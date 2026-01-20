@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
@@ -50,6 +51,21 @@ trait FormatsResults
      * @used-by fixedOrder()
      */
     public bool $fixedOrder = false;
+
+    /**
+     * @param  string|callable  $indexBy  the name of the column by which the query results should be indexed by.
+     *                                    This can also be a callable (e.g. anonymous function) that returns the index value based on the given
+     *                                    row data. The signature of the callable should be:
+     *
+     * ```php
+     * function ($row)
+     * {
+     *     // return the index value corresponding to $row
+     * }
+     * ```
+     * @return $this the query object itself
+     */
+    public $indexBy;
 
     /**
      * Causes the query results to be returned in reverse order.
@@ -141,6 +157,27 @@ trait FormatsResults
         return $this;
     }
 
+    /**
+     * Sets the [[indexBy]] property.
+     *
+     * @param  string|callable  $column  the name of the column by which the query results should be indexed by.
+     *                                   This can also be a callable (e.g. anonymous function) that returns the index value based on the given
+     *                                   row data. The signature of the callable should be:
+     *
+     * ```php
+     * function ($row)
+     * {
+     *     // return the index value corresponding to $row
+     * }
+     * ```
+     */
+    public function indexBy($column): static
+    {
+        $this->indexBy = $column;
+
+        return $this;
+    }
+
     public function ids(): array
     {
         return $this->pluck('elements.id')->all();
@@ -173,7 +210,8 @@ trait FormatsResults
             }
         }
 
-        $this->parseOrderColumnMappings($elementQuery);
+        $this->parseOrderColumnMappings($elementQuery, $this->query);
+        $this->parseOrderColumnMappings($elementQuery, $this->subQuery);
     }
 
     private function applyDefaultOrder(ElementQuery $elementQuery): void
@@ -201,39 +239,42 @@ trait FormatsResults
                 $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
-            $elementQuery->query->orderBy(new FixedOrderExpression('elements.id', $ids));
+            $elementQuery->orderBy(new FixedOrderExpression('elements.id', $ids));
 
             return;
         }
 
         if ($elementQuery->revisions) {
-            $elementQuery->query->orderByDesc('num');
+            $elementQuery->orderByDesc('num');
 
             return;
         }
 
         if ($elementQuery->shouldJoinStructureData()) {
-            $elementQuery->query->orderBy('structureelements.lft');
+            $elementQuery->orderBy('structureelements.lft');
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
-            $elementQuery->query->orderBy($column, match ($direction) {
+            $direction = match ($direction) {
                 SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
                 default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
-            });
+            };
+
+            $elementQuery->query->orderBy($column, $direction);
+            $elementQuery->subQuery->orderBy($column, $direction);
         }
     }
 
-    private function parseOrderColumnMappings(ElementQuery $elementQuery): void
+    private function parseOrderColumnMappings(ElementQuery $elementQuery, Builder $query): void
     {
-        $orders = $elementQuery->query->orders;
+        $orders = $query->orders;
 
         if (is_null($orders)) {
             return;
         }
 
-        $elementQuery->query->orders = array_map(function ($order) use ($elementQuery) {
+        $query->orders = array_map(function ($order) use ($elementQuery) {
             if (! is_string($order['column'])) {
                 return $order;
             }
@@ -248,6 +289,11 @@ trait FormatsResults
     {
         $elementQuery->query->orders = array_filter(
             $elementQuery->query->orders ?? [],
+            fn (array $order) => $order['column'] !== 'score',
+        );
+
+        $elementQuery->subQuery->orders = array_filter(
+            $elementQuery->subQuery->orders ?? [],
             fn (array $order) => $order['column'] !== 'score',
         );
 
@@ -278,5 +324,6 @@ trait FormatsResults
         }
 
         $elementQuery->query->orderBy(new CaseGroup($rules, new Value($i + 1)));
+        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

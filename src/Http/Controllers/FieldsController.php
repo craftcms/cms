@@ -73,7 +73,9 @@ final class FieldsController
     {
         $fieldId ??= $field->id ?? $request->input('fieldId');
 
-        abort_if(is_null($fieldId), 404, 'Field not found');
+        if (is_null($fieldId)) {
+            return $this->create();
+        }
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
@@ -279,7 +281,7 @@ final class FieldsController
         ]);
     }
 
-    public function renderCardPreview(Request $request): JsonResponse
+    public function renderCardPreview(Request $request, Fields $fields): JsonResponse
     {
         $request->validate([
             'fieldLayoutConfig' => ['required', 'array'],
@@ -289,30 +291,10 @@ final class FieldsController
         ]);
 
         $fieldLayoutConfig = $request->input('fieldLayoutConfig');
-        $cardElements = $request->input('cardElements');
-        $showThumb = $request->input('showThumb', false);
-        $thumbAlignment = $request->input('thumbAlignment', false);
-
-        if (! isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = $this->fieldsService->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        abort_if(! $fieldLayout, 400, 'Invalid field layout');
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 
@@ -352,7 +334,7 @@ final class FieldsController
 
         $uid = $request->input('uid');
         $elementType = $request->input('elementType');
-        $layoutConfig = $request->array('layoutConfig');
+        $layoutConfig = Component::cleanseConfig($request->array('layoutConfig'));
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
 
@@ -368,6 +350,8 @@ final class FieldsController
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
+
+        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 
@@ -448,7 +432,7 @@ final class FieldsController
                 $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {

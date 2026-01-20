@@ -13,9 +13,9 @@ use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
-use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
@@ -345,6 +345,9 @@ class Gql
         foreach ($groups['mutations'] as $group) {
             $traverser($group);
         }
+
+        $schema->scope[] = 'directive:parseRefs';
+        $schema->scope[] = 'directive:transform';
 
         return $schema;
     }

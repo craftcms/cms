@@ -69,6 +69,8 @@ final readonly class Table
 
     public const string MIGRATIONS = 'migrations';
 
+    public const string PASSWORD_RESET_TOKENS = 'password_reset_tokens';
+
     public const string PHPSESSIONS = 'sessions';
 
     public const string PLUGINS = 'plugins';

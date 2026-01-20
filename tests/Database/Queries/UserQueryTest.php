@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -12,7 +13,51 @@ it('sorts by username by default', function () {
     expect(userQuery()->pluck('id')->all())->toBe([$secondUser->id, $firstUser->id]);
 });
 
+test('gets active users first', function () {
+    $inactive = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ]);
+
+    $active = UserModel::factory()->createElement([
+        'active' => true,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ]);
+
+    expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($active->id);
+
+    // Even when sorting on something else
+    expect(userQuery()->email('john@example.com')->status(null)->orderBy('email')->pluck('id')->first())->toBe($active->id);
+});
+
+test('gets pending users first', function () {
+    $nonPending = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => false,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ]);
+
+    $pending = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => true,
+        'username' => 'john',
+        'email' => 'john@example.com',
+    ]);
+
+    expect(userQuery()->email('john@example.com')->status(null)->pluck('id')->first())->toBe($pending->id);
+
+    // Even when sorting on something else
+    expect(userQuery()->email('john@example.com')->status(null)->orderBy('email')->pluck('id')->first())->toBe($pending->id);
+});
+
 it('can query by status', function (string $status, array $attributes, int $expectedCount) {
+    Cms::config()->cooldownDuration = 0;
+
     UserModel::factory()->create($attributes);
 
     expect(userQuery()->status($status)->count())->toBe($expectedCount);

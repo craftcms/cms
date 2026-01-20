@@ -4,14 +4,14 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 
 test('editable/savable returns 0 when having no access', function (string $method) {
     Edition::set(Edition::Pro);
 
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     EntryModel::factory()->create();
 
@@ -19,7 +19,7 @@ test('editable/savable returns 0 when having no access', function (string $metho
 
     expect(entryQuery()->$method()->count())->toBe(1);
 
-    actingAs(User::factory()->create());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
 
     // Access to nothing
     expect(entryQuery()->$method()->count())->toBe(0);
@@ -29,7 +29,7 @@ test('editable/savable returns 0 when having no access', function (string $metho
 ]);
 
 test('savable', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     EntryModel::factory()->create();
 

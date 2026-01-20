@@ -30,7 +30,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
-use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -63,6 +62,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -76,6 +76,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
@@ -89,7 +90,9 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -100,20 +103,21 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
-use Throwable;
+use Stringable;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ArrayableTrait;
-use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -828,6 +832,11 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_RENDER = 'render';
 
     /**
+     * @see sources()
+     */
+    private static array $sources = [];
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -956,6 +965,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function get(int|string $id): ?static
     {
+        /** @phpstan-ignore return.type */
         return static::find()
             ->id($id)
             ->fixedOrder()
@@ -987,19 +997,22 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources(string $context): array
     {
-        $sources = static::defineSources($context);
+        if (!isset(self::$sources[$context])) {
+            // Memoize the results immediately, in case sources() gets called again via the event
+            self::$sources[$context] = static::defineSources($context);
 
-        // Fire a 'registerSources' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
-            $event = new RegisterElementSourcesEvent([
-                'context' => $context,
-                'sources' => $sources,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
-            return $event->sources;
+            // Fire a 'registerSources' event
+            if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+                $event = new RegisterElementSourcesEvent([
+                    'context' => $context,
+                    'sources' => self::$sources[$context],
+                ]);
+                Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+                self::$sources[$context] = $event->sources;
+            }
         }
 
-        return $sources;
+        return self::$sources[$context];
     }
 
     /**
@@ -1265,7 +1278,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function indexHtml(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         ?array $disabledElementIds,
         array $viewState,
         ?string $sourceKey,
@@ -1309,7 +1322,7 @@ abstract class Element extends Component implements ElementInterface
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
-                        Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
+                        SessionAuth::authorize('editStructure:' . $variables['structure']->id);
                     }
                 } else {
                     unset($viewState['order']);
@@ -1397,17 +1410,29 @@ abstract class Element extends Component implements ElementInterface
 
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
-        if (is_array($elementQuery->where)) {
-            foreach ($elementQuery->where as $key => $condition) {
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $wheres = $elementQuery->getSubQuery()->wheres;
+        } else {
+            $wheres = $elementQuery->where;
+        }
+
+        if (is_array($wheres)) {
+            foreach ($wheres as $key => $condition) {
                 if ($condition instanceof ExcludeDescendantIdsExpression) {
                     $elementQuery = clone $elementQuery;
-                    unset($elementQuery->where[$key]);
+                    unset($wheres[$key]);
                     break;
                 }
             }
-        } elseif ($elementQuery->where instanceof ExcludeDescendantIdsExpression) {
+        } elseif ($wheres instanceof ExcludeDescendantIdsExpression) {
             $elementQuery = clone $elementQuery;
-            $elementQuery->where = null;
+            $wheres = null;
+        }
+
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            $elementQuery->getSubQuery()->wheres = $wheres;
+        } else {
+            $elementQuery->where = $wheres;
         }
 
         return $elementQuery;
@@ -1416,11 +1441,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Prepares an element query for an element index that includes a given table attribute.
      *
-     * @param ElementQueryInterface $elementQuery
+     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery
      * @param string $attribute
      */
     protected static function prepElementQueryForTableAttribute(
-        ElementQueryInterface $elementQuery,
+        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
         string $attribute,
     ): void {
         switch ($attribute) {
@@ -1467,7 +1492,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        return (int)$elementQuery
+        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            return $elementQuery
+                ->select(DB::raw('1'))
+                ->count();
+        }
+
+        return (int) $elementQuery
             ->select(new Expression('1'))
             ->count();
     }
@@ -2574,17 +2605,13 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        try {
-            if (!$this->id || $this->getIsUnpublishedDraft()) {
-                return t('New {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]);
-            }
-
-            return sprintf('%s %s', static::displayName(), $this->id);
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return t('New {type}', [
+                'type' => static::lowerDisplayName(),
+            ]);
         }
+
+        return sprintf('%s %s', static::displayName(), $this->id);
     }
 
     /**
@@ -2690,7 +2717,7 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if (!isset($this->siteId) && Craft::$app->getIsInstalled()) {
+        if (!isset($this->siteId) && Cms::isInstalled()) {
             $this->siteId = Sites::getPrimarySite()->id;
         }
 
@@ -2878,7 +2905,7 @@ abstract class Element extends Component implements ElementInterface
             'uri' => t('URI'),
         ];
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Cms::isInstalled()) {
             $layout = $this->getFieldLayout();
 
             if ($layout !== null) {
@@ -2997,7 +3024,7 @@ abstract class Element extends Component implements ElementInterface
     public function afterValidate(): void
     {
         if (
-            Craft::$app->getIsInstalled() &&
+            Cms::isInstalled() &&
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
@@ -3633,21 +3660,12 @@ abstract class Element extends Component implements ElementInterface
     {
         $this->viewMode = 'cards';
         $html = '';
+        $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
 
-        foreach ($this->getFieldLayout()?->getCardBodyElements($this) ?? [] as $item) {
-            if ($item instanceof BaseField) {
-                $itemHtml = $item->previewHtml($this);
-            } elseif (is_array($item) && isset($item['html'])) {
-                $itemHtml = $item['html'];
-            } else {
-                $itemHtml = $this->getAttributeHtml($item['value']);
-            }
-
-            if ($itemHtml !== '') {
-                $html .= Html::tag('div', $itemHtml, [
-                    'class' => 'card-attribute-preview',
-                ]);
-            }
+        foreach ($cardElements as $item) {
+            $html .= Html::tag('div', $item['html'], [
+                'class' => 'card-attribute-preview',
+            ]);
         }
 
         return $html;
@@ -3799,13 +3817,13 @@ abstract class Element extends Component implements ElementInterface
             return $event->authorized;
         }
 
-        return $this->traitCanCreateDrafts(\CraftCms\Cms\User\Models\User::findOrFail($user->id));
+        return $this->traitCanCreateDrafts($user);
     }
 
     /**
      * @inheritdoc
      */
-    public function prepareEditScreen(Response $response, string $containerId): void
+    public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void
     {
     }
 
@@ -4110,7 +4128,7 @@ JS, [
         $items = [];
 
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         // Figure out what we're dealing with here
         $isCanonical = $this->getIsCanonical();
@@ -4928,16 +4946,14 @@ JS, [
 
     /**
      * @inheritdoc
-     * @phpstan-ignore-next-line
+     * @param string|int $offset
      */
     public function offsetExists($offset): bool
     {
         return (
             $offset === 'title' ||
-            /** @phpstan-ignore-next-line */
             ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
             parent::offsetExists($offset) ||
-            /** @phpstan-ignore-next-line */
             $this->fieldByHandle($offset)
         );
     }
@@ -5796,8 +5812,16 @@ JS, [
      * @see getAttributeHtml()
      * @since 5.0.0
      */
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            return $this->contentBlockAttributeHtml($attribute);
+        }
+
+        if (str_starts_with($attribute, 'generatedField:')) {
+            return $this->generatedFieldAttributeHtml($attribute);
+        }
+
         switch ($attribute) {
             case 'id':
                 return (string)$this->getCanonicalId();
@@ -5928,7 +5952,7 @@ JS, [
                             } catch (FieldNotFoundException) {
                             }
                         }
-                        $field ??= null;
+                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -5952,6 +5976,78 @@ JS, [
 
                 return ElementHelper::attributeHtml($this->$attribute);
         }
+    }
+
+    private function contentBlockAttributeHtml(string $attribute): string
+    {
+        $parts = explode('.', $attribute);
+        $uid = Str::after(array_shift($parts), 'contentBlock:');
+        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return '';
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return '';
+        }
+
+        if (!$field instanceof ContentBlockField) {
+            return '';
+        }
+
+        $block = $this->getFieldValue($field->handle);
+        return $block->getAttributeHtml(implode('.', $parts));
+    }
+
+    private function generatedFieldAttributeHtml(string $attribute): string
+    {
+        $uid = Str::after($attribute, 'generatedField:');
+        return $this->getGeneratedFieldValues()[$uid] ?? '';
+    }
+
+    /**
+     * Find field instance that matches the instance UID from another layout.
+     *
+     * @param $layoutElementUid
+     * @return FieldInterface|null
+     */
+    private function _getFieldFromAlternativeLayouts($layoutElementUid): ?FieldInterface
+    {
+        $currentLayout = $this->getFieldLayout();
+
+        // get all field layouts for this element type sans the layout used by this element
+        $fieldLayouts = Collection::make(Craft::$app->getFields()->getLayoutsByType(static::class))
+            ->filter(fn($fieldLayout) => $fieldLayout->uid !== $currentLayout?->uid);
+
+        if ($fieldLayouts->isEmpty()) {
+            return null;
+        }
+
+        // find the layout that has this element UID and get its handle
+        $handle = null;
+        foreach ($fieldLayouts as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->uid === $layoutElementUid) {
+                    // get its handle
+                    $handle = $field->layoutElement->handle;
+                    break 2;
+                }
+            }
+        }
+
+        // and now find the layout element by handle in this element's layout
+        if ($handle) {
+            foreach ($currentLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->handle === $handle) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -5979,6 +6075,8 @@ JS, [
                 } catch (FieldNotFoundException) {
                 }
             }
+
+            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
         }
 
         if ($field !== null) {

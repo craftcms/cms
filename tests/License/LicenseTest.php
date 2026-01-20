@@ -8,7 +8,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -61,7 +61,7 @@ test('issues is empty when not logged in', function () {
 });
 
 it('can get invalid license issues for craft', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);
 
@@ -83,7 +83,9 @@ it('can get invalid license issues for craft', function () {
 });
 
 it('can get trial license issues for craft', function () {
-    actingAs(User::first());
+    Edition::set(Edition::Solo);
+
+    actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);
 
@@ -109,7 +111,7 @@ it('can get trial license issues for craft', function () {
 });
 
 it('can get mismatched license issues for craft', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);
 
@@ -143,7 +145,7 @@ it('can get mismatched license issues for craft', function () {
 });
 
 it('can get astray license issues for craft', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);
 
@@ -170,7 +172,7 @@ it('can get astray license issues for craft', function () {
 });
 
 it('can get wrong edition license issues for craft', function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);
 

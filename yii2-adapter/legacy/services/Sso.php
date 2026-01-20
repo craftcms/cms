@@ -10,14 +10,15 @@ namespace craft\services;
 use Craft;
 use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
-use craft\db\Table;
-use craft\elements\User;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -219,17 +220,10 @@ class Sso extends Component
     public function findUser(ProviderInterface $provider, string $idpIdentifier): ?User
     {
         return User::find()
-            ->innerJoin(
-                ['s_i' => Table::SSO_IDENTITIES],
-                '[[s_i.userId]] = [[users.id]]',
-            )
-            ->andWhere(
-                [
-                    's_i.provider' => $provider->getHandle(),
-                    's_i.identityId' => $idpIdentifier,
-                ]
-            )
-            ->one();
+            ->join(new Alias(Table::SSO_IDENTITIES, 's_i'), 's_i.userId', '=', 'users.id')
+            ->where('s_i.provider', $provider->getHandle())
+            ->where('s_i.identityId', $idpIdentifier)
+            ->first();
     }
 
     /**
@@ -261,30 +255,21 @@ class Sso extends Component
      */
     public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false): bool
     {
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->getIsGuest()) {
+        if (Auth::check()) {
             return true;
         }
 
-        if (empty($sessionDuration)) {
-            // Get the session duration
-            $generalConfig = Cms::config();
-            if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
-                $sessionDuration = $generalConfig->rememberedUserSessionDuration;
-            } else {
-                $sessionDuration = $generalConfig->userSessionDuration;
-            }
-        }
+        $authError = app(\CraftCms\Cms\Auth\Auth::class)->getAuthError($user);
 
-        $user->authError = UserHelper::getAuthStatus($user);
-
-        if (!empty($user->authError)) {
-            throw new SsoFailedException($provider, $user, $user->authError);
+        if ($authError !== null) {
+            throw new SsoFailedException($provider, $user, $authError->value);
         }
 
         // Try logging them in
-        if (!$userSession->login($user, $sessionDuration)) {
-            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
+        try {
+            Auth::setRememberDuration($sessionDuration ?? config('auth.guards.craft.remember', 576000))->login($user, $rememberMe);
+        } catch (Throwable $e) {
+            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'), previous: $e);
         }
 
         return true;

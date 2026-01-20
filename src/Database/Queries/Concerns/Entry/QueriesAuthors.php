@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Queries\Concerns\Entry;
 
-use craft\models\UserGroup;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 

@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use Craft;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Support\Json;
 use yii\base\Behavior;
 use yii\base\Exception;
@@ -25,16 +26,6 @@ use function CraftCms\Cms\t;
  */
 class SessionBehavior extends Behavior
 {
-    private const AUTH_LOCK_NAME = 'authAccess';
-
-    /**
-     * @var string|null The session variable name used to store the authorization keys for the current session.
-     * @see authorize()
-     * @see deauthorize()
-     * @see checkAuthorization()
-     */
-    public ?string $authAccessParam = null;
-
     /**
      * @var string the name of the flash key that stores asset bundle data
      */
@@ -263,57 +254,36 @@ JS
      * Authorizes the user to perform an action for the duration of the session.
      *
      * @param string $action
+     *
+     * @deprecated 6.0.0 use {@see SessionAuth::authorize} instead.
      */
     public function authorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
-
-        $access = $this->owner->get($this->authAccessParam, []);
-
-        if (!in_array($action, $access, true)) {
-            $access[] = $action;
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+        SessionAuth::authorize($action);
     }
 
     /**
      * Deauthorizes the user from performing an action.
      *
      * @param string $action
+     *
+     * @deprecated 6.0.0 use {@see SessionAuth::deauthorize} instead.
      */
     public function deauthorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
-
-        $access = $this->owner->get($this->authAccessParam, []);
-        $index = array_search($action, $access, true);
-
-        if ($index !== false) {
-            array_splice($access, $index, 1);
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+        SessionAuth::deauthorize($action);
     }
 
     /**
      * Returns whether the user is authorized to perform an action.
      *
      * @param string $action
+     *
      * @return bool
+     * @deprecated 6.0.0 use {@see SessionAuth::checkAuthorization} instead.
      */
     public function checkAuthorization(string $action): bool
     {
-        $access = $this->owner->get($this->authAccessParam, []);
-
-        return in_array($action, $access, true);
+        return SessionAuth::checkAuthorization($action);
     }
 }

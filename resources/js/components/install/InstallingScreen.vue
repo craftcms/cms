@@ -34,14 +34,14 @@
   <Pane class="max-w-[80ch] mx-auto">
     <template v-if="isLoading">
       <div class="content">
-        <h2>{{ t('app', 'Installing Craft CMS…') }}</h2>
+        <h2>{{ t('Installing Craft CMS…') }}</h2>
         <craft-spinner></craft-spinner>
       </div>
     </template>
 
     <template v-else-if="isSuccess">
       <div class="content">
-        <h2>{{ t('app', 'Craft is installed! 🎉') }}</h2>
+        <h2>{{ t('Craft is installed! 🎉') }}</h2>
         <div class="flex justify-center items-center">
           <craft-icon
             name="circle-check"
@@ -54,7 +54,7 @@
 
     <template v-if="isError">
       <div class="content">
-        <h2>{{ t('app', 'Install failed 😞') }}</h2>
+        <h2>{{ t('Install failed 😞') }}</h2>
 
         <div
           class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"

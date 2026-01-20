@@ -38,7 +38,7 @@
     "commerceguys/addressing": "^2.1.1",
     "composer/semver": "^3.3.2",
     "craftcms/laravel-aliases": "^2.0",
-    "craftcms/laravel-dependency-aware-cache": "^1.0",
+    "craftcms/laravel-dependency-aware-cache": "^1.1",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.0.1",
     "craftcms/yii2-adapter": "self.version",
@@ -51,6 +51,7 @@
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpdocumentor/reflection-docblock": "^5.3",
+    "phpoffice/phpspreadsheet": "^5.3",
     "pixelandtonic/imagine": "~1.3.3.1",
     "pragmarx/google2fa": "^8.0",
     "pragmarx/recovery": "^0.2.1",
@@ -83,7 +84,7 @@
     "pestphp/pest-plugin-arch": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.0",
     "phpstan/phpstan": "^2.1",
-    "rector/rector": "^2.0"
+    "rector/rector": "^2.3"
   },
   "repositories": [
     {
@@ -116,7 +117,7 @@
     "fix-cs": "npx concurrently -c 'rector' 'pint src --parallel' './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix' --names=rector,pint,ecs",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
-    "tests": "./vendor/bin/pest",
+    "tests": "./vendor/bin/pest --compact",
     "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
   },
   "config": {

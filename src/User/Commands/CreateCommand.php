@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Commands;
 
 use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -38,9 +39,9 @@ final class CreateCommand extends Command
 
     protected $aliases = ['users/create'];
 
-    public function handle(GeneralConfig $generalConfig): int
+    public function handle(GeneralConfig $generalConfig, Users $users): int
     {
-        if (! Craft::$app->getUsers()->canCreateUsers()) {
+        if (! $users->canCreateUsers()) {
             $this->components->error('The maximum number of users has already been reached.');
 
             return self::FAILURE;
@@ -137,8 +138,8 @@ final class CreateCommand extends Command
         if ($groupIds) {
             $this->components->task(
                 description: 'Assigning the user to groups',
-                task: function () use ($user, $groupIds) {
-                    Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+                task: function () use ($users, $user, $groupIds) {
+                    $users->assignUserToGroups($user->id, $groupIds);
                 }
             );
         }
@@ -148,7 +149,7 @@ final class CreateCommand extends Command
                 $this->components->task(
                     'Sending activation email...',
                     function () use ($user) {
-                        Craft::$app->getUsers()->sendActivationEmail($user);
+                        $user->sendEmailVerificationNotification();
                     }
                 );
 

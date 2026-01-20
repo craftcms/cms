@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -9,14 +10,14 @@ use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 dataset('routes', [
@@ -42,11 +43,11 @@ it('requires the editStructure permission', function (string $route) {
     // Set edition so permissions actually get checked
     Edition::set(Edition::Pro);
 
-    $user = User::factory()->create([
+    $user = \CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 
-    actingAs($user);
+    actingAs($user->asElement());
 
     $structure = Structure::factory()->create();
 
@@ -57,6 +58,9 @@ it('requires the editStructure permission', function (string $route) {
     ])->assertForbidden();
 
     $user->update(['admin' => true]);
+    actingAs($user->asElement());
+
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $status = postJson($route, [
         'structureId' => $structure->id,
@@ -70,6 +74,8 @@ it('requires the editStructure permission', function (string $route) {
 it('needs a valid element', function (string $route) {
     $structure = Structure::factory()->create();
 
+    SessionAuth::authorize("editStructure:{$structure->id}");
+
     postJson($route, [
         'structureId' => $structure->id,
         'elementId' => 999,
@@ -81,6 +87,7 @@ it('can get element level delta', function (string $elementToTest, int $expected
     $structure = Structure::factory()->create();
     $root = $structure->structureElements()->firstOrFail();
     Entry::factory()->create(['id' => $root->elementId]);
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $child = new StructureElement([
         'structureId' => $structure->id,
@@ -115,6 +122,7 @@ it('can move elements', function () {
     $structure = Structure::factory()->create();
     $root = $structure->structureElements()->firstOrFail();
     Entry::factory()->create(['id' => $root->elementId]);
+    SessionAuth::authorize("editStructure:{$structure->id}");
 
     $child1 = new StructureElement([
         'structureId' => $structure->id,

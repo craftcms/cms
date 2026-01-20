@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use ResourceBundle;
 use Stringable;
@@ -68,15 +70,14 @@ final class I18N
             return $this->getLocale();
         }
 
-        if (Info::isInstalled() && Auth::user()) {
+        if (Cms::isInstalled() && $user = Auth::user()) {
             // If they have a preferred locale, use it
-            $usersService = Craft::$app->getUsers();
-            if (($locale = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'locale')) !== null) {
+            if (($locale = Users::getUserPreference($user->id, 'locale')) !== null) {
                 return $this->getLocaleById($locale);
             }
 
             if (
-                ($language = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'language')) !== null &&
+                ($language = Users::getUserPreference($user->id, 'language')) !== null &&
                 $this->validateAppLocaleId($language)
             ) {
                 return $this->getLocaleById($language);
@@ -254,7 +255,7 @@ final class I18N
             return $this->getSiteLocales();
         }
 
-        return $this->getSiteLocales()->filter(fn (Locale $locale) => Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id));
+        return $this->getSiteLocales()->filter(fn (Locale $locale) => Gate::check('editLocale:'.$locale->id));
     }
 
     /**
@@ -287,6 +288,14 @@ final class I18N
             };
 
             $translation = $char.$translation.$char;
+        }
+
+        /**
+         * If we don't have a translation for the message.
+         * Translate it using Laravel's translations.
+         */
+        if ($translation === (string) $message) {
+            return __($message, $parameters, $locale);
         }
 
         return $translation;

@@ -1,14 +1,18 @@
 <?php
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
+    DB::table(Table::USERGROUPS)->delete();
+
     Edition::set(Edition::Pro);
 
     UserGroups::saveGroup($group = UserGroup::from([
@@ -39,11 +43,11 @@ it('can get assignable groups', function () {
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 
     // All when admin
-    actingAs(User::first());
-    expect(UserGroups::getAssignableGroups())->toHaveCount(1);
+    actingAs(User::find()->one());
+    expect(UserGroups::getAssignableGroups()->count())->toBeGreaterThan(0);
 
     // No group when user has no permissions to assign groups
-    actingAs(User::factory()->create());
+    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 });
 
@@ -78,11 +82,11 @@ it('creates a unique name and handle for the team group', function () {
 });
 
 it('can get groups by user id', function () {
-    expect(UserGroups::getGroupsByUserId(User::first()->id))->toBeEmpty();
+    expect(UserGroups::getGroupsByUserId(User::find()->one()->id))->toBeEmpty();
 
-    User::first()->userGroups()->attach($this->group->id);
+    \CraftCms\Cms\User\Models\User::firstOrFail()->userGroups()->attach($this->group->id);
 
-    expect(UserGroups::getGroupsByUserId(User::first()->id))->toHaveCount(1);
+    expect(UserGroups::getGroupsByUserId(User::find()->one()->id))->toHaveCount(1);
 });
 
 it('can delete a group by id', function () {

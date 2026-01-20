@@ -354,13 +354,10 @@ class ElementIndexSettingsController extends BaseElementsController
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
-        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);
-
+        $sourcesService = app(ElementSources::class);
+        $sourcesService->saveSources($elementType, $newSourceConfigs);
         if ($multiPage) {
-            $projectConfig->set(
-                sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
-                array_map('array_filter', $pageSettings),
-            );
+            $sourcesService->savePageSettings($elementType, array_map('array_filter', $pageSettings));
         }
 
         Craft::$app->getSession()->setSuccess(t('Source settings saved'));

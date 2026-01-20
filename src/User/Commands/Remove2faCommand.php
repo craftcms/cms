@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
-use craft\auth\methods\AuthMethodInterface;
-use craft\auth\methods\RecoveryCodes;
-use craft\elements\User;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
@@ -25,24 +25,23 @@ final class Remove2faCommand extends Command implements PromptsForMissingInput
 
     protected $aliases = ['users/remove-2fa'];
 
-    public function handle(): int
+    public function handle(Auth $auth): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
         }
 
-        $authService = Craft::$app->getAuth();
-        $activeMethods = $authService->getActiveMethods($user);
+        $activeMethods = $auth->getActiveMethods($user);
 
-        if (empty($activeMethods)) {
+        if ($activeMethods->isEmpty()) {
             $this->components->info("User “{$user->username}” doesn’t have any active two-step verification methods.");
 
             return self::SUCCESS;
         }
 
         $activeMethods = array_combine(
-            array_map(fn (AuthMethodInterface $method) => $method::displayName(), $activeMethods),
-            $activeMethods,
+            $activeMethods->map(fn (AuthMethodInterface $method) => $method::displayName())->all(),
+            $activeMethods->all(),
         );
 
         $methodsToRemove = multiselect(
@@ -52,13 +51,13 @@ final class Remove2faCommand extends Command implements PromptsForMissingInput
         );
 
         foreach ($methodsToRemove as $method) {
-            $this->remove2faMethod($activeMethods[$method], $user);
+            $this->remove2faMethod($auth, $activeMethods[$method], $user);
         }
 
         return self::SUCCESS;
     }
 
-    private function remove2faMethod(AuthMethodInterface $method, User $user): void
+    private function remove2faMethod(Auth $auth, AuthMethodInterface $method, User $user): void
     {
         $this->components->task(
             "Removing “{$method::displayName()}” two-step verification method for the user ...",
@@ -67,18 +66,20 @@ final class Remove2faCommand extends Command implements PromptsForMissingInput
             }
         );
 
-        $auth = Craft::$app->getAuth();
+        if ($auth->getActiveMethods($user)->isNotEmpty()) {
+            return;
+        }
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
-        if (empty($auth->getActiveMethods($user))) {
-            $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
+        $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
 
-            if ($recoveryCodes->isActive()) {
-                $this->components->task(
-                    "No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...",
-                    fn () => $recoveryCodes->remove(),
-                );
-            }
+        if (! $recoveryCodes->isActive()) {
+            return;
         }
+
+        $this->components->task(
+            "No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...",
+            fn () => $recoveryCodes->remove(),
+        );
     }
 }

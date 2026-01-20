@@ -7,7 +7,6 @@ namespace CraftCms\Cms\ProjectConfig;
 use Craft;
 use craft\base\FsInterface;
 use craft\elements\Address;
-use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -45,6 +44,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Container\Attributes\Singleton;
@@ -327,7 +327,7 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, $this->handleChangeEvent(...));
         Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
-        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
+        $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
         $this->writeYamlAutomatically = ! App::isEphemeral();
     }
 
@@ -1659,7 +1659,7 @@ final class ProjectConfig
      */
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
@@ -1938,7 +1938,7 @@ final class ProjectConfig
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             try {
                 $storedConfigVersion = DB::table(Table::INFO)->value('configVersion');
             } catch (Throwable) {

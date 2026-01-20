@@ -78,7 +78,6 @@
     @file-removed="handleFileRemoved"
     @file-list-changed="handleListChange"
     :has-feedback-for="error ? 'error' : ''"
-    :type="modelValue ? 'hidden' : 'file'"
     :style="{
       '--thumbnail-size': thumbSize,
     }"

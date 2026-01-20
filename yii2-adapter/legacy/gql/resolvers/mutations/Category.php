@@ -62,6 +62,7 @@ class Category extends ElementMutationResolver
             $category = $elementService->createElement(['type' => CategoryElement::class, 'groupId' => $categoryGroup->id]);
         }
 
+        /** @var \craft\elements\Category $category */
         if ($category->groupId != $categoryGroup->id) {
             throw new Error('Impossible to change the group of an existing category');
         }

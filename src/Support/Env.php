@@ -31,7 +31,7 @@ final class Env extends \Illuminate\Support\Env
         $envContent = $filesystem->get($pathToFile);
 
         $lines = explode(PHP_EOL, $envContent);
-        $lines = array_filter($lines, fn ($line) => ! str_starts_with($line, $key.'='));
+        $lines = array_filter($lines, fn ($line) => ! str_starts_with((string) $line, $key.'='));
 
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }
@@ -81,7 +81,16 @@ final class Env extends \Illuminate\Support\Env
         // …/$VAR/…
         $value = preg_replace_callback(
             '/(?<=^|\/)\$(\w+)(?=$|\/)?/',
-            fn ($m) => self::get($m[1]), $value
+            function ($m) {
+                $result = self::get($m[1]);
+
+                if (is_bool($result)) {
+                    return $result ? 'true' : 'false';
+                }
+
+                return (string) $result;
+            },
+            $value
         );
 
         if ($value === '') {

@@ -7,7 +7,8 @@ namespace CraftCms\Cms\Element;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
+use craft\behaviors\EventBehavior;
+use craft\events\ModelEvent;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
@@ -46,6 +48,7 @@ final readonly class Drafts
             return collect();
         }
 
+        /** @var \craft\elements\db\ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
@@ -122,15 +125,23 @@ final readonly class Drafts
             $newAttributes['trackDraftChanges'] = $canonical::trackChanges();
             $newAttributes['markDraftAsSaved'] = $markAsSaved;
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
+            /** @TODO: Remove behavior */
+            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
+                Element::EVENT_AFTER_PROPAGATE => function (ModelEvent $event) use ($canonical) {
+                    /** @var ElementInterface $draft */
+                    $draft = $event->sender;
 
-            // Duplicate nested element ownership
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
-                    DB::table(Table::ELEMENTS_OWNERS, 'o')
-                        ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
-                        ->where('o.ownerId', $canonical->id)
-                );
+                    // Duplicate nested element ownership
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
+                            DB::table(Table::ELEMENTS_OWNERS, 'o')
+                                ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
+                                ->where('o.ownerId', $canonical->id)
+                        );
+                },
+            ], true);
+
+            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             DB::commit();
         } catch (Throwable $e) {

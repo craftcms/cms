@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -36,6 +37,8 @@ use function CraftCms\Cms\t;
  */
 final class Table extends Field implements CrossSiteCopyableFieldInterface
 {
+    private static array $typeOptions;
+
     /**
      * {@inheritdoc}
      */
@@ -61,6 +64,31 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (! isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => t('Checkbox'),
+                'color' => t('Color'),
+                'date' => t('Date'),
+                'select' => t('Dropdown'),
+                'email' => t('Email'),
+                'heading' => t('Row heading'),
+                'lightswitch' => t('Lightswitch'),
+                'multiline' => t('Multi-line text'),
+                'number' => t('Number'),
+                'singleline' => t('Single-line text'),
+                'time' => t('Time'),
+                'url' => t('URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -149,9 +177,10 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (! empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
@@ -188,7 +217,13 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
     public function afterValidate(Validator $validator): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (! isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if (! $col['handle']) {
                 continue;
             }
@@ -250,24 +285,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
     private function settingsHtml(bool $readOnly): string
     {
-        $typeOptions = [
-            'checkbox' => t('Checkbox'),
-            'color' => t('Color'),
-            'date' => t('Date'),
-            'select' => t('Dropdown'),
-            'email' => t('Email'),
-            'heading' => t('Row heading'),
-            'lightswitch' => t('Lightswitch'),
-            'multiline' => t('Multi-line text'),
-            'number' => t('Number'),
-            'singleline' => t('Single-line text'),
-            'time' => t('Time'),
-            'url' => t('URL'),
-        ];
-
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
-
         $columnSettings = [
             'heading' => [
                 'heading' => t('Column Heading'),
@@ -289,7 +306,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 'heading' => t('Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
@@ -860,7 +877,10 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && ! $this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
-                        'value' => $row[$colId],
+                        'value' => match ($col['type']) {
+                            'heading' => Html::encode($row[$colId]),
+                            default => $row[$colId],
+                        },
                         'hasErrors' => $hasErrors,
                     ];
                 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Data;
 
-use Illuminate\Support\Facades\Auth;
+use CraftCms\Cms\Auth\SessionAuth;
 use Spatie\LaravelData\Dto;
 
 final class Structure extends Dto
@@ -17,6 +17,6 @@ final class Structure extends Dto
 
     public function isSortable(): bool
     {
-        return Auth::user()?->can("editStructure:{$this->id}");
+        return SessionAuth::checkAuthorization("editStructure:{$this->id}");
     }
 }

@@ -22,10 +22,12 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -128,6 +130,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             'country' => ['label' => t('Country')],
         ]);
     }
+
 
     /**
      * @inheritdoc
@@ -236,67 +239,80 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
+    #[AllowedInSandbox]
     public string $countryCode;
 
     /**
      * @var string|null Administrative area
      */
+    #[AllowedInSandbox]
     public ?string $administrativeArea = null;
 
     /**
      * @var string|null Locality
      */
+    #[AllowedInSandbox]
     public ?string $locality = null;
 
     /**
      * @var string|null Dependent locality
      */
+    #[AllowedInSandbox]
     public ?string $dependentLocality = null;
 
     /**
      * @var string|null Postal code
      */
+    #[AllowedInSandbox]
     public ?string $postalCode = null;
 
     /**
      * @var string|null Sorting code
      */
+    #[AllowedInSandbox]
     public ?string $sortingCode = null;
 
     /**
      * @var string|null First line of the address
      */
+    #[AllowedInSandbox]
     public ?string $addressLine1 = null;
 
     /**
      * @var string|null Second line of the address
      */
+    #[AllowedInSandbox]
     public ?string $addressLine2 = null;
 
     /**
      * @var string|null Third line of the address
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
      */
+    #[AllowedInSandbox]
     public ?string $organization = null;
 
     /**
      * @var string|null Organization tax ID
      */
+    #[AllowedInSandbox]
     public ?string $organizationTaxId = null;
 
     /**
      * @var string|null Latitude
      */
+    #[AllowedInSandbox]
     public ?string $latitude = null;
 
     /**
      * @var string|null Longitude
      */
+    #[AllowedInSandbox]
     public ?string $longitude = null;
 
     /**
@@ -455,6 +471,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getCountryCode(): string
     {
         return $this->countryCode;
@@ -466,6 +483,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @return Country
      * @since 5.3.0
      */
+    #[AllowedInSandbox]
     public function getCountry(): Country
     {
         return app(Addresses::class)->getCountryRepository()->get($this->countryCode, app()->getLocale());
@@ -474,6 +492,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAdministrativeArea(): ?string
     {
         return $this->administrativeArea;
@@ -482,6 +501,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getLocality(): ?string
     {
         return $this->locality;
@@ -490,6 +510,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getDependentLocality(): ?string
     {
         return $this->dependentLocality;
@@ -498,6 +519,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getPostalCode(): ?string
     {
         return $this->postalCode;
@@ -506,6 +528,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getSortingCode(): ?string
     {
         return $this->sortingCode;
@@ -514,6 +537,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine1(): ?string
     {
         return $this->addressLine1;
@@ -522,6 +546,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine2(): ?string
     {
         return $this->addressLine2;
@@ -530,6 +555,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine3(): ?string
     {
         return $this->addressLine3;
@@ -538,6 +564,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getOrganization(): ?string
     {
         return $this->organization;
@@ -546,6 +573,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getGivenName(): ?string
     {
         return $this->firstName;
@@ -554,6 +582,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAdditionalName(): ?string
     {
         return null;
@@ -562,6 +591,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getFamilyName(): ?string
     {
         return $this->lastName;
@@ -570,6 +600,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getLocale(): string
     {
         return app()->getLocale();

@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\elements\User;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
@@ -76,6 +75,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Error\ClientAware;
@@ -94,6 +94,7 @@ use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -390,7 +391,7 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
@@ -469,7 +470,7 @@ class Gql extends Component
             }
         }
 
-        if (!$generalConfig->enableGraphqlIntrospection && Craft::$app->getUser()->getIsGuest()) {
+        if (!$generalConfig->enableGraphqlIntrospection && Auth::guest()) {
             $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
@@ -1540,9 +1541,10 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
@@ -1550,13 +1552,21 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
             StripTags::class,
             Trim::class,
         ];
 
-        if (!Cms::config()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
+
+            if (
+                !Cms::config()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
         // Fire a 'registerGqlDirectives' event

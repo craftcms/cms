@@ -19,13 +19,13 @@ use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\TagQuery;
-use craft\elements\db\UserQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -36,6 +36,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Config;
@@ -188,6 +189,11 @@ class CraftVariable extends ServiceLocator
         return $query;
     }
 
+    public function auth(): Auth
+    {
+        return app(Auth::class);
+    }
+
     /**
      * Returns a new [category query](https://craftcms.com/docs/5.x/reference/element-types/categories.html#querying-categories).
      *
@@ -314,7 +320,7 @@ class CraftVariable extends ServiceLocator
      * Returns a new [user query](https://craftcms.com/docs/5.x/reference/element-types/users.html#querying-users).
      *
      * @param array $criteria
-     * @return UserQuery
+     * @return \CraftCms\Cms\Database\Queries\UserQuery
      */
     public function users(array $criteria = []): UserQuery
     {

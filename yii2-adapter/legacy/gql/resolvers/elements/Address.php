@@ -9,7 +9,7 @@ namespace craft\gql\resolvers\elements;
 
 use craft\elements\Address as AddressElement;
 use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\gql\base\ElementResolver;
 use yii\base\UnknownMethodException;
 
@@ -36,7 +36,7 @@ class Address extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (!$query instanceof ElementQuery) {
+        if (!$query instanceof ElementQueryInterface) {
             return $query;
         }
 

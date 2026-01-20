@@ -12,6 +12,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
@@ -53,7 +54,7 @@ class ContextProcessor implements ProcessorInterface
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = $user->getIdentity(false))) {
+        if ($user && ($identity = Auth::user())) {
             $data['userId'] = $identity->getId();
         }
 

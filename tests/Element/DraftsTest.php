@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -26,16 +26,18 @@ it('can get editable drafts', function () {
 
     $element = EntryElement::findOne();
 
-    $this->drafts->createDraft($element, User::first()->id);
+    $this->drafts->createDraft($element, User::findOne()->id);
 
     expect($this->drafts->getEditableDrafts($element))->toBeEmpty();
 
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     expect($this->drafts->getEditableDrafts($element))->not()->toBeEmpty();
 });
 
 it('can create a draft', function () {
+    actingAs(User::findOne());
+
     Event::fake([
         CreatingDraft::class,
         DraftCreated::class,
@@ -77,12 +79,14 @@ it('can save an element as draft', function () {
 
     expect($element->getIsDraft())->toBeFalse();
 
-    $this->drafts->saveElementAsDraft($element, User::first()->id);
+    $this->drafts->saveElementAsDraft($element, User::find()->one()->id);
 
     expect($element->getIsDraft())->toBeTrue();
 });
 
 it('can apply a draft', function () {
+    actingAs(User::findOne());
+
     Event::fake([
         ApplyingDraft::class,
         DraftApplied::class,
@@ -91,9 +95,8 @@ it('can apply a draft', function () {
     Event::listen(ApplyingDraft::class, fn () => true);
     Event::listen(DraftApplied::class, fn () => true);
 
-    $entry = Entry::factory()->create();
+    Entry::factory()->create();
     $element = EntryElement::findOne();
-    $entry->section->entryTypes()->attach($entry->entryType, ['sortOrder' => 1]);
 
     $draft = $this->drafts->createDraft(
         canonical: $element,
@@ -114,6 +117,8 @@ it('can apply a draft', function () {
 });
 
 it('can remove draft data from an element', function () {
+    actingAs(User::findOne());
+
     Entry::factory()->create();
     $element = EntryElement::findOne();
 

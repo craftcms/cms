@@ -12,13 +12,15 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
@@ -775,6 +777,7 @@ interface ElementInterface extends
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -783,6 +786,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -837,6 +841,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -844,6 +849,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -851,6 +857,7 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -1040,7 +1047,7 @@ interface ElementInterface extends
      * @param string $containerId The ID of the element editor’s container element
      * @since 4.0.0
      */
-    public function prepareEditScreen(Response $response, string $containerId): void;
+    public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void;
 
     /**
      * Returns the URL that users should be redirected to after editing the element.
@@ -1311,6 +1318,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 

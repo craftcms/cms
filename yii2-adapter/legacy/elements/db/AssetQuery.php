@@ -13,11 +13,12 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\models\Volume;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -1064,7 +1065,7 @@ class AssetQuery extends ElementQuery
             return;
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if (!$user) {
             throw new QueryAbortedException();

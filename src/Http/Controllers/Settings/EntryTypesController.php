@@ -11,6 +11,7 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -88,8 +89,12 @@ final class EntryTypesController
             ]);
     }
 
-    public function edit(EntryTypeModel $entryType): CpScreenResponse
+    public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
     {
+        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
+
+        abort_if(is_null($entryType), 404, 'Entry type not found');
+
         $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');
@@ -153,7 +158,9 @@ final class EntryTypesController
                                 $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (
                                     &$labels
                                 ) {
-                                    $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                                        ? $usage::icon()
+                                        : $usage->getIcon();
                                     $label = $labels[] = $usage->getUiLabel();
                                     $labelHtml = Html::beginTag('span', [
                                         'class' => ['flex', 'flex-nowrap', 'gap-s'],

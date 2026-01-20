@@ -14,7 +14,8 @@ use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
-use craft\elements\User;
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\User\Elements\User;
 use craft\errors\DbConnectException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
@@ -279,17 +280,17 @@ trait ApplicationTrait
         $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
         $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
         if (is_dir($altBowerPath)) {
-            Craft::setAlias('@bower', $altBowerPath);
+            Aliases::set('@bower', $altBowerPath);
         }
         if (is_dir($altNpmPath)) {
-            Craft::setAlias('@npm', $altNpmPath);
+            Aliases::set('@npm', $altNpmPath);
         }
 
         // Override where Yii should find its asset deps
-        Craft::setAlias('@bower/jquery/dist', '@app/web/assets/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
-        Craft::setAlias('@bower/punycode', '@app/web/assets/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
+        Aliases::set('@bower/jquery/dist', '@app/web/assets/jquery/dist');
+        Aliases::set('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
+        Aliases::set('@bower/punycode', '@app/web/assets/punycode/dist');
+        Aliases::set('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
     }
 
     /**
@@ -331,7 +332,7 @@ trait ApplicationTrait
         // Use the fallback language for console requests, or if Craft isn't installed or is updating
         if (
             $this instanceof ConsoleApplication ||
-            !$this->getIsInstalled() ||
+            !Cms::isInstalled() ||
             app(Updates::class)->isCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
@@ -345,7 +346,7 @@ trait ApplicationTrait
             $id = Session::get($user->idParam);
             if (
                 $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
                 \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;
@@ -364,20 +365,22 @@ trait ApplicationTrait
      *
      * @param bool $strict Whether to ignore the cached value and explicitly check from the default schema.
      * @return bool
+     * @deprecated 6.0.0 use {@see Cms::isInstalled()} instead.
      */
     public function getIsInstalled(bool $strict = false): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::isInstalled($strict);
+        return Cms::isInstalled($strict);
     }
 
     /**
      * Sets Craft's record of whether it's installed
      *
      * @param bool|null $value
+     * @deprecated 6.0.0 use {@see Cms::setIsInstalled()} instead.
      */
     public function setIsInstalled(?bool $value = true): void
     {
-        \CraftCms\Cms\Shared\Models\Info::setIsInstalled($value);
+        Cms::setIsInstalled($value);
     }
 
     /**
@@ -731,7 +734,7 @@ trait ApplicationTrait
             $attributes,
         );
 
-        $this->setIsInstalled();
+        Cms::setIsInstalled();
 
         return true;
     }
@@ -836,6 +839,7 @@ trait ApplicationTrait
      *
      * @return Auth The Auth service
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth} instead.
      */
     public function getAuth(): Auth
     {
@@ -1278,6 +1282,7 @@ trait ApplicationTrait
     /**
      * Returns the users service.
      *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Users} instead.
      * @return Users The users service
      */
     public function getUsers(): Users

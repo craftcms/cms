@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use craft\models\Section_SiteSettings;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -31,13 +31,12 @@ class SingleSectionUriValidator extends UriFormatValidator
      */
     public function validateAttribute($model, $attribute): void
     {
-        if (!$model instanceof Section_SiteSettings || $attribute !== 'uriFormat') {
+        if (!$model instanceof SectionSiteSettings || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 
         parent::validateAttribute($model, $attribute);
 
-        /** @var Section_SiteSettings $model */
         $section = $model->getSection();
 
         // Make sure no other elements are using this URI already

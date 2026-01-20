@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Deprecated;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -31,17 +31,17 @@ class GeneralConfig extends BaseConfig
 {
     use Conditionable;
 
-    public const IMAGE_DRIVER_AUTO = 'auto';
+    public const string IMAGE_DRIVER_AUTO = 'auto';
 
-    public const IMAGE_DRIVER_GD = 'gd';
+    public const string IMAGE_DRIVER_GD = 'gd';
 
-    public const IMAGE_DRIVER_IMAGICK = 'imagick';
+    public const string IMAGE_DRIVER_IMAGICK = 'imagick';
 
-    public const CAMEL_CASE = 'camel';
+    public const string CAMEL_CASE = 'camel';
 
-    public const PASCAL_CASE = 'pascal';
+    public const string PASCAL_CASE = 'pascal';
 
-    public const SNAKE_CASE = 'snake';
+    public const string SNAKE_CASE = 'snake';
 
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
@@ -1039,7 +1039,7 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ::: code
      * ```php Static Config
@@ -1050,7 +1050,15 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
+     *
      * @group GraphQL
+     *
+     * @since 3.6.0
+     * @deprecated in 5.9.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1069,25 +1077,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $asyncCsrfInputs = false;
-
-    /**
-     * @var bool Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableBasicHttpAuth(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @since 3.5.0
-     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
-     */
-    public bool $enableBasicHttpAuth = false;
 
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
@@ -1239,6 +1228,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $enableTemplateCaching = true;
+
+    /**
+     * @var bool Whether user-defined Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     *
+     * @group Security
+     */
+    public bool $enableTwigSandbox = false;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
@@ -2094,6 +2101,8 @@ class GeneralConfig extends BaseConfig
      * @see https://php.net/manual/en/function.session-name.php
      *
      * @group Session
+     *
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public string $phpSessionName = 'CraftSessionId';
 
@@ -2409,6 +2418,7 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 90 days
      *
      * @since 3.3.0
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
 
@@ -2487,6 +2497,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireMatchingUserAgentForSession = true;
 
@@ -2503,6 +2515,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireUserAgentAndIpForSession = true;
 
@@ -3332,6 +3346,8 @@ class GeneralConfig extends BaseConfig
      * @group Session
      *
      * @defaultAlt 1 hour
+     *
+     * @deprecated 6.0.0
      */
     public mixed $userSessionDuration = 3600;
 
@@ -3419,8 +3435,6 @@ class GeneralConfig extends BaseConfig
      */
     public mixed $verifyEmailSuccessPath = '';
 
-    protected ?DateInterval $_rememberedUserSessionDuration = null;
-
     public function __construct()
     {
         // (Re-)normalize everything.
@@ -3432,15 +3446,12 @@ class GeneralConfig extends BaseConfig
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
-            ->elevatedSessionDuration($this->elevatedSessionDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
             ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
             ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
             ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
             ->softDeleteDuration($this->softDeleteDuration)
-            ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
@@ -3671,7 +3682,7 @@ class GeneralConfig extends BaseConfig
      * @since 4.2.0
      * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
-    #[\Deprecated(message: 'in 4.11.0. [[\craft\filters\Cors]] should be used instead.')]
+    #[Deprecated(message: 'in 4.11.0. [[\craft\filters\Cors]] should be used instead.')]
     public function allowedGraphqlOrigins(array|null|false $value): self
     {
         $this->allowedGraphqlOrigins = $value;
@@ -3851,11 +3862,11 @@ class GeneralConfig extends BaseConfig
      * @see $blowfishHashCost
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.')]
+    #[Deprecated(message: 'in 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.')]
     public function blowfishHashCost(int $value): self
     {
         app()->booting(function () use ($value) {
-            config()->set('hashing.bcrypt.rounds', $value);
+            Config::set('hashing.bcrypt.rounds', $value);
             Deprecator::log('generalConfig.blowfishHashCost', 'blowfishHashCost is deprecated. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS instead.');
         });
 
@@ -4052,7 +4063,7 @@ class GeneralConfig extends BaseConfig
      * @see enableCsrfProtection
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.')]
+    #[Deprecated(message: 'in 6.0.0. Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.')]
     public function csrfTokenName(string $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.csrfTokenName', 'Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.'));
@@ -4080,7 +4091,10 @@ class GeneralConfig extends BaseConfig
     {
         $this->defaultCookieDomain = $value;
 
-        config()->set('session.domain', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.defaultCookieDomain', 'Calling defaultCookieDomain() is deprecated.');
+            Config::set('session.domain', $value);
+        });
 
         return $this;
     }
@@ -4355,14 +4369,15 @@ class GeneralConfig extends BaseConfig
      * @see $devMode
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Set `app.debug` or `APP_DEBUG` environment variable instead.')]
+    #[Deprecated(message: 'in 6.0.0. Set `app.debug` or `APP_DEBUG` environment variable instead.')]
     public function devMode(bool $value = true): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.'));
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.');
+            Config::set('app.debug', $value);
+        });
 
         $this->devMode = $value;
-
-        config()->set('app.debug', $value);
 
         return $this;
     }
@@ -4483,11 +4498,16 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the `transform` directive should be disabled for the GraphQL API.
+     * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
+     *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
      *
      * @group GraphQL
      *
@@ -4517,25 +4537,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ```php
-     * ->enableBasicHttpAuth(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $enableBasicHttpAuth
-     * @since 4.2.0
-     */
-    public function enableBasicHttpAuth(bool $value = true): self
-    {
-        $this->enableBasicHttpAuth = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
      * stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
      * it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
@@ -4549,7 +4550,7 @@ class GeneralConfig extends BaseConfig
      * @see $enableCsrfCookie
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. A cookie will always be used to persist the CSRF token.')]
+    #[Deprecated(message: 'in 6.0.0. A cookie will always be used to persist the CSRF token.')]
     public function enableCsrfCookie(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.enableCsrfCookie', 'A cookie will always be used to persist the CSRF token.'));
@@ -4571,7 +4572,7 @@ class GeneralConfig extends BaseConfig
      * @see $enableCsrfProtection
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/12.x/csrf#csrf-excluding-uris)')]
+    #[Deprecated(message: 'in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/12.x/csrf#csrf-excluding-uris)')]
     public function enableCsrfProtection(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.enableCsrfProtection', 'Configure excluded routes instead.'));
@@ -4640,9 +4641,15 @@ class GeneralConfig extends BaseConfig
      *
      * @see $elevatedSessionDuration
      */
+    #[Deprecated(message: 'use the `auth.password_timeout` config setting instead.', since: '6.0.0')]
     public function elevatedSessionDuration(mixed $value): self
     {
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
+
+        app()->booting(function () {
+            Deprecator::log('generalConfig.elevatedSessionDuration', 'Use the `auth.password_timeout` config setting instead.');
+            Config::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration);
+        });
 
         return $this;
     }
@@ -4704,6 +4711,25 @@ class GeneralConfig extends BaseConfig
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether user-defined Twig templates should be sandboxed.
+     *
+     * ```php
+     * ->enableTwigSandbox()
+     * ```
+     *
+     * @group Security
+     *
+     * @see $enableTwigSandbox
+     */
+    #[Deprecated(message: 'in 6.0.0. Sandbox is always enabled.')]
+    public function enableTwigSandbox(bool $value = true): self
+    {
+        $this->enableTwigSandbox = $value;
 
         return $this;
     }
@@ -5479,7 +5505,7 @@ class GeneralConfig extends BaseConfig
      * @see $omitScriptNameInUrls
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Script name is now always omitted.')]
+    #[Deprecated(message: 'in 6.0.0. Script name is now always omitted.')]
     public function omitScriptNameInUrls(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.omitScriptNameInUrls', 'Calling omitScriptNameInUrls() is deprecated. Script name is now always omitted.'));
@@ -5594,7 +5620,7 @@ class GeneralConfig extends BaseConfig
      * @see $pathParam
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This method no longer does anything.')]
+    #[Deprecated(message: 'in 6.0.0. This method no longer does anything.')]
     public function pathParam(?string $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.pathParam', 'Calling pathParam() is deprecated.'));
@@ -5616,7 +5642,7 @@ class GeneralConfig extends BaseConfig
      * @see $permissionsPolicyHeader
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 4.11.0. [[\craft\filters\Headers]] should be used instead.')]
+    #[Deprecated(message: 'in 4.11.0. [[\craft\filters\Headers]] should be used instead.')]
     public function permissionsPolicyHeader(?string $value): self
     {
         $this->permissionsPolicyHeader = $value;
@@ -5658,14 +5684,15 @@ class GeneralConfig extends BaseConfig
      * @see https://php.net/manual/en/function.session-name.php
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.')]
+    #[Deprecated(message: 'in 6.0.0. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.')]
     public function phpSessionName(string $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.'));
-
         $this->phpSessionName = $value;
 
-        config()->set('session.cookie', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.');
+            Config::set('session.cookie', $value);
+        });
 
         return $this;
     }
@@ -5984,12 +6011,12 @@ class GeneralConfig extends BaseConfig
      * @see $purgeStaleUserSessionDuration
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This method no longer does anything, sessions are cleaned up on a lottery basis when needed.')]
+    #[Deprecated(message: 'in 6.0.0. This method no longer does anything, sessions are cleaned up on a lottery basis when needed.')]
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.purgeStaleUserSessionDuration', 'Calling purgeStaleUserSessionDuration() is deprecated. Sessions are cleaned up on a lottery basis when needed.'));
 
-        $this->purgeStaleUserSessionDuration = $value;
+        $this->purgeStaleUserSessionDuration = ConfigHelper::durationInSeconds($value);
 
         return $this;
     }
@@ -6056,10 +6083,8 @@ class GeneralConfig extends BaseConfig
      * @throws InvalidConfigException
      *
      * @see $rememberedUserSessionDuration
-     * @see getRememberedUserSessionDuration()
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Configure `auth.guards.web.remember` in minutes instead.')]
     public function rememberedUserSessionDuration(mixed $value): self
     {
         // Store the DateInterval separately for getRememberedUserSessionDuration()
@@ -6070,14 +6095,13 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
-        $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        if (app()->has(ConfigRepository::class)) {
-            app()->get(ConfigRepository::class)->set(
-                'auth.guards.web.remember',
+        app()->booting(function () {
+            Config::set(
+                'auth.guards.craft.remember',
                 floor($this->rememberedUserSessionDuration / 60),
             );
-        }
+        });
 
         return $this;
     }
@@ -6118,7 +6142,7 @@ class GeneralConfig extends BaseConfig
      * @see $requireMatchingUserAgentForSession
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
+    #[Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function requireMatchingUserAgentForSession(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.requireMatchingUserAgentForSession', 'Calling requireMatchingUserAgentForSession() is deprecated.'));
@@ -6140,7 +6164,7 @@ class GeneralConfig extends BaseConfig
      * @see $requireUserAgentAndIpForSession
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
+    #[Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function requireUserAgentAndIpForSession(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.requireUserAgentAndIpForSession', 'Calling requireUserAgentAndIpForSession() is deprecated.'));
@@ -6320,7 +6344,7 @@ class GeneralConfig extends BaseConfig
      * @see $sameSiteCookieValue
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.')]
+    #[Deprecated(message: 'in 6.0.0. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.')]
     public function sameSiteCookieValue(?string $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.sameSiteCookieValue', 'Calling sameSiteCookieValue() is deprecated. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.'));
@@ -6391,7 +6415,7 @@ class GeneralConfig extends BaseConfig
      * @see $secureHeaders
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
+    #[Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
     public function secureHeaders(?array $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.secureHeaders', 'Calling secureHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies)'));
@@ -6449,7 +6473,7 @@ class GeneralConfig extends BaseConfig
      * @see $secureProtocolHeaders
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
+    #[Deprecated(message: 'in 6.0.0. This method no longer configures anything.')]
     public function secureProtocolHeaders(?array $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.secureProtocolHeaders', 'Calling secureProtocolHeaders() is deprecated.'));
@@ -6484,14 +6508,15 @@ class GeneralConfig extends BaseConfig
      * @see https://craftcms.com/knowledge-base/securing-craft
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Configure `app.key` or set `APP_KEY` in your environment instead.')]
+    #[Deprecated(message: 'in 6.0.0. Configure `app.key` or set `APP_KEY` in your environment instead.')]
     public function securityKey(string $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.securityKey', 'Calling securityKey() is deprecated.'));
-
         $this->securityKey = $value;
 
-        config()->set('app.key', $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.securityKey', 'Calling securityKey() is deprecated.');
+            Config::set('app.key', $value);
+        });
 
         return $this;
     }
@@ -6784,12 +6809,13 @@ class GeneralConfig extends BaseConfig
      *
      * @see $timezone
      */
-    #[\Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
+    #[Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
     public function timezone(?string $value): self
     {
-        config()->set('app.timezone', $value);
-
-        app()->booting(fn () => Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.'));
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
+            Config::set('app.timezone', $value);
+        });
 
         $this->timezone = $value;
 
@@ -6877,7 +6903,7 @@ class GeneralConfig extends BaseConfig
      * @see $trustedHosts
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
+    #[Deprecated(message: 'in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).')]
     public function trustedHosts(array $value): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.trustedHosts', 'Calling secureProtocolHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).'));
@@ -7027,7 +7053,7 @@ class GeneralConfig extends BaseConfig
      * @see $usePathInfo
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
+    #[Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
     public function usePathInfo(bool $value = true): self
     {
         app()->booting(fn () => Deprecator::log('generalConfig.usePathInfo', 'Calling usePathInfo() is deprecated. This setting no longer has any effect.'));
@@ -7052,12 +7078,13 @@ class GeneralConfig extends BaseConfig
      * @see $useSecureCookies
      * @since 4.2.0
      */
-    #[\Deprecated(message: 'in 6.0.0. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.')]
+    #[Deprecated(message: 'in 6.0.0. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.')]
     public function useSecureCookies(string|bool $value): self
     {
-        app()->booting(fn () => Deprecator::log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.'));
-
-        config()->set('session.secure', $value === 'auto' ? null : $value);
+        app()->booting(function () use ($value) {
+            Deprecator::log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.');
+            Config::set('session.secure', $value === 'auto' ? null : $value);
+        });
 
         $this->useSecureCookies = $value;
 
@@ -7104,6 +7131,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $userSessionDuration
      */
+    #[Deprecated(message: "configure sessions using Laravel's session config instead.", since: '6.0.0')]
     public function userSessionDuration(mixed $value): self
     {
         $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
@@ -7153,6 +7181,10 @@ class GeneralConfig extends BaseConfig
     public function verificationCodeDuration(mixed $value): self
     {
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
+
+        app()->booted(function () {
+            Config::set('auth.passwords.craft.expire', $this->verificationCodeDuration);
+        });
 
         return $this;
     }
@@ -7324,7 +7356,9 @@ class GeneralConfig extends BaseConfig
      */
     public function getRememberedUserSessionDuration(): ?DateInterval
     {
-        return $this->_rememberedUserSessionDuration ?: null;
+        return $this->rememberedUserSessionDuration > 0
+            ? DateTimeHelper::toDateInterval($this->rememberedUserSessionDuration)
+            : null;
     }
 
     /**

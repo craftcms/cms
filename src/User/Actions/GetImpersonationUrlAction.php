@@ -6,7 +6,7 @@ namespace CraftCms\Cms\User\Actions;
 
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\action_url;

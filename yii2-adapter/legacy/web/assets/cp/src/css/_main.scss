@@ -3727,9 +3727,15 @@ table {
     svg {
       display: block;
       flex-shrink: 0;
-      border-radius: var(--radius-sm);
       max-width: 100%;
       max-height: 100%;
+    }
+
+    &:not(.cp-icon) {
+      img,
+      svg {
+        border-radius: var(--radius-sm);
+      }
     }
 
     svg {
@@ -8294,6 +8300,17 @@ fieldset {
   .custom-option-input {
     margin-inline-start: var(--xs);
   }
+}
+
+.read-only-badge {
+  font-size: calc(11rem / 16);
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding-block: 0;
+  padding-inline: 0.25em;
+  line-height: 1.45;
 }
 
 .field > .instructions,

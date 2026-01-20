@@ -9,7 +9,6 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -34,10 +33,13 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -48,9 +50,11 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -141,6 +145,7 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
+            'Are you sure you want to delete the selected {type}?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete this {type}?',
             'Are you sure you want to delete “{name}”?',
@@ -212,8 +217,6 @@ JS;
             'Display in a structured table',
             'Display in a table',
             'Done',
-            'Don’t show in element cards',
-            'Don’t use for element thumbnails',
             'Draft Name',
             'Duplicate',
             'Edit draft settings',
@@ -368,7 +371,6 @@ JS;
             'Select {element}',
             'Select',
             'Settings',
-            'Show in element cards',
             'Show nav',
             'Show nested sources',
             'Show sidebar',
@@ -423,7 +425,6 @@ JS;
             'Upload failed.',
             'Upload files',
             'Use defaults',
-            'Use for element thumbnails',
             'Use the arrow keys to change position, Tab or Spacebar to drop.',
             'User Groups',
             'View in a new tab',
@@ -522,14 +523,14 @@ JS;
 
     private function _craftData(): array
     {
-        $upToDate = Craft::$app->getIsInstalled() && !app(Updates::class)->areMigrationsPending();
+        $upToDate = Cms::isInstalled() && !app(Updates::class)->areMigrationsPending();
         $request = Craft::$app->getRequest();
         $generalConfig = Cms::config();
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
-        $currentUser = $userSession->getIdentity();
+        $currentUser = Auth::user();
         $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
         $data = [
@@ -650,7 +651,7 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
-            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
+            'userHasPasskeys' => app(Passkeys::class)->hasPasskeys(app(Impersonation::class)->getImpersonator() ?? $currentUser),
             'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
@@ -774,7 +775,7 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(\CraftCms\Cms\Section\Data\Section $section): array
+    private function _entryTypes(Section $section): array
     {
         $types = [];
 

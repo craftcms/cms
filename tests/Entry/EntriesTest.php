@@ -68,7 +68,6 @@ it('can move an entry to a different section', function () {
     $section1 = Section::factory()->create([
         'type' => SectionType::Channel,
     ]);
-    $section1->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
     $section2 = Section::factory()->create([
         'type' => SectionType::Channel,
@@ -77,6 +76,7 @@ it('can move an entry to a different section', function () {
 
     $entry = Entry::factory()->create([
         'sectionId' => $section1->id,
+        'typeId' => $entryType->id,
     ]);
 
     expect($this->entries->getEntryById($entry->id)->sectionId)->toBe($section1->id);

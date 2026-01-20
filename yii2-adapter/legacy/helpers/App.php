@@ -15,7 +15,6 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
-use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\mail\Mailer;
 use craft\mail\Message;
@@ -36,6 +35,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\Cache;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -612,7 +613,7 @@ class App
         $generalConfig = Cms::config();
 
         return [
-            'class' => \CraftCms\Yii2Adapter\Cache::class,
+            'class' => Cache::class,
             'keyPrefix' => Craft::$app->id,
             'defaultDuration' => $generalConfig->cacheDuration,
         ];
@@ -777,7 +778,7 @@ class App
     {
         return [
             'class' => \craft\services\ProjectConfig::class,
-            'readOnly' => Craft::$app->getIsInstalled() && !Cms::config()->allowAdminChanges,
+            'readOnly' => Cms::isInstalled() && !Cms::config()->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
@@ -796,7 +797,6 @@ class App
             'class' => \craft\web\Session::class,
             'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
-            'authAccessParam' => $stateKeyPrefix . '__auth_access',
         ];
     }
 
@@ -817,8 +817,6 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
-
         return [
             'class' => WebUser::class,
             'identityClass' => User::class,
@@ -826,7 +824,6 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
         ];
     }
 

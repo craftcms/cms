@@ -32,7 +32,9 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -223,7 +225,7 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $isAdmin = Auth::user()?->isAdmin();
         $generalConfig = Cms::config();
 
         $navItems = [
@@ -266,7 +268,7 @@ class Cp extends Component
 
         if (
             Edition::get() !== Edition::Solo &&
-            Craft::$app->getUser()->checkPermission('viewUsers')
+            Gate::check('viewUsers')
         ) {
             $navItems[] = [
                 'label' => t('Users'),
@@ -281,7 +283,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->handle) &&
+                Gate::check('accessPlugin-' . $plugin->handle) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -630,20 +632,6 @@ class Cp extends Component
     public function getLanguageEnvOptions(bool $appOnly = false): array
     {
         return SelectOptions::getLanguageEnvOptions($appOnly);
-    }
-
-    /**
-     * @param array $options
-     * @return array
-     */
-    private function _envOptions(array $options): array
-    {
-        return Collection::make($options)
-            ->sortBy('value')
-            ->prepend([
-                'optgroup' => t('Environment Variables'),
-            ])
-            ->all();
     }
 
     /**

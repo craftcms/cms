@@ -8,16 +8,20 @@ use Closure;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Database\Queries\Concerns\LegacyMethods;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\Query\Builder;
@@ -42,16 +46,22 @@ use Twig\Markup;
  *
  * @mixin \Illuminate\Database\Query\Builder
  *
- * @method self addSelect($column)
- * @method self orderByDesc($column)
- * @method self where($column, $operator = null, $value = null, $boolean = 'and')
- * @method self whereIn($column, $values, $boolean = 'and', $not = false)
- * @method self whereNot($column, $operator = null, $value = null, $boolean = 'and')
- * @method self whereNotIn($column, $values, $boolean = 'and')
- * @method self whereNotNull($columns, $boolean = 'and')
- * @method self whereNotExists($callback, $boolean = 'and')
+ * @method static addSelect($column)
+ * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
+ * @method static leftJoin($table, $first, $operator = null, $second = null)
+ * @method static orderBy($column)
+ * @method static orderByDesc($column)
+ * @method static rightJoin($table, $first, $operator = null, $second = null)
+ * @method static where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static whereIn($column, $values, $boolean = 'and', $not = false)
+ * @method static whereNot($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static whereNotIn($column, $values, $boolean = 'and')
+ * @method static whereNotNull($columns, $boolean = 'and')
+ * @method static whereNotExists($callback, $boolean = 'and')
+ *
+ * @phpstan-ignore class.missingExtends
  */
-class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
+class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
     use BuildsQueries {
@@ -79,6 +89,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
+
+    /** @TODO: Remove after ElementQueryInterface is removed */
+    use LegacyMethods;
 
     /**
      * The base query builder instance.
@@ -438,6 +451,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         $models = $this->getModels($columns);
 
         return $this->applyAfterQueryCallbacks(new ElementCollection($models))
+            ->when($this->indexBy, fn (ElementCollection $collection) => $collection->keyBy($this->indexBy))
             ->when($this->asArray, fn (ElementCollection $collection) => $collection->all());
     }
 
@@ -479,17 +493,22 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
     /**
      * Execute the query as a "select" statement.
      *
+     * @param  array|string  $columns
      * @return array<int, TElement>
+     *
+     * @phpstan-ignore-next-line
      */
-    public function all(array|string $columns = ['*']): array
+    public function all($columns = ['*']): array
     {
         return collect($this->get($columns))->all();
     }
 
     /**
      * @return TElement|null
+     *
+     * @phpstan-ignore parameter.defaultValue, method.childReturnType
      */
-    public function one(array|string $columns = ['*']): ?ElementInterface
+    public function one($columns = ['*']): ?ElementInterface
     {
         return $this->first($columns);
     }
@@ -524,7 +543,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         return $result->when($this->asArray, fn (Collection $collection) => $collection->all());
     }
 
-    public function count($columns = '*'): int
+    /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
+    public function count($columns = '*', $_ = null): int
     {
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
@@ -572,7 +592,10 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return $eagerResult->first();
         }
 
-        return $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
+        /** @var ?ElementInterface $element */
+        $element = $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
+
+        return $element;
     }
 
     /**
@@ -633,7 +656,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         return $this->subQuery;
     }
 
-    public function limit(?int $value): self
+    public function limit($value): self
     {
         $this->subQuery->limit = $value;
 
@@ -648,9 +671,31 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         return $this->subQuery->getLimit();
     }
 
-    public function offset(?int $value): self
+    public function offset($value): self
     {
         $this->subQuery->offset = $value;
+
+        return $this;
+    }
+
+    public function orderBy($column, $direction = 'asc'): self
+    {
+        /**
+         * In case orderBy is called with an array of [$column, $direction]
+         */
+        if (is_array($column)) {
+            Deprecator::log(static::class.'::orderBy', static::class.'::orderBy() with an array argument is deprecated in 6.0.0.');
+
+            foreach ($column as $c => $dir) {
+                $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+                $this->subQuery->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+            }
+
+            return $this;
+        }
+
+        $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
+        $this->forwardCallTo($this->subQuery, 'orderBy', [$column, $direction]);
 
         return $this;
     }
@@ -832,7 +877,17 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['orderby', 'orderbydesc', 'select', 'reorder'])) {
+        /**
+         * Joins and orders should be done on both queries
+         */
+        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc'])) {
+            $this->forwardCallTo($this->query, $method, $parameters);
+            $this->forwardCallTo($this->subQuery, $method, $parameters);
+
+            return $this;
+        }
+
+        if (in_array(strtolower($method), ['select', 'reorder', 'addselect'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
@@ -1002,8 +1057,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder
         $includeDefaults = false;
 
         foreach ($this->query->columns as $column) {
-            if ($column instanceof Alias) {
-                $column = $column->getValue($this->getGrammar());
+            if ($column instanceof Expression) {
+                $column = $column->getValue($this->query->getGrammar());
             }
 
             [$column, $alias] = explode(' as ', $column, 2) + [1 => null];

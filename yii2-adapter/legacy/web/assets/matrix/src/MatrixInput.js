@@ -1090,7 +1090,10 @@
               confirm(
                 Craft.t(
                   'app',
-                  'Are you sure you want to delete the selected entries?'
+                  'Are you sure you want to delete the selected {type}?',
+                  {
+                    type: Craft.elementTypeNames['craft\\elements\\Entry'][3],
+                  }
                 )
               )
             ) {

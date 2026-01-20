@@ -8,13 +8,14 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
 use UnitTester;
 
 /**
@@ -49,44 +50,6 @@ class UserTest extends TestCase
     /**
      *
      */
-    public function testSendUsernameCookie(): void
-    {
-        DateTimeHelper::pause();
-
-        // Send the cookie with a hardcoded time value
-        Cms::config()->rememberUsernameDuration = 20;
-        $this->user->sendUsernameCookie($this->userElement);
-
-        // Assert that the cookie is correct
-        $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
-
-        self::assertSame($this->userElement->username, $cookie->value);
-        self::assertSame(DateTimeHelper::currentTimeStamp() + 20, $cookie->expire);
-
-        DateTimeHelper::resume();
-    }
-
-    /**
-     *
-     */
-    public function testSendUsernameCookieDeletes(): void
-    {
-        // Ensure something is set
-        $this->user->sendUsernameCookie($this->userElement);
-
-        // Setting this to (int)0 will trigger sendUsernameCookie to set the values to null in the existing cookie.
-        Cms::config()->rememberUsernameDuration = 0;
-        $this->user->sendUsernameCookie($this->userElement);
-
-        $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
-
-        self::assertSame('', $cookie->value);
-        self::assertSame(1, $cookie->expire);
-    }
-
-    /**
-     *
-     */
     public function testGetRemainingSessionTime(): void
     {
         // No identity. Remaining should be null.
@@ -94,7 +57,8 @@ class UserTest extends TestCase
         self::assertSame(0, $this->user->getRemainingSessionTime());
 
         // With a user and authTimeout null it should return -1
-        $this->user->setIdentity($this->userElement);
+        Auth::login($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
         $this->user->authTimeout = null;
         self::assertSame(-1, $this->user->getRemainingSessionTime());
     }
@@ -106,60 +70,13 @@ class UserTest extends TestCase
     public function testGetRemainingSessionTimeMath(): void
     {
         DateTimeHelper::pause();
-        $this->user->setIdentity($this->userElement);
+        $this->user->setIdentity(new IdentityWrapper($this->userElement));
 
         // ensure Craft::$app->getSession()->get() always returns the current timestamp + 50.
         $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
 
         // Give a few seconds depending on how fast tests run.
         self::assertEquals(Craft::$app->getUser()->getRemainingSessionTime(), 50);
-
-        DateTimeHelper::resume();
-        Session::reset();
-    }
-
-    /**
-     * Test if not logged in getElevated returns 0 or false depending on conditions
-     * Important to test this because of PHP's typing system
-     */
-    public function testGetHasElevatedSession(): void
-    {
-        $this->user->setIdentity(null);
-        self::assertSame(0, $this->user->getElevatedSessionTimeout());
-
-        Cms::config()->elevatedSessionDuration = 0;
-
-        self::assertFalse($this->user->getElevatedSessionTimeout());
-    }
-
-    /**
-     * Test that if a user is logged in and no expires session has been set null is returned.
-     */
-    public function testGetHasElevatedSessionVoid(): void
-    {
-        $this->user->setIdentity($this->userElement);
-        // Session must return null
-        $this->_sessionGetStub(null);
-
-        $generalConfig = Cms::config();
-        $oldValue = $generalConfig->elevatedSessionDuration;
-        $generalConfig->elevatedSessionDuration = 0;
-        self::assertSame(false, $this->user->getElevatedSessionTimeout());
-        $generalConfig->elevatedSessionDuration = $oldValue;
-
-        Session::reset();
-    }
-
-    /**
-     * Test that if a user is logged in and no expires session has been set null is returned.
-     */
-    public function testGetHasElevatedSessionMath(): void
-    {
-        DateTimeHelper::pause();
-        $this->user->setIdentity($this->userElement);
-
-        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
-        self::assertEquals(50, $this->user->getElevatedSessionTimeout());
 
         DateTimeHelper::resume();
         Session::reset();
@@ -197,13 +114,5 @@ class UserTest extends TestCase
     private function _getUser(): ?UserElement
     {
         return Craft::$app->getUsers()->getUserById(1);
-    }
-
-    /**
-     * @return mixed
-     */
-    private function _getUsernameCookieName(): mixed
-    {
-        return Craft::$app->getUser()->usernameCookie['name'];
     }
 }

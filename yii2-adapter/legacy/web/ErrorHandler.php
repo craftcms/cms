@@ -14,6 +14,7 @@ use craft\helpers\Template;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Throwable;
 use Twig\Error\Error as TwigError;
@@ -305,7 +306,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             return true;
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
         return (
             $user &&
             $user->admin &&

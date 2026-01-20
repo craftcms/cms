@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -12,7 +12,7 @@ use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 
 beforeEach(function () {
-    actingAs(User::first());
+    actingAs(User::find()->one());
 });
 
 it('needs authentication for the routes', function (string $method, array $route) {
@@ -20,9 +20,9 @@ it('needs authentication for the routes', function (string $method, array $route
 
     $this->$method(action($route))->assertUnauthorized();
 
-    User::first()->update(['admin' => false]);
+    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
 
-    actingAs(User::first());
+    actingAs(User::find()->one());
 
     $this->$method(action($route))->assertForbidden();
 })->with([

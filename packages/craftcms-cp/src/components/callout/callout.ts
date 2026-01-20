@@ -3,10 +3,10 @@ import {property} from 'lit/decorators.js';
 import styles from './callout.styles.js';
 import '../icon/icon.js';
 import {
-  type VariantKey,
-  type AppearanceKey,
   Appearance,
+  type AppearanceKey,
   Variant,
+  type VariantKey,
 } from '@/types/index.js';
 import variantsStyles from '@/styles/variants.styles';
 
@@ -28,7 +28,10 @@ export default class CraftCallout extends LitElement {
   /** Icon to display in the callout */
   @property() icon: string | null = null;
 
-  getIcon() {
+  @property({reflect: true})
+  rounded: 'all' | 'start' | 'end' | 'none' = 'all';
+
+  getDefaultIcon() {
     switch (this.variant) {
       case Variant.Info:
         return 'lightbulb';
@@ -50,7 +53,7 @@ export default class CraftCallout extends LitElement {
       ${hasIcon
         ? html`<slot name="icon" class="callout__icon">
             <craft-icon
-              name="${this.getIcon()}"
+              name="${this.getDefaultIcon()}"
               style="font-size: 0.9em"
             ></craft-icon>
           </slot>`
