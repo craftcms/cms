@@ -774,8 +774,6 @@ class Install extends Migration
             $table->dateTime('lastInvalidLoginDate')->nullable();
             $table->dateTime('lockoutDate')->nullable();
             $table->boolean('hasDashboard')->default(false);
-            $table->string('verificationCode')->nullable();
-            $table->dateTime('verificationCodeIssuedDate')->nullable();
             $table->string('unverifiedEmail')->nullable();
             $table->boolean('passwordResetRequired')->default(false);
             $table->dateTime('lastPasswordChangeDate')->nullable();
@@ -815,6 +813,12 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);
             $table->char('uid', 36)->default('0');
+        });
+
+        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
+            $table->string('email')->index();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
         });
 
         Schema::create('webauthn', function (Blueprint $table) {
@@ -941,7 +945,6 @@ class Install extends Migration
         Schema::createIndex(Table::USERS, ['locked']);
         Schema::createIndex(Table::USERS, ['pending']);
         Schema::createIndex(Table::USERS, ['suspended']);
-        Schema::createIndex(Table::USERS, ['verificationCode']);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], unique: true);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['parentId']);
         Schema::createIndex(Table::VOLUMEFOLDERS, ['volumeId']);

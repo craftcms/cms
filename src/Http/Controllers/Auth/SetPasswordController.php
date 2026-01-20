@@ -8,20 +8,24 @@ use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\Rules\Password;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 final readonly class SetPasswordController extends AuthenticationController
 {
-    public function show(Request $request): Response|View
+    public function show(Request $request, Auth $auth): Response|View
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;
@@ -34,7 +38,7 @@ final readonly class SetPasswordController extends AuthenticationController
          */
         [$user, $uid, $code] = $info;
 
-        app(Auth::class)->setRememberedUsername($user);
+        $auth->setRememberedUsername($user);
 
         // Send them to the set password template.
         return $this->renderViewWithFallback('set-password', [
@@ -60,14 +64,32 @@ final readonly class SetPasswordController extends AuthenticationController
 
         abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('id'));
 
-        if (! $users->isVerificationCodeValidForUser($user, $request->input('code'))) {
-            return $this->processInvalidToken($request, $user);
+        try {
+            $status = PasswordFacade::broker('craft')->reset(
+                [
+                    'token' => $request->input('code'),
+                    'loginName' => $user->email,
+                    'password' => $request->input('newPassword'),
+                ],
+                function (User $user, string $password) {
+                    $user->newPassword = $password;
+                    $user->setScenario(User::SCENARIO_PASSWORD);
+
+                    if (! Craft::$app->getElements()->saveElement($user)) {
+                        throw new RuntimeException('Couldn’t update password.');
+                    }
+                }
+            );
+        } catch (RuntimeException) {
+            $status = 'password.save_failed';
         }
 
-        $user->newPassword = $request->input('newPassword');
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        if (Event::hasListeners(SettingPassword::class)) {
+            Event::dispatch($event = new SettingPassword($user, $request->input('code'), $request->input('newPassword'), $status));
+            $status = $event->status;
+        }
 
-        if (! Craft::$app->getElements()->saveElement($user)) {
+        if ($status === 'password.save_failed') {
             if ($request->wantsJson()) {
                 return $this->asFailure(
                     t('Couldn’t update password.'),
@@ -81,6 +103,10 @@ final readonly class SetPasswordController extends AuthenticationController
                 'id' => $request->input('id'),
                 'newUser' => ! $user->password,
             ]);
+        }
+
+        if ($status !== PasswordFacade::PASSWORD_RESET) {
+            return $this->processInvalidToken($request, $user);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request

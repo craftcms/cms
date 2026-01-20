@@ -83,7 +83,7 @@ final class AuthServiceProvider extends ServiceProvider
             Config::set('auth.passwords.craft', [
                 'provider' => 'craft',
                 'table' => 'password_reset_tokens',
-                'expire' => 60,
+                'expire' => Cms::config()->verificationCodeDuration,
                 'throttle' => 60,
             ]);
         }

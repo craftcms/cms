@@ -4,7 +4,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Models\User;
-use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Notification;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -73,9 +73,7 @@ it('requires login for sendActivationEmail', function () {
 });
 
 test('sendActivationEmail works for pending users without moderateUsers permission', function () {
-    $this->partialMock(Users::class)
-        ->shouldReceive('sendActivationEmail')
-        ->andReturnTrue();
+    Notification::fake();
 
     Edition::set(Edition::Pro);
 
@@ -93,9 +91,7 @@ test('sendActivationEmail works for pending users without moderateUsers permissi
 });
 
 test('sendActivationEmail requires moderateUsers for inactive (non-pending) users', function () {
-    $this->partialMock(Users::class)
-        ->shouldReceive('sendActivationEmail')
-        ->andReturnTrue();
+    Notification::fake();
 
     Edition::set(Edition::Pro);
 
