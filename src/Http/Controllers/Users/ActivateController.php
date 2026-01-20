@@ -12,6 +12,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -84,7 +85,7 @@ final readonly class ActivateController
         }
     }
 
-    public function sendActivationEmail(Request $request, Users $users): Response
+    public function sendActivationEmail(Request $request): Response
     {
         $validated = $request->validate([
             'userId' => ['required', 'int'],
@@ -111,8 +112,8 @@ final readonly class ActivateController
         $userVariable = $request->getSigned('userVariable') ?? 'user';
 
         try {
-            $emailSent = $users->sendActivationEmail($user);
-        } catch (InvalidElementException $e) {
+            $user->sendEmailVerificationNotification();
+        } catch (Throwable $e) {
             return $this->asModelFailure(
                 $user,
                 t('Couldn’t send the activation email: {error}', [
@@ -122,8 +123,6 @@ final readonly class ActivateController
             );
         }
 
-        return $emailSent ?
-            $this->asSuccess(t('Activation email sent.')) :
-            $this->asFailure(t('Couldn’t send activation email. Check your email settings.'));
+        return $this->asSuccess(t('Activation email sent.'));
     }
 }

@@ -61,20 +61,27 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
+use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Deprecated;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
@@ -105,13 +112,15 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
-final class User extends Element implements AuthenticatableContract, AuthorizableContract
+final class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
 {
     use Authenticatable;
     use Authorizable;
+    use CanResetPassword;
     use ConfirmsPasswords;
     use Macroable;
     use NameTrait;
+    use Notifiable;
 
     /**
      * @since 5.0.0
@@ -778,16 +787,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     public ?string $currentPassword = null;
 
     /**
-     * @var DateTime|null Verification code issued date
-     */
-    public ?DateTime $verificationCodeIssuedDate = null;
-
-    /**
-     * @var string|null Verification code
-     */
-    public ?string $verificationCode = null;
-
-    /**
      * @var string|null Last login attempt IP address.
      */
     public ?string $lastLoginAttemptIp = null;
@@ -835,6 +834,55 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private ?array $_groups = null;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return is_null($this->unverifiedEmail);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function markEmailAsVerified(): bool
+    {
+        try {
+            Users::verifyEmailForUser($this);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker('craft');
+
+        $this->notify(new VerifyEmailNotification($broker->createToken($this)));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEmailForVerification(): string
+    {
+        return $this->unverifiedEmail ?? $this->email;
+    }
 
     /**
      * {@inheritdoc}
@@ -1015,12 +1063,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
             self::SCENARIO_ACTIVATION,
         ]);
 
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
+        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn () => ! $this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
@@ -2444,8 +2491,6 @@ JS, [
             $model->password = $this->password = $hash;
             $model->invalidLoginWindowStart = null;
             $model->invalidLoginCount = $this->invalidLoginCount = null;
-            $model->verificationCode = null;
-            $model->verificationCodeIssuedDate = null;
             $model->lastPasswordChangeDate = $this->lastPasswordChangeDate;
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false

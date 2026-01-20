@@ -7182,6 +7182,10 @@ class GeneralConfig extends BaseConfig
     {
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
 
+        app()->booted(function () {
+            Config::set('auth.passwords.craft.expire', $this->verificationCodeDuration);
+        });
+
         return $this;
     }
 

@@ -5,7 +5,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserPermissions;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -119,13 +118,11 @@ test('removeCredentials', function () {
         'active' => true,
         'pending' => true,
         'password' => Hash::make('password'),
-        'verificationCode' => Str::random(32),
     ]);
 
     expect($user->active)->toBeTrue();
     expect($user->pending)->toBeTrue();
     expect($user->password)->not()->toBeNull();
-    expect($user->verificationCode)->not()->toBeNull();
 
     $this->users->removeCredentials($userElement);
 
@@ -134,7 +131,6 @@ test('removeCredentials', function () {
     expect($user->active)->toBeFalse();
     expect($user->pending)->toBeFalse();
     expect($user->password)->toBeNull();
-    expect($user->verificationCode)->toBeNull();
 });
 
 test('user activation', function () {
@@ -247,17 +243,11 @@ test('shunned messages', function () {
 });
 
 test('set verification code', function () {
-    Date::setTestNow(now('UTC'));
-
     $user = UserModel::factory()->pending()->createElement();
 
     $verificationCode = $this->users->setVerificationCodeOnUser($user);
 
-    $model = UserModel::findOrFail($user->id);
-
-    expect(strlen((string) $verificationCode))->toBe(32);
-    expect($model->verificationCode)->not()->toBeNull();
-    expect($model->verificationCodeIssuedDate)->toEqualCanonicalizing(now('UTC')->startOfSecond());
+    expect(strlen((string) $verificationCode))->toBe(64);
 });
 
 test('assignUserToGroups', function () {
