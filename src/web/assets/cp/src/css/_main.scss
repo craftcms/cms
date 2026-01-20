@@ -6465,7 +6465,7 @@ $min2ColWidth: 400px;
       transition:
         inset-inline-start linear 250ms,
         inset-inline-end linear 250ms;
-      will-change: inset-inline-start, inset-inline-end;
+      will-change: transform;
     }
   }
 
