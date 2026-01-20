@@ -57,6 +57,7 @@
 - Element cards and table views can now include fields nested within Content Block fields. ([#18206](https://github.com/craftcms/cms/pull/18206), [#18252](https://github.com/craftcms/cms/pull/18252))
 - Element table views can now include generated fields. ([#18253](https://github.com/craftcms/cms/pull/18253))
 - Element indexes can now be sorted by generated fields. ([#18253](https://github.com/craftcms/cms/pull/18253))
+- Generated fields now normalize `true`/`false`/`null`/integer/float values to the appropriate types. ([#18267](https://github.com/craftcms/cms/pull/18267))
 - Money fields’ icons now indicate their selected currency, for common currencies.
 
 ### Development
