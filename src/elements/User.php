@@ -818,6 +818,12 @@ class User extends Element implements IdentityInterface
     private ?array $_groups = null;
 
     /**
+     * @see setAttributesFromRequest()
+     * @see afterSave()
+     */
+    private bool $sendVerificationEmailAfterRequest = false;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -1097,6 +1103,7 @@ class User extends Element implements IdentityInterface
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                        $this->sendVerificationEmailAfterRequest = true;
                     }
                 } else {
                     unset($values['email']);
@@ -2630,6 +2637,25 @@ JS, [
                 $condition = ['and', $condition, ['not', ['token' => $token]]];
             }
             Db::delete(Table::SESSIONS, $condition);
+        }
+
+        if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
+            // Temporarily set the unverified email on the User so the verification email goes to the right place
+            $originalEmail = $this->email;
+            $this->email = $this->unverifiedEmail;
+
+            try {
+                if ($isNew) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($this);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($this);
+                }
+            } finally {
+                // Put the original email back into place
+                $this->email = $originalEmail;
+            }
         }
     }
 
