@@ -72,13 +72,13 @@
           @click="toggleSidebar"
           v-if="!isLargeScreen"
         >
-          <craft-icon :name="sidebarIcon" :label="t('app', 'Toggle menu')"></craft-icon>
+          <craft-icon :name="sidebarIcon" :label="t('Toggle menu')"></craft-icon>
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
         <craft-button icon appearance="plain">
-          <craft-icon name="search" :label="t('app', 'Search')"></craft-icon>
+          <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
       </div>
     </div>
