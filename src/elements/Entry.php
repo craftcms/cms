@@ -51,6 +51,7 @@ use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
@@ -708,6 +709,7 @@ class Entry extends Element implements ExpirableElementInterface
      * {{ entry.postDate|date('short') }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $postDate = null;
 
     /**
@@ -724,6 +726,7 @@ class Entry extends Element implements ExpirableElementInterface
      * {% endif %}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $expiryDate = null;
 
     /**
@@ -797,8 +800,10 @@ class Entry extends Element implements ExpirableElementInterface
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'postDate' => Craft::t('app', 'Post Date'),
+            'authorId' => Craft::t('app', 'Author'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'postDate' => Craft::t('app', 'Post Date'),
+            'typeId' => Craft::t('app', 'Entry Type'),
         ]);
     }
 
@@ -809,6 +814,7 @@ class Entry extends Element implements ExpirableElementInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'typeId'], 'required'];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         $rules[] = [
@@ -822,15 +828,58 @@ class Entry extends Element implements ExpirableElementInterface
             'on' => self::SCENARIO_LIVE,
         ];
 
-        if ($this->sectionId) {
-            $section = $this->getSection();
+        $rules[] = [
+            ['authorId'],
+            'required',
+            'when' => fn() => $this->getSection()->type !== Section::TYPE_SINGLE,
+            'on' => self::SCENARIO_LIVE,
+        ];
 
-            if ($section->type !== Section::TYPE_SINGLE) {
-                $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
-            }
-        }
+        $rules[] = [
+            ['typeId'],
+            function($attribute) {
+                $typeId = $this->getTypeId();
+                foreach ($this->getAvailableEntryTypes() as $entryType) {
+                    if ($entryType->id === $typeId) {
+                        return;
+                    }
+                }
+                $this->addError($attribute, Craft::t('yii', '{attribute} is invalid.', [
+                    'attribute' => $this->getAttributeLabel($attribute),
+                ]));
+            },
+        ];
+
+        $rules[] = [
+            ['authorId'],
+            function($attribute) {
+                if (!$this->getAuthor()->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
+                    $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
+                }
+            },
+            'when' => fn() => $this->getSection()->type !== Section::TYPE_SINGLE,
+        ];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAttributesFromRequest(array $values): void
+    {
+        $authorId = $this->normalizeAuthorId(ArrayHelper::remove($values, 'authorId'));
+
+        parent::setAttributesFromRequest($values);
+
+        // Only set the author if the user has permission to change it
+        if (
+            $authorId !== null &&
+            $authorId !== $this->getAuthorId() &&
+            Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+        ) {
+            $this->setAuthorId($authorId);
+        }
     }
 
     /**
@@ -1212,6 +1261,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return int|null
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorId(): ?int
     {
         return $this->_authorId;
@@ -1225,17 +1275,17 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function setAuthorId(array|int|string|null $authorId): void
     {
-        if ($authorId === '') {
-            $authorId = null;
-        }
-
-        if (is_array($authorId)) {
-            $this->_authorId = reset($authorId) ?: null;
-        } else {
-            $this->_authorId = $authorId;
-        }
-
+        $this->_authorId = $this->normalizeAuthorId($authorId);
         $this->_author = null;
+    }
+
+    private function normalizeAuthorId(array|int|string|null $authorId): ?int
+    {
+        if (is_array($authorId)) {
+            $authorId = reset($authorId);
+        }
+
+        return $authorId ? (int)$authorId : null;
     }
 
     /**
@@ -1252,6 +1302,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
+    #[AllowedInSandbox]
     public function getAuthor(): ?User
     {
         if (!isset($this->_author)) {

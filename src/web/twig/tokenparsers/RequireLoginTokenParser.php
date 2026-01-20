@@ -30,7 +30,7 @@ class RequireLoginTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RequireLoginNode([], [], $lineno, $this->getTag());
+        return new RequireLoginNode([], [], $lineno);
     }
 
     /**

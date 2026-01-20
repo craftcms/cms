@@ -40,7 +40,7 @@ class ExitTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new ExitNode($nodes, [], $lineno, $this->getTag());
+        return new ExitNode($nodes, [], $lineno);
     }
 
     /**

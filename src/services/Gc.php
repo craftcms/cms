@@ -156,6 +156,7 @@ class Gc extends Component
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedSearchIndexJobs();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
         $this->_deleteOrphanedFkRows();
@@ -494,6 +495,13 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedSearchIndexJobs(): void
+    {
+        $this->_stdout('    > deleting orphaned search index jobs ... ');
+        Craft::$app->getSearch()->deleteOrphanedIndexJobs();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

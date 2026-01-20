@@ -30,7 +30,7 @@ class RequireGuestTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RequireGuestNode([], [], $lineno, $this->getTag());
+        return new RequireGuestNode([], [], $lineno);
     }
 
     /**

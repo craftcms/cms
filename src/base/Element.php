@@ -2185,7 +2185,12 @@ abstract class Element extends Component implements ElementInterface
         try {
             return static::displayName();
         } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+            if (PHP_VERSION_ID < 70400) {
+                trigger_error(ErrorHandler::convertExceptionToError($e), E_USER_ERROR);
+                /** @phpstan-ignore-next-line */
+                return '';
+            }
+            throw $e;
         }
     }
 
@@ -4001,6 +4006,14 @@ abstract class Element extends Component implements ElementInterface
     {
         /** @phpstan-ignore-next-line */
         return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAttributesFromRequest(array $values): void
+    {
+        $this->setAttributes($values);
     }
 
     /**

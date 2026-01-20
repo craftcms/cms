@@ -45,7 +45,6 @@ import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CategoryIndex.js';
-import './js/CategorySelectInput.js';
 import './js/Chart.js';
 import './js/ColorInput.js';
 import './js/CustomizeSourcesModal.js';

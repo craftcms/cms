@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * UserGroup model class.
@@ -24,22 +25,26 @@ class UserGroup extends Model
     /**
      * @var int|null ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var string|null Description
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public ?string $description = null;
 
     /**

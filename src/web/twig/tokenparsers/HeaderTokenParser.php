@@ -33,7 +33,7 @@ class HeaderTokenParser extends AbstractTokenParser
         ];
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new HeaderNode($nodes, [], $lineno, $this->getTag());
+        return new HeaderNode($nodes, [], $lineno);
     }
 
     /**

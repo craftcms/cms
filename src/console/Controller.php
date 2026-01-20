@@ -73,7 +73,7 @@ class Controller extends YiiController
     public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
-     * @var array[] Custom actions that should be available.
+     * @var array<string,array{action:class-string|array{class:class-string,label:string,...},options:array,helpSummary?:string,help?:string,argsHelp:array,optionsHelp:array}> Custom actions that should be available.
      * @see defineActions()
      */
     private array $_actions;
@@ -171,6 +171,7 @@ class Controller extends YiiController
 
     /**
      * @inheritdoc
+     * @return array<string,class-string|array{class:class-string,label:string,...}>
      */
     public function actions(): array
     {

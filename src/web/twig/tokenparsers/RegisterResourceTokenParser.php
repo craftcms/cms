@@ -149,7 +149,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'position' => $position,
         ];
 
-        return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
+        return new RegisterResourceNode($nodes, $attributes, $lineno);
     }
 
     /**

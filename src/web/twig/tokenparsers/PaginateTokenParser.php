@@ -47,7 +47,7 @@ class PaginateTokenParser extends AbstractTokenParser
 
         $nodes['resultVariable'] = new AssignNameExpression($resultVariable->getAttribute('name'), $resultVariable->getTemplateLine());
 
-        return new PaginateNode($nodes, [], $lineno, $this->getTag());
+        return new PaginateNode($nodes, [], $lineno);
     }
 
     /**
