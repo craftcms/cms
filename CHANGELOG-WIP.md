@@ -164,6 +164,7 @@
 - Checkbox selects can now be configured with a `storageKey` setting.
 - The `_includes/forms/checkbox.twig` template now escapes the `label` variable. A raw HTML label can be passed by wrapping the label value in `raw()` or `craft\helpers\Template::raw()`.
 - The `_includes/forms/radio.twig` template now escapes the `label` variable. A raw HTML label can be passed by wrapping the label value in `raw()` or `craft\helpers\Template::raw()`.
+- `Craft.ui.createCheckbox()` now escapes the `config.label` property. A raw HTML label can be passed via the `config.labelHtml` property.
 - `Craft.ui.createSelect()` now escapes options’ `label` properties. Raw HTML labels can be passed via `labelHtml` properties.
 - Deprecated `craft\fieldlayoutelements\BaseField::$includeInCards`.
 - Deprecated `craft\fieldlayoutelements\BaseField::$providesThumbs`.
