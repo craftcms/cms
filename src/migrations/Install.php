@@ -452,6 +452,7 @@ class Install extends Migration
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
+            'allowLineBreaksInTitles' => $this->boolean()->notNull()->defaultValue(false),
             'showSlugField' => $this->boolean()->defaultValue(true),
             'slugTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'slugTranslationKeyFormat' => $this->text(),
