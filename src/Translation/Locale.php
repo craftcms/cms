@@ -511,6 +511,20 @@ final class Locale implements Stringable
     }
 
     /**
+     * Returns the default currency for the locale.
+     */
+    public function getDefaultCurrency(): string
+    {
+        // h/t: https://stackoverflow.com/a/8325456
+        $locale = $this->aliasOf ?? $this->id;
+
+        return new NumberFormatter(
+            locale: $locale,
+            style: NumberFormatter::CURRENCY,
+        )->getTextAttribute(NumberFormatter::CURRENCY_CODE);
+    }
+
+    /**
      * Returns a localized date/time format.
      *
      * @param  string  $length  The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL

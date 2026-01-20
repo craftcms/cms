@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Structures;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use function CraftCms\Cms\t;
 
@@ -118,8 +119,13 @@ JS, [static::class]);
     private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
+        $user = Auth::user();
 
         foreach ($elements as $element) {
+            if (!$elementsService->canDuplicate($element, $user)) {
+                continue;
+            }
+
             // Make sure this element wasn't already duplicated, which could
             // happen if it's the descendant of a previously duplicated element
             // and $this->deep == true.

@@ -84,13 +84,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     {
         // Save the current base path to restore later.
         $oldBasePath = $this->basePath;
-        $newBasePath = Craft::getAlias('@translations');
-
-        if ($newBasePath === false) {
-            throw new Exception('There was a problem getting the translations path.');
-        }
-
-        $this->basePath = $newBasePath;
+        $this->basePath = Craft::getAlias('@translations');
 
         // Code adapted from yii\i18n\PhpMessageSource, minus the error logging
         $messageFile = $this->getMessageFilePath($category, $language);

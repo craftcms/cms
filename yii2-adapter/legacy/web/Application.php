@@ -296,10 +296,6 @@ class Application extends \yii\web\Application
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
 
-        if ($resourceBasePath === false) {
-            return;
-        }
-
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }

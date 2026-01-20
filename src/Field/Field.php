@@ -25,6 +25,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -59,7 +60,6 @@ use InvalidArgumentException;
 use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -435,7 +435,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
      * {@inheritdoc} */
     public static function dbType(): array|string|null
     {
-        return Schema::TYPE_TEXT;
+        return Query::TYPE_TEXT;
     }
 
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
@@ -879,7 +879,7 @@ JS, [
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
         $db = Craft::$app->getDb();
-        if ($db->getIsMysql() && is_string($dbType) && DbHelper::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+        if ($db->getIsMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 
@@ -929,7 +929,7 @@ JS, [
     public function afterMergeFrom(FieldInterface $outgoingField)
     {
         if ($this instanceof RelationalFieldInterface) {
-            DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
+            DB::table(Table::RELATIONS)
                 ->where('fieldId', $outgoingField->id)
                 ->update([
                     'fieldId' => $this->id,
@@ -1042,21 +1042,21 @@ JS, [
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (DbHelper::parseColumnType($dbType)) {
-                Schema::TYPE_CHAR,
-                Schema::TYPE_STRING,
+                Query::TYPE_CHAR,
+                Query::TYPE_STRING,
                 'varchar' => 'CHAR(255)',
                 // only reliable way to compare booleans is as 'true'/'false' strings :(
-                Schema::TYPE_BOOLEAN => 'CHAR(5)',
-                Schema::TYPE_DATE => 'DATE',
-                Schema::TYPE_DATETIME => 'DATETIME',
-                Schema::TYPE_DECIMAL => 'DECIMAL',
-                Schema::TYPE_DOUBLE => 'DOUBLE',
-                Schema::TYPE_FLOAT => 'FLOAT',
-                Schema::TYPE_TINYINT,
-                Schema::TYPE_SMALLINT,
-                Schema::TYPE_INTEGER,
-                Schema::TYPE_BIGINT => 'SIGNED',
-                SCHEMA::TYPE_TIME => 'TIME',
+                Query::TYPE_BOOLEAN => 'CHAR(5)',
+                Query::TYPE_DATE => 'DATE',
+                Query::TYPE_DATETIME => 'DATETIME',
+                Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_DOUBLE => 'DOUBLE',
+                Query::TYPE_FLOAT => 'FLOAT',
+                Query::TYPE_TINYINT,
+                Query::TYPE_SMALLINT,
+                Query::TYPE_INTEGER,
+                Query::TYPE_BIGINT => 'SIGNED',
+                Query::TYPE_TIME => 'TIME',
                 default => null,
             };
         }
@@ -1064,9 +1064,9 @@ JS, [
         // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
         if (DB::getDriverName() === 'pgsql') {
-            $castType = match (DbHelper::parseColumnType($dbType)) {
-                Schema::TYPE_DECIMAL => 'DECIMAL',
-                Schema::TYPE_INTEGER => 'INTEGER',
+            $castType = match (Query::parseColumnType($dbType)) {
+                Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_INTEGER => 'INTEGER',
                 default => null,
             };
         }

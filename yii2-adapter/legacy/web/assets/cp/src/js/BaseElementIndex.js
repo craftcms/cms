@@ -275,6 +275,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $('.body, .content', this.$container).removeClass('has-sidebar');
       }
 
+      // Get the request query params before we start changing anything
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
+
       // Find the sources
       // ---------------------------------------------------------------------
 
@@ -440,33 +444,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.filterHuds = {};
       this.addListener(this.$filterBtn, 'click', 'showFilterHud');
 
-      // Set the default status
-      // ---------------------------------------------------------------------
-
-      const queryParams =
-        this.settings.context === 'index' ? Craft.getQueryParams() : {};
-
-      if (queryParams.status) {
-        let selector;
-        switch (queryParams.status) {
-          case 'trashed':
-            selector = '[data-trashed]';
-            break;
-          case 'drafts':
-            selector = '[data-drafts]';
-            break;
-          default:
-            selector = `[data-status="${queryParams.status}"]`;
-        }
-
-        const $option = this.statusMenu.$options.filter(selector);
-        if ($option.length) {
-          this.statusMenu.selectOption($option[0]);
-        } else {
-          Craft.setQueryParam('status', null);
-        }
-      }
-
       // Initialize the Export button
       // ---------------------------------------------------------------------
 
@@ -605,6 +582,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           const attr = queryParams.sort.substring(0, lastDashPos);
           const dir = queryParams.sort.substring(lastDashPos + 1);
           this.setSelectedSortAttribute(attr, dir);
+        }
+      }
+
+      // Set the default status
+      // ---------------------------------------------------------------------
+
+      if (queryParams.status) {
+        let selector;
+        switch (queryParams.status) {
+          case 'trashed':
+            selector = '[data-trashed]';
+            break;
+          case 'drafts':
+            selector = '[data-drafts]';
+            break;
+          default:
+            selector = `[data-status="${queryParams.status}"]`;
+        }
+
+        const $option = this.statusMenu.$options.filter(selector);
+        if ($option.length) {
+          this.statusMenu.selectOption($option[0]);
+        } else {
+          Craft.setQueryParam('status', null);
         }
       }
 
@@ -2344,6 +2345,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return false;
       }
 
+      // if newly selected source is the same as the one that's currently selected
       if (
         this.$source &&
         this.$source[0] &&
@@ -3153,7 +3155,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         Craft.setQueryParam('status', queryParam);
       }
 
-      this.updateElements();
+      if (this.initialized) {
+        this.updateElements();
+      }
     },
 
     _handleSiteChange: async function (ev) {
@@ -4594,7 +4598,11 @@ const ViewMenu = Garnish.Base.extend({
       })
       .reduce(
         (groups, option) => {
-          const index = option.attr.startsWith('field:') ? 1 : 0;
+          const index =
+            option.attr.startsWith('field:') ||
+            option.attr.startsWith('fieldInstance:')
+              ? 1
+              : 0;
           groups[index].options.push(option);
           return groups;
         },

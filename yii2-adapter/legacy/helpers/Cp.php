@@ -1660,7 +1660,8 @@ JS, [
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
-        $disabled = $config['disabled'] ?? $config['static'] ?? false;
+        $disabled = $config['disabled'] ?? false;
+        $static = $config['static'] ?? false;
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
@@ -1811,6 +1812,9 @@ JS, [
                             'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
+                    ($static ? Html::tag('span', Craft::t('app', 'Read Only'), [
+                        'class' => ['read-only-badge'],
+                    ]) : '') .
                     ($showLabelExtra
                         ? Html::tag('div', '', ['class' => 'flex-grow']) .
                         ($showActionMenu ? static::disclosureMenu($config['actionMenuItems'], [
@@ -2858,7 +2862,7 @@ JS, [
             foreach ($fieldLayout->type::cardAttributes($fieldLayout) as $key => $attribute) {
                 $allOptions[$keyPrefix . $key] = [
                     'label' => $labelPrefix . $attribute['label'],
-                    'placeholder' => $attribute['placeholder'],
+                    'placeholder' => $attribute['placeholder'] ?? null,
                 ];
             }
         }
@@ -2874,7 +2878,7 @@ JS, [
                     $allOptions += self::cardPreviewOptionsInternal(
                         $field->getFieldLayout(),
                         "{$keyPrefix}contentBlock:$layoutElement->uid.",
-                        sprintf('%s%s - ', $labelPrefix, $layoutElement->label()),
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                         false,
                     );
                     continue;

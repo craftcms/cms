@@ -9,10 +9,15 @@ use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->revisions = app(Revisions::class);
+
+    actingAs(User::findOne());
 });
 
 it('can create a revision', function () {
@@ -50,9 +55,8 @@ it('can revert an element to a revision', function () {
     Event::listen(RevertingToRevision::class, fn () => true);
     Event::listen(RevertedToRevision::class, fn () => true);
 
-    $entry = Entry::factory()->create();
+    Entry::factory()->create();
     $element = EntryElement::findOne();
-    $entry->section->entryTypes()->attach($entry->entryType, ['sortOrder' => 1]);
 
     $revisionId = $this->revisions->createRevision(
         canonical: $element,

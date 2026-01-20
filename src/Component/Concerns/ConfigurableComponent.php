@@ -53,6 +53,7 @@ trait ConfigurableComponent
             try {
                 $value = match (true) {
                     property_exists($this, $attribute) => $this->$attribute,
+                    /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                     method_exists($this, $method = 'get'.Str::studly($attribute)) => $this->$method(),
                     default => throw new RuntimeException,
                 };

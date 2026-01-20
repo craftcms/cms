@@ -832,23 +832,25 @@ MD);
 
     private function _addSectionToPage(string $name, string $icon): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $sourcesService = app(ElementSources::class);
 
-        $sourceConfigPath = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class);
-        $sourceConfigs = Collection::make($projectConfig->get($sourceConfigPath))
-            ->map(fn(array $config) => $config + ['page' => 'Entries'])
+        $sourceKey = sprintf('section:%s', $this->_section()->uid);
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+            ->map(function(array $config) use ($sourceKey, $name) {
+                if (($config['key'] ?? null) === $sourceKey) {
+                    $config['page'] = $name;
+                } else {
+                    $config['page'] ??= 'Entries';
+                }
+                return $config;
+            })
             ->all();
-        $sourceConfigs[] = [
-            'key' => sprintf('section:%s', $this->_section()->uid),
-            'page' => $name,
-            'type' => 'native',
-        ];
-        $projectConfig->set($sourceConfigPath, $sourceConfigs);
+        $sourcesService->saveSources(Entry::class, $sourceConfigs);
 
-        $pageSettings = app(ElementSources::class)->getPageSettings(Entry::class);
+        $pageSettings = $sourcesService->getPageSettings(Entry::class);
         $pageSettings[$name] = [
             'icon' => $icon,
         ];
-        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, Entry::class), $pageSettings);
+        $sourcesService->savePageSettings(Entry::class, $pageSettings);
     }
 }

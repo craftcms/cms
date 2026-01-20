@@ -19,12 +19,13 @@ import './Money.scss';
           .find('.clear-btn');
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
+        this.$field.on('blur', $.proxy(this, 'onBlur'));
         this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
         if (this.$clearBtn) {
           this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
         }
 
-        if (this.$field.val() != '') {
+        if (this.$field.val() !== '') {
           this.updateInputMask();
         }
 
@@ -57,6 +58,10 @@ import './Money.scss';
       },
 
       onFocus: function () {
+        this.updateInputMask();
+      },
+
+      onBlur: function () {
         this.updateInputMask();
       },
 

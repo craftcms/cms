@@ -152,7 +152,7 @@ final class AppServiceProvider extends ServiceProvider
         Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
 
         Request::macro('isPreview', function () {
-            $previewParamValue = $this->input('x-craft-preview') ?? $this->input('x-craft-live-preview');
+            $previewParamValue = $this->input('x-craft-preview') ?? $this->input('x-craft-live-preview') ?? $this->header('X-Craft-Preview-Token');
 
             if (! $previewParamValue) {
                 return false;
