@@ -11,11 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\behaviors\EventBehavior;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
+use craft\events\ModelEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -164,23 +166,29 @@ class Drafts extends Component
                 'trackChanges' => $canonical::trackChanges(),
                 'markAsSaved' => $markAsSaved,
             ];
+            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
+                Element::EVENT_AFTER_PROPAGATE => function(ModelEvent $event) use ($canonical) {
+                    /** @var ElementInterface $draft */
+                    $draft = $event->sender;
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
-
-            // Duplicate nested element ownership
-            Craft::$app->getDb()->createCommand(sprintf(
-                <<<SQL
+                    // Duplicate nested element ownership
+                    Craft::$app->getDb()->createCommand(sprintf(
+                        <<<SQL
 INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]])
 SELECT [[o.elementId]], :draftId, [[o.sortOrder]]
 FROM %s AS [[o]]
 WHERE [[o.ownerId]] = :canonicalId
 SQL,
-                Table::ELEMENTS_OWNERS,
-                Table::ELEMENTS_OWNERS,
-            ), [
-                ':draftId' => $draft->id,
-                ':canonicalId' => $canonical->id,
-            ])->execute();
+                        Table::ELEMENTS_OWNERS,
+                        Table::ELEMENTS_OWNERS,
+                    ), [
+                        ':draftId' => $draft->id,
+                        ':canonicalId' => $canonical->id,
+                    ])->execute();
+                },
+            ], true);
+
+            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
         } catch (Throwable $e) {

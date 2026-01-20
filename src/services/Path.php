@@ -56,17 +56,7 @@ class Path extends Component
      */
     public function getConfigPath(): string
     {
-        if (isset($this->_configPath)) {
-            return $this->_configPath;
-        }
-
-        $configPath = Craft::getAlias('@config');
-
-        if ($configPath === false) {
-            throw new Exception('There was a problem getting the config path.');
-        }
-
-        return $this->_configPath = FileHelper::normalizePath($configPath);
+        return $this->_configPath ?? $this->_configPath = FileHelper::normalizePath(Craft::getAlias('@config'));
     }
 
     /**
@@ -109,13 +99,7 @@ class Path extends Component
     public function getStoragePath(bool $create = true): string
     {
         if (!isset($this->_storagePath)) {
-            $path = Craft::getAlias('@storage');
-
-            if ($path === false) {
-                throw new Exception('There was a problem getting the storage path.');
-            }
-
-            $this->_storagePath = FileHelper::normalizePath($path);
+            $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
         }
 
         if ($create) {
@@ -134,17 +118,7 @@ class Path extends Component
      */
     public function getTestsPath(): string
     {
-        if (isset($this->_testsPath)) {
-            return $this->_testsPath;
-        }
-
-        $path = Craft::getAlias('@tests');
-
-        if ($path === false) {
-            throw new Exception('There was a problem getting the tests path.');
-        }
-
-        return $this->_testsPath = FileHelper::normalizePath($path);
+        return $this->_testsPath ?? $this->_testsPath = FileHelper::normalizePath(Craft::getAlias('@tests'));
     }
 
     /**
@@ -235,17 +209,7 @@ class Path extends Component
      */
     public function getVendorPath(): string
     {
-        if (isset($this->_vendorPath)) {
-            return $this->_vendorPath;
-        }
-
-        $vendorPath = Craft::getAlias('@vendor');
-
-        if ($vendorPath === false) {
-            throw new Exception('There was a problem getting the vendor path.');
-        }
-
-        return $this->_vendorPath = FileHelper::normalizePath($vendorPath);
+        return $this->_vendorPath ?? $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
     }
 
     /**
@@ -458,17 +422,7 @@ class Path extends Component
      */
     public function getSiteTranslationsPath(): string
     {
-        if (isset($this->_siteTranslationsPath)) {
-            return $this->_siteTranslationsPath;
-        }
-
-        $translationsPath = Craft::getAlias('@translations');
-
-        if ($translationsPath === false) {
-            throw new Exception('There was a problem getting the translations path.');
-        }
-
-        return $this->_siteTranslationsPath = $translationsPath;
+        return $this->_siteTranslationsPath ?? $this->_siteTranslationsPath = Craft::getAlias('@translations');
     }
 
     /**
@@ -489,13 +443,7 @@ class Path extends Component
      */
     public function getSiteTemplatesPath(): string
     {
-        $siteTemplatesPath = Craft::getAlias('@templates');
-
-        if ($siteTemplatesPath === false) {
-            throw new Exception('There was a problem getting the site templates path.');
-        }
-
-        return FileHelper::normalizePath($siteTemplatesPath);
+        return FileHelper::normalizePath(Craft::getAlias('@templates'));
     }
 
     /**

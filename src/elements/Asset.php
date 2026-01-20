@@ -72,12 +72,11 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Throwable;
 use Twig\Markup;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
@@ -668,10 +667,10 @@ class Asset extends Element
      */
     protected static function defineCardAttributes(): array
     {
-        $attributes = array_merge(parent::defineCardAttributes(), [
+        $attributes = array_merge($parentAttributes = parent::defineCardAttributes(), [
             'dateCreated' => [
                 'label' => Craft::t('app', 'Date Uploaded'),
-                // placeholder will be merged from parent
+                'placeholder' => $parentAttributes['dateCreated']['placeholder'],
             ],
             'filename' => [
                 'label' => Craft::t('app', 'Filename'),
@@ -1067,17 +1066,20 @@ class Asset extends Element
     /**
      * @var string|null Kind
      */
+    #[AllowedInSandbox]
     public ?string $kind = null;
 
     /**
      * @var string|null Alternative text
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public ?string $alt = null;
 
     /**
      * @var int|null Size
      */
+    #[AllowedInSandbox]
     public ?int $size = null;
 
     /**
@@ -1221,12 +1223,11 @@ class Asset extends Element
      */
     public function __toString(): string
     {
-        try {
-            if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
+        if (isset($this->_transform)) {
+            $url = $this->getUrl();
+            if ($url) {
                 return $url;
             }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
         }
 
         return parent::__toString();
@@ -1829,6 +1830,7 @@ JS,[
      * @return Markup|null
      * @throws InvalidArgumentException
      */
+    #[AllowedInSandbox]
     public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
@@ -1885,6 +1887,7 @@ JS,[
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getSrcset(array $sizes, mixed $transform = null): string|false
     {
         $urls = array_filter($this->getUrlsBySize($sizes, $transform));
@@ -1933,6 +1936,7 @@ JS,[
      * @return array
      * @since 3.7.16
      */
+    #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
@@ -2380,6 +2384,7 @@ JS,[
      * @return string
      * @throws InvalidConfigException if the filename isn’t set yet
      */
+    #[AllowedInSandbox]
     public function getFilename(bool $withExtension = true): string
     {
         if ($this->isFolder) {
@@ -2413,6 +2418,7 @@ JS,[
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
@@ -2436,6 +2442,7 @@ JS,[
      * @return string|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
+    #[AllowedInSandbox]
     public function getMimeType(mixed $transform = null): ?string
     {
         $transform ??= $this->_transform;
@@ -2467,6 +2474,7 @@ JS,[
      * @return string The asset's format
      * @throws ImageTransformException If an invalid transform handle is supplied
      */
+    #[AllowedInSandbox]
     public function getFormat(mixed $transform = null): string
     {
         $ext = $this->getExtension();
@@ -2485,6 +2493,7 @@ JS,[
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
@@ -2506,6 +2515,7 @@ JS,[
      * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getWidth(array|string|ImageTransform $transform = null): ?int
     {
         return $this->_dimensions($transform)[0];
@@ -2529,6 +2539,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getFormattedSize(?int $decimals = null, bool $short = true): ?string
     {
         if (!isset($this->size)) {
@@ -2547,6 +2558,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getFormattedSizeInBytes(bool $short = true): ?string
     {
         if (!isset($this->size)) {
@@ -2568,6 +2580,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getDimensions(): ?string
     {
         $width = $this->getWidth();
@@ -2655,6 +2668,7 @@ JS,[
      * @throws AssetException if a stream could not be created
      * @since 3.5.13
      */
+    #[AllowedInSandbox]
     public function getDataUrl(): string
     {
         return Html::dataUrlFromString($this->getContents(), $this->getMimeType());
@@ -3469,7 +3483,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile) {
+        if ($this->dateDeleted && $this->keptFile && Craft::$app->getElements()->canSave($this)) {
             $attributes['data']['restorable'] = true;
         }
 

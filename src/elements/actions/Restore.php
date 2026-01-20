@@ -79,15 +79,14 @@ class Restore extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        if ($this->restorableElementsOnly) {
-            // Only enable for deletable elements, per canDelete()
-            Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        // Only enable for restorable/savable elements
+        Craft::$app->getView()->registerJsWithVars(fn($type, $attribute) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         validateSelection: (selectedItems, elementIndex) => {
             for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-restorable')) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attribute)) {
                     return false;
                 }
             }
@@ -95,8 +94,10 @@ class Restore extends ElementAction
         },
     });
 })();
-JS, [static::class]);
-        }
+JS, [
+            static::class,
+            $this->restorableElementsOnly ? 'data-restorable' : 'data-savable',
+        ]);
 
         return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
     }
@@ -109,7 +110,13 @@ JS, [static::class]);
         $anySuccess = false;
         $anyFail = false;
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
+
         foreach ($query->all() as $element) {
+            if (!$elementsService->canSave($element, $user)) {
+                continue;
+            }
+
             if ($elementsService->restoreElement($element)) {
                 $anySuccess = true;
             } else {

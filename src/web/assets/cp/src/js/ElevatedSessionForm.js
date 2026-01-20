@@ -5,30 +5,39 @@
  */
 Craft.ElevatedSessionForm = Garnish.Base.extend({
   $form: null,
+  inputSelectors: null,
+  $inputs: null,
   inputs: null,
 
   init: function (form, inputs) {
     this.$form = $(form);
+    this.inputSelectors = [];
+    this.$inputs = $();
+    this.inputs = [];
 
     // Only check specific inputs?
     if (typeof inputs !== 'undefined') {
-      this.inputs = [];
-      inputs = $.makeArray(inputs);
+      $.makeArray(inputs).forEach((selector) => {
+        if (typeof selector === 'string') {
+          this.inputSelectors.push(selector);
+        }
 
-      for (var i = 0; i < inputs.length; i++) {
-        var $inputs = $(inputs[i]);
-
-        for (var j = 0; j < $inputs.length; j++) {
-          var $input = $inputs.eq(j);
-
+        $(selector, this.$form).each((i, input) => {
+          this.$inputs = this.$inputs.add(input);
+          const $input = $(input);
           this.inputs.push({
-            input: $input,
+            $input,
             val: Garnish.getInputPostVal($input),
           });
-        }
-      }
+        });
+      });
     }
 
+    // is this for a slideout?
+    const slideout = this.$form.data('slideout');
+    if (slideout) {
+    } else {
+    }
     this.addListener(this.$form, 'submit', 'handleFormSubmit');
   },
 
@@ -37,40 +46,55 @@ Craft.ElevatedSessionForm = Garnish.Base.extend({
     if (Craft.elevatedSessionManager.fetchingTimeout) {
       ev.preventDefault();
       ev.stopImmediatePropagation();
+      ev.cancel = true;
       return;
     }
 
-    // Are we only interested in certain inputs?
-    if (this.inputs) {
-      var inputsChanged = false;
-      var $input;
-
-      for (var i = 0; i < this.inputs.length; i++) {
-        $input = this.inputs[i].input;
-        // Is this a password input?
-        if ($input.data('passwordInput')) {
-          $input = $input.data('passwordInput').$currentInput;
-        }
-
-        // Has this input's value changed?
-        if (Garnish.getInputPostVal($input) !== this.inputs[i].val) {
-          inputsChanged = true;
-          break;
-        }
-      }
-
-      if (!inputsChanged) {
-        // No need to interrupt the submit
-        return;
-      }
+    if (!this.inputsChanged()) {
+      return;
     }
 
     // Prevent the form from submitting until the user has an elevated session
     ev.preventDefault();
     ev.stopImmediatePropagation();
+    ev.cancel = true;
+
     Craft.elevatedSessionManager.requireElevatedSession(
       this.submitForm.bind(this)
     );
+  },
+
+  inputsChanged: function () {
+    if (!this.inputSelectors.length && !this.inputs.length) {
+      // no way to know
+      return true;
+    }
+
+    // If we have any input selectors, see if there are any new inputs that match them
+    for (const selector of this.inputSelectors) {
+      const $inputs = $(selector, this.$form);
+      for (let i = 0; i < $inputs.length; i++) {
+        const input = $inputs[i];
+        if (!this.$inputs.is(input)) {
+          return true;
+        }
+      }
+    }
+
+    // If we have any inputs, see if their values have changed
+    for (let {$input, val} of this.inputs) {
+      // Is this a password input?
+      if ($input.data('passwordInput')) {
+        $input = $input.data('passwordInput').$currentInput;
+      }
+
+      // Has this input's value changed?
+      if (Garnish.getInputPostVal($input) !== val) {
+        return true;
+      }
+    }
+
+    return false;
   },
 
   submitForm: function () {

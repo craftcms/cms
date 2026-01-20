@@ -29,10 +29,8 @@ use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
-use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
-use yii\base\ErrorHandler;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
@@ -165,6 +163,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     /** @since 5.8.0 */
     public const RESERVED_HANDLES = [
         'ancestors',
+        'applyingDraft',
         'archived',
         'attributeLabel',
         'attributes',
@@ -214,6 +213,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         'prevSibling',
         'previewing',
         'propagateAll',
+        'propagateRequired',
         'propagating',
         'ref',
         'relatedToAssets',
@@ -400,15 +400,10 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      * Use the translated field name as the string representation.
      *
      * @return string
-     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
-        try {
-            return Craft::t('site', $this->name) ?: static::class;
-        } catch (Exception $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -562,9 +557,8 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     protected function actionMenuItems(): array
     {
         $items = [];
-        $userSessionService = Craft::$app->getUser();
 
-        if ($this->id && $userSessionService->getIsAdmin()) {
+        if ($this->id && Craft::$app->getUser()->getIsAdmin()) {
             $view = Craft::$app->getView();
 
             if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
@@ -586,29 +580,6 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
 JS, [
                     $view->namespaceInputId($editId),
                     ['fieldId' => $this->id],
-                ]);
-            }
-
-            // Copy field handle
-            if (!$userSessionService->getIdentity()->getPreference('showFieldHandles')) {
-                $copyId = sprintf('action-copy-handle-%s', mt_rand());
-                $items[] = [
-                    'id' => $copyId,
-                    'icon' => 'clipboard',
-                    'label' => Craft::t('app', 'Copy field handle'),
-                ];
-                $view->registerJsWithVars(fn($id, $attribute) => <<<JS
-(() => {
-  $('#' + $id).on('activate', () => {
-    Craft.ui.createCopyTextPrompt({
-      label: Craft.t('app', 'Field Handle'),
-      value: $attribute,
-    });
-  });
-})();
-JS, [
-                    $view->namespaceInputId($copyId),
-                    $this->handle,
                 ]);
             }
         }
@@ -1366,5 +1337,13 @@ JS, [
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
 }

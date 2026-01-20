@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -18,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -122,7 +124,7 @@ class EntryTypesController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('entry-types/save')
-                ->redirectUrl('settings/entry-types')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/entry-types/{id}',
                     'shortcut' => true,
@@ -158,7 +160,9 @@ class EntryTypesController extends Controller
 
                         $labels = [];
                         $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
-                            $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                            $icon = $usage instanceof FieldInterface && !$usage instanceof Iconic
+                                ? $usage::icon()
+                                : $usage->getIcon();
                             $label = $labels[] = $usage->getUiLabel();
                             $labelHtml = Html::beginTag('span', [
                                     'class' => ['flex', 'flex-nowrap', 'gap-s'],
@@ -221,9 +225,11 @@ class EntryTypesController extends Controller
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $this->request->getBodyParam('uiLabelFormat', $entryType->uiLabelFormat);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->allowLineBreaksInTitles = $this->request->getBodyParam('allowLineBreaksInTitles', $entryType->allowLineBreaksInTitles);
         $entryType->showSlugField = $this->request->getBodyParam('showSlugField', $entryType->showSlugField);
         $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);

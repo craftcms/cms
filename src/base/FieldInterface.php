@@ -501,6 +501,15 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
     public function setIsFresh(?bool $isFresh = null): void;
 
     /**
+     * Copies the field value from one site to another.
+     *
+     * @param ElementInterface $from
+     * @param ElementInterface $to
+     * @since 5.9.0
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void;
+
+    /**
      * Returns whether the field should be included in the given GraphQL schema.
      *
      * @param GqlSchema $schema

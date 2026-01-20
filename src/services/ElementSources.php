@@ -19,6 +19,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
@@ -68,14 +69,62 @@ class ElementSources extends Component
     }
 
     /**
+     * @see defineSources()
+     */
+    private array $sources = [];
+
+    /**
      * Returns the element index sources in the custom groupings/order.
      *
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $context The context
      * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
      * @return array[]
      */
-    public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
+    public function getSources(
+        string $elementType,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): array {
+        $sources = $this->sources($elementType, $context);
+
+        if (!$withDisabled) {
+            $sources = array_filter($sources, fn(array $source) => !($source['disabled'] ?? false));
+        }
+
+        if ($page && isset($sources[0]['page'])) {
+            $pageNameId = $this->pageNameId($page);
+            $sources = array_filter($sources, fn(array $source) => (
+                isset($source['page']) &&
+                $this->pageNameId($source['page']) === $pageNameId
+            ));
+        }
+
+        return array_values($sources);
+    }
+
+    /**
+     * @param class-string<ElementInterface> $elementType
+     * @param string $context
+     * @return array[]
+     */
+    private function sources(string $elementType, string $context): array
+    {
+        if (!isset($this->sources[$elementType][$context])) {
+            $this->sources[$elementType][$context] = $this->defineSources($elementType, $context);
+        }
+
+        return $this->sources[$elementType][$context];
+    }
+
+    /**
+     * @param class-string<ElementInterface> $elementType
+     * @param string $context
+     * @return array[]
+     */
+    private function defineSources(string $elementType, string $context): array
     {
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
@@ -85,15 +134,14 @@ class ElementSources extends Component
             $sources = [];
             $indexedNativeSources = ArrayHelper::index(array_filter($nativeSources, fn($s) => $s['type'] === self::TYPE_NATIVE), 'key');
             $nativeSourceKeys = [];
+
+            $firstPage = $sourceConfigs[0]['page'] ?? null;
+
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
                     if (isset($indexedNativeSources[$source['key']])) {
-                        if ($withDisabled || !($source['disabled'] ?? false)) {
-                            $sources[] = $source + $indexedNativeSources[$source['key']];
-                            $nativeSourceKeys[$source['key']] = true;
-                        } else {
-                            unset($indexedNativeSources[$source['key']]);
-                        }
+                        $sources[] = $source + $indexedNativeSources[$source['key']];
+                        $nativeSourceKeys[$source['key']] = true;
                     }
                 } else {
                     if ($source['type'] === self::TYPE_CUSTOM) {
@@ -101,9 +149,6 @@ class ElementSources extends Component
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
-                        if (!$withDisabled && ($source['disabled'] ?? false)) {
-                            continue;
-                        }
                     }
                     $sources[] = $source;
                 }
@@ -117,13 +162,19 @@ class ElementSources extends Component
             ));
 
             if (!empty($missingSources)) {
-                if (!empty($sources)) {
+                // If there are any headings, add a blank heading
+                if (ArrayHelper::contains($sources, fn(array $source) => $source['type'] === self::TYPE_HEADING)) {
                     $sources[] = [
                         'type' => self::TYPE_HEADING,
                         'heading' => '',
+                        'page' => $firstPage,
                     ];
                 }
-                array_push($sources, ...$missingSources);
+
+                array_push($sources, ...array_map(fn(array $source) => [
+                    ...$source,
+                    'page' => $firstPage,
+                ], $missingSources));
             }
         } else {
             $sources = $nativeSources;
@@ -157,18 +208,95 @@ class ElementSources extends Component
      * @param string $sourceKey The source key
      * @param string $context The context
      * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
      * @return bool
      * @since 5.7.11
      */
-    public function sourceExists(string $elementType, string $sourceKey, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
-    {
-        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+    public function sourceExists(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): bool {
+        foreach ($this->getSources($elementType, $context, $withDisabled, $page) as $source) {
             if (($source['key'] ?? null) === $sourceKey) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Returns the unique pages found for the given element type’s sources.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return string[]
+     * @since 5.9.0
+     */
+    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
+    {
+        $pages = [];
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page'])) {
+                $pages[$source['page']] = true;
+            }
+        }
+        return array_keys($pages);
+    }
+
+    /**
+     * Returns the first page found for the given element type’s sources.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getFirstPage(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): ?string
+    {
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page'])) {
+                return $source['page'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the given page exists for an element type.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return bool
+     * @since 5.9.0
+     */
+    public function pageExists(string $elementType, string $page, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
+    {
+        $nameId = $this->pageNameId($page);
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (isset($source['page']) && $nameId === $this->pageNameId($source['page'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a normalized ID for a given page name.
+     *
+     * @param string $page
+     * @return string
+     * @since 5.9.0
+     */
+    public function pageNameId(string $page): string
+    {
+        return mb_strtolower(preg_replace('/[^\p{L}\p{N}\p{M}]/u', '', $page));
     }
 
     /**
@@ -205,6 +333,45 @@ class ElementSources extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Saves an element’s source configs.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $sources
+     * @since 5.9.0
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = array_map(fn(array $s) => array_filter([
+            'type' => $s['type'] ?? self::TYPE_NATIVE,
+            'key' => $s['key'] ?? null,
+            'page' => $s['page'] ?? null,
+            'tableAttributes' => $s['tableAttributes'] ?? null,
+            'defaultSort' => $s['defaultSort'] ?? null,
+            'defaultViewMode' => $s['defaultViewMode'] ?? null,
+            ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                self::TYPE_CUSTOM => [
+                    'label' => $s['label'] ?? null,
+                    'condition' => ($s['condition'] ?? false)
+                        ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                        : null,
+                    'sites' => $s['sites'] ?? null,
+                    'userGroups' => $s['userGroups'] ?? null,
+                ],
+                self::TYPE_HEADING => [
+                    'heading' => $s['heading'] ?? null,
+                ],
+                default => [
+                    'disabled' => $s['disabled'] ?? null,
+                ],
+            },
+        ], fn($val) => $val !== null), $sources);
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $sources);
     }
 
     /**
@@ -368,6 +535,7 @@ class ElementSources extends Component
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
         $sortOptions = [];
+        $qb = null;
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
@@ -381,6 +549,17 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $qb ??= Craft::$app->getDb()->getQueryBuilder();
+                    $sortOptions[] = [
+                        'label' => Craft::t('site', $field['name']),
+                        'attribute' => "generatedField:{$field['uid']}",
+                        'orderBy' => $qb->jsonExtract('elements_sites.content', [$field['uid']]),
+                    ];
                 }
             }
         }
@@ -453,10 +632,14 @@ class ElementSources extends Component
                     }
 
                     if (
-                        $field instanceof PreviewableFieldInterface &&
+                        ($field instanceof PreviewableFieldInterface || $field instanceof ContentBlock) &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        if ($layoutElement->handle === null) {
+                        if ($field instanceof ContentBlock) {
+                            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
+                                $attributes["contentBlock:{$field->layoutElement->uid}.$key"] = $attribute;
+                            }
+                        } elseif ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
                             // where the handle also wasn't overridden
                             $groupedFieldElements[$field->id][] = $layoutElement;
@@ -470,6 +653,14 @@ class ElementSources extends Component
                             }
                         }
                     }
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $attributes["generatedField:{$field['uid']}"] = [
+                        'label' => Craft::t('site', $field['name']),
+                    ];
                 }
             }
         }
@@ -559,5 +750,31 @@ class ElementSources extends Component
             return null;
         }
         return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
+    }
+
+    /**
+     * Returns the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @return array
+     * @since 5.9.0
+     */
+    public function getPageSettings(string $elementType): array
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        return Craft::$app->getProjectConfig()->get($path) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $pageSettings
+     * @since 5.9.0
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        Craft::$app->getProjectConfig()->set($path, $pageSettings);
     }
 }

@@ -152,7 +152,7 @@ class FieldsController extends Controller
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {
@@ -205,7 +205,7 @@ class FieldsController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl('settings/fields')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
@@ -610,32 +610,10 @@ JS, [
         $this->requireAcceptsJson();
 
         $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
-        $cardElements = $this->request->getRequiredBodyParam('cardElements');
-        $showThumb = $this->request->getBodyParam('showThumb', false);
-        $thumbAlignment = $this->request->getBodyParam('thumbAlignment', false);
-
-        if (!isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...Component::cleanseConfig($fieldLayoutConfig),
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        if (!$fieldLayout) {
-            throw new BadRequestHttpException('Invalid field layout');
-        }
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = Craft::$app->getFields()->createLayout($fieldLayoutConfig);
 
         return $this->asJson([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 

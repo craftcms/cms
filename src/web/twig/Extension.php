@@ -71,15 +71,17 @@ use IteratorAggregate;
 use Money\Money;
 use Throwable;
 use Traversable;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
-use Twig\ExpressionParser;
+use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -100,7 +102,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public static function arraySome(TwigEnvironment $env, $array, $arrow)
     {
-        self::checkArrowFunction($arrow, 'has some', 'operator');
+        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
         return CoreExtension::arraySome($env, $array, $arrow);
     }
 
@@ -109,26 +111,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public static function arrayEvery(TwigEnvironment $env, $array, $arrow)
     {
-        self::checkArrowFunction($arrow, 'has every', 'operator');
+        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
         return CoreExtension::arrayEvery($env, $array, $arrow);
-    }
-
-    private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
-    {
-        if (
-            is_string($arrow) &&
-            in_array(ltrim(strtolower($arrow), '\\'), [
-                'system',
-                'passthru',
-                'exec',
-                'file_get_contents',
-                'file_put_contents',
-                'popen',
-                'call_user_func',
-            ])
-        ) {
-            throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));
-        }
     }
 
     /**
@@ -162,7 +146,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder(),
+            new EventTagAdder($this->view),
         ];
     }
 
@@ -243,18 +227,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
-            new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
-            new TwigFilter('find', [$this, 'findFilter'], ['needs_environment' => true]),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
@@ -330,15 +313,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    /** @phpstan-ignore-next-line */
-    public function getOperators(): array
+    public function getExpressionParsers(): array
     {
         return [
-            [],
-            [
-                'has some' => ['precedence' => 20, 'class' => HasSomeBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-                'has every' => ['precedence' => 20, 'class' => HasEveryBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-            ],
+            new BinaryOperatorExpressionParser(HasSomeBinary::class, 'has some', 20),
+            new BinaryOperatorExpressionParser(HasEveryBinary::class, 'has every', 20),
         ];
     }
 
@@ -530,7 +509,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'sort', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'sort', 'filter');
         return CoreExtension::sort($env, $array, $arrow);
     }
 
@@ -547,7 +526,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        self::checkArrowFunction($arrow, 'reduce', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'reduce', 'filter');
         return CoreExtension::reduce($env, $array, $arrow, $initial);
     }
 
@@ -563,7 +542,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'map', 'filter');
+        CoreExtension::checkArrow($env, $arrow, 'map', 'filter');
         return CoreExtension::map($env, $array, $arrow);
     }
 
@@ -681,15 +660,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (InvalidArgumentException) {
             return $value;
         }
-    }
-
-    /**
-     * @since 5.4.3
-     */
-    public function findFilter(TwigEnvironment $env, $array, $arrow): mixed
-    {
-        self::checkArrowFunction($arrow, 'find', 'filter');
-        return CoreExtension::find($env, $array, $arrow);
     }
 
     /**
@@ -1165,8 +1135,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        self::checkArrowFunction($arrow, 'filter', 'filter');
-
         /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {
@@ -1174,6 +1142,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return array_filter($arr);
         }
+
+        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
 
         $filtered = CoreExtension::filter($env, $arr, $arrow);
 
@@ -1194,20 +1164,21 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function groupFilter(iterable $arr, callable|string $arrow): array
     {
-        self::checkArrowFunction($arrow, 'group', 'filter');
+        // No need to call checkArrow() here since strings are always interpreted as nested fields,
+        // which should be passed to renderObjectTemplate() as `{name}`
 
         $groups = [];
 
-        if (is_callable($arrow)) {
-            foreach ($arr as $key => $item) {
-                $groupKey = (string)$arrow($item, $key);
-                $groups[$groupKey][] = $item;
-            }
-        } else {
+        if (is_string($arrow)) {
             $template = '{' . $arrow . '}';
             $view = Craft::$app->getView();
             foreach ($arr as $item) {
                 $groupKey = $view->renderObjectTemplate($template, $item);
+                $groups[$groupKey][] = $item;
+            }
+        } else {
+            foreach ($arr as $key => $item) {
+                $groupKey = (string)$arrow($item, $key);
                 $groups[$groupKey][] = $item;
             }
         }
@@ -1215,6 +1186,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $groups;
     }
 
+    /**
+     * Hashes the given data
+     *
+     * @param string $data The data to be hashed
+     * @param string|null $algo The hashing algorithm to use, e.g. `md5` or `sha256`.
+     * @return string
+     * @since 5.9.0
+     */
+    public function hashFilter(string $data, ?string $algo = null): string
+    {
+        if ($algo === null) {
+            return Craft::$app->getSecurity()->hashData($data);
+        }
+
+        return hash($algo, $data);
+    }
 
     /**
      * Converts a date to the HTTP format (used by HTTP headers such as `Expires`).
@@ -1394,7 +1381,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
-            new TwigFunction('create', [Craft::class, 'createObject']),
+            new TwigFunction('create', [$this, 'createFunction']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
@@ -1408,12 +1395,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('randomString', [StringHelper::class, 'randomString']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('seq', [$this, 'seqFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
+            new TwigFunction('uuid', [StringHelper::class, 'UUID']),
 
             // Element authorization functions
             new TwigFunction('canCreateDrafts', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),
@@ -1472,6 +1461,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $collection;
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @template T of BaseObject
+     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>} $type
+     * @param array $params
+     * @return T
+     * @since 5.9.0
+     */
+    public function createFunction(string|array $type, array $params = []): BaseObject
+    {
+        $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
+        if (!is_subclass_of($class, BaseObject::class)) {
+            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
+        }
+
+        /** @var BaseObject */
+        return Craft::createObject($type, $params);
     }
 
     /**

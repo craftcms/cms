@@ -25,12 +25,11 @@ class RequireGuestTokenParser extends AbstractTokenParser
     public function parse(Token $token): RequireGuestNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RequireGuestNode([], [], $lineno, $this->getTag());
+        return new RequireGuestNode([], [], $lineno);
     }
 
     /**

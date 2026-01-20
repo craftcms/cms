@@ -63,7 +63,9 @@ class CraftDisclosure extends HTMLElement {
     }
   }
 
-  toggle() {
+  toggle(event) {
+    event.preventDefault();
+
     if (this.expanded) {
       this.close();
     } else {

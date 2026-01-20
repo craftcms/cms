@@ -107,6 +107,11 @@ class Application extends \yii\web\Application
 
         $this->_postInit();
 
+        // If there's an invalid token on the request, throw an exception now
+        if ($this->getRequest()->getHasInvalidToken()) {
+            throw new BadRequestHttpException('Invalid token');
+        }
+
         // Process resource requests before we do anything to establish the user session
         $this->_processResourceRequest();
 
@@ -397,10 +402,6 @@ class Application extends \yii\web\Application
         $generalConfig = $this->getConfig()->getGeneral();
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
-
-        if ($resourceBasePath === false) {
-            return;
-        }
 
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");

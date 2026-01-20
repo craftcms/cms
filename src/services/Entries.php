@@ -1452,6 +1452,12 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
             $query->addSelect('color');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+            $query->addSelect('uiLabelFormat');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+            $query->addSelect('allowLineBreaksInTitles');
+        }
 
         return $query;
     }
@@ -1666,6 +1672,7 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
+            $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeRecord->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
@@ -1675,6 +1682,9 @@ SQL)->execute();
             // todo: remove after the next breakpoint
             if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
                 $entryTypeRecord->description = $data['description'] ?? null;
+            }
+            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+                $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             }
 
             if (!empty($data['fieldLayouts'])) {
