@@ -41,6 +41,6 @@ class HookTokenParser extends AbstractTokenParser
         ];
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new HookNode($nodes, [], $lineno, $this->getTag());
+        return new HookNode($nodes, [], $lineno);
     }
 }

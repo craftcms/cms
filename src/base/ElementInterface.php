@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\web\Response;
@@ -689,6 +690,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -697,6 +699,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -751,6 +754,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -758,6 +762,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -765,6 +770,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -911,6 +917,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getCpEditUrl(): ?string;
 
     /**
@@ -1024,6 +1031,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getStatus(): ?string;
 
     /**
@@ -1215,6 +1223,14 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      */
     public function offsetExists($offset): bool;
+
+    /**
+     * Sets the element’s attributes from an element editor submission.
+     *
+     * @param array $values The attribute values
+     * @since 4.17.0
+     */
+    public function setAttributesFromRequest(array $values): void;
 
     /**
      * Returns the status of a given attribute.

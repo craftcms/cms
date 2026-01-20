@@ -14,9 +14,11 @@ use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -38,6 +40,8 @@ use yii\validators\EmailValidator;
  */
 class Table extends Field
 {
+    private static array $typeOptions;
+
     /**
      * @inheritdoc
      */
@@ -52,6 +56,31 @@ class Table extends Field
     public static function valueType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (!isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => Craft::t('app', 'Checkbox'),
+                'color' => Craft::t('app', 'Color'),
+                'date' => Craft::t('app', 'Date'),
+                'select' => Craft::t('app', 'Dropdown'),
+                'email' => Craft::t('app', 'Email'),
+                'heading' => Craft::t('app', 'Row heading'),
+                'lightswitch' => Craft::t('app', 'Lightswitch'),
+                'multiline' => Craft::t('app', 'Multi-line text'),
+                'number' => Craft::t('app', 'Number'),
+                'singleline' => Craft::t('app', 'Single-line text'),
+                'time' => Craft::t('app', 'Time'),
+                'url' => Craft::t('app', 'URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -137,9 +166,10 @@ class Table extends Field
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (!empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
@@ -188,7 +218,13 @@ class Table extends Field
      */
     public function validateColumns(): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (!isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if ($col['handle']) {
                 $error = null;
 
@@ -242,24 +278,6 @@ class Table extends Field
      */
     public function getSettingsHtml(): ?string
     {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
-
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -281,7 +299,7 @@ class Table extends Field
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
@@ -338,7 +356,8 @@ class Table extends Field
             Json::encode($this->defaults ?? []) . ', ' .
             Json::encode($columnSettings) . ', ' .
             Json::encode($dropdownSettingsHtml) . ', ' .
-            Json::encode($dropdownSettingsCols) .
+            Json::encode($dropdownSettingsCols) . ', ' .
+            Json::encode($this->staticRows) . ', ' .
             ');');
 
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
@@ -358,6 +377,7 @@ class Table extends Field
             'cols' => $columns,
             'rows' => $this->defaults,
             'initJs' => false,
+            'includeRowId' => true,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
@@ -365,6 +385,25 @@ class Table extends Field
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        if ($this->staticRows && !empty($this->defaults)) {
+            // make sure the default rows have IDs assigned
+            foreach ($this->defaults as &$row) {
+                $row['rowId'] ??= StringHelper::UUID();
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -464,11 +503,60 @@ class Table extends Field
         $value = array_values($value);
 
         if ($this->staticRows) {
+            // get the order of the default rows
+            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $missingValueRowIds = null;
+
+            if (!empty($order)) {
+                // if there's no rowIds, add them
+                if (ArrayHelper::containsRecursive($value, 'rowId') === false) {
+                    foreach ($value as $key => &$row) {
+                        $row['rowId'] = $order[$key];
+                    }
+                }
+
+                // the rowIds present in the $value array
+                $usedValueRowIds = ArrayHelper::getColumn($value, 'rowId');
+
+                // if the field has a set order
+                $missingValueRowIds = array_values(array_diff($order, $usedValueRowIds));
+                $leftoverValueRowIds = array_diff($usedValueRowIds, $order);
+
+                // if the rowId is missing from the defaults - remove it from the $value array
+                if (!empty($leftoverValueRowIds)) {
+                    foreach ($leftoverValueRowIds as $key => $rowId) {
+                        unset($value[$key]);
+                    }
+                }
+            }
+
             $valueRows = count($value);
             $totalRows = count($defaults);
+
+            // if we have too few rows
             if ($valueRows < $totalRows) {
-                $value = array_pad($value, $totalRows, []);
-            } elseif ($valueRows > $totalRows) {
+                if ($missingValueRowIds === null) {
+                    $value = array_pad($value, $totalRows, []);
+                } else {
+                    // if we have the missing value rowIds - add them in places where settings rowId doesn't exist in the $value array
+                    while (count($value) < $totalRows) {
+                        $value[] = ['rowId' => reset($missingValueRowIds)];
+                        array_shift($missingValueRowIds);
+                    }
+                }
+            }
+
+            if (!empty($order)) {
+                // sort as per the field's settings
+                usort($value, function($a, $b) use ($order) {
+                    $posA = array_search($a['rowId'], $order);
+                    $posB = array_search($b['rowId'], $order);
+                    return $posA - $posB;
+                });
+            }
+
+            // now that we've sorted the rows, if we have too many rows - splice
+            if ($valueRows > $totalRows) {
                 array_splice($value, $totalRows);
             }
         }
@@ -566,6 +654,14 @@ class Table extends Field
                     $serializedRow[$colId] = parent::serializeValue($value, $element);
                 }
             }
+
+            // if the table has static rows, store the rowId too
+            if ($this->staticRows) {
+                if (isset($row['rowId'])) {
+                    $serializedRow['rowId'] = $row['rowId'];
+                }
+            }
+
             $serialized[] = $serializedRow;
         }
 
@@ -750,7 +846,10 @@ class Table extends Field
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
-                        'value' => $row[$colId],
+                        'value' => match ($col['type']) {
+                            'heading' => Html::encode($row[$colId]),
+                            default => $row[$colId],
+                        },
                         'hasErrors' => $hasErrors,
                     ];
                 }
@@ -779,6 +878,7 @@ class Table extends Field
             'allowReorder' => true,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'describedBy' => $this->describedBy,
+            'includeRowId' => $this->staticRows,
         ]);
     }
 }

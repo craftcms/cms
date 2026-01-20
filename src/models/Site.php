@@ -16,6 +16,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use yii\base\InvalidConfigException;
 
@@ -33,6 +34,7 @@ class Site extends Model
     /**
      * @var int|null ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
@@ -43,21 +45,25 @@ class Site extends Model
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $language = null;
 
     /**
      * @var bool Primary site?
      */
+    #[AllowedInSandbox]
     public bool $primary = false;
 
     /**
      * @var bool Has URLs
      */
+    #[AllowedInSandbox]
     public bool $hasUrls = true;
 
     /**
@@ -108,6 +114,7 @@ class Site extends Model
      * @return string
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getName(bool $parse = true): string
     {
         return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
@@ -131,6 +138,7 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
+    #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
@@ -169,6 +177,7 @@ class Site extends Model
      * @return bool|string
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getEnabled(bool $parse = true): bool|string
     {
         if ($this->primary) {
@@ -271,6 +280,7 @@ class Site extends Model
      * @return Locale
      * @since 3.5.8
      */
+    #[AllowedInSandbox]
     public function getLocale(): Locale
     {
         if ($this->language === Craft::$app->language) {

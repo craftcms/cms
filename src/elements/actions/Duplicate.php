@@ -109,8 +109,13 @@ JS, [static::class]);
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
+        $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($elements as $element) {
+            if (!$elementsService->canDuplicate($element, $user)) {
+                continue;
+            }
+
             // Make sure this element wasn't already duplicated, which could
             // happen if it's the descendant of a previously duplicated element
             // and $this->deep == true.

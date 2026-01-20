@@ -33,7 +33,7 @@ class RequirePermissionTokenParser extends AbstractTokenParser
         ];
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RequirePermissionNode($nodes, [], $lineno, $this->getTag());
+        return new RequirePermissionNode($nodes, [], $lineno);
     }
 
     /**

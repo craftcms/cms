@@ -36,7 +36,7 @@ class DdTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new DdNode($nodes, [], $lineno, $this->getTag());
+        return new DdNode($nodes, [], $lineno);
     }
 
     /**

@@ -89,6 +89,10 @@ class UpController extends Controller
             }
             $this->stdout("\n");
 
+            // Delete compiled templates
+            $this->run('clear-caches/compiled-templates');
+            $this->stdout("\n");
+
             $this->stdout('Updating license info ... ');
             Craft::$app->getUpdates()->getUpdates(true);
             $this->stdout("done\n", Console::FG_GREEN);

@@ -128,7 +128,12 @@ class App
         }
 
         if (($env = getenv($name)) !== false) {
-            return static::normalizeValue($env);
+            $value = static::normalizeValue($env);
+            if (is_string($value)) {
+                // parse nested variables
+                $value = self::parseNestedEnv($value);
+            }
+            return $value;
         }
 
         if (defined($name)) {
@@ -136,6 +141,11 @@ class App
         }
 
         return null;
+    }
+
+    private static function parseNestedEnv(string $value): string
+    {
+        return preg_replace_callback('/\$\{(\w+)}/', fn(array $m) => static::env($m[1]), $value);
     }
 
     /**
@@ -198,20 +208,15 @@ class App
      */
     public static function parseEnv(?string $value): bool|string|null
     {
-        if ($value === null) {
-            return null;
+        if ($value === null || $value === '') {
+            return $value;
         }
 
-        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = static::env($matches[1]);
+        // …${VAR}…
+        $value = self::parseNestedEnv($value);
 
-            if ($env === null) {
-                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
-                return $value;
-            }
-
-            $value = $env . ($matches[2] ?? '');
-        }
+        // …/$VAR/…
+        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', fn($m) => static::env($m[1]) ?? sprintf('$%s', $m[1]), $value);
 
         if (is_string($value) && str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;
@@ -244,7 +249,7 @@ class App
             return (bool)$value;
         }
 
-        if (!is_string($value)) {
+        if (!is_string($value) || $value === '') {
             return null;
         }
 

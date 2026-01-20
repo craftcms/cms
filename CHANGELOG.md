@@ -1,15 +1,26 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.19 - 2026-01-20
+
+- Fixed an error that could occur if the `purgeStaleUserSessionDuration` config setting was set to a duration interval string. ([#18238](https://github.com/craftcms/cms/issues/18238))
+- Fixed a bug where image transforms weren’t getting regenerated on Local filesystems, if the transform params changed and the asset transform index had been cleared. ([#18249](https://github.com/craftcms/cms/issues/18249))
+- Fixed a bug where entry queries were executing extra database queries when the `type` param was used. ([#18223](https://github.com/craftcms/cms/issues/18223))
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
+
+## 4.16.18 - 2026-01-09
 
 - The `utils/fix-field-layout-uids` command now checks for duplicate top-level field layout UUIDs. ([#18193](https://github.com/craftcms/cms/pull/18193))
-- The `_includes/forms/radio.twig` template now escapes the `label` variable. A raw HTML label can be passed by wrapping the label value in `raw()` or `craft\helpers\Template::raw()`.
-- `Craft.ui.createCheckbox()` now escapes the `config.label` property. A raw HTML label can be passed via the `config.labelHtml` property.
-- `Craft.ui.createSelect()` now escapes options’ `label` properties. Raw HTML labels can be passed via `labelHtml` properties.
 - Fixed a bug where all plugin settings were being saved to the project config, rather than just posted settings. ([craftcms/commerce#4006](https://github.com/craftcms/commerce/issues/4006))
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
-- Fixed an SSRF vulnerability. (GHSA-96pq-hxpw-rgh8)
-- Fixed XSS vulnerabilities. (GHSA-4mgv-366x-qxvx)
+- Fixed an error that could occur when logging a deprecation warning, if the backtrace contained any non-UTF-8-encoded strings. ([#18218](https://github.com/craftcms/cms/issues/18218))
+- Fixed a bug where it wasn’t possible to view assets if they had exactly 50 subfolders alongside them. ([#18213](https://github.com/craftcms/cms/issues/18213))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-2453-mppf-46cj)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-7jx7-3846-m7w7)
 
 ## 4.16.17 - 2025-12-0421
 
@@ -17,10 +28,10 @@
 - Fixed an error that could occur when executing a GraphQL mutation when the `lazyGqlTypes` config setting was enabled. ([#18014](https://github.com/craftcms/cms/issues/18014))
 - Fixed a PHP error that could occur when creating a username that began or ended with an `@`. ([#18123](https://github.com/craftcms/cms/pull/18123))
 - Fixed a bug where assets with disallowed file extensions could be stored in the system’s temp directory. ([#18049](https://github.com/craftcms/cms/pull/18049))
-- Fixed RCE vulnerabilities. (GHSA-255j-qw47-wjh5, GHSA-742x-x762-7383)
-- Fixed an SSRF vulnerability. (GHSA-x27p-wfqw-hfcc)
-- Fixed a DoS vulnerability. (GHSA-v64r-7wg9-23pr)
-- Fixed an information disclosure vulnerability. (GHSA-53vf-c43h-j2x9)
+- Fixed RCE vulnerabilities. ([GHSA-255j-qw47-wjh5](https://github.com/craftcms/cms/security/advisories/GHSA-255j-qw47-wjh5), [GHSA-742x-x762-7383](https://github.com/craftcms/cms/security/advisories/GHSA-742x-x762-7383))
+- Fixed an SSRF vulnerability. ([GHSA-x27p-wfqw-hfcc](https://github.com/craftcms/cms/security/advisories/GHSA-x27p-wfqw-hfcc))
+- Fixed a DoS vulnerability. ([GHSA-v64r-7wg9-23pr](https://github.com/craftcms/cms/security/advisories/GHSA-v64r-7wg9-23pr))
+- Fixed an information disclosure vulnerability. ([GHSA-53vf-c43h-j2x9](https://github.com/craftcms/cms/security/advisories/GHSA-53vf-c43h-j2x9))
 
 ## 4.16.16 - 2025-11-18
 

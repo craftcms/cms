@@ -80,7 +80,7 @@ class CacheTokenParser extends AbstractTokenParser
         ], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new CacheNode($nodes, $attributes, $lineno, $this->getTag());
+        return new CacheNode($nodes, $attributes, $lineno);
     }
 
     /**

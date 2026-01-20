@@ -51,6 +51,6 @@ class TagTokenParser extends AbstractTokenParser
         }, true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new TagNode($nodes, [], $lineno, $this->getTag());
+        return new TagNode($nodes, [], $lineno);
     }
 }

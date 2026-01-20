@@ -47,7 +47,7 @@ class ExpiresTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new ExpiresNode($nodes, $attributes, $lineno, $this->getTag());
+        return new ExpiresNode($nodes, $attributes, $lineno);
     }
 
     /**
