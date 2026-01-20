@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
   withDefaults(
     defineProps<{
       items: Array<{
@@ -16,7 +15,14 @@
 
 <template>
   <ul class="breadcrumbs">
-    <li v-for="(item, idx) in items" :key="idx" class="breadcrumb-item">
+    <li
+      v-for="(item, idx) in items"
+      :key="idx"
+      :class="{
+        'breadcrumb-item': true,
+        'breadcrumb-item--active': idx === items.length - 1,
+      }"
+    >
       <template v-if="item.url">
         <a :href="item.url">{{ item.label }}</a>
       </template>
@@ -24,7 +30,9 @@
         {{ item.label }}
       </template>
 
-      <span class="separator" v-if="idx < items.length - 1">{{ separator }}</span>
+      <span class="separator" v-if="idx < items.length - 1">{{
+        separator
+      }}</span>
     </li>
   </ul>
 </template>
@@ -35,6 +43,11 @@
   }
 
   .breadcrumb-item {
+  }
+
+  .breadcrumb-item--active {
+    font-weight: bold;
+    color: currentColor;
   }
 
   .separator {
