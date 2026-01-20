@@ -4,7 +4,8 @@ import {property, state} from 'lit/decorators.js';
 import styles from './button.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
-import {computeAccessibleName} from "dom-accessibility-api";
+import {computeAccessibleName} from 'dom-accessibility-api';
+import {classMap} from 'lit/directives/class-map.js';
 
 /**
  * @summary Interactive element that triggers an action or event.
@@ -41,7 +42,8 @@ export default class CraftButton extends LionButtonSubmit {
       this.accessibleName = computeAccessibleName(this);
     }
 
-    this._hasAccessibilityError = !this.accessibleName || this.accessibleName.trim() === '';
+    this._hasAccessibilityError =
+      !this.accessibleName || this.accessibleName.trim() === '';
   }
 
   /** The computed accessible name */
@@ -66,14 +68,17 @@ export default class CraftButton extends LionButtonSubmit {
 
   override render() {
     return html`
-      <div class="button-content" part="content">
+      <div
+        class="${classMap({
+          'button-content': true,
+          'a11y-error': this._hasAccessibilityError,
+        })}"
+        part="content"
+      >
         <slot name="prefix" class="prefix" part="prefix"></slot>
         <slot class="label" part="label"></slot>
         <slot name="suffix" class="suffix" part="suffix"></slot>
       </div>
-      ${this._hasAccessibilityError
-        ? html`<craft-icon name="exclamation-triangle" :label="t('app', 'Error')"></craft-icon>`
-        : nothing}
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
