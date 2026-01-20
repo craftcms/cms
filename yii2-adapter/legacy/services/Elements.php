@@ -2133,7 +2133,7 @@ class Elements extends Component
         $modifiedAttributes = array_unique($modifiedAttributes);
         $modifiedFields = array_unique($modifiedFields);
 
-        $userId = Auth::user()->id;
+        $userId = Auth::user()?->id;
 
         if (!empty($modifiedAttributes)) {
             $data = [];
