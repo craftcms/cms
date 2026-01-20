@@ -127,8 +127,10 @@ class MailerHelper
                 }
             } elseif (is_numeric($key)) {
                 $normalized[] = $value;
-            } else {
+            } elseif ($value !== null) {
                 $normalized[$key] = $value;
+            } else {
+                $normalized[] = $key;
             }
         }
 

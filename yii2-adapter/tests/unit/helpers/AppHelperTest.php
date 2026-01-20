@@ -67,7 +67,7 @@ class AppHelperTest extends TestCase
             ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
             ['cacheConfig', ['class', 'keyPrefix', 'defaultDuration']],
             ['sessionConfig', ['class', 'as session', 'flashParam']],
-            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'usernameCookie']],
+            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout']],
         ];
     }
 

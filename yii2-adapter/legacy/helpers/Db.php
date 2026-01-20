@@ -476,21 +476,7 @@ class Db
      */
     public static function escapeParam(string $value): string
     {
-        if (in_array(strtolower($value), [':empty:', 'not :empty:', ':notempty:'])) {
-            return "\\$value";
-        }
-
-        $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
-
-        // If the value starts with an operator, escape that too.
-        foreach (self::$_operators as $operator) {
-            if (stripos($value, $operator) === 0) {
-                $value = "\\$value";
-                break;
-            }
-        }
-
-        return $value;
+        return \CraftCms\Cms\Support\Query::escapeParam($value);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use Craft;
 use craft\base\FsInterface;
 use craft\helpers\Assets;
+use craft\models\Volume;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -51,7 +52,7 @@ class SelectOptions
             ) {
                 $envSuggestions[] = [
                     'name' => '$'.$var,
-                    'hint' => $security->redactIfSensitive($var, Craft::getAlias((string) $env, false)),
+                    'hint' => $security->redactIfSensitive($var, Aliases::get((string) $env, false)),
                 ];
             }
         }
@@ -123,7 +124,7 @@ class SelectOptions
             ) {
                 $data = [];
                 if ($value !== '') {
-                    $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
+                    $data['hint'] = $security->redactIfSensitive($var, Aliases::get($value, false));
                 }
 
                 $options[] = array_filter([
@@ -300,7 +301,7 @@ class SelectOptions
     public static function getVolumeOptions(): array
     {
         return Collection::make(app(Craft::class)->getVolumes()->getAllVolumes())
-            ->map(fn (\craft\models\Volume $volume) => [
+            ->map(fn (Volume $volume) => [
                 'label' => $volume->name,
                 'value' => $volume->id,
             ])
@@ -313,7 +314,7 @@ class SelectOptions
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $offsetDate ??= new \DateTime;
+        $offsetDate ??= new DateTime;
         $offsetDate->setTimezone(new DateTimeZone('UTC'));
         $offsets = [];
         $timezoneIds = [];

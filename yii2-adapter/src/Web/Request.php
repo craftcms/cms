@@ -9,7 +9,7 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
-use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -159,7 +159,7 @@ class Request extends \yii\web\Request
     {
         $cookies = [];
 
-        $this->enableCookieValidation = !empty(app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey);
+        $this->enableCookieValidation = !empty(app(GeneralConfig::class)->securityKey);
 
         if ($this->enableCookieValidation && $this->cookieValidationKey !== '') {
             foreach ($this->getIlluminateRequest()->cookies as $name => $value) {
@@ -202,21 +202,16 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
+     * @deprecated 6.0.0 use {@see csrf_token()} instead.
      */
-    public function getCsrfToken($regenerate = false): string
+    public function getCsrfToken($regenerate = false): ?string
     {
-        // Ensure the response is not cached by the browser or static cache proxies.
-        Craft::$app->getResponse()->setNoCacheHeaders();
-
-        if ($regenerate) {
-            return $this->generateCsrfToken();
-        }
-
-        return $this->loadCsrfToken();
+        return csrf_token();
     }
 
     /**
      * {@inheritdoc}
+     * @deprecated 6.0.0 use {@see csrf_token()} instead.
      */
     protected function loadCsrfToken(): ?string
     {
@@ -225,52 +220,22 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
+     * @deprecated 6.0.0 use `session()->regenerateToken()` instead.
      */
     protected function generateCsrfToken(): string
     {
-        // Ensure the response is not cached by the browser or static cache proxies.
-        Craft::$app->getResponse()->setNoCacheHeaders();
+        session()->regenerateToken();
 
-        $session = $this->getIlluminateRequest()->session();
-        $session->regenerateToken();
-
-        return $session->token();
+        return csrf_token();
     }
 
     /**
      * {@inheritdoc}
+     * @deprecated 6.0.0 use {@see \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken} instead.
      */
     public function validateCsrfToken($clientSuppliedToken = null): bool
     {
-        // only validate CSRF token on non-"safe" methods https://tools.ietf.org/html/rfc2616#section-9.1.1
-        if (!$this->enableCsrfValidation || in_array($this->getMethod(), ['GET', 'HEAD', 'OPTIONS'], true)) {
-            return true;
-        }
-
-        $trueToken = $this->getCsrfToken();
-
-        if ($clientSuppliedToken !== null) {
-            return $this->validateCsrfTokenInternal($clientSuppliedToken, $trueToken);
-        }
-
-        return $this->validateCsrfTokenInternal($this->getBodyParam('_token'), $trueToken)
-            || $this->validateCsrfTokenInternal($this->getCsrfTokenFromHeader(), $trueToken);
-    }
-
-    /**
-     * Validates CSRF token.
-     *
-     * @see \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::tokensMatch()
-     *
-     * @param  mixed  $clientSuppliedToken  The masked client-supplied token.
-     * @param  string  $trueToken  The masked true token.
-     */
-    private function validateCsrfTokenInternal(mixed $clientSuppliedToken, string $trueToken): bool
-    {
-        if (!is_string($clientSuppliedToken)) {
-            return false;
-        }
-
-        return hash_equals($trueToken, $clientSuppliedToken);
+        // Laravel will already have validated the CSRF token.
+        return true;
     }
 }

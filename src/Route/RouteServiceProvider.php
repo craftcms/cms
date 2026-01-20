@@ -8,9 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
+use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
-use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -23,6 +23,7 @@ use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -79,7 +80,7 @@ final class RouteServiceProvider extends ServiceProvider
             CheckSchemaVersion::class,
             CheckForUpdates::class,
             SendPoweredByHeader::class,
-            FlushProjectConfig::class,
+            Enforce2fa::class,
             SetHeaders::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
@@ -91,6 +92,7 @@ final class RouteServiceProvider extends ServiceProvider
 
         collect([
             'web',
+            AuthenticateSession::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

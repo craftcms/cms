@@ -111,7 +111,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function key(): string
     {
-        return $this->attribute();
+        $uid = $this->uid ?? '{uid}';
+
+        return "layoutElement:$uid";
     }
 
     /**
@@ -207,7 +209,7 @@ abstract class BaseField extends FieldLayoutElement
         return [
             [
                 'label' => $this->selectorLabel() ?? $this->attribute(),
-                'value' => $this->attribute(),
+                'value' => 'layoutElement:{uid}',
             ],
         ];
     }
@@ -471,6 +473,7 @@ abstract class BaseField extends FieldLayoutElement
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
+            'static' => $static,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'showAttribute' => $this->showAttribute(),

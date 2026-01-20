@@ -13,8 +13,6 @@ final class ConstAdapter implements AdapterInterface
 {
     /**
      * Create a new array adapter instance.
-     *
-     * @return void
      */
     private function __construct() {}
 

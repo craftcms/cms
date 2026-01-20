@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Database\Table;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Session\SessionManager;
 
 final class LogoutAllCommand extends Command
 {
@@ -19,11 +18,11 @@ final class LogoutAllCommand extends Command
 
     protected $aliases = ['users/logout-all', 'users/logoutAll', 'users:logoutAll'];
 
-    public function handle(): void
+    public function handle(SessionManager $sessionManager): void
     {
         $this->components->task(
             'Logging out all users',
-            fn () => DB::table(Table::SESSIONS)->truncate(),
+            fn () => $sessionManager->getHandler()->gc(0),
         );
     }
 }

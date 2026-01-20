@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\console\Request as ConsoleRequest;
 use craft\web\Request as WebRequest;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -516,7 +517,7 @@ class UrlHelper
         }
 
         // Use @web as a fallback
-        return Craft::getAlias('@web');
+        return Aliases::get('@web');
     }
 
     /**
@@ -542,7 +543,7 @@ class UrlHelper
         // in which case it's totally unreliable so go with the base site URL
         return $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
             ? static::baseSiteUrl()
-            : Craft::getAlias('@web');
+            : Aliases::get('@web');
     }
 
     /**

@@ -10,6 +10,7 @@ namespace craft\db;
 use Craft;
 use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -83,7 +84,7 @@ class MigrationManager extends Component
             throw new InvalidConfigException('The migration path has not been set.');
         }
 
-        $this->migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
+        $this->migrationPath = FileHelper::normalizePath(Aliases::get($this->migrationPath));
         $this->db = Instance::ensure($this->db, Connection::class);
     }
 

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter;
 
-use Craft;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -67,7 +66,7 @@ final class IdentityWrapper implements IdentityInterface
         // Only accept active users, unless they're being impersonated
         if (
             $user->getStatus() !== User::STATUS_ACTIVE &&
-            !Craft::$app->getUser()->getImpersonator()
+            !app(Impersonation::class)->isImpersonating()
         ) {
             return null;
         }
@@ -87,13 +86,13 @@ final class IdentityWrapper implements IdentityInterface
 
     public function getAuthKey(): string
     {
-        $token = Craft::$app->getUser()->getToken();
+        $token = session()->id();
 
         if ($token === null) {
             throw new Exception('No user session token exists.');
         }
 
-        $userAgent = Craft::$app->getRequest()->getUserAgent();
+        $userAgent = request()->userAgent();
 
         // The auth key is a combination of the hashed token, its row's UID, and the user agent string
         return Json::encode([
@@ -113,13 +112,9 @@ final class IdentityWrapper implements IdentityInterface
 
         [$token, , $userAgent] = $data;
 
-        if (!$this->_validateUserAgent($userAgent)) {
-            return false;
-        }
-
         $tokenId = DbFacade::table(Table::SESSIONS)
             ->where('token', $token)
-            ->where('userId', $this->id)
+            ->where('user_id', $this->id)
             ->value('id');
 
         if (!$tokenId) {
@@ -129,34 +124,7 @@ final class IdentityWrapper implements IdentityInterface
         // Update the session row's dateUpdated value so it doesn't get GC'd
         DbFacade::table(Table::SESSIONS)
             ->where('id', $tokenId)
-            ->update([
-                'dateUpdated' => now(),
-            ]);
-
-        return true;
-    }
-
-    /**
-     * Validates a cookie's stored user agent against the current request's user agent string,
-     * if the 'requireMatchingUserAgentForSession' config setting is enabled.
-     */
-    private function _validateUserAgent(string $userAgent): bool
-    {
-        if (!Cms::config()->requireMatchingUserAgentForSession) {
-            return true;
-        }
-
-        $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
-
-        if (!$requestUserAgent) {
-            return false;
-        }
-
-        if (!hash_equals($userAgent, md5($requestUserAgent))) {
-            Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
-
-            return false;
-        }
+            ->update(['last_activity' => now()]);
 
         return true;
     }

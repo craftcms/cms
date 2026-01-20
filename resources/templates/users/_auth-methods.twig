@@ -4,7 +4,7 @@
   id: 'auth-method-setup',
   class: ['pane', 'fullwidth']|merge((paneClass ?? [])|explodeClass),
 } %}
-  {% for method in craft.app.auth.getAvailableMethods() %}
+  {% for method in craft.auth.getAvailableMethods() %}
     {% set isActive = method.isActive() %}
     {% set headingId = "auth-method-heading-#{loop.index0}" %}
 

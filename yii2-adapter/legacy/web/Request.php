@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
@@ -54,11 +56,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 
-    public const CP_PATH_LOGIN = 'login';
-    public const CP_PATH_LOGOUT = 'logout';
-    public const CP_PATH_SET_PASSWORD = 'set-password';
-    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    public const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = CpAuthPath::Login->value;
+    public const CP_PATH_LOGOUT = CpAuthPath::Logout->value;
+    public const CP_PATH_SET_PASSWORD = CpAuthPath::SetPassword->value;
+    public const CP_PATH_VERIFY_EMAIL = CpAuthPath::VerifyEmail->value;
+    public const CP_PATH_UPDATE = CpAuthPath::Update->value;
 
     /**
      * @inheritdoc
@@ -206,12 +208,12 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
         // in case a site's base URL requires @web, and so we can include the host info in @web
-        if (Craft::getRootAlias('@webroot') === false) {
-            Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        if (Aliases::get('@webroot', false) === false) {
+            Aliases::set('@webroot', dirname($this->getScriptFile()));
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Craft::getRootAlias('@web') === false) {
-            Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
+        if (Aliases::get('@web', false) === false) {
+            Aliases::set('@web', $this->getHostInfo() . $this->getBaseUrl());
             $this->isWebAliasSetDynamically = true;
         }
 
@@ -687,7 +689,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getIsPreview(): bool
     {
-        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview') ?? $this->getHeaders()->get('X-Craft-Preview-Token');
         if (!$previewParamValue) {
             return false;
         }

@@ -83,6 +83,8 @@ it('can get invalid license issues for craft', function () {
 });
 
 it('can get trial license issues for craft', function () {
+    Edition::set(Edition::Solo);
+
     actingAs(User::find()->one());
 
     Cache::put(Updates::class, []);

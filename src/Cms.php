@@ -48,11 +48,6 @@ final readonly class Cms
         return $name ?: config('app.name', 'Craft');
     }
 
-    public static function envId(): string
-    {
-        return sprintf('%s--%s', self::systemName(), app()->environment());
-    }
-
     public static function isInstalled(bool $strict = false): bool
     {
         if ($strict) {
@@ -93,9 +88,9 @@ final readonly class Cms
             return $isInstalled;
         } catch (Throwable $e) {
             Log::error('There was a problem fetching the info row: '.$e->getMessage(), [__METHOD__]);
-            report($e);
-
             Context::addHidden('craft.isInstalled', false);
+
+            report($e);
 
             return false;
         }

@@ -1388,6 +1388,7 @@ class FieldLayout extends Model
 
         // Any already-included layout elements?
         $visibleElements = Arr::pull($config, 'visibleElements');
+        $staticElements = Arr::pull($config, 'staticElements');
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -1415,16 +1416,25 @@ class FieldLayout extends Model
                 $isConditional = isset($tab->uid, $layoutElement->uid);
 
                 if ($showTab && (!$isConditional || $layoutElement->showInForm($element))) {
+                    if ($layoutElement instanceof CustomField) {
+                        $isStatic = $static || !$layoutElement->editable($element);
+                    } else {
+                        $isStatic = $static;
+                    }
+
                     // If it was already included and we just need the missing elements, only keep track that it’s still included
                     if (
                         !$layoutElement->alwaysRefresh() &&
                         $visibleElements !== null &&
-                        (!$isConditional || (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])))
+                        (!$isConditional || (
+                            (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) &&
+                            ($staticElements === null || $isStatic === in_array($layoutElement->uid, $staticElements[$tab->uid] ?? []))
+                        ))
                     ) {
-                        $layoutElements[] = [$layoutElement, $isConditional, true];
+                        $layoutElements[] = [$layoutElement, $isConditional, true, $isStatic];
                         $hasVisibleFields = true;
                     } else {
-                        $html = $view->namespaceInputs(fn() => $layoutElement->formHtml($element, $static) ?? '', $namespace);
+                        $html = $view->namespaceInputs(fn() => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
 
                         if ($html) {
                             $errorKey = null;
@@ -1443,17 +1453,19 @@ class FieldLayout extends Model
                             $html = Html::modifyTagAttributes($html, [
                                 'data' => [
                                     'layout-element' => $isConditional ? $layoutElement->uid : true,
-                                ] + ($errorKey ? ['error-key' => $errorKey] : []),
+                                    'error-key' => $errorKey,
+                                    'static' => $isStatic,
+                                ],
                             ]);
 
-                            $layoutElements[] = [$layoutElement, $isConditional, $html];
+                            $layoutElements[] = [$layoutElement, $isConditional, $html, $isStatic];
                             $hasVisibleFields = true;
                         } else {
-                            $layoutElements[] = [$layoutElement, $isConditional, false];
+                            $layoutElements[] = [$layoutElement, $isConditional, false, false];
                         }
                     }
                 } else {
-                    $layoutElements[] = [$layoutElement, $isConditional, false];
+                    $layoutElements[] = [$layoutElement, $isConditional, false, false];
                 }
             }
 

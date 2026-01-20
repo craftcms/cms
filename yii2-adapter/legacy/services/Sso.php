@@ -12,13 +12,12 @@ use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -256,30 +255,21 @@ class Sso extends Component
      */
     public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false): bool
     {
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->getIsGuest()) {
+        if (Auth::check()) {
             return true;
         }
 
-        if (empty($sessionDuration)) {
-            // Get the session duration
-            $generalConfig = Cms::config();
-            if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
-                $sessionDuration = $generalConfig->rememberedUserSessionDuration;
-            } else {
-                $sessionDuration = $generalConfig->userSessionDuration;
-            }
-        }
+        $authError = app(\CraftCms\Cms\Auth\Auth::class)->getAuthError($user);
 
-        $user->authError = UserHelper::getAuthStatus($user);
-
-        if (!empty($user->authError)) {
-            throw new SsoFailedException($provider, $user, $user->authError);
+        if ($authError !== null) {
+            throw new SsoFailedException($provider, $user, $authError->value);
         }
 
         // Try logging them in
-        if (!$userSession->login(new IdentityWrapper($user), $sessionDuration)) {
-            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
+        try {
+            Auth::setRememberDuration($sessionDuration ?? config('auth.guards.craft.remember', 576000))->login($user, $rememberMe);
+        } catch (Throwable $e) {
+            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'), previous: $e);
         }
 
         return true;

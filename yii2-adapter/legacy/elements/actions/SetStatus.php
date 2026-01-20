@@ -13,6 +13,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -87,21 +88,16 @@ JS, [static::class]);
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Sites::isMultiSite();
         $elementsService = Craft::$app->getElements();
+        $user = Auth::user();
 
         $elements = $query->all();
         $failCount = 0;
 
-        // Make sure the user has permission to edit each of the elements
         foreach ($elements as $element) {
-            if (!$elementsService->canSave($element)) {
-                $this->setMessage(t('Couldn’t save {type}.', [
-                    'type' => count($elements) === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                ]));
-                return false;
+            if (!$elementsService->canSave($element, $user)) {
+                continue;
             }
-        }
 
-        foreach ($elements as $element) {
             switch ($this->status) {
                 case self::ENABLED:
                     // Skip if there's nothing to change

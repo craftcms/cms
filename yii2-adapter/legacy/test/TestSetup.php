@@ -56,6 +56,7 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
 use CraftCms\Cms\Database\Migrations\Install;
@@ -178,19 +179,19 @@ class TestSetup
 
         $appType = self::appType();
 
-        Craft::setAlias('@craftunitsupport', $srcPath . '/test');
-        Craft::setAlias('@craftunittemplates', $basePath . '/tests/_craft/templates');
-        Craft::setAlias('@craftunitfixtures', $basePath . '/tests/fixtures');
-        Craft::setAlias('@testsfolder', $basePath . '/tests');
-        Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
+        Aliases::set('@craftunitsupport', $srcPath . '/test');
+        Aliases::set('@craftunittemplates', $basePath . '/tests/_craft/templates');
+        Aliases::set('@craftunitfixtures', $basePath . '/tests/fixtures');
+        Aliases::set('@testsfolder', $basePath . '/tests');
+        Aliases::set('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
-        Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
-        Craft::setAlias('@config', CraftTest::normalizePathSeparators(Craft::getAlias('@config')));
-        Craft::setAlias('@contentMigrations', CraftTest::normalizePathSeparators(Craft::getAlias('@contentMigrations')));
-        Craft::setAlias('@storage', CraftTest::normalizePathSeparators(Craft::getAlias('@storage')));
-        Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
-        Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
+        Aliases::set('@lib', CraftTest::normalizePathSeparators(Aliases::get('@lib')));
+        Aliases::set('@config', CraftTest::normalizePathSeparators(Aliases::get('@config')));
+        Aliases::set('@contentMigrations', CraftTest::normalizePathSeparators(Aliases::get('@contentMigrations')));
+        Aliases::set('@storage', CraftTest::normalizePathSeparators(Aliases::get('@storage')));
+        Aliases::set('@templates', CraftTest::normalizePathSeparators(Aliases::get('@templates')));
+        Aliases::set('@translations', CraftTest::normalizePathSeparators(Aliases::get('@translations')));
 
         $configService = self::$_configService ?? self::createConfigService();
 
@@ -291,12 +292,12 @@ class TestSetup
         require_once $srcPath . '/Craft.php';
 
         // Set aliases
-        Craft::setAlias('@vendor', $vendorPath);
-        Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@config', $configPath);
-        Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-        Craft::setAlias('@tests', $testsPath);
-        Craft::setAlias('@translations', $translationsPath);
+        Aliases::set('@vendor', $vendorPath);
+        Aliases::set('@lib', $libPath);
+        Aliases::set('@config', $configPath);
+        Aliases::set('@contentMigrations', $contentMigrationsPath);
+        Aliases::set('@tests', $testsPath);
+        Aliases::set('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();
         $generalConfig = Cms::config();
@@ -306,7 +307,7 @@ class TestSetup
         if (is_array($customAliases)) {
             foreach ($customAliases as $name => $value) {
                 if (is_string($value)) {
-                    Craft::setAlias($name, $value);
+                    Aliases::set($name, $value);
                 }
             }
         }

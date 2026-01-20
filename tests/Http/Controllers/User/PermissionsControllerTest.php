@@ -26,6 +26,8 @@ it('requires login', function () {
 });
 
 test('index is forbidden when edition is not above team', function () {
+    Edition::set(Edition::Solo);
+
     get(cp_url('myaccount/permissions'))->assertForbidden();
 
     Edition::set(Edition::Pro);

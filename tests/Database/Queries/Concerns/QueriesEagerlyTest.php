@@ -13,8 +13,13 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
+    actingAs(User::findOne());
+
     $field = Field::factory()->create([
         'handle' => 'entriesField',
         'type' => Entries::class,
