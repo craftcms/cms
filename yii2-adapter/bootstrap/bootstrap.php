@@ -9,6 +9,7 @@
 
 use craft\helpers\App;
 use craft\services\Config;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -91,15 +92,15 @@ require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yi
 require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
-Craft::setAlias('@lib', $libPath);
-Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` command
-Craft::setAlias('@dotenv', $app->environmentFilePath());
-Craft::setAlias('@config', $app->configPath());
-Craft::setAlias('@contentMigrations', Env::get('CRAFT_CONTENT_MIGRATIONS_PATH', $app->basePath('migrations')));
-Craft::setAlias('@storage', defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $app->storagePath());
-Craft::setAlias('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
-Craft::setAlias('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
-Craft::setAlias('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
+Aliases::set('@lib', $libPath);
+Aliases::set('@craft', $srcPath); // same as @app, but needed for the `help` command
+Aliases::set('@dotenv', $app->environmentFilePath());
+Aliases::set('@config', $app->configPath());
+Aliases::set('@contentMigrations', Env::get('CRAFT_CONTENT_MIGRATIONS_PATH', $app->basePath('migrations')));
+Aliases::set('@storage', defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $app->storagePath());
+Aliases::set('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
+Aliases::set('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
+Aliases::set('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
 
 // Load the config
 $config = Arr::merge(

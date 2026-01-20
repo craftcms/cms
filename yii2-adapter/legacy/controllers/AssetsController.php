@@ -29,6 +29,7 @@ use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
@@ -1284,7 +1285,7 @@ class AssetsController extends Controller
     {
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
         return $this->response
-            ->sendFile(Craft::getAlias('@appicons/broken-image.svg'), 'nope.svg', [
+            ->sendFile(Aliases::get('@appicons/broken-image.svg'), 'nope.svg', [
                 'mimeType' => 'image/svg+xml',
                 'inline' => true,
             ])
