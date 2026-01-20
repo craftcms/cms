@@ -9,9 +9,9 @@
 - Fixed a bug where it was possible to suspend SSO-based user accounts.
 - Fixed an error that could occur a nested element’s field layout no longer existed. ([#18246](https://github.com/craftcms/cms/issues/18246))
 - Fixed a bug where selecting new elements within relation fields could cause multiple draft saves in quick succession.
-- Fixed XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
-- Fixed SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
-- Fixed a TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
 
 ## 5.8.22 - 2026-01-09
 
@@ -35,12 +35,12 @@
 - Fixed an error that could occur when saving a recursively-nested element. ([#18164](https://github.com/craftcms/cms/issues/18164))
 - Fixed a bug where element indexes could show muliple table columns for the same field/label/handle combinations. ([#18209](https://github.com/craftcms/cms/issues/18209))
 - Fixed a bug where element indexes’ “View” menus could list some custom fields under “Attributes”. ([#18221](https://github.com/craftcms/cms/pull/18221))
-- Fixed SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
-- Fixed an XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
-- Fixed a SQL injection vulnerability. (GHSA-2453-mppf-46cj)
-- Fixed an XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
-- Fixed a permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
-- Fixed an RCE vulnerability. (GHSA-7jx7-3846-m7w7)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-96pq-hxpw-rgh8, GHSA-m5r2-8p9x-hp5m, GHSA-8jr8-7hr4-vhfx)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-7pr4-wx9w-mqwr)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-2453-mppf-46cj)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-9f5h-mmq6-2x78)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-fxp3-g6gw-4r4v)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-7jx7-3846-m7w7)
 
 ## 5.8.21 - 2025-12-04
 
