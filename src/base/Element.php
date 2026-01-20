@@ -2941,6 +2941,12 @@ abstract class Element extends Component implements ElementInterface
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             'when' => fn() => $this->shouldValidateTitle(),
         ];
+        $rules[] = [
+            ['title'],
+            function() {
+                $this->title = StringHelper::convertLineBreaks($this->title);
+            },
+        ];
 
         if (static::hasUris()) {
             try {

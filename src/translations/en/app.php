@@ -103,6 +103,7 @@ return [
     'Allow custom URL schemes' => 'Allow custom URL schemes',
     'Allow custom colors' => 'Allow custom colors',
     'Allow custom options' => 'Allow custom options',
+    'Allow line breaks in titles' => 'Allow line breaks in titles',
     'Allow line breaks' => 'Allow line breaks',
     'Allow public registration' => 'Allow public registration',
     'Allow root-relative URLs' => 'Allow root-relative URLs',

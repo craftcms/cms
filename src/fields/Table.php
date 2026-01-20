@@ -787,7 +787,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                     if (!$fromRequest) {
                         $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
                     }
-                    return trim(preg_replace('/\R/u', "\n", $value));
+                    return trim(StringHelper::convertLineBreaks($value));
                 }
                 // no break
             case 'date':
