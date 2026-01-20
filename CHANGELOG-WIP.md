@@ -33,6 +33,7 @@
 - GraphQL API responses now set their `Content-Type` header to `application/graphql-response+json`.
 - GraphQL API responses now set cache headers based on whether a mutation was performed, regardless of the request type.
 - Global set queries no longer register cache tags.
+- A rate limit is now enforced for `users/send-password-reset-email` requests. ([#17337](https://github.com/craftcms/cms/issues/17337))
 - Updated Yii to 2.0.54.
 - Updated Twig to 3.19. ([#17603](https://github.com/craftcms/cms/discussions/17603))
 - Fixed a bug where Table fields with the “Static Rows” setting enabled would lose track of which values belonged to which row headings, if the “Default Values” table was reordered. ([#17090](https://github.com/craftcms/cms/issues/17090))
