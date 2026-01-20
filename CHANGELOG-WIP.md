@@ -63,11 +63,11 @@
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17794](https://github.com/craftcms/cms/pull/17794))
 - Environmental settings can now reference `CRAFT_SITE` (the current site’s handle) and `CRAFT_SITE_UPPER` (the current site’s handle in UPPER_SNAKE_CASE) environment variables, which are defined at runtime. ([#17794](https://github.com/craftcms/cms/pull/17794))
 - It’s now possible to create unpublished drafts via GraphQL. ([#17805](https://github.com/craftcms/cms/pull/17805))
-- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. (GHSA-94rc-cqvm-m4pw)
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function, which fixes a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI issue. (GHSA-94rc-cqvm-m4pw)
 - Added the `randomString()` Twig function. ([#18020](https://github.com/craftcms/cms/discussions/18020))
 - Added the `uuid()` Twig function.
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
-- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema, which fixes a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) IDOR issue. (GHSA-7x43-mpfg-r9wj)
 - GraphQL API requests can now identify themselves as preview requests by passing an `X-Craft-Preview-Token` header, set to the `x-craft-preview`/`x-craft-live-preview` query param in the preview target URL.
 
 ### Extensibility
@@ -196,5 +196,5 @@
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed a bug where Matrix and Addresses fields weren’t loading provisional drafts for GraphQL preview requests.
 - Fixed a bug where generated field values weren’t always up-to-date if their template referenced nested elements. ([#17938](https://github.com/craftcms/cms/issues/17938))
-- Fixed an RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Fixed permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-v47q-jxvr-p68x)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
