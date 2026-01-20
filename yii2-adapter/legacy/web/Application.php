@@ -16,7 +16,6 @@ use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
@@ -27,8 +26,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -54,7 +51,6 @@ use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
-use yii\web\UnauthorizedHttpException;
 use function CraftCms\Cms\t;
 
 /**
@@ -120,7 +116,6 @@ class Application extends \yii\web\Application
         // Process resource requests before we do anything to establish the user session
         $this->_processResourceRequest();
 
-        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -214,22 +209,11 @@ class Application extends \yii\web\Application
                     ($firstSeg = $request->getSegment(1)) !== null &&
                     ($plugin = app(Plugins::class)->getPlugin($firstSeg)) !== null
                 ) {
-                    if ($userSession->getIsGuest()) {
+                    if (Auth::guest()) {
                         return $userSession->loginRequired();
                     }
 
                     Gate::authorize('accessPlugin-' . $plugin->handle);
-                }
-
-                if (!$userSession->getIsGuest()) {
-                    // See if the user is expected to have 2FA enabled
-                    if (!$generalConfig->disable2fa) {
-                        $auth = $this->getAuth();
-                        $user = Auth::user();
-                        if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
-                            return $this->runAction('users/setup-2fa');
-                        }
-                    }
                 }
             }
         }
@@ -300,38 +284,6 @@ class Application extends \yii\web\Application
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
-    }
-
-    /**
-     * Authenticates the request.
-     *
-     * @throws UnauthorizedHttpException
-     * @since 3.5.0
-     */
-    protected function authenticate(): void
-    {
-        if (!Cms::config()->enableBasicHttpAuth) {
-            return;
-        }
-
-        // Did the request include user credentials?
-        [$username, $password] = $this->getRequest()->getAuthCredentials();
-
-        if (!$username || !$password) {
-            return;
-        }
-
-        $user = Users::getUserByUsernameOrEmail(Db::escapeParam($username));
-
-        if (!$user) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        if (!$user->authenticate($password)) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        $this->getUser()->setIdentity(new IdentityWrapper($user));
     }
 
     /**

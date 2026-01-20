@@ -13,9 +13,9 @@ use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Auth;
 use UnitTester;
 
 /**
@@ -50,44 +50,6 @@ class UserTest extends TestCase
     /**
      *
      */
-    public function testSendUsernameCookie(): void
-    {
-        DateTimeHelper::pause();
-
-        // Send the cookie with a hardcoded time value
-        Cms::config()->rememberUsernameDuration = 20;
-        $this->user->sendUsernameCookie($this->userElement);
-
-        // Assert that the cookie is correct
-        $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
-
-        self::assertSame($this->userElement->username, $cookie->value);
-        self::assertSame(DateTimeHelper::currentTimeStamp() + 20, $cookie->expire);
-
-        DateTimeHelper::resume();
-    }
-
-    /**
-     *
-     */
-    public function testSendUsernameCookieDeletes(): void
-    {
-        // Ensure something is set
-        $this->user->sendUsernameCookie($this->userElement);
-
-        // Setting this to (int)0 will trigger sendUsernameCookie to set the values to null in the existing cookie.
-        Cms::config()->rememberUsernameDuration = 0;
-        $this->user->sendUsernameCookie($this->userElement);
-
-        $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
-
-        self::assertSame('', $cookie->value);
-        self::assertSame(1, $cookie->expire);
-    }
-
-    /**
-     *
-     */
     public function testGetRemainingSessionTime(): void
     {
         // No identity. Remaining should be null.
@@ -95,6 +57,7 @@ class UserTest extends TestCase
         self::assertSame(0, $this->user->getRemainingSessionTime());
 
         // With a user and authTimeout null it should return -1
+        Auth::login($this->userElement);
         $this->user->setIdentity(new IdentityWrapper($this->userElement));
         $this->user->authTimeout = null;
         self::assertSame(-1, $this->user->getRemainingSessionTime());
@@ -151,13 +114,5 @@ class UserTest extends TestCase
     private function _getUser(): ?UserElement
     {
         return Craft::$app->getUsers()->getUserById(1);
-    }
-
-    /**
-     * @return mixed
-     */
-    private function _getUsernameCookieName(): mixed
-    {
-        return Craft::$app->getUser()->usernameCookie['name'];
     }
 }

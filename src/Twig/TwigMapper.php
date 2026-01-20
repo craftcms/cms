@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use Craft;
+use Exception;
 use Illuminate\Support\Collection;
 use ReflectionProperty;
 use Throwable;
@@ -46,8 +47,10 @@ final readonly class TwigMapper
             )
             ->all();
 
-        $traceProperty = new ReflectionProperty('Exception', 'trace');
-        $traceProperty->setValue($exception, $trace);
+        if ($exception instanceof Exception) {
+            $traceProperty = new ReflectionProperty('Exception', 'trace');
+            $traceProperty->setValue($exception, $trace);
+        }
 
         return $exception;
     }

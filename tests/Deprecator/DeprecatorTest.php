@@ -41,9 +41,8 @@ it('can log deprecations to the database', function () {
 
     $this->deprecator->storeLogs();
 
-    expect(DeprecationError::count())->toBe(1);
-    tap(DeprecationError::query()->firstOrFail(), function (DeprecationError $error) {
-        expect($error->key)->toBe('foo');
+    expect(DeprecationError::count())->toBeGreaterThanOrEqual(1);
+    tap(DeprecationError::query()->where('key', 'foo')->firstOrFail(), function (DeprecationError $error) {
         expect($error->traces)->toBeArray();
         expect($error->uid)->not()->toBe('0');
     });

@@ -1079,25 +1079,6 @@ class GeneralConfig extends BaseConfig
     public bool $asyncCsrfInputs = false;
 
     /**
-     * @var bool Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableBasicHttpAuth(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @since 3.5.0
-     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
-     */
-    public bool $enableBasicHttpAuth = false;
-
-    /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
      *           stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
      *           it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
@@ -2120,6 +2101,8 @@ class GeneralConfig extends BaseConfig
      * @see https://php.net/manual/en/function.session-name.php
      *
      * @group Session
+     *
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public string $phpSessionName = 'CraftSessionId';
 
@@ -2435,6 +2418,7 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 90 days
      *
      * @since 3.3.0
+     * @deprecated 6.0.0 configure sessions using Laravel's session config instead.
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
 
@@ -2513,6 +2497,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireMatchingUserAgentForSession = true;
 
@@ -2529,6 +2515,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
+     * @deprecated 6.0.0
      */
     public bool $requireUserAgentAndIpForSession = true;
 
@@ -3358,6 +3346,8 @@ class GeneralConfig extends BaseConfig
      * @group Session
      *
      * @defaultAlt 1 hour
+     *
+     * @deprecated 6.0.0
      */
     public mixed $userSessionDuration = 3600;
 
@@ -3445,8 +3435,6 @@ class GeneralConfig extends BaseConfig
      */
     public mixed $verifyEmailSuccessPath = '';
 
-    protected ?DateInterval $_rememberedUserSessionDuration = null;
-
     public function __construct()
     {
         // (Re-)normalize everything.
@@ -3458,17 +3446,13 @@ class GeneralConfig extends BaseConfig
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
-            ->elevatedSessionDuration($this->elevatedSessionDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
             ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
             ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
             ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
             ->softDeleteDuration($this->softDeleteDuration)
-            ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
-            ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -4548,25 +4532,6 @@ class GeneralConfig extends BaseConfig
     public function asyncCsrfInputs(bool $value = true): self
     {
         $this->asyncCsrfInputs = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ```php
-     * ->enableBasicHttpAuth(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $enableBasicHttpAuth
-     * @since 4.2.0
-     */
-    public function enableBasicHttpAuth(bool $value = true): self
-    {
-        $this->enableBasicHttpAuth = $value;
 
         return $this;
     }
@@ -6118,10 +6083,8 @@ class GeneralConfig extends BaseConfig
      * @throws InvalidConfigException
      *
      * @see $rememberedUserSessionDuration
-     * @see getRememberedUserSessionDuration()
      * @since 4.2.0
      */
-    #[Deprecated(message: 'in 6.0.0. Configure `auth.guards.web.remember` in minutes instead.')]
     public function rememberedUserSessionDuration(mixed $value): self
     {
         // Store the DateInterval separately for getRememberedUserSessionDuration()
@@ -6132,10 +6095,12 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
-        $this->_rememberedUserSessionDuration = $interval ?: null;
 
         app()->booting(function () {
-            Config::set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
+            Config::set(
+                'auth.guards.craft.remember',
+                floor($this->rememberedUserSessionDuration / 60),
+            );
         });
 
         return $this;
@@ -7166,6 +7131,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $userSessionDuration
      */
+    #[Deprecated(message: "configure sessions using Laravel's session config instead.", since: '6.0.0')]
     public function userSessionDuration(mixed $value): self
     {
         $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
@@ -7215,6 +7181,10 @@ class GeneralConfig extends BaseConfig
     public function verificationCodeDuration(mixed $value): self
     {
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
+
+        app()->booted(function () {
+            Config::set('auth.passwords.craft.expire', $this->verificationCodeDuration);
+        });
 
         return $this;
     }
@@ -7386,7 +7356,9 @@ class GeneralConfig extends BaseConfig
      */
     public function getRememberedUserSessionDuration(): ?DateInterval
     {
-        return $this->_rememberedUserSessionDuration ?: null;
+        return $this->rememberedUserSessionDuration > 0
+            ? DateTimeHelper::toDateInterval($this->rememberedUserSessionDuration)
+            : null;
     }
 
     /**

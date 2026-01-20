@@ -593,7 +593,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
             return $items;
         }
 
-        if (! Craft::$app->getUser()->getIsAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return $items;
         }
 
