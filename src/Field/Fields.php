@@ -13,7 +13,6 @@ use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\AdminTable;
-use craft\helpers\Component;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
@@ -910,7 +909,7 @@ final class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config = Component::cleanseConfig($config);
+        $config = ComponentHelper::cleanseConfig($config);
 
         $layout = $this->createLayout($config);
 
