@@ -28,8 +28,7 @@ class SecurityTest extends TestCase
      */
     public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $sensitiveKeywords): void
     {
-        $security = new Security(['sensitiveKeywords' => $sensitiveKeywords]);
-        self::assertSame($expected, $security->redactIfSensitive($name, $value));
+        self::assertSame($expected, new \CraftCms\Cms\Support\Security($sensitiveKeywords)->redactIfSensitive($name, $value));
     }
 
     /**

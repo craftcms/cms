@@ -177,7 +177,7 @@ class GraphqlController extends Controller
         $token->name = $this->name ?? $this->prompt('Token name:', [
                 'required' => true,
             ]);
-        $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
+        $token->accessToken = Str::random(32, extendedChars: true);
 
         if (isset($this->expiry)) {
             $expiry = DateTimeHelper::toDateTime($this->expiry);

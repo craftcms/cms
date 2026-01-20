@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Crypt;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -14,7 +15,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::find()->one());
 
-    $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
+    $this->hashedData = Crypt::encrypt(Json::encode([
         'packageName' => 'craftcms/test-plugin',
         'handle' => 'test-plugin',
         'edition' => 'standard',

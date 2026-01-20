@@ -7,10 +7,10 @@
 
 namespace craft\filters;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Hash;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 
@@ -52,7 +52,7 @@ class BasicHttpAuthLogin extends HttpBasicAuth
         /** @var ?IdentityWrapper $identity */
         $identity = $user ? new IdentityWrapper($user)->findIdentity($user->id) : null;
 
-        if ($identity && Craft::$app->getSecurity()->validatePassword($password, $identity->password)) {
+        if ($identity && Hash::check($password, $identity->password)) {
             return $identity;
         }
 
