@@ -29,6 +29,7 @@
 - It’s now possible to divide entry sources into multiple index pages, via the Customize Sources modal. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - The Customize Sources modal now supports mobile devices. ([#18067](https://github.com/craftcms/cms/pull/18067))
 - Added the “UI Label Format” entry type setting. ([#18044](https://github.com/craftcms/cms/pull/18044))
+- Added the “Allow line breaks in titles” entry type setting. ([#18265](https://github.com/craftcms/cms/pull/18265))
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
 - Users’ User Groups settings now show a component select input, and support inline group editing/creation on environments that allow administrative changes.
 - Address labels can now be made optional. ([#11410](https://github.com/craftcms/cms/discussions/11410))
@@ -103,6 +104,7 @@
 - Added `craft\helpers\Assets::resolveSubpath()`. ([#18103](https://github.com/craftcms/cms/pull/18103))
 - Added `craft\helpers\Cp::cardPreviewOptions()`.
 - Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
+- Added `craft\helpers\StringHelper::convertLineBreaks()`.
 - Added `craft\helpers\UrlHelper::cpReferralUrl()`.
 - Added `craft\i18n\Locale::getDefaultCurrency()`.
 - Added `craft\models\EntryType::$uiLabelFormat`.
