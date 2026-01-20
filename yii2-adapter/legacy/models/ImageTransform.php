@@ -18,6 +18,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Cms;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 use function CraftCms\Cms\t;
 
 /**
@@ -299,7 +300,7 @@ class ImageTransform extends Model
     public function setTransformer(string $transformer): void
     {
         if (!is_subclass_of($transformer, ImageTransformerInterface::class)) {
-            Craft::warning("Invalid image transformer: $transformer", __METHOD__);
+            Log::warning("Invalid image transformer: $transformer", [__METHOD__]);
             $transformer = self::DEFAULT_TRANSFORMER;
         }
 

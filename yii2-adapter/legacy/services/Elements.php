@@ -1301,7 +1301,7 @@ class Elements extends Component
      * ]);
      * $success = Craft::$app->elements->saveElement($entry);
      * if (!$success) {
-     *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
+     *     \Illuminate\Support\Facades\Log::error('Couldn’t save the entry "'.$entry->title.'"', [__METHOD__]);
      * }
      * ```
      *
@@ -2819,8 +2819,7 @@ class Elements extends Component
                 // Make sure it still passes essential validation
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
-                    Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors,
-                            true), __METHOD__);
+                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), [__METHOD__]);
                     DB::rollBack();
                     return false;
                 }
@@ -2829,8 +2828,7 @@ class Elements extends Component
                     if ($siteElement !== $element) {
                         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
                         if (!$siteElement->validate()) {
-                            Craft::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors,
-                                    true), __METHOD__);
+                            Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors, true), [__METHOD__]);
                             throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                         }
                     }
@@ -2954,13 +2952,13 @@ class Elements extends Component
 
                 // just to be safe...
                 if (!$resultElement) {
-                    Craft::warning(sprintf(
+                    Log::warning(sprintf(
                         'Couldn’t load %s element %s%s for site %s',
                         $element::class,
                         $element->getCanonicalId(),
                         $result->draftId ? " (draft {$result->draftId})" : '',
                         $result->siteId,
-                    ), __METHOD__);
+                    ), [__METHOD__]);
                     continue;
                 }
 
@@ -4612,7 +4610,7 @@ class Elements extends Component
                 foreach ($siteElement->getFirstErrors() as $attributeError) {
                     $error .= "\n- " . $attributeError;
                 }
-                Craft::error($error);
+                Log::error($error);
                 throw new Exception('Couldn’t propagate element to other site.');
             }
         }
@@ -4724,8 +4722,7 @@ class Elements extends Component
             return $this->parseRefs((string)$value);
         } catch (Throwable $e) {
             // Log it
-            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(),
-                __METHOD__);
+            Log::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), [__METHOD__]);
 
             // Replace the token with the default value
             return $fallback;

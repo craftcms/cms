@@ -110,7 +110,7 @@ final class IdentityWrapper implements IdentityInterface
             return false;
         }
 
-        [$token, , $userAgent] = $data;
+        [$token] = $data;
 
         $tokenId = DbFacade::table(Table::SESSIONS)
             ->where('token', $token)

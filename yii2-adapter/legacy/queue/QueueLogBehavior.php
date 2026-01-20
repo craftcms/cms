@@ -11,6 +11,7 @@ use Craft;
 use craft\log\Dispatcher;
 use craft\log\MonologTarget;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use yii\queue\ExecEvent;
 
 /**
@@ -53,7 +54,7 @@ class QueueLogBehavior extends VerboseBehavior
         }
 
         $this->_jobStartedAt = microtime(true);
-        Craft::info(sprintf('%s - Started', parent::jobTitle($event)), __METHOD__);
+        Log::info(sprintf('%s - Started', parent::jobTitle($event)), [__METHOD__]);
     }
 
     /**
@@ -62,9 +63,9 @@ class QueueLogBehavior extends VerboseBehavior
     public function afterExec(ExecEvent $event): void
     {
         if (isset($this->_jobStartedAt)) {
-            Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $this->_formattedDuration()), __METHOD__);
+            Log::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $this->_formattedDuration()), [__METHOD__]);
         } else {
-            Craft::info(sprintf('%s - Done', parent::jobTitle($event)), __METHOD__);
+            Log::info(sprintf('%s - Done', parent::jobTitle($event)), [__METHOD__]);
         }
     }
 
@@ -83,7 +84,7 @@ class QueueLogBehavior extends VerboseBehavior
             $message .= sprintf(': %s', $event->error->getMessage());
         }
 
-        Craft::error($message, __METHOD__);
+        Log::error($message, [__METHOD__]);
 
         if ($event->error) {
             Craft::$app->getErrorHandler()->logException($event->error);

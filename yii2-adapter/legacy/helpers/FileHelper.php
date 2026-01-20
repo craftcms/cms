@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -481,7 +482,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $freeBytes = disk_free_space($dir);
 
             if ($freeBytes === false) {
-                Craft::warning("Could not determine the free disk space for \"$dir\".");
+                Log::info("Could not determine the free disk space for \"$dir\".");
             } else {
                 $bytes = StringHelper::byteLength($contents);
                 if ($bytes > $freeBytes) {
@@ -611,7 +612,7 @@ class FileHelper extends \yii\helpers\FileHelper
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
                         if (!str_contains($e->getMessage(), 'No such file or directory')) {
-                            Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
+                            Log::info("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }
                     }
@@ -760,7 +761,7 @@ class FileHelper extends \yii\helpers\FileHelper
             }
             self::$_useFileLocks = true;
         } catch (Throwable $e) {
-            Craft::warning('Write lock test failed: ' . $e->getMessage(), __METHOD__);
+            Log::warning('Write lock test failed: ' . $e->getMessage(), [__METHOD__]);
         }
 
         // Cache for two months

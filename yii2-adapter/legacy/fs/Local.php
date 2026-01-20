@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
+use Illuminate\Support\Facades\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use UnexpectedValueException;
@@ -325,7 +326,7 @@ class Local extends Fs implements LocalFsInterface
         }
 
         if (!unlink($this->prefixPath($path))) {
-            Craft::warning("Tried to delete `$path`, but could not.");
+            Log::info("Tried to delete `$path`, but could not.");
         }
     }
 

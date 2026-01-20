@@ -18,6 +18,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
@@ -164,16 +165,16 @@ class SsoController extends Controller
         }
 
         // Log some context around the error
-        $user?->hasErrors() ? Craft::error(
+        $user?->hasErrors() ? Log::error(
             sprintf(
                 "%s. Errors: %s.",
                 $message,
                 Json::encode($user->getErrors())
             ),
-            "auth"
-        ) : Craft::error(
+            ["auth"]
+        ) : Log::error(
             $message,
-            "auth"
+            ["auth"]
         );
 
         throw new HttpException(500, $message, 0, $exception);

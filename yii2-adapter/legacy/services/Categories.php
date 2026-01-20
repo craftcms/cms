@@ -33,6 +33,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
@@ -290,7 +291,7 @@ class Categories extends Component
         }
 
         if ($runValidation && !$group->validate()) {
-            Craft::info('Category group not saved due to validation error.', __METHOD__);
+            Log::info('Category group not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

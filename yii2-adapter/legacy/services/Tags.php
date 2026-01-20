@@ -23,6 +23,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 
@@ -217,7 +218,7 @@ class Tags extends Component
         }
 
         if ($runValidation && !$tagGroup->validate()) {
-            Craft::info('Tag group not saved due to validation error.', __METHOD__);
+            Log::info('Tag group not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

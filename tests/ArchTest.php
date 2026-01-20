@@ -13,6 +13,11 @@ arch()
     ->expect('cms')
     ->not->toUse(['die', 'dd', 'dump', 'env']);
 
+arch('Don\'t use legacy logging')
+    ->expect(['Craft::info', 'Craft::warning', 'Craft::debug', 'Craft::error', 'Craft::trace'])
+    ->not()
+    ->toBeUsed();
+
 /**
  * We only want our own Env helpers to be used.
  */

@@ -28,6 +28,7 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class Gql
@@ -638,7 +639,7 @@ class Gql
         try {
             return Craft::$app->getGql()->getActiveSchema();
         } catch (GqlException $e) {
-            Craft::warning("Could not get the active GraphQL schema: {$e->getMessage()}", __METHOD__);
+            Log::warning("Could not get the active GraphQL schema: {$e->getMessage()}", [__METHOD__]);
             Craft::$app->getErrorHandler()->logException($e);
             throw $e;
         }

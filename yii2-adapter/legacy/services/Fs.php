@@ -18,6 +18,7 @@ use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -170,7 +171,7 @@ class Fs extends Component
         }
 
         if ($runValidation && !$fs->validate()) {
-            Craft::info('Filesystem not saved due to validation error.', __METHOD__);
+            Log::info('Filesystem not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

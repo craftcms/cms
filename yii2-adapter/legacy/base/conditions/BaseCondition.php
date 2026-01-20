@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -193,7 +194,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 try {
                     $rule = $this->createConditionRule($rule);
                 } catch (InvalidArgumentException $e) {
-                    Craft::warning("Invalid condition rule: {$e->getMessage()}");
+                    Log::warning("Invalid condition rule: {$e->getMessage()}");
                     continue;
                 }
             }
