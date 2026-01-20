@@ -1184,16 +1184,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         $groups = [];
 
-        if (is_callable($arrow)) {
-            foreach ($arr as $key => $item) {
-                $groupKey = (string)$arrow($item, $key);
-                $groups[$groupKey][] = $item;
-            }
-        } else {
+        if (is_string($arrow)) {
             $template = '{' . $arrow . '}';
             $view = Craft::$app->getView();
             foreach ($arr as $item) {
                 $groupKey = $view->renderObjectTemplate($template, $item);
+                $groups[$groupKey][] = $item;
+            }
+        } else {
+            foreach ($arr as $key => $item) {
+                $groupKey = (string)$arrow($item, $key);
                 $groups[$groupKey][] = $item;
             }
         }

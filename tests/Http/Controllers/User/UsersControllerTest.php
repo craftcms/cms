@@ -5,7 +5,6 @@ use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -57,9 +56,6 @@ test('destroy deletes a user', function () {
     ])->assertOk();
 
     expect(new UserQuery()->count())->toBe(1);
-
-    // Bulk op is causing issues here
-    DB::commit();
 });
 
 test('edit shows a cp screen', function () {
@@ -83,8 +79,6 @@ test('destroy can transfer content to another user', function () {
 
     // Verify user was deleted
     expect(User::find()->id($user->id)->exists())->toBeFalse();
-
-    DB::commit();
 });
 
 test('destroy handles non-existent user gracefully', function () {
@@ -122,8 +116,6 @@ test('destroy requires proper authorization', function () {
     postJson(action([UsersController::class, 'destroy']), [
         'userId' => $user->id,
     ])->assertForbidden();
-
-    DB::commit();
 });
 
 test('create requires proper authorization', function () {

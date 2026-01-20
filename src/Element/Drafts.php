@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\behaviors\EventBehavior;
+use craft\events\ModelEvent;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -123,15 +125,23 @@ final readonly class Drafts
             $newAttributes['trackDraftChanges'] = $canonical::trackChanges();
             $newAttributes['markDraftAsSaved'] = $markAsSaved;
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
+            /** @TODO: Remove behavior */
+            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
+                Element::EVENT_AFTER_PROPAGATE => function (ModelEvent $event) use ($canonical) {
+                    /** @var ElementInterface $draft */
+                    $draft = $event->sender;
 
-            // Duplicate nested element ownership
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
-                    DB::table(Table::ELEMENTS_OWNERS, 'o')
-                        ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
-                        ->where('o.ownerId', $canonical->id)
-                );
+                    // Duplicate nested element ownership
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
+                            DB::table(Table::ELEMENTS_OWNERS, 'o')
+                                ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
+                                ->where('o.ownerId', $canonical->id)
+                        );
+                },
+            ], true);
+
+            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             DB::commit();
         } catch (Throwable $e) {

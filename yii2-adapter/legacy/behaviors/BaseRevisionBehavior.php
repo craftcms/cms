@@ -7,6 +7,7 @@
 
 namespace craft\behaviors;
 
+use craft\base\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -15,7 +16,8 @@ use yii\base\Behavior;
 /**
  * BaseRevisionBehavior is the base implementation of draft & revision behaviors.
  *
- * @property ElementInterface $owner
+ * @template T of Element
+ * @extends Behavior<T>
  * @property User|null $creator
  * @property-read int $sourceId
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -29,10 +31,12 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public ?int $creatorId {
         get => match($this::class) {
+            /** @phpstan-ignore-next-line */
             DraftBehavior::class => $this->owner->draftCreatorId,
             default => $this->owner->revisionCreatorId,
         };
         set(?int $value) => match($this::class) {
+            /** @phpstan-ignore-next-line */
             DraftBehavior::class => $this->owner->draftCreatorId = $value,
             default => $this->owner->revisionCreatorId = $value,
         };
@@ -46,6 +50,7 @@ abstract class BaseRevisionBehavior extends Behavior
     public function getCreator(): ?User
     {
         return match($this::class) {
+            /** @phpstan-ignore-next-line */
             DraftBehavior::class => $this->owner->getDraftCreator(),
             default => $this->owner->getRevisionCreator(),
         };
@@ -60,6 +65,7 @@ abstract class BaseRevisionBehavior extends Behavior
     public function setCreator(?User $creator = null): void
     {
         match($this::class) {
+            /** @phpstan-ignore-next-line */
             DraftBehavior::class => $this->owner->setDraftCreator($creator),
             default => $this->owner->setRevisionCreator($creator),
         };

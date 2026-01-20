@@ -83,7 +83,6 @@ use Stringable;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -908,12 +907,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     #[Override]
     public function __toString(): string
     {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        $name = $this->getName();
+        if ($name !== '') {
+            return $name;
         }
 
         return parent::__toString();
@@ -1784,7 +1780,8 @@ XML;
 
         return
             $user->id !== $this->id &&
-            $user->can('deleteUsers');
+            $user->can('deleteUsers') &&
+            (! $this->admin || $user->admin);
     }
 
     /**

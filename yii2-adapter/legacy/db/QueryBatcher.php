@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use craft\base\Batchable;
+use CraftCms\Cms\Database\Queries\ElementQuery;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
@@ -43,7 +44,11 @@ class QueryBatcher implements Batchable
     public function count(): int
     {
         try {
-            $count = $this->query->count(db: $this->db);
+            if ($this->query instanceof ElementQuery) {
+                $count = $this->query->count();
+            } else {
+                $count = $this->query->count(db: $this->db);
+            }
         } catch (QueryAbortedException) {
             return 0;
         }

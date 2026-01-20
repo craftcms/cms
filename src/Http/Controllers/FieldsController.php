@@ -432,7 +432,7 @@ final class FieldsController
                 $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {

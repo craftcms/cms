@@ -371,8 +371,8 @@ trait NestedElementTrait
         $field = null;
 
         try {
-            $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId);
-        } catch (InvalidConfigException $e) {
+            $field = $this->getOwner()?->getFieldLayout()?->getFieldById($this->fieldId);
+        } catch (InvalidConfigException) {
             // carry on as we might still be able to get the field by ID
         }
 

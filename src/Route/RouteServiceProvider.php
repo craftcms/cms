@@ -10,7 +10,6 @@ use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
-use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -79,7 +78,6 @@ final class RouteServiceProvider extends ServiceProvider
             CheckSchemaVersion::class,
             CheckForUpdates::class,
             SendPoweredByHeader::class,
-            FlushProjectConfig::class,
             SetHeaders::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 

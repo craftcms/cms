@@ -18,6 +18,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Addresses as AddressesField;
@@ -1276,7 +1277,7 @@ final class Fields
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [

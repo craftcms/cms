@@ -687,7 +687,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getIsPreview(): bool
     {
-        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview') ?? $this->getHeaders()->get('X-Craft-Preview-Token');
         if (!$previewParamValue) {
             return false;
         }

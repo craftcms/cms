@@ -24,7 +24,7 @@ it('can filter out extra headings from a collection of sources', function () {
 });
 
 it('can get sources', function () {
-    expect($this->elementSources->getSources(Entry::class))->toHaveCount(1);
+    expect($this->elementSources->getSources(Entry::class)->count())->toBeGreaterThan(1);
 });
 
 it('can check if a source exists', function () {

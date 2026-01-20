@@ -9,8 +9,13 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+
+use function Pest\Laravel\actingAs;
 
 it('can query custom fields', function () {
+    actingAs(User::findOne());
+
     $field = Field::factory()->create([
         'handle' => 'textField',
         'type' => PlainText::class,

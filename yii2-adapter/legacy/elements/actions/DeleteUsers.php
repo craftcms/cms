@@ -82,14 +82,14 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         }
 
         Craft::$app->getView()->registerJsWithVars(
-            fn($type, $undeletableIds, $redirect) => <<<JS
+            fn($type, $redirect) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
         validateSelection: (selectedItems, elementIndex) => {
             for (let i = 0; i < selectedItems.length; i++) {
-                if ($.inArray(selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
                 }
             }
@@ -120,7 +120,6 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
 JS,
             [
                 static::class,
-                $this->_getUndeletableUserIds(),
                 Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
             ]);
 
@@ -148,7 +147,6 @@ JS,
     {
         /** @var User[] $users */
         $users = $query->all();
-        $undeletableIds = $this->_getUndeletableUserIds();
 
         // Are we transferring the user’s content to a different user?
         if (is_array($this->transferContentTo)) {
@@ -167,9 +165,11 @@ JS,
 
         // Delete the users
         $elementsService = Craft::$app->getElements();
+        $currentUser = Auth::user();
         $deletedCount = 0;
+
         foreach ($users as $user) {
-            if (!in_array($user->id, $undeletableIds, false)) {
+            if ($elementsService->canDelete($user, $currentUser)) {
                 $user->inheritorOnDelete = $transferContentTo;
                 if ($elementsService->deleteElement($user, $this->hard)) {
                     $deletedCount++;
@@ -196,21 +196,5 @@ JS,
         ]));
 
         return true;
-    }
-
-    /**
-     * Returns a list of the user IDs that can't be deleted.
-     *
-     * @return array
-     */
-    private function _getUndeletableUserIds(): array
-    {
-        if (!Auth::user()->isAdmin()) {
-            // Only admins can delete other admins
-            return User::find()->admin()->ids();
-        }
-
-        // Can't delete your own account from here
-        return [Auth::user()->id];
     }
 }

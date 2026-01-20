@@ -1352,6 +1352,10 @@ final class Users
             return false;
         }
 
+        if ($suspendee->getHasSsoIdentity()) {
+            return false;
+        }
+
         return true;
     }
 

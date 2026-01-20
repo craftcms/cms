@@ -3468,6 +3468,7 @@ class GeneralConfig extends BaseConfig
             ->softDeleteDuration($this->softDeleteDuration)
             ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
+            ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -6050,7 +6051,7 @@ class GeneralConfig extends BaseConfig
     {
         app()->booting(fn () => Deprecator::log('generalConfig.purgeStaleUserSessionDuration', 'Calling purgeStaleUserSessionDuration() is deprecated. Sessions are cleaned up on a lottery basis when needed.'));
 
-        $this->purgeStaleUserSessionDuration = $value;
+        $this->purgeStaleUserSessionDuration = ConfigHelper::durationInSeconds($value);
 
         return $this;
     }

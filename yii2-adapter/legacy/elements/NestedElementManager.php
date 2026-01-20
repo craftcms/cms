@@ -397,6 +397,7 @@ class NestedElementManager extends Component
         $config += [
             'showInGrid' => false,
             'prevalidate' => false,
+            'selectable' => false,
         ];
 
         return $this->createView(
@@ -412,6 +413,7 @@ class NestedElementManager extends Component
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
                     'showInGrid' => $config['showInGrid'],
+                    'selectable' => $config['selectable'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -451,6 +453,7 @@ class NestedElementManager extends Component
                         fn(ElementInterface $element) => Html::li(Cp::elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
+                            'selectable' => $config['selectable'],
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
                         ]))->encode(false),
@@ -696,7 +699,7 @@ JS, [
         $resetValue = false;
 
         if ($owner->duplicateOf !== null) {
-            // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
+            // If this is a draft, its nested element ownership should have already been duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
             // getIsUnpublishedDraft is needed for "save as new" duplication
