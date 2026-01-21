@@ -104,7 +104,7 @@ return [
     'Allow custom URL schemes' => 'Permitir esquemas de URL personalizados',
     'Allow custom colors' => 'Permitir cores personalizadas',
     'Allow custom options' => 'Permitir opções personalizadas',
-    'Allow line breaks in titles' => 'Allow line breaks in titles',
+    'Allow line breaks in titles' => 'Permitir quebras de linha nos títulos',
     'Allow line breaks' => 'Permitir quebras de linha',
     'Allow public registration' => 'Permitir o registo público',
     'Allow root-relative URLs' => 'Permitir URL relativos à raiz',
