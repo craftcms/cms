@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\elements\Address as AddressElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
@@ -16,6 +15,7 @@ use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Address as AddressInterface;
 use craft\gql\types\elements\Address;
+use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Field\Fields;
 
 /**

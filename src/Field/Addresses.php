@@ -8,15 +8,10 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\elements\Address;
-use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
-use craft\events\CancelableEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
@@ -25,6 +20,8 @@ use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Gql;
 use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Database\Queries\AddressQuery;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -405,13 +402,13 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if ($value === '') {
-            $query->setCachedResult([]);
+            $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
             $query->drafts(null)->savedDraftsOnly()->status(null)->limit(null);
-            $query->setCachedResult($query->all());
+            $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
-            $query->setCachedResult($this->createAddressesFromSerializedData($value, $element, $fromRequest));
+            $query->setResultOverride($this->createAddressesFromSerializedData($value, $element, $fromRequest));
         } elseif (Craft::$app->getRequest()->getIsPreview()) {
             $query->withProvisionalDrafts();
         }
@@ -542,26 +539,21 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function (
-                    CancelableEvent $event,
-                    AddressQuery $query,
-                ) use ($owner) {
-                    $query->owner($owner);
+            $query->beforeQuery(function (AddressQuery $query) use ($owner) {
+                $query->owner($owner);
 
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
+                // Clear out id=false if this query was populated previously
+                if ($query->id === false) {
+                    $query->id = null;
+                }
 
-                    // If the owner is a revision, allow revision addresses to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
+                // If the owner is a revision, allow revision addresses to be returned as well
+                if ($owner->getIsRevision()) {
+                    $query
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -728,7 +720,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof AddressQuery) {
-            $addresses = $value->getCachedResult() ?? (clone $value)
+            $addresses = $value->getResultOverride() ?? (clone $value)
                 ->drafts(null)
                 ->savedDraftsOnly()
                 ->status(null)
@@ -754,7 +746,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
             if (! empty($invalidAddressIds)) {
                 // Just in case the addresses weren't already cached
-                $value->setCachedResult($addresses);
+                $value->setResultOverride($addresses);
                 $element->addInvalidNestedElementIds($invalidAddressIds);
 
                 // show a top level error to let users know that there are validation errors in the nested entries
@@ -872,7 +864,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
         return [

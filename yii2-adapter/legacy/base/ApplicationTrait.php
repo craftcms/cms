@@ -11,7 +11,7 @@ use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
-use craft\elements\Address;
+use CraftCms\Cms\Address\Elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use CraftCms\Aliases\Aliases;

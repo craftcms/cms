@@ -22,7 +22,7 @@ final class AddressQuery extends ElementQuery
      *            ---
      *            ```php
      *            // fetch addresses that are located in AU
-     *            $addresses = \craft\elements\Address::find()
+     *            $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *            ->countryCode('AU')
      *            ->all();
      *            ```
@@ -42,7 +42,7 @@ final class AddressQuery extends ElementQuery
      *            ---
      *            ```php
      *            // fetch addresses that are located in Western Australia
-     *            $addresses = \craft\elements\Address::find()
+     *            $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *            ->administrativeArea('WA')
      *            ->all();
      *            ```
@@ -62,7 +62,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by locality
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->locality('Perth')
      *                  ->all();
      *                  ```
@@ -82,7 +82,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by dependent locality
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->dependentLocality('Darlington')
      *                  ->all();
      *                  ```
@@ -102,7 +102,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by postal code
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->postalCode('10001')
      *                  ->all();
      *                  ```
@@ -122,7 +122,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by sorting code
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->sortingCode('ABCD')
      *                  ->all();
      *                  ```
@@ -142,7 +142,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by organization
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->organization('Pixel & Tonic')
      *                  ->all();
      *                  ```
@@ -162,7 +162,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by organization tax ID
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->organizationTaxId('123-456-789')
      *                  ->all();
      *                  ```
@@ -182,7 +182,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by address line 1
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->addressLine1('23 Craft st')
      *                  ->all();
      *                  ```
@@ -202,7 +202,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by address line 2
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->addressLine2('Apt 5B')
      *                  ->all();
      *                  ```
@@ -222,7 +222,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by address line 3
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->addressLine3('Suite 212')
      *                  ->all();
      *                  ```
@@ -242,7 +242,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by full name
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->fullName('John Doe')
      *                  ->all();
      *                  ```
@@ -262,7 +262,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by first name
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->firstName('Doe')
      *                  ->all();
      *                  ```
@@ -282,7 +282,7 @@ final class AddressQuery extends ElementQuery
      *                  ---
      *                  ```php
      *                  // fetch addresses by last name
-     *                  $addresses = \craft\elements\Address::find()
+     *                  $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *                  ->lastName('Doe')
      *                  ->all();
      *                  ```
