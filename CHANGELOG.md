@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur when loading elements with provisional changes.
+
 ## 5.9.0-beta.1 - 2026-01-20
 
 ### Content Management
