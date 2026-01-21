@@ -20,7 +20,6 @@ use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -1298,8 +1297,8 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
             }
 
             $this->_addresses = $this->createAddressQuery()
-                ->andWhere(['fieldId' => null])
-                ->collect();
+                ->whereNull('fieldId')
+                ->get();
         }
 
         return $this->_addresses;
@@ -2572,13 +2571,12 @@ JS, [
                     ->site('*')
                     ->unique();
 
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
+                $entryQuery->each(function (Entry $entry) use ($elementsService) {
                     // only delete their entry if they're the sole author
                     if ($entry->getAuthorIds() === [$this->id]) {
                         $elementsService->deleteElement($entry);
                     }
-                }
+                }, 100);
             }
 
             DbFacade::commit();

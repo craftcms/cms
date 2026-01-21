@@ -343,11 +343,10 @@ class Assets extends Component
         $assetQuery = Asset::find()->folderId($allFolderIds);
         $elementService = Craft::$app->getElements();
 
-        foreach (Db::each($assetQuery) as $asset) {
-            /** @var Asset $asset */
+        $assetQuery->each(function(Asset $asset) use ($deleteDir, $elementService) {
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
-        }
+        }, 100);
 
         // Delete the folder records
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
