@@ -1,14 +1,9 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\elements;
+declare(strict_types=1);
 
-use Closure;
-use Craft;
+namespace CraftCms\Cms\Element;
+
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
@@ -27,10 +22,8 @@ use yii\base\NotSupportedException;
  * @extends Collection<TKey,TElement>
  *
  * @method TElement one(callable|null $callback, mixed $default)
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.3.0
  */
-class ElementCollection extends Collection
+final class ElementCollection extends Collection
 {
     /**
      * Finds an element in the collection.
@@ -192,7 +185,7 @@ class ElementCollection extends Collection
      *
      * @param callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue> $callback
      * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|static<TMapWithKeysKey,TMapWithKeysValue>
-    */
+     */
     public function mapWithKeys(callable $callback)
     {
         $result = parent::mapWithKeys($callback);
