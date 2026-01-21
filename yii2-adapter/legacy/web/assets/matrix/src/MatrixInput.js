@@ -1092,7 +1092,9 @@
                   'app',
                   'Are you sure you want to delete the selected {type}?',
                   {
-                    type: Craft.elementTypeNames['CraftCms\\Cms\\Entry\\Elements\\Entry'][3],
+                    type: Craft.elementTypeNames[
+                      'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                    ][3],
                   }
                 )
               )
