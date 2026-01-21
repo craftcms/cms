@@ -1,9 +1,9 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\ElementCollection;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;

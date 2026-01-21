@@ -19,6 +19,7 @@ it('can run basic queries', function () {
     expect(entryQuery()->find($elements[0]->id))->toBeInstanceOf(Entry::class);
     expect(entryQuery()->where('elements.id', $elements[0]->id))->sole()->toBeInstanceOf(Entry::class);
     expect(entryQuery()->offset(4)->limit(10)->get())->toHaveCount(1);
+    expect(entryQuery()->limit(1)->get())->toHaveCount(1);
 
     $this->expectException(MultipleRecordsFoundException::class);
     entryQuery()->sole();

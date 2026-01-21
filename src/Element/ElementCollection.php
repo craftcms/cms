@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
+use RuntimeException;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -19,6 +21,7 @@ use yii\base\NotSupportedException;
  *
  * @template TKey of array-key
  * @template TElement of ElementInterface
+ *
  * @extends Collection<TKey,TElement>
  *
  * @method TElement one(callable|null $callback, mixed $default)
@@ -34,17 +37,16 @@ final class ElementCollection extends Collection
      *
      * @template TFindDefault
      *
-     * @param int|TElement|Arrayable<array-key,int>|iterable<array-key,int> $key
-     * @param TFindDefault $default
+     * @param  int|TElement|Arrayable<array-key,int>|iterable<array-key,int>  $key
+     * @param  TFindDefault  $default
      * @return static<TKey,TElement>|TElement|TFindDefault
-     * @since 5.2.0
      */
     public function find(mixed $key, mixed $default = null): mixed
     {
         if ($key instanceof ElementInterface) {
             return Arr::first(
                 $this->items,
-                fn(ElementInterface $element) => $element->siteSettingsId === $key->siteSettingsId,
+                fn (ElementInterface $element) => $element->siteSettingsId === $key->siteSettingsId,
                 $default,
             );
         }
@@ -55,14 +57,13 @@ final class ElementCollection extends Collection
 
         if (is_array($key)) {
             if ($this->isEmpty()) {
-                /** @phpstan-ignore-next-line */
-                return new static();
+                return self::make();
             }
 
             return $this->whereIn('id', $key);
         }
 
-        return Arr::first($this->items, fn(ElementInterface $element) => $element->id === $key, $default);
+        return Arr::first($this->items, fn (ElementInterface $element) => $element->id === $key, $default);
     }
 
     /**
@@ -86,17 +87,18 @@ final class ElementCollection extends Collection
      *     ->with(['related']);
      * ```
      *
-     * @param array|string $with The property value
-     * @return $this
+     * @param  array|string  $with  The property value
      */
-    public function with(array|string $with): static
+    public function with(array|string $with): self
     {
         /** @var array<class-string<TElement>,TElement[]> $elementsByClass */
-        $elementsByClass = $this->groupBy(fn(ElementInterface $element) => $element::class)->all();
+        $elementsByClass = $this->groupBy(fn (ElementInterface $element) => $element::class)->all();
         $elementsService = Craft::$app->getElements();
+
         foreach ($elementsByClass as $class => $classElements) {
             $elementsService->eagerLoadElements($class, $this->items, $with);
         }
+
         return $this;
     }
 
@@ -108,23 +110,21 @@ final class ElementCollection extends Collection
      *
      * If `$key` is an integer, `true` will be returned in the collection contains an element with that ID.
      *
-     * @param (callable(TElement,TKey):bool)|TElement|string|int $key
-     * @param mixed $operator
-     * @param mixed $value
-     * @return bool
+     * @param  (callable(TElement,TKey):bool)|TElement|string|int  $key
      */
-    public function contains($key, $operator = null, $value = null)
+    #[\Override]
+    public function contains(mixed $key, mixed $operator = null, mixed $value = null): bool
     {
         if (func_num_args() > 1 || $this->useAsCallable($key)) {
             return parent::contains(...func_get_args());
         }
 
         if ($key instanceof ElementInterface) {
-            return parent::contains(fn(ElementInterface $element) => $element->siteSettingsId === $key->siteSettingsId);
+            return parent::contains(fn (ElementInterface $element) => $element->siteSettingsId === $key->siteSettingsId);
         }
 
         if (is_int($key)) {
-            return parent::contains(fn(ElementInterface $element) => $element->id === $key);
+            return parent::contains(fn (ElementInterface $element) => $element->id === $key);
         }
 
         return false;
@@ -137,7 +137,7 @@ final class ElementCollection extends Collection
      */
     public function ids(): Collection
     {
-        return Collection::make(array_map(fn(ElementInterface $element): int => $element->id, $this->items));
+        return $this->pluck('id');
     }
 
     /**
@@ -145,10 +145,10 @@ final class ElementCollection extends Collection
      *
      * Any elements with a matching ID and site ID will be replaced.
      *
-     * @param iterable<array-key,TElement> $items
-     * @return static
+     * @param  iterable<array-key,TElement>  $items
      */
-    public function merge($items)
+    #[\Override]
+    public function merge($items): self
     {
         $elements = $this->keyBy('siteSettingsId')->all();
 
@@ -156,8 +156,7 @@ final class ElementCollection extends Collection
             $elements[$element->siteSettingsId] = $element;
         }
 
-        /** @phpstan-ignore-next-line */
-        return new static(array_values($elements));
+        return self::make(array_values($elements));
     }
 
     /**
@@ -165,14 +164,15 @@ final class ElementCollection extends Collection
      *
      * @template TMapValue
      *
-     * @param callable(TElement,TKey):TMapValue $callback
-     * @return Collection<TKey,TMapValue>|static<TKey,TMapValue>
+     * @param  callable(TElement,TKey):TMapValue  $callback
+     * @return Collection<TKey,TMapValue>|self<TKey,TMapValue>
      */
-    public function map(callable $callback)
+    #[\Override]
+    public function map(callable $callback): Collection|self
     {
         $result = parent::map($callback);
-        /** @phpstan-ignore-next-line */
-        return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
+
+        return $result->contains(fn ($item) => ! $item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
     /**
@@ -183,27 +183,24 @@ final class ElementCollection extends Collection
      * @template TMapWithKeysKey of array-key
      * @template TMapWithKeysValue
      *
-     * @param callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue> $callback
-     * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|static<TMapWithKeysKey,TMapWithKeysValue>
+     * @param  callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue>  $callback
+     * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|self<TMapWithKeysKey,TMapWithKeysValue>
      */
-    public function mapWithKeys(callable $callback)
+    #[\Override]
+    public function mapWithKeys(callable $callback): self|Collection
     {
         $result = parent::mapWithKeys($callback);
-        /** @phpstan-ignore-next-line */
-        return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
+
+        return $result->contains(fn ($item) => ! $item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
     /**
      * Reloads fresh element instances from the database for all the elements.
-     *
-     * @return static
-     * @since 5.2.0
      */
-    public function fresh(): static
+    public function fresh(): self
     {
         if ($this->isEmpty()) {
-            /** @phpstan-ignore-next-line */
-            return new static();
+            return self::make();
         }
 
         // Get all the elements' site settings IDs, grouped by element type
@@ -230,24 +227,23 @@ final class ElementCollection extends Collection
                 ->all();
         }
 
-        /** @phpstan-ignore-next-line */
         return $this
-            ->filter(fn(ElementInterface $element) => isset($freshElements[$element::class][$element->siteSettingsId]))
-            ->map(fn(ElementInterface $element) => $freshElements[$element::class][$element->siteSettingsId]);
+            ->filter(fn (ElementInterface $element) => isset($freshElements[$element::class][$element->siteSettingsId]))
+            ->map(fn (ElementInterface $element) => $freshElements[$element::class][$element->siteSettingsId]);
     }
 
     /**
      * Returns a new collection with the elements that are not present in the given array.
      */
-    public function diff($items)
+    #[\Override]
+    public function diff($items): self
     {
-        /** @phpstan-ignore-next-line */
-        $diff = new static();
-        $ids = array_flip(array_map(fn(ElementInterface $element) => $element->siteSettingsId, $items));
+        $diff = self::make();
+        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $items));
 
         foreach ($this->items as $element) {
             /** @var TElement $element */
-            if (!isset($ids[$element->siteSettingsId])) {
+            if (! isset($ids[$element->siteSettingsId])) {
                 $diff->add($element);
             }
         }
@@ -258,19 +254,18 @@ final class ElementCollection extends Collection
     /**
      * Returns a new collection with all the elements present in this collection and the provided array.
      *
-     * @param  array<array-key,TElement> $items
-     * @return static
+     * @param  array<array-key,TElement>  $items
      */
-    public function intersect($items)
+    #[\Override]
+    public function intersect($items): self
     {
-        /** @phpstan-ignore-next-line */
-        $intersect = new static();
+        $intersect = self::make();
 
         if (empty($items)) {
             return $intersect;
         }
 
-        $ids = array_flip(array_map(fn(ElementInterface $element) => $element->siteSettingsId, $items));
+        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $items));
 
         foreach ($this->items as $element) {
             /** @var TElement $element */
@@ -285,11 +280,11 @@ final class ElementCollection extends Collection
     /**
      * Return only unique items from the collection.
      *
-     * @param (callable(TElement,TKey):mixed)|string|null $key
-     * @param bool $strict
-     * @return static
+     * @param  (callable(TElement,TKey):mixed)|string|null  $key
+     * @param  bool  $strict
      */
-    public function unique($key = null, $strict = false)
+    #[\Override]
+    public function unique($key = null, $strict = false): self
     {
         if ($key !== null) {
             return parent::unique($key, $strict);
@@ -303,30 +298,29 @@ final class ElementCollection extends Collection
      *
      * If `$keys` is an integer or array of integers, a collection of elements with the same IDs will be returned.
      *
-     * @param Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null $keys
-     * @return static
+     * @param  Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null  $keys
      */
-    public function only($keys)
+    #[\Override]
+    public function only($keys): self
     {
         if ($keys === null) {
-            /** @phpstan-ignore-next-line */
-            return new static($this->items);
+            return self::make($this->items);
         }
 
         if ($keys instanceof Enumerable) {
-            $keys = $keys->toArray();
+            $keys = $keys->all();
         } elseif (is_scalar($keys)) {
             $keys = [$keys];
         }
 
-        if (!Arr::isNumeric($keys)) {
+        if (! Arr::isNumeric($keys)) {
             return parent::only($keys);
         }
 
         $keys = array_flip($keys);
-        $elements = array_filter($this->items, fn(ElementInterface $element) => isset($keys[$element->id]));
-        /** @phpstan-ignore-next-line */
-        return new static(array_values($elements));
+        $elements = array_filter($this->items, fn (ElementInterface $element) => isset($keys[$element->id]));
+
+        return self::make(array_values($elements));
     }
 
     /**
@@ -334,30 +328,29 @@ final class ElementCollection extends Collection
      *
      * If `$keys` is an integer or array of integers, a collection of elements without the same IDs will be returned.
      *
-     * @param Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null $keys
-     * @return static
+     * @param  Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null  $keys
      */
-    public function except($keys)
+    #[\Override]
+    public function except($keys): self
     {
         if ($keys === null) {
-            /** @phpstan-ignore-next-line */
-            return new static($this->items);
+            return self::make($this->items);
         }
 
         if ($keys instanceof Enumerable) {
-            $keys = $keys->toArray();
+            $keys = $keys->all();
         } elseif (is_scalar($keys)) {
             $keys = [$keys];
         }
 
-        if (!Arr::isNumeric($keys)) {
+        if (! Arr::isNumeric($keys)) {
             return parent::except($keys);
         }
 
         $keys = array_flip($keys);
-        $elements = array_filter($this->items, fn(ElementInterface $element) => !isset($keys[$element->id]));
-        /** @phpstan-ignore-next-line */
-        return new static(array_values($elements));
+        $elements = array_filter($this->items, fn (ElementInterface $element) => ! isset($keys[$element->id]));
+
+        return self::make(array_values($elements));
     }
 
     /**
@@ -365,12 +358,10 @@ final class ElementCollection extends Collection
      *
      * If no partial template exists for an element, its string representation will be output instead.
      *
-     * @param array $variables
-     * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
+     *
      * @see ElementHelper::renderElements()
-     * @since 5.0.0
      */
     public function render(array $variables = []): Markup
     {
@@ -381,56 +372,59 @@ final class ElementCollection extends Collection
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     * @return Collection
+     * {@inheritdoc}
      */
-    public function countBy($countBy = null)
+    #[\Override]
+    public function countBy($countBy = null): Collection
     {
         return $this->toBase()->countBy($countBy);
     }
 
     /**
-     * @inheritdoc
-     * @return Collection
+     * {@inheritdoc}
      */
-    public function collapse()
+    #[\Override]
+    public function collapse(): Collection
     {
         return $this->toBase()->collapse();
     }
 
     /**
-     * @inheritdoc
-     * @param int|float $depth
-     * @return Collection
+     * {@inheritdoc}
+     *
+     * @param  int|float  $depth
      */
-    public function flatten($depth = INF)
+    #[\Override]
+    public function flatten($depth = INF): Collection
     {
         return $this->toBase()->flatten($depth);
     }
 
     /**
-     * @inheritdoc
-     * @throws NotSupportedException
+     * {@inheritdoc}
+     *
+     * @throws RuntimeException
      */
-    public function flip()
+    #[\Override]
+    public function flip(): never
     {
-        throw new NotSupportedException('Not possible to flip element collections.');
+        throw new RuntimeException('Not possible to flip element collections.');
     }
 
     /**
-     * @inheritdoc
-     * @return Collection
+     * {@inheritdoc}
      */
-    public function keys()
+    #[\Override]
+    public function keys(): Collection
     {
         return $this->toBase()->keys();
     }
 
     /**
-     * @inheritdoc
-     * @return Collection
+     * {@inheritdoc}
      */
-    public function pad($size, $value)
+    #[\Override]
+    public function pad($size, $value): Collection
     {
         return $this->toBase()->pad($size, $value);
     }
@@ -440,20 +434,22 @@ final class ElementCollection extends Collection
      *
      * @template TPluckValueReturn
      * @template TPluckKeyReturn of array-key
-     * @param string|array<array-key, string>|Closure(TElement):TPluckValueReturn|null $value
-     * @param string|Closure(TElement):TPluckKeyReturn|null $key
+     *
+     * @param  string|array<array-key, string>|Closure(TElement):TPluckValueReturn|null  $value
+     * @param  string|Closure(TElement):TPluckKeyReturn|null  $key
      * @return ($value is Closure ? ($key is Closure ? Collection<TPluckKeyReturn, TPluckValueReturn> : Collection<array-key, TPluckValueReturn>) : ($key is Closure ? Collection<TPluckKeyReturn, mixed> : Collection<array-key, mixed>))
      */
-    public function pluck($value, $key = null)
+    #[\Override]
+    public function pluck($value, $key = null): Collection
     {
         return $this->toBase()->pluck($value, $key);
     }
 
     /**
-     * @inheritdoc
-     * @return Collection
+     * {@inheritdoc}
      */
-    public function zip($items)
+    #[\Override]
+    public function zip($items): Collection
     {
         return $this->toBase()->zip(...func_get_args());
     }

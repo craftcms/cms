@@ -9,10 +9,10 @@ namespace craft\gql\resolvers\elements;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Element\ElementCollection;
 use yii\base\UnknownMethodException;
 
 /**

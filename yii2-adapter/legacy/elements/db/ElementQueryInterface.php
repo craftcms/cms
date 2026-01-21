@@ -9,8 +9,8 @@ namespace craft\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\elements\ElementCollection;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Element\ElementCollection;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 

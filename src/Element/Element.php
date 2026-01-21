@@ -27,7 +27,6 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\errors\FieldNotFoundException;
