@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -75,6 +76,7 @@ final class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            AddLogContext::class,
             SetCraftGuard::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,

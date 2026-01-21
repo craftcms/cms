@@ -41,6 +41,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -1330,8 +1332,9 @@ class AssetsController extends Controller
      */
     public function actionGenerateFallbackTransform(string $transform): Response
     {
-        $transform = Craft::$app->getSecurity()->validateData($transform);
-        if ($transform === false) {
+        try {
+            $transform = Crypt::decrypt($transform);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid transform param.');
         }
 

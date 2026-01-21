@@ -77,6 +77,8 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -2086,7 +2088,7 @@ JS,
                             $view->namespaceInputId($deleteId),
                             $this->id,
                             /** @phpstan-ignore-next-line */
-                            Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
+                            Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
                         ]);
                 }
             }

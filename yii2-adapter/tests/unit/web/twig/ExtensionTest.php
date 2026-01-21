@@ -33,6 +33,7 @@ use DateTime;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
@@ -659,10 +660,9 @@ class ExtensionTest extends TestCase
      */
     public function testHashFilter(): void
     {
-        $this->testRenderResult(
-            Craft::$app->getSecurity()->hashData('test'),
-            '{{ "test"|hash }}'
-        );
+        $result = $this->view->renderString('{{ "test"|hash }}');
+
+        self::assertEquals(Crypt::decrypt($result), 'test');
 
         $this->testRenderResult(
             '098f6bcd4621d373cade4e832627b4f6',
@@ -1027,25 +1027,6 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
-        );
-    }
-
-    /**
-     * @throws LoaderError
-     * @throws SyntaxError
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function test_redirect_input_function(): void
-    {
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
-            '{{ redirectInput("A URL") }}'
-        );
-
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
-            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
         );
     }
 

@@ -9,10 +9,11 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
+use Craft;
 use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Cookie;
+use Throwable;
 use Yii;
-use yii\base\InvalidConfigException;
 use yii\web\HeadersAlreadySentException;
 
 /**
@@ -101,7 +102,7 @@ class Response extends \yii\web\Response
 
         parent::send();
 
-        \Craft::$app->getSession()->updateFlashCounters();
+        Craft::$app->getSession()->updateFlashCounters();
     }
 
     /**
@@ -158,22 +159,8 @@ class Response extends \yii\web\Response
             return;
         }
 
-        $request = Yii::$app->getRequest();
-
-        $request->enableCookieValidation = !empty(app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey);
-
-        if ($request->enableCookieValidation) {
-            if ($request->cookieValidationKey == '') {
-                throw new InvalidConfigException(get_class($request) . '::$cookieValidationKey must be configured with a secret key.');
-            }
-            $validationKey = $request->cookieValidationKey;
-        }
-
         foreach ($this->getCookies() as $cookie) {
             $value = $cookie->value;
-            if ((int) $cookie->expire !== 1 && isset($validationKey)) {
-                $value = Yii::$app->getSecurity()->hashData(serialize([$cookie->name, $value]), $validationKey);
-            }
 
             $response->headers->setCookie(new Cookie($cookie->name, $value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly));
         }
@@ -204,7 +191,7 @@ class Response extends \yii\web\Response
             parent::sendContent();
 
             $response->setContent(ob_get_clean());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (!@ob_end_clean()) {
                 ob_clean();
             }
