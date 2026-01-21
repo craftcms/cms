@@ -9,12 +9,12 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Batchable;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseBatchedElementJob;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 

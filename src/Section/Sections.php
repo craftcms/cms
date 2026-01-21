@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use Craft;
-use craft\base\Element;
 use craft\base\MemoizableArray;
 use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
@@ -13,6 +12,7 @@ use craft\helpers\Queue;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;

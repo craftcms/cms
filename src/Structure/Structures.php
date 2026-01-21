@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;

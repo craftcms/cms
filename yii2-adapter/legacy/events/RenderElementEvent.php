@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use craft\base\Element;
 use craft\base\Event;
+use CraftCms\Cms\Element\Element;
 
 /**
  * Render element class.

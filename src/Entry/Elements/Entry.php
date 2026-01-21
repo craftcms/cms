@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
@@ -49,6 +48,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Revisions;

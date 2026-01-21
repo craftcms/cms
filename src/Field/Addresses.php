@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Queries\AddressQuery;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

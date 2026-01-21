@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Closure;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\actions\ChangeSortOrder;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

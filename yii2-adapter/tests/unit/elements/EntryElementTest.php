@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\elements;
 
-use craft\base\Element;
 use craft\events\DefineUrlEvent;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
 use UnitTester;
 

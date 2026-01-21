@@ -1,6 +1,6 @@
 <?php
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry;
 
 it('queries enabled elements by default', function () {

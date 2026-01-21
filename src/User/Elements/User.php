@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
@@ -42,6 +41,7 @@ use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Elements\Entry;

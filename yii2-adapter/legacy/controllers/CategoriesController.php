@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\Category;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -18,6 +17,7 @@ use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;

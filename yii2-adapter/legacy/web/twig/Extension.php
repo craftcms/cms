@@ -9,7 +9,6 @@ namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
@@ -62,6 +61,7 @@ use CraftCms\Cms\Database\Queries\ContentBlockQuery;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Queries\UserQuery;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;

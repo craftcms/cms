@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use Closure;
-use craft\base\Element;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Element\Element;
 use Illuminate\Database\Query\Builder;
 
 /**

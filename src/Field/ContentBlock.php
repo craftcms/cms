@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
@@ -22,6 +21,7 @@ use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Database\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;

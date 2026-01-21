@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
@@ -30,6 +29,7 @@ use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Models\Info;

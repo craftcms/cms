@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Elements;
 
-use craft\base\Element;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Queries\ContentBlockQuery;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;

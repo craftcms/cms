@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -16,6 +15,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;

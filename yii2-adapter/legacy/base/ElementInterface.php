@@ -34,7 +34,7 @@ use yii\web\Response;
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
  * @mixin Component
- * @phpstan-require-extends Element
+ * @phpstan-require-extends \CraftCms\Cms\Element\Element
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -189,7 +189,7 @@ interface ElementInterface extends
      * }
      * ```
      *
-     * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
+     * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface]] instance.
      */
     public static function find(): ElementQueryInterface|ElementQuery;
 

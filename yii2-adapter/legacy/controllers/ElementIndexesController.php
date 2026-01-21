@@ -10,7 +10,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -27,6 +26,7 @@ use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -795,8 +795,13 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if (!empty($descendantIds)) {
-                    /** @phpstan-ignore-next-line */
-                    $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
+                    if ($query instanceof ElementQuery) {
+                        $query->whereNotIn('elements.id', $descendantIds);
+                    } else {
+                        /** @phpstan-ignore-next-line */
+                        $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
+                    }
+
                     $hasFilters = true;
                 }
             }

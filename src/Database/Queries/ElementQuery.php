@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Database\Queries;
 
 use Closure;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Database\Queries\Concerns\LegacyMethods;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;

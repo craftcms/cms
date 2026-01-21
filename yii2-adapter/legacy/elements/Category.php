@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -27,6 +26,7 @@ use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;

@@ -9,6 +9,7 @@ use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
 use craft\base\ElementTrait;
+use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
@@ -91,7 +92,6 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -105,11 +105,13 @@ use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
+use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Override;
 use ReflectionClass;
 use Stringable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -172,10 +174,6 @@ use function CraftCms\Cms\t;
  * @property string|null $url The element’s full URL
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
  */
 abstract class Element extends Component implements ElementInterface
 {
@@ -472,7 +470,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canView()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.')]
     public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
     /**
@@ -493,7 +491,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canSave()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.')]
     public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
 
     /**
@@ -514,7 +512,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canCreateDrafts()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.')]
     public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
 
     /**
@@ -535,7 +533,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canDuplicate()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
     /**
@@ -556,7 +554,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canDelete()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
 
     /**
@@ -577,7 +575,7 @@ abstract class Element extends Component implements ElementInterface
      * @see canDeleteForSite()
      * @since 4.0.0
      */
-    #[\Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
+    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
     /**
@@ -863,7 +861,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Element');
@@ -965,7 +963,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
-        return new ElementQuery(static::class);
+        return new \CraftCms\Cms\Database\Queries\ElementQuery(static::class);
     }
 
     /**
@@ -2583,7 +2581,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function __clone()
     {
         parent::__clone();
@@ -2622,7 +2620,7 @@ abstract class Element extends Component implements ElementInterface
      * @param  string  $name  The property name
      * @return bool Whether the property is set
      */
-    #[\Override]
+    #[Override]
     public function __isset($name): bool
     {
         // Is this the "field:handle" syntax?
@@ -2645,7 +2643,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function __get($name)
     {
         // Is $name a set of eager-loaded elements?
@@ -2673,7 +2671,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function __set($name, $value)
     {
         // Is this the "field:handle" syntax?
@@ -2698,7 +2696,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function __call($name, $params)
     {
         if (str_starts_with($name, 'isFieldEmpty:')) {
@@ -2711,7 +2709,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function defineBehaviors(): array
     {
         return [
@@ -2724,7 +2722,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function init(): void
     {
         parent::init();
@@ -2748,7 +2746,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function attributes(): array
     {
         $names = array_flip(parent::attributes());
@@ -2806,7 +2804,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -2849,7 +2847,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function extraFields(): array
     {
         return [
@@ -2874,7 +2872,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getIterator(): Traversable
     {
         $attributes = $this->getAttributes();
@@ -2897,7 +2895,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
@@ -2911,7 +2909,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         $labels = [
@@ -2944,7 +2942,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -3029,7 +3027,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function validate($attributeNames = null, $clearErrors = true): bool
     {
         $this->_attributeNames = $attributeNames ? array_flip((array) $attributeNames) : null;
@@ -3043,7 +3041,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function afterValidate(): void
     {
         if (
@@ -3195,7 +3193,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function addError($attribute, $error = ''): void
     {
         if (str_starts_with($attribute, 'field:')) {
@@ -3319,7 +3317,7 @@ abstract class Element extends Component implements ElementInterface
                 ->status(null)
                 ->ignorePlaceholders()
                 ->select(['elements.uid'])
-                ->scalar();
+                ->one()?->uid;
         }
 
         return $this->_canonicalUid;
@@ -3330,7 +3328,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.2.0
      */
-    #[\Deprecated(message: 'in 3.7.0. Use [[getCanonicalId()]] instead.')]
+    #[Deprecated(message: 'in 3.7.0. Use [[getCanonicalId()]] instead.')]
     public function getSourceId(): ?int
     {
         Deprecator::log(__METHOD__,
@@ -3344,7 +3342,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.2.0
      */
-    #[\Deprecated(message: 'in 3.7.0. Use [[getCanonicalUid()]] instead.')]
+    #[Deprecated(message: 'in 3.7.0. Use [[getCanonicalUid()]] instead.')]
     public function getSourceUid(): string
     {
         Deprecator::log(__METHOD__,
@@ -4737,7 +4735,7 @@ JS, [
             ->siteId($element->siteId)
             ->status(null)
             ->select('elements.id')
-            ->scalar();
+            ->one()?->id;
     }
 
     /**
@@ -4830,7 +4828,7 @@ JS, [
     public function getPrevSibling(): ?ElementInterface
     {
         if (! isset($this->_prevSibling)) {
-            /** @var ElementQuery $query */
+            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
             $query = static::find();
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
@@ -4852,7 +4850,7 @@ JS, [
     public function getNextSibling(): ?ElementInterface
     {
         if (! isset($this->_nextSibling)) {
-            /** @var ElementQuery $query */
+            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
             $query = static::find();
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
@@ -4968,7 +4966,7 @@ JS, [
      *
      * @param  string|int  $offset
      */
-    #[\Override]
+    #[Override]
     public function offsetExists($offset): bool
     {
         if (parent::offsetExists($offset)) {
@@ -6809,6 +6807,7 @@ JS, [
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery<static> $query */
         $query = static::find();
 
         if ($criteria !== null) {
@@ -6819,7 +6818,7 @@ JS, [
         }
 
         if ($one) {
-            return $query->one();
+            return $query->first();
         }
 
         return $query->all();
