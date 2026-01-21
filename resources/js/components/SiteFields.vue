@@ -69,7 +69,7 @@
       return form.value.enabled ? '1' : '0';
     },
     set(newValue) {
-      form.value.enabled = newValue === '1';
+      form.value.enabled = newValue;
     },
   });
 
