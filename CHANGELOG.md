@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability.
+
 ## 4.17.0-beta.1 - 2026-01-20
 
 ### Administration
