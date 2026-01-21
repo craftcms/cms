@@ -3,11 +3,7 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -16,6 +12,7 @@
   import SiteGroupActions from '@/components/SiteGroupActions.vue';
   import {create} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
+  import CpLink from '@/components/CpLink.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -180,13 +177,10 @@
       </div>
     </template>
     <template #actions>
-      <a :href="create({query: {groupId: group?.id}}).url">{{
-        t('New Site')
-      }}</a>
-      <craft-button variant="primary" :href="create().url">
+      <CpLink :href="create({query: {groupId: group?.id}}).url" variant="primary" appearance="button">
         <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New site') }}
-      </craft-button>
+        {{ t('New Site') }}
+      </CpLink>
     </template>
 
     <div class="interior">
