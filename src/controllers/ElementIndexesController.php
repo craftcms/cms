@@ -582,7 +582,7 @@ class ElementIndexesController extends BaseElementsController
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributes($attributes);
+                $element->setAttributesFromRequest($attributes);
                 $element->setScenario($scenario);
             }
 
