@@ -75,7 +75,8 @@
   }
 
   .cell {
-    padding: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     white-space: nowrap;
   }
 
@@ -90,5 +91,9 @@
   th {
     background-color: var(--c-color-neutral-bg-normal);
     text-align: left;
+  }
+
+  tr {
+    border-bottom: 1px solid var(--color-slate-200);
   }
 </style>

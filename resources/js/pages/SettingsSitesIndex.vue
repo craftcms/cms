@@ -3,11 +3,7 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -124,16 +120,18 @@
     columnHelper.display({
       id: 'delete',
       cell: ({row}) =>
-        h(
-          'div',
-          {
-            class: 'flex justify-end gap-2',
-          },
-          h(DeleteSiteButton, {
-            site: row.original,
-            class: 'whitespace-normal',
-          })
-        ),
+        !row.original.primary
+          ? h(
+              'div',
+              {
+                class: 'flex justify-end gap-2',
+              },
+              h(DeleteSiteButton, {
+                site: row.original,
+                class: 'whitespace-normal',
+              })
+            )
+          : null,
       meta: {
         wrap: true,
       },
