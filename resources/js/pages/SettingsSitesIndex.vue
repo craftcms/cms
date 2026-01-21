@@ -248,10 +248,13 @@
                   style="font-size: calc(48rem / 16)"
                 ></craft-icon>
                 <p>{{ t('No sites exist for this group yet.') }}</p>
-                <craft-button>
+                <CpLink
+                  :href="create({query: {groupId: group?.id}}).url"
+                  appearance="button"
+                >
                   <craft-icon name="plus" slot="prefix"></craft-icon>
-                  {{ t('New site') }}
-                </craft-button>
+                  {{ t('New Site') }}
+                </CpLink>
               </div>
             </div>
           </template>
