@@ -53,6 +53,7 @@ use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\AddressQuery;
@@ -84,6 +85,7 @@ use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Stringable;
 use Illuminate\Support\ViewErrorBag;
@@ -780,7 +782,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return [];
         }
     }
@@ -813,7 +815,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::prependToTag($tag, $html, $ifExists);
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -838,12 +840,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 DIRECTORY_SEPARATOR . $config . '.json';
             $config = null;
             if (!is_file($path)) {
-                Craft::warning("No HTML Purifier config found at $path.");
+                Log::info("No HTML Purifier config found at $path.");
             } else {
                 try {
                     $config = Json::decode(file_get_contents($path));
                 } catch (InvalidArgumentException) {
-                    Craft::warning("Invalid HTML Purifier config at $path.");
+                    Log::info("Invalid HTML Purifier config at $path.");
                 }
             }
         }
@@ -901,7 +903,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return $newTag;
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1019,7 +1021,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::appendToTag($tag, $html, $ifExists);
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1050,7 +1052,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::modifyTagAttributes($tag, $attributes);
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1389,7 +1391,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('app', [$this, 'appFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
-            new TwigFunction('alias', [Craft::class, 'getAlias']),
+            new TwigFunction('alias', [Aliases::class, 'get']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
@@ -1539,9 +1541,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return $file->getDataUrl();
             }
 
-            return Html::dataUrl(Craft::getAlias($file), $mimeType);
+            return Html::dataUrl(Aliases::get($file), $mimeType);
         } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return '';
         }
     }
@@ -1767,7 +1769,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                     'class' => $class,
                 ]);
             } catch (\InvalidArgumentException $e) {
-                Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Unable to add a class to the SVG: ' . $e->getMessage(), [__METHOD__]);
             }
         }
 

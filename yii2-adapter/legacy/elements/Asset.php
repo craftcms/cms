@@ -64,6 +64,7 @@ use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\ElementQuery;
@@ -85,6 +86,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -2260,7 +2262,7 @@ JS,[
             } catch (NotSupportedException) {
                 return null;
             } catch (ImageTransformException $e) {
-                Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
+                Log::warning("Couldn’t get image transform URL: {$e->getMessage()}", [__METHOD__]);
                 Craft::$app->getErrorHandler()->logException($e);
                 return null;
             }
@@ -2312,7 +2314,7 @@ JS,[
     protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
-            return file_get_contents(Craft::getAlias('@app/elements/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
         }
 
         return Assets::iconSvg($this->getExtension());
@@ -3529,7 +3531,7 @@ JS;
                 $this->kind === self::KIND_IMAGE &&
                 $this->getScenario() !== self::SCENARIO_CREATE
             ) {
-                Craft::warning("Asset $this->id is missing its width or height", __METHOD__);
+                Log::warning("Asset $this->id is missing its width or height", [__METHOD__]);
             }
 
             return [null, null];
@@ -3591,7 +3593,7 @@ JS;
             // Get the temp path
             if (isset($this->tempFilePath)) {
                 if (!$this->_validateTempFilePath()) {
-                    Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+                    Log::info("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
                     throw new FileException(t("There was an error relocating the file."));
                 }
 
@@ -3692,8 +3694,8 @@ JS;
             [$pathService->getTempPath(), true],
             [$pathService->getTempAssetUploadsPath(), true],
             [sys_get_temp_dir(), true],
-            [Craft::getAlias('@root', false), false],
-            [Craft::getAlias('@storage', false), false],
+            [Aliases::get('@root', false), false],
+            [Aliases::get('@storage', false), false],
         ];
 
         $inAllowedRoot = false;

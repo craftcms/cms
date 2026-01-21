@@ -13,6 +13,7 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -100,7 +101,7 @@ class PhotoField extends BaseNativeField
         $view->registerJsWithVars(fn($userId, $inputId, $isCurrentUser) => <<<JS
 new Craft.UserPhotoInput($userId, '#' + $inputId, {
   isCurrentUser: $isCurrentUser,
-});
+})
 JS, [
             $element->id,
             $view->namespaceInputId($inputId),
@@ -120,7 +121,7 @@ JS, [
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

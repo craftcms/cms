@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -135,7 +136,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                 $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
             } catch (UnsupportedSiteException $e) {
                 // Just log it and move along
-                Craft::warning(sprintf(
+                Log::warning(sprintf(
                     "Unable to duplicate “%s” to site %d: %s",
                     get_class($otherSiteElement),
                     $otherSiteElement->siteId,

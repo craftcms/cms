@@ -13,7 +13,7 @@ use CraftCms\Cms\User\Elements\User;
 final class DefineEditUserScreens
 {
     public function __construct(
-        public User $currentUser,
+        public ?User $currentUser,
         public User $editedUser,
 
         /**

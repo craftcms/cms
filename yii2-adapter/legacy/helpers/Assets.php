@@ -21,6 +21,7 @@ use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
@@ -946,7 +947,7 @@ class Assets
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
+        $svg = file_get_contents(Aliases::get('@app/elements/thumbs/file.svg'));
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {

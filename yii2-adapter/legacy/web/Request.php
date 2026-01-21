@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
@@ -20,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -54,11 +57,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 
-    public const CP_PATH_LOGIN = 'login';
-    public const CP_PATH_LOGOUT = 'logout';
-    public const CP_PATH_SET_PASSWORD = 'set-password';
-    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    public const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = CpAuthPath::Login->value;
+    public const CP_PATH_LOGOUT = CpAuthPath::Logout->value;
+    public const CP_PATH_SET_PASSWORD = CpAuthPath::SetPassword->value;
+    public const CP_PATH_VERIFY_EMAIL = CpAuthPath::VerifyEmail->value;
+    public const CP_PATH_UPDATE = CpAuthPath::Update->value;
 
     /**
      * @inheritdoc
@@ -206,12 +209,12 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
         // in case a site's base URL requires @web, and so we can include the host info in @web
-        if (Craft::getRootAlias('@webroot') === false) {
-            Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        if (Aliases::get('@webroot', false) === false) {
+            Aliases::set('@webroot', dirname($this->getScriptFile()));
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Craft::getRootAlias('@web') === false) {
-            Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
+        if (Aliases::get('@web', false) === false) {
+            Aliases::set('@web', $this->getHostInfo() . $this->getBaseUrl());
             $this->isWebAliasSetDynamically = true;
         }
 
@@ -1497,7 +1500,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     private function _scoreUrl(string $url): int
     {
         if (($parsed = parse_url($url)) === false) {
-            Craft::warning("Unable to parse the URL: $url");
+            Log::info("Unable to parse the URL: $url");
             return 0;
         }
 

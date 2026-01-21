@@ -7,12 +7,12 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
@@ -123,7 +123,7 @@ class LatLongField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
-        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $isAdmin = Auth::user()?->isAdmin();
 
         return
             Html::beginTag('div', ['class' => 'flex-fields']) .

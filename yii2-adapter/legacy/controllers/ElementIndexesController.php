@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -598,7 +599,7 @@ class ElementIndexesController extends BaseElementsController
         try {
             foreach ($elements as $element) {
                 if (!$elementsService->saveElement($element)) {
-                    Craft::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
+                    Log::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
                     throw new ServerErrorHttpException("Couldn’t save element $element->id");
                 }
             }

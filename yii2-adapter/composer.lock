@@ -479,7 +479,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "f2c319a2dfee12dbac35f2b68fa9abc5a6b0ba37"
+                "reference": "ee55e90e8ac40ea5f96f57d6eb14ecda4832df13"
             },
             "require": {
                 "bacon/bacon-qr-code": "^2.0",
@@ -543,7 +543,7 @@
                 "pestphp/pest-plugin-arch": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0",
                 "phpstan/phpstan": "^2.1",
-                "rector/rector": "^2.0"
+                "rector/rector": "^2.3"
             },
             "suggest": {
                 "ext-exif": "Adds support for parsing image EXIF data.",
@@ -587,7 +587,7 @@
                     "rector"
                 ],
                 "tests": [
-                    "./vendor/bin/pest"
+                    "./vendor/bin/pest --compact"
                 ],
                 "tests-adapter": [
                     "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
@@ -623,16 +623,16 @@
         },
         {
             "name": "craftcms/laravel-aliases",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/laravel-aliases.git",
-                "reference": "59154e91e69619712034ce697034a90135fd2528"
+                "reference": "976d8c00cafe2929dacc02591df80388e53bcec6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-aliases/zipball/59154e91e69619712034ce697034a90135fd2528",
-                "reference": "59154e91e69619712034ce697034a90135fd2528",
+                "url": "https://api.github.com/repos/craftcms/laravel-aliases/zipball/976d8c00cafe2929dacc02591df80388e53bcec6",
+                "reference": "976d8c00cafe2929dacc02591df80388e53bcec6",
                 "shasum": ""
             },
             "require": {
@@ -689,9 +689,9 @@
             ],
             "support": {
                 "issues": "https://github.com/craftcms/laravel-aliases/issues",
-                "source": "https://github.com/craftcms/laravel-aliases/tree/2.0.0"
+                "source": "https://github.com/craftcms/laravel-aliases/tree/2.0.1"
             },
-            "time": "2025-09-23T14:59:37+00:00"
+            "time": "2026-01-20T12:58:55+00:00"
         },
         {
             "name": "craftcms/laravel-dependency-aware-cache",

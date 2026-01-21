@@ -16,23 +16,22 @@ use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -53,7 +52,6 @@ use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
-use yii\web\UnauthorizedHttpException;
 use function CraftCms\Cms\t;
 
 /**
@@ -119,7 +117,6 @@ class Application extends \yii\web\Application
         // Process resource requests before we do anything to establish the user session
         $this->_processResourceRequest();
 
-        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -159,7 +156,7 @@ class Application extends \yii\web\Application
             try {
                 new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
-                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
+                Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -213,22 +210,11 @@ class Application extends \yii\web\Application
                     ($firstSeg = $request->getSegment(1)) !== null &&
                     ($plugin = app(Plugins::class)->getPlugin($firstSeg)) !== null
                 ) {
-                    if ($userSession->getIsGuest()) {
+                    if (Auth::guest()) {
                         return $userSession->loginRequired();
                     }
 
                     Gate::authorize('accessPlugin-' . $plugin->handle);
-                }
-
-                if (!$userSession->getIsGuest()) {
-                    // See if the user is expected to have 2FA enabled
-                    if (!$generalConfig->disable2fa) {
-                        $auth = $this->getAuth();
-                        $user = Auth::user();
-                        if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
-                            return $this->runAction('users/setup-2fa');
-                        }
-                    }
                 }
             }
         }
@@ -294,43 +280,11 @@ class Application extends \yii\web\Application
     {
         $generalConfig = Cms::config();
 
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath);
 
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
-    }
-
-    /**
-     * Authenticates the request.
-     *
-     * @throws UnauthorizedHttpException
-     * @since 3.5.0
-     */
-    protected function authenticate(): void
-    {
-        if (!Cms::config()->enableBasicHttpAuth) {
-            return;
-        }
-
-        // Did the request include user credentials?
-        [$username, $password] = $this->getRequest()->getAuthCredentials();
-
-        if (!$username || !$password) {
-            return;
-        }
-
-        $user = Users::getUserByUsernameOrEmail(Db::escapeParam($username));
-
-        if (!$user) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        if (!$user->authenticate($password)) {
-            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-        }
-
-        $this->getUser()->setIdentity(new IdentityWrapper($user));
     }
 
     /**
@@ -420,7 +374,7 @@ class Application extends \yii\web\Application
         $request = $this->getRequest();
 
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
@@ -441,7 +395,7 @@ class Application extends \yii\web\Application
         }
 
         // Publish the directory
-        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+        [$publishedDir] = $this->getAssetManager()->publish(Aliases::get($sourcePath));
 
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
@@ -546,7 +500,7 @@ class Application extends \yii\web\Application
             $route = implode('/', $request->getActionSegments());
 
             try {
-                Craft::debug("Route requested: '$route'", __METHOD__);
+                Log::debug("Route requested: '$route'", [__METHOD__]);
                 $this->requestedRoute = $route;
                 $response = $this->runAction($route, $_GET);
 

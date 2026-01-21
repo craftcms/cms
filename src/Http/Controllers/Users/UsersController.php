@@ -6,18 +6,24 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -162,5 +168,49 @@ final readonly class UsersController
         return $this->asSuccess(t('{type} deleted.', [
             'type' => User::displayName(),
         ]));
+    }
+
+    /**
+     * Returns a summary of the content that is owned by a given user ID(s).
+     */
+    public function contentSummary(Request $request, Sections $sections): Response
+    {
+        $validated = $request->validate([
+            'userId' => ['required'],
+        ]);
+
+        $userId = is_array($validated['userId'])
+            ? array_map(fn ($id) => (int) $id, $validated['userId'])
+            : (int) $validated['userId'];
+
+        if ($userId !== $request->user()?->id) {
+            $this->requirePermission('deleteUsers');
+        }
+
+        $summary = $sections->getAllSections()->map(function (Section $section) use ($userId) {
+            $entryCount = Entry::find()
+                ->sectionId($section->id)
+                ->authorId($userId)
+                ->site('*')
+                ->unique()
+                ->status(null)
+                ->count();
+
+            if (! $entryCount) {
+                return null;
+            }
+
+            return t('{num, number} {section} {num, plural, =1{entry} other{entries}}', [
+                'num' => $entryCount,
+                'section' => t($section->name, category: 'site'),
+            ]);
+        })->filter();
+
+        if (Event::hasListeners(DefineUserContentSummary::class)) {
+            Event::dispatch($event = new DefineUserContentSummary($userId, $summary));
+            $summary = $event->contentSummary;
+        }
+
+        return new JsonResponse($summary->all());
     }
 }

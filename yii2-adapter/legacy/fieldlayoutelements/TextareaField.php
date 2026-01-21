@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Html as HtmlHelper;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * TextareaField represents a textarea field that can be included in field layouts.
@@ -146,7 +147,7 @@ class TextareaField extends BaseNativeField
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

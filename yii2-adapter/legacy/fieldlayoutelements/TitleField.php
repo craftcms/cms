@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -117,7 +118,7 @@ class TitleField extends TextField
   if (slugInput.length && !slugInput.val().length) {
     new Craft.SlugGenerator($('#' + $titleId), slugInput, {
         charMap: $charMap,
-    });
+    })
   }
 })();
 JS, [
@@ -145,7 +146,7 @@ JS, [
     {
         $items = [];
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (Auth::user()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

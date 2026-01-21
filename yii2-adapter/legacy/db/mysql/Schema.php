@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Log;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
@@ -148,7 +149,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }
@@ -168,7 +169,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }

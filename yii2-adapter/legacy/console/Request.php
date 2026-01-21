@@ -7,8 +7,8 @@
 
 namespace craft\console;
 
-use Craft;
 use craft\base\RequestTrait;
+use CraftCms\Aliases\Aliases;
 
 /**
  * @inheritdoc
@@ -27,7 +27,7 @@ class Request extends \yii\console\Request
         parent::init();
 
         // Set the @webroot and @web aliases, in case they are needed
-        if (Craft::getRootAlias('@webroot') === false) {
+        if (Aliases::get('@webroot', false) === false) {
             // see if it's any of the usual suspects
             $dir = dirname($this->getScriptFile());
             foreach (['web', 'public', 'public_html', 'html'] as $folder) {
@@ -36,11 +36,11 @@ class Request extends \yii\console\Request
                     break;
                 }
             }
-            Craft::setAlias('@webroot', $dir);
+            Aliases::set('@webroot', $dir);
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Craft::getRootAlias('@web') === false) {
-            Craft::setAlias('@web', '/');
+        if (Aliases::get('@web', false) === false) {
+            Aliases::set('@web', '/');
             $this->isWebAliasSetDynamically = true;
         }
     }

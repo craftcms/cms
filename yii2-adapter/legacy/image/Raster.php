@@ -13,6 +13,7 @@ use craft\errors\ImageException;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Cms;
+use Illuminate\Support\Facades\Log;
 use Imagick;
 use ImagickException;
 use Imagine\Exception\NotSupportedException;
@@ -158,7 +159,7 @@ class Raster extends Image
         $imageService = Craft::$app->getImages();
 
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
+            Log::error('Tried to load an image at ' . $path . ', but the file does not exist.', [__METHOD__]);
             throw new ImageException(t('No file exists at the given path.'));
         }
 
@@ -180,9 +181,9 @@ class Raster extends Image
         } catch (Throwable $e) {
             // Imagick can throw all sorts of errors via the open() method
             // we should log them to better know what's going on
-            Craft::warning($e->getMessage(), $e->getFile());
+            Log::info($e->getMessage(), $e->getFile());
             if (($instanceException = $e->getPrevious()) !== null) {
-                Craft::warning($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
+                Log::info($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
             }
             throw new ImageException(t('The file “{name}” does not appear to be an image.', [
                 'name' => basename($path),
@@ -670,7 +671,7 @@ class Raster extends Image
 
             return $exif->toArray();
         } catch (NotSupportedException $exception) {
-            Craft::error($exception->getMessage(), __METHOD__);
+            Log::error($exception->getMessage(), [__METHOD__]);
 
             return [];
         }

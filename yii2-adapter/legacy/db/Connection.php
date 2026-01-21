@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\DatabaseConnection;
 use CraftCms\Yii2Adapter\LaravelTransaction;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
@@ -184,7 +185,7 @@ class Connection extends DatabaseConnection
         try {
             parent::open();
         } catch (DbException $e) {
-            Craft::error($e->getMessage(), __METHOD__);
+            Log::error($e->getMessage(), [__METHOD__]);
 
             if ($this->getIsMysql()) {
                 if (!extension_loaded('pdo')) {
@@ -202,10 +203,10 @@ class Connection extends DatabaseConnection
                 }
             }
 
-            Craft::error($e->getMessage(), __METHOD__);
+            Log::error($e->getMessage(), [__METHOD__]);
             throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         } catch (Throwable $e) {
-            Craft::error($e->getMessage(), __METHOD__);
+            Log::error($e->getMessage(), [__METHOD__]);
             throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         }
     }

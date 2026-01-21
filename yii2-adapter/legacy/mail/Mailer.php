@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -205,7 +206,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ]), $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body
-                    Craft::warning('Error rendering email template: ' . $e->getMessage(), __METHOD__);
+                    Log::warning('Error rendering email template: ' . $e->getMessage(), [__METHOD__]);
                     Craft::$app->getErrorHandler()->logException($e);
                 }
             }

@@ -14,6 +14,7 @@ use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\User\Elements\User;
 use craft\errors\DbConnectException;
 use craft\events\DefineFieldLayoutFieldsEvent;
@@ -103,6 +104,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Yii;
 use yii\base\Application;
@@ -279,17 +281,17 @@ trait ApplicationTrait
         $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
         $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
         if (is_dir($altBowerPath)) {
-            Craft::setAlias('@bower', $altBowerPath);
+            Aliases::set('@bower', $altBowerPath);
         }
         if (is_dir($altNpmPath)) {
-            Craft::setAlias('@npm', $altNpmPath);
+            Aliases::set('@npm', $altNpmPath);
         }
 
         // Override where Yii should find its asset deps
-        Craft::setAlias('@bower/jquery/dist', '@app/web/assets/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
-        Craft::setAlias('@bower/punycode', '@app/web/assets/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
+        Aliases::set('@bower/jquery/dist', '@app/web/assets/jquery/dist');
+        Aliases::set('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
+        Aliases::set('@bower/punycode', '@app/web/assets/punycode/dist');
+        Aliases::set('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
     }
 
     /**
@@ -774,7 +776,7 @@ trait ApplicationTrait
 
             // Only log for web requests
             if ($this instanceof WebApplication) {
-                Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+                Log::error('There was a problem connecting to the database: ' . $e->getMessage(), [__METHOD__]);
                 /** @var ErrorHandler $errorHandler */
                 $errorHandler = $this->getErrorHandler();
                 $errorHandler->logException($e);
@@ -838,6 +840,7 @@ trait ApplicationTrait
      *
      * @return Auth The Auth service
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth} instead.
      */
     public function getAuth(): Auth
     {

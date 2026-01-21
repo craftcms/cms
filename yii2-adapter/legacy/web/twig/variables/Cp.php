@@ -32,6 +32,7 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use RecursiveCallbackFilterIterator;
@@ -224,7 +225,7 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $isAdmin = Auth::user()?->isAdmin();
         $generalConfig = Cms::config();
 
         $navItems = [

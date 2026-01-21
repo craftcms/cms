@@ -28,6 +28,8 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -204,7 +206,7 @@ class Volume extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (!$this->id || !Auth::user()?->isAdmin()) {
             return null;
         }
         return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
@@ -371,7 +373,7 @@ class Volume extends Model implements
             }
             $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
             if (!$fs) {
-                Craft::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
+                Log::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
                 return new MissingFs(['handle' => $this->_fsHandle]);
             }
             $this->_fs = $fs;

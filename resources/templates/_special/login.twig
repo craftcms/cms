@@ -5,7 +5,7 @@
 {% set staticEmail = staticEmail ?? null %}
 
 {% set generalConfig = app.config.craft.general %}
-{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '') %}
+{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.auth.getRememberedUsername() : '') %}
 
 {% if generalConfig.useEmailAsUsername %}
   {% set usernameLabel = 'Email'|t('app') %}
