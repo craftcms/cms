@@ -8,7 +8,7 @@
       href: string;
       variant?: 'default' | 'primary' | 'danger';
       appearance?: 'button' | 'inline';
-      block: boolean;
+      block?: boolean;
     }>(),
     {as: 'a', variant: 'default', appearance: 'inline', block: false}
   );

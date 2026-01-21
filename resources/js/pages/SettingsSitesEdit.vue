@@ -54,7 +54,7 @@
   <form @submit.prevent="save">
     <AppLayout :title="title" :debug="$props">
       <template #title-badge>
-        <Badge :variant="site.enabled ? 'success' : 'neutral'">
+        <Badge :variant="site.enabled ? 'success' : 'default'">
           {{ site.enabled ? t('Enabled') : t('Disabled') }}
         </Badge>
         <craft-callout v-if="site.primary" size="small" inline>

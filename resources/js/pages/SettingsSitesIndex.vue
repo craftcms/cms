@@ -64,9 +64,9 @@
         h(
           CpLink,
           {
-            href: edit(row.original.id),
+            href: edit.url(row.original.id),
           },
-          h(
+          () => h(
             'div',
             {
               class: 'flex gap-2',
@@ -92,7 +92,7 @@
           {
             variant: info.getValue() ? 'success' : 'default',
           },
-          info.getValue() ? t('Enabled') : t('Disabled')
+          () => info.getValue() ? t('Enabled') : t('Disabled')
         ),
     }),
     columnHelper.accessor('language', {
