@@ -25,7 +25,7 @@
   const form = useForm({
     id: props.site.id ?? null,
     group: props.groupId,
-    name: props.site.name,
+    name: props.site.nameRaw,
     handle: props.site.handle,
     language: props.site.languageRaw,
     enabled: props.site.enabledRaw,

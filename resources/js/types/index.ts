@@ -22,6 +22,7 @@ export interface SiteGroup {
 
 export interface Site {
   name: string;
+  nameRaw: string;
   uiLabel?: string;
   handle: string;
   language: string;

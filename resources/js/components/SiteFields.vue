@@ -76,11 +76,11 @@
   watch(
     () => form.value?.name,
     (newValue) => {
-      if (!handleRef.value?.dirty) {
+      if (form.value?.handle === '') {
         form.value.handle = toHandle(newValue);
       }
 
-      if (!baseUrlRef.value?.dirty) {
+      if (form.value?.baseUrl === '') {
         form.value.baseUrl = toEnvVar(newValue, {
           prefix: '$',
           suffix: '_URL',

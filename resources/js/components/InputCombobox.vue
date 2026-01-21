@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, type MaybeRef, onMounted, ref, unref, watch} from 'vue';
+  import {computed, type MaybeRef, ref, unref} from 'vue';
   import {
     Combobox,
     ComboboxButton,
@@ -10,52 +10,63 @@
   import type {SelectItem, SelectOption} from '@/types';
   import InputComboboxOption from '@/components/InputComboboxOption.vue';
 
-  const modelValue = defineModel<string>();
+  const emit = defineEmits<{
+    (e: 'update:modelValue', value: string): void;
+  }>();
   const props = withDefaults(
     defineProps<{
       options?: Array<SelectItem>;
+      modelValue?: string;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
     }>(),
     {
+      modelValue: '',
       requireOptionMatch: false,
       options: () => [],
-      transformModelValue: (newValue: SelectOption | null) =>
+      transformModelValue: (newValue: SelectOption | undefined | null) =>
         newValue ? newValue.value : '',
     }
   );
 
-  const selectedOption = ref<SelectOption | null>(null);
-  const query = ref(modelValue.value ?? '');
+  const selectedOption = computed({
+    get() {
+      let selectedItem = null;
 
-  onMounted(() => {
-    if (modelValue.value && modelValue.value !== '') {
-      props.options.forEach((item) => {
-        if (item.type === 'optgroup') {
-          item.options.forEach((option) => {
-            if (option.value === modelValue.value) {
-              selectedOption.value = option;
+      if (props.modelValue && props.modelValue !== '') {
+        props.options.forEach((item) => {
+          if (item.type === 'optgroup') {
+            item.options.forEach((option) => {
+              if (option.value === props.modelValue) {
+                selectedItem = option;
+              }
+            });
+          } else {
+            if (item.value === props.modelValue) {
+              selectedItem = item;
             }
-          });
-        } else {
-          if (item.value === modelValue.value) {
-            selectedOption.value = item;
           }
+        });
+
+        if (!selectedItem && !props.requireOptionMatch) {
+          selectedItem = {
+            label: props.modelValue,
+            value: props.modelValue,
+          };
         }
-      });
-
-      if (!selectedOption.value && !props.requireOptionMatch) {
-        selectedOption.value = {
-          label: modelValue.value,
-          value: modelValue.value,
-        };
       }
-    }
+
+      return selectedItem;
+    },
+    set(newValue) {
+      emit(
+        'update:modelValue',
+        props.transformModelValue(newValue as SelectOption)
+      );
+    },
   });
 
-  watch(selectedOption, (newValue: SelectOption | null) => {
-    modelValue.value = props.transformModelValue(newValue);
-  });
+  const query = ref(props.modelValue ?? '');
 
   function matchesQuery(query: MaybeRef<string>, item: MaybeRef<SelectOption>) {
     const lowerQuery = unref(query).toLowerCase();
