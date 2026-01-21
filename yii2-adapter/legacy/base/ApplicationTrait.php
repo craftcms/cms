@@ -12,7 +12,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
 use CraftCms\Cms\Address\Elements\Address;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use craft\elements\Entry;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\User\Elements\User;

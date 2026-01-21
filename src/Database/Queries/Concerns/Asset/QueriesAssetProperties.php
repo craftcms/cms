@@ -59,7 +59,7 @@ trait QueriesAssetProperties
      *
      * ```php
      * // fetch only images
-     * $logos = \craft\elements\Asset::find()
+     * $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->all();
      * ```

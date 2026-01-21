@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\elements\Asset;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\VolumeException;
@@ -16,6 +15,7 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\web\Request;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;

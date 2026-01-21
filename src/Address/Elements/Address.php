@@ -36,14 +36,7 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-/**
- * Address element class
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
-class Address extends Element implements AddressInterface, NestedElementInterface
+final class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
     use NestedElementTrait;

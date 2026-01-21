@@ -7,11 +7,11 @@
 
 namespace craft\gql\directives;
 
-use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\Gql;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;

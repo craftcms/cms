@@ -7,11 +7,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;

@@ -17,7 +17,7 @@ trait QueriesSizes
      *            ---
      *            ```php{4}
      *            // fetch images that are at least 500 pixels wide
-     *            $images = \craft\elements\Asset::find()
+     *            $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *            ->kind('image')
      *            ->width('>= 500')
      *            ->all();
@@ -39,7 +39,7 @@ trait QueriesSizes
      *            ---
      *            ```php{4}
      *            // fetch images that are at least 500 pixels high
-     *            $images = \craft\elements\Asset::find()
+     *            $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *            ->kind('image')
      *            ->height('>= 500')
      *            ->all();

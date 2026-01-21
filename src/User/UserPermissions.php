@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\elements\Asset;
 use craft\elements\Entry;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;

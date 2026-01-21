@@ -17,7 +17,7 @@ trait EagerloadsTransforms
      *            ---
      *            ```php{4}
      *            // fetch images with their 'thumb' transforms preloaded
-     *            $images = \craft\elements\Asset::find()
+     *            $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *            ->kind('image')
      *            ->withTransforms(['thumb'])
      *            ->all();

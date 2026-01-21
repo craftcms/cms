@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalFsInterface;
-use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
@@ -28,6 +27,7 @@ use craft\models\AssetIndexingSession;
 use craft\models\FsListing;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;

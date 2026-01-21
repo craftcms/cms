@@ -10,7 +10,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
-use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\AssetQuery;
@@ -24,6 +23,7 @@ use craft\elements\Tag;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
@@ -184,7 +184,7 @@ class CraftVariable extends ServiceLocator
      */
     public function assets(array $criteria = []): AssetQuery
     {
-        $query = Asset::find();
+        $query = new AssetQuery(Asset::class);
         Craft::configure($query, $criteria);
         return $query;
     }

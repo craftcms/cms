@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use crafttests\fixtures\AssetFixture;
 use UnitTester;

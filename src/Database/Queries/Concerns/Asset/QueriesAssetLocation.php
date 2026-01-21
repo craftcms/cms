@@ -25,7 +25,7 @@ trait QueriesAssetLocation
      *            ---
      *            ```php
      *            // fetch assets in the Logos volume
-     *            $logos = \craft\elements\Asset::find()
+     *            $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *            ->volume('logos')
      *            ->all();
      *            ```

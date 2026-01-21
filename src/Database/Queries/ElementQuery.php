@@ -46,6 +46,7 @@ use Twig\Markup;
  *
  * @mixin \Illuminate\Database\Query\Builder
  *
+ * @method static select($columns = ['*'])
  * @method static addSelect($column)
  * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
  * @method static leftJoin($table, $first, $operator = null, $second = null)
