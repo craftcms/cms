@@ -59,6 +59,7 @@ use Twig\Markup;
  * @method static whereNotIn($column, $values, $boolean = 'and')
  * @method static whereNotNull($columns, $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
+ * @method static whereNull($columns, $boolean = 'and', $not = false)
  *
  * @phpstan-ignore class.missingExtends
  */
@@ -445,15 +446,15 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Execute the query as a "select" statement.
      *
-     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
+     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
+     * @return \craft\elements\ElementCollection<int, TElement>
      */
-    public function get(array|string $columns = ['*']): ElementCollection|array
+    public function get($columns = ['*']): ElementCollection
     {
         $models = $this->getModels($columns);
 
         return $this->applyAfterQueryCallbacks(new ElementCollection($models))
-            ->when($this->indexBy, fn (ElementCollection $collection) => $collection->keyBy($this->indexBy))
-            ->when($this->asArray, fn (ElementCollection $collection) => $collection->all());
+            ->when($this->indexBy, fn (ElementCollection $collection) => $collection->keyBy($this->indexBy));
     }
 
     /**
