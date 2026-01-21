@@ -1359,6 +1359,7 @@ abstract class Element extends Component implements ElementInterface
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1], $db)) {
+                            /** @phpstan-ignore arguments.count */
                             $elementQuery->orderBy($orderBy[0], $orderBy[1] === SORT_ASC ? 'asc' : 'desc');
                         } else {
                             break;

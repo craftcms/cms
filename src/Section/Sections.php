@@ -710,7 +710,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \craft\elements\ElementCollection<Entry> $entries */
+            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)

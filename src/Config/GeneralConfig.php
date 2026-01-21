@@ -2002,7 +2002,7 @@ class GeneralConfig extends BaseConfig
      * @var string The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -5565,7 +5565,7 @@ class GeneralConfig extends BaseConfig
      * The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *

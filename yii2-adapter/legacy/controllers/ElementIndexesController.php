@@ -764,6 +764,7 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
+            /** @var ElementQuery $query */
             $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
@@ -798,7 +799,6 @@ class ElementIndexesController extends BaseElementsController
                     if ($query instanceof ElementQuery) {
                         $query->whereNotIn('elements.id', $descendantIds);
                     } else {
-                        /** @phpstan-ignore-next-line */
                         $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
                     }
 

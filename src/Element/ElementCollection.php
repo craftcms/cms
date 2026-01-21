@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
@@ -11,10 +12,9 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
+use Override;
 use RuntimeException;
 use Twig\Markup;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 /**
  * ElementCollection represents a collection of elements.
@@ -112,7 +112,7 @@ final class ElementCollection extends Collection
      *
      * @param  (callable(TElement,TKey):bool)|TElement|string|int  $key
      */
-    #[\Override]
+    #[Override]
     public function contains(mixed $key, mixed $operator = null, mixed $value = null): bool
     {
         if (func_num_args() > 1 || $this->useAsCallable($key)) {
@@ -147,7 +147,7 @@ final class ElementCollection extends Collection
      *
      * @param  iterable<array-key,TElement>  $items
      */
-    #[\Override]
+    #[Override]
     public function merge($items): self
     {
         $elements = $this->keyBy('siteSettingsId')->all();
@@ -167,7 +167,7 @@ final class ElementCollection extends Collection
      * @param  callable(TElement,TKey):TMapValue  $callback
      * @return Collection<TKey,TMapValue>|self<TKey,TMapValue>
      */
-    #[\Override]
+    #[Override]
     public function map(callable $callback): Collection|self
     {
         $result = parent::map($callback);
@@ -186,7 +186,7 @@ final class ElementCollection extends Collection
      * @param  callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue>  $callback
      * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|self<TMapWithKeysKey,TMapWithKeysValue>
      */
-    #[\Override]
+    #[Override]
     public function mapWithKeys(callable $callback): self|Collection
     {
         $result = parent::mapWithKeys($callback);
@@ -197,7 +197,7 @@ final class ElementCollection extends Collection
     /**
      * Reloads fresh element instances from the database for all the elements.
      */
-    public function fresh(): self
+    public function fresh(): Collection
     {
         if ($this->isEmpty()) {
             return self::make();
@@ -235,7 +235,7 @@ final class ElementCollection extends Collection
     /**
      * Returns a new collection with the elements that are not present in the given array.
      */
-    #[\Override]
+    #[Override]
     public function diff($items): self
     {
         $diff = self::make();
@@ -256,7 +256,7 @@ final class ElementCollection extends Collection
      *
      * @param  array<array-key,TElement>  $items
      */
-    #[\Override]
+    #[Override]
     public function intersect($items): self
     {
         $intersect = self::make();
@@ -283,7 +283,7 @@ final class ElementCollection extends Collection
      * @param  (callable(TElement,TKey):mixed)|string|null  $key
      * @param  bool  $strict
      */
-    #[\Override]
+    #[Override]
     public function unique($key = null, $strict = false): self
     {
         if ($key !== null) {
@@ -300,7 +300,7 @@ final class ElementCollection extends Collection
      *
      * @param  Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null  $keys
      */
-    #[\Override]
+    #[Override]
     public function only($keys): self
     {
         if ($keys === null) {
@@ -330,7 +330,7 @@ final class ElementCollection extends Collection
      *
      * @param  Enumerable<array-key,TKey>|array<array-key,TKey>|string|int|null  $keys
      */
-    #[\Override]
+    #[Override]
     public function except($keys): self
     {
         if ($keys === null) {
@@ -358,9 +358,6 @@ final class ElementCollection extends Collection
      *
      * If no partial template exists for an element, its string representation will be output instead.
      *
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @see ElementHelper::renderElements()
      */
     public function render(array $variables = []): Markup
@@ -374,7 +371,7 @@ final class ElementCollection extends Collection
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function countBy($countBy = null): Collection
     {
         return $this->toBase()->countBy($countBy);
@@ -383,7 +380,7 @@ final class ElementCollection extends Collection
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function collapse(): Collection
     {
         return $this->toBase()->collapse();
@@ -394,7 +391,7 @@ final class ElementCollection extends Collection
      *
      * @param  int|float  $depth
      */
-    #[\Override]
+    #[Override]
     public function flatten($depth = INF): Collection
     {
         return $this->toBase()->flatten($depth);
@@ -405,7 +402,7 @@ final class ElementCollection extends Collection
      *
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     public function flip(): never
     {
         throw new RuntimeException('Not possible to flip element collections.');
@@ -414,7 +411,7 @@ final class ElementCollection extends Collection
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function keys(): Collection
     {
         return $this->toBase()->keys();
@@ -423,7 +420,7 @@ final class ElementCollection extends Collection
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function pad($size, $value): Collection
     {
         return $this->toBase()->pad($size, $value);
@@ -439,7 +436,7 @@ final class ElementCollection extends Collection
      * @param  string|Closure(TElement):TPluckKeyReturn|null  $key
      * @return ($value is Closure ? ($key is Closure ? Collection<TPluckKeyReturn, TPluckValueReturn> : Collection<array-key, TPluckValueReturn>) : ($key is Closure ? Collection<TPluckKeyReturn, mixed> : Collection<array-key, mixed>))
      */
-    #[\Override]
+    #[Override]
     public function pluck($value, $key = null): Collection
     {
         return $this->toBase()->pluck($value, $key);
@@ -448,7 +445,7 @@ final class ElementCollection extends Collection
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function zip($items): Collection
     {
         return $this->toBase()->zip(...func_get_args());

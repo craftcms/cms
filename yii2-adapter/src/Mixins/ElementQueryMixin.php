@@ -6,7 +6,6 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use Craft;
-use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use yii\base\NotSupportedException;
@@ -18,7 +17,7 @@ class ElementQueryMixin
         return function() {
             Deprecator::log('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
 
-            /** @var ElementQuery $this */
+            /** @phpstan-ignore-next-line */
             return $this->getResultOverride();
         };
     }
@@ -28,7 +27,7 @@ class ElementQueryMixin
         return function(array $elements) {
             Deprecator::log('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
 
-            /** @var ElementQuery $this */
+            /** @phpstan-ignore-next-line */
             $this->setResultOverride($elements);
         };
     }
@@ -38,7 +37,7 @@ class ElementQueryMixin
         return function() {
             Deprecator::log('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
 
-            /** @var ElementQuery $this */
+            /** @phpstan-ignore-next-line */
             $this->clearResultOverride();
         };
     }
@@ -48,6 +47,7 @@ class ElementQueryMixin
         return function() {
             Deprecator::log('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
 
+            /** @phpstan-ignore-next-line */
             return $this->get();
         };
     }
@@ -57,6 +57,7 @@ class ElementQueryMixin
         return function() {
             Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->value($column) instead.');
 
+            /** @phpstan-ignore-next-line */
             return $this->value($this->query->getColumns()[0]);
         };
     }
@@ -67,6 +68,7 @@ class ElementQueryMixin
             Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->value($column) instead.');
 
             foreach (Arr::wrap($columns) as $column) {
+                /** @phpstan-ignore-next-line */
                 $this->orderBy($column);
             }
 
@@ -94,6 +96,7 @@ class ElementQueryMixin
                 return $this;
             }
 
+            /** @phpstan-ignore-next-line */
             return $this->whereRaw($condition, $params);
         };
     }
@@ -115,9 +118,12 @@ class ElementQueryMixin
                 return $this;
             }
 
+            /** @phpstan-ignore-next-line */
             $this->query->wheres = [];
+            /** @phpstan-ignore-next-line */
             $this->subQuery->wheres = [];
 
+            /** @phpstan-ignore-next-line */
             return $this->whereRaw($condition, $params);
         };
     }
@@ -139,6 +145,7 @@ class ElementQueryMixin
                 return $this;
             }
 
+            /** @phpstan-ignore-next-line */
             return $this->whereRaw($condition, $params);
         };
     }
@@ -160,6 +167,7 @@ class ElementQueryMixin
                 return $this;
             }
 
+            /** @phpstan-ignore-next-line */
             return $this->orWhereRaw($condition, $params);
         };
     }
@@ -170,8 +178,10 @@ class ElementQueryMixin
             Deprecator::log('ElementQuery-emulateExecution', 'Calling ->emulateExecution on an ElementQuery is deprecated.');
 
             if ($value) {
+                /** @phpstan-ignore-next-line */
                 $this->setResultOverride([]);
             } else {
+                /** @phpstan-ignore-next-line */
                 $this->clearResultOverride();
             }
 
@@ -189,14 +199,10 @@ class ElementQueryMixin
      */
     private static function filterCondition(array $condition): array
     {
-        if (!is_array($condition)) {
-            return $condition;
-        }
-
         if (!isset($condition[0])) {
             // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
             foreach ($condition as $name => $value) {
-                if ($this->isEmpty($value)) {
+                if (self::isEmpty($value)) {
                     unset($condition[$name]);
                 }
             }
@@ -213,8 +219,8 @@ class ElementQueryMixin
             case 'AND':
             case 'OR':
                 foreach ($condition as $i => $operand) {
-                    $subCondition = $this->filterCondition($operand);
-                    if ($this->isEmpty($subCondition)) {
+                    $subCondition = self::filterCondition($operand);
+                    if (self::isEmpty($subCondition)) {
                         unset($condition[$i]);
                     } else {
                         $condition[$i] = $subCondition;
@@ -228,13 +234,13 @@ class ElementQueryMixin
             case 'BETWEEN':
             case 'NOT BETWEEN':
                 if (array_key_exists(1, $condition) && array_key_exists(2, $condition)) {
-                    if ($this->isEmpty($condition[1]) || $this->isEmpty($condition[2])) {
+                    if (self::isEmpty($condition[1]) || self::isEmpty($condition[2])) {
                         return [];
                     }
                 }
                 break;
             default:
-                if (array_key_exists(1, $condition) && $this->isEmpty($condition[1])) {
+                if (array_key_exists(1, $condition) && self::isEmpty($condition[1])) {
                     return [];
                 }
         }
@@ -242,5 +248,23 @@ class ElementQueryMixin
         array_unshift($condition, $operator);
 
         return $condition;
+    }
+
+    /**
+     * Returns a value indicating whether the give value is "empty".
+     *
+     * The value is considered "empty", if one of the following conditions is satisfied:
+     *
+     * - it is `null`,
+     * - an empty string (`''`),
+     * - a string containing only whitespace characters,
+     * - or an empty array.
+     *
+     * @param mixed $value
+     * @return bool if the value is empty
+     */
+    private static function isEmpty(mixed $value): bool
+    {
+        return $value === '' || $value === [] || $value === null || is_string($value) && trim($value) === '';
     }
 }

@@ -17,6 +17,7 @@ class UserMixin
         return function(#[SensitiveParameter] string $password) {
             Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
 
+            /** @phpstan-ignore-next-line */
             return app(Auth::class)->authenticate($this, [
                 'password' => $password,
             ]);
@@ -28,6 +29,7 @@ class UserMixin
         return function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
             Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
 
+            /** @phpstan-ignore-next-line */
             return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
         };
     }
@@ -37,6 +39,7 @@ class UserMixin
         return function(): void {
             Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
 
+            /** @phpstan-ignore-next-line */
             app(Auth::class)->handleInvalidLogin($this);
         };
     }

@@ -52,6 +52,7 @@ use Twig\Markup;
  * @method static leftJoin($table, $first, $operator = null, $second = null)
  * @method static orderBy($column)
  * @method static orderByDesc($column)
+ * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)
  * @method static where($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereIn($column, $values, $boolean = 'and', $not = false)
@@ -283,7 +284,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Find a model by its primary key.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \craft\elements\ElementCollection<int, TElement> : TElement|null)
+     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<int, TElement> : TElement|null)
      */
     public function find(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection|null
     {
@@ -298,7 +299,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      * Find multiple elements by their primary keys.
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @return \craft\elements\ElementCollection<int, TElement>|array<int, TElement>
+     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>|array<int, TElement>
      */
     public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|array
     {
@@ -314,7 +315,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \craft\elements\ElementCollection<int, TElement> : TElement)
+     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<int, TElement> : TElement)
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -352,7 +353,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      * @param  (\Closure(): TValue)|null  $callback
      * @return (
      *     $id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>)
-     *     ? \craft\elements\ElementCollection<int, TElement>
+     *     ? \CraftCms\Cms\Element\ElementCollection<int, TElement>
      *     : TElement|TValue
      * )
      */
@@ -447,7 +448,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      * Execute the query as a "select" statement.
      *
      * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return \craft\elements\ElementCollection<int, TElement>
+     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>
      */
     public function get($columns = ['*']): ElementCollection
     {
