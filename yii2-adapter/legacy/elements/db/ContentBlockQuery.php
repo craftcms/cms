@@ -8,7 +8,7 @@
 namespace craft\elements\db;
 
 use craft\db\Table;
-use craft\elements\ContentBlock;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
  * ContentBlockQuery represents a SELECT SQL statement for content blocks in a way that is independent of DBMS.

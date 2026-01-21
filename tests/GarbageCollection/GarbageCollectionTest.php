@@ -1,12 +1,11 @@
 <?php
 
 declare(strict_types=1);
-
-use craft\elements\ContentBlock;
 use craft\elements\Entry;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;

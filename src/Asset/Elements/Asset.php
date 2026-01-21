@@ -137,17 +137,17 @@ final class Asset extends Element
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
-    public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
+    public const string EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     /**
      * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
      */
-    public const EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
+    public const string EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
 
     /**
      * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
      */
-    public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
+    public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
      * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
@@ -166,9 +166,9 @@ final class Asset extends Element
     // Location error codes
     // -------------------------------------------------------------------------
 
-    public const ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
+    public const string ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
 
-    public const ERROR_FILENAME_CONFLICT = 'filename_conflict';
+    public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -176,58 +176,58 @@ final class Asset extends Element
     /**
      * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
      */
-    public const SCENARIO_MOVE = 'move';
+    public const string SCENARIO_MOVE = 'move';
 
-    public const SCENARIO_FILEOPS = 'fileOperations';
+    public const string SCENARIO_FILEOPS = 'fileOperations';
 
-    public const SCENARIO_INDEX = 'index';
+    public const string SCENARIO_INDEX = 'index';
 
-    public const SCENARIO_CREATE = 'create';
+    public const string SCENARIO_CREATE = 'create';
 
-    public const SCENARIO_REPLACE = 'replace';
+    public const string SCENARIO_REPLACE = 'replace';
 
     // File kinds
     // -------------------------------------------------------------------------
 
-    public const KIND_ACCESS = 'access';
+    public const string KIND_ACCESS = 'access';
 
-    public const KIND_AUDIO = 'audio';
+    public const string KIND_AUDIO = 'audio';
 
-    public const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
+    public const string KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
 
-    public const KIND_COMPRESSED = 'compressed';
+    public const string KIND_COMPRESSED = 'compressed';
 
-    public const KIND_EXCEL = 'excel';
+    public const string KIND_EXCEL = 'excel';
 
-    public const KIND_FLASH = 'flash';
+    public const string KIND_FLASH = 'flash';
 
-    public const KIND_HTML = 'html';
+    public const string KIND_HTML = 'html';
 
-    public const KIND_ILLUSTRATOR = 'illustrator';
+    public const string KIND_ILLUSTRATOR = 'illustrator';
 
-    public const KIND_IMAGE = 'image';
+    public const string KIND_IMAGE = 'image';
 
-    public const KIND_JAVASCRIPT = 'javascript';
+    public const string KIND_JAVASCRIPT = 'javascript';
 
-    public const KIND_JSON = 'json';
+    public const string KIND_JSON = 'json';
 
-    public const KIND_PDF = 'pdf';
+    public const string KIND_PDF = 'pdf';
 
-    public const KIND_PHOTOSHOP = 'photoshop';
+    public const string KIND_PHOTOSHOP = 'photoshop';
 
-    public const KIND_PHP = 'php';
+    public const string KIND_PHP = 'php';
 
-    public const KIND_POWERPOINT = 'powerpoint';
+    public const string KIND_POWERPOINT = 'powerpoint';
 
-    public const KIND_TEXT = 'text';
+    public const string KIND_TEXT = 'text';
 
-    public const KIND_VIDEO = 'video';
+    public const string KIND_VIDEO = 'video';
 
-    public const KIND_WORD = 'word';
+    public const string KIND_WORD = 'word';
 
-    public const KIND_XML = 'xml';
+    public const string KIND_XML = 'xml';
 
-    public const KIND_UNKNOWN = 'unknown';
+    public const string KIND_UNKNOWN = 'unknown';
 
     private static string $_displayName;
 
@@ -278,7 +278,7 @@ final class Asset extends Element
     /**
      * {@inheritdoc}
      */
-    public static function refHandle(): ?string
+    public static function refHandle(): string
     {
         return 'asset';
     }
@@ -329,7 +329,7 @@ final class Asset extends Element
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AssetCondition::class, [static::class]);
+        return Craft::createObject(AssetCondition::class, [self::class]);
     }
 
     /**
@@ -800,7 +800,7 @@ final class Asset extends Element
             $totalFolders = $folderQuery->count();
 
             if ($totalFolders > $elementQuery->offset) {
-                $source = ElementHelper::findSource(static::class, $sourceKey);
+                $source = ElementHelper::findSource(self::class, $sourceKey);
                 if (isset($source['criteria']['folderId'])) {
                     $baseFolder = $assetsService->getFolderById($source['criteria']['folderId']);
                 } else {
@@ -1597,7 +1597,7 @@ final class Asset extends Element
     /**
      * {@inheritdoc}
      */
-    public function getPostEditUrl(): ?string
+    public function getPostEditUrl(): string
     {
         return UrlHelper::cpUrl('assets');
     }
@@ -2333,7 +2333,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    protected function thumbSvg(): ?string
+    protected function thumbSvg(): string
     {
         if ($this->isFolder) {
             return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
@@ -3129,7 +3129,7 @@ JS;
     #[Override]
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeName($this->getVolume());
+        return self::gqlTypeName($this->getVolume());
     }
 
     /**
@@ -3277,7 +3277,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                Assets::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     ! Craft::$app->getRequest()->getIsCpRequest() ||
                     Cms::config()->sanitizeCpImageUploads
@@ -3293,7 +3293,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+                Assets::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
                 if (isset($imageSize[0])) {

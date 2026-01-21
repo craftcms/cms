@@ -44,7 +44,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     /**
      * @since 5.0.0
      */
-    public const GQL_TYPE_NAME = 'Address';
+    public const string GQL_TYPE_NAME = 'Address';
 
     /**
      * {@inheritdoc}
@@ -115,7 +115,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AddressCondition::class, [static::class]);
+        return Craft::createObject(AddressCondition::class, [self::class]);
     }
 
     /**
@@ -641,7 +641,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     #[Override]
     protected function shouldValidateTitle(): bool
     {
-        $titleField = $this->getFieldLayout()?->getField('title');
+        $titleField = $this->getFieldLayout()->getField('title');
 
         return $titleField->required && $titleField->showInForm($this);
     }
@@ -873,7 +873,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
      * {@inheritdoc}
      */
     #[Override]
-    public function getFieldLayout(): ?FieldLayout
+    public function getFieldLayout(): FieldLayout
     {
         return app(Addresses::class)->getFieldLayout();
     }
