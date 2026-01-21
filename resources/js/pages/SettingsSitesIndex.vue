@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {CraftCombobox, t} from '@craftcms/cp';
+  import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
@@ -15,6 +15,7 @@
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
   import {index} from '@routes/cp/settings/sites';
+  import InputCombobox from '@/components/InputCombobox.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -66,18 +67,19 @@
           {
             href: edit.url(row.original.id),
           },
-          () => h(
-            'div',
-            {
-              class: 'flex gap-2',
-            },
-            [
-              h('craft-indicator', {
-                variant: row.original.enabled ? 'success' : 'empty',
-              }),
-              h('span', getValue()),
-            ]
-          )
+          () =>
+            h(
+              'div',
+              {
+                class: 'flex gap-2',
+              },
+              [
+                h('craft-indicator', {
+                  variant: row.original.enabled ? 'success' : 'empty',
+                }),
+                h('span', getValue()),
+              ]
+            )
         ),
     }),
     columnHelper.accessor('handle', {
@@ -92,7 +94,7 @@
           {
             variant: info.getValue() ? 'success' : 'default',
           },
-          () => info.getValue() ? t('Enabled') : t('Disabled')
+          () => (info.getValue() ? t('Enabled') : t('Disabled'))
         ),
     }),
     columnHelper.accessor('language', {
@@ -295,27 +297,15 @@
           </div>
         </craft-input>
       </template>
-      <craft-combobox
-        .requireOptionMatch="false"
+      <craft-input
         :label="t('Group Name')"
         id="name"
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
         :has-feedback-for="form.errors?.name ? 'error' : ''"
-        show-all-on-empty
-        v-model="form.name"
-        @model-value-changed="form.name = $event.target?.modelValue"
       >
-        <template v-for="(group, idx) in nameSuggestions" :key="idx">
-          <craft-option
-            v-for="suggestion in group.data"
-            :key="suggestion.name"
-            .choiceValue="suggestion.name"
-            .hint="suggestion.hint"
-            >{{ suggestion.name }}</craft-option
-          >
-        </template>
+        <InputCombobox :options="nameSuggestions" v-model="form.name" slot="input" />
         <div slot="after">
           <craft-callout
             variant="info"
@@ -336,7 +326,7 @@
             <li>{{ form.errors.name }}</li>
           </ul>
         </div>
-      </craft-combobox>
+      </craft-input>
     </Deferred>
   </ModalForm>
 </template>

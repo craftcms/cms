@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, type MaybeRef, ref, unref} from 'vue';
+  import {computed, type MaybeRef, ref, unref, useTemplateRef} from 'vue';
   import {
     Combobox,
     ComboboxButton,
@@ -66,7 +66,18 @@
     },
   });
 
+  const reference = useTemplateRef<HTMLElement | null>('reference');
   const query = ref(props.modelValue ?? '');
+
+  const referenceCoordinates = computed(() => {
+    const coordinates = reference.value?.getBoundingClientRect();
+    console.log({coordinates});
+    if (coordinates) {
+      return coordinates;
+    }
+
+    return new DOMRect();
+  });
 
   function matchesQuery(query: MaybeRef<string>, item: MaybeRef<SelectOption>) {
     const lowerQuery = unref(query).toLowerCase();
@@ -124,7 +135,7 @@
 </script>
 
 <template>
-  <div class="relative">
+  <div class="relative" ref="reference">
     <Combobox v-model="selectedOption">
       <ComboboxInput
         @change="query = $event.target.value"
@@ -147,7 +158,15 @@
         leaveTo="opacity-0"
         @after-leave="query = ''"
       >
-        <ComboboxOptions class="options">
+        <ComboboxOptions
+          class="options"
+          :style="{
+            position: 'fixed',
+            insetInlineStart: `${referenceCoordinates.left}px`,
+            width: `${referenceCoordinates.width}px`,
+            insetBlockStart: `${referenceCoordinates.bottom}px`,
+          }"
+        >
           <InputComboboxOption
             v-if="!requireOptionMatch && customValue"
             :option="customValue"
@@ -200,9 +219,6 @@
 
   .options {
     padding: var(--c-spacing-sm);
-    position: absolute;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
     margin-block-start: var(--c-spacing-1px);
     max-height: calc(var(--c-spacing) * 60);
     overflow: auto;
