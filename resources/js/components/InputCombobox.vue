@@ -99,12 +99,7 @@
 
   function displayValue(data: unknown) {
     if (data) {
-      const item = data as SelectOption;
-      if (item.data?.hint) {
-        return `${item.label} — ${item.data.hint}`;
-      }
-
-      return item.label;
+      return (data as SelectOption).label;
     }
 
     return '';

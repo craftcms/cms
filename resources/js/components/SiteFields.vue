@@ -146,6 +146,27 @@
       v-model="form.name"
       :options="nameSuggestions"
     />
+
+    <div slot="after">
+      <craft-callout
+        variant="info"
+        appearance="plain"
+        class="p-0"
+        icon="lightbulb"
+      >
+        {{ t('This can begin with an environment variable.') }}
+        <a
+          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+          >{{ t('Learn more') }}</a
+        >
+      </craft-callout>
+    </div>
+
+    <div slot="feedback">
+      <ul class="error-list" v-if="form.errors?.name">
+        <li>{{ form.errors.name }}</li>
+      </ul>
+    </div>
   </craft-input>
 
   <craft-input-handle
@@ -178,6 +199,24 @@
       :options="languageOptions"
       :require-option-match="true"
     />
+
+    <div slot="after">
+      <craft-callout
+        variant="info"
+        appearance="plain"
+        class="p-0"
+        icon="lightbulb"
+        v-html="
+          t(
+            'This can be set to an environment variable with a valid language ID ({examples}).',
+            {
+              examples: '<code>en</code>/<code>en-GB</code>',
+            }
+          )
+        "
+      >
+      </craft-callout>
+    </div>
 
     <div slot="feedback">
       <ul class="error-list" v-if="form.errors?.language">
@@ -231,6 +270,23 @@
         >
           {{ t('The primary site cannot be disabled.') }}
         </craft-callout>
+
+        <craft-callout
+          variant="info"
+          appearance="plain"
+          class="p-0"
+          icon="lightbulb"
+          v-html="
+            t(
+              'This can be set to an environment variable with a boolean value ({examples})',
+              {
+                examples:
+                  '<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>',
+              }
+            )
+          "
+        >
+        </craft-callout>
       </div>
 
       <div slot="feedback">
@@ -278,8 +334,22 @@
         slot="input"
         v-model="form.baseUrl"
         :options="baseUrlSuggestions"
-      >
-      </InputCombobox>
+      />
+
+      <div slot="after">
+        <craft-callout
+          variant="info"
+          appearance="plain"
+          class="p-0"
+          icon="lightbulb"
+        >
+          {{ t('This can begin with an environment variable or alias.') }}
+          <a
+            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+            >{{ t('Learn more') }}</a
+          >
+        </craft-callout>
+      </div>
     </craft-input>
   </template>
 </template>
