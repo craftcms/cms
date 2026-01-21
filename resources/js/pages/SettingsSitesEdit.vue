@@ -43,7 +43,7 @@
   });
 
   function save() {
-    form.clearErrors().submit(store({site: props.site.id}));
+    form.clearErrors().submit(store());
   }
 
   const modalActive = ref(false);
@@ -112,7 +112,7 @@
                 <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
 
-              <template v-if="!site.primary">
+              <template v-if="site.id && !site.primary">
                 <hr />
                 <craft-action-item @click="modalActive = true" variant="danger">
                   {{ t('Delete site') }}
@@ -135,6 +135,7 @@
   </form>
 
   <DeleteSiteModal
+    @close="modalActive = false"
     :open="modalActive"
     :site="props.site"
     v-if="!site.primary"

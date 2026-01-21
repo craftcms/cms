@@ -27,7 +27,11 @@
       <craft-icon name="x" label="t('Delete site'"></craft-icon>
     </craft-button>
 
-    <DeleteSiteModal :site="site" :open="modalActive" />
+    <DeleteSiteModal
+      :site="site"
+      :open="modalActive"
+      @close="modalActive = false"
+    />
   </div>
 </template>
 

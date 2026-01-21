@@ -54,34 +54,18 @@
     form.clearErrors();
     form.reset();
   }
-
-  function handleClick() {
-    emit('close');
-  }
 </script>
 
 <template>
   <ModalForm
+    :title="t('Delete {site}', {site: site.name})"
     :is-active="open"
     @close="handleModalClose"
     @submit="handleSubmit"
     :loading="form.processing"
-    :submit-label="
-      t('Delete {site}', {
-        site: site.name,
-      })
-    "
+    :submit-label="t('Delete')"
   >
     <div class="grid gap-3">
-      <!--        <p id="content-action">-->
-      <!--          {{-->
-      <!--            t(-->
-      <!--              'What do you want to do with any content that is only available in {siteName}?',-->
-      <!--              {siteName: site.name}-->
-      <!--            )-->
-      <!--          }}-->
-      <!--        </p>-->
-
       <craft-radio-group
         name="contentDestination"
         :label="t('Content Destination')"

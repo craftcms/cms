@@ -11,6 +11,7 @@
     defineProps<
       ModalProps & {
         loading?: boolean;
+        title?: string;
         resetLabel?: string;
         submitLabel?: string;
       }
@@ -31,7 +32,7 @@
 <template>
   <Modal :isActive="isActive" :overlay="overlay" @close="emit('close')">
     <form @submit.prevent="submitHandler">
-      <Pane class="w-[60ch] mx-auto">
+      <Pane class="w-[60ch] mx-auto" :title="title">
         <slot></slot>
         <template #secondary-action>
           <craft-button type="reset" @click="emit('close')" appearance="plain">
