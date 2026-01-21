@@ -19,6 +19,7 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
+use craft\errors\WrongEditionException;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
@@ -178,7 +179,6 @@ class UsersController extends Controller
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
-        'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -427,7 +427,7 @@ class UsersController extends Controller
      */
     public function actionImpersonate(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
         $this->requireElevatedSession();
 
         $userSession = Craft::$app->getUser();
@@ -466,7 +466,7 @@ class UsersController extends Controller
      */
     public function actionGetImpersonationUrl(): Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
         $this->requireElevatedSession();
 
         $userId = $this->request->getBodyParam('userId');
@@ -754,6 +754,7 @@ class UsersController extends Controller
      */
     public function actionGetPasswordResetUrl(): Response
     {
+        $this->userActionChecks();
         $this->requirePermission('administrateUsers');
 
         if (!$this->_verifyElevatedSession()) {
@@ -1031,7 +1032,7 @@ class UsersController extends Controller
      */
     public function actionEnableUser(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
 
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -1068,8 +1069,8 @@ class UsersController extends Controller
      */
     public function actionActivateUser(): ?Response
     {
+        $this->userActionChecks();
         $this->requirePermission('administrateUsers');
-        $this->requirePostRequest();
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         $userId = $this->request->getRequiredBodyParam('userId');
@@ -1979,7 +1980,7 @@ JS);
      */
     public function actionSendActivationEmail(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
@@ -2032,7 +2033,7 @@ JS);
      */
     public function actionUnlockUser(): Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
@@ -2069,7 +2070,7 @@ JS);
      */
     public function actionSuspendUser(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
@@ -2160,7 +2161,7 @@ JS);
      */
     public function actionDeactivateUser(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
 
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -2255,7 +2256,7 @@ JS);
      */
     public function actionUnsuspendUser(): ?Response
     {
-        $this->requirePostRequest();
+        $this->userActionChecks();
         $this->requirePermission('moderateUsers');
 
         $userId = $this->request->getRequiredBodyParam('userId');
@@ -2430,22 +2431,6 @@ JS);
 
         $this->setSuccessFlash(Craft::t('app', 'User fields saved.'));
         return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * Verifies a password for a user.
-     *
-     * @return Response|null
-     */
-    public function actionVerifyPassword(): ?Response
-    {
-        $this->requireAcceptsJson();
-
-        if ($this->_verifyExistingPassword()) {
-            return $this->asSuccess();
-        }
-
-        return $this->asFailure(Craft::t('app', 'Invalid password.'));
     }
 
     /**
@@ -3143,5 +3128,18 @@ JS);
             $model->newPassword = null;
             $model->currentPassword = null;
         }
+    }
+
+    /**
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws WrongEditionException
+     */
+    private function userActionChecks(): void
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+        $this->requirePermission('editUsers');
     }
 }
