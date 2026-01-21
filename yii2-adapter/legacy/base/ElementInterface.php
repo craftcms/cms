@@ -45,8 +45,8 @@ interface ElementInterface extends
     ModelInterface,
     \CraftCms\Cms\Component\Contracts\Chippable,
     \CraftCms\Cms\Component\Contracts\CpEditable,
-    Thumbable,
-    Statusable,
+    \CraftCms\Cms\Component\Contracts\Thumbable,
+    \CraftCms\Cms\Component\Contracts\Statusable,
     \CraftCms\Cms\Component\Contracts\Actionable
 {
     /**
