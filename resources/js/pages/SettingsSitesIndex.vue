@@ -3,7 +3,11 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {createColumnHelper, getCoreRowModel, useVueTable,} from '@tanstack/vue-table';
+  import {
+    createColumnHelper,
+    getCoreRowModel,
+    useVueTable,
+  } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -305,7 +309,11 @@
         :help-text="t('What this group will be called in the control panel.')"
         :has-feedback-for="form.errors?.name ? 'error' : ''"
       >
-        <InputCombobox :options="nameSuggestions" v-model="form.name" slot="input" />
+        <InputCombobox
+          :options="nameSuggestions"
+          v-model="form.name"
+          slot="input"
+        />
         <div slot="after">
           <craft-callout
             variant="info"
