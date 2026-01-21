@@ -1454,10 +1454,7 @@ class UsersController extends Controller
     public function actionSavePassword(): ?Response
     {
         $this->requireCpRequest();
-
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new BadRequestHttpException('An elevated session is required to change your password.');
-        }
+        $this->requireElevatedSession();
 
         $user = static::currentUser();
 
