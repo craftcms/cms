@@ -48,7 +48,9 @@ export default css`
 
   :host([inline]) {
     display: inline-flex;
-    padding: var(--c-spacing-xs) var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-sm);
+    padding-block: 0;
+    line-height: 1.25rem;
     font-size: 0.9em;
   }
 

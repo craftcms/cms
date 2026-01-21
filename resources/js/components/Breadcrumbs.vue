@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import CpLink from '@/components/CpLink.vue';
+
   withDefaults(
     defineProps<{
       items: Array<{
@@ -24,7 +26,7 @@
       }"
     >
       <template v-if="item.url">
-        <a :href="item.url">{{ item.label }}</a>
+        <CpLink :href="item.url">{{ item.label }}</CpLink>
       </template>
       <template v-else>
         {{ item.label }}

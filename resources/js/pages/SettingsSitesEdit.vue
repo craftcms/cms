@@ -10,6 +10,7 @@
   import SiteFields from '@/components/SiteFields.vue';
   import DeleteSiteModal from '@/components/DeleteSiteModal.vue';
   import {ref} from 'vue';
+  import Badge from '@/components/Badge.vue';
 
   const props = defineProps<{
     title: string;
@@ -53,19 +54,9 @@
   <form @submit.prevent="save">
     <AppLayout :title="title" :debug="$props">
       <template #title-badge>
-        <craft-callout
-          v-if="site.id"
-          :variant="site.enabled ? 'success' : 'danger'"
-          size="small"
-          class="flex items-center gap-1"
-          inline
-        >
-          <craft-indicator
-            slot="icon"
-            :variant="site.enabled ? 'success' : 'danger'"
-          ></craft-indicator>
-          <span>{{ site.enabled ? t('Enabled') : t('Disabled') }}</span>
-        </craft-callout>
+        <Badge :variant="site.enabled ? 'success' : 'neutral'">
+          {{ site.enabled ? t('Enabled') : t('Disabled') }}
+        </Badge>
         <craft-callout v-if="site.primary" size="small" inline>
           <span>{{ t('Primary') }}</span>
         </craft-callout>

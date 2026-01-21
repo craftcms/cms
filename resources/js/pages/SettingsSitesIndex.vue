@@ -10,9 +10,11 @@
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import SiteGroupActions from '@/components/SiteGroupActions.vue';
-  import {create} from '@actions/Settings/SitesController';
+  import {create, edit} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
   import CpLink from '@/components/CpLink.vue';
+  import Badge from '@/components/Badge.vue';
+  import {index} from '@routes/cp/settings/sites';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -60,10 +62,9 @@
       header: () => t('Name'),
       cell: ({row, getValue}) =>
         h(
-          'a',
+          CpLink,
           {
-            // @TODO Update to respect CP trigger
-            href: `/admin/settings/sites/${row.original.id}`,
+            href: edit(row.original.id),
           },
           h(
             'div',
@@ -72,7 +73,7 @@
             },
             [
               h('craft-indicator', {
-                variant: row.original.enabled ? 'success' : 'danger',
+                variant: row.original.enabled ? 'success' : 'empty',
               }),
               h('span', getValue()),
             ]
@@ -85,7 +86,14 @@
     }),
     columnHelper.accessor('enabled', {
       header: () => t('Status'),
-      cell: (info) => h('div', info.getValue()),
+      cell: (info) =>
+        h(
+          Badge,
+          {
+            variant: info.getValue() ? 'success' : 'default',
+          },
+          info.getValue() ? t('Enabled') : t('Disabled')
+        ),
     }),
     columnHelper.accessor('language', {
       header: () => t('Language'),
@@ -177,7 +185,11 @@
       </div>
     </template>
     <template #actions>
-      <CpLink :href="create({query: {groupId: group?.id}}).url" variant="primary" appearance="button">
+      <CpLink
+        :href="create({query: {groupId: group?.id}}).url"
+        variant="primary"
+        appearance="button"
+      >
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New Site') }}
       </CpLink>
@@ -187,18 +199,20 @@
       <div class="">
         <nav>
           <craft-nav-list>
-            <craft-nav-item url="/admin/settings/sites" :active="!group">
+            <craft-nav-item :url="index.url()" :active="!group">
               {{ t('All Sites') }}
             </craft-nav-item>
-            <craft-nav-item
+            <CpLink
+              as="craft-nav-item"
               v-for="g in groups"
               :key="g.id"
-              :url="`/admin/settings/sites?groupId=${g.id}`"
+              :href="index.url({query: {groupId: g.id}})"
               :active="group && g.id === group.id"
+              block
               suffix-only-on-hover
             >
               {{ g.name }}
-            </craft-nav-item>
+            </CpLink>
           </craft-nav-list>
         </nav>
 

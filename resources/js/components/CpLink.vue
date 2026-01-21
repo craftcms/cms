@@ -1,20 +1,26 @@
 <script setup lang="ts">
   import {Link} from '@inertiajs/vue3';
+  import type {Component} from 'vue';
 
   withDefaults(
     defineProps<{
-      href: any;
+      as?: string | Component;
+      href: string;
       variant?: 'default' | 'primary' | 'danger';
       appearance?: 'button' | 'inline';
+      block: boolean;
     }>(),
-    {variant: 'default', appearance: 'inline'}
+    {as: 'a', variant: 'default', appearance: 'inline', block: false}
   );
 </script>
 
 <template>
   <Link
+    :as="as"
     :href="href"
     :class="{
+      block: block,
+      'inline-flex': !block,
       'cp-link': true,
       'cp-link--inline': appearance === 'inline',
       'cp-link--button': appearance === 'button',
@@ -30,7 +36,6 @@
 
 <style scoped lang="scss">
   .cp-link {
-    display: inline-flex;
     justify-content: center;
     gap: var(--c-spacing-sm);
     align-items: center;
