@@ -16,6 +16,7 @@ use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
@@ -106,7 +107,7 @@ class ControllerTest extends TestCase
         ]);
         $this->controller->request = Craft::$app->getRequest();
 
-        $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
+        $redirect = Crypt::encrypt('craft/do/stuff');
 
         // Default
         $default = $this->controller->redirectToPostedUrl();

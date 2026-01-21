@@ -7,7 +7,6 @@
 
 namespace craft\imagetransforms;
 
-use Craft;
 use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\elements\Asset;
@@ -16,6 +15,7 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Cms;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * FallbackTransformer transforms image assets using GD or ImageMagick, and stores them in the storage folder.
@@ -40,9 +40,8 @@ class FallbackTransformer extends Component implements ImageTransformerInterface
             $transformString = 'original';
         }
 
-        $security = Craft::$app->getSecurity();
         return UrlHelper::actionUrl('assets/generate-fallback-transform', [
-            'transform' => $security->hashData(sprintf('%s,%s', $asset->id, $transformString)),
+            'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
         ] + Assets::revParams($asset), showScriptName: false);
     }
 

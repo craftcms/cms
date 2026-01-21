@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\validators;
 
-use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\validators\UserPasswordValidator;
+use Illuminate\Support\Facades\Hash;
 use TypeError;
 use UnitTester;
 
@@ -90,7 +90,7 @@ class PasswordValidatorTest extends TestCase
     public function testForceDiffValidation(bool $mustValidate, string $input, string $currentPassword): void
     {
         $this->passwordValidator->forceDifferent = true;
-        $this->passwordValidator->currentPassword = Craft::$app->getSecurity()->hashPassword($currentPassword);
+        $this->passwordValidator->currentPassword = Hash::make($currentPassword);
         $this->model->exampleParam = $input;
         $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
 

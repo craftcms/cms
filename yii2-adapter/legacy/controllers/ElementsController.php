@@ -51,6 +51,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -381,7 +382,6 @@ class ElementsController extends Controller
             ];
         }
 
-        $security = Craft::$app->getSecurity();
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
@@ -456,19 +456,19 @@ class ElementsController extends Controller
                         'elementType' => get_class($element),
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
-                        'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
+                        'hashedCpEditUrl' => Crypt::encrypt('{cpEditUrl}'),
                         'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
-                        'previewToken' => $previewTargets ? $security->generateRandomString() : null,
-                        'previewParamValue' => $previewTargets ? $security->hashData(Str::random(10)) : null,
+                        'previewToken' => $previewTargets ? Str::random(extendedChars: true) : null,
+                        'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                         'revisionId' => $element->revisionId,
                         'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? $security->hashData((string)$element->siteId) : null,
+                        'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? Crypt::encrypt((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form?->getVisibleElements() ?? [],
                         'staticLayoutElements' => $form?->getStaticElements() ?? [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
@@ -1013,7 +1013,7 @@ JS, [
                     'class' => ['btn', 'formsubmit'],
                     'data' => [
                         'action' => 'elements/save-draft',
-                        'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'redirect' => Crypt::encrypt('{cpEditUrl}'),
                         'params' => ['dropProvisional' => 1],
                     ],
                 ]);
@@ -1048,7 +1048,7 @@ JS, [
                 'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
                 'data' => [
                     'action' => 'elements/apply-draft',
-                    'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                    'redirect' => Crypt::encrypt('{cpEditUrl}'),
                 ],
             ]);
         }
@@ -2036,7 +2036,7 @@ JS, [
                 'docTitle' => $docTitle,
                 'title' => $title,
                 'previewTargets' => $previewTargets,
-                'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(Str::random(10)) : null,
+                'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                 'deltaNames' => Craft::$app->getView()->getDeltaNames(),
                 'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),

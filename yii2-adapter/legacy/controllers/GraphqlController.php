@@ -27,6 +27,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use DateTimeZone;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -815,6 +816,6 @@ class GraphqlController extends Controller
      */
     private function _generateToken(): string
     {
-        return Craft::$app->getSecurity()->generateRandomString(32);
+        return Str::random(32, extendedChars: true);
     }
 }
