@@ -39,4 +39,4 @@ Craft.UserIndex = Craft.BaseElementIndex.extend({
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\elements\\User', Craft.UserIndex);
+Craft.registerElementIndexClass('CraftCms\\Cms\\User\\Elements\\User', Craft.UserIndex);
