@@ -8,6 +8,8 @@
   import {store} from '@actions/Settings/SitesController';
   import {useEventListener} from '@vueuse/core';
   import SiteFields from '@/components/SiteFields.vue';
+  import DeleteSiteModal from '@/components/DeleteSiteModal.vue';
+  import {ref} from 'vue';
 
   const props = defineProps<{
     title: string;
@@ -43,6 +45,8 @@
   function save() {
     form.clearErrors().submit(store({site: props.site.id}));
   }
+
+  const modalActive = ref(false);
 </script>
 
 <template>
@@ -107,6 +111,13 @@
                 {{ t('Save and continue editing') }}
                 <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
+
+              <template v-if="!site.primary">
+                <hr />
+                <craft-action-item @click="modalActive = true" variant="danger">
+                  {{ t('Delete site') }}
+                </craft-action-item>
+              </template>
             </div>
           </craft-action-menu>
         </craft-button-group>
@@ -122,6 +133,12 @@
       </div>
     </AppLayout>
   </form>
+
+  <DeleteSiteModal
+    :open="modalActive"
+    :site="props.site"
+    v-if="!site.primary"
+  />
 </template>
 
 <style scoped lang="scss"></style>

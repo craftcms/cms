@@ -9,7 +9,7 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
-  import type {Site, SiteGroup, SuggestionGroup} from '@/types';
+  import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
@@ -22,7 +22,7 @@
     group: SiteGroup | null;
     groups: Array<SiteGroup>;
     sites: Array<Site>;
-    nameSuggestions?: Array<SuggestionGroup>;
+    nameSuggestions?: Array<SelectItem>;
     flash: {
       success: string | null;
       error: string | null;
@@ -113,10 +113,16 @@
     columnHelper.display({
       id: 'delete',
       cell: ({row}) =>
-        h(DeleteSiteButton, {
-          site: row.original,
-          class: 'whitespace-normal',
-        }),
+        h(
+          'div',
+          {
+            class: 'flex justify-end gap-2',
+          },
+          h(DeleteSiteButton, {
+            site: row.original,
+            class: 'whitespace-normal',
+          })
+        ),
       meta: {
         wrap: true,
       },
@@ -130,7 +136,7 @@
     get columns() {
       return columns.value;
     },
-    getCoreRowModel: getCoreRowModel(),
+    getCoreRowModel: getCoreRowModel<Site>(),
     defaultColumn: {
       // @ts-ignore this is technically invalid, but gives us the behavior we want
       size: 'auto',

@@ -151,6 +151,7 @@ final readonly class SitesController
                 'value' => $group->id,
             ])->all(),
             'readOnly' => $this->readOnly,
+            'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
         ]);
     }
 
