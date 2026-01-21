@@ -9,8 +9,6 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\elements\Category as CategoryElement;
-use craft\elements\Entry;
-use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\errors\GqlException;
 use craft\fs\Local;
@@ -31,6 +29,8 @@ use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;

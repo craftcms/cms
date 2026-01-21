@@ -8,8 +8,8 @@
 namespace crafttests\unit\elements;
 
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\test\TestCase;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\EntryFixture;
 use Illuminate\Support\Collection;

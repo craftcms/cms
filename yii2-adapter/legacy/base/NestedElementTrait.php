@@ -29,6 +29,7 @@ use yii\base\InvalidConfigException;
  * @mixin Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @phpstan-ignore trait.unused
  */
 trait NestedElementTrait
 {

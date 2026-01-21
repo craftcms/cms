@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\elements\Entry;
 use craft\services\Elements;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use CraftCms\Cms\Entry\Elements\Entry;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;

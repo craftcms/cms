@@ -8,9 +8,9 @@
 namespace craft\fieldlayoutelements\entries;
 
 use craft\base\ElementInterface;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;

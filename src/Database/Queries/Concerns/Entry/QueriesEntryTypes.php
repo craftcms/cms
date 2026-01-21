@@ -22,7 +22,7 @@ trait QueriesEntryTypes
      *            ---
      *            ```php{4}
      *            // fetch Article entries in the News section
-     *            $entries = \craft\elements\Entry::find()
+     *            $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *            ->section('news')
      *            ->type('article')
      *            ->all();

@@ -28,7 +28,7 @@ trait QueriesAuthors
      *            ---
      *            ```php
      *            // fetch entries authored by people in the Authors group
-     *            $entries = \craft\elements\Entry::find()
+     *            $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *            ->authorGroup('authors')
      *            ->all();
      *            ```

@@ -17,7 +17,6 @@ use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\TagQuery;
-use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\events\DefineBehaviorsEvent;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Route\Routes;
@@ -221,7 +221,7 @@ class CraftVariable extends ServiceLocator
      */
     public function entries(array $criteria = []): EntryQuery
     {
-        $query = Entry::find();
+        $query = new EntryQuery(Entry::class);
         Craft::configure($query, $criteria);
         return $query;
     }

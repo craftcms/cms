@@ -8,7 +8,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use function CraftCms\Cms\t;
 
 /**

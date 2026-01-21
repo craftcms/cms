@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
@@ -70,7 +71,7 @@ test('getTableAttributeHtml', function (mixed $value, string $expected, ?string 
         I18N::getFormattingLocale()->id = $locale;
     }
 
-    $html = $this->field->getPreviewHtml($value, new \craft\elements\Entry);
+    $html = $this->field->getPreviewHtml($value, new Entry);
 
     expect($html)->toBe($expected);
 

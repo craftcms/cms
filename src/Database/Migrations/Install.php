@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;

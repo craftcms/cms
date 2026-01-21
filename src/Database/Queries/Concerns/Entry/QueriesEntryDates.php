@@ -16,7 +16,7 @@ trait QueriesEntryDates
      *            ---
      *            ```php
      *            // fetch entries written in 2018
-     *            $entries = \craft\elements\Entry::find()
+     *            $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *            ->postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
      *            ->all();
      *            ```
@@ -36,7 +36,7 @@ trait QueriesEntryDates
      *            ---
      *            ```php
      *            // fetch entries written before 4/4/2018
-     *            $entries = \craft\elements\Entry::find()
+     *            $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *            ->before('2018-04-04')
      *            ->all();
      *            ```
@@ -56,7 +56,7 @@ trait QueriesEntryDates
      *            ---
      *            ```php
      *            // fetch entries written in the last 7 days
-     *            $entries = \craft\elements\Entry::find()
+     *            $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *            ->after((new \DateTime())->modify('-7 days'))
      *            ->all();
      *            ```

@@ -13,7 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
-use craft\elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\User\Elements\User;
 use craft\errors\DbConnectException;

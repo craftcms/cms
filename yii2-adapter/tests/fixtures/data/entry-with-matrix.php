@@ -1,6 +1,8 @@
 <?php
 
-$relatedEntryQuery = \craft\elements\Entry::find()->title('Theories of life');
+use CraftCms\Cms\Entry\Elements\Entry;
+
+$relatedEntryQuery = Entry::find()->title('Theories of life');
 
 return [
     [

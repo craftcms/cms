@@ -259,7 +259,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\DefineAttributeHtmlEvent;
      * use craft\events\ElementIndexTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
@@ -330,7 +330,7 @@ abstract class Element extends Component implements ElementInterface
      * use craft\base\Element;
      * use craft\base\ElementInterface;
      * use craft\db\Query;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\DefineEagerLoadingMapEvent;
      * use yii\base\Event;
      *
@@ -626,7 +626,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\DefineUrlEvent;
      * use craft\helpers\UrlHelper;
      * use yii\base\Event;
@@ -658,7 +658,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\DefineUrlEvent;
      * use craft\helpers\UrlHelper;
      * use yii\base\Event;
@@ -698,7 +698,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\ModelEvent;
      * use craft\helpers\ElementHelper;
      * use yii\base\Event;
@@ -725,7 +725,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\ModelEvent;
      * use craft\helpers\ElementHelper;
      * use yii\base\Event;
@@ -752,7 +752,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\ModelEvent;
      * use craft\helpers\ElementHelper;
      * use yii\base\Event;

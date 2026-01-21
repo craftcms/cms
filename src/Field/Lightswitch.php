@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -31,7 +32,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Lightswitch');
@@ -40,7 +41,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'toggle-on';
@@ -49,7 +50,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function isRequirable(): bool
     {
         return false;
@@ -58,7 +59,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return 'bool';
@@ -67,7 +68,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_BOOLEAN;
@@ -76,7 +77,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
@@ -180,7 +181,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtmlInternal($value, false);
@@ -189,7 +190,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return $this->_inputHtmlInternal($value, true);
@@ -217,7 +218,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): bool
     {
         // If this is a new entry, look for a default option
@@ -239,7 +240,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type
     {
         return Type::boolean();
@@ -248,7 +249,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [
@@ -261,7 +262,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlQueryArgumentType(): array
     {
         return [
@@ -273,7 +274,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         $canShowLabel = ($value && $this->onLabel) || (! $value && $this->offLabel);
@@ -320,7 +321,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
