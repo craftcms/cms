@@ -89,7 +89,6 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 use function CraftCms\Cms\t;
 
@@ -611,7 +610,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             'uri' => t('URI'),
             [
                 'label' => t('Section'),
-                'orderBy' => function (int $dir, Connection $db) {
+                'orderBy' => function (int $dir) {
                     $sectionIds = Sections::getAllSections()
                         ->sort(fn (Section $a, Section $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
@@ -619,7 +618,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                         ->pluck('id')
                         ->all();
 
-                    return new FixedOrderExpression('entries.sectionId', $sectionIds, $db);
+                    return new \CraftCms\Cms\Database\Expressions\FixedOrderExpression('entries.sectionId', $sectionIds);
                 },
                 'attribute' => 'section',
             ],
@@ -642,16 +641,16 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 'orderBy' => function (int $dir) {
                     if ($dir === SORT_ASC) {
                         if (Craft::$app->getDb()->getIsMysql()) {
-                            return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
+                            return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
                         }
 
-                        return new Expression('[[postDate]] ASC NULLS LAST');
+                        return DB::raw('postDate ASC NULLS LAST');
                     }
                     if (Craft::$app->getDb()->getIsMysql()) {
-                        return new Expression('[[postDate]] IS NULL DESC, [[postDate]] DESC');
+                        return DB::raw('postDate IS NULL DESC, postDate DESC');
                     }
 
-                    return new Expression('[[postDate]] DESC NULLS FIRST');
+                    return DB::raw('postDate DESC NULLS FIRST');
                 },
                 'attribute' => 'postDate',
                 'defaultDir' => 'desc',

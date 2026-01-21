@@ -578,6 +578,27 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->applyAfterQueryCallbacks($result);
     }
 
+    /** @TODO: Remove $db variable after ElementQueryInterface is removed */
+    public function exists($db = null): bool
+    {
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return false;
+        }
+
+        if ((int) $this->queryCacheDuration >= 0) {
+            return DependencyCache::remember(
+                key: $this->queryCacheKey($this, 'exists'),
+                ttl: $this->queryCacheDuration,
+                callback: fn () => $this->getQuery()->exists(),
+                dependency: $this->getCacheDependency(),
+            );
+        }
+
+        return $this->getQuery()->exists();
+    }
+
     public function nth(int $n, array|string $columns = ['*']): ?ElementInterface
     {
         if (! is_null($result = $this->getResultOverride())) {

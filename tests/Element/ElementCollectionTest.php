@@ -35,8 +35,8 @@ test('contains', function () {
 
     expect($collection)->toBeInstanceOf(ElementCollection::class);
     expect($collection->contains('title', 'Theories of life'))->toBeTrue();
-    expect($collection->contains(fn(Entry $entry) => $entry->title === 'Theories of life'))->toBeTrue();
-    expect($collection->contains(fn(Entry $entry) => false))->toBeFalse();
+    expect($collection->contains(fn (Entry $entry) => $entry->title === 'Theories of life'))->toBeTrue();
+    expect($collection->contains(fn (Entry $entry) => false))->toBeFalse();
 
     $first = $collection->first();
 
@@ -52,7 +52,7 @@ test('ids', function () {
     $collection = Entry::find()->collect();
     expect($collection)->toBeInstanceOf(ElementCollection::class);
 
-    $ids = $collection->map(fn(Entry $entry) => $entry->id)->all();
+    $ids = $collection->map(fn (Entry $entry) => $entry->id)->all();
     expect($collection->ids()->all())->toBe($ids);
 });
 
@@ -77,10 +77,10 @@ test('map', function () {
     $collection = Entry::find()->collect();
     expect($collection)->toBeInstanceOf(ElementCollection::class);
 
-    $mapped = $collection->map(fn(Entry $entry) => new Entry());
+    $mapped = $collection->map(fn (Entry $entry) => new Entry);
     expect($mapped)->toBeInstanceOf(ElementCollection::class);
 
-    $mapped = $collection->map(fn(Entry $entry) => $entry->id);
+    $mapped = $collection->map(fn (Entry $entry) => $entry->id);
     expect($mapped::class)->toBe(Collection::class);
 });
 
@@ -88,10 +88,10 @@ test('mapWithKeys', function () {
     $collection = Entry::find()->collect();
     expect($collection)->toBeInstanceOf(ElementCollection::class);
 
-    $mapped = $collection->mapWithKeys(fn(Entry $entry, int|string $key) => [$entry->id => new Entry()]);
+    $mapped = $collection->mapWithKeys(fn (Entry $entry, int|string $key) => [$entry->id => new Entry]);
     expect($mapped)->toBeInstanceOf(ElementCollection::class);
 
-    $mapped = $collection->mapWithKeys(fn(Entry $entry, int|string $key) => [$entry->id => $entry->id]);
+    $mapped = $collection->mapWithKeys(fn (Entry $entry, int|string $key) => [$entry->id => $entry->id]);
     expect($mapped)->toBeInstanceOf(Collection::class)
         ->not->toBeInstanceOf(ElementCollection::class);
 });
@@ -100,14 +100,14 @@ test('fresh', function () {
     $collection = Entry::find()->collect();
     expect($collection)->toBeInstanceOf(ElementCollection::class);
 
-    $collection->each(function(Entry $entry) {
+    $collection->each(function (Entry $entry) {
         $entry->title .= 'edit';
     });
-    expect($collection->contains(fn(Entry $entry) => !str_ends_with($entry->title, 'edit')))->toBeFalse();
+    expect($collection->contains(fn (Entry $entry) => ! str_ends_with((string) $entry->title, 'edit')))->toBeFalse();
 
     $fresh = $collection->fresh();
     expect($fresh)->toHaveCount($collection->count());
-    expect($fresh->contains(fn(Entry $entry) => !str_ends_with($entry->title, 'edit')))->toBeTrue();
+    expect($fresh->contains(fn (Entry $entry) => ! str_ends_with((string) $entry->title, 'edit')))->toBeTrue();
 });
 
 test('diff', function () {
@@ -173,11 +173,11 @@ test('except', function () {
 test('toBaseMethods', function () {
     $collection = Entry::find()->collect();
     expect($collection)->toBeInstanceOf(ElementCollection::class);
-    expect(get_class($collection->countBy(fn(Entry $entry) => $entry->sectionId)))->toBe(Collection::class);
-    expect(get_class($collection->collapse()))->toBe(Collection::class);
-    expect(get_class($collection->flatten(1)))->toBe(Collection::class);
-    expect(get_class($collection->keys()))->toBe(Collection::class);
-    expect(get_class($collection->pad(100, null)))->toBe(Collection::class);
-    expect(get_class($collection->pluck('title')))->toBe(Collection::class);
-    expect(get_class($collection->zip($collection->ids())))->toBe(Collection::class);
+    expect($collection->countBy(fn (Entry $entry) => $entry->sectionId)::class)->toBe(Collection::class);
+    expect($collection->collapse()::class)->toBe(Collection::class);
+    expect($collection->flatten(1)::class)->toBe(Collection::class);
+    expect($collection->keys()::class)->toBe(Collection::class);
+    expect($collection->pad(100, null)::class)->toBe(Collection::class);
+    expect($collection->pluck('title')::class)->toBe(Collection::class);
+    expect($collection->zip($collection->ids())::class)->toBe(Collection::class);
 });

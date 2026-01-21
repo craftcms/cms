@@ -7,9 +7,10 @@
 
 namespace crafttests\unit\elements\db;
 
+use craft\elements\db\EntryQuery;
 use craft\test\TestCase;
 use CraftCms\Cms\Entry\Elements\Entry;
-use yii\base\NotSupportedException;
+use RuntimeException;
 
 /**
  * Unit tests for ElementQuery
@@ -28,7 +29,7 @@ class ElementQueryTest extends TestCase
     public function testAndRelatedTo(array|false $expected, mixed $relatedToParam, mixed $andRelatedToParam): void
     {
         if ($expected === false) {
-            self::expectException(NotSupportedException::class);
+            self::expectException(RuntimeException::class);
         }
 
         $query = Entry::find()
@@ -46,7 +47,7 @@ class ElementQueryTest extends TestCase
      */
     public function testNormalizeOrderBy(array $expected, mixed $columns): void
     {
-        $query = Entry::find();
+        $query = new EntryQuery(Entry::class);
         self::assertSame($expected, $this->invokeMethod($query, 'normalizeOrderBy', [$columns]));
     }
 

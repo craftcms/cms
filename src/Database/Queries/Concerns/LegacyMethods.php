@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Queries\Concerns;
 
 use BadMethodCallException;
-use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use RuntimeException;
 
 /** @TODO: Remove this after ElementQueryInterface is removed */
@@ -84,25 +82,5 @@ trait LegacyMethods
         $this->forwardCallTo($this->subQuery, 'orWhere', func_get_args());
 
         return $this;
-    }
-
-    public function exists($db = null)
-    {
-        try {
-            $this->applyBeforeQueryCallbacks();
-        } catch (QueryAbortedException) {
-            return false;
-        }
-
-        if ((int) $this->queryCacheDuration >= 0) {
-            return DependencyCache::remember(
-                key: $this->queryCacheKey($this, 'exists'),
-                ttl: $this->queryCacheDuration,
-                callback: fn () => $this->getQuery()->exists(),
-                dependency: $this->getCacheDependency(),
-            );
-        }
-
-        return $this->getQuery()->exists();
     }
 }

@@ -12,7 +12,6 @@ use craft\base\ElementTrait;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\controllers\ElementsController;
-use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\Delete;
@@ -113,6 +112,7 @@ use Illuminate\Support\Facades\DB;
 use Override;
 use ReflectionClass;
 use Stringable;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
 use Twig\Markup;
@@ -1336,7 +1336,7 @@ abstract class Element extends Component implements ElementInterface
                 $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
-                    $elementQuery->orderBy(['lft' => SORT_ASC]);
+                    $elementQuery->orderBy('lft');
                     $variables['structure'] = Structures::getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
@@ -1359,7 +1359,7 @@ abstract class Element extends Component implements ElementInterface
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1], $db)) {
-                            $elementQuery->addOrderBy($orderBy);
+                            $elementQuery->orderBy($orderBy[0], $orderBy[1] === SORT_ASC ? 'asc' : 'desc');
                         } else {
                             break;
                         }
@@ -2321,7 +2321,7 @@ abstract class Element extends Component implements ElementInterface
         string $attribute,
         int $dir,
         Connection $db,
-    ): ExpressionInterface|bool|array|string {
+    ): \Illuminate\Contracts\Database\Query\Expression|bool|array|string {
         if (! $attribute) {
             return false;
         }
@@ -2348,16 +2348,15 @@ abstract class Element extends Component implements ElementInterface
         // See if it's a source-specific sort option
         foreach (app(ElementSources::class)->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
-                if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
-                    $params = [];
-                    $sql = $sortOption['orderBy']->getSql($params);
+                if ($sortOption['orderBy'] instanceof Coalesce) {
+                    $sql = $sortOption['orderBy']->getValue(DB::connection()->getQueryGrammar());
                 } elseif (is_string($sortOption['orderBy'])) {
                     $sql = $sortOption['orderBy'];
                 } else {
                     return $sortOption['orderBy'];
                 }
 
-                return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params ?? []);
+                return DB::raw(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'));
             }
         }
 

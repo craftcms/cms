@@ -767,7 +767,7 @@ class ElementIndexesController extends BaseElementsController
             $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
-                ->orderBy([])
+                ->reorder()
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->status(null);
@@ -775,7 +775,7 @@ class ElementIndexesController extends BaseElementsController
             // Get the actual elements
             $collapsedElements = (clone $descendantQuery)
                 ->id($collapsedElementIds)
-                ->orderBy(['lft' => SORT_ASC])
+                ->orderBy('lft')
                 ->all();
 
             if (!empty($collapsedElements)) {
