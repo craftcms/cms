@@ -13,7 +13,6 @@
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
-  import SiteGroupActions from '@/components/SiteGroupActions.vue';
   import {create, edit} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
   import CpLink from '@/components/CpLink.vue';
@@ -184,12 +183,28 @@
         <h1 class="title text-xl">
           {{ pageTitle }}
         </h1>
-        <SiteGroupActions
-          class="inline-block"
-          v-if="group"
-          @click:rename="openModal('update')"
-          @click:delete="handleDeleteClick"
-        />
+
+        <craft-action-menu>
+          <craft-button type="button" icon size="small" slot="invoker">
+            <craft-icon
+              name="gear"
+              :label="t('Site group Actions')"
+            ></craft-icon>
+          </craft-button>
+
+          <div slot="content">
+            <craft-action-item @click.prevent="openModal('update')">
+              {{ t('Rename Group') }}
+            </craft-action-item>
+            <craft-action-item
+              variant="danger"
+              :disabled="sites.length > 0"
+              @click.prevent="handleDeleteClick"
+            >
+              {{ t('Delete Group') }}
+            </craft-action-item>
+          </div>
+        </craft-action-menu>
       </div>
     </template>
     <template #actions>
