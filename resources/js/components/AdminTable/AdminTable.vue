@@ -93,7 +93,7 @@
     text-align: left;
   }
 
-  tr {
+  tr:not(:last-child) {
     border-bottom: 1px solid var(--color-slate-200);
   }
 </style>
