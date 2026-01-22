@@ -173,28 +173,34 @@ class ElementIndexesController extends BaseElementsController
     {
         $elementSources = Craft::$app->getElementSources();
 
-        $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
-            ->map(fn(array $option) => [
-                'label' => $option['label'],
-                'attr' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
+        if ($this->sourceKey) {
+            $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+                ->map(fn(array $option) => [
+                    'label' => $option['label'],
+                    'attr' => $option['attribute'] ?? $option['orderBy'],
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
 
-        $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute, string $key) => [
-                ...$attribute,
-                'attr' => $key,
-            ])
-            ->values()
-            ->all();
+            $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+                ->map(fn(array $attribute, string $key) => [
+                    ...$attribute,
+                    'attr' => $key,
+                ])
+                ->values()
+                ->all();
 
-        $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute) => $attribute[0])
-            ->filter(fn(string $attribute) => $attribute !== 'title')
-            ->values()
-            ->all();
+            $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
+                ->map(fn(array $attribute) => $attribute[0])
+                ->filter(fn(string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        } else {
+            $sortOptions = [];
+            $tableColumns = [];
+            $defaultTableColumns = [];
+        }
 
         return $this->asJson(compact(
             'sortOptions',
