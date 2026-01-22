@@ -26,7 +26,10 @@ final readonly class SiteGroupsController
         $data = $siteGroup->toArray();
         $data['name'] = t($data['name'], category: 'site');
 
-        return back();
+        return to_route('craft.cp.settings.sites.index', [
+            'groupId' => $siteGroup->id,
+        ])
+            ->with('success', t('Site deleted.'));
     }
 
     public function destroy(int $groupId): Response
