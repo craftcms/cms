@@ -3216,7 +3216,7 @@ class Elements extends Component
 
                     if ($refType === 'id') {
                         $elementQuery->id($refNames);
-                    } else {
+                    } elseif (method_exists($elementQuery, 'ref')) {
                         $elementQuery->ref($refNames);
                     }
 
