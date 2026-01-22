@@ -28,11 +28,7 @@ final readonly class UpdateRelease
 
         event($event = new CriticalUpdateReleased($update));
 
-        if ($event->isValid) {
-            return false;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     public static function fromArray(array $data): self
