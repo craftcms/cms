@@ -47,10 +47,6 @@ export default css`
     min-width: var(--c-size-control-sm);
     min-height: var(--c-size-control-sm);
     font-size: 0.9em;
-
-    craft-icon {
-      font-size: 0.8em;
-    }
   }
 
   :host([size~='large']) {
@@ -140,8 +136,25 @@ export default css`
 
   .button-content {
     display: flex;
+    align-items: center;
     gap: 0.25em;
     width: 100%;
+  }
+
+  .prefix,
+  .suffix {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .button-content--start {
+    justify-content: start;
+  }
+
+  .button-content--end {
+    justify-content: end;
   }
 
   craft-button-group craft-button {
