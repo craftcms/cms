@@ -1,41 +1,27 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\elements\db;
+namespace CraftCms\Cms\Database\Queries\Contracts;
 
 use craft\base\ElementInterface;
-use craft\db\Query;
 use craft\models\FieldLayout;
-use CraftCms\Cms\Element\ElementCollection;
-use yii\db\Connection;
-use yii\db\QueryInterface;
 
 /**
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin Query
- * @mixin ElementQuery
- * @phpstan-require-extends ElementQuery
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated 6.0.0
+ * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ * @phpstan-require-extends \CraftCms\Cms\Database\Queries\ElementQuery
  */
-interface ElementQueryInterface extends QueryInterface
+interface ElementQueryInterface
 {
     /**
      * Executes the query and returns a single row of result.
-     * @param Connection|null $db the database connection used to execute the query.
-     * If this parameter is not given, the `db` application component will be used.
-     * @return ElementInterface|null the first row (in terms of an array) of the query result. False is returned if the query
+     * @param  array|string  $columns
+     * @return ElementInterface|array|null the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      * @phpstan-ignore method.childReturnType
      */
-    public function one($db = null);
+    public function one($columns = ['*']);
 
     /**
      * Causes the query results to be returned in reverse order.
@@ -91,7 +77,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 5.6.0
      */
     public function withProvisionalDrafts(bool $value = true): static;
 
@@ -101,7 +86,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2.9
      */
     public function ignorePlaceholders(bool $value = true): static;
 
@@ -128,7 +112,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool|null $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2.0
      */
     public function drafts(?bool $value = true): static;
 
@@ -159,7 +142,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param int|null $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function draftId(?int $value = null): static;
 
@@ -195,7 +177,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function draftOf(mixed $value): static;
 
@@ -227,7 +208,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function draftCreator(mixed $value): static;
 
@@ -254,7 +234,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool|null $value The property value
      * @return static self reference
-     * @since 3.7.0
      */
     public function provisionalDrafts(?bool $value = true): static;
 
@@ -268,7 +247,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value
      * @return static self reference
-     * @since 5.7.0
      */
     public function canonicalsOnly(bool $value = true): static;
 
@@ -295,7 +273,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.6.6
      */
     public function savedDraftsOnly(bool $value = true): static;
 
@@ -322,7 +299,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool|null $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2.0
      */
     public function revisions(?bool $value = true): static;
 
@@ -353,7 +329,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param int|null $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function revisionId(?int $value = null): static;
 
@@ -385,7 +360,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function revisionOf(mixed $value): static;
 
@@ -417,7 +391,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function revisionCreator(mixed $value): static;
 
@@ -514,7 +487,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.7.0
      */
     public function siteSettingsId(mixed $value): static;
 
@@ -609,7 +581,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool|null $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.1.0
      */
     public function trashed(?bool $value = true): static;
 
@@ -799,7 +770,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static
-     * @since 4.9.0
      */
     public function language(mixed $value): self;
 
@@ -829,7 +799,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2.0
      */
     public function unique(bool $value = true): static;
 
@@ -864,7 +833,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param array|null $value The property value
      * @return static self reference
-     * @since 3.2.0
      */
     public function preferSites(?array $value = null): static;
 
@@ -891,7 +859,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 5.4.0
      */
     public function notRelatedTo(mixed $value): static;
 
@@ -920,7 +887,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 5.4.0
      */
     public function andNotRelatedTo(mixed $value): static;
 
@@ -975,7 +941,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 3.6.11
      */
     public function andRelatedTo(mixed $value): static;
 
@@ -1136,17 +1101,8 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|null $value The property value
      * @return static self reference
-     * @since 5.0.0
      */
     public function inBulkOp(?string $value): static;
-
-    /**
-     * Narrows the query results based on a reference string.
-     *
-     * @param mixed $value The property value
-     * @return static self reference
-     */
-    //public function ref(mixed $value): static;
 
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
@@ -1179,7 +1135,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param array|string|null $value The property value to append
      * @return static self reference
-     * @since 3.0.9
      */
     public function andWith(array|string|null $value): static;
 
@@ -1189,7 +1144,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|bool $value The property value. If a string, the value will be used as the eager-loading alias.
      * @return static
-     * @since 5.0.0
      */
     public function eagerly(string|bool $value = true): static;
 
@@ -1198,7 +1152,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 5.2.0
      */
     public function withCustomFields(bool $value = true): static;
 
@@ -1276,7 +1229,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param bool $value The property value
      * @return static self reference
-     * @since 3.0.4
      */
     public function hasDescendants(bool $value = true): static;
 
@@ -1595,7 +1547,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $handle The eager loading handle the query is for
      * @param ElementInterface $sourceElement One of the source elements the query is fetching elements for
-     * @since 5.0.0
      */
     public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static;
 
@@ -1604,7 +1555,6 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|null $alias The eager-loading alias to check
      * @return bool
-     * @since 5.0.0
      */
     public function wasEagerLoaded(?string $alias = null): bool;
 
@@ -1613,82 +1563,46 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|null $alias The eager-loading alias to check
      * @return bool
-     * @since 5.0.0
      */
     public function wasCountEagerLoaded(?string $alias = null): bool;
 
     /**
      * Executes the query and returns all results as an array.
      *
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
+     * @param array $columns = ['*']
      * @return ElementInterface[]|array[] The resulting elements.
      */
-    //public function all($db = null): array;
-
-    /**
-     * Executes the query and returns all results as a collection.
-     *
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
-     * @return ElementCollection A collection of the resulting elements.
-     * @since 4.0.0
-     */
-    //public function collect(?Connection $db = null): ElementCollection;
-
-    /**
-     * Executes the query and returns a single row of result.
-     *
-     * @param Connection $db The database connection used to execute the query.
-     * If this parameter is not given, the `db` application
-     * component will be used.
-     * @return mixed The resulting element. Null is returned if the query results in nothing.
-     */
-    //public function one($db = null): mixed;
+    public function all($columns = ['*']): array;
 
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
+     * @param array $columns
      * @return mixed The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
-    //public function nth(int $n, ?Connection $db = null): mixed;
+    public function nth(int $n, $columns): mixed;
 
     /**
      * Executes the query and returns the IDs of the resulting elements.
      *
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
-    //public function ids(?Connection $db = null): array;
+    public function ids(): array;
 
     /**
      * Converts a found row into an element instance.
      *
      * @param array $row
      * @return ElementInterface
-     * @since 3.6.0
      */
     public function createElement(array $row): ElementInterface;
-
-    /**
-     * Performs any post-population processing on elements.
-     *
-     * @param ElementInterface[]|array[] $elements the populated elements
-     * @return ElementInterface[]|array[]
-     * @since 3.6.0
-     */
-    //public function afterPopulate(array $elements): array;
 
     /**
      * Returns the field layouts that could be associated with the resulting elements.
      *
      * @return FieldLayout[]
-     * @since 5.6.0
      */
-    //public function getFieldLayouts(): array;
+    public function getFieldLayouts(): array;
 }
