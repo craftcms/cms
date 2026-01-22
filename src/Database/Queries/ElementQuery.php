@@ -284,9 +284,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Find a model by its primary key.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<int, TElement> : TElement|null)
+     * @param  int|string|Arrayable<array-key, mixed>|array<mixed>  $id
+     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array> : TElement|array|null)
      */
-    public function find(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection|null
+    public function find(mixed $id, $columns = ['*']): ElementInterface|ElementCollection|Collection|array|null
     {
         if (is_array($id) || $id instanceof Arrayable) {
             return $this->findMany($id, $columns);
@@ -299,9 +301,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      * Find multiple elements by their primary keys.
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>|array<int, TElement>
+     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>|Collection<int, array>
      */
-    public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|array
+    public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|Collection
     {
         $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
 
@@ -315,11 +317,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<int, TElement> : TElement)
+     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection
+    public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection|Collection|array
     {
         $result = $this->find($id, $columns);
 
@@ -328,7 +330,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         if (is_array($id)) {
             if (count($result) !== count(array_unique($id))) {
                 throw (new ElementNotFoundException)->setElement(
-                    $this->elementType, array_diff($id, $result->pluck('id')->all())
+                    $this->elementType, array_diff($id, $result->pluck('id')->all()),
                 );
             }
 
@@ -337,7 +339,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
 
         if (is_null($result)) {
             throw (new ElementNotFoundException)->setElement(
-                $this->elementType, $id
+                $this->elementType, $id,
             );
         }
 
@@ -375,11 +377,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Execute the query and get the first result or throw an exception.
      *
-     * @return TElement
+     * @return TElement|array
      *
      * @throws ElementNotFoundException<TElement>
      */
-    public function firstOrFail(array|string $columns = ['*']): ElementInterface
+    public function firstOrFail(array|string $columns = ['*']): ElementInterface|array
     {
         if (! is_null($model = $this->first($columns))) {
             return $model;
@@ -415,12 +417,12 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Execute the query and get the first result if it's the sole matching record.
      *
-     * @return TElement
+     * @return TElement|array
      *
      * @throws ElementNotFoundException<TElement>
      * @throws \Illuminate\Database\MultipleRecordsFoundException
      */
-    public function sole(array|string $columns = ['*']): ElementInterface
+    public function sole(array|string $columns = ['*']): ElementInterface|array
     {
         try {
             return $this->baseSole($columns);
@@ -430,9 +432,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     }
 
     /**
-     * @return TElement|null
+     * @return TElement|array|null
      */
-    public function first($columns = ['*']): ?ElementInterface
+    public function first($columns = ['*']): ElementInterface|array|null
     {
         // Eagerly?
         $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
@@ -448,14 +450,18 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      * Execute the query as a "select" statement.
      *
      * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>
+     * @return \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array>
      */
-    public function get($columns = ['*']): ElementCollection
+    public function get($columns = ['*']): ElementCollection|Collection
     {
         $models = $this->getModels($columns);
 
-        return $this->applyAfterQueryCallbacks(new ElementCollection($models))
-            ->when($this->indexBy, fn (ElementCollection $collection) => $collection->keyBy($this->indexBy));
+        $results = $this->asArray
+            ? new Collection($models)
+            : new ElementCollection($models);
+
+        return $this->applyAfterQueryCallbacks($results)
+            ->when($this->indexBy, fn (ElementCollection|Collection $collection) => $collection->keyBy($this->indexBy));
     }
 
     /**
@@ -516,7 +522,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->first($columns);
     }
 
-    public function pluck($column, $key = null): Collection|array
+    public function pluck($column, $key = null): Collection
     {
         $column = $this->columnMap[$column] ?? $column;
 
@@ -527,23 +533,21 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
-            return $this->asArray ? [] : new Collection;
+            return new Collection;
         }
 
         $column = $this->columnMap[$column] ?? $column;
 
         if ((int) $this->queryCacheDuration >= 0) {
-            $result = DependencyCache::remember(
+            return DependencyCache::remember(
                 key: $this->queryCacheKey($this, 'pluck', [$column, $key]),
                 ttl: $this->queryCacheDuration,
                 callback: fn () => $this->query->pluck($column, $key),
                 dependency: $this->getCacheDependency(),
             );
-        } else {
-            $result = $this->query->pluck($column, $key);
         }
 
-        return $result->when($this->asArray, fn (Collection $collection) => $collection->all());
+        return $this->query->pluck($column, $key);
     }
 
     /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
@@ -963,7 +967,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     protected static function registerMixin(object $mixin, bool $replace = true): void
     {
         $methods = new ReflectionClass($mixin)->getMethods(
-            ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED
+            ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED,
         );
 
         foreach ($methods as $method) {

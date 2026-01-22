@@ -16,13 +16,9 @@ test('asArray', function () {
     $element = Entry::factory()->create();
 
     expect(entryQuery()->get())->toBeInstanceOf(Collection::class);
-    expect(entryQuery()->asArray()->get())->toBeArray();
-
-    expect(entryQuery()->pluck('id'))->toBeInstanceOf(Collection::class);
-    expect(entryQuery()->asArray()->pluck('id'))->toBeArray();
-
-    expect(entryQuery()->findMany([$element->id]))->toBeInstanceOf(Collection::class);
-    expect(entryQuery()->asArray()->findMany([$element->id]))->toBeArray();
+    expect(entryQuery()->asArray()->all())->toBeArray();
+    expect(entryQuery()->asArray()->first())->toBeArray();
+    expect(entryQuery()->asArray()->sole())->toBeArray();
 });
 
 test('fixedOrder', function () {
