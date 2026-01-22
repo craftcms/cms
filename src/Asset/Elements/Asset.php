@@ -84,6 +84,7 @@ use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Override;
+use Stringable;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -2773,7 +2774,7 @@ JS, [
      * {@inheritdoc}
      */
     #[Override]
-    public function getAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string|Stringable
     {
         if ($this->isFolder) {
             return '';

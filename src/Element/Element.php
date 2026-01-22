@@ -962,7 +962,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new \CraftCms\Cms\Element\Queries\ElementQuery(static::class);
+        return new Queries\ElementQuery(static::class);
     }
 
     /**
@@ -1433,7 +1433,7 @@ abstract class Element extends Component implements ElementInterface
         return Craft::$app->getView()->renderTemplate($template, $variables);
     }
 
-    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
+    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|Queries\ElementQuery
     {
         $wheres = $elementQuery->getSubQuery()->wheres;
 
@@ -1505,7 +1505,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        if ($elementQuery instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
+        if ($elementQuery instanceof Queries\ElementQuery) {
             return $elementQuery
                 ->select(DB::raw('1'))
                 ->count();
@@ -4507,7 +4507,7 @@ JS, [
      *
      * @since 3.5.0
      */
-    public function getLocalized(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
+    public function getLocalized(): ElementQueryInterface|Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
@@ -4731,7 +4731,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
+    public function getAncestors(?int $dist = null): ElementQueryInterface|Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
@@ -4750,7 +4750,7 @@ JS, [
      *
      * @since 5.6.8
      */
-    protected function ancestors(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
+    protected function ancestors(): ElementQueryInterface|Queries\ElementQuery
     {
         return static::find()
             ->structureId($this->structureId)
@@ -4761,7 +4761,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
+    public function getDescendants(?int $dist = null): ElementQueryInterface|Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
@@ -4780,7 +4780,7 @@ JS, [
      *
      * @since 5.6.8
      */
-    protected function descendants(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
+    protected function descendants(): ElementQueryInterface|Queries\ElementQuery
     {
         return static::find()
             ->structureId($this->structureId)
@@ -4791,7 +4791,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getChildren(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
+    public function getChildren(): ElementQueryInterface|Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($children = $this->getEagerLoadedElements('children')) !== null) {
@@ -4804,7 +4804,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getSiblings(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
+    public function getSiblings(): ElementQueryInterface|Queries\ElementQuery|ElementCollection
     {
         return static::find()
             ->structureId($this->structureId)
@@ -5761,7 +5761,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string|Stringable
     {
         // Fire a 'defineAttributeHtml' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ATTRIBUTE_HTML)) {

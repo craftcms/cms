@@ -120,6 +120,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     protected array $propertyPassthru = [
         'from',
         'orders',
+        'limit',
+        'offset',
     ];
 
     /**

@@ -22,6 +22,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
+use Stringable;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -1808,7 +1809,7 @@ interface ElementInterface extends
      * @return string The HTML that should be shown for a given attribute in table and card views.
      * @since 5.0.0
      */
-    public function getAttributeHtml(string $attribute): string;
+    public function getAttributeHtml(string $attribute): string|Stringable;
 
     /**
      * Returns the HTML that should be shown for a given attribute's inline editing input.
