@@ -29,7 +29,7 @@ export default css`
       height: 76%;
       border-radius: calc(2rem / 16);
       background-color: currentColor;
-      transform: translateX(-200%);
+      transform: translateX(-150%);
     }
   }
 

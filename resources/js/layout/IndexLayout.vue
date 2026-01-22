@@ -64,11 +64,9 @@
           ></craft-icon>
           {{ toggleLabel }}
         </craft-button>
-        <Transition>
-          <div v-if="navState === 'expanded'" id="nav-container">
-            <slot name="interior-nav" :state="navState"></slot>
-          </div>
-        </Transition>
+        <div v-if="navState === 'expanded'" id="nav-container">
+          <slot name="interior-nav" :state="navState"></slot>
+        </div>
       </div>
       <div
         class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-auto"
