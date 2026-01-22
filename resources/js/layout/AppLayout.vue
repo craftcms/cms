@@ -198,6 +198,10 @@
     display: grid;
   }
 
+  .cp__main {
+    container-type: size;
+  }
+
   .cp__header {
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);

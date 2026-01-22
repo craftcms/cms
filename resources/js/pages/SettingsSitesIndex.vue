@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {
@@ -19,6 +18,7 @@
   import Badge from '@/components/Badge.vue';
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/InputCombobox.vue';
+  import IndexLayout from '@/layout/IndexLayout.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -177,14 +177,14 @@
 </script>
 
 <template>
-  <AppLayout :debug="{form, $props}" :full-width="true" :title="pageTitle">
+  <IndexLayout :debug="{form, $props}" :full-width="true" :title="pageTitle">
     <template #title>
       <div class="flex gap-2 items-center">
         <h1 class="title text-xl">
           {{ pageTitle }}
         </h1>
 
-        <craft-action-menu>
+        <craft-action-menu v-if="group?.id">
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
@@ -209,6 +209,7 @@
     </template>
     <template #actions>
       <CpLink
+        as="craft-button"
         :href="create({query: {groupId: group?.id}}).url"
         variant="primary"
         appearance="button"
@@ -218,69 +219,64 @@
       </CpLink>
     </template>
 
-    <div class="interior">
-      <div class="">
-        <nav>
-          <craft-nav-list>
-            <craft-nav-item :url="index.url()" :active="!group">
-              {{ t('All Sites') }}
-            </craft-nav-item>
+    <template #interior-nav="{state}">
+      <nav>
+        <craft-nav-list>
+          <craft-nav-item :url="index.url()" :active="!group">
+            {{ t('All Sites') }}
+          </craft-nav-item>
+          <CpLink
+            as="craft-nav-item"
+            v-for="g in groups"
+            :key="g.id"
+            :href="index.url({query: {groupId: g.id}})"
+            :active="group && g.id === group.id"
+            block
+          >
+            {{ g.name }}
+          </CpLink>
+        </craft-nav-list>
+      </nav>
+
+      <div class="mt-4 flex gap-2">
+        <craft-button type="button" @click="openModal('create')" size="small">
+          <craft-icon name="plus" slot="prefix"></craft-icon>
+          {{ t('New Group') }}
+        </craft-button>
+      </div>
+    </template>
+
+    <div>
+      <template v-if="readOnly">
+        <CalloutReadOnly />
+      </template>
+
+      <template v-if="sites.length">
+        <AdminTable :table="sitesTable"></AdminTable>
+      </template>
+      <template v-else>
+        <div class="py-20">
+          <div
+            class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
+          >
+            <craft-icon
+              name="light/earth-americas"
+              style="font-size: calc(48rem / 16)"
+            ></craft-icon>
+            <p>{{ t('No sites exist for this group yet.') }}</p>
             <CpLink
-              as="craft-nav-item"
-              v-for="g in groups"
-              :key="g.id"
-              :href="index.url({query: {groupId: g.id}})"
-              :active="group && g.id === group.id"
-              block
-              suffix-only-on-hover
+              as="craft-button"
+              :href="create({query: {groupId: group?.id}}).url"
+              appearance="button"
             >
-              {{ g.name }}
+              <craft-icon name="plus" slot="prefix"></craft-icon>
+              {{ t('New Site') }}
             </CpLink>
-          </craft-nav-list>
-        </nav>
-
-        <div class="mt-4 flex gap-2">
-          <craft-button type="button" @click="openModal('create')" size="small">
-            <craft-icon name="plus" slot="prefix"></craft-icon>
-            {{ t('New Group') }}
-          </craft-button>
+          </div>
         </div>
-      </div>
-      <div
-        class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-auto"
-      >
-        <div>
-          <template v-if="readOnly">
-            <CalloutReadOnly />
-          </template>
-
-          <template v-if="sites.length">
-            <AdminTable :table="sitesTable"></AdminTable>
-          </template>
-          <template v-else>
-            <div class="py-20">
-              <div
-                class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
-              >
-                <craft-icon
-                  name="light/earth-americas"
-                  style="font-size: calc(48rem / 16)"
-                ></craft-icon>
-                <p>{{ t('No sites exist for this group yet.') }}</p>
-                <CpLink
-                  :href="create({query: {groupId: group?.id}}).url"
-                  appearance="button"
-                >
-                  <craft-icon name="plus" slot="prefix"></craft-icon>
-                  {{ t('New Site') }}
-                </CpLink>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
+      </template>
     </div>
-  </AppLayout>
+  </IndexLayout>
 
   <ModalForm
     :is-active="modalActive"
