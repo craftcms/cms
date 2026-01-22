@@ -828,7 +828,7 @@ JS, [
                 ->status(null)
                 ->offset(1)
                 ->limit($generalConfig->maxRevisions ? min($generalConfig->maxRevisions - 1, 10) : 10)
-                ->orderBy(['dateCreated' => SORT_DESC])
+                ->orderByDesc('dateCreated')
                 ->with(['revisionCreator']);
 
             $revisions = $revisionsQuery->all();

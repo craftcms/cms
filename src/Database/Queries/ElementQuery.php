@@ -208,6 +208,13 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     private bool $joinedElementTable = false;
 
     /**
+     * @var bool Whether the element query before query callback has been called
+     *
+     * @see elementQueryBeforeQuery()
+     */
+    private bool $elementQueryBeforeQueryCalled = false;
+
+    /**
      * Create a new Element query instance.
      *
      * @param  class-string<TElement>  $elementType
@@ -1030,6 +1037,10 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
 
     protected function elementQueryBeforeQuery(): void
     {
+        if ($this->elementQueryBeforeQueryCalled) {
+            return;
+        }
+
         $this->applySelectParams();
 
         // If an element table was never joined in, explicitly filter based on the element type
@@ -1054,6 +1065,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         }
 
         $this->query->fromSub($this->subQuery, 'subquery');
+
+        $this->elementQueryBeforeQueryCalled = true;
     }
 
     /**
