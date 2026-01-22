@@ -85,7 +85,9 @@
     gap: var(--c-spacing-md);
 
     @container (width >= 768px) {
-      grid-template-columns: minmax(calc(120rem / 16), 16%) 1fr;
+      grid-template-columns:
+        clamp(calc(120rem / 16), 20%, calc(180rem / 16))
+        6fr;
       align-items: start;
     }
   }
