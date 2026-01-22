@@ -7,18 +7,20 @@
     getCoreRowModel,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {computed, h, ref} from 'vue';
+  import {computed, h, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
-  import {create, edit} from '@actions/Settings/SitesController';
+  import {create, edit, reorder} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
+  import ReorderButton from '@/components/ReorderButton.vue';
+  import VarDump from '@/components/VarDump.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -59,6 +61,48 @@
     }
 
     modalActive.value = true;
+  }
+
+  const siteIds = ref(props.sites.map((site) => site.id));
+  const sites = computed(() => {
+    return siteIds.value
+      .map((id) => props.sites.find((site) => site.id === id))
+      .filter(Boolean);
+  });
+
+  watch(
+    siteIds,
+    (newValue, oldValue) => {
+      router.post(
+        reorder(),
+        {
+          ids: newValue,
+        },
+        {
+          preserveScroll: true,
+          onError: () => {
+            siteIds.value = oldValue;
+          },
+        }
+      );
+    },
+    {deep: true}
+  );
+
+  function moveUp(site: Site) {
+    const oldIndex = siteIds.value.indexOf(site.id);
+    const newIndex = oldIndex - 1;
+
+    siteIds.value.splice(oldIndex, 1);
+    siteIds.value.splice(newIndex, 0, site.id);
+  }
+
+  function moveDown(site: Site) {
+    const oldIndex = siteIds.value.indexOf(site.id);
+    const newIndex = oldIndex + 1;
+
+    siteIds.value.splice(oldIndex, 1);
+    siteIds.value.splice(newIndex, 0, site.id);
   }
 
   const columns = ref([
@@ -121,20 +165,43 @@
       header: () => t('Group'),
     }),
     columnHelper.display({
-      id: 'delete',
+      id: 'actions',
       cell: ({row}) =>
-        !row.original.primary
-          ? h(
-              'div',
+        h(
+          'div',
+          {
+            class: 'flex justify-end gap-1',
+          },
+          [
+            h(
+              'craft-button',
               {
-                class: 'flex justify-end gap-2',
+                size: 'small',
+                appearance: 'plain',
+                icon: true,
+                disabled: row.index === 0,
+                onClick: () => moveUp(row.original),
               },
-              h(DeleteSiteButton, {
-                site: row.original,
-                class: 'whitespace-normal',
-              })
-            )
-          : null,
+              h('craft-icon', {name: 'chevron-up', label: 'Move site up'})
+            ),
+            h(
+              'craft-button',
+              {
+                size: 'small',
+                appearance: 'plain',
+                icon: true,
+                disabled: sites.value.length === row.index + 1,
+                onClick: () => moveDown(row.original),
+              },
+              h('craft-icon', {name: 'chevron-down', label: 'Move site down'})
+            ),
+            h(DeleteSiteButton, {
+              site: row.original,
+              disabled: row.original.primary,
+              class: 'whitespace-normal',
+            }),
+          ]
+        ),
       meta: {
         wrap: true,
       },
@@ -143,12 +210,13 @@
 
   const sitesTable = useVueTable({
     get data() {
-      return props.sites;
+      return sites.value;
     },
     get columns() {
       return columns.value;
     },
     getCoreRowModel: getCoreRowModel<Site>(),
+    getRowId: (row) => row.id.toString(),
     defaultColumn: {
       // @ts-ignore this is technically invalid, but gives us the behavior we want
       size: 'auto',

@@ -15,7 +15,6 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -59,11 +58,7 @@ final readonly class SitesController
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
             'groups' => $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values(),
-            'sites' => $sites
-                ->sortBy([
-                    ['id', 'asc'],
-                    ['sortOrder', 'asc'],
-                ])->values()->toArray(),
+            'sites' => $sites->toArray(),
             'readOnly' => $this->readOnly,
             'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
         ]);
@@ -184,7 +179,7 @@ final readonly class SitesController
             ->with('success', t('Site saved.'));
     }
 
-    public function reorder(Request $request): JsonResponse
+    public function reorder(Request $request)
     {
         $ids = $request->input('ids', []);
 
@@ -194,7 +189,7 @@ final readonly class SitesController
 
         $this->sites->reorderSites($ids);
 
-        return new JsonResponse;
+        return back();
     }
 
     public function destroy(Request $request, SiteModel $siteData): \Illuminate\Http\RedirectResponse
