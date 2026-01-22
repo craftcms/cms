@@ -1044,6 +1044,11 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         $this->applyOrderByParams($this);
         $this->applyUniqueParams($this);
 
+        if ($this->getOffset() !== null && $this->getLimit() === null && DB::connection()->getDriverName() === 'mysql') {
+            // Limit is not optional in MySQL
+            $this->subQuery->limit(PHP_INT_MAX);
+        }
+
         $this->query->fromSub($this->subQuery, 'subquery');
     }
 

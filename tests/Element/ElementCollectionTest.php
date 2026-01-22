@@ -115,7 +115,7 @@ test('diff', function () {
     expect($collection1)->toBeInstanceOf(ElementCollection::class);
     expect($collection1)->toHaveCount(4);
 
-    $collection2 = Entry::find()->offset(3)->limit(10)->collect();
+    $collection2 = Entry::find()->offset(3)->collect();
     expect($collection2)->toBeInstanceOf(ElementCollection::class);
     expect($collection2->isNotEmpty())->toBeTrue();
 
@@ -128,7 +128,7 @@ test('intersect', function () {
     expect($collection1)->toBeInstanceOf(ElementCollection::class);
     expect($collection1)->toHaveCount(4);
 
-    $collection2 = Entry::find()->offset(3)->limit(10)->collect();
+    $collection2 = Entry::find()->offset(3)->collect();
     expect($collection2)->toBeInstanceOf(ElementCollection::class);
     expect($collection2->isNotEmpty())->toBeTrue();
 
