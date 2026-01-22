@@ -28,6 +28,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -301,7 +302,7 @@ class Volumes extends Component
         }
 
         if ($runValidation && !$volume->validate()) {
-            Craft::info('Volume not saved due to validation error.', __METHOD__);
+            Log::info('Volume not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

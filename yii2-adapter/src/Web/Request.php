@@ -167,13 +167,7 @@ class Request extends \yii\web\Request
                     continue;
                 }
 
-                $data = Yii::$app->getSecurity()->validateData($value, $this->cookieValidationKey);
-
-                if ($data === false) {
-                    continue;
-                }
-
-                $data = @unserialize($data);
+                $data = @unserialize($value);
 
                 if (is_array($data) && isset($data[0], $data[1]) && $data[0] === $name) {
                     $cookies[$name] = Yii::createObject([

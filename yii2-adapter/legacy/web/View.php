@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -422,7 +423,7 @@ class View extends \yii\web\View
     {
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning('Twig instantiated before Craft is fully initialized.', __METHOD__);
+            Log::warning('Twig instantiated before Craft is fully initialized.', [__METHOD__]);
         }
 
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
@@ -574,7 +575,7 @@ class View extends \yii\web\View
             return '';
         }
 
-        Craft::debug("Rendering template: $template", __METHOD__);
+        Log::debug("Rendering template: $template", [__METHOD__]);
 
         $oldTemplateMode = $this->getTemplateMode();
         $this->setTemplateMode($templateMode);
@@ -2487,7 +2488,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::warning('Someone tried to load a template outside the templates folder: ' . $name);
+            Log::info('Someone tried to load a template outside the templates folder: ' . $name);
             throw new TwigLoaderError(t('Looks like you are trying to load a template outside the template folder.'));
         }
     }

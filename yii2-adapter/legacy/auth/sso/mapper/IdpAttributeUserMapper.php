@@ -7,10 +7,10 @@
 
 namespace craft\auth\sso\mapper;
 
-use Craft;
 use craft\base\Component;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Set a value from the IdP as a User's attribute
@@ -36,12 +36,12 @@ class IdpAttributeUserMapper extends Component implements UserMapInterface
         $value = Arr::get($data, $this->idpProperty);
 
         if (is_null($value)) {
-            Craft::warning(
+            Log::warning(
                 sprintf(
                     "Attribute mapper value was not found in IdP data set: %s. Skipping",
                     $this->idpProperty
                 ),
-                "auth"
+                ["auth"]
             );
 
             return $user;

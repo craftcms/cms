@@ -7,8 +7,8 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Str;
 use yii\base\Behavior;
 use yii\base\Model;
@@ -80,7 +80,6 @@ class EnvAttributeParserBehavior extends Behavior
     public function beforeValidate(): void
     {
         $this->_values = [];
-        $securityService = Craft::$app->getSecurity();
 
         foreach ($this->attributes as $i => $attribute) {
             if (is_string($i)) {
@@ -103,7 +102,7 @@ class EnvAttributeParserBehavior extends Behavior
                         $validator->defaultScheme = null;
                     }
 
-                    if (is_string($validator->message) && !$securityService->isSensitive($value)) {
+                    if (is_string($validator->message) && !Security::isSensitive($value)) {
                         $validator->message = Str::finish($validator->message, ' ({value})');
                     }
                 }

@@ -1,4 +1,22 @@
 {
+  "_Badge.css": {
+    "file": "assets/Badge.css",
+    "src": "_Badge.css"
+  },
+  "_Badge.vue_vue_type_script_setup_true_lang.js": {
+    "file": "Badge.vue_vue_type_script_setup_true_lang.js",
+    "name": "Badge.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "resources/js/cp.ts",
+      "__plugin-vue_export-helper.js",
+      "resources/js/legacy.ts",
+      "_Modal.js",
+      "_index.js"
+    ],
+    "css": [
+      "assets/Badge.css"
+    ]
+  },
   "_CalloutReadOnly.css": {
     "file": "assets/CalloutReadOnly.css",
     "src": "_CalloutReadOnly.css"
@@ -28,6 +46,21 @@
     ],
     "css": [
       "assets/Modal.css"
+    ]
+  },
+  "_TransitionFade.css": {
+    "file": "assets/TransitionFade.css",
+    "src": "_TransitionFade.css"
+  },
+  "_TransitionFade.js": {
+    "file": "TransitionFade.js",
+    "name": "TransitionFade",
+    "imports": [
+      "resources/js/cp.ts",
+      "__plugin-vue_export-helper.js"
+    ],
+    "css": [
+      "assets/TransitionFade.css"
     ]
   },
   "__plugin-vue_export-helper.js": {
@@ -693,6 +726,7 @@
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSitesEdit.vue",
       "resources/js/pages/SettingsSitesIndex.vue"
     ]
   },
@@ -819,10 +853,11 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
+      "resources/js/legacy.ts",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_index.js",
-      "resources/js/legacy.ts"
+      "_TransitionFade.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -836,11 +871,27 @@
     "imports": [
       "resources/js/cp.ts",
       "resources/js/legacy.ts",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "__plugin-vue_export-helper.js"
+      "__plugin-vue_export-helper.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ],
     "css": [
       "assets/SettingsIndexPage.css"
+    ]
+  },
+  "resources/js/pages/SettingsSitesEdit.vue": {
+    "file": "SettingsSitesEdit.js",
+    "name": "SettingsSitesEdit",
+    "src": "resources/js/pages/SettingsSitesEdit.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/cp.ts",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "resources/js/legacy.ts",
+      "__plugin-vue_export-helper.js",
+      "_TransitionFade.js",
+      "_Badge.vue_vue_type_script_setup_true_lang.js",
+      "_Modal.js",
+      "_index.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -851,10 +902,11 @@
     "imports": [
       "resources/js/cp.ts",
       "resources/js/legacy.ts",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "__plugin-vue_export-helper.js",
-      "_Modal.js",
-      "_index.js"
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_Badge.vue_vue_type_script_setup_true_lang.js",
+      "_index.js",
+      "_Modal.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"

@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
 
@@ -304,7 +305,7 @@ class Globals extends Component
         $globalSet->setScenario(GlobalSet::SCENARIO_SAVE_SET);
 
         if ($runValidation && !$globalSet->validate()) {
-            Craft::info('Global set not saved due to validation error.', __METHOD__);
+            Log::info('Global set not saved due to validation error.', [__METHOD__]);
             return false;
         }
 

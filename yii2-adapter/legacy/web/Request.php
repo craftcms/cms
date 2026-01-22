@@ -22,6 +22,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -693,7 +696,10 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if (!$previewParamValue) {
             return false;
         }
-        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+
+        try {
+            Crypt::decrypt($previewParamValue);
+        } catch (DecryptException) {
             return false;
         }
 
@@ -926,13 +932,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             return null;
         }
 
-        $value = Craft::$app->getSecurity()->validateData($value);
-
-        if ($value === false) {
+        try {
+            return Crypt::decrypt($value);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid body param');
         }
-
-        return $value;
     }
 
     /**
@@ -1050,13 +1054,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             return null;
         }
 
-        $value = Craft::$app->getSecurity()->validateData($value);
-
-        if ($value === false) {
+        try {
+            return Crypt::decrypt($value);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid query param');
         }
-
-        return $value;
     }
 
     /**
@@ -1270,12 +1272,16 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // If cookie validation is enabled, then we don't need the concept of "raw" cookies to begin with
         if ($this->enableCookieValidation) {
-            $security = Craft::$app->getSecurity();
             foreach ($_COOKIE as $name => $value) {
                 // Ignore if this is a hashed cookie
-                if (is_string($value) && $security->validateData($value, $this->cookieValidationKey) !== false) {
-                    continue;
+                if (is_string($value)) {
+                    try {
+                        Crypt::decryptString($value);
+                    } catch (DecryptException) {
+                        continue;
+                    }
                 }
+
                 $cookies[$name] = Craft::createObject([
                     'class' => Cookie::class,
                     'name' => $name,
@@ -1457,10 +1463,17 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if ($siteToken === null) {
             return null;
         }
-        $siteId = Craft::$app->getSecurity()->validateData($siteToken);
+
+        try {
+            $siteId = Crypt::decrypt($siteToken);
+        } catch (DecryptException) {
+            throw new BadRequestHttpException('Invalid site token');
+        }
+
         if (!is_numeric($siteId)) {
             throw new BadRequestHttpException('Invalid site token');
         }
+
         $site = Sites::getSiteById((int)$siteId, true);
         if (!$site) {
             throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
@@ -1499,7 +1512,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     private function _scoreUrl(string $url): int
     {
         if (($parsed = parse_url($url)) === false) {
-            Craft::warning("Unable to parse the URL: $url");
+            Log::info("Unable to parse the URL: $url");
             return 0;
         }
 

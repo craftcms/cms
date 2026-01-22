@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Crypt;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -168,7 +169,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             }
         }
 
-        $security = Craft::$app->getSecurity();
         $response->attachBehavior(TemplateResponseBehavior::NAME, [
             'class' => TemplateResponseBehavior::class,
             'template' => '_layouts/cp',
@@ -198,9 +198,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'fullPageForm' => $isForm,
                 'mainAttributes' => $behavior->mainAttributes,
                 'mainFormAttributes' => $behavior->formAttributes,
-                'formActions' => array_map(function(array $action) use ($security): array {
+                'formActions' => array_map(function(array $action): array {
                     if (isset($action['redirect'])) {
-                        $action['redirect'] = $security->hashData($action['redirect']);
+                        $action['redirect'] = Crypt::encrypt($action['redirect']);
                     }
                     return $action;
                 }, $altActions ?? []),

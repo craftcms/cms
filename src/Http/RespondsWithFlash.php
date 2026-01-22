@@ -9,8 +9,10 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpFoundation\Response;
 
 trait RespondsWithFlash
@@ -112,9 +114,9 @@ trait RespondsWithFlash
             return null;
         }
 
-        $url = Craft::$app->getSecurity()->validateData($url);
-
-        if ($url === false) {
+        try {
+            $url = Crypt::decrypt($url);
+        } catch (DecryptException) {
             abort(400, 'Request contained an invalid body param');
         }
 

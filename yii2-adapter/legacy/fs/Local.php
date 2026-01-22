@@ -17,10 +17,12 @@ use craft\helpers\Path;
 use craft\models\FsListing;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
+use Illuminate\Support\Facades\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use UnexpectedValueException;
@@ -133,7 +135,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
+        if (Security::isSystemDir($this->getRootPath())) {
             $validator->addError($this, $attribute, t('Local filesystems cannot be located within or above system directories.'));
         }
     }
@@ -324,7 +326,7 @@ class Local extends Fs implements LocalFsInterface
         }
 
         if (!unlink($this->prefixPath($path))) {
-            Craft::warning("Tried to delete `$path`, but could not.");
+            Log::info("Tried to delete `$path`, but could not.");
         }
     }
 

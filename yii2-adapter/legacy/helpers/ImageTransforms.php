@@ -23,6 +23,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
@@ -185,7 +186,7 @@ class ImageTransforms
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
-                            Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
+                            Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
                         throw new FsException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
@@ -201,7 +202,7 @@ class ImageTransforms
                     }
 
                     if (!FileHelper::unlink($tempFilePath)) {
-                        Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
+                        Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                     }
                 }
             }
@@ -288,12 +289,12 @@ class ImageTransforms
 
         if (is_array($transform)) {
             if (!empty($transform['width']) && !is_numeric($transform['width'])) {
-                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
+                Log::warning("Invalid transform width: {$transform['width']}", [__METHOD__]);
                 $transform['width'] = null;
             }
 
             if (!empty($transform['height']) && !is_numeric($transform['height'])) {
-                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
+                Log::warning("Invalid transform height: {$transform['height']}", [__METHOD__]);
                 $transform['height'] = null;
             }
 
@@ -307,7 +308,7 @@ class ImageTransforms
                 if ($colorValidator->passes()) {
                     $transform['fill'] = $normalizedValue;
                 } else {
-                    Craft::warning("Invalid transform fill: {$transform['fill']}", __METHOD__);
+                    Log::warning("Invalid transform fill: {$transform['fill']}", [__METHOD__]);
                     $transform['fill'] = null;
                 }
             }
@@ -442,7 +443,7 @@ class ImageTransforms
                         $scaleIfSmaller
                     );
                 } else {
-                    Craft::warning("Cannot add fill to non-raster images");
+                    Log::info("Cannot add fill to non-raster images");
                     $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 }
                 break;

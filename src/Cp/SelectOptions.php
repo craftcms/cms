@@ -12,6 +12,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
@@ -40,7 +41,6 @@ class SelectOptions
     public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
         $suggestions = [];
-        $security = Craft::$app->getSecurity();
 
         $envSuggestions = [];
         foreach (array_keys($_SERVER) as $var) {
@@ -54,7 +54,7 @@ class SelectOptions
                     'label' => '$'.$var,
                     'value' => '$'.$var,
                     'data' => [
-                        'hint' => $security->redactIfSensitive($var, Aliases::get((string) $env, false)),
+                        'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
                     ],
                 ];
             }
@@ -124,7 +124,6 @@ class SelectOptions
         }
 
         $options = [];
-        $security = Craft::$app->getSecurity();
 
         foreach (array_keys($_SERVER) as $var) {
             if (
@@ -135,7 +134,7 @@ class SelectOptions
             ) {
                 $data = [];
                 if ($value !== '') {
-                    $data['hint'] = $security->redactIfSensitive($var, Aliases::get($value, false));
+                    $data['hint'] = Security::redactIfSensitive($var, Aliases::get($value, false));
                 }
 
                 $options[] = array_filter([
