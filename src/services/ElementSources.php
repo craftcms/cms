@@ -240,11 +240,20 @@ class ElementSources extends Component
     public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
         $pages = [];
-        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+
+        foreach ($this->_sourceConfigs($elementType) as $source) {
+            // divide all sources into pages
             if (isset($source['page'])) {
-                $pages[$source['page']] = true;
+                $pages[$source['page']][] = $source;
             }
         }
+
+        foreach ($pages as $key => $pageWithSources) {
+            if (count(array_filter($pageWithSources, fn(array $source) => !isset($source['disabled']) || $source['disabled'] === true)) == 0) {
+                unset($pages[$key]);
+            }
+        }
+
         return array_keys($pages);
     }
 
