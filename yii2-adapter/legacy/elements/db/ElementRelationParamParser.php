@@ -7,7 +7,6 @@
 
 namespace craft\elements\db;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 
@@ -358,7 +358,7 @@ class ElementRelationParamParser extends BaseObject
 
             foreach ($fields as $field) {
                 if (($fieldModel = $this->_getField($field, $fieldHandleParts, $useElementQueryFields)) === null) {
-                    Craft::warning('Attempting to load relations for an invalid field: ' . $field);
+                    Log::info('Attempting to load relations for an invalid field: ' . $field);
 
                     return false;
                 }
@@ -450,7 +450,7 @@ class ElementRelationParamParser extends BaseObject
                     $conditions[] = ['elements.id' => $subQuery];
                     unset($subQuery);
                 } else {
-                    Craft::warning('Attempting to load relations for a non-relational field: ' . $fieldModel->handle);
+                    Log::info('Attempting to load relations for a non-relational field: ' . $fieldModel->handle);
 
                     return false;
                 }

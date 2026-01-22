@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -60,7 +61,7 @@ final class RouteTokens
         }
 
         $tokenModel = new RouteToken;
-        $tokenModel->token = $token ?? Craft::$app->getSecurity()->generateRandomString();
+        $tokenModel->token = $token ?? Str::random(32, extendedChars: true);
         $tokenModel->route = $route;
         $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
 

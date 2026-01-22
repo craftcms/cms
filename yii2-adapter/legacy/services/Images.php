@@ -17,6 +17,7 @@ use craft\image\SvgAllowedAttributes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
+use Illuminate\Support\Facades\Log;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
 use Imagine\Imagick\Imagick;
@@ -284,7 +285,7 @@ class Images extends Component
 
         // If we can't find out the imagesize, chances are, we won't be able to anything about it.
         if (!is_array($imageInfo)) {
-            Craft::warning('Could not determine image information for ' . $filePath);
+            Log::info('Could not determine image information for ' . $filePath);
             return true;
         }
 
@@ -349,7 +350,7 @@ class Images extends Component
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (Throwable $e) {
-            Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
+            Log::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), [__METHOD__]);
         }
 
         // Image has already been cleaned if it had exif/orientation data

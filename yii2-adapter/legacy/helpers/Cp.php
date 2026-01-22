@@ -63,6 +63,7 @@ use CraftCms\Cms\Utility\Utilities\Updates;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -3890,7 +3891,7 @@ JS, [
                 $svg = Html::svg($icon, true, throwException: true);
             }
         } catch (InvalidArgumentException|\InvalidArgumentException $e) {
-            Craft::warning("Could not load icon: {$e->getMessage()}", __METHOD__);
+            Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
             if (!$fallbackLabel) {
                 return '';
             }

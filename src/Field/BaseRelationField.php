@@ -48,6 +48,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Event;
@@ -1133,7 +1134,7 @@ JS, [
             try {
                 $criteria['siteId'] = Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
+                Log::warning($exception->getMessage(), [__METHOD__]);
             }
         }
 
@@ -1738,7 +1739,7 @@ JS, [
             try {
                 return Sites::getSiteByUid($this->targetSiteId)->id;
             } catch (SiteNotFoundException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
+                Log::warning($exception->getMessage(), [__METHOD__]);
             }
         }
 

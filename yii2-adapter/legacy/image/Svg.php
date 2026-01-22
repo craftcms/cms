@@ -7,11 +7,11 @@
 
 namespace craft\image;
 
-use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use Illuminate\Support\Facades\Log;
 use function CraftCms\Cms\t;
 
 /**
@@ -75,14 +75,14 @@ class Svg extends Image
     public function loadImage(string $path): self
     {
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
+            Log::error('Tried to load an image at ' . $path . ', but the file does not exist.', [__METHOD__]);
             throw new ImageException(t('No file exists at the given path.'));
         }
 
         $svg = file_get_contents($path);
 
         if ($svg === false) {
-            Craft::error('Tried to read the SVG contents at ' . $path . ', but could not.', __METHOD__);
+            Log::error('Tried to read the SVG contents at ' . $path . ', but could not.', [__METHOD__]);
             throw new ImageException(t('Could not read SVG contents.'));
         }
 

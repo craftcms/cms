@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Traits\Conditionable;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
@@ -801,7 +802,6 @@ final class CpScreenResponse implements Responsable
             }
         }
 
-        $security = Craft::$app->getSecurity();
         $view = Craft::$app->getView();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
@@ -842,9 +842,9 @@ final class CpScreenResponse implements Responsable
                 'fullPageForm' => $isForm,
                 'mainAttributes' => $this->mainAttributes,
                 'mainFormAttributes' => $this->formAttributes,
-                'formActions' => array_map(function (array $action) use ($security): array {
+                'formActions' => array_map(function (array $action): array {
                     if (isset($action['redirect'])) {
-                        $action['redirect'] = $security->hashData($action['redirect']);
+                        $action['redirect'] = Crypt::encrypt($action['redirect']);
                     }
 
                     return $action;

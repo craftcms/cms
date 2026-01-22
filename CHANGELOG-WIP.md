@@ -295,6 +295,14 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 
 - Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
 
+## Security
+
+- Added `CraftCms\Cms\Support\Security`.
+- Added `CraftCms\Cms\Support\Facades\Security`.
+- Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
+- Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
+- Deprecated `GeneralConfig::$blowfishHashCost` in favor of Laravel's hashing.bcrypt.rounds config or the BCRYPT_ROUNDS environment variable.
+
 ## Updates
 
 The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Updates\Updates` should be used instead.

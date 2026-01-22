@@ -14,6 +14,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -120,7 +121,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
 JS,
             [
                 static::class,
-                Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
+                Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
             ]);
 
         return null;
