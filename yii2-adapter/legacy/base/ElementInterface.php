@@ -455,7 +455,7 @@ interface ElementInterface extends
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
-    ): string;
+    ): string|Stringable;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -899,7 +899,7 @@ interface ElementInterface extends
      * @return string
      * @since 5.0.0
      */
-    public function getChipLabelHtml(): string;
+    public function getChipLabelHtml(): string|Stringable;
 
     /**
      * Returns whether chips and cards for this element should include a status indicator.
@@ -1072,7 +1072,7 @@ interface ElementInterface extends
      * @return string
      * @since 4.0.0
      */
-    public function getAdditionalButtons(): string;
+    public function getAdditionalButtons(): string|Stringable;
 
     /**
      * Returns alternative form actions for the element.
@@ -1818,7 +1818,7 @@ interface ElementInterface extends
      * @return string The HTML that should be shown for the element input.
      * @since 5.0.0
      */
-    public function getInlineAttributeInputHtml(string $attribute): string;
+    public function getInlineAttributeInputHtml(string $attribute): string|Stringable;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
@@ -1827,7 +1827,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.7.0
      */
-    public function getSidebarHtml(bool $static): string;
+    public function getSidebarHtml(bool $static): string|Stringable;
 
     /**
      * Returns element metadata that should be shown within the editor sidebar.

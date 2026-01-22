@@ -1311,7 +1311,7 @@ abstract class Element extends Component implements ElementInterface
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
-    ): string {
+    ): string|Stringable {
         $request = Craft::$app->getRequest();
         $static = $viewState['static'] ?? false;
         $variables = [
@@ -3640,7 +3640,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function getChipLabelHtml(): string
+    public function getChipLabelHtml(): string|Stringable
     {
         return Html::encode($this->getUiLabel());
     }
@@ -3878,7 +3878,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function getAdditionalButtons(): string
+    public function getAdditionalButtons(): string|Stringable
     {
         // Fire a 'defineAdditionalButtons' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
@@ -5780,7 +5780,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getInlineAttributeInputHtml(string $attribute): string
+    public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
         // Fire a 'defineInlineAttributeInputHtml' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
@@ -5996,7 +5996,7 @@ JS, [
         }
     }
 
-    private function contentBlockAttributeHtml(string $attribute): string
+    private function contentBlockAttributeHtml(string $attribute): string|Stringable
     {
         $parts = explode('.', $attribute);
         $uid = Str::after(array_shift($parts), 'contentBlock:');
@@ -6021,7 +6021,7 @@ JS, [
         return $block->getAttributeHtml(implode('.', $parts));
     }
 
-    private function generatedFieldAttributeHtml(string $attribute): string
+    private function generatedFieldAttributeHtml(string $attribute): string|Stringable
     {
         $uid = Str::after($attribute, 'generatedField:');
 
@@ -6076,7 +6076,7 @@ JS, [
      * @see getInlineAttributeInputHtml()
      * @since 5.0.0
      */
-    protected function inlineAttributeInputHtml(string $attribute): string
+    protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
         // Is this a custom field?
         $field = null;
@@ -6123,7 +6123,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getSidebarHtml(bool $static): string
+    public function getSidebarHtml(bool $static): string|Stringable
     {
         $components = [];
 
@@ -6162,7 +6162,7 @@ JS, [
      *
      * @since 3.7.0
      */
-    protected function metaFieldsHtml(bool $static): string
+    protected function metaFieldsHtml(bool $static): string|Stringable
     {
         // Fire a 'defineMetaFieldsHtml' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS_HTML)) {
@@ -6182,7 +6182,7 @@ JS, [
      *
      * @since 3.7.0
      */
-    protected function slugFieldHtml(bool $static): string
+    protected function slugFieldHtml(bool $static): string|Stringable
     {
         $slug = isset($this->slug) && ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
@@ -6219,7 +6219,7 @@ JS, [
      *
      * @since 4.0.0
      */
-    protected function statusFieldHtml(): string
+    protected function statusFieldHtml(): string|Stringable
     {
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);
         $allEditableSiteIds = Sites::getEditableSiteIds()->all();
@@ -6273,7 +6273,7 @@ JS, [
      *
      * @since 4.0.0
      */
-    protected function notesFieldHtml(): string
+    protected function notesFieldHtml(): string|Stringable
     {
         // todo: this should accept a $static arg
         return Cp::textareaFieldHtml([
