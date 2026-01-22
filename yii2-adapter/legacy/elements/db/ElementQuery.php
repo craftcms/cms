@@ -3966,4 +3966,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $this->clearCachedResult();
     }
+
+    public function afterHydrate(Collection $items): Collection
+    {
+        return collect($this->afterPopulate($items->all()));
+    }
 }

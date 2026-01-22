@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Queries\Contracts;
 use craft\base\ElementInterface;
 use craft\models\FieldLayout;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Support\Collection;
 
 /**
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
@@ -1631,4 +1632,12 @@ interface ElementQueryInterface extends Builder
      * @see setResultOverride()
      */
     public function clearResultOverride(): void;
+
+    /**
+     * Performs any post-population processing on elements.
+     *
+     * @param  Collection<ElementInterface|array>  $items  the populated elements
+     * @return Collection<ElementInterface|array>
+     */
+    public function afterHydrate(Collection $items): Collection;
 }

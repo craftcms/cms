@@ -3669,7 +3669,7 @@ class Elements extends Component
                         // Pass the instantiated elements to afterPopulate()
                         $query->asArray = false;
                         if ($query instanceof ElementQueryInterface) {
-                            $query->hydrate($flatTargetElements);
+                            $query->afterHydrate(collect($flatTargetElements));
                         }
                     }
 
