@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\Auth;
 use Throwable;

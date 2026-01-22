@@ -10,7 +10,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
 use function CraftCms\Cms\t;
 

@@ -9,8 +9,8 @@ namespace craft\gql\resolvers\elements;
 
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sections;

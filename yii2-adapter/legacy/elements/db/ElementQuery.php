@@ -26,10 +26,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
@@ -71,7 +71,7 @@ use function CraftCms\Cms\backTraceAsString;
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ElementQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ElementQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
 class ElementQuery extends Query implements ElementQueryInterface

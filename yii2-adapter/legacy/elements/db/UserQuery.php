@@ -40,7 +40,7 @@ use yii\db\Expression;
  * @replace {twig-method} craft.users()
  * @replace {myElement} myUser
  * @replace {element-class} \CraftCms\Cms\User\Elements\User
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\UserQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\UserQuery} instead.
  * @phpstan-ignore generics.notSubtype, class.missingExtends
  */
 class UserQuery extends ElementQuery

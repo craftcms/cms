@@ -13,7 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use function CraftCms\Cms\t;

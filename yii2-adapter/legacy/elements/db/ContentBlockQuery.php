@@ -19,7 +19,7 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.8.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ContentBlockQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ContentBlockQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
 class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface

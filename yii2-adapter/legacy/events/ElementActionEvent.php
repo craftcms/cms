@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementActionInterface;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * Element action event class.

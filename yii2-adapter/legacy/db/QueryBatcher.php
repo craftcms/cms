@@ -8,7 +8,7 @@
 namespace craft\db;
 
 use craft\base\Batchable;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;

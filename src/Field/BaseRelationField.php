@@ -23,12 +23,12 @@ use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -707,7 +707,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -771,7 +771,7 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->beforeQuery(function (\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery) use (
+            $query->beforeQuery(function (\CraftCms\Cms\Element\Queries\ElementQuery $elementQuery) use (
                 $element,
                 $relationsAlias) {
                 if ($elementQuery->id !== null) {
@@ -902,7 +902,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
+            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1090,7 +1090,7 @@ JS, [
             if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }
-            if ($rawValue instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            if ($rawValue instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
                 $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
                 $rawValue = $where['value'] ?? null;
             }
@@ -1229,7 +1229,7 @@ JS, [
      */
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1241,7 +1241,7 @@ JS, [
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
-            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
+            $value instanceof \CraftCms\Cms\Element\Queries\ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
             Arr::isNumeric($where['values'])
         ) {
@@ -1797,7 +1797,7 @@ JS, [
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
         $clone = (clone $query)
             ->drafts(null)
             ->status(null)

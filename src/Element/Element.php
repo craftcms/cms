@@ -75,11 +75,11 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -962,7 +962,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new \CraftCms\Cms\Database\Queries\ElementQuery(static::class);
+        return new \CraftCms\Cms\Element\Queries\ElementQuery(static::class);
     }
 
     /**
@@ -1433,7 +1433,7 @@ abstract class Element extends Component implements ElementInterface
         return Craft::$app->getView()->renderTemplate($template, $variables);
     }
 
-    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         $wheres = $elementQuery->getSubQuery()->wheres;
 
@@ -1505,7 +1505,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if ($elementQuery instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
             return $elementQuery
                 ->select(DB::raw('1'))
                 ->count();
@@ -4507,7 +4507,7 @@ JS, [
      *
      * @since 3.5.0
      */
-    public function getLocalized(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection
+    public function getLocalized(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
@@ -4731,7 +4731,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection
+    public function getAncestors(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
@@ -4750,7 +4750,7 @@ JS, [
      *
      * @since 5.6.8
      */
-    protected function ancestors(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    protected function ancestors(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         return static::find()
             ->structureId($this->structureId)
@@ -4761,7 +4761,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection
+    public function getDescendants(?int $dist = null): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
@@ -4780,7 +4780,7 @@ JS, [
      *
      * @since 5.6.8
      */
-    protected function descendants(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    protected function descendants(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         return static::find()
             ->structureId($this->structureId)
@@ -4791,7 +4791,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getChildren(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection
+    public function getChildren(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
     {
         // Eager-loaded?
         if (($children = $this->getEagerLoadedElements('children')) !== null) {
@@ -4804,7 +4804,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    public function getSiblings(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection
+    public function getSiblings(): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection
     {
         return static::find()
             ->structureId($this->structureId)
@@ -4818,7 +4818,7 @@ JS, [
     public function getPrevSibling(): ?ElementInterface
     {
         if (! isset($this->_prevSibling)) {
-            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
+            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
             $query = static::find();
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
@@ -4840,7 +4840,7 @@ JS, [
     public function getNextSibling(): ?ElementInterface
     {
         if (! isset($this->_nextSibling)) {
-            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
+            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
             $query = static::find();
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
@@ -6797,7 +6797,7 @@ JS, [
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery<static> $query */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery<static> $query */
         $query = static::find();
 
         if ($criteria !== null) {

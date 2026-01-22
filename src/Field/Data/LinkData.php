@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Data;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
 use craft\helpers\Template;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Support\Html;

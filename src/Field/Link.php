@@ -14,7 +14,7 @@ use craft\helpers\Cp;
 use craft\helpers\Template;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;

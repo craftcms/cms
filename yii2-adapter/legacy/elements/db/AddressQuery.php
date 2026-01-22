@@ -29,7 +29,7 @@ use CraftCms\Cms\Address\Elements\Address;
  * @replace {twig-method} craft.addresses()
  * @replace {myElement} myAddress
  * @replace {element-class} \CraftCms\Cms\Address\Elements\Address
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AddressQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AddressQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
 class AddressQuery extends ElementQuery implements NestedElementQueryInterface

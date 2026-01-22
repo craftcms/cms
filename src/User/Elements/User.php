@@ -33,15 +33,15 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\AddressQuery;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -547,7 +547,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var \CraftCms\Cms\Database\Queries\UserQuery $elementQuery */
+        /** @var \CraftCms\Cms\Element\Queries\UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {

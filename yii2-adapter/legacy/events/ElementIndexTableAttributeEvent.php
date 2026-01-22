@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * Table attribute Element Query preparation event

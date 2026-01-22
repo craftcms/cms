@@ -11,8 +11,8 @@ use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\UnknownMethodException;
 
 /**

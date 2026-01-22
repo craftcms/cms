@@ -10,7 +10,7 @@ namespace craft\elements\conditions;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\models\FieldLayout;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementConditionInterface defines the common interface to be implemented by element conditions.

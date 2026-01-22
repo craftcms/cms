@@ -53,7 +53,7 @@ use yii\base\InvalidConfigException;
  * @replace {twig-method} craft.entries()
  * @replace {myElement} myEntry
  * @replace {element-class} \CraftCms\Cms\Entry\Elements\Entry
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\EntryQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\EntryQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface

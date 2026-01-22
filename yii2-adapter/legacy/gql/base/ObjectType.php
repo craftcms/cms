@@ -9,7 +9,7 @@ namespace craft\gql\base;
 
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;

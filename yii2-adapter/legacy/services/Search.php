@@ -23,7 +23,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -422,7 +422,7 @@ class Search extends Component
             return [];
         }
 
-        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if ($elementQuery instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
             $elementQuery->getSubQuery()->offset = null;

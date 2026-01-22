@@ -40,7 +40,7 @@ use yii\db\Schema;
  * @replace {twig-method} craft.assets()
  * @replace {myElement} myAsset
  * @replace {element-class} \CraftCms\Cms\Asset\Elements\Asset
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AssetQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AssetQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
 class AssetQuery extends ElementQuery

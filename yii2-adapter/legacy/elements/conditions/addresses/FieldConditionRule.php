@@ -8,7 +8,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\AddressQuery;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Structure\Commands;
 
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\Structures;

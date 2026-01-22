@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementExporterInterface defines the common interface to be implemented by element exporter classes.

@@ -9,7 +9,7 @@ namespace craft\base;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementActionInterface defines the common interface to be implemented by element action classes.

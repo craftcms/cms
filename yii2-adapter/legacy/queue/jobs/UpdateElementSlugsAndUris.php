@@ -13,7 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Log;

@@ -45,7 +45,6 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -53,6 +52,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -577,7 +577,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -1592,7 +1592,7 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query The element query to fetch elements with
+     * @param ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element

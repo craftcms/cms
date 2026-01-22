@@ -19,7 +19,7 @@ use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;

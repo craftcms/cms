@@ -8,7 +8,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\helpers\Cp;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidValueException;
 use function CraftCms\Cms\t;

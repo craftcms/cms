@@ -19,12 +19,12 @@ use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -83,7 +83,7 @@ class NestedElementManager extends Component
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
-     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery) $queryFactory A factory method which returns a
+     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery) $queryFactory A factory method which returns a
      * query for fetching nested elements
      * @param array $config name-value pairs that will be used to initialize the object properties.
      */

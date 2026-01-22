@@ -7,7 +7,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
-use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 use function CraftCms\Cms\t;

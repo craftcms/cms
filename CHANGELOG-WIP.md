@@ -196,13 +196,13 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Element Queries
 
-- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Database\Queries\AddressQuery` should be used instead.
-- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Database\Queries\AssetQuery` should be used instead.
-- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Database\Queries\ContentBlockQuery` should be used instead.
-- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Database\Queries\ElementQuery` should be used instead.
+- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Element\Queries\AddressQuery` should be used instead.
+- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Element\Queries\AssetQuery` should be used instead.
+- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Element\Queries\ContentBlockQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Element\Queries\ElementQuery` should be used instead.
 - Deprecated `\craft\elements\db\ElementQueryInterface`
-- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Database\Queries\EntryQuery` should be used instead.
-- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Database\Queries\UserQuery` should be used instead.
+- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Element\Queries\EntryQuery` should be used instead.
+- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Element\Queries\UserQuery` should be used instead.
 
 ## Entries & Entry Types
 

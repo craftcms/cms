@@ -6,11 +6,11 @@ namespace craft\elements\db;
 if (false) {
     /**
      * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface} instead.
      */
     interface ElementQueryInterface
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface::class, ElementQueryInterface::class);
+class_alias(\CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface::class, ElementQueryInterface::class);
