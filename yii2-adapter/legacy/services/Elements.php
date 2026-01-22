@@ -917,7 +917,7 @@ class Elements extends Component
     public function getElementById(
         int $elementId,
         ?string $elementType = null,
-        array|int|string $siteId = null,
+        array|int|string|null $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);

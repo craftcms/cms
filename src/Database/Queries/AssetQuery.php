@@ -218,7 +218,7 @@ final class AssetQuery extends ElementQuery
         $volumesService = Craft::$app->getVolumes();
 
         foreach (Arr::wrap($this->volumeId) as $volumeId) {
-            if ($volume = $volumesService->getVolumeById($volumeId)) {
+            if ($volume = $volumesService->getVolumeById((int) $volumeId)) {
                 $fieldLayouts[] = $volume->getFieldLayout();
             }
         }

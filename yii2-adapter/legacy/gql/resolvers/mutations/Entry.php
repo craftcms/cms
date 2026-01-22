@@ -10,9 +10,9 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\elements\db\EntryQuery;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;

@@ -3971,4 +3971,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return collect($this->afterPopulate($items->all()));
     }
+
+    public function whereIn($column, $values, $boolean = 'and', $not = false): static
+    {
+        return $this->andWhere(['in', $column, $values]);
+    }
 }

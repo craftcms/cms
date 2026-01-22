@@ -9,10 +9,10 @@ namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\elements\db\EntryQuery;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
