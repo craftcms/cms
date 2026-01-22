@@ -39,6 +39,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use Override;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -56,7 +57,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Link');
@@ -65,7 +66,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'link';
@@ -74,7 +75,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', LinkData::class);
@@ -83,7 +84,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): array
     {
         return [
@@ -118,13 +119,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ];
 
             // Fire a registerLinkTypes event
-            if (Event::hasListeners(RegisterLinkTypes::class)) {
-                Event::dispatch($event = new RegisterLinkTypes($types));
+            event($event = new RegisterLinkTypes($types));
 
-                return $event->types;
-            }
+            $types = $event->types;
 
             // URL *has* to be there
+            /** @var class-string<BaseLinkType>[] $types */
             $types[] = UrlType::class;
 
             self::$_types = array_combine(
@@ -225,7 +225,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -452,7 +452,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
@@ -548,7 +548,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
@@ -557,7 +557,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
@@ -775,7 +775,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -817,7 +817,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         if (parent::isValueEmpty($value, $element)) {
@@ -844,7 +844,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
@@ -854,7 +854,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -868,7 +868,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type|array
     {
         if (! $this->fullGraphqlData) {
@@ -881,7 +881,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         if (! $this->fullGraphqlData) {

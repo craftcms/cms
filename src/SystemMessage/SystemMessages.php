@@ -12,7 +12,6 @@ use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -70,13 +69,10 @@ final class SystemMessages
             ]),
         ]);
 
-        if (Event::hasListeners(RegisterSystemMessages::class)) {
-            Event::dispatch($event = new RegisterSystemMessages($messages));
-            $messages = $event->messages;
-        }
+        event($event = new RegisterSystemMessages($messages));
 
         // Sort them all by key
-        $messages = $messages
+        $messages = $event->messages
             ->keyBy('key')
             ->sortBy('key');
 

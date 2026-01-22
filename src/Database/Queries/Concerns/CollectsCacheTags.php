@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Database\Queries\Concerns;
 use Craft;
 use CraftCms\Cms\Database\Queries\Events\DefineCacheTags;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Support\Facades\Event;
 
 /**
  * @internal
@@ -67,11 +66,9 @@ trait CollectsCacheTags
 
         $queryTags = $this->cacheTags();
 
-        if (Event::hasListeners(DefineCacheTags::class)) {
-            Event::dispatch($event = new DefineCacheTags($this, $queryTags));
+        event($event = new DefineCacheTags($this, $queryTags));
 
-            $queryTags = $event->tags;
-        }
+        $queryTags = $event->tags;
 
         if (! empty($queryTags)) {
             if ($this->drafts !== false) {

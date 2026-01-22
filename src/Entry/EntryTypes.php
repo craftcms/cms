@@ -280,9 +280,7 @@ final class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        if (Event::hasListeners(SavingEntryType::class)) {
-            Event::dispatch(new SavingEntryType($entryType, $isNewEntryType));
-        }
+        event(new SavingEntryType($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
@@ -423,9 +421,7 @@ final class EntryTypes
             ]));
         }
 
-        if (Event::hasListeners(EntryTypeSaved::class)) {
-            Event::dispatch(new EntryTypeSaved($entryType, $isNewEntryType));
-        }
+        event(new EntryTypeSaved($entryType, $isNewEntryType));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
@@ -472,9 +468,7 @@ final class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        if (Event::hasListeners(DeletingEntryType::class)) {
-            Event::dispatch(new DeletingEntryType($entryType));
-        }
+        event(new DeletingEntryType($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
@@ -499,9 +493,7 @@ final class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        if (Event::hasListeners(ApplyingDeleteEntryType::class)) {
-            Event::dispatch(new ApplyingDeleteEntryType($entryType));
-        }
+        event(new ApplyingDeleteEntryType($entryType));
 
         DB::beginTransaction();
 
@@ -552,9 +544,7 @@ final class EntryTypes
         // Clear caches
         $this->refreshEntryTypes();
 
-        if (Event::hasListeners(EntryTypeDeleted::class)) {
-            Event::dispatch(new EntryTypeDeleted($entryType));
-        }
+        event(new EntryTypeDeleted($entryType));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);

@@ -23,7 +23,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -92,18 +91,16 @@ final readonly class Drafts
 
         $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
-        if (Event::hasListeners(CreatingDraft::class)) {
-            Event::dispatch($event = new CreatingDraft(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-            ));
+        event($event = new CreatingDraft(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+        ));
 
-            $name = $event->draftName;
-            $notes = $event->draftNotes;
-        }
+        $name = $event->draftName;
+        $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
             $name = $this->generateDraftName($canonical->id);
@@ -149,16 +146,14 @@ final readonly class Drafts
             throw $e;
         }
 
-        if (Event::hasListeners(DraftCreated::class)) {
-            Event::dispatch(new DraftCreated(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftCreated(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+            draft: $draft,
+        ));
 
         return $draft;
     }
@@ -241,15 +236,13 @@ final readonly class Drafts
             }
         }
 
-        if (Event::hasListeners(ApplyingDraft::class)) {
-            Event::dispatch(new ApplyingDraft(
-                canonical: $canonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new ApplyingDraft(
+            canonical: $canonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
         $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
@@ -293,15 +286,13 @@ final readonly class Drafts
             throw $e;
         }
 
-        if (Event::hasListeners(DraftApplied::class)) {
-            Event::dispatch(new DraftApplied(
-                canonical: $newCanonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftApplied(
+            canonical: $newCanonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on

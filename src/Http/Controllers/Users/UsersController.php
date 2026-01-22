@@ -23,7 +23,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -206,11 +205,8 @@ final readonly class UsersController
             ]);
         })->filter();
 
-        if (Event::hasListeners(DefineUserContentSummary::class)) {
-            Event::dispatch($event = new DefineUserContentSummary($userId, $summary));
-            $summary = $event->contentSummary;
-        }
+        event($event = new DefineUserContentSummary($userId, $summary));
 
-        return new JsonResponse($summary->all());
+        return new JsonResponse($event->contentSummary->all());
     }
 }

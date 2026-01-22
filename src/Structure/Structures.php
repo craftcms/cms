@@ -22,7 +22,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Exception;
 
@@ -422,20 +421,17 @@ final class Structures
 
         $targetElementId = $targetElementModel->isRoot() ? null : $targetElementModel->elementId;
 
-        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
-        if (Event::hasListeners($beforeEvent)) {
-            Event::dispatch($event = new $beforeEvent(
-                element: $element,
-                structureId: $structureId,
-                targetElementId: $targetElementId,
-                action: $action,
-            ));
+        event($event = new $beforeEvent(
+            element: $element,
+            structureId: $structureId,
+            targetElementId: $targetElementId,
+            action: $action,
+        ));
 
-            if (! $event->isValid) {
-                $lock->release();
+        if (! $event->isValid) {
+            $lock->release();
 
-                return false;
-            }
+            return false;
         }
 
         // Tell the element about it
@@ -483,14 +479,12 @@ final class Structures
         // (see https://github.com/craftcms/cms/issues/14846)
         Craft::$app->getElements()->invalidateCachesForElementType($element::class);
 
-        if (Event::hasListeners($afterEvent)) {
-            Event::dispatch(new $afterEvent(
-                element: $element,
-                structureId: $structureId,
-                targetElementId: $targetElementId,
-                action: $action,
-            ));
-        }
+        event(new $afterEvent(
+            element: $element,
+            structureId: $structureId,
+            targetElementId: $targetElementId,
+            action: $action,
+        ));
 
         return true;
     }

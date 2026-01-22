@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Updates\Data;
 
 use CraftCms\Cms\Updates\Events\CriticalUpdateReleased;
+use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Event;
 
 /**
  * @internal
@@ -15,7 +15,7 @@ final readonly class UpdateRelease
 {
     public function __construct(
         public string $version,
-        public ?\DateTimeInterface $date = null,
+        public ?DateTimeInterface $date = null,
         private bool $critical = false,
         public ?string $notes = null,
     ) {}
@@ -26,12 +26,10 @@ final readonly class UpdateRelease
             return false;
         }
 
-        if (Event::hasListeners(CriticalUpdateReleased::class)) {
-            Event::dispatch($event = new CriticalUpdateReleased($update));
+        event($event = new CriticalUpdateReleased($update));
 
-            if ($event->isValid) {
-                return false;
-            }
+        if ($event->isValid) {
+            return false;
         }
 
         return true;

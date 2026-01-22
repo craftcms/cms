@@ -49,7 +49,6 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
@@ -428,9 +427,7 @@ final class Sections
     {
         $isNewSection = ! $section->id;
 
-        if (Event::hasListeners(SavingSection::class)) {
-            Event::dispatch(new SavingSection($section, $isNewSection));
-        }
+        event(new SavingSection($section, $isNewSection));
 
         if ($isNewSection) {
             $section->uid ??= Str::uuid()->toString();
@@ -744,9 +741,7 @@ final class Sections
             $this->ensureSingleEntry($section, $siteSettingData);
         }
 
-        if (Event::hasListeners(SectionSaved::class)) {
-            Event::dispatch(new SectionSaved($section, $isNewSection));
-        }
+        event(new SectionSaved($section, $isNewSection));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
@@ -965,9 +960,7 @@ final class Sections
      */
     public function deleteSection(Section $section): bool
     {
-        if (Event::hasListeners(DeletingSection::class)) {
-            Event::dispatch(new DeletingSection($section));
-        }
+        event(new DeletingSection($section));
 
         // Remove the section from the project config
         $this->projectConfig->remove(
@@ -993,9 +986,7 @@ final class Sections
         /** @var Section $section */
         $section = $this->getSectionById($sectionModel->id);
 
-        if (Event::hasListeners(ApplyingSectionDelete::class)) {
-            Event::dispatch(new ApplyingSectionDelete($section));
-        }
+        event(new ApplyingSectionDelete($section));
 
         DB::beginTransaction();
         try {
@@ -1043,9 +1034,7 @@ final class Sections
         // Clear caches
         $this->refreshSections();
 
-        if (Event::hasListeners(SectionDeleted::class)) {
-            Event::dispatch(new SectionDeleted($section));
-        }
+        event(new SectionDeleted($section));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);

@@ -17,7 +17,6 @@ use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Override;
 
@@ -204,12 +203,9 @@ final class ClearCaches extends Utility
             ],
         ];
 
-        if (Event::hasListeners(RegisterCacheOptions::class)) {
-            Event::dispatch($event = new RegisterCacheOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterCacheOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 
     /**
@@ -231,11 +227,8 @@ final class ClearCaches extends Utility
             ];
         }
 
-        if (Event::hasListeners(RegisterTagOptions::class)) {
-            Event::dispatch($event = new RegisterTagOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterTagOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 }

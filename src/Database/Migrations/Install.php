@@ -36,7 +36,6 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 use Throwable;
@@ -67,9 +66,7 @@ class Install extends Migration
         $this->components->task('Creating indexes', fn () => $this->createIndexes());
         $this->components->task('Adding foreign keys', fn () => $this->addForeignKeys());
 
-        if (Event::hasListeners(PostCreateTables::class)) {
-            Event::dispatch(new PostCreateTables);
-        }
+        event(new PostCreateTables);
 
         DB::afterCommit(function () {
             try {
