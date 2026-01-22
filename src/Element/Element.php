@@ -6021,7 +6021,7 @@ JS, [
         return $block->getAttributeHtml(implode('.', $parts));
     }
 
-    private function generatedFieldAttributeHtml(string $attribute): string|Stringable
+    private function generatedFieldAttributeHtml(string $attribute): string
     {
         $uid = Str::after($attribute, 'generatedField:');
 
