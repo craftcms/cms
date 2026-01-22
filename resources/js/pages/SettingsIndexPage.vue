@@ -69,7 +69,7 @@
 
   .settings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, calc(120rem / 16));
+    grid-template-columns: repeat(auto-fill, minmax(calc(120rem / 16), 1fr));
     gap: var(--c-spacing-md);
   }
 
