@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that could occur when loading elements with provisional changes.
+- Fixed an error that could occur when reverting content from an entry revision.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 

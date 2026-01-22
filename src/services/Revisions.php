@@ -152,6 +152,12 @@ class Revisions extends Component
 
             $transaction = $db->beginTransaction();
             try {
+                // Even if no existing revision info was found, there could be an orphaned row in there
+                Db::delete(Table::REVISIONS, [
+                    'canonicalId' => $canonical->id,
+                    'num' => $num,
+                ]);
+
                 // Create the revision row
                 Db::insert(Table::REVISIONS, [
                     'canonicalId' => $canonical->id,
