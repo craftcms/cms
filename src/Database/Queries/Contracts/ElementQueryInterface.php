@@ -1,25 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Queries\Contracts;
 
 use craft\base\ElementInterface;
 use craft\models\FieldLayout;
+use Illuminate\Contracts\Database\Query\Builder;
 
 /**
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
  * @mixin \CraftCms\Cms\Database\Queries\ElementQuery
+ *
  * @phpstan-require-extends \CraftCms\Cms\Database\Queries\ElementQuery
  */
-interface ElementQueryInterface
+interface ElementQueryInterface extends Builder
 {
     /**
      * Executes the query and returns a single row of result.
+     *
      * @param  array|string  $columns
      * @return ElementInterface|array|null the first row (in terms of an array) of the query result. False is returned if the query
-     * results in nothing.
-     * @phpstan-ignore method.childReturnType
+     *                                     results in nothing.
      */
     public function one($columns = ['*']);
 
@@ -42,7 +46,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function inReverse(bool $value = true): static;
@@ -66,7 +70,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function asArray(bool $value = true): static;
@@ -75,7 +79,7 @@ interface ElementQueryInterface
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function withProvisionalDrafts(bool $value = true): static;
@@ -84,7 +88,7 @@ interface ElementQueryInterface
      * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
      * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function ignorePlaceholders(bool $value = true): static;
@@ -110,7 +114,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param bool|null $value The property value (defaults to true)
+     * @param  bool|null  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function drafts(?bool $value = true): static;
@@ -140,7 +144,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function draftId(?int $value = null): static;
@@ -175,7 +179,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function draftOf(mixed $value): static;
@@ -206,7 +210,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function draftCreator(mixed $value): static;
@@ -232,7 +236,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool|null $value The property value
+     * @param  bool|null  $value  The property value
      * @return static self reference
      */
     public function provisionalDrafts(?bool $value = true): static;
@@ -245,7 +249,7 @@ interface ElementQueryInterface
      * Unpublished drafts can be included as well if `drafts(null)` and
      * `draftOf(false)` are also passed.
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function canonicalsOnly(bool $value = true): static;
@@ -271,7 +275,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function savedDraftsOnly(bool $value = true): static;
@@ -297,7 +301,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param bool|null $value The property value (defaults to true)
+     * @param  bool|null  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function revisions(?bool $value = true): static;
@@ -327,7 +331,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function revisionId(?int $value = null): static;
@@ -358,7 +362,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function revisionOf(mixed $value): static;
@@ -389,7 +393,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function revisionCreator(mixed $value): static;
@@ -428,7 +432,7 @@ interface ElementQueryInterface
      * This can be combined with [[fixedOrder()]] if you want the results to be returned in a specific order.
      * :::
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function id(mixed $value): static;
@@ -452,7 +456,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function uid(mixed $value): static;
@@ -485,7 +489,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function siteSettingsId(mixed $value): static;
@@ -515,7 +519,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function fixedOrder(bool $value = true): static;
@@ -547,7 +551,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param  string|string[]|null  $value  The property value
      * @return static self reference
      */
     public function status(array|string|null $value): static;
@@ -555,7 +559,7 @@ interface ElementQueryInterface
     /**
      * Sets the [[$archived]] property.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function archived(bool $value = true): static;
@@ -579,7 +583,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool|null $value The property value (defaults to true)
+     * @param  bool|null  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function trashed(?bool $value = true): static;
@@ -618,7 +622,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function dateCreated(mixed $value): static;
@@ -655,7 +659,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function dateUpdated(mixed $value): static;
@@ -696,7 +700,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function site(mixed $value): static;
@@ -731,7 +735,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function siteId(mixed $value): static;
@@ -768,10 +772,9 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
-     * @return static
+     * @param  mixed  $value  The property value
      */
-    public function language(mixed $value): self;
+    public function language(mixed $value): static;
 
     /**
      * Determines whether only elements with unique IDs should be returned by the query.
@@ -797,7 +800,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function unique(bool $value = true): static;
@@ -831,7 +834,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param array|null $value The property value
+     * @param  array|null  $value  The property value
      * @return static self reference
      */
     public function preferSites(?array $value = null): static;
@@ -857,7 +860,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function notRelatedTo(mixed $value): static;
@@ -885,7 +888,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function andNotRelatedTo(mixed $value): static;
@@ -911,7 +914,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function relatedTo(mixed $value): static;
@@ -939,7 +942,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function andRelatedTo(mixed $value): static;
@@ -975,7 +978,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function title(mixed $value): static;
@@ -1017,7 +1020,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function slug(mixed $value): static;
@@ -1059,7 +1062,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function uri(mixed $value): static;
@@ -1091,7 +1094,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function search(mixed $value): static;
@@ -1099,7 +1102,7 @@ interface ElementQueryInterface
     /**
      * Narrows the query results to only {elements} that were involved in a bulk element operation.
      *
-     * @param string|null $value The property value
+     * @param  string|null  $value  The property value
      * @return static self reference
      */
     public function inBulkOp(?string $value): static;
@@ -1125,7 +1128,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param array|string|null $value The property value
+     * @param  array|string|null  $value  The property value
      * @return static self reference
      */
     public function with(array|string|null $value): static;
@@ -1133,7 +1136,7 @@ interface ElementQueryInterface
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements, in addition to the elements that were already specified by [[with()]]..
      *
-     * @param array|string|null $value The property value to append
+     * @param  array|string|null  $value  The property value to append
      * @return static self reference
      */
     public function andWith(array|string|null $value): static;
@@ -1142,15 +1145,14 @@ interface ElementQueryInterface
      * Causes the query to be used to eager-load results for the query’s source element
      * and any other elements in its collection.
      *
-     * @param string|bool $value The property value. If a string, the value will be used as the eager-loading alias.
-     * @return static
+     * @param  string|bool  $value  The property value. If a string, the value will be used as the eager-loading alias.
      */
     public function eagerly(string|bool $value = true): static;
 
     /**
      * Sets whether custom fields should be factored into the query.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function withCustomFields(bool $value = true): static;
@@ -1158,7 +1160,7 @@ interface ElementQueryInterface
     /**
      * Explicitly determines whether the query should join in the structure data.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
      */
     public function withStructure(bool $value = true): static;
@@ -1166,7 +1168,7 @@ interface ElementQueryInterface
     /**
      * Determines which structure data should be joined into the query.
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function structureId(?int $value = null): static;
@@ -1201,7 +1203,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param mixed $value The property value
+     * @param  mixed  $value  The property value
      * @return static self reference
      */
     public function level(mixed $value = null): static;
@@ -1227,7 +1229,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function hasDescendants(bool $value = true): static;
@@ -1253,7 +1255,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param bool $value The property value
+     * @param  bool  $value  The property value
      * @return static self reference
      */
     public function leaves(bool $value = true): static;
@@ -1290,7 +1292,7 @@ interface ElementQueryInterface
      * This can be combined with [[ancestorDist()]] if you want to limit how far away the ancestor {elements} can be.
      * :::
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function ancestorOf(ElementInterface|int|null $value): static;
@@ -1316,7 +1318,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function ancestorDist(?int $value = null): static;
@@ -1353,7 +1355,7 @@ interface ElementQueryInterface
      * This can be combined with [[descendantDist()]] if you want to limit how far away the descendant {elements} can be.
      * :::
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function descendantOf(ElementInterface|int|null $value): static;
@@ -1379,7 +1381,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param  int|null  $value  The property value
      * @return static self reference
      */
     public function descendantDist(?int $value = null): static;
@@ -1410,7 +1412,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function siblingOf(ElementInterface|int|null $value): static;
@@ -1441,7 +1443,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function prevSiblingOf(ElementInterface|int|null $value): static;
@@ -1472,7 +1474,7 @@ interface ElementQueryInterface
      *     ->one();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function nextSiblingOf(ElementInterface|int|null $value): static;
@@ -1503,7 +1505,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function positionedBefore(ElementInterface|int|null $value): static;
@@ -1534,7 +1536,7 @@ interface ElementQueryInterface
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param  int|ElementInterface|null  $value  The property value
      * @return static self reference
      */
     public function positionedAfter(ElementInterface|int|null $value): static;
@@ -1545,31 +1547,29 @@ interface ElementQueryInterface
     /**
      * Prepares the query for lazy eager loading.
      *
-     * @param string $handle The eager loading handle the query is for
-     * @param ElementInterface $sourceElement One of the source elements the query is fetching elements for
+     * @param  string  $handle  The eager loading handle the query is for
+     * @param  ElementInterface  $sourceElement  One of the source elements the query is fetching elements for
      */
     public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static;
 
     /**
      * Returns whether the query results were already eager loaded by the query's source element.
      *
-     * @param string|null $alias The eager-loading alias to check
-     * @return bool
+     * @param  string|null  $alias  The eager-loading alias to check
      */
     public function wasEagerLoaded(?string $alias = null): bool;
 
     /**
      * Returns whether the query result count was already eager loaded by the query's source element.
      *
-     * @param string|null $alias The eager-loading alias to check
-     * @return bool
+     * @param  string|null  $alias  The eager-loading alias to check
      */
     public function wasCountEagerLoaded(?string $alias = null): bool;
 
     /**
      * Executes the query and returns all results as an array.
      *
-     * @param array $columns = ['*']
+     * @param  array  $columns  = ['*']
      * @return ElementInterface[]|array[] The resulting elements.
      */
     public function all($columns = ['*']): array;
@@ -1577,10 +1577,10 @@ interface ElementQueryInterface
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param array $columns
+     * @param  int  $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param  array  $columns
      * @return mixed The element or row of the query result. Null is returned if the query
-     * results in nothing.
+     *               results in nothing.
      */
     public function nth(int $n, $columns): mixed;
 
@@ -1593,9 +1593,6 @@ interface ElementQueryInterface
 
     /**
      * Converts a found row into an element instance.
-     *
-     * @param array $row
-     * @return ElementInterface
      */
     public function createElement(array $row): ElementInterface;
 
@@ -1605,4 +1602,33 @@ interface ElementQueryInterface
      * @return FieldLayout[]
      */
     public function getFieldLayouts(): array;
+
+    /**
+     * Returns the resulting elements set by [[setResultOverride()]], if the criteria params haven’t changed since then.
+     *
+     * @return ElementInterface[]|null $elements The resulting elements, or null if setResultOverride() was never called or the criteria has changed
+     *
+     * @see setResultOverride()
+     */
+    public function getResultOverride(): ?array;
+
+    /**
+     * Sets the resulting elements.
+     *
+     * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
+     * as long as none of the parameters have changed since setResultOverride() was called.
+     *
+     * @param  ElementInterface[]  $elements  The resulting elements.
+     *
+     * @see getResultOverride()
+     */
+    public function setResultOverride(array $elements): void;
+
+    /**
+     * Clears the overridden result.
+     *
+     * @see getResultOverride()
+     * @see setResultOverride()
+     */
+    public function clearResultOverride(): void;
 }

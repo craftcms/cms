@@ -167,9 +167,9 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                         ->drafts(null)
                         ->provisionalDrafts(null)
                         ->select(['elements.id'])
-                        ->scalar();
+                        ->value('id');
 
-                    if ($parentId !== false) {
+                    if ($parentId !== null) {
                         // If we've cloned the parent, use the clone's ID instead
                         if (isset($this->duplicatedElementIds[$parentId][$newElement->siteId])) {
                             $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];

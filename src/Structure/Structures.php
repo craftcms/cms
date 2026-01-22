@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Structure;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Structure\Data\Structure;
@@ -111,12 +110,7 @@ final class Structures
                     ->status(null);
 
                 if ($prevElement) {
-                    if ($ancestorQuery instanceof ElementQuery) {
-                        $ancestorQuery->where('structureelements.lft', '>', $prevElement->lft);
-                    } else {
-                        // @TODO: Remove when all ElementQueries are ported
-                        $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
-                    }
+                    $ancestorQuery->where('structureelements.lft', '>', $prevElement->lft);
                 }
 
                 /** @var T $ancestor */

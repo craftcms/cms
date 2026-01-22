@@ -8,9 +8,9 @@
 namespace craft\gql\resolvers\elements;
 
 use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\gql\base\ElementResolver;
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use yii\base\UnknownMethodException;
 
 /**

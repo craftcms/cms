@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Database\Queries;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Concerns\LegacyMethods;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Database\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Database\Table;
@@ -61,8 +61,6 @@ use Twig\Markup;
  * @method static whereNotNull($columns, $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
  * @method static whereNull($columns, $boolean = 'and', $not = false)
- *
- * @phpstan-ignore class.missingExtends
  */
 class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
@@ -504,8 +502,6 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      *
      * @param  array|string  $columns
      * @return array<int, TElement>
-     *
-     * @phpstan-ignore-next-line
      */
     public function all($columns = ['*']): array
     {
@@ -514,10 +510,8 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
 
     /**
      * @return TElement|null
-     *
-     * @phpstan-ignore parameter.defaultValue, method.childReturnType
      */
-    public function one($columns = ['*']): ?ElementInterface
+    public function one($columns = ['*']): ElementInterface|array|null
     {
         return $this->first($columns);
     }
@@ -604,7 +598,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->getQuery()->exists();
     }
 
-    public function nth(int $n, array|string $columns = ['*']): ?ElementInterface
+    public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
         if (! is_null($result = $this->getResultOverride())) {
             return $result[$n] ?? null;
@@ -651,7 +645,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * Get a lazy collection for the given query.
      *
-     * @return \Illuminate\Support\LazyCollection<int, TElement>
+     * @return \Illuminate\Support\LazyCollection<int, TElement|array>
      */
     public function cursor(): LazyCollection
     {
@@ -684,6 +678,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->subQuery;
     }
 
+    /**
+     * @param  int|null  $value
+     */
     public function limit($value): self
     {
         $this->subQuery->limit = $value;
@@ -699,6 +696,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         return $this->subQuery->getLimit();
     }
 
+    /**
+     * @param  int|null  $value
+     */
     public function offset($value): self
     {
         $this->subQuery->offset = $value;

@@ -6,9 +6,8 @@ use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
-use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**

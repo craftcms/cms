@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Contracts;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -14,11 +13,12 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.

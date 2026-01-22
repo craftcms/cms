@@ -11,6 +11,7 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Database\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Database\Queries\Events\HydratingElement;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -32,7 +33,13 @@ trait HydratesElements
      */
     public function hydrate(array $items): array
     {
-        $items = array_map(fn (stdClass $row) => (array) $row, $items);
+        $items = array_map(function (stdClass|ElementInterface $row) {
+            if ($row instanceof stdClass) {
+                return (array) $row;
+            }
+
+            return $row;
+        }, $items);
 
         if ($this->asArray) {
             return $items;
@@ -52,7 +59,7 @@ trait HydratesElements
 
                 return $row;
             }))
-            ->map(fn (array $row) => $this->createElement($row))
+            ->map(fn (array|ElementInterface $row) => $row instanceof ElementInterface ? $row : $this->createElement($row))
             ->unless($this->asArray, function (Collection $elements) {
                 $elementsService = Craft::$app->getElements();
 

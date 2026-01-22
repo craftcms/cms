@@ -23,8 +23,6 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @extends ElementQuery<Asset>
- *
- * @phpstan-ignore class.missingExtends
  */
 final class AssetQuery extends ElementQuery
 {

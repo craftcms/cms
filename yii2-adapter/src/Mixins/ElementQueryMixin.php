@@ -62,6 +62,26 @@ class ElementQueryMixin
         };
     }
 
+    public function column(): Closure
+    {
+        return function($column) {
+            Deprecator::log('ElementQuery-column', 'Calling ->column on an ElementQuery is deprecated. Use ->pluck($column) instead.');
+
+            /** @phpstan-ignore-next-line */
+            return $this->pluck($this->query->getColumns()[0])->all();
+        };
+    }
+
+    public function pairs(): Closure
+    {
+        return function() {
+            Deprecator::log('ElementQuery-pairs', 'Calling ->pairs on an ElementQuery is deprecated. Use ->pluck($value, $key) instead.');
+
+            /** @phpstan-ignore-next-line */
+            return $this->pluck($this->query->getColumns()[1], $this->query->getColumns()[0])->all();
+        };
+    }
+
     public function addOrderBy(): Closure
     {
         return function($columns) {
@@ -81,7 +101,8 @@ class ElementQueryMixin
         return function(array $elements) {
             Deprecator::log('ElementQuery-afterPopulate', 'Calling ->afterPopulate on an ElementQuery is deprecated.');
 
-            return $elements;
+            /** @phpstan-ignore-next-line */
+            return $this->hydrate($elements);
         };
     }
 
@@ -92,12 +113,15 @@ class ElementQueryMixin
 
             $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
 
+            // Yii uses named parameters, Laravel uses positional
+            $condition = preg_replace('/:qp\d+/', '?', $condition);
+
             if (!$condition) {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, $params);
+            return $this->whereRaw($condition, array_values($params));
         };
     }
 
@@ -114,6 +138,9 @@ class ElementQueryMixin
 
             $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
 
+            // Yii uses named parameters, Laravel uses positional
+            $condition = preg_replace('/:qp\d+/', '?', $condition);
+
             if (!$condition) {
                 return $this;
             }
@@ -124,7 +151,7 @@ class ElementQueryMixin
             $this->subQuery->wheres = [];
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, $params);
+            return $this->whereRaw($condition, array_values($params));
         };
     }
 
@@ -141,12 +168,15 @@ class ElementQueryMixin
 
             $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
 
+            // Yii uses named parameters, Laravel uses positional
+            $condition = preg_replace('/:qp\d+/', '?', $condition);
+
             if (!$condition) {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, $params);
+            return $this->whereRaw($condition, array_values($params));
         };
     }
 
@@ -163,12 +193,15 @@ class ElementQueryMixin
 
             $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
 
+            // Yii uses named parameters, Laravel uses positional
+            $condition = preg_replace('/:qp\d+/', '?', $condition);
+
             if (!$condition) {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->orWhereRaw($condition, $params);
+            return $this->orWhereRaw($condition, array_values($params));
         };
     }
 

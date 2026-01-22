@@ -24,7 +24,7 @@ use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 use yii\db\Schema;
 

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\LinkFieldConditionRule;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
@@ -15,6 +14,7 @@ use craft\helpers\Cp;
 use craft\helpers\Template;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;

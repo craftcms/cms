@@ -47,7 +47,7 @@ final readonly class Drafts
             return collect();
         }
 
-        /** @var \craft\elements\db\ElementQueryInterface $query */
+        /** @var \CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)

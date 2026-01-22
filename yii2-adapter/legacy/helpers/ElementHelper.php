@@ -376,7 +376,7 @@ class ElementHelper
             return array_combine($propagatedSiteIds, array_map(fn() => $defaultStatus, $propagatedSiteIds));
         }
 
-        $siteStatusesQuery = $element::find()
+        return $element::find()
             ->drafts($element->getIsDraft())
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
@@ -385,9 +385,10 @@ class ElementHelper
             ->status(null)
             ->trashed(null)
             ->asArray()
-            ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-
-        return array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
+            ->select(['elements_sites.siteId', 'elements_sites.enabled'])
+            ->pluck('enabled', 'siteId')
+            ->map(fn($enabled) => (bool)$enabled)
+            ->all();
     }
 
     /**

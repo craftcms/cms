@@ -19,12 +19,12 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -70,12 +70,12 @@ class ElementIndexesController extends BaseElementsController
 
     protected ?array $viewState = null;
 
-    protected ElementQueryInterface|ElementQuery|null $elementQuery = null;
+    protected ElementQueryInterface|null $elementQuery = null;
 
     /**
      * @since 5.0.0
      */
-    protected ElementQueryInterface|ElementQuery|null $unfilteredElementQuery = null;
+    protected ElementQueryInterface|null $unfilteredElementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null
@@ -670,7 +670,7 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element query based on the current params.
      */
-    protected function elementQuery(): ElementQueryInterface|ElementQuery
+    protected function elementQuery(): ElementQueryInterface
     {
         $query = $this->elementType::find();
         $conditionsService = Craft::$app->getConditions();

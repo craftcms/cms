@@ -19,7 +19,6 @@ use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
 use craft\errors\UnsupportedSiteException;
@@ -46,6 +45,7 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -1603,7 +1603,7 @@ class Elements extends Component
      * @since 3.2.0
      */
     public function resaveElements(
-        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query,
+        ElementQueryInterface $query,
         bool $continueOnError = false,
         bool $skipRevisions = true,
         ?bool $updateSearchIndex = null,
@@ -2678,7 +2678,8 @@ class Elements extends Component
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
-            ->column();
+            ->pluck('id')
+            ->all();
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -3516,15 +3517,9 @@ class Elements extends Component
                         $query = $this->createElementQuery($map['elementType']);
 
                         // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                        if ($query instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
-                            $query->reorder();
-                            $query->offset(null);
-                            $query->limit(null);
-                        } else {
-                            $query->orderBy = null;
-                            $query->offset = null;
-                            $query->limit = null;
-                        }
+                        $query->reorder();
+                        $query->offset(null);
+                        $query->limit(null);
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
@@ -3544,9 +3539,7 @@ class Elements extends Component
                         if (!$query->id) {
                             $query->id = array_keys($uniqueTargetElementIds);
                         } else {
-                            $query->andWhere([
-                                'elements.id' => array_keys($uniqueTargetElementIds),
-                            ]);
+                            $query->whereIn('elements.id', array_keys($uniqueTargetElementIds));
                         }
                     }
 
@@ -3676,7 +3669,7 @@ class Elements extends Component
                         // Pass the instantiated elements to afterPopulate()
                         $query->asArray = false;
                         if ($query instanceof ElementQueryInterface) {
-                            $query->afterPopulate($flatTargetElements);
+                            $query->hydrate($flatTargetElements);
                         }
                     }
 

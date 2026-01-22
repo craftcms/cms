@@ -54,6 +54,7 @@ use yii\base\InvalidConfigException;
  * @replace {myElement} myEntry
  * @replace {element-class} \CraftCms\Cms\Entry\Elements\Entry
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\EntryQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {

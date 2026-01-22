@@ -7,10 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Arr;

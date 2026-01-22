@@ -14,8 +14,6 @@ use Illuminate\Support\Collection;
 
 /**
  * @extends ElementQuery<Address>
- *
- * @phpstan-ignore class.missingExtends
  */
 final class AddressQuery extends ElementQuery
 {

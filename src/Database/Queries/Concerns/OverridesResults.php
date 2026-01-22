@@ -56,7 +56,7 @@ trait OverridesResults
      *
      * @param  TValue[]  $elements  The resulting elements.
      *
-     * @see getCachedResult()
+     * @see getResultOverride()
      */
     public function setResultOverride(array $elements): void
     {

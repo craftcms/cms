@@ -10,11 +10,11 @@ namespace craft\base;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
@@ -189,9 +189,9 @@ interface ElementInterface extends
      * }
      * ```
      *
-     * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface]] instance.
+     * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
      */
-    public static function find(): ElementQueryInterface|ElementQuery;
+    public static function find(): ElementQueryInterface;
 
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.

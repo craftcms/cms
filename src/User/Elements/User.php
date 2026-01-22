@@ -13,7 +13,6 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\NestedElementManager;
 use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
@@ -35,7 +34,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Queries\AddressQuery;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -78,7 +77,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -547,7 +545,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         /** @var \CraftCms\Cms\Database\Queries\UserQuery $elementQuery */
         if ($attribute === 'groups') {

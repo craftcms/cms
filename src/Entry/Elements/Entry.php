@@ -26,8 +26,6 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
@@ -45,6 +43,7 @@ use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -81,7 +80,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
 use Throwable;
@@ -458,7 +456,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -873,7 +870,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
      * {@inheritdoc}
      */
     #[Override]
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         match ($attribute) {
             'authors' => $elementQuery->andWith(['authors', ['status' => null]]),
@@ -3205,7 +3202,7 @@ JS;
                 ->ancestorDist(1)
                 ->status(null)
                 ->select(['elements.id'])
-                ->scalar();
+                ->value('id');
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }

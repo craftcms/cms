@@ -7,8 +7,8 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use function CraftCms\Cms\t;
 

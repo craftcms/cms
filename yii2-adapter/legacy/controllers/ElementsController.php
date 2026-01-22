@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
@@ -33,6 +32,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -707,7 +707,7 @@ JS, [
                     ->preferSites([$element->siteId])
                     ->unique()
                     ->status(null)
-                    ->andWhere(['!=', 'elements.dateCreated', Db::prepareDateForDb($element->dateUpdated)])
+                    ->where('elements.dateCreated', '!=', Db::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
     }
@@ -809,7 +809,7 @@ JS, [
                     ->status(null)
                     ->orderBy(['dateUpdated' => SORT_DESC])
                     ->with(['draftCreator'])
-                    ->collect()
+                    ->get()
                     ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
                     ->all();
             }

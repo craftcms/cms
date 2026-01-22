@@ -24,7 +24,6 @@ use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
@@ -76,6 +75,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
@@ -960,7 +960,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public static function find(): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    public static function find(): ElementQueryInterface
     {
         return new \CraftCms\Cms\Database\Queries\ElementQuery(static::class);
     }
@@ -1303,7 +1303,7 @@ abstract class Element extends Component implements ElementInterface
      * {@inheritdoc}
      */
     public static function indexHtml(
-        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
+        ElementQueryInterface $elementQuery,
         ?array $disabledElementIds,
         array $viewState,
         ?string $sourceKey,
@@ -1359,8 +1359,7 @@ abstract class Element extends Component implements ElementInterface
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1], $db)) {
-                            /** @phpstan-ignore arguments.count */
-                            $elementQuery->orderBy($orderBy[0], $orderBy[1] === SORT_ASC ? 'asc' : 'desc');
+                            $elementQuery->orderBy($orderBy[0]);
                         } else {
                             break;
                         }
@@ -1436,11 +1435,7 @@ abstract class Element extends Component implements ElementInterface
 
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
     {
-        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
-            $wheres = $elementQuery->getSubQuery()->wheres;
-        } else {
-            $wheres = $elementQuery->where;
-        }
+        $wheres = $elementQuery->getSubQuery()->wheres;
 
         if (is_array($wheres)) {
             foreach ($wheres as $key => $condition) {
@@ -1455,11 +1450,7 @@ abstract class Element extends Component implements ElementInterface
             $wheres = null;
         }
 
-        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
-            $elementQuery->getSubQuery()->wheres = $wheres;
-        } else {
-            $elementQuery->where = $wheres;
-        }
+        $elementQuery->getSubQuery()->wheres = $wheres;
 
         return $elementQuery;
     }
@@ -1468,7 +1459,7 @@ abstract class Element extends Component implements ElementInterface
      * Prepares an element query for an element index that includes a given table attribute.
      */
     protected static function prepElementQueryForTableAttribute(
-        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery,
+        ElementQueryInterface $elementQuery,
         string $attribute,
     ): void {
         switch ($attribute) {

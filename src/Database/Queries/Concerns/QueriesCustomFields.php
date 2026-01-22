@@ -105,11 +105,11 @@ trait QueriesCustomFields
     /**
      * Returns the field layouts that could be associated with the resulting elements.
      *
-     * @return Collection<FieldLayout>
+     * @return FieldLayout[]
      */
-    public function getFieldLayouts(): Collection
+    public function getFieldLayouts(): array
     {
-        return $this->fieldLayouts();
+        return $this->fieldLayouts()->all();
     }
 
     /**

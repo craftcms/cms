@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
@@ -29,6 +28,7 @@ use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
@@ -54,7 +54,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -1003,7 +1003,7 @@ JS);
   }
 
   const getEntries = () => {
-    const entries = field.find($entrySelector);
+    const entries = field.find($entrySelector)
     const selectedEntries = entries.filter('.sel');
     return (selectedEntries.length ? selectedEntries : entries).toArray();
   };
@@ -1018,7 +1018,7 @@ JS);
           revisionId: element.data('revisionId'),
           ownerId: element.data('ownerId'),
           siteId: element.data('siteId'),
-        };
+        }
     }));
   });
 
@@ -1609,7 +1609,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
         return [

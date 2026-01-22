@@ -6,7 +6,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
@@ -17,11 +16,11 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use DOMElement;
 use GraphQL\Type\Definition\Type;
 use Symfony\Component\DomCrawler\Crawler;
-
 use function CraftCms\Cms\t;
 
 /**

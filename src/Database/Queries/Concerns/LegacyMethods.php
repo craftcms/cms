@@ -33,54 +33,8 @@ trait LegacyMethods
         return $this;
     }
 
-    public function afterPopulate(array $elements): array
-    {
-        return $elements;
-    }
-
-    public function andWhere($condition): never
-    {
-        throw new BadMethodCallException;
-    }
-
-    public function filterWhere(array $condition): never
-    {
-        throw new BadMethodCallException;
-    }
-
-    public function andFilterWhere(array $condition): never
-    {
-        throw new BadMethodCallException;
-    }
-
-    public function orFilterWhere(array $condition): never
-    {
-        throw new BadMethodCallException;
-    }
-
-    public function addOrderBy($columns)
-    {
-        $this->forwardCallTo($this->query, 'orderBy', func_get_args());
-
-        return $this;
-    }
-
     public function emulateExecution($value = true): never
     {
         throw new RuntimeException('This method is not supported.');
-    }
-
-    public function where($column, $operator = null, $value = null)
-    {
-        $this->forwardCallTo($this->subQuery, 'where', func_get_args());
-
-        return $this;
-    }
-
-    public function orWhere($column, $operator = null, $value = null)
-    {
-        $this->forwardCallTo($this->subQuery, 'orWhere', func_get_args());
-
-        return $this;
     }
 }

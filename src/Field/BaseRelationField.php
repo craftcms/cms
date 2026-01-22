@@ -9,13 +9,10 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\db\Query;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -26,6 +23,7 @@ use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -132,7 +130,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * {@inheritdoc}
      */
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
     {
         /** @var self $field */
         $field = reset($instances);
@@ -658,6 +656,7 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
+                /** @var Element $target */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -1257,7 +1256,7 @@ JS, [
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->collect()
+                ->get()
                 ->pluck('id')
                 ->all();
         }
@@ -1798,6 +1797,7 @@ JS, [
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
+        /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
         $clone = (clone $query)
             ->drafts(null)
             ->status(null)
