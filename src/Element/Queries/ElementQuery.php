@@ -11,7 +11,6 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\Queries\Concerns\LegacyMethods;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -90,9 +89,6 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
-
-    /** @TODO: Remove after ElementQueryInterface is removed */
-    use LegacyMethods;
 
     /**
      * The base query builder instance.
