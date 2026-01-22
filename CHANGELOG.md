@@ -4,6 +4,7 @@
 
 - Fixed an error that could occur when loading elements with provisional changes.
 - Fixed an error that could occur when reverting content from an entry revision.
+- Fixed a bug where field layout elements weren’t always getting saved in the correct position, if the layout config referenced custom fields that no longer exist. ([#18268](https://github.com/craftcms/cms/issues/18268))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 
