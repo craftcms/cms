@@ -21,11 +21,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\records\User as UserRecord;
-use craft\validators\DateTimeValidator;
-use craft\validators\UniqueValidator;
-use craft\validators\UsernameValidator;
-use craft\validators\UserPasswordValidator;
 use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use CraftCms\Cms\Address\Elements\Address;
@@ -33,6 +28,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -54,13 +50,13 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
+use CraftCms\Cms\User\Validation\UserRules;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -71,7 +67,6 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -85,12 +80,9 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\InlineValidator;
 use yii\validators\RequiredValidator;
-use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 
 use function CraftCms\Cms\t;
@@ -111,6 +103,7 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
+#[Ruleset(UserRules::class)]
 final class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
 {
     use Authenticatable;
@@ -147,15 +140,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * @since 3.7.0
      */
     public const string EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
-
-    #[Deprecated(message: 'in 5.6.0. [[\craft\web\User:getImpersonatorId()]] should be used instead.')]
-    public const string IMPERSONATE_KEY = '__impersonator_id';
-
-    /**
-     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
-     */
-    #[Deprecated(message: 'in 5.6.0')]
-    public const string EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     private static array $photoColors = [
         'red',
@@ -199,11 +183,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * @since 4.4.8
      */
-    public const string SCENARIO_ACTIVATION = 'activation';
+    public const string SCENARIO_ACTIVATION = UserRules::SCENARIO_ACTIVATION;
 
-    public const string SCENARIO_REGISTRATION = 'registration';
+    public const string SCENARIO_REGISTRATION = UserRules::SCENARIO_REGISTRATION;
 
-    public const string SCENARIO_PASSWORD = 'password';
+    public const string SCENARIO_PASSWORD = UserRules::SCENARIO_PASSWORD;
 
     /**
      * {@inheritdoc}
@@ -1059,83 +1043,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $treatAsActive = fn () => $this->getIsCredentialed() || in_array($this->getScenario(), [
-            self::SCENARIO_REGISTRATION,
-            self::SCENARIO_ACTIVATION,
-        ]);
-
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate'], DateTimeValidator::class];
-        $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
-        $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()];
-        $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['email'], 'required', 'when' => fn () => ! $this->getIsDraft()];
-        $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
-
-        if (! Cms::config()->useEmailAsUsername) {
-            $rules[] = [['username'], 'required', 'when' => $treatAsActive];
-            $rules[] = [['username'], UsernameValidator::class];
-        }
-
-        if (Craft::$app->getIsInstalled()) {
-            $rules[] = [
-                ['email'],
-                UniqueValidator::class,
-                'targetClass' => UserRecord::class,
-                'caseInsensitive' => true,
-                'filter' => ['or', ['active' => true], ['pending' => true]],
-                'when' => $treatAsActive,
-            ];
-
-            if (! Cms::config()->useEmailAsUsername) {
-                $rules[] = [
-                    ['username'],
-                    UniqueValidator::class,
-                    'targetClass' => UserRecord::class,
-                    'caseInsensitive' => true,
-                    'filter' => ['or', ['active' => true], ['pending' => true]],
-                    'when' => $treatAsActive,
-                ];
-            }
-
-            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
-        }
-
-        if (isset($this->id) && $this->passwordResetRequired) {
-            // Get the current password hash
-            $currentPassword = DbFacade::table(Table::USERS)
-                ->where('id', $this->id)
-                ->value('password');
-        } else {
-            $currentPassword = null;
-        }
-
-        $rules[] = [
-            ['newPassword'],
-            UserPasswordValidator::class,
-            'forceDifferent' => $this->passwordResetRequired,
-            'currentPassword' => $currentPassword,
-        ];
-
-        $rules[] = [
-            ['fullName', 'firstName', 'lastName', 'username'], function ($attribute, $params, Validator $validator) {
-                if (str_contains((string) $this->$attribute, '://')) {
-                    $validator->addError($this, $attribute, t('Invalid value “{value}”.'));
-                }
-            },
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
@@ -1240,41 +1147,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         }
 
         return Craft::$app->getSso()->identityExists($this->id);
-    }
-
-    /**
-     * Validates the unverifiedEmail value is unique.
-     */
-    public function validateUnverifiedEmail(string $attribute, ?array $params, InlineValidator $validator): void
-    {
-        $query = self::find()
-            ->status(null)
-            ->where(new Lower('email'), mb_strtolower((string) $this->unverifiedEmail))
-            ->where(function (Builder $query) {
-                $query->where('active', true)
-                    ->orWhere('pending', true);
-            })
-            ->when($this->id, function (UserQuery $query) {
-                $query->whereNot('elements.id', $this->id);
-            });
-
-        if ($query->exists()) {
-            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'), $params);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
-        $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
-        $scenarios[self::SCENARIO_ACTIVATION] = ['username', 'email'];
-
-        return $scenarios;
     }
 
     /**

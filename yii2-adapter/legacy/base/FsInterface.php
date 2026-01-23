@@ -9,7 +9,7 @@ namespace craft\base;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 
 /**
  * FsInterface defines the common interface to be implemented by filesystem classes.

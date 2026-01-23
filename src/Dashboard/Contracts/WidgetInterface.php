@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Dashboard\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 
 /**

@@ -37,12 +37,11 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\validators\DateCompareValidator;
-use craft\validators\DateTimeValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -53,6 +52,7 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -99,6 +99,7 @@ use function CraftCms\Cms\t;
  * @property int|null $authorId The primary entry author’s ID
  * @property int[] $authorIds the entry authors’ IDs
  */
+#[Ruleset(EntryRules::class)]
 final class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
     use NestedElementTrait {
@@ -1068,105 +1069,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             'postDate' => t('Post Date'),
             'typeId' => t('Entry Type'),
         ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['authorIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
-        $rules[] = [['placeInStructure'], 'safe'];
-        $rules[] = [
-            ['sectionId'],
-            'required',
-            'when' => fn () => ! isset($this->fieldId),
-        ];
-        $rules[] = [['typeId'], 'required'];
-        $rules[] = [
-            ['typeId'],
-            function (string $attribute) {
-                if (! $this->isEntryTypeAllowed()) {
-                    $this->addError($attribute, t('{type} entries are no longer allowed in this section. Please choose a different entry type.', [
-                        'type' => $this->getType()->getUiLabel(),
-                    ]));
-                }
-            },
-            'skipOnEmpty' => false,
-            'when' => $this->getIsCanonical(...),
-            'on' => self::SCENARIO_LIVE,
-        ];
-        $rules[] = [['fieldId'], function (string $attribute) {
-            if (isset($this->sectionId)) {
-                $this->addError($attribute, t('`sectionId` and `fieldId` cannot both be set on an entry.'));
-            }
-        }];
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
-        $rules[] = [
-            ['postDate'],
-            DateCompareValidator::class,
-            'operator' => '<',
-            'compareAttribute' => 'expiryDate',
-            'when' => fn () => $this->postDate && $this->expiryDate,
-            'on' => self::SCENARIO_LIVE,
-        ];
-        $rules[] = [
-            ['authorIds'],
-            'required',
-            'when' => function () {
-                $section = $this->getSection();
-
-                return $section && $section->type !== SectionType::Single && $section->maxAuthors !== 0;
-            },
-            'on' => self::SCENARIO_LIVE,
-        ];
-        $rules[] = [
-            ['typeId'],
-            function (string $attribute) {
-                $typeId = $this->getType()->id;
-                foreach ($this->getAvailableEntryTypes() as $entryType) {
-                    if ($entryType->id === $typeId) {
-                        return;
-                    }
-                }
-                $this->addError($attribute, t('{attribute} is invalid.', [
-                    'attribute' => $this->getAttributeLabel($attribute),
-                ]));
-            },
-        ];
-        $rules[] = [
-            ['authorIds'],
-            function (string $attribute) {
-                $authors = $this->getAuthors();
-                $section = $this->getSection();
-                if (count($authors) > $section->maxAuthors) {
-                    $this->addError($attribute, t('{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
-                        'num' => $section->maxAuthors,
-                    ]));
-                }
-                foreach ($authors as $author) {
-                    if (! $author->can(sprintf('viewEntries:%s', $this->getSection()->uid))) {
-                        $this->addError($attribute, t('This user doesn’t have permission to author entries in this section.'));
-                        break;
-                    }
-                }
-            },
-            'when' => function () {
-                $section = $this->getSection();
-
-                return
-                    $section &&
-                    $section->type !== SectionType::Single &&
-                    isset($section->maxAuthors) &&
-                    $section->maxAuthors !== 0;
-            },
-        ];
-
-        return $rules;
     }
 
     /**
@@ -3354,7 +3256,7 @@ JS;
      *
      * @throws InvalidConfigException
      */
-    private function isEntryTypeAllowed(?array $entryTypes = null): bool
+    public function isEntryTypeAllowed(?array $entryTypes = null): bool
     {
         if ($entryTypes === null) {
             $entryTypes = $this->getAvailableEntryTypes();

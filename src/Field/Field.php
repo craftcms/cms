@@ -47,6 +47,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -437,7 +438,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         return Query::TYPE_TEXT;
     }
 
-    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = static::valueSql($instances);
 

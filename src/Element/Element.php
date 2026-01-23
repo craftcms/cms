@@ -66,20 +66,19 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\validators\DateTimeValidator;
-use craft\validators\ElementUriValidator;
-use craft\validators\SiteIdValidator;
-use craft\validators\SlugValidator;
-use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Concerns\ValidatesElement;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -125,9 +124,6 @@ use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
-use yii\validators\BooleanValidator;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
 use yii\web\Response;
 
 use function CraftCms\Cms\t;
@@ -174,7 +170,8 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-abstract class Element extends Component implements ElementInterface
+#[Ruleset(ElementRules::class)]
+abstract class Element extends Component implements ElementInterface, ValidatableComponentInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -184,6 +181,7 @@ abstract class Element extends Component implements ElementInterface
     }
     use ElementTrait;
     use Revisionable;
+    use ValidatesElement;
 
     /**
      * @since 3.3.6
@@ -2930,87 +2928,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [
-            ['id', 'parentId', 'root', 'lft', 'rgt', 'level'],
-            'number',
-            'integerOnly' => true,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-        ];
-        $rules[] = [
-            ['siteId'],
-            SiteIdValidator::class,
-            'allowDisabled' => true,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-        ];
-        $rules[] = [
-            ['dateCreated', 'dateUpdated'],
-            DateTimeValidator::class,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-        ];
-        $rules[] = [['isFresh'], BooleanValidator::class];
-
-        $rules[] = [['title'], 'trim'];
-        $rules[] = [
-            ['title'],
-            StringValidator::class,
-            'max' => 255,
-            'disallowMb4' => true,
-        ];
-        $rules[] = [
-            ['title'],
-            'required',
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => $this->shouldValidateTitle(...),
-        ];
-        $rules[] = [
-            ['title'],
-            function () {
-                $this->title = Str::convertLineBreaks($this->title);
-            },
-        ];
-
-        if (static::hasUris()) {
-            try {
-                $language = $this->getSite()->getLanguage();
-            } catch (InvalidConfigException) {
-                $language = null;
-            }
-
-            $rules[] = [
-                ['slug'],
-                SlugValidator::class,
-                'language' => $language,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-            $rules[] = [
-                ['slug'],
-                'string',
-                'max' => 255,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-            $rules[] = [
-                ['slug'],
-                'required',
-                'when' => fn () => (bool) preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            ];
-            $rules[] = [
-                ['uri'],
-                ElementUriValidator::class,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-        }
-
-        return $rules;
-    }
-
-    /**
      * Returns whether the element’s `title` attribute should be validated
      *
      * @since 5.0.0
@@ -3018,137 +2935,6 @@ abstract class Element extends Component implements ElementInterface
     protected function shouldValidateTitle(): bool
     {
         return static::hasTitles();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function validate($attributeNames = null, $clearErrors = true): bool
-    {
-        $this->_attributeNames = $attributeNames ? array_flip((array) $attributeNames) : null;
-        $this->_invalidNestedElementIds = [];
-        $result = parent::validate($attributeNames, $clearErrors);
-        $this->_attributeNames = null;
-
-        return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(): void
-    {
-        if (
-            Cms::isInstalled() &&
-            $fieldLayout = $this->getFieldLayout()
-        ) {
-            $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
-
-            foreach ($layoutElements as $layoutElement) {
-                $field = $layoutElement->getField();
-                $attribute = "field:$field->handle";
-
-                if (isset($this->_attributeNames) && ! isset($this->_attributeNames[$attribute])) {
-                    continue;
-                }
-
-                $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
-
-                if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
-                    new RequiredValidator(['isEmpty' => $isEmpty])
-                        ->validateAttribute($this, $attribute);
-                }
-
-                foreach ($field->getElementValidationRules() as $rule) {
-                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
-                    if (
-                        in_array($scenario, $validator->on) ||
-                        (empty($validator->on) && ! in_array($scenario, $validator->except))
-                    ) {
-                        $validator->validateAttributes($this);
-                    }
-                }
-            }
-        }
-
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $allErrors = $this->getErrors();
-            $this->clearErrors();
-            foreach ($allErrors as $attribute => &$errors) {
-                $label = $this->getAttributeLabel($attribute);
-                foreach ($errors as &$error) {
-                    $error = str_replace($label, "*$label*", $error);
-                }
-            }
-            $this->addErrors($allErrors);
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * Normalizes a field’s validation rule.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    private function _normalizeFieldValidator(
-        string $attribute,
-        mixed $rule,
-        FieldInterface $field,
-        callable $isEmpty,
-    ): Validator {
-        if ($rule instanceof Validator) {
-            return $rule;
-        }
-
-        if (is_string($rule)) {
-            // "Validator" syntax
-            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-        }
-
-        if (! is_array($rule) || ! isset($rule[0])) {
-            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
-        }
-
-        if (isset($rule[1])) {
-            // Make sure the attribute name starts with 'field:'
-            if ($rule[0] === $field->handle) {
-                $rule[0] = $attribute;
-            }
-        } else {
-            // ["Validator"] syntax
-            array_unshift($rule, $attribute);
-        }
-
-        if (
-            (! is_string($rule[1]) || ! isset(Validator::$builtInValidators[$rule[1]])) &&
-            (is_callable($rule[1]) || method_exists($field, $rule[1]))
-        ) {
-            // InlineValidator assumes that the closure is on the model being validated
-            // so it won’t pass a reference to the element
-            $rule['params'] = [
-                $field,
-                $rule[1],
-                $rule['params'] ?? null,
-            ];
-            $rule[1] = 'validateCustomFieldAttribute';
-        }
-
-        // Set 'isEmpty' to the field's isEmpty() method by default
-        if (! array_key_exists('isEmpty', $rule)) {
-            $rule['isEmpty'] = $isEmpty;
-        }
-
-        // Set 'on' to the main scenarios by default
-        if (! array_key_exists('on', $rule)) {
-            $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-        }
-
-        return Validator::createValidator($rule[1], $this, (array) $rule[0], array_slice($rule, 2));
     }
 
     /**
@@ -3195,6 +2981,9 @@ abstract class Element extends Component implements ElementInterface
         if (str_starts_with($attribute, 'field:')) {
             $attribute = substr($attribute, 6);
         }
+
+        $this->getValidator()->errors()->add($attribute, $error);
+        $this->validated = true;
 
         parent::addError($attribute, $error);
     }

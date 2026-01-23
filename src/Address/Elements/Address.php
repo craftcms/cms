@@ -14,17 +14,13 @@ use craft\base\NestedElementTrait;
 use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\fieldlayoutelements\addresses\LatLongField;
-use craft\fieldlayoutelements\addresses\OrganizationField;
-use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
-use craft\fieldlayoutelements\BaseNativeField;
-use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
-use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
+use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -36,6 +32,7 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
+#[Ruleset(AddressRules::class)]
 final class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
@@ -203,7 +200,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return self::_addressAttributes();
+        return self::addressAttributes();
     }
 
     /**
@@ -211,7 +208,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
      *
      * @return string[]
      */
-    private static function _addressAttributes(): array
+    public static function addressAttributes(): array
     {
         return [
             'countryCode',
@@ -661,7 +658,7 @@ final class Address extends Element implements AddressInterface, NestedElementIn
             'countryCode',
         ]);
         $nullFields = array_filter(
-            array_diff(self::_addressAttributes(), $usedFields),
+            array_diff(self::addressAttributes(), $usedFields),
             fn (string $attribute) => ! in_array($attribute, ['givenName', 'familyName', 'additionalName']),
         );
 
@@ -670,102 +667,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         }
 
         return parent::beforeValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
-        $rules[] = [['countryCode'], 'required'];
-
-        $stringFields = [
-            'countryCode',
-            'administrativeArea',
-            'locality',
-            'dependentLocality',
-            'postalCode',
-            'sortingCode',
-            'addressLine1',
-            'addressLine2',
-            'addressLine3',
-            'organization',
-            'organizationTaxId',
-            'fullName',
-            'firstName',
-            'lastName',
-            'latitude',
-            'longitude',
-        ];
-        $rules[] = [$stringFields, 'trim', 'skipOnEmpty' => true];
-        $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
-
-        $addressesService = app(Addresses::class);
-        $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
-        $rules[] = [['countryCode'], 'in', 'range' => $countryCodes];
-
-        foreach (self::_addressAttributes() as $attr) {
-            if ($attr === 'countryCode') {
-                continue;
-            }
-
-            // Add them as individual rows making it easier to extend/manipulate the rules.
-            $rules[] = [
-                $attr,
-                'required',
-                'on' => self::SCENARIO_LIVE,
-                'when' => function (Address $model, string $attribute) use ($addressesService) {
-                    $formatter = $addressesService->getAddressFormatRepository()->get($this->countryCode);
-
-                    return in_array($attribute, $formatter->getRequiredFields());
-                },
-            ];
-        }
-
-        $requirableNativeFields = [
-            OrganizationField::class,
-            OrganizationTaxIdField::class,
-            FullNameField::class,
-            LatLongField::class,
-        ];
-
-        $generalConfig = Cms::config();
-        $fieldLayout = $this->getFieldLayout();
-
-        foreach ($requirableNativeFields as $class) {
-            /** @var BaseNativeField|null $field */
-            $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
-            if ($field && $field->required) {
-                $attribute = $field->attribute();
-                switch ($attribute) {
-                    case 'latLong':
-                        $attribute = ['latitude', 'longitude'];
-                        break;
-                    case 'fullName':
-                        if ($generalConfig->showFirstAndLastNameFields) {
-                            $attribute = ['firstName', 'lastName'];
-                        }
-                        break;
-                }
-
-                $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
-            }
-        }
-
-        $rules[] = ['latitude', 'number', 'min' => -90, 'max' => 90, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
-        $rules[] = ['longitude', 'number', 'min' => -180, 'max' => 180, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
-
-        $rules[] = [self::_addressAttributes(), 'safe'];
-
-        if ($generalConfig->showFirstAndLastNameFields) {
-            $rules[] = [['firstName', 'lastName'], 'safe'];
-        }
-
-        return $rules;
     }
 
     /**

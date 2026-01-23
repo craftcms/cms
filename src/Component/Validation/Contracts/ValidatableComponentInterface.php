@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Contracts;
+namespace CraftCms\Cms\Component\Validation\Contracts;
 
 interface ValidatableComponentInterface
 {

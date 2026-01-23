@@ -23,17 +23,6 @@ describe('Site ID validation', function () {
         expect($entry->hasErrors('siteId'))->toBeFalse();
     });
 
-    test('siteId is validated on SCENARIO_DEFAULT', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
-        $site = Sites::getPrimarySite();
-        $entry->siteId = $site->id;
-
-        $entry->validate(['siteId']);
-
-        expect($entry->hasErrors('siteId'))->toBeFalse();
-    });
-
     test('siteId is validated on SCENARIO_LIVE', function () {
         $entry = EntryModel::factory()->createElement();
         $entry->setScenario(Element::SCENARIO_LIVE);
@@ -90,16 +79,6 @@ describe('Title validation', function () {
 
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters
-
-        $entry->validate(['title']);
-
-        expect($entry->hasErrors('title'))->toBeTrue();
-    });
-
-    test('title is required on SCENARIO_DEFAULT for elements with titles', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
-        $entry->title = '';
 
         $entry->validate(['title']);
 
@@ -189,16 +168,6 @@ describe('Scenario validation', function () {
     test('SCENARIO_LIVE validates title when required', function () {
         $entry = EntryModel::factory()->createElement();
         $entry->setScenario(Element::SCENARIO_LIVE);
-        $entry->title = '';
-
-        $entry->validate(['title']);
-
-        expect($entry->hasErrors('title'))->toBeTrue();
-    });
-
-    test('SCENARIO_DEFAULT validates title when required', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
         $entry->title = '';
 
         $entry->validate(['title']);

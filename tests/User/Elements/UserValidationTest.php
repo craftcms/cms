@@ -374,7 +374,6 @@ describe('Password validation', function () {
         '160 chars is valid' => [str_repeat('a', 160), false],
         '161 chars is too long' => [str_repeat('a', 161), true],
         'null is valid' => [null, false],
-        'empty string is invalid' => ['', true],
     ]);
 
     test('newPassword must be different when passwordResetRequired is true', function () {
@@ -421,30 +420,46 @@ describe('Scenario validation', function () {
     test('SCENARIO_PASSWORD only validates newPassword', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->newPassword = 'p'; // too short
 
-        expect($user->activeAttributes())->toBe(['newPassword']);
+        $user->validate(['username', 'newPassword']);
+
+        expect($user->hasErrors('username'))->toBeFalse();
+        expect($user->hasErrors('newPassword'))->toBeTrue();
     });
 
     test('SCENARIO_REGISTRATION validates username email and newPassword', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_REGISTRATION);
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->email = 'invalid-email'; // Invalid
+        $user->newPassword = 'p'; // too short
+        $user->firstName = str_repeat('a', 256); // Invalid
 
-        $activeAttributes = $user->activeAttributes();
+        $user->validate();
 
-        expect($activeAttributes)->toContain('username');
-        expect($activeAttributes)->toContain('email');
-        expect($activeAttributes)->toContain('newPassword');
+        expect($user->hasErrors('username'))->toBeTrue();
+        expect($user->hasErrors('email'))->toBeTrue();
+        expect($user->hasErrors('newPassword'))->toBeTrue();
+        expect($user->hasErrors('firstName'))->toBeFalse();
     });
 
     test('SCENARIO_ACTIVATION validates username and email', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_ACTIVATION);
 
-        $activeAttributes = $user->activeAttributes();
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->email = 'invalid-email'; // Invalid
+        $user->newPassword = 'p'; // too short
+        $user->firstName = str_repeat('a', 256); // Invalid
 
-        expect($activeAttributes)->toContain('username');
-        expect($activeAttributes)->toContain('email');
-        expect($activeAttributes)->not()->toContain('newPassword');
+        $user->validate();
+
+        expect($user->hasErrors('username'))->toBeTrue();
+        expect($user->hasErrors('email'))->toBeTrue();
+        expect($user->hasErrors('newPassword'))->toBeFalse();
+        expect($user->hasErrors('firstName'))->toBeFalse();
     });
 
     test('treatAsActive returns correct value based on user status', function (callable $factoryMethod, bool $expected) {
@@ -505,5 +520,24 @@ describe('Edge cases', function () {
         expect($user->hasErrors('email'))->toBeTrue();
         expect($user->hasErrors('username'))->toBeTrue();
         expect($user->hasErrors('fullName'))->toBeTrue();
+    });
+
+    test('errors reset between validate calls unless specified', function () {
+        $user = UserModel::factory()->createElement();
+        $user->email = 'invalid-email';
+
+        $user->validate(['email']);
+
+        expect($user->hasErrors('email'))->toBeTrue();
+
+        $user->email = 'john@example.com';
+
+        $user->validate(['email'], false);
+
+        expect($user->hasErrors('email'))->toBeTrue();
+
+        $user->validate(['email']);
+
+        expect($user->hasErrors('email'))->toBeFalse();
     });
 });

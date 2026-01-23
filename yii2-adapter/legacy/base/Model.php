@@ -14,7 +14,7 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use yii\validators\Validator;
@@ -113,6 +113,24 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
 
         return $behaviors;
+    }
+
+    /*
+     * @inheritdoc
+     */
+    public function getScenario(): string
+    {
+        return parent::getScenario();
+    }
+
+    public function setScenario($scenario): void
+    {
+        parent::setScenario($scenario);
+    }
+
+    public function scenarios(): array
+    {
+        return parent::scenarios();
     }
 
     /**
@@ -312,6 +330,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function addError($attribute, $error = ''): void
     {
         parent::addError($attribute, $error);
+    }
+
+    public function activeAttributes(): array
+    {
+        return parent::activeAttributes();
     }
 
     /**

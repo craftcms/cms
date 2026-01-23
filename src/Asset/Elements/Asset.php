@@ -55,12 +55,12 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
-use craft\validators\DateTimeValidator;
-use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -129,6 +129,7 @@ use function CraftCms\Cms\t;
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  */
+#[Ruleset(AssetRules::class)]
 final class Asset extends Element
 {
     // Events
@@ -176,15 +177,15 @@ final class Asset extends Element
     /**
      * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
      */
-    public const string SCENARIO_MOVE = 'move';
+    public const string SCENARIO_MOVE = AssetRules::SCENARIO_MOVE;
 
-    public const string SCENARIO_FILEOPS = 'fileOperations';
+    public const string SCENARIO_FILEOPS = AssetRules::SCENARIO_FILEOPS;
 
-    public const string SCENARIO_INDEX = 'index';
+    public const string SCENARIO_INDEX = AssetRules::SCENARIO_INDEX;
 
-    public const string SCENARIO_CREATE = 'create';
+    public const string SCENARIO_CREATE = AssetRules::SCENARIO_CREATE;
 
-    public const string SCENARIO_REPLACE = 'replace';
+    public const string SCENARIO_REPLACE = AssetRules::SCENARIO_REPLACE;
 
     // File kinds
     // -------------------------------------------------------------------------
@@ -1382,53 +1383,6 @@ final class Asset extends Element
         }
 
         parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
-        $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
-        $rules[] = [['dateModified'], DateTimeValidator::class];
-        $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
-        $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
-        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
-
-        // Validate the extension unless all we're doing is moving the file
-        $rules[] = [
-            ['newLocation'],
-            AssetLocationValidator::class,
-            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
-            'except' => [self::SCENARIO_MOVE],
-        ];
-        $rules[] = [
-            ['newLocation'],
-            AssetLocationValidator::class,
-            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
-            'allowedExtensions' => '*',
-            'on' => [self::SCENARIO_MOVE],
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_INDEX] = [];
-
-        return $scenarios;
     }
 
     /**

@@ -584,11 +584,22 @@ JS, [
     public function getElementValidationRules(): array
     {
         $rules = [
-            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE], 'skipOnEmpty' => false],
+            [
+                function (ElementInterface $element) {
+                    $this->validateRelationCount($element);
+                },
+                'on' => [Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
+            ],
         ];
 
         if ($this->validateRelatedElements) {
-            $rules[] = ['validateRelatedElements', 'on' => [Element::SCENARIO_LIVE]];
+            $rules[] = [
+                function (ElementInterface $element) {
+                    $this->validateRelatedElements($element);
+                },
+                'on' => [Element::SCENARIO_LIVE],
+            ];
         }
 
         return $rules;

@@ -8,6 +8,7 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -22,6 +23,7 @@ use function CraftCms\Cms\t;
 /**
  * @method ContentBlockField getField()
  */
+#[Ruleset(ContentBlockRules::class)]
 final class ContentBlock extends Element implements NestedElementInterface
 {
     use NestedElementTrait;
@@ -134,18 +136,6 @@ final class ContentBlock extends Element implements NestedElementInterface
     public static function baseGqlType(): Type
     {
         return ContentBlockInterface::getType();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        return [
-            ...parent::defineRules(),
-            [['fieldId', 'ownerId', 'primaryOwnerId', 'sortOrder'], 'number', 'integerOnly' => true],
-        ];
     }
 
     /**
