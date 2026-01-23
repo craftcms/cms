@@ -211,6 +211,6 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 // Register it!
 Craft.registerElementSelectorModalClass(
-  'craft\\elements\\Asset',
+  'CraftCms\\Cms\\Asset\\Elements\\Asset',
   Craft.AssetSelectorModal
 );

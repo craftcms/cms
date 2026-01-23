@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -16,6 +15,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -376,7 +376,7 @@ class ElementHelper
             return array_combine($propagatedSiteIds, array_map(fn() => $defaultStatus, $propagatedSiteIds));
         }
 
-        $siteStatusesQuery = $element::find()
+        return $element::find()
             ->drafts($element->getIsDraft())
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
@@ -385,9 +385,10 @@ class ElementHelper
             ->status(null)
             ->trashed(null)
             ->asArray()
-            ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-
-        return array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
+            ->select(['elements_sites.siteId', 'elements_sites.enabled'])
+            ->pluck('enabled', 'siteId')
+            ->map(fn($enabled) => (bool)$enabled)
+            ->all();
     }
 
     /**

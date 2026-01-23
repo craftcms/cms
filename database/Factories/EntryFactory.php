@@ -19,10 +19,10 @@ final class EntryFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => Element::factory()->set('type', \craft\elements\Entry::class),
+            'id' => Element::factory()->set('type', \CraftCms\Cms\Entry\Elements\Entry::class),
             'sectionId' => Section::factory(),
             'typeId' => EntryType::factory(),
-            'status' => \craft\elements\Entry::STATUS_LIVE,
+            'status' => \CraftCms\Cms\Entry\Elements\Entry::STATUS_LIVE,
             'postDate' => $created = $this->faker->dateTime(),
             'dateCreated' => $created,
             'dateUpdated' => $created,

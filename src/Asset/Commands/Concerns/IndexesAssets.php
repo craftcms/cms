@@ -109,7 +109,7 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($craft, $assetIds) {
-                    /** @var \craft\elements\ElementCollection<Asset> $assets */
+                    /** @var \CraftCms\Cms\Element\ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {

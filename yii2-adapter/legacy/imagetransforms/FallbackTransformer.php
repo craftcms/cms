@@ -9,11 +9,11 @@ namespace craft\imagetransforms;
 
 use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Crypt;
 

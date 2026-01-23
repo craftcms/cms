@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\Asset;
 use craft\errors\VolumeException;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 

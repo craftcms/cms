@@ -7,7 +7,7 @@
 
 namespace craft\behaviors;
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Support\Facades\Deprecator;

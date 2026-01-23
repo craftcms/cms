@@ -9,13 +9,13 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Batchable;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseBatchedElementJob;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -167,9 +167,9 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                         ->drafts(null)
                         ->provisionalDrafts(null)
                         ->select(['elements.id'])
-                        ->scalar();
+                        ->value('id');
 
-                    if ($parentId !== false) {
+                    if ($parentId !== null) {
                         // If we've cloned the parent, use the clone's ID instead
                         if (isset($this->duplicatedElementIds[$parentId][$newElement->siteId])) {
                             $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];

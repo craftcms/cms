@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use craft\base\NameTrait;
 use Illuminate\Http\Request;
 
 trait PopulatesNames

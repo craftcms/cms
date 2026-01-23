@@ -8,8 +8,8 @@
 namespace craft\validators;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;

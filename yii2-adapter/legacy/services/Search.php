@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\db\ElementQuery;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\Component as ComponentHelper;
@@ -24,6 +23,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -380,11 +380,11 @@ class Search extends Component
      * If the element query is being ordered by `score`, [[searchElements()]] will be called regardless of
      * what this returns.
      *
-     * @param ElementQuery $elementQuery
+     * @param ElementQueryInterface $elementQuery
      * @return bool
      * @since 4.8.0
      */
-    public function shouldCallSearchElements(ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): bool
+    public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool
     {
         return false;
     }
@@ -392,11 +392,11 @@ class Search extends Component
     /**
      * Searches for elements that match the given element query.
      *
-     * @param ElementQuery $elementQuery The element query being executed
+     * @param ElementQueryInterface $elementQuery The element query being executed
      * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
      * @since 3.7.14
      */
-    public function searchElements(ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): array
+    public function searchElements(ElementQueryInterface $elementQuery): array
     {
         $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
 
@@ -422,7 +422,7 @@ class Search extends Component
             return [];
         }
 
-        if ($elementQuery instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+        if ($elementQuery instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
             $elementQuery->getSubQuery()->offset = null;
@@ -468,11 +468,11 @@ class Search extends Component
      * Returns a database query which will fetch results for a given search query.
      *
      * @param string|array|SearchQuery $searchQuery The search term to filter the resulting elements by.
-     * @param ElementQuery $elementQuery The element query being executed
+     * @param ElementQueryInterface $elementQuery The element query being executed
      * @return Query|false
      * @since 4.6.0
      */
-    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): Query|false
+    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQueryInterface $elementQuery): Query|false
     {
         $searchQuery = $this->normalizeSearchQuery($searchQuery);
 
@@ -513,7 +513,7 @@ class Search extends Component
         return $query;
     }
 
-    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQuery|\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery): array
+    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQueryInterface $elementQuery): array
     {
         // Fire a 'beforeScoreResults' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {

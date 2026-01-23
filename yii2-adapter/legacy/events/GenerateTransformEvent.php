@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\Asset;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Asset generate transform event class.

@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use craft\base\Element;
 use craft\base\Event as YiiEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Elements;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Plugin\Plugin;
 
 /**

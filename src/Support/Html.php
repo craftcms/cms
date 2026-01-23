@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\Security;

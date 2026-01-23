@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\elements\ContentBlock as ContentBlockElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
@@ -17,6 +16,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\gql\types\elements\ContentBlock as ContentBlockType;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Fields;
 
 /**

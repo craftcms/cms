@@ -5,28 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\NameTrait;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
-use craft\elements\Address;
-use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -37,17 +28,24 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\ElementQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -79,7 +77,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -120,8 +117,8 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     use Authorizable;
     use CanResetPassword;
     use ConfirmsPasswords;
+    use HasNames;
     use Macroable;
-    use NameTrait;
     use Notifiable;
 
     /**
@@ -548,9 +545,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var \CraftCms\Cms\Database\Queries\UserQuery $elementQuery */
+        /** @var \CraftCms\Cms\Element\Queries\UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -1300,8 +1297,8 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
             }
 
             $this->_addresses = $this->createAddressQuery()
-                ->andWhere(['fieldId' => null])
-                ->collect();
+                ->whereNull('fieldId')
+                ->get();
         }
 
         return $this->_addresses;
@@ -2574,13 +2571,12 @@ JS, [
                     ->site('*')
                     ->unique();
 
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
+                $entryQuery->each(function (Entry $entry) use ($elementsService) {
                     // only delete their entry if they're the sole author
                     if ($entry->getAuthorIds() === [$this->id]) {
                         $elementsService->deleteElement($entry);
                     }
-                }
+                }, 100);
             }
 
             DbFacade::commit();

@@ -8,7 +8,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
-use craft\elements\ElementCollection;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -18,6 +17,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Type\Definition\Type;
 

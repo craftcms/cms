@@ -198,7 +198,7 @@
         }
 
         for (const e of elementInfo) {
-          if (e.type !== 'craft\\elements\\Entry') {
+          if (e.type !== 'CraftCms\\Cms\\Entry\\Elements\\Entry') {
             return false;
           }
         }
@@ -1053,7 +1053,7 @@
               let entry = $(selectedItems[i]).data('entry');
 
               elementInfo.push({
-                type: 'craft\\elements\\Entry',
+                type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
                 id:
                   entry.matrix.elementEditor?.getDraftElementId(entry.id) ||
                   entry.id,
@@ -1067,7 +1067,7 @@
           } else {
             elementInfo = [
               {
-                type: 'craft\\elements\\Entry',
+                type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
                 id:
                   this.matrix.elementEditor?.getDraftElementId(this.id) ||
                   this.id,
@@ -1092,7 +1092,9 @@
                   'app',
                   'Are you sure you want to delete the selected {type}?',
                   {
-                    type: Craft.elementTypeNames['craft\\elements\\Entry'][3],
+                    type: Craft.elementTypeNames[
+                      'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                    ][3],
                   }
                 )
               )
@@ -1149,7 +1151,7 @@
         const param = (n) => Craft.namespaceInputName(n, baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
-          [param('elementType')]: 'craft\\elements\\Entry',
+          [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,

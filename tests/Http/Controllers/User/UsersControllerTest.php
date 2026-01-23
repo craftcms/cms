@@ -1,8 +1,8 @@
 <?php
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;

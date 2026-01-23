@@ -8,7 +8,7 @@
 namespace craft\db;
 
 use craft\base\Batchable;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
@@ -29,11 +29,11 @@ class QueryBatcher implements Batchable
      * column. That will ensure that the rows returned in result batches are consecutive.
      * :::
      *
-     * @param QueryInterface $query
+     * @param QueryInterface|ElementQueryInterface $query
      * @param YiiConnection|null $db
      */
     public function __construct(
-        private QueryInterface $query,
+        private QueryInterface|ElementQueryInterface $query,
         private ?YiiConnection $db = null,
     ) {
     }
@@ -44,11 +44,7 @@ class QueryBatcher implements Batchable
     public function count(): int
     {
         try {
-            if ($this->query instanceof ElementQuery) {
-                $count = $this->query->count();
-            } else {
-                $count = $this->query->count(db: $this->db);
-            }
+            $count = $this->query->count();
         } catch (QueryAbortedException) {
             return 0;
         }

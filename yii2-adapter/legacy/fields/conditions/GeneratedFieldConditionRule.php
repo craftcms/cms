@@ -2,13 +2,12 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 use function CraftCms\Cms\t;
@@ -96,9 +95,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
             return;
         }
 
-        $qb = Craft::$app->getDb()->getQueryBuilder();
-        $valueSql = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
-        $query->andWhere(Db::parseParam($valueSql, $value, caseInsensitive: true, columnType: Schema::TYPE_JSON));
+        $query->whereParam(new JsonExtract('elements_sites.content', [$field['uid']]), $value, caseInsensitive: true, columnType: Schema::TYPE_JSON);
     }
 
     /**

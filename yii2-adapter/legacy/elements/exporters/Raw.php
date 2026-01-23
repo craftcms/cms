@@ -8,7 +8,7 @@
 namespace craft\elements\exporters;
 
 use craft\base\ElementExporter;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
