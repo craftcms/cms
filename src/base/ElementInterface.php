@@ -30,6 +30,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 interface ElementInterface extends ComponentInterface
 {
     /**
@@ -690,7 +691,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Site
      */
-    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -699,7 +699,6 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.5.0
      */
-    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -754,7 +753,6 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.3.6
      */
-    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -762,7 +760,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
-    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -770,7 +767,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Markup|null
      */
-    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -917,7 +913,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
-    #[AllowedInSandbox]
     public function getCpEditUrl(): ?string;
 
     /**
@@ -1031,7 +1026,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
-    #[AllowedInSandbox]
     public function getStatus(): ?string;
 
     /**

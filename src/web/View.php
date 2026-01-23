@@ -432,6 +432,7 @@ class View extends \yii\web\View
                 $sandboxConfig['allowedFunctions'],
                 $sandboxConfig['allowedMethods'],
                 $sandboxConfig['allowedProperties'],
+                $sandboxConfig['allowedClasses'],
             )));
         }
 

@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Class OptionData
@@ -15,6 +16,7 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 class OptionData implements Serializable
 {
     /**
