@@ -4461,7 +4461,7 @@ JS, [
     public function setEnabledForSite(array|bool $enabledForSite): void
     {
         if (is_array($enabledForSite)) {
-            $this->_enabledForSite = array_map(fn ($value) => $value, $enabledForSite);
+            $this->_enabledForSite = array_map(fn ($value) => (bool) $value, $enabledForSite);
         } else {
             $this->_enabledForSite = $enabledForSite;
         }
