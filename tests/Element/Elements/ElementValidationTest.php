@@ -6,6 +6,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -185,7 +186,7 @@ describe('Title validation', function () {
     });
 
     test('title rejects 4-byte unicode (mb4) characters', function () {
-        $this->markTestSkippedWhen(\Illuminate\Support\Facades\DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
+        $this->markTestSkippedWhen(DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
 
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters
