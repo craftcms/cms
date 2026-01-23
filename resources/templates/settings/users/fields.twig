@@ -16,7 +16,7 @@
 
         {{ forms.fieldLayoutDesignerField({
             first: true,
-            fieldLayout: fieldLayout ?? craft.fields.getLayoutByType('craft\\elements\\User'),
+            fieldLayout: fieldLayout ?? craft.fields.getLayoutByType('CraftCms\\Cms\\Entry\\Elements\\User'),
             withGeneratedFields: true,
             withCardViewDesigner: true,
             disabled: readOnly,

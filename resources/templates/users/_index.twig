@@ -3,7 +3,7 @@
 {% endif %}
 
 {% extends "_layouts/elementindex" %}
-{% set elementType = 'craft\\elements\\User' %}
+{% set elementType = 'CraftCms\\Cms\\Entry\\Elements\\User' %}
 
 {% set canHaveDrafts = craft.users().drafts().draftOf(false).savedDraftsOnly().exists() %}
 
