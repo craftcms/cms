@@ -7,8 +7,8 @@
 
 namespace craft\gql\handlers;
 
-use craft\elements\Entry;
 use craft\gql\base\RelationArgumentHandler;
+use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
  * Class RelatedEntries

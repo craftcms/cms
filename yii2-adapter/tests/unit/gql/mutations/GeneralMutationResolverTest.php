@@ -9,9 +9,7 @@ namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\base\MutationResolver;
@@ -20,6 +18,8 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\models\GqlSchema;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Error\Error;

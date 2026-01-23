@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\GarbageCollection;
 
 use Craft;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\ContentBlock;
-use craft\elements\Entry;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;

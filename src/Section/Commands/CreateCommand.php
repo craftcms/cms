@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Commands;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
@@ -22,6 +22,7 @@ use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\View\TaskResult;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\confirm;
@@ -63,7 +64,7 @@ final class CreateCommand extends Command
                 $entryType = $entryTypesService->getEntryTypeByHandle($entryTypeHandle);
 
                 if (! $entryType) {
-                    throw new \RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
+                    throw new RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
                 }
 
                 return $entryType->handle;

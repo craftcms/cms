@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Structure\Commands;
 
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -24,7 +24,7 @@ use yii\console\ExitCode;
 
 abstract class RepairCommand extends Command
 {
-    protected function repairStructure(int $structureId, ElementQuery|Collection $query): int
+    protected function repairStructure(int $structureId, ElementQueryInterface|Collection $query): int
     {
         $structure = Structures::getStructureById($structureId);
 

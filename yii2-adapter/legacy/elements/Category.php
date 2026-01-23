@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -18,8 +17,6 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
@@ -27,6 +24,8 @@ use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -236,7 +235,7 @@ class Category extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQuery $elementQuery */
+            /** @var ElementQueryInterface $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -935,7 +934,7 @@ class Category extends Element
                 ->ancestorDist(1)
                 ->status(null)
                 ->select(['elements.id'])
-                ->scalar();
+                ->value('id');
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }

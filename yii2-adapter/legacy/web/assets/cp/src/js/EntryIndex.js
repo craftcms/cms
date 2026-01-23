@@ -98,7 +98,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           this.settings.context === 'index'
             ? Craft.uppercaseFirst(
                 Craft.t('app', 'New {type}', {
-                  type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+                  type: Craft.elementTypeNames[
+                    'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                  ][2],
                 })
               )
             : Craft.t('app', 'New {section} entry', {
@@ -160,7 +162,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           .createButton({
             label: Craft.uppercaseFirst(
               Craft.t('app', 'New {type}', {
-                type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+                type: Craft.elementTypeNames[
+                  'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                ][2],
               })
             ),
             ariaLabel: Craft.t('app', 'New entry, choose a section'),
@@ -311,4 +315,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass(
+  'CraftCms\\Cms\\Entry\\Elements\\Entry',
+  Craft.EntryIndex
+);

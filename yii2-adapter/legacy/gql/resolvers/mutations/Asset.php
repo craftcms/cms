@@ -9,7 +9,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset as AssetElement;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
@@ -18,6 +17,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
@@ -101,7 +101,7 @@ class Asset extends ElementMutationResolver
 
         if (empty($newFolderId)) {
             if (!$canIdentify) {
-                /** @var \craft\elements\Asset $asset */
+                /** @var \CraftCms\Cms\Asset\Elements\Asset $asset */
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
             }
         } else {

@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\filters\UtilityAccess;
 use craft\models\AssetIndexingSession;
 use craft\models\Volume;
 use craft\web\Controller;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;

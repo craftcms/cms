@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Asset event class.

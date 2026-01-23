@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;

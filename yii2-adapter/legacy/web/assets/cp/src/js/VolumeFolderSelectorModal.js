@@ -15,7 +15,7 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend(
         }
       );
       settings.indexSettings.disabledFolderIds = settings.disabledFolderIds;
-      this.base('craft\\elements\\Asset', settings);
+      this.base('CraftCms\\Cms\\Asset\\Elements\\Asset', settings);
     },
 
     getElementIndexParams: function () {

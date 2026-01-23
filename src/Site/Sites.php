@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Site;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\helpers\Queue;
 use craft\queue\jobs\PropagateElements;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;

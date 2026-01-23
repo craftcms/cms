@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 
 /**
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Field} instead.

@@ -6,13 +6,13 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\elements\Address;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\services\ElementSources;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;

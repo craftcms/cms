@@ -26,7 +26,7 @@ it('can create a token', function () {
     expect(RouteToken::count())->toBe(0);
 
     postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'siteId' => Site::firstOrFail()->id,
         'canonicalId' => $this->entry->id,
     ])->assertOk();
@@ -43,19 +43,19 @@ test('elementType is required', function () {
 
 test('siteId is required', function () {
     postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'canonicalId' => $this->entry->id,
     ])->assertJsonValidationErrorFor('siteId');
 });
 
 test('canonicalId is required without sourceId', function () {
     postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'siteId' => Site::firstOrFail()->id,
     ])->assertJsonValidationErrorFor('sourceId');
 
     postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'siteId' => Site::firstOrFail()->id,
         'sourceId' => $this->entry->id,
     ])->assertOk();
@@ -63,7 +63,7 @@ test('canonicalId is required without sourceId', function () {
 
 it('redirects when a redirect is passed', function () {
     postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'siteId' => Site::firstOrFail()->id,
         'canonicalId' => $this->entry->id,
         'redirect' => 'https://example.com',
@@ -77,14 +77,14 @@ test('preview requires a valid token', function () {
 
 test('it can preview elements', function () {
     $token = postJson(action([PreviewController::class, 'createToken']), [
-        'elementType' => \craft\elements\Entry::class,
+        'elementType' => \CraftCms\Cms\Entry\Elements\Entry::class,
         'siteId' => Site::firstOrFail()->id,
         'canonicalId' => $this->entry->id,
     ])->json('token');
 
     $entryId = $this->entry->id;
     Route::get('/', function () use ($entryId) {
-        $entry = Craft::$app->elements->getElementById($entryId, \craft\elements\Entry::class);
+        $entry = Craft::$app->elements->getElementById($entryId, \CraftCms\Cms\Entry\Elements\Entry::class);
 
         return $entry?->previewing ? 'previewing' : 'not previewing';
     });

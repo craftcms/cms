@@ -4,11 +4,11 @@ namespace craft\elements\conditions\assets;
 
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidValueException;
 use function CraftCms\Cms\t;

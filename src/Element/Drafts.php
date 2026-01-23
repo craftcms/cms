@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\events\ModelEvent;
@@ -47,7 +46,7 @@ final readonly class Drafts
             return collect();
         }
 
-        /** @var \craft\elements\db\ElementQueryInterface $query */
+        /** @var \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)

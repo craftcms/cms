@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
 final class DraftFactory extends Factory
 {
     protected $model = Draft::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -28,7 +29,7 @@ final class DraftFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Draft $draft) {
