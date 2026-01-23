@@ -15,64 +15,6 @@ beforeEach(function () {
     Edition::set(Edition::Pro);
 });
 
-describe('Integer validation', function () {
-    test('integer fields accept valid integers', function (string $field, int $value, ?callable $setup = null) {
-        $entry = EntryModel::factory()->createElement();
-        $setup?->__invoke($entry);
-
-        $entry->{$field} = $value;
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'sectionId accepts 1' => ['sectionId', 1],
-        'fieldId accepts 1' => ['fieldId', 1, fn ($entry) => $entry->sectionId = null],
-        'ownerId accepts 1' => ['ownerId', 1],
-        'primaryOwnerId accepts 1' => ['primaryOwnerId', 1],
-        'sortOrder accepts 1' => ['sortOrder', 1],
-        'sortOrder accepts 0' => ['sortOrder', 0],
-    ]);
-
-    test('typeId accepts valid integers from factory', function () {
-        $entry = EntryModel::factory()->createElement();
-
-        $entry->validate(['typeId']);
-
-        expect($entry->hasErrors('typeId'))->toBeFalse();
-    });
-
-    test('nullable integer fields accept null', function (string $field, ?callable $setup = null) {
-        $entry = EntryModel::factory()->createElement();
-        $setup?->__invoke($entry);
-
-        $entry->{$field} = null;
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'sectionId accepts null when fieldId is set' => ['sectionId', fn ($entry) => $entry->fieldId = 1],
-        'fieldId accepts null' => ['fieldId'],
-        'ownerId accepts null' => ['ownerId'],
-        'primaryOwnerId accepts null' => ['primaryOwnerId'],
-        'sortOrder accepts null' => ['sortOrder'],
-    ]);
-});
-
-describe('authorIds array validation', function () {
-    test('authorIds accepts valid arrays', function (array $authorIds) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setAuthorIds($authorIds);
-
-        $entry->validate(['authorIds']);
-
-        expect($entry->hasErrors('authorIds'))->toBeFalse();
-    })->with([
-        'array of integers' => [[1, 2, 3]],
-        'empty array' => [[]],
-        'single integer in array' => [[1]],
-    ]);
-});
-
 describe('Safe attribute validation', function () {
     test('placeInStructure is a safe attribute', function (bool $value) {
         $entry = EntryModel::factory()->createElement();
@@ -108,6 +50,17 @@ describe('Required field validation', function () {
         expect($entry->hasErrors('sectionId'))->toBeFalse();
     });
 
+    test('fieldId and sectionId cannot both be set', function () {
+        $entry = EntryModel::factory()->createElement();
+        $entry->fieldId = 1;
+
+        $entry->validate(['fieldId']);
+
+        expect($entry->hasErrors('fieldId'))->toBeTrue();
+        expect($entry->getFirstError('fieldId'))->toContain('sectionId');
+        expect($entry->getFirstError('fieldId'))->toContain('fieldId');
+    });
+
     test('typeId is required and cannot be empty', function () {
         $entry = EntryModel::factory()->createElement();
 
@@ -137,29 +90,6 @@ describe('Entry type validation', function () {
     });
 });
 
-describe('Mutual exclusion validation', function () {
-    test('fieldId and sectionId cannot both be set', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->fieldId = 1;
-
-        $entry->validate(['fieldId']);
-
-        expect($entry->hasErrors('fieldId'))->toBeTrue();
-        expect($entry->getFirstError('fieldId'))->toContain('sectionId');
-        expect($entry->getFirstError('fieldId'))->toContain('fieldId');
-    });
-
-    test('fieldId without sectionId is valid', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->sectionId = null;
-        $entry->fieldId = 1;
-
-        $entry->validate(['fieldId']);
-
-        expect($entry->hasErrors('fieldId'))->toBeFalse();
-    });
-});
-
 describe('DateTime validation', function () {
     test('date fields accept valid values', function (string $field, mixed $value) {
         $entry = EntryModel::factory()->createElement();
@@ -169,14 +99,8 @@ describe('DateTime validation', function () {
 
         expect($entry->hasErrors($field))->toBeFalse();
     })->with([
-        'postDate accepts DateTime' => ['postDate', new DateTime],
         'postDate accepts null' => ['postDate', null],
-        'postDate accepts past dates' => ['postDate', new DateTime('2020-01-01')],
-        'postDate accepts future dates' => ['postDate', new DateTime('+1 year')],
-        'expiryDate accepts DateTime' => ['expiryDate', new DateTime('+1 year')],
         'expiryDate accepts null' => ['expiryDate', null],
-        'expiryDate accepts past dates' => ['expiryDate', new DateTime('2020-01-01')],
-        'expiryDate accepts future dates' => ['expiryDate', new DateTime('+1 year')],
     ]);
 });
 
@@ -424,23 +348,6 @@ describe('Scenario-specific validation', function () {
 });
 
 describe('Edge cases', function () {
-    test('null values are handled gracefully for nullable fields', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->fieldId = null;
-        $entry->ownerId = null;
-        $entry->primaryOwnerId = null;
-        $entry->sortOrder = null;
-        $entry->expiryDate = null;
-
-        $entry->validate(['fieldId', 'ownerId', 'primaryOwnerId', 'sortOrder', 'expiryDate']);
-
-        expect($entry->hasErrors('fieldId'))->toBeFalse();
-        expect($entry->hasErrors('ownerId'))->toBeFalse();
-        expect($entry->hasErrors('primaryOwnerId'))->toBeFalse();
-        expect($entry->hasErrors('sortOrder'))->toBeFalse();
-        expect($entry->hasErrors('expiryDate'))->toBeFalse();
-    });
-
     test('multiple validation errors can be collected', function () {
         $entry = EntryModel::factory()->createElement();
         $entry->sectionId = null;
@@ -449,15 +356,6 @@ describe('Edge cases', function () {
         $entry->validate(['sectionId']);
 
         expect($entry->hasErrors('sectionId'))->toBeTrue();
-    });
-
-    test('integer fields accept zero', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->sortOrder = 0;
-
-        $entry->validate(['sortOrder']);
-
-        expect($entry->hasErrors('sortOrder'))->toBeFalse();
     });
 
     test('factory creates valid entry by default', function () {

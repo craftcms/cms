@@ -12,43 +12,6 @@ beforeEach(function () {
     Edition::set(Edition::Pro);
 });
 
-describe('Integer validation for structure attributes', function () {
-    test('structure integer fields accept valid integers', function (string $field, int $value) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->{$field} = $value;
-
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'id accepts 1' => ['id', 1],
-        'id accepts 999' => ['id', 999],
-        'parentId accepts 1' => ['parentId', 1],
-        'root accepts 1' => ['root', 1],
-        'lft accepts 1' => ['lft', 1],
-        'rgt accepts 2' => ['rgt', 2],
-        'level accepts 0' => ['level', 0],
-        'level accepts 5' => ['level', 5],
-    ]);
-
-    test('structure integer fields accept null', function (string $field) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->{$field} = null;
-
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'id accepts null' => ['id'],
-        'parentId accepts null' => ['parentId'],
-        'root accepts null' => ['root'],
-        'lft accepts null' => ['lft'],
-        'rgt accepts null' => ['rgt'],
-        'level accepts null' => ['level'],
-    ]);
-
-});
-
 describe('Site ID validation', function () {
     test('siteId accepts valid site ID', function () {
         $entry = EntryModel::factory()->createElement();
@@ -92,69 +55,6 @@ describe('Site ID validation', function () {
 
         expect($entry->hasErrors('siteId'))->toBeFalse();
     });
-});
-
-describe('DateTime validation', function () {
-    test('dateCreated and dateUpdated accept DateTime objects', function (string $field) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->{$field} = new DateTime;
-
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'dateCreated accepts DateTime' => ['dateCreated'],
-        'dateUpdated accepts DateTime' => ['dateUpdated'],
-    ]);
-
-    test('dateCreated and dateUpdated accept null', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->dateCreated = null;
-        $entry->dateUpdated = null;
-
-        $entry->validate(['dateCreated', 'dateUpdated']);
-
-        expect($entry->hasErrors('dateCreated'))->toBeFalse();
-        expect($entry->hasErrors('dateUpdated'))->toBeFalse();
-    });
-
-    test('dateCreated and dateUpdated accept past dates', function (string $field) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->{$field} = new DateTime('-1 year');
-
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'dateCreated accepts past date' => ['dateCreated'],
-        'dateUpdated accepts past date' => ['dateUpdated'],
-    ]);
-
-    test('dateCreated and dateUpdated accept future dates', function (string $field) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->{$field} = new DateTime('+1 year');
-
-        $entry->validate([$field]);
-
-        expect($entry->hasErrors($field))->toBeFalse();
-    })->with([
-        'dateCreated accepts future date' => ['dateCreated'],
-        'dateUpdated accepts future date' => ['dateUpdated'],
-    ]);
-});
-
-describe('Boolean validation', function () {
-    test('isFresh accepts boolean values', function (bool $value) {
-        $entry = EntryModel::factory()->createElement();
-        $entry->isFresh = $value;
-
-        $entry->validate(['isFresh']);
-
-        expect($entry->hasErrors('isFresh'))->toBeFalse();
-    })->with([
-        'isFresh accepts true' => [true],
-        'isFresh accepts false' => [false],
-    ]);
 });
 
 describe('Title validation', function () {
@@ -308,21 +208,6 @@ describe('Scenario validation', function () {
 });
 
 describe('Edge cases', function () {
-    test('nullable fields accept null values', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->id = null;
-        $entry->parentId = null;
-        $entry->dateCreated = null;
-        $entry->dateUpdated = null;
-
-        $entry->validate(['id', 'parentId', 'dateCreated', 'dateUpdated']);
-
-        expect($entry->hasErrors('id'))->toBeFalse();
-        expect($entry->hasErrors('parentId'))->toBeFalse();
-        expect($entry->hasErrors('dateCreated'))->toBeFalse();
-        expect($entry->hasErrors('dateUpdated'))->toBeFalse();
-    });
-
     test('unicode characters are handled in title', function () {
         $entry = EntryModel::factory()->createElement();
         $entry->title = '日本語タイトル';

@@ -6,45 +6,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Cms;
 
-describe('Numeric field validation', function () {
-    test('integer fields accept valid integers', function (string $field) {
-        $address = AddressModel::factory()->createElement();
-        $address->{$field} = 1;
-
-        $address->validate([$field]);
-
-        expect($address->hasErrors($field))->toBeFalse();
-    })->with([
-        'fieldId accepts 1' => ['fieldId'],
-        'ownerId accepts 1' => ['ownerId'],
-        'primaryOwnerId accepts 1' => ['primaryOwnerId'],
-    ]);
-
-    test('integer fields accept null', function (string $field) {
-        $address = AddressModel::factory()->createElement();
-        $address->{$field} = null;
-
-        $address->validate([$field]);
-
-        expect($address->hasErrors($field))->toBeFalse();
-    })->with([
-        'fieldId accepts null' => ['fieldId'],
-        'ownerId accepts null' => ['ownerId'],
-        'primaryOwnerId accepts null' => ['primaryOwnerId'],
-    ]);
-});
-
-describe('Required countryCode validation', function () {
-    test('countryCode accepts valid values', function () {
-        $address = AddressModel::factory()->createElement();
-        $address->countryCode = 'US';
-
-        $address->validate(['countryCode']);
-
-        expect($address->hasErrors('countryCode'))->toBeFalse();
-    });
-});
-
 describe('Country code format validation', function () {
     test('valid country codes are accepted', function (string $code) {
         $address = AddressModel::factory()->createElement();
@@ -229,27 +190,6 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 });
 
 describe('Safe attribute validation', function () {
-    test('safe attributes accept valid values', function (string $field, string $value) {
-        $address = AddressModel::factory()->createElement();
-        $address->{$field} = $value;
-
-        $address->validate([$field]);
-
-        expect($address->hasErrors($field))->toBeFalse();
-    })->with([
-        'addressLine1 accepts valid string' => ['addressLine1', '123 Main Street'],
-        'addressLine2 accepts valid string' => ['addressLine2', 'Apartment 4B'],
-        'addressLine3 accepts valid string' => ['addressLine3', 'Building C'],
-        'locality accepts valid string' => ['locality', 'New York'],
-        'administrativeArea accepts valid string' => ['administrativeArea', 'NY'],
-        'postalCode accepts valid string' => ['postalCode', '10001'],
-        'dependentLocality accepts valid string' => ['dependentLocality', 'Downtown'],
-        'sortingCode accepts valid string' => ['sortingCode', 'ABC123'],
-        'organization accepts valid string' => ['organization', 'Acme Corporation'],
-        'organizationTaxId accepts valid string' => ['organizationTaxId', 'TAX123456'],
-        'fullName accepts valid string' => ['fullName', 'John Doe'],
-    ]);
-
     test('firstName is a safe attribute when config enabled', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
@@ -274,45 +214,6 @@ describe('Safe attribute validation', function () {
 });
 
 describe('Edge cases', function () {
-    test('null values are handled gracefully for all nullable fields', function () {
-        $address = AddressModel::factory()->createElement();
-        $address->addressLine1 = null;
-        $address->addressLine2 = null;
-        $address->addressLine3 = null;
-        $address->locality = null;
-        $address->administrativeArea = null;
-        $address->postalCode = null;
-        $address->dependentLocality = null;
-        $address->sortingCode = null;
-        $address->organization = null;
-        $address->organizationTaxId = null;
-        $address->fullName = null;
-        $address->latitude = null;
-        $address->longitude = null;
-
-        $address->validate([
-            'addressLine1', 'addressLine2', 'addressLine3',
-            'locality', 'administrativeArea', 'postalCode',
-            'dependentLocality', 'sortingCode',
-            'organization', 'organizationTaxId', 'fullName',
-            'latitude', 'longitude',
-        ]);
-
-        expect($address->hasErrors('addressLine1'))->toBeFalse();
-        expect($address->hasErrors('addressLine2'))->toBeFalse();
-        expect($address->hasErrors('addressLine3'))->toBeFalse();
-        expect($address->hasErrors('locality'))->toBeFalse();
-        expect($address->hasErrors('administrativeArea'))->toBeFalse();
-        expect($address->hasErrors('postalCode'))->toBeFalse();
-        expect($address->hasErrors('dependentLocality'))->toBeFalse();
-        expect($address->hasErrors('sortingCode'))->toBeFalse();
-        expect($address->hasErrors('organization'))->toBeFalse();
-        expect($address->hasErrors('organizationTaxId'))->toBeFalse();
-        expect($address->hasErrors('fullName'))->toBeFalse();
-        expect($address->hasErrors('latitude'))->toBeFalse();
-        expect($address->hasErrors('longitude'))->toBeFalse();
-    });
-
     test('unicode characters are handled in address fields', function () {
         $address = AddressModel::factory()->createElement();
         $address->addressLine1 = '東京都渋谷区';

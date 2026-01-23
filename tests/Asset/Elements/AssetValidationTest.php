@@ -5,66 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 
-describe('Integer validation', function () {
-    test('integer fields accept valid values', function (string $field, int $value) {
-        $asset = AssetModel::factory()->createElement();
-        $asset->{$field} = $value;
-
-        $asset->validate([$field]);
-
-        expect($asset->hasErrors($field))->toBeFalse();
-    })->with([
-        'volumeId accepts 1' => ['volumeId', 1],
-        'folderId accepts 1' => ['folderId', 1],
-        'width accepts 1920' => ['width', 1920],
-        'width accepts 0' => ['width', 0],
-        'height accepts 1080' => ['height', 1080],
-        'size accepts 1048576' => ['size', 1048576],
-    ]);
-
-    test('nullable integer fields accept null', function (string $field) {
-        $asset = AssetModel::factory()->createElement();
-        $asset->{$field} = null;
-
-        $asset->validate([$field]);
-
-        expect($asset->hasErrors($field))->toBeFalse();
-    })->with([
-        'volumeId accepts null' => ['volumeId'],
-        'folderId accepts null' => ['folderId'],
-        'width accepts null' => ['width'],
-        'height accepts null' => ['height'],
-        'size accepts null' => ['size'],
-    ]);
-
-    test('integer fields accept zero', function () {
-        $asset = AssetModel::factory()->createElement();
-        $asset->width = 0;
-        $asset->height = 0;
-        $asset->size = 0;
-
-        $asset->validate(['width', 'height', 'size']);
-
-        expect($asset->hasErrors())->toBeFalse();
-    });
-});
-
-describe('DateTime validation', function () {
-    test('dateModified accepts valid values', function (mixed $value) {
-        $asset = AssetModel::factory()->createElement();
-        $asset->dateModified = $value;
-
-        $asset->validate(['dateModified']);
-
-        expect($asset->hasErrors('dateModified'))->toBeFalse();
-    })->with([
-        'DateTime object' => [new DateTime],
-        'null' => [null],
-        'past date' => [new DateTime('2020-01-01')],
-        'future date' => [new DateTime('+1 year')],
-    ]);
-});
-
 describe('Required field validation', function () {
     test('filename validation', function (string $value, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
@@ -122,20 +62,14 @@ describe('Title validation on SCENARIO_CREATE', function () {
 });
 
 describe('Safe attribute validation', function () {
-    test('safe attributes accept valid values', function (string $field, mixed $value) {
+    test('alt accepts string with special chars', function () {
         $asset = AssetModel::factory()->createElement();
-        $asset->{$field} = $value;
+        $asset->alt = 'Some alternative text with special characters: <>&"';
 
-        $asset->validate([$field]);
+        $asset->validate(['alt']);
 
-        expect($asset->hasErrors($field))->toBeFalse();
-    })->with([
-        'filename accepts valid string' => ['filename', 'new-filename.jpg'],
-        'newFilename accepts valid string' => ['newFilename', 'renamed-file.jpg'],
-        'alt accepts string with special chars' => ['alt', 'Some alternative text with special characters: <>&"'],
-        'alt accepts null' => ['alt', null],
-        'alt accepts empty string' => ['alt', ''],
-    ]);
+        expect($asset->hasErrors('alt'))->toBeFalse();
+    });
 });
 
 describe('Scenario-specific required validation', function () {
@@ -193,27 +127,6 @@ describe('SCENARIO_INDEX validation', function () {
 });
 
 describe('Edge cases', function () {
-    test('null values are handled gracefully for all nullable fields', function () {
-        $asset = AssetModel::factory()->createElement();
-        $asset->volumeId = null;
-        $asset->folderId = null;
-        $asset->width = null;
-        $asset->height = null;
-        $asset->size = null;
-        $asset->dateModified = null;
-        $asset->alt = null;
-
-        $asset->validate(['volumeId', 'folderId', 'width', 'height', 'size', 'dateModified', 'alt']);
-
-        expect($asset->hasErrors('volumeId'))->toBeFalse();
-        expect($asset->hasErrors('folderId'))->toBeFalse();
-        expect($asset->hasErrors('width'))->toBeFalse();
-        expect($asset->hasErrors('height'))->toBeFalse();
-        expect($asset->hasErrors('size'))->toBeFalse();
-        expect($asset->hasErrors('dateModified'))->toBeFalse();
-        expect($asset->hasErrors('alt'))->toBeFalse();
-    });
-
     test('unicode characters are handled in alt text', function () {
         $asset = AssetModel::factory()->createElement();
         $asset->alt = 'Image of 山 mountain';

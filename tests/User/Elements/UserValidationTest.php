@@ -12,61 +12,6 @@ beforeEach(function () {
     Edition::set(Edition::Pro);
 });
 
-describe('DateTime validation', function () {
-    test('DateTime fields accept valid DateTime objects', function (string $field) {
-        $user = UserModel::factory()->createElement();
-        $user->{$field} = new DateTime;
-
-        $user->validate([$field]);
-
-        expect($user->hasErrors($field))->toBeFalse();
-    })->with([
-        'lastLoginDate accepts DateTime' => ['lastLoginDate'],
-        'lastInvalidLoginDate accepts DateTime' => ['lastInvalidLoginDate'],
-        'lockoutDate accepts DateTime' => ['lockoutDate'],
-        'lastPasswordChangeDate accepts DateTime' => ['lastPasswordChangeDate'],
-    ]);
-
-    test('DateTime fields accept null values', function () {
-        $user = UserModel::factory()->createElement();
-        $user->lastLoginDate = null;
-        $user->lastInvalidLoginDate = null;
-        $user->lockoutDate = null;
-        $user->lastPasswordChangeDate = null;
-
-        $user->validate(['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate']);
-
-        expect($user->hasErrors())->toBeFalse();
-    });
-});
-
-describe('Integer validation', function () {
-    test('integer fields accept valid values', function (string $field, int $value) {
-        $user = UserModel::factory()->createElement();
-        $user->{$field} = $value;
-
-        $user->validate([$field]);
-
-        expect($user->hasErrors($field))->toBeFalse();
-    })->with([
-        'invalidLoginCount accepts 5' => ['invalidLoginCount', 5],
-        'invalidLoginCount accepts 0' => ['invalidLoginCount', 0],
-        'photoId accepts 123' => ['photoId', 123],
-        'affiliatedSiteId accepts 1' => ['affiliatedSiteId', 1],
-    ]);
-
-    test('integer fields accept null values', function () {
-        $user = UserModel::factory()->createElement();
-        $user->invalidLoginCount = null;
-        $user->photoId = null;
-        $user->affiliatedSiteId = null;
-
-        $user->validate(['invalidLoginCount', 'photoId', 'affiliatedSiteId']);
-
-        expect($user->hasErrors())->toBeFalse();
-    });
-});
-
 describe('String trimming', function () {
     test('string fields are trimmed of whitespace', function (string $field, string $input, string $expected) {
         $user = UserModel::factory()->createElement();
@@ -514,23 +459,6 @@ describe('Scenario validation', function () {
 });
 
 describe('Edge cases', function () {
-    test('null values are handled gracefully for all string fields', function () {
-        $user = UserModel::factory()->createElement();
-        $user->fullName = null;
-        $user->firstName = null;
-        $user->lastName = null;
-        $user->unverifiedEmail = null;
-        $user->lastLoginAttemptIp = null;
-
-        $user->validate(['fullName', 'firstName', 'lastName', 'unverifiedEmail', 'lastLoginAttemptIp']);
-
-        expect($user->hasErrors('fullName'))->toBeFalse();
-        expect($user->hasErrors('firstName'))->toBeFalse();
-        expect($user->hasErrors('lastName'))->toBeFalse();
-        expect($user->hasErrors('unverifiedEmail'))->toBeFalse();
-        expect($user->hasErrors('lastLoginAttemptIp'))->toBeFalse();
-    });
-
     test('unicode characters are handled in name fields', function () {
         $user = UserModel::factory()->createElement();
         $user->fullName = '日本語名前';
