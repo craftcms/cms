@@ -2978,12 +2978,6 @@ abstract class Element extends Component implements ElementInterface
 
             $rules[] = [
                 ['slug'],
-                'required',
-                'when' => fn () => (bool) preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            ];
-            $rules[] = [
-                ['slug'],
                 SlugValidator::class,
                 'language' => $language,
                 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
@@ -2993,6 +2987,12 @@ abstract class Element extends Component implements ElementInterface
                 'string',
                 'max' => 255,
                 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+            ];
+            $rules[] = [
+                ['slug'],
+                'required',
+                'when' => fn () => (bool) preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             ];
             $rules[] = [
                 ['uri'],
