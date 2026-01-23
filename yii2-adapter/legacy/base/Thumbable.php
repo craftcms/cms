@@ -7,20 +7,15 @@
 
 namespace craft\base;
 
-/**
- * Thumbable defines the common interface to be implemented by components that
- * can have thumbnails within the control panel.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-interface Thumbable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the HTML for the component’s thumbnail, if it has one.
-     *
-     * @param int $size The maximum width and height the thumbnail should have.
-     * @return string|null
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Thumbable} instead.
      */
-    public function getThumbHtml(int $size): ?string;
+    interface Thumbable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Component\Contracts\Thumbable::class, Thumbable::class);

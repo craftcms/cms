@@ -17,6 +17,7 @@ use Psr\Log\LogLevel;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
+ * @deprecated 6.0.0
  */
 class Dispatcher extends \yii\log\Dispatcher
 {

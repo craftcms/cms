@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section\Data;
 
 use Closure;
-use craft\elements\Entry;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Rules\HandleRule;

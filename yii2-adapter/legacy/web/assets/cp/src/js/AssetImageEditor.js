@@ -138,7 +138,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           .createButton({
             class: 'save copy',
             label: Craft.t('app', 'Save as a new {type}', {
-              type: Craft.elementTypeNames['craft\\elements\\Asset'][2],
+              type: Craft.elementTypeNames[
+                'CraftCms\\Cms\\Asset\\Elements\\Asset'
+              ][2],
             }),
             spinner: true,
           })

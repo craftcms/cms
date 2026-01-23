@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * NestedElementQueryInterface defines the common interface to be implemented by element query classes

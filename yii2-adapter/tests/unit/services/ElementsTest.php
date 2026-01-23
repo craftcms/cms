@@ -11,10 +11,11 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\elements\Entry;
 use craft\services\Elements;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -44,7 +45,7 @@ class ElementsTest extends TestCase
         $this->markTestSkipped('Port to Laravel');
 
         // Generate a random slug that is unlikely to exist:
-        $randomSlug = Craft::$app->getSecurity()->generateRandomString(10);
+        $randomSlug = Str::random(10, extendedChars: true);
 
         $entryWithUrl = Entry::find()
             ->slug('With--URL--1')

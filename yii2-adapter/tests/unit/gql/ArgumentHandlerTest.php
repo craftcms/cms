@@ -8,9 +8,7 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use craft\elements\Asset;
 use craft\elements\Category;
-use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -24,7 +22,9 @@ use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;

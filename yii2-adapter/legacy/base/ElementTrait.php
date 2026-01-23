@@ -16,6 +16,7 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @phpstan-ignore trait.unused
  */
 trait ElementTrait
 {

@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\Security;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
@@ -229,7 +231,7 @@ final class Html
      */
     public static function redirectInput(string $url, array $options = []): string
     {
-        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options)->render();
+        return self::hiddenInput('redirect', Crypt::encrypt($url), $options)->render();
     }
 
     /**
@@ -247,7 +249,7 @@ final class Html
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('failMessage', Crypt::encrypt($message), $options)->render();
     }
 
     /**
@@ -265,7 +267,7 @@ final class Html
      */
     public static function successMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
     }
 
     public static function tag($name, $content = '', $options = []): string
@@ -1094,7 +1096,7 @@ final class Html
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
 
-        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+        if (Security::isSystemDir(dirname($file))) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
         }
 

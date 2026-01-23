@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use Craft;
-use craft\base\Element;
 use craft\base\MemoizableArray;
 use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
@@ -13,6 +12,7 @@ use craft\helpers\Queue;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -684,7 +684,7 @@ final class Sections
                         'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                        'elementType' => \craft\elements\Entry::class,
+                        'elementType' => Entry::class,
                         'criteria' => [
                             'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
@@ -710,7 +710,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \craft\elements\ElementCollection<Entry> $entries */
+            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)

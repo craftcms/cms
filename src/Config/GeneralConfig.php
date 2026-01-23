@@ -19,7 +19,7 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -523,6 +523,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
+     * @deprecated 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.
      */
     public int $blowfishHashCost = 13;
 
@@ -2000,7 +2002,7 @@ class GeneralConfig extends BaseConfig
      * @var string The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -4138,15 +4140,11 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value): self
     {
-        if (
-            $value !== null &&
-            class_exists(Craft::class, false) &&
-            isset(Craft::$app)
-        ) {
+        if ($value !== null) {
             try {
                 $value = I18N::normalizeLanguage($value);
                 /** @phpstan-ignore catch.neverThrown */
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
@@ -4795,14 +4793,12 @@ class GeneralConfig extends BaseConfig
      */
     public function extraAppLocales(array $value): self
     {
-        if (class_exists(Craft::class, false)) {
-            foreach ($value as &$localeId) {
-                try {
-                    $localeId = I18N::normalizeLanguage($localeId);
-                    /** @phpstan-ignore catch.neverThrown */
-                } catch (\InvalidArgumentException $e) {
-                    throw new InvalidConfigException($e->getMessage(), 0, $e);
-                }
+        foreach ($value as &$localeId) {
+            try {
+                $localeId = I18N::normalizeLanguage($localeId);
+                /** @phpstan-ignore catch.neverThrown */
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
 
@@ -5569,7 +5565,7 @@ class GeneralConfig extends BaseConfig
      * The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -6090,7 +6086,7 @@ class GeneralConfig extends BaseConfig
         // Store the DateInterval separately for getRememberedUserSessionDuration()
         try {
             $interval = DateTimeHelper::toDateInterval($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (\yii\base\InvalidArgumentException $e) {
             throw new InvalidConfigException($e->getMessage(), 0, $e);
         }
 

@@ -8,9 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Str;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use SensitiveParameter;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -23,42 +25,19 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Security} instead.
  */
 class Security extends \yii\base\Security
 {
     /**
-     * @var string[] Keywords used to reference sensitive data
-     * @see redactIfSensitive()
-     */
-    public array $sensitiveKeywords = [];
-
-    /**
-     * @var mixed
-     */
-    private mixed $_blowFishHashCost = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->_blowFishHashCost = Cms::config()->blowfishHashCost;
-
-        // normalize the sensitive keywords
-        $this->sensitiveKeywords = array_map(
-            fn(string $word) => Str::camel2words($word, false),
-            $this->sensitiveKeywords,
-        );
-    }
-
-    /**
      * @return int
+     * @deprecated 6.0.0 use {@see Password} validation rules instead.
      */
     public function getMinimumPasswordLength(): int
     {
-        return 6;
+        $defaultRules = Password::default();
+
+        return $defaultRules->appliedRules()['min'];
     }
 
     /**
@@ -68,12 +47,13 @@ class Security extends \yii\base\Security
      * @param bool $validateHash If you want to validate the just generated hash. Will throw an exception if
      * validation fails.
      * @return string The hash.
+     * @deprecated 6.0.0 use {@see Hash::make()} instead.
      */
     public function hashPassword(#[SensitiveParameter] string $password, bool $validateHash = false): string
     {
-        $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
+        $hash = Hash::make($password);
 
-        if ($validateHash && !$this->validatePassword($password, $hash)) {
+        if ($validateHash && !Hash::check($password, $hash)) {
             throw new InvalidArgumentException('Could not hash the given string.');
         }
 
@@ -90,18 +70,11 @@ class Security extends \yii\base\Security
      * @return string the data prefixed with the keyed hash
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails.
-     * @see validateData()
-     * @see generateRandomKey()
-     * @see hkdf()
-     * @see pbkdf2()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Security::hashData()} instead.
      */
     public function hashData(#[SensitiveParameter] $data, #[SensitiveParameter] $key = null, $rawHash = false): string
     {
-        if ($key === null) {
-            $key = Cms::config()->securityKey;
-        }
-
-        return parent::hashData($data, $key, $rawHash);
+        return Crypt::encrypt($data);
     }
 
     /**
@@ -118,15 +91,15 @@ class Security extends \yii\base\Security
      * @return string|false the real data with the hash stripped off. False if the data is tampered.
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails.
-     * @see hashData()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Crypt::decrypt()} instead.
      */
     public function validateData($data, #[SensitiveParameter] $key = null, $rawHash = false): string|false
     {
-        if ($key === null) {
-            $key = Cms::config()->securityKey;
+        try {
+            return Crypt::decrypt($data);
+        } catch (DecryptException) {
+            return false;
         }
-
-        return parent::validateData($data, $key, $rawHash);
     }
 
     /**
@@ -137,8 +110,8 @@ class Security extends \yii\base\Security
      * @return string the encrypted data
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
-     * @see decryptByKey()
      * @see encryptByPassword()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Crypt::encrypt()} instead.
      */
     public function encryptByKey(#[SensitiveParameter] $data, #[SensitiveParameter] $inputKey = null, $info = null): string
     {
@@ -157,15 +130,18 @@ class Security extends \yii\base\Security
      * @return string|false the decrypted data or false on authentication failure
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
-     * @see encryptByKey()
      */
     public function decryptByKey($data, #[SensitiveParameter] $inputKey = null, $info = null): string|false
     {
-        if ($inputKey === null) {
-            $inputKey = Cms::config()->securityKey;
-        }
+        try {
+            return Crypt::decrypt($data);
+        } catch (DecryptException) {
+            if ($inputKey === null) {
+                $inputKey = Cms::config()->securityKey;
+            }
 
-        return parent::decryptByKey($data, $inputKey, $info);
+            return parent::decryptByKey($data, $inputKey, $info);
+        }
     }
 
     /**
@@ -174,10 +150,11 @@ class Security extends \yii\base\Security
      * @param string $key
      * @return bool
      * @since 3.7.24
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Security::isSensitive()} instead.
      */
     public function isSensitive(string $key): bool
     {
-        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Str::camel2words($key, false));
+        return app(\CraftCms\Cms\Support\Security::class)->isSensitive($key);
     }
 
     /**
@@ -189,15 +166,7 @@ class Security extends \yii\base\Security
      */
     public function redactIfSensitive(string $key, #[SensitiveParameter] mixed $value): mixed
     {
-        if (is_array($value)) {
-            foreach ($value as $n => &$v) {
-                $v = $this->redactIfSensitive($n, $v);
-            }
-        } elseif (is_string($value) && $this->isSensitive($key)) {
-            $value = str_repeat('•', strlen($value));
-        }
-
-        return $value;
+        return app(\CraftCms\Cms\Support\Security::class)->redactIfSensitive($key, $value);
     }
 
     /**
@@ -209,15 +178,6 @@ class Security extends \yii\base\Security
      */
     public function isSystemDir(string $path): bool
     {
-        $path = FileHelper::absolutePath($path, '/');
-
-        foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
-            $dir = FileHelper::absolutePath($dir, '/');
-            if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
-                return true;
-            }
-        }
-
-        return false;
+        return app(\CraftCms\Cms\Support\Security::class)->isSystemDir($path);
     }
 }

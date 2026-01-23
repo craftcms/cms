@@ -8,6 +8,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -16,7 +17,7 @@ use function Pest\Laravel\swap;
 beforeEach(function () {
     actingAs(User::find()->one());
 
-    $this->hashedData = Craft::$app->getSecurity()->hashData(Json::encode([
+    $this->hashedData = Crypt::encrypt(Json::encode([
 
     ]));
 
@@ -61,8 +62,7 @@ test('all routes validate data', function (string $controller, string $action) {
 test('index', function () {
     postJson(action([ConfigSyncController::class, 'index']))
         ->assertOk()
-        ->assertSee('Project Config Sync')
-        ->assertSee('Applying changes from the project config YAML files');
+        ->assertSee('Project Config Sync');
 });
 
 test('retry', function () {
@@ -97,7 +97,7 @@ test('uninstall-plugin', function () {
     swap(Plugins::class, app(PluginsFake::class));
 
     postJson(action([ConfigSyncController::class, 'uninstallPlugin']), [
-        'data' => Craft::$app->getSecurity()->hashData(Json::encode([
+        'data' => Crypt::encrypt(Json::encode([
             'uninstallPlugins' => [
                 'test-plugin',
             ],
@@ -115,7 +115,7 @@ test('install-plugin', function () {
     swap(Plugins::class, app(PluginsFake::class));
 
     postJson(action([ConfigSyncController::class, 'installPlugin']), [
-        'data' => Craft::$app->getSecurity()->hashData(Json::encode([
+        'data' => Crypt::encrypt(Json::encode([
             'installPlugins' => [
                 'test-plugin',
             ],

@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -64,7 +64,7 @@ class ShowInFolder extends ElementAction
             Craft.cp.displayError(e?.response?.data?.message);
           });
         },
-    });
+    })
 })();
 JS, [static::class]);
 

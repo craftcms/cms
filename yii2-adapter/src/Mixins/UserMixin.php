@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Yii2Adapter\Mixins;
+
+use Closure;
+use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use SensitiveParameter;
+use Webauthn\PublicKeyCredentialRequestOptions;
+
+class UserMixin
+{
+    public function authenticate(): Closure
+    {
+        return function(#[SensitiveParameter] string $password) {
+            Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
+
+            /** @phpstan-ignore-next-line */
+            return app(Auth::class)->authenticate($this, [
+                'password' => $password,
+            ]);
+        };
+    }
+
+    public function authenticateWithPasskey(): Closure
+    {
+        return function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
+            Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
+
+            /** @phpstan-ignore-next-line */
+            return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
+        };
+    }
+
+    public function handleInvalidLoginParam(): Closure
+    {
+        return function(): void {
+            Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
+
+            /** @phpstan-ignore-next-line */
+            app(Auth::class)->handleInvalidLogin($this);
+        };
+    }
+}

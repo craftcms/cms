@@ -8,6 +8,7 @@
 namespace craft\debug;
 
 use Craft;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -24,7 +25,7 @@ class RequestPanel extends \yii\debug\panels\RequestPanel
     public function save(): array
     {
         $data = parent::save();
-        $data = Craft::$app->getSecurity()->redactIfSensitive('', $data);
+        $data = Security::redactIfSensitive('', $data);
         if (isset($data['actionParams'])) {
             $this->serializeObjects($data['actionParams']);
         }

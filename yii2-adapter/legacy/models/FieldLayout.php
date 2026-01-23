@@ -135,7 +135,7 @@ class FieldLayout extends Model
      * @event CreateFieldLayoutFormEvent The event that is triggered when creating a new field layout form.
      *
      * ```php
-     * use craft\elements\Entry;
+     * use CraftCms\Cms\Entry\Elements\Entry;
      * use craft\events\CreateFieldLayoutFormEvent;
      * use craft\fieldlayoutelements\HorizontalRule;
      * use craft\fieldlayoutelements\StandardTextField;

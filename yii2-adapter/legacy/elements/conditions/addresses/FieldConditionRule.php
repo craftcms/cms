@@ -4,11 +4,11 @@ namespace craft\elements\conditions\addresses;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;

@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -29,6 +30,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -165,7 +167,9 @@ final class AppServiceProvider extends ServiceProvider
                 return false;
             }
 
-            if (! Craft::$app->getSecurity()->validateData($previewParamValue)) {
+            try {
+                Crypt::decrypt($previewParamValue);
+            } catch (DecryptException) {
                 return false;
             }
 
@@ -221,9 +225,11 @@ final class AppServiceProvider extends ServiceProvider
                 return $default;
             }
 
-            $value = Craft::$app->getSecurity()->validateData($value);
-
-            abort_if($value === false, 400, 'Request contained an invalid body param');
+            try {
+                $value = Crypt::decrypt($value);
+            } catch (DecryptException) {
+                abort(400, 'Request contained an invalid body param');
+            }
 
             return $value;
         });

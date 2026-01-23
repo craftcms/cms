@@ -9,22 +9,22 @@ namespace craft\elements;
 
 use Closure;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
-use craft\elements\db\ElementQueryInterface;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -83,7 +83,7 @@ class NestedElementManager extends Component
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
-     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery) $queryFactory A factory method which returns a
+     * @param Closure(ElementInterface $owner): (ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery) $queryFactory A factory method which returns a
      * query for fetching nested elements
      * @param array $config name-value pairs that will be used to initialize the object properties.
      */
@@ -182,12 +182,12 @@ class NestedElementManager extends Component
         return $this->propagationMethod !== PropagationMethod::All;
     }
 
-    private function nestedElementQuery(ElementInterface $owner): ElementQueryInterface|ElementQuery
+    private function nestedElementQuery(ElementInterface $owner): ElementQueryInterface
     {
         return call_user_func($this->queryFactory, $owner);
     }
 
-    private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementQuery|ElementCollection
+    private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
     {
         if (isset($this->valueGetter)) {
             return call_user_func($this->valueGetter, $owner, $fetchAll);
@@ -207,11 +207,7 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        /** @phpstan-ignore function.alreadyNarrowedType */
-        $result = method_exists($query, 'getCachedResult')
-            ? $query->getCachedResult()
-            /** @phpstan-ignore method.notFound */
-            : $query->getResultOverride();
+        $result = $query->getResultOverride();
 
         if ($fetchAll && $result === null) {
             $query
@@ -225,7 +221,7 @@ class NestedElementManager extends Component
         return $query;
     }
 
-    private function setValue(ElementInterface $owner, ElementQueryInterface|ElementQuery|ElementCollection $value): void
+    private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
     {
         if ($this->valueSetter === false) {
             return;
@@ -428,7 +424,7 @@ class NestedElementManager extends Component
                     $elements = $value->all();
                 } else {
                     /** @var NestedElementInterface[] $elements */
-                    $elements = $value->getCachedResult() ?? $value
+                    $elements = $value->getResultOverride() ?? $value
                         ->status(null)
                         ->limit(null)
                         ->all();
@@ -819,11 +815,7 @@ JS, [
             $elements = $value->all();
             $saveAll = true;
         } else {
-            /** @phpstan-ignore function.alreadyNarrowedType */
-            $elements = method_exists($value, 'getCachedResult')
-                ? $value->getCachedResult()
-                /** @phpstan-ignore method.notFound */
-                : $value->getResultOverride();
+            $elements = $value->getResultOverride();
             if ($elements !== null) {
                 $saveAll = !empty($owner->newSiteIds);
             } else {
@@ -948,7 +940,7 @@ JS, [
 
                     if ($value instanceof ElementQueryInterface) {
                         $cachedQuery = (clone $value)->status(null);
-                        $cachedQuery->setCachedResult($elements);
+                        $cachedQuery->setResultOverride($elements);
                         $this->setValue($owner, $cachedQuery);
                     }
 
@@ -1025,11 +1017,7 @@ JS, [
             ->status(null)
             ->siteId($owner->siteId);
 
-        if ($query instanceof ElementQuery) {
-            $elements = $query->whereNotIn('elements.id', $except)->all();
-        } else {
-            $elements = $query->andWhere(['not', ['elements.id' => $except]])->all();
-        }
+        $elements = $query->whereNotIn('elements.id', $except)->all();
 
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
@@ -1075,7 +1063,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $elements = $this->getValue($source, true);
         if ($elements instanceof ElementQueryInterface) {
-            $elements = ElementCollection::make($elements->getCachedResult() ?? $elements->all());
+            $elements = ElementCollection::make($elements->getResultOverride() ?? $elements->all());
         }
 
         // Ignore any elements that don't have an ID yet
@@ -1444,7 +1432,8 @@ JS, [
                 ->status(null)
                 ->siteId($siteInfo['siteId'])
                 ->trashed()
-                ->andWhere(['elements.deletedWithOwner' => true]);
+                ->where('elements.deletedWithOwner', true);
+
             $query->{$this->ownerIdParam} = null;
             $query->{$this->primaryOwnerIdParam} = $owner->id;
             /** @var NestedElementInterface[] $elements */

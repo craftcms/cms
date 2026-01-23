@@ -16,7 +16,6 @@ use craft\base\AssetPreviewHandlerInterface;
 use craft\base\FsInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
@@ -38,6 +37,7 @@ use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
@@ -343,11 +343,10 @@ class Assets extends Component
         $assetQuery = Asset::find()->folderId($allFolderIds);
         $elementService = Craft::$app->getElements();
 
-        foreach (Db::each($assetQuery) as $asset) {
-            /** @var Asset $asset */
+        $assetQuery->each(function(Asset $asset) use ($deleteDir, $elementService) {
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
-        }
+        }, 100);
 
         // Delete the folder records
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
@@ -966,7 +965,7 @@ class Assets extends Component
      */
     public function createTempAssetQuery(): AssetQuery
     {
-        $query = Asset::find();
+        $query = new AssetQuery(Asset::class);
         $query->volumeId(':empty:');
 
         return $query;

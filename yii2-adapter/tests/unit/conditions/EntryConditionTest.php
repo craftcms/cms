@@ -11,8 +11,8 @@ namespace crafttests\unit\conditions;
 use Codeception\Test\Unit;
 use craft\elements\conditions\entries\ExpiryDateConditionRule;
 use craft\elements\conditions\SlugConditionRule;
-use craft\elements\Entry;
 use craft\test\TestCase;
+use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
  * Unit tests for entry conditions.

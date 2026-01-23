@@ -9,8 +9,10 @@ use Craft;
 use craft\helpers\HtmlPurifier;
 use CraftCms\Cms\Cms;
 use HTMLPurifier_Config;
+use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
+use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
 use voku\helper\ASCII;
@@ -147,7 +149,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         if (str_starts_with($str, 'crypt:')) {
-            return Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
+            return Crypt::decryptString(substr($str, 6));
         }
 
         return $str;
@@ -183,7 +185,7 @@ class Str extends \Illuminate\Support\Str
      */
     public static function encenc(string $str): string
     {
-        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
+        return 'base64:'.base64_encode('crypt:'.Crypt::encryptString($str));
     }
 
     /**
@@ -238,7 +240,7 @@ class Str extends \Illuminate\Support\Str
         return static::lines($str)[0];
     }
 
-    #[\Override]
+    #[Override]
     public static function flushCache(): void
     {
         parent::flushCache();
@@ -370,12 +372,14 @@ class Str extends \Illuminate\Support\Str
      * @param  bool  $extendedChars  Whether to include symbols in the random string.
      * @return string The randomly generated string.
      */
-    #[\Override]
+    #[Override]
     public static function random($length = 36, bool $extendedChars = false): string
     {
-        $validChars = $extendedChars
-            ? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"'
-            : 'abcdefghijklmnopqrstuvwxyz';
+        if ($extendedChars) {
+            return parent::random($length);
+        }
+
+        $validChars = 'abcdefghijklmnopqrstuvwxyz';
 
         $string = '';
 

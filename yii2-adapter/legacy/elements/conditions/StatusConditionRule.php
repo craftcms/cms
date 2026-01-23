@@ -4,8 +4,7 @@ namespace craft\elements\conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use yii\db\QueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
@@ -45,9 +44,8 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): void
+    public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var ElementQueryInterface $query */
         $query->status($this->paramValue());
     }
 
