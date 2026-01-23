@@ -2072,7 +2072,7 @@ return [
     'Whether authors should be able to choose which time zone the time is in.' => 'Zda by autoři měli mít možnost zvolit, v jakém časovém pásmu je čas uveden.',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Určuje, zda mají mít autoři umožněno nahrávat soubory přímo do pole, spíše než vyžadovat od nich výběr / nahrávání objektů pomocí modálního výběru.',
     'Whether buttons should only show their icons, hiding their text labels.' => 'Zda mají tlačítka zobrazovat pouze své ikony a skrývat své textové popisky.',
-    'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.' => 'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.',
+    'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.' => 'Zda se mají v zobrazeních karet, která obsahují toto pole, zobrazovat namísto názvu pole vlastní štítky ON/OFF.',
     'Whether custom fields should be validated during public registration.' => 'Zda se mají při veřejné registraci ověřovat vlastní pole.',
     'Whether empty folders should be listed for deletion.' => 'Zda se mají prázdné složky vypisovat, aby mohly být smazány.',
     'Whether preview frames should be automatically refreshed when content changes.' => 'Zda se náhledové snímky mají automaticky aktualizovat při změně obsahu.',
