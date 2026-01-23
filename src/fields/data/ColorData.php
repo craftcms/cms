@@ -9,6 +9,7 @@ namespace craft\fields\data;
 
 use craft\base\Model;
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Multi-select option field data class.
@@ -26,6 +27,7 @@ use craft\base\Serializable;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 class ColorData extends Model implements Serializable
 {
     /**

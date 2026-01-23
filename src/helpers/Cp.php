@@ -3114,11 +3114,26 @@ JS, [
                 $tab->uid = StringHelper::UUID();
             }
 
+            $layoutElements = [];
+
             foreach ($tab->getElements() as $layoutElement) {
+                // If this is a custom field, make sure the field still exists
+                if ($layoutElement instanceof CustomField) {
+                    try {
+                        $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+                }
+
                 if (!isset($layoutElement->uid)) {
                     $layoutElement->uid = StringHelper::UUID();
                 }
+
+                $layoutElements[] = $layoutElement;
             }
+
+            $tab->setElements($layoutElements);
         }
 
         $view = Craft::$app->getView();

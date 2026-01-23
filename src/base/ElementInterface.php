@@ -37,6 +37,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 interface ElementInterface extends
     ComponentInterface,
     Chippable,
@@ -773,7 +774,6 @@ interface ElementInterface extends
      *
      * @return Site
      */
-    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -782,7 +782,6 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
-    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -837,7 +836,6 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
-    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -845,7 +843,6 @@ interface ElementInterface extends
      *
      * @return string|null
      */
-    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -853,7 +850,6 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
-    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**

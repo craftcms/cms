@@ -14,6 +14,7 @@ use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Html;
 use craft\helpers\Template;
+use craft\web\twig\AllowedInSandbox;
 use Twig\Markup;
 use yii\base\BaseObject;
 
@@ -32,6 +33,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
+#[AllowedInSandbox]
 class LinkData extends BaseObject implements Serializable
 {
     /**
