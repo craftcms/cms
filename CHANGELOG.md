@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `config/twig-sandbox.php` can now include an `allowedClasses` array, with class names whose entire collection of properties and methods should be allowed in sandboxed Twig environments.
+- `craft\fields\data\ColorData`, `craft\fields\data\IconData`, `craft\fields\data\JsonData`, `craft\fields\data\LinkData`, `craft\fields\data\MultiOptionsFieldData`, and `craft\fields\data\OptionData` are now allowed in their entirety within sandboxed Twig environments.
 - Fixed an error that could occur when loading elements with provisional changes.
 - Fixed an error that could occur when reverting content from an entry revision.
 - Fixed a bug where field layout elements weren’t always getting saved in the correct position, if the layout config referenced custom fields that no longer exist. ([#18268](https://github.com/craftcms/cms/issues/18268))
