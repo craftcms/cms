@@ -89,4 +89,11 @@ final class EntryFactory extends Factory
                 : fake()->dateTimeBetween('+1 day', '+1 year'),
         ]);
     }
+
+    public function createElement(array $attributes = []): \CraftCms\Cms\Entry\Elements\Entry
+    {
+        $model = $this->create($attributes);
+
+        return \CraftCms\Cms\Entry\Elements\Entry::find()->id($model->id)->one();
+    }
 }
