@@ -26,6 +26,7 @@
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
 - The Image Editor’s focal point tool is now keyboard accessible. ([#17880](https://github.com/craftcms/cms/pull/17880))
 - All sortable checkbox select options, selected Dashboard widgets, and site listings now have keyboard-accessible “Move up” and “Move down” action items. ([#18067](https://github.com/craftcms/cms/pull/18067))
+- Improved the accessibility of user permission lists and GraphQL schema component lists. ([#18290](https://github.com/craftcms/cms/pull/18290))
 
 ### Administration
 - It’s now possible to divide entry sources into multiple index pages, via the Customize Sources modal. ([#17779](https://github.com/craftcms/cms/pull/17779))
