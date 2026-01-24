@@ -18,7 +18,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\HtmlPurifier;
-use craft\helpers\Sequence;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
@@ -74,6 +73,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
@@ -1696,6 +1696,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         if ($next) {
             return Sequence::next($name, $length);
         }
+
         return Sequence::current($name, $length);
     }
 
