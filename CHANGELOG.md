@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+- Improved the accessibility of user permission lists and GraphQL schema component lists. ([#18290](https://github.com/craftcms/cms/pull/18290))
 - `config/twig-sandbox.php` can now include an `allowedClasses` array, with class names whose entire collection of properties and methods should be allowed in sandboxed Twig environments.
 - `craft\fields\data\ColorData`, `craft\fields\data\IconData`, `craft\fields\data\JsonData`, `craft\fields\data\LinkData`, `craft\fields\data\MultiOptionsFieldData`, and `craft\fields\data\OptionData` are now allowed in their entirety within sandboxed Twig environments.
 - Fixed an error that could occur when loading elements with provisional changes.
 - Fixed an error that could occur when reverting content from an entry revision.
 - Fixed a bug where field layout elements weren’t always getting saved in the correct position, if the layout config referenced custom fields that no longer exist. ([#18268](https://github.com/craftcms/cms/issues/18268))
+- Fixed a bug where custom entry index pages weren’t visible when viewing other entry types’ index pages. ([#18284](https://github.com/craftcms/cms/issues/18284))
+- Fixed a bug where element index pages could show a spinner indefinitely if there weren’t any visible sources. ([#18286](https://github.com/craftcms/cms/pull/18286))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 
