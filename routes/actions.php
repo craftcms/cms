@@ -56,6 +56,7 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -244,6 +245,13 @@ Route::prefix(implode('/', [
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
+
+        // Asset Indexes
+        Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
+        Route::post('asset-indexes/stop-indexing-session', [AssetIndexesController::class, 'stopIndexingSession']);
+        Route::post('asset-indexes/process-indexing-session', [AssetIndexesController::class, 'processIndexingSession']);
+        Route::post('asset-indexes/indexing-session-overview', [AssetIndexesController::class, 'indexingSessionOverview']);
+        Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);

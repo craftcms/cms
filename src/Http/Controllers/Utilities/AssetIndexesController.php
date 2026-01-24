@@ -1,82 +1,48 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\controllers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
-use craft\errors\AssetException;
-use craft\filters\UtilityAccess;
 use craft\models\AssetIndexingSession;
-use craft\models\Volume;
-use craft\web\Controller;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
-use Throwable;
-use yii\web\BadRequestHttpException;
-use yii\web\Response;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 use function CraftCms\Cms\t;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
-
-/**
- * The AssetIndexes class is a controller that handles asset indexing tasks.
- * Note that all actions in the controller require an authenticated Craft session as well as the relevant permissions.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class AssetIndexesController extends Controller
+final readonly class AssetIndexesController
 {
-    /**
-     * @inheritdoc
-     */
-    public function behaviors(): array
-    {
-        return array_merge(parent::behaviors(), [
-            [
-                'class' => UtilityAccess::class,
-                'utility' => AssetIndexes::class,
-            ],
-        ]);
-    }
+    use RespondsWithFlash;
 
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
+    public function __construct(Utilities $utilitiesService)
     {
-        if (!parent::beforeAction($action)) {
-            return false;
+        if (! $utilitiesService->checkAuthorization(AssetIndexes::class)) {
+            abort(403, 'User is not authorized to perform this action.');
         }
-
-        $this->requireAcceptsJson();
-
-        return true;
     }
 
-    /**
-     * Start an indexing session.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionStartIndexing(): Response
+    public function startIndexing(Request $request): Response
     {
-        $request = Craft::$app->getRequest();
-        $volumeIds = (array)$request->getRequiredBodyParam('volumes');
-        $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
-        $listEmptyFolders = (bool)$request->getBodyParam('listEmptyFolders', false);
+        $validated = $request->validate([
+            'volumes' => ['required', 'array'],
+            'cacheImages' => ['nullable', 'boolean'],
+            'listEmptyFolders' => ['nullable', 'boolean'],
+        ]);
 
-        // Typecast volume IDs and filter out any disallowed volumes
-        $volumeIds = array_map(fn($volumeId) => (int)$volumeId, $volumeIds);
-        $allowedVolumeIds = array_map(fn(Volume $volume) => $volume->id, AssetIndexes::volumes());
+        $volumeIds = array_map(fn ($volumeId) => (int) $volumeId, $validated['volumes']);
+        $cacheRemoteImages = (bool) ($validated['cacheImages'] ?? false);
+        $listEmptyFolders = (bool) ($validated['listEmptyFolders'] ?? false);
+
+        // Filter out any disallowed volumes
+        $allowedVolumeIds = array_map(fn ($volume) => $volume->id, AssetIndexes::volumes());
         $volumeIds = array_intersect($volumeIds, $allowedVolumeIds);
 
         if (empty($volumeIds)) {
@@ -89,7 +55,7 @@ class AssetIndexesController extends Controller
         $data = ['session' => $sessionData];
         $error = null;
 
-        if ($indexingSession->totalEntries === 0 && !$indexingSession->processIfRootEmpty) {
+        if ($indexingSession->totalEntries === 0 && ! $indexingSession->processIfRootEmpty) {
             $data['stop'] = $indexingSession->id;
             $error = t('The filesystem doesn’t contain any files.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
@@ -97,19 +63,16 @@ class AssetIndexesController extends Controller
 
         return $error ?
             $this->asFailure($error, $data) :
-            $this->asSuccess(data: $data);
+            $this->asSuccess(null, $data);
     }
 
-    /**
-     * Stop an indexing sessions.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws Throwable if something goes wrong.
-     */
-    public function actionStopIndexingSession(): Response
+    public function stopIndexingSession(Request $request): Response
     {
-        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $validated = $request->validate([
+            'sessionId' => ['required', 'integer'],
+        ]);
+
+        $sessionId = (int) $validated['sessionId'];
 
         if (empty($sessionId)) {
             return $this->asFailure(t('No indexing session specified.'));
@@ -121,18 +84,16 @@ class AssetIndexesController extends Controller
             Craft::$app->getAssetIndexer()->stopIndexingSession($session);
         }
 
-        return $this->asSuccess(data: ['stop' => $sessionId]);
+        return $this->asSuccess(null, ['stop' => $sessionId]);
     }
 
-    /**
-     * Progress an indexing session by one step.
-     *
-     * @return Response
-     * @throws Throwable if something goes wrong
-     */
-    public function actionProcessIndexingSession(): Response
+    public function processIndexingSession(Request $request): Response
     {
-        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $validated = $request->validate([
+            'sessionId' => ['required', 'integer'],
+        ]);
+
+        $sessionId = (int) $validated['sessionId'];
 
         if (empty($sessionId)) {
             return $this->asFailure(t('No indexing session specified.'));
@@ -143,19 +104,20 @@ class AssetIndexesController extends Controller
 
         // Have to account for the fact that some people might be processing this in parallel
         // If the indexing session no longer exists - most likely a parallel user finished it
-        if (!$indexingSession) {
-            return $this->asSuccess(data: ['stop' => $sessionId]);
+        if (! $indexingSession) {
+            return $this->asSuccess(null, ['stop' => $sessionId]);
         }
 
         $skipDialog = false;
 
         // If action is not required, continue with indexing
-        if (!$indexingSession->actionRequired) {
+        if (! $indexingSession->actionRequired) {
             $indexingSession = $assetIndexer->processIndexSession($indexingSession);
 
             if ($indexingSession->forceStop) {
                 $assetIndexer->stopIndexingSession($indexingSession);
-                return $this->asFailure(data: [
+
+                return $this->asFailure(null, [
                     'stop' => $sessionId,
                     'message' => t('There was a problem indexing assets.'),
                 ]);
@@ -174,7 +136,8 @@ class AssetIndexesController extends Controller
                     empty($indexingSession->missingEntries['files'])
                 ) {
                     $assetIndexer->stopIndexingSession($indexingSession);
-                    return $this->asSuccess(data: ['stop' => $sessionId]);
+
+                    return $this->asSuccess(null, ['stop' => $sessionId]);
                 }
             }
         } else {
@@ -182,19 +145,17 @@ class AssetIndexesController extends Controller
         }
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asSuccess(data: ['session' => $sessionData, 'skipDialog' => $skipDialog]);
+
+        return $this->asSuccess(null, ['session' => $sessionData, 'skipDialog' => $skipDialog]);
     }
 
-    /**
-     * Fetch an indexing session overview.
-     *
-     * @return Response
-     * @throws AssetException
-     * @throws BadRequestHttpException
-     */
-    public function actionIndexingSessionOverview(): Response
+    public function indexingSessionOverview(Request $request): Response
     {
-        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $validated = $request->validate([
+            'sessionId' => ['required', 'integer'],
+        ]);
+
+        $sessionId = (int) $validated['sessionId'];
 
         if (empty($sessionId)) {
             return $this->asFailure(t('No indexing session specified.'));
@@ -203,7 +164,7 @@ class AssetIndexesController extends Controller
         $assetIndexer = Craft::$app->getAssetIndexer();
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
-        if (!$indexingSession || !$indexingSession->actionRequired) {
+        if (! $indexingSession || ! $indexingSession->actionRequired) {
             return $this->asFailure(t('Cannot find the indexing session, or there’s nothing to review.'));
         }
 
@@ -211,18 +172,19 @@ class AssetIndexesController extends Controller
         $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asSuccess(data: ['session' => $sessionData]);
+
+        return $this->asSuccess(null, ['session' => $sessionData]);
     }
 
-    /**
-     * Finish an indexing session, removing the specified file and folder records.
-     *
-     * @return Response
-     * @throws Throwable
-     */
-    public function actionFinishIndexingSession(): Response
+    public function finishIndexingSession(Request $request): Response
     {
-        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $validated = $request->validate([
+            'sessionId' => ['required', 'integer'],
+            'deleteFolder' => ['nullable', 'array'],
+            'deleteAsset' => ['nullable', 'array'],
+        ]);
+
+        $sessionId = (int) $validated['sessionId'];
 
         if (empty($sessionId)) {
             return $this->asFailure(t('No indexing session specified.'));
@@ -234,15 +196,15 @@ class AssetIndexesController extends Controller
             Craft::$app->getAssetIndexer()->stopIndexingSession($session);
         }
 
-        $deleteFolders = Craft::$app->getRequest()->getBodyParam('deleteFolder', []);
-        $deleteFiles = Craft::$app->getRequest()->getBodyParam('deleteAsset', []);
+        $deleteFolders = $validated['deleteFolder'] ?? [];
+        $deleteFiles = $validated['deleteAsset'] ?? [];
 
-        if (!empty($deleteFolders)) {
+        if (! empty($deleteFolders)) {
             // if listEmptyFolders was set to true, delete the directories too, so that they don't pop back up on next indexing
-            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, $session->listEmptyFolders);
+            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, $session->listEmptyFolders ?? false);
         }
 
-        if (!empty($deleteFiles)) {
+        if (! empty($deleteFiles)) {
             /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->status(null)
@@ -256,21 +218,18 @@ class AssetIndexesController extends Controller
             }
         }
 
-        return $this->asSuccess(data: ['stop' => $sessionId]);
+        return $this->asSuccess(null, ['stop' => $sessionId]);
     }
 
-    /**
-     * Prepare session data for transport.
-     *
-     * @param AssetIndexingSession $indexingSession
-     * @return array
-     */
     private function prepareSessionData(AssetIndexingSession $indexingSession): array
     {
         $sessionData = $indexingSession->toArray();
+
         unset($sessionData['dateUpdated']);
+
         $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
         $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
+
         return $sessionData;
     }
 }
