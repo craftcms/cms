@@ -31,16 +31,17 @@ final readonly class Sequence
      */
     public static function next(string $name, ?int $length = null): int|string
     {
+        $name = Str::emojiToShortcodes($name);
+
         return Cache::lock('seq--'.str_replace(['/', '\\'], '-', $name))
             ->block(3, function () use ($name, $length) {
                 $num = self::nextNumber($name);
 
                 if ($num === 1) {
-                    DB::table(Table::SEQUENCES)
-                        ->insert([
-                            'name' => $name,
-                            'next' => $num + 1,
-                        ]);
+                    DB::table(Table::SEQUENCES)->insert([
+                        'name' => $name,
+                        'next' => $num + 1,
+                    ]);
 
                     return self::format($num, $length);
                 }

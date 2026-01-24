@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Sequence;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -118,7 +119,8 @@ test('sequence names with unicode characters', function (string $name) {
     $result = Sequence::next($name);
 
     expect($result)->toBe(1);
-    expect(DB::table(Table::SEQUENCES)->where('name', $name)->exists())
+
+    expect(DB::table(Table::SEQUENCES)->where('name', Str::emojiToShortcodes($name))->exists())
         ->toBeTrue();
 })->with([
     'emoji' => '🔥-sequence',
