@@ -10,6 +10,7 @@
 - Fixed a bug where field layout elements weren’t always getting saved in the correct position, if the layout config referenced custom fields that no longer exist. ([#18268](https://github.com/craftcms/cms/issues/18268))
 - Fixed a bug where custom entry index pages weren’t visible when viewing other entry types’ index pages. ([#18284](https://github.com/craftcms/cms/issues/18284))
 - Fixed a bug where element index pages could show a spinner indefinitely if there weren’t any visible sources. ([#18286](https://github.com/craftcms/cms/pull/18286))
+- Fixed a bug where ineditable fields appeared to be editable via the inline editing mode on element indexes. ([#18291](https://github.com/craftcms/cms/pull/18291))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 
