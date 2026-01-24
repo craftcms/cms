@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
@@ -490,15 +489,13 @@ final class ElementSources
 
         $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceSortOptions::class)) {
-            Event::dispatch($event = new DefineSourceSortOptions(
-                elementType: $elementType,
-                source: $sourceKey,
-                sortOptions: $sortOptions,
-            ));
+        event($event = new DefineSourceSortOptions(
+            elementType: $elementType,
+            source: $sourceKey,
+            sortOptions: $sortOptions,
+        ));
 
-            $sortOptions = $event->sortOptions;
-        }
+        $sortOptions = $event->sortOptions;
 
         // Combine duplicate attributes. If any attributes map to multiple sort
         // options and each option has a string orderBy value, cmobine them
@@ -565,17 +562,13 @@ final class ElementSources
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceTableAttributes::class)) {
-            Event::dispatch($event = new DefineSourceTableAttributes(
-                elementType: $elementType,
-                source: $sourceKey,
-                attributes: $attributes,
-            ));
+        event($event = new DefineSourceTableAttributes(
+            elementType: $elementType,
+            source: $sourceKey,
+            attributes: $attributes,
+        ));
 
-            return $event->attributes;
-        }
-
-        return $attributes;
+        return $event->attributes;
     }
 
     /**

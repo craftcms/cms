@@ -119,13 +119,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ];
 
             // Fire a registerLinkTypes event
-            if (Event::hasListeners(RegisterLinkTypes::class)) {
-                Event::dispatch($event = new RegisterLinkTypes($types));
+            event($event = new RegisterLinkTypes($types));
 
-                return $event->types;
-            }
+            $types = $event->types;
 
             // URL *has* to be there
+            /** @var class-string<BaseLinkType>[] $types */
             $types[] = UrlType::class;
 
             self::$_types = array_combine(

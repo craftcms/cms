@@ -439,22 +439,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $entryTypes = $this->_entryTypes;
 
-        // Fire a 'defineEntryTypes' event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
-                field: $this,
-                entryTypes: $entryTypes,
-                element: $element,
-                value: $value,
-            ));
-            $entryTypes = $event->entryTypes;
-        }
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+            field: $this,
+            entryTypes: $entryTypes,
+            element: $element,
+            value: $value,
+        ));
 
-        if (empty($entryTypes)) {
+        if (empty($event->entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return array_values($entryTypes);
+        return array_values($event->entryTypes);
     }
 
     /**

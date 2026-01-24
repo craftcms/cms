@@ -710,19 +710,17 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = $this->options();
         $translatedOptions = [];
 
-        // Fire a 'defineOptions' event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_OPTIONS)) {
+        $this->dispatchComponentEvent(
+            self::EVENT_DEFINE_OPTIONS,
             $event = new DefineInputOptions(
                 field: $this,
                 options: $options,
                 value: $value,
                 element: $element,
-            );
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_OPTIONS, $event);
-            $options = $event->options;
-        }
+            ),
+        );
 
-        foreach ($options as $option) {
+        foreach ($event->options as $option) {
             if (isset($option['optgroup'])) {
                 $translatedOptions[] = [
                     'optgroup' => t($option['optgroup'], category: 'site'),

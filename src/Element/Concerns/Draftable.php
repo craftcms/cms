@@ -9,7 +9,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 
 /** @phpstan-ignore trait.unused */
 trait Draftable
@@ -129,13 +128,9 @@ trait Draftable
      */
     public function canCreateDrafts(UserElement $user): bool
     {
-        if (Event::hasListeners(AuthorizeCreateDrafts::class)) {
-            Event::dispatch($event = new AuthorizeCreateDrafts($this, $user));
+        event($event = new AuthorizeCreateDrafts($this, $user));
 
-            return $event->authorized;
-        }
-
-        return false;
+        return $event->authorized;
     }
 
     /**

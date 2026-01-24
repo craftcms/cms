@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -50,13 +49,9 @@ final readonly class Dashboard
             UpdatesWidget::class,
         ]);
 
-        if (Event::hasListeners(RegisterWidgetTypes::class)) {
-            Event::dispatch($event = new RegisterWidgetTypes($widgetTypes));
+        event($event = new RegisterWidgetTypes($widgetTypes));
 
-            return $event->types;
-        }
-
-        return $widgetTypes;
+        return $event->types;
     }
 
     /**
@@ -140,15 +135,13 @@ final readonly class Dashboard
     {
         $isNewWidget = ! $widget->id;
 
-        if (Event::hasListeners(WidgetSaving::class)) {
-            Event::dispatch($event = new WidgetSaving($widget, $isNewWidget));
+        event($event = new WidgetSaving($widget, $isNewWidget));
 
-            if (! $event->isValid) {
-                return false;
-            }
-
-            $widget = $event->widget;
+        if (! $event->isValid) {
+            return false;
         }
+
+        $widget = $event->widget;
 
         if (! $widget->beforeSave($isNewWidget)) {
             return false;
@@ -193,9 +186,7 @@ final readonly class Dashboard
             throw $e;
         }
 
-        if (Event::hasListeners(WidgetSaved::class)) {
-            Event::dispatch(new WidgetSaved($widget, $isNewWidget));
-        }
+        event(new WidgetSaved($widget, $isNewWidget));
 
         return true;
     }
@@ -221,13 +212,10 @@ final readonly class Dashboard
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
-        if (Event::hasListeners(WidgetDeleting::class)) {
-            $event = new WidgetDeleting($widget);
-            Event::dispatch($event);
+        event($event = new WidgetDeleting($widget));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         if (! $widget->beforeDelete()) {
@@ -247,9 +235,7 @@ final readonly class Dashboard
             throw $e;
         }
 
-        if (Event::hasListeners(WidgetDeleted::class)) {
-            Event::dispatch(new WidgetDeleted($widget));
-        }
+        event(new WidgetDeleted($widget));
 
         return true;
     }

@@ -1649,17 +1649,12 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        // Fire a 'defineSelectionCriteria event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_SELECTION_CRITERIA)) {
-            $this->dispatchComponentEvent(
-                self::EVENT_DEFINE_SELECTION_CRITERIA,
-                $event = new DefineElementCriteria,
-            );
+        $this->dispatchComponentEvent(
+            self::EVENT_DEFINE_SELECTION_CRITERIA,
+            $event = new DefineElementCriteria,
+        );
 
-            return $event->criteria;
-        }
-
-        return [];
+        return $event->criteria;
     }
 
     /**

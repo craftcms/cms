@@ -111,21 +111,15 @@ trait HasSettings
     /** {@inheritdoc} */
     public function beforeSaveSettings(): bool
     {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
+        event(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /** {@inheritdoc} */
     public function afterSaveSettings(): void
     {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
-        }
+        event(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
     }
 
     /**

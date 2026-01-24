@@ -25,7 +25,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use RuntimeException;
@@ -80,11 +79,9 @@ final class Auth
             RecoveryCodes::class,
         ]);
 
-        if (Event::hasListeners(RegisterAuthMethods::class)) {
-            Event::dispatch(new RegisterAuthMethods($methods));
-        }
+        event($event = new RegisterAuthMethods($methods));
 
-        $this->methods[$user->id] = $methods->map(function (string $class) use ($user) {
+        $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
             if (! is_subclass_of($class, AuthMethodInterface::class)) {
                 throw new RuntimeException("$class must implement ".AuthMethodInterface::class);
             }
@@ -237,20 +234,16 @@ final class Auth
 
     public function authenticate(User $user, #[SensitiveParameter] array $credentials): bool
     {
-        $this->authError = null;
+        event($event = new Authenticating($credentials));
 
-        if (Event::hasListeners(Authenticating::class)) {
-            Event::dispatch($event = new Authenticating($credentials));
+        $this->authError = $event->authError;
 
-            $this->authError = $event->authError;
+        if (isset($this->authError)) {
+            return false;
+        }
 
-            if (isset($this->authError)) {
-                return false;
-            }
-
-            if (! $event->performAuthentication) {
-                return true;
-            }
+        if (! $event->performAuthentication) {
+            return true;
         }
 
         if (is_null($plain = $credentials['password'])) {
@@ -288,20 +281,16 @@ final class Auth
 
     public function authenticateWithPasskey(User $user, PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool
     {
-        $this->authError = null;
+        event($event = new Authenticating);
 
-        if (Event::hasListeners(Authenticating::class)) {
-            Event::dispatch($event = new Authenticating);
+        $this->authError = $event->authError;
 
-            $this->authError = $event->authError;
+        if (isset($this->authError)) {
+            return false;
+        }
 
-            if (isset($this->authError)) {
-                return false;
-            }
-
-            if (! $event->performAuthentication) {
-                return true;
-            }
+        if (! $event->performAuthentication) {
+            return true;
         }
 
         // make sure the passkey exists and belongs to this user
