@@ -31,6 +31,7 @@
 - Deprecated `craft\services\Gc`. `CraftCms\Cms\GarbageCollection\GarbageCollection` should be used instead.
 - Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\nameparsing\CustomLanguage`. `CraftCms\Cms\Shared\Nameparser\CustomLanguage` should be used instead.
 - Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
   - #### General helpers
   - `App:devMode()` -> `app()->hasDebugModeEnabled()`

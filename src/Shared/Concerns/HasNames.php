@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Shared\Concerns;
 
-use craft\nameparsing\CustomLanguage;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Shared\Nameparser\CustomLanguage;
 use TheIconic\NameParser\Language\English;
 use TheIconic\NameParser\Language\German;
 use TheIconic\NameParser\Parser as NameParser;
