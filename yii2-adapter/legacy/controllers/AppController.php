@@ -99,7 +99,7 @@ class AppController extends Controller
         }
 
         // Close the PHP session in case this takes a while
-        Session::close();
+        \Illuminate\Support\Facades\Session::save();
 
         $response = Http::create()->get($url);
         $this->response->setCacheHeaders();

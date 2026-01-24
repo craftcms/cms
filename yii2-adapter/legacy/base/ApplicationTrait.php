@@ -344,7 +344,7 @@ trait ApplicationTrait
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
             /** @var UserSession $user */
             $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = \Illuminate\Support\Facades\Session::get($user->idParam);
             if (
                 $id &&
                 ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&

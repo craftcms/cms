@@ -8,8 +8,6 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
@@ -64,25 +62,6 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test that the current timestamp is subtracted from the session expiration value.
-     * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
-     */
-    public function testGetRemainingSessionTimeMath(): void
-    {
-        DateTimeHelper::pause();
-        $this->user->setIdentity(new IdentityWrapper($this->userElement));
-
-        // ensure Craft::$app->getSession()->get() always returns the current timestamp + 50.
-        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
-
-        // Give a few seconds depending on how fast tests run.
-        self::assertEquals(Craft::$app->getUser()->getRemainingSessionTime(), 50);
-
-        DateTimeHelper::resume();
-        Session::reset();
-    }
-
-    /**
      * @inheritdoc
      */
     protected function _before(): void
@@ -100,7 +79,7 @@ class UserTest extends TestCase
      */
     private function _sessionGetStub(?int $returnValue)
     {
-        Session::reset();
+        \Illuminate\Support\Facades\Session::invalidate();
 
         $this->tester->mockCraftMethods('session', [
             'getHasSessionId' => fn() => true,

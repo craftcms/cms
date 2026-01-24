@@ -321,7 +321,7 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
         $this->send();
 
         // Close the session.
-        Session::close();
+        \Illuminate\Support\Facades\Session::save();
 
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {

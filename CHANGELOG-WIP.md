@@ -12,6 +12,7 @@
 - Deprecated `craft\helpers\ConfigHelper`. `CraftCms\Cms\Support\Config` should be used instead.
 - Deprecated `craft\helpers\Diff`. `CraftCms\Cms\Support\Diff` should be used instead.
 - Deprecated `craft\helpers\Html`. `CraftCms\Cms\Support\Html` should be used instead.
+- Deprecated `craft\helpers\SessionHelper`. `Illuminate\Support\Facades\Session` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
