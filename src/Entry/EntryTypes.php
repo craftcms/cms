@@ -556,6 +556,9 @@ final class EntryTypes
     public function refreshEntryTypes(): void
     {
         $this->entryTypes = null;
+
+        // Sections cache entry types internally, so ensure those get refreshed as well.
+        Sections::refreshSections();
     }
 
     /**
