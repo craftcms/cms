@@ -16,6 +16,7 @@ use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\enums\LicenseKeyStatus;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -308,7 +309,11 @@ class Application extends \yii\web\Application
 
                     if ($isCpRequest && !$this->getCanTestEditions()) {
                         // Are there are any licensing issues cached?
-                        $licenseIssues = App::licensingIssues(false);
+                        $licenseIssues = App::licensingIssues([
+                            LicenseKeyStatus::Trial->value,
+                            LicenseKeyStatus::Astray->value,
+                            'wrong_edition',
+                        ]);
                         if (!empty($licenseIssues)) {
                             $hash = App::licensingIssuesHash($licenseIssues);
                             if ($this->_showLicensingIssuesScreen($hash)) {

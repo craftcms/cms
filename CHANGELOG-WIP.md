@@ -45,9 +45,11 @@
 - “Field” and “Section” condition rules now show field/section handles for users with the “Show field handles in edit forms” preference enabled. ([#17909](https://github.com/craftcms/cms/pull/17909))
 - Native fields within element edit pages now have “Copy attribute name” actions. ([#18114](https://github.com/craftcms/cms/pull/18114))
 - “Remove” actions on the Plugins index page now show a confirmation dialog. ([#17922](https://github.com/craftcms/cms/pull/17922))
+- Composer package constraints in `composer.json` are now set with caret operators (e.g. `^1.2.3`). ([#18297](https://github.com/craftcms/cms/pull/18297))
 - `entrify` commands no longer require a category group/tag group/global set handle to be passed.
 - `entrify` commands now automatically assign newly-created channel/structure sections to “Categories” or “Tags” pages. ([#17779](https://github.com/craftcms/cms/pull/17779))
 - The `clear-cache` command now accepts a space-delimited list of cache IDs that should be cleared.
+- The `up` command now warns about any astray license issues before running migrations. ([#18297](https://github.com/craftcms/cms/pull/18297))
 - Compiled templates are now deleted by the `up` command rather than from `migrate` commands.
 - Added the `enableTwigSandbox` config setting. ([#18208](https://github.com/craftcms/cms/pull/18208), [#18216](https://github.com/craftcms/cms/pull/18216))
 - Added the `useIdnaNontransitionalToUnicode` config setting. ([#17946](https://github.com/craftcms/cms/pull/17946))

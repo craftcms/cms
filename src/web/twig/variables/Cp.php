@@ -12,6 +12,7 @@ use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use craft\elements\Entry;
 use craft\enums\CmsEdition;
+use craft\enums\LicenseKeyStatus;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -552,7 +553,11 @@ class Cp extends Component
      */
     public function trialInfo(): ?array
     {
-        $issues = Collection::make(App::licensingIssues(false));
+        $issues = Collection::make(App::licensingIssues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]));
 
         if ($issues->isEmpty()) {
             return null;
