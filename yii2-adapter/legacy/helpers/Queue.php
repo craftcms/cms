@@ -22,6 +22,7 @@ use yii\queue\Queue as BaseQueue;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Queue} instead.
  */
 class Queue
 {
@@ -58,8 +59,10 @@ class Queue
             $job->timeout = $ttr;
         }
 
-        // Dispatch with delay if specified
-        $queueName = Cms::config()->queueName;
+        // Dispatch with delay and lower priority if specified
+        $queueName = $priority > 1024
+            ? Cms::config()->lowPriorityQueueName
+            : Cms::config()->queueName;
 
         if ($delay !== null && $delay > 0) {
             dispatch($job)->onQueue($queueName)->delay($delay);
