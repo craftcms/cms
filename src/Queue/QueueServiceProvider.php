@@ -107,7 +107,7 @@ final class QueueServiceProvider extends ServiceProvider
         }
 
         $description = $this->getQueueJobDescription($event->job);
-        $error = $event->exception?->getMessage();
+        $error = $event->exception->getMessage();
 
         $this->app->make(JobProgress::class)->failed($uuid, $description, $error);
     }

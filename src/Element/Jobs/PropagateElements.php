@@ -33,7 +33,7 @@ final class PropagateElements extends BatchedElementJob
      * Creates a new PropagateElements job.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type to propagate.
-     * @param  array<string, mixed>|null  $criteria  The element criteria.
+     * @param  array<string, mixed>  $criteria  The element criteria.
      * @param  int|int[]|null  $siteId  The site ID(s) to propagate to.
      * @param  bool  $isNewSite  Whether this is for a newly-added site.
      */

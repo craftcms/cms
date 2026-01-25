@@ -111,7 +111,6 @@ final readonly class JobProgress
      */
     public function getByStatus(JobStatus $status): Collection
     {
-        /** @phpstan-ignore return.type */
         return $this->db->table(Table::JOBPROGRESS)
             ->where('status', $status->value)
             ->orderBy('dateCreated')

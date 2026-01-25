@@ -209,11 +209,12 @@ class QueueComponent extends Component implements QueueInterface
                 'progress' => 0,
                 'progressLabel' => null,
                 'description' => 'Unknown job',
+                'error' => null,
             ];
         }
 
         return [
-            'status' => $progress->status,
+            'status' => $progress->status->value,
             'progress' => $progress->progress,
             'progressLabel' => $progress->label,
             'description' => $progress->description,

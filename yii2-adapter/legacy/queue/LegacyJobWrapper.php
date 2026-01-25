@@ -9,6 +9,7 @@
 
 namespace craft\queue;
 
+use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\JobProgress;
@@ -51,8 +52,7 @@ final class LegacyJobWrapper implements DescribableJob, ShouldQueue
 
     public function handle(): void
     {
-        $queueAdapter = new LegacyQueueAdapter($this);
-        $this->legacyJob->execute($queueAdapter);
+        $this->legacyJob->execute(Craft::$app->getQueue());
     }
 
     public function getDescription(): string
