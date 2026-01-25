@@ -2661,6 +2661,25 @@ class GeneralConfig extends BaseConfig
     public string $queueName = 'craft';
 
     /**
+     * @var string The name of the queue that Craft lower priority jobs should be sent to.
+     *             By default, all jobs go to the same queue. Make sure to update `trackedQueueNames`
+     *             as well if you change this setting.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ->trackedQueueNames(['craft', 'craft-low-prio'])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_LOW_PRIORITY_QUEUE_NAME=craft-low-prio
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $lowPriorityQueueName = 'craft';
+
+    /**
      * @var array<string> The queue names that should have their job progress tracked.
      *
      * By default, only jobs on the `craft` queue are tracked. Add additional queue names
@@ -6350,6 +6369,24 @@ class GeneralConfig extends BaseConfig
     public function queueName(string $value): self
     {
         $this->queueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ```
+     *
+     * @group System
+     *
+     * @see $lowPriorityQueueName
+     */
+    public function lowPriorityQueueName(string $value): self
+    {
+        $this->lowPriorityQueueName = $value;
 
         return $this;
     }

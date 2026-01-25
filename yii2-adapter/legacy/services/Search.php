@@ -228,13 +228,12 @@ class Search extends Component
             return;
         }
 
-        // @TODO: Priority used to be 2048 (low priority, separate queue?)
         dispatch(new UpdateSearchIndex(
             elementType: $element::class,
             elementId: $element->id,
             siteId: $element->siteId,
             queued: true,
-        ));
+        ))->onQueue(Cms::config()->lowPriorityQueueName);
     }
 
     /**

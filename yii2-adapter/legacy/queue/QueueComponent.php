@@ -10,11 +10,14 @@
 namespace craft\queue;
 
 use craft\helpers\Queue as QueueHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Queue\Queue as LaravelQueue;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
+use Illuminate\Support\Facades\Artisan;
 use yii\base\Component;
 use function CraftCms\Cms\t;
 
@@ -52,10 +55,14 @@ class QueueComponent extends Component implements QueueInterface
      *
      * @deprecated Use Laravel's `php artisan queue:work` command instead.
      */
-    public function run(): mixed
+    public function run(bool $repeat = false, int $timeout = 0): mixed
     {
-        // In Laravel, queue workers are managed by artisan commands
-        // This is kept for backwards compatibility but does nothing
+        Artisan::call('queue:work', Arr::whereNotNull([
+            '--queue' => [Cms::config()->queueName, Cms::config()->lowPriorityQueueName],
+            '--stop-when-empty' => !$repeat,
+            '--rest' => $timeout,
+        ]));
+
         return null;
     }
 

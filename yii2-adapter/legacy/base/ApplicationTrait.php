@@ -105,6 +105,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Yii;
 use yii\base\Application;
@@ -348,7 +349,7 @@ trait ApplicationTrait
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
             /** @var UserSession $user */
             $user = $this->getUser();
-            $id = \Illuminate\Support\Facades\Session::get($user->idParam);
+            $id = Session::get($user->idParam);
             if (
                 $id &&
                 ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
@@ -1140,6 +1141,7 @@ trait ApplicationTrait
      * Returns the queue service.
      *
      * @return Queue|QueueInterface The queue service
+     * @deprecated 6.0.0. Use Laravel's Queue system instead.
      */
     public function getQueue(): Queue|QueueInterface
     {

@@ -57,6 +57,12 @@ it('can set queueName via fluent setter', function () {
     expect($config->queueName)->toBe('custom');
 });
 
+it('can set lowPriorityQueueName via fluent setter', function () {
+    $config = GeneralConfig::create()->lowPriorityQueueName('custom');
+
+    expect($config->lowPriorityQueueName)->toBe('custom');
+});
+
 it('can set trackedQueueNames via fluent setter', function () {
     $config = GeneralConfig::create()->trackedQueueNames(['craft', 'default']);
 

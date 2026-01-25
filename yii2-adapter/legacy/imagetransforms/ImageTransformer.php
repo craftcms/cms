@@ -120,13 +120,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         if (!$index->fileExists) {
             if (!$immediately) {
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
-                // @TODO: Queue priority used to be 2048, lower priority queue?
                 dispatch(new GenerateImageTransform(
                     transformId: $index->id,
                     description: I18N::prep('Generating image transform for {file}', [
                         'file' => $asset->getFilename(),
                     ]),
-                ));
+                ))->onQueue(Cms::config()->lowPriorityQueueName);
 
                 // Prevent the page from being cached
                 if (!Craft::$app->getRequest()->getIsConsoleRequest()) {

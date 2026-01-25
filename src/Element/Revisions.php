@@ -165,12 +165,11 @@ final readonly class Revisions
 
         // Prune any excess revisions
         if (Cms::config()->maxRevisions) {
-            // @TODO: Queue priority used to be 2049, lower priority queue?
             dispatch(new PruneRevisions(
                 elementType: $canonical::class,
                 canonicalId: $canonical->id,
                 siteId: $canonical->siteId,
-            ));
+            ))->onQueue(Cms::config()->lowPriorityQueueName);
         }
 
         return $revision->id;
