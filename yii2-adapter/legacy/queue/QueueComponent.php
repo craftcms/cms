@@ -19,7 +19,6 @@ use Illuminate\Contracts\Queue\Queue as LaravelQueue;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Facades\Artisan;
 use yii\base\Component;
-use function CraftCms\Cms\t;
 
 /**
  * Provides the Craft::$app->getQueue() API using Laravel's queue system.
@@ -58,7 +57,7 @@ class QueueComponent extends Component implements QueueInterface
     public function run(bool $repeat = false, int $timeout = 0): mixed
     {
         Artisan::call('queue:work', Arr::whereNotNull([
-            '--queue' => [Cms::config()->queueName, Cms::config()->lowPriorityQueueName],
+            '--queue' => implode(',', array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])),
             '--stop-when-empty' => !$repeat,
             '--rest' => $timeout,
         ]));

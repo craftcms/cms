@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use craft\queue\JobInterface;
 use craft\queue\LegacyJobWrapper;
-use craft\queue\LegacyQueueAdapter;
+use craft\queue\QueueComponent;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Queue;
@@ -126,5 +126,5 @@ it('executes the legacy job via LegacyQueueAdapter', function () {
     $wrapper->handle();
 
     expect($legacyJob->executed)->toBeTrue()
-        ->and($legacyJob->receivedQueue)->toBeInstanceOf(LegacyQueueAdapter::class);
+        ->and($legacyJob->receivedQueue)->toBeInstanceOf(QueueComponent::class);
 });

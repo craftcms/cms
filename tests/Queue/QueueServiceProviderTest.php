@@ -37,9 +37,9 @@ it('cleans up progress when job is processed', function () {
     {
         public function __construct(private string $uid) {}
 
-        public function uuid(): string
+        public function payload(): array
         {
-            return $this->uid;
+            return ['uuid' => $this->uid];
         }
 
         public function getQueue(): string
@@ -65,9 +65,9 @@ it('tracks failed jobs with error message', function () {
     {
         public function __construct(private string $uid) {}
 
-        public function uuid(): string
+        public function payload(): array
         {
-            return $this->uid;
+            return ['uuid' => $this->uid];
         }
 
         public function getQueue(): string
@@ -98,6 +98,11 @@ it('handles jobs without uuid method gracefully', function () {
         {
             return 'craft';
         }
+
+        public function payload(): array
+        {
+            return [];
+        }
     };
 
     Event::dispatch(new JobProcessed('sync', $mockJob));
@@ -113,9 +118,9 @@ it('handles jobs with null uuid gracefully', function () {
 
     $mockJob = new class
     {
-        public function uuid(): ?string
+        public function payload(): array
         {
-            return null;
+            return ['uuid' => null];
         }
 
         public function getQueue(): string

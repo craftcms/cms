@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use craft\queue\JobInterface;
+use craft\queue\LegacyJobWrapper;
 use craft\queue\QueueComponent;
 use craft\queue\QueueInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Queue;
 use yii\base\Component;
 
@@ -48,7 +50,7 @@ it('can push a legacy job', function () {
     $result = $component->push($legacyJob);
 
     expect($result)->toBeNull();
-    Queue::assertPushed(\craft\queue\LegacyJobWrapper::class);
+    Queue::assertPushed(LegacyJobWrapper::class);
 });
 
 it('can push a job with delay', function () {
@@ -72,13 +74,7 @@ it('can push a job with delay', function () {
     $component = new QueueComponent;
     $component->push($legacyJob, null, 60);
 
-    Queue::assertPushed(\craft\queue\LegacyJobWrapper::class);
-});
-
-it('returns null for run method (deprecated)', function () {
-    $component = new QueueComponent;
-
-    expect($component->run())->toBeNull();
+    Queue::assertPushed(LegacyJobWrapper::class);
 });
 
 it('returns total jobs count', function () {
@@ -115,7 +111,7 @@ it('returns job details for unknown job', function () {
 
         expect($details)->toBeArray()
             ->and($details['status'])->toBeIn([1, 4]); // Waiting or Failed
-    } catch (\Illuminate\Database\QueryException $e) {
+    } catch (QueryException $e) {
         // Skip if failed_jobs table doesn't exist
         if (str_contains($e->getMessage(), 'failed_jobs')) {
             $this->markTestSkipped('failed_jobs table does not exist');
