@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,6 +19,7 @@ use yii\db\QueryInterface;
  * QueryBatcher provides a [[Batchable]] wrapper for a given [[QueryInterface]] object.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.4.0
  */
 class QueryBatcher implements Batchable
@@ -28,9 +31,6 @@ class QueryBatcher implements Batchable
      * The query should have [[QueryInterface::orderBy()|`orderBy`]] set on it, ideally to the table’s primary key
      * column. That will ensure that the rows returned in result batches are consecutive.
      * :::
-     *
-     * @param QueryInterface|ElementQueryInterface $query
-     * @param YiiConnection|null $db
      */
     public function __construct(
         private QueryInterface|ElementQueryInterface $query,
@@ -39,7 +39,7 @@ class QueryBatcher implements Batchable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function count(): int
     {
@@ -51,17 +51,17 @@ class QueryBatcher implements Batchable
 
         // Query::count() doesn't take the offset and limit into account
         if (isset($this->query->offset)) {
-            $count = max($count - (int)$this->query->offset, 0);
+            $count = max($count - (int) $this->query->offset, 0);
         }
         if (isset($this->query->limit)) {
-            $count = min((int)$this->query->limit, $count);
+            $count = min((int) $this->query->limit, $count);
         }
 
         return $count;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSlice(int $offset, int $limit): iterable
     {
@@ -80,10 +80,19 @@ class QueryBatcher implements Batchable
         $queryLimit = $query->limit;
 
         try {
-            $slice = $query
-                ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
-                ->limit($limit)
-                ->all($this->db);
+            // For Laravel ElementQuery, call all() without arguments
+            // For Yii2 Query, pass the database connection
+            if ($this->query instanceof ElementQueryInterface) {
+                $slice = $query
+                    ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
+                    ->limit($limit)
+                    ->all();
+            } else {
+                $slice = $query
+                    ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
+                    ->limit($limit)
+                    ->all($this->db);
+            }
         } catch (QueryAbortedException) {
             $slice = [];
         }
