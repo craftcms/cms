@@ -10,6 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\enums\LicenseKeyStatus;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -510,7 +511,11 @@ class Cp extends Component
      */
     public function trialInfo(): ?array
     {
-        $issues = Collection::make(App::licensingIssues(false));
+        $issues = Collection::make(App::licensingIssues([
+            LicenseKeyStatus::Trial,
+            LicenseKeyStatus::Astray,
+            'wrong_edition',
+        ]));
 
         if ($issues->isEmpty()) {
             return null;
