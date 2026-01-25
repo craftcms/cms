@@ -54,11 +54,11 @@ class UserTest extends TestCase
         $this->user->setIdentity(null);
         self::assertSame(0, $this->user->getRemainingSessionTime());
 
-        // With a user and authTimeout null it should return -1
+        // With a user and authTimeout null it should return 7200 (laravel default session timeout)
         Auth::login($this->userElement);
         $this->user->setIdentity(new IdentityWrapper($this->userElement));
         $this->user->authTimeout = null;
-        self::assertSame(-1, $this->user->getRemainingSessionTime());
+        self::assertSame(7200, $this->user->getRemainingSessionTime());
     }
 
     /**
