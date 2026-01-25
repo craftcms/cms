@@ -2645,6 +2645,38 @@ class GeneralConfig extends BaseConfig
     public bool $runQueueAutomatically = true;
 
     /**
+     * @var string The name of the queue that Craft jobs should be sent to.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->queueName('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_QUEUE_NAME=craft
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $queueName = 'craft';
+
+    /**
+     * @var array<string> The queue names that should have their job progress tracked.
+     *
+     * By default, only jobs on the `craft` queue are tracked. Add additional queue names
+     * if you want to track progress for jobs on other queues.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public array $trackedQueueNames = ['craft'];
+
+    /**
      * @var bool Whether the system should run in Safe Mode.
      *
      * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
@@ -6300,6 +6332,42 @@ class GeneralConfig extends BaseConfig
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->queueName('craft')
+     * ```
+     *
+     * @group System
+     *
+     * @see $queueName
+     */
+    public function queueName(string $value): self
+    {
+        $this->queueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The queue names that should have their job progress tracked.
+     *
+     * ```php
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     *
+     * @group System
+     *
+     * @see $trackedQueueNames
+     */
+    public function trackedQueueNames(array $value): self
+    {
+        $this->trackedQueueNames = $value;
 
         return $this;
     }

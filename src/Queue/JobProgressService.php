@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Queue;
 
 use CraftCms\Cms\Database\Table;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
@@ -15,6 +16,7 @@ use Illuminate\Support\Collection;
  * Uses database for persistent storage and cache for fast access
  * during CP polling.
  */
+#[Singleton]
 final readonly class JobProgressService
 {
     private const string CACHE_PREFIX = 'craft_job_progress:';

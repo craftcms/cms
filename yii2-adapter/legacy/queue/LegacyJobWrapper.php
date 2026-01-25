@@ -9,6 +9,7 @@
 
 namespace craft\queue;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\JobProgressService;
 use Illuminate\Bus\Queueable;
@@ -42,6 +43,8 @@ final class LegacyJobWrapper implements DescribableJob, ShouldQueue
     public function __construct(
         private readonly JobInterface $legacyJob,
     ) {
+        $this->queue = Cms::config()->queueName;
+
         if (method_exists($this->legacyJob, 'getTtr')) {
             $this->timeout = $this->legacyJob->getTtr();
         }

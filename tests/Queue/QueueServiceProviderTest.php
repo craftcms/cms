@@ -41,6 +41,11 @@ it('cleans up progress when job is processed', function () {
         {
             return $this->uid;
         }
+
+        public function getQueue(): string
+        {
+            return 'craft';
+        }
     };
 
     Event::dispatch(new JobProcessed('sync', $mockJob));
@@ -64,6 +69,11 @@ it('tracks failed jobs with error message', function () {
         {
             return $this->uid;
         }
+
+        public function getQueue(): string
+        {
+            return 'craft';
+        }
     };
 
     Event::dispatch(new JobFailed('sync', $mockJob, new Exception('Test failure')));
@@ -82,7 +92,13 @@ it('handles jobs without uuid method gracefully', function () {
 
     $progressService->setProgress($uid, 'Test Job', 50);
 
-    $mockJob = new class {};
+    $mockJob = new class
+    {
+        public function getQueue(): string
+        {
+            return 'craft';
+        }
+    };
 
     Event::dispatch(new JobProcessed('sync', $mockJob));
 
@@ -101,6 +117,11 @@ it('handles jobs with null uuid gracefully', function () {
         {
             return null;
         }
+
+        public function getQueue(): string
+        {
+            return 'craft';
+        }
     };
 
     Event::dispatch(new JobProcessed('sync', $mockJob));
@@ -118,4 +139,36 @@ it('listens for JobFailed events', function () {
     $listeners = Event::getListeners(JobFailed::class);
 
     expect($listeners)->not->toBeEmpty();
+});
+
+it('does not track jobs on non-tracked queues', function () {
+    $progressService = app(JobProgressService::class);
+    $uid = 'test-non-tracked-queue';
+
+    // Manually set progress to simulate a job that was tracked
+    $progressService->setProgress($uid, 'Test Job', 50);
+
+    expect($progressService->getProgress($uid))->not->toBeNull();
+
+    // Create a mock job on the 'default' queue (not tracked by default)
+    $mockJob = new readonly class($uid)
+    {
+        public function __construct(private string $uid) {}
+
+        public function uuid(): string
+        {
+            return $this->uid;
+        }
+
+        public function getQueue(): string
+        {
+            return 'default';
+        }
+    };
+
+    // Dispatch event - should not clean up because queue is not tracked
+    Event::dispatch(new JobProcessed('sync', $mockJob));
+
+    // Progress should still exist because the queue is not tracked
+    expect($progressService->getProgress($uid))->not->toBeNull();
 });

@@ -36,6 +36,15 @@ it('has default timeout of 300 seconds', function () {
     expect($job->timeout)->toBe(300);
 });
 
+it('sets queue name from config', function () {
+    $job = new class extends Job
+    {
+        public function handle(): void {}
+    };
+
+    expect($job->queue)->toBe('craft');
+});
+
 it('can set a custom timeout', function () {
     $job = new class extends Job
     {

@@ -11,6 +11,7 @@ namespace craft\helpers;
 
 use craft\queue\JobInterface;
 use craft\queue\LegacyJobWrapper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Job as LaravelJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use yii\queue\Queue as BaseQueue;
@@ -58,10 +59,12 @@ class Queue
         }
 
         // Dispatch with delay if specified
+        $queueName = Cms::config()->queueName;
+
         if ($delay !== null && $delay > 0) {
-            dispatch($job)->delay($delay);
+            dispatch($job)->onQueue($queueName)->delay($delay);
         } else {
-            dispatch($job);
+            dispatch($job)->onQueue($queueName);
         }
 
         // Laravel assigns UUID internally - we don't have access to it here

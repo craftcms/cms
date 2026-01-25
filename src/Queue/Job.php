@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\Middleware\CheckShouldRun;
 use Illuminate\Bus\Queueable;
@@ -34,6 +35,11 @@ abstract class Job implements DescribableJob, ShouldQueue
      * This maps to Laravel's TTR equivalent.
      */
     public int $timeout = 300;
+
+    public function __construct()
+    {
+        $this->queue = Cms::config()->queueName;
+    }
 
     /**
      * Execute the job.

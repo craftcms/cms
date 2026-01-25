@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
@@ -14,15 +15,6 @@ use Illuminate\Support\ServiceProvider;
 
 final class QueueServiceProvider extends ServiceProvider
 {
-    #[\Override]
-    public function register(): void
-    {
-        $this->app->singleton(fn ($app): \CraftCms\Cms\Queue\JobProgressService => new JobProgressService(
-            $app['db'],
-            $app['cache.store'],
-        ));
-    }
-
     public function boot(): void
     {
         $this->registerEventListeners();
@@ -53,6 +45,10 @@ final class QueueServiceProvider extends ServiceProvider
 
     private function trackQueued(JobQueued $event): void
     {
+        if (! $this->shouldTrackQueue($event->queue)) {
+            return;
+        }
+
         $job = $event->job;
         $uuid = $this->getJobUuid($job);
 
@@ -68,6 +64,10 @@ final class QueueServiceProvider extends ServiceProvider
 
     private function trackProcessing(JobProcessing $event): void
     {
+        if (! $this->shouldTrackQueue($event->job->getQueue())) {
+            return;
+        }
+
         $uuid = $this->getQueueJobUuid($event->job);
 
         if ($uuid === null) {
@@ -81,6 +81,10 @@ final class QueueServiceProvider extends ServiceProvider
 
     private function trackCompleted(JobProcessed $event): void
     {
+        if (! $this->shouldTrackQueue($event->job->getQueue())) {
+            return;
+        }
+
         $uuid = $this->getQueueJobUuid($event->job);
 
         if ($uuid === null) {
@@ -92,6 +96,10 @@ final class QueueServiceProvider extends ServiceProvider
 
     private function trackFailed(JobFailed $event): void
     {
+        if (! $this->shouldTrackQueue($event->job->getQueue())) {
+            return;
+        }
+
         $uuid = $this->getQueueJobUuid($event->job);
 
         if ($uuid === null) {
@@ -104,9 +112,11 @@ final class QueueServiceProvider extends ServiceProvider
         $this->app->make(JobProgressService::class)->trackFailed($uuid, $description, $error);
     }
 
-    /**
-     * Gets the UUID from a job instance (before it's queued).
-     */
+    private function shouldTrackQueue(?string $queueName): bool
+    {
+        return in_array($queueName, Cms::config()->trackedQueueNames, true);
+    }
+
     private function getJobUuid(mixed $job): ?string
     {
         // For JobQueued event, $job is the actual job instance
@@ -117,9 +127,6 @@ final class QueueServiceProvider extends ServiceProvider
         return null;
     }
 
-    /**
-     * Gets the UUID from a queue job (after it's been queued).
-     */
     private function getQueueJobUuid(mixed $job): ?string
     {
         if (! method_exists($job, 'uuid')) {
@@ -129,9 +136,6 @@ final class QueueServiceProvider extends ServiceProvider
         return $job->uuid();
     }
 
-    /**
-     * Gets the description from a job instance (before it's queued).
-     */
     private function getJobDescription(mixed $job): string
     {
         if ($job instanceof DescribableJob) {
@@ -145,9 +149,6 @@ final class QueueServiceProvider extends ServiceProvider
         return 'Unknown job';
     }
 
-    /**
-     * Gets the description from a queue job (after it's been queued).
-     */
     private function getQueueJobDescription(mixed $job): string
     {
         // Try to get the underlying job instance
