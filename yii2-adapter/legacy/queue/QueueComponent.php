@@ -124,7 +124,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getHasWaitingJobs(): bool
     {
-        return app(LaravelQueue::class)->size() > 0;
+        return app(JobProgress::class)->getByStatus(JobStatus::Pending)->count() > 0;
     }
 
     /**
@@ -132,7 +132,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getHasReservedJobs(): bool
     {
-        return app(JobProgress::class)->getActive()->isNotEmpty();
+        return app(JobProgress::class)->getByStatus(JobStatus::Reserved)->isNotEmpty();
     }
 
     /**
@@ -157,7 +157,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getJobInfo(?int $limit = null): array
     {
-        $activeJobs = app(JobProgress::class)->getActive();
+        $activeJobs = app(JobProgress::class)->getAll();
 
         if ($limit !== null) {
             $activeJobs = $activeJobs->take($limit);
@@ -165,11 +165,12 @@ class QueueComponent extends Component implements QueueInterface
 
         return $activeJobs->map(fn(ProgressData $job) => [
             'id' => $job->uid,
-            'status' => $job->status,
+            'status' => $job->status->value,
             'progress' => $job->progress,
             'progressLabel' => $job->label,
             'description' => $job->description,
-        ])->toArray();
+            'error' => $job->error,
+        ])->values()->toArray();
     }
 
     /**

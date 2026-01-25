@@ -20,6 +20,6 @@ final readonly class StoreReserved extends ProgressListener
             return;
         }
 
-        $this->progress->processing($uuid, $this->jobDescription($event->job));
+        $this->progress->processing($uuid);
     }
 }

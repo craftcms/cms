@@ -16,7 +16,7 @@ final class ProgressData extends Dto
 
     public string $description {
         get => t($this->description);
-        set => $this->description = $value;
+        set(?string $value) => $this->description = (string) $value;
     }
 
     public JobStatus $status;
