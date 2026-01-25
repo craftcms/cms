@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Queue\Job;
-use CraftCms\Cms\Queue\Middleware\CheckShouldRun;
+use CraftCms\Cms\Queue\Middleware\ShouldRun;
 
 it('allows job to continue when shouldStillRun returns true', function () {
-    $middleware = new CheckShouldRun;
+    $middleware = new ShouldRun;
 
     $job = new class extends Job
     {
@@ -33,7 +33,7 @@ it('allows job to continue when shouldStillRun returns true', function () {
 });
 
 it('deletes job and stops execution when shouldStillRun returns false', function () {
-    $middleware = new CheckShouldRun;
+    $middleware = new ShouldRun;
 
     $mockQueueJob = new class
     {
@@ -75,7 +75,7 @@ it('deletes job and stops execution when shouldStillRun returns false', function
 });
 
 it('passes through non-Job instances', function () {
-    $middleware = new CheckShouldRun;
+    $middleware = new ShouldRun;
 
     $nonJob = new stdClass;
     $nonJob->data = 'test';
@@ -92,7 +92,7 @@ it('passes through non-Job instances', function () {
 });
 
 it('handles job with null uuid gracefully', function () {
-    $middleware = new CheckShouldRun;
+    $middleware = new ShouldRun;
 
     $mockQueueJob = new class
     {

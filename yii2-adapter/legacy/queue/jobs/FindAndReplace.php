@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Search\Jobs\FindAndReplace]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\FindAndReplace} instead.
  */
 class FindAndReplace extends BaseBatchedJob
 {

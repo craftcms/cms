@@ -9,23 +9,20 @@ use craft\imagetransforms\ImageTransformer;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
+use Override;
 use Throwable;
 
 /**
  * Generates an image transform.
- *
- * @since 6.0.0
  */
 final class GenerateImageTransform extends Job
 {
-    /**
-     * Creates a new GenerateImageTransform job.
-     *
-     * @param  int  $transformId  The transform ID.
-     */
     public function __construct(
         public int $transformId,
-    ) {}
+        protected ?string $description = null,
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
@@ -41,12 +38,13 @@ final class GenerateImageTransform extends Job
                 if ($asset) {
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }
-            } catch (Throwable) {
+            } catch (Throwable $e) {
+                report($e);
             }
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Generating image transform');

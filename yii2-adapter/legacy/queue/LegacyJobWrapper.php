@@ -11,7 +11,7 @@ namespace craft\queue;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
-use CraftCms\Cms\Queue\JobProgressService;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,8 +25,7 @@ use Illuminate\Queue\SerializesModels;
  * working with Laravel's queue system.
  *
  * @internal
- *
- * @since 6.0.0
+ * @deprecated 6.0.0
  */
 final class LegacyJobWrapper implements DescribableJob, ShouldQueue
 {
@@ -82,7 +81,7 @@ final class LegacyJobWrapper implements DescribableJob, ShouldQueue
             return;
         }
 
-        app(JobProgressService::class)->setProgress(
+        app(JobProgress::class)->setProgress(
             uid: $uuid,
             description: $this->getDescription(),
             progress: $progress,

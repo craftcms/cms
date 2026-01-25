@@ -21,7 +21,7 @@ use CraftCms\Cms\Support\Facades\I18N;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.5.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\PruneRevisions]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PruneRevisions} instead.
  */
 class PruneRevisions extends BaseJob
 {

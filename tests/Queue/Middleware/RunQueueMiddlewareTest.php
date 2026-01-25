@@ -3,16 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Queue\JobProgressService;
-use CraftCms\Cms\Queue\Middleware\RunQueueMiddleware;
+use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
     $this->queue = Mockery::mock(Queue::class);
-    $this->progressService = Mockery::mock(JobProgressService::class);
-    $this->middleware = new RunQueueMiddleware($this->queue, $this->progressService);
+    $this->progressService = Mockery::mock(JobProgress::class);
+    $this->middleware = new RunQueue($this->queue, $this->progressService);
     $this->generalConfig = Cms::config();
 });
 
@@ -133,7 +133,7 @@ it('appends script if no closing body tag exists', function () {
 
     expect($result->getContent())
         ->toContain('<script')
-        ->toEndWith("</script>\n");
+        ->toEndWith('</script>');
 });
 
 it('handles xhtml content type', function () {

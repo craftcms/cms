@@ -9,12 +9,8 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
+use Override;
 
-/**
- * Prunes extra revisions beyond the configured maximum.
- *
- * @since 6.0.0
- */
 final class PruneRevisions extends Job
 {
     /**
@@ -30,23 +26,24 @@ final class PruneRevisions extends Job
         public int $canonicalId,
         public int $siteId,
         public ?int $maxRevisions = null,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
-        if (! $this->maxRevisions) {
-            // Make sure maxRevisions is still set
-            if (! Cms::config()->maxRevisions) {
-                return;
-            }
-            $this->maxRevisions = Cms::config()->maxRevisions;
+        // Make sure maxRevisions is still set
+        if (! $this->maxRevisions && ! Cms::config()->maxRevisions) {
+            return;
         }
+
+        $this->maxRevisions ??= Cms::config()->maxRevisions;
 
         $extraRevisions = $this->elementType::find()
             ->revisionOf($this->canonicalId)
             ->siteId($this->siteId)
             ->status(null)
-            ->orderBy(['num' => SORT_DESC])
+            ->orderByDesc('num')
             ->offset($this->maxRevisions)
             ->all();
 
@@ -63,7 +60,7 @@ final class PruneRevisions extends Job
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Pruning extra revisions');

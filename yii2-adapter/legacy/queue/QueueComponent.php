@@ -10,11 +10,13 @@
 namespace craft\queue;
 
 use craft\helpers\Queue as QueueHelper;
-use CraftCms\Cms\Queue\JobProgressService;
-use CraftCms\Cms\Queue\JobStatus;
+use CraftCms\Cms\Queue\Data\ProgressData;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Contracts\Queue\Queue as LaravelQueue;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use yii\base\Component;
+use function CraftCms\Cms\t;
 
 /**
  * Provides the Craft::$app->getQueue() API using Laravel's queue system.
@@ -22,14 +24,14 @@ use yii\base\Component;
  * This component maintains backwards compatibility for legacy code that accesses
  * the queue via Craft::$app->getQueue().
  *
- * @since 6.0.0
+ * @deprecated 6.0.0
  */
 class QueueComponent extends Component implements QueueInterface
 {
     /**
      * @var int Default time-to-reserve for jobs (in seconds).
      */
-    public int $ttr = 300;
+    public $ttr = 300;
 
     /**
      * Pushes a job to the queue.
@@ -40,7 +42,7 @@ class QueueComponent extends Component implements QueueInterface
      * @param  int|null  $ttr  The maximum time the job can run before timing out.
      * @return string|null Always returns null - Laravel assigns UUID internally.
      */
-    public function push(JobInterface $job, ?int $priority = null, ?int $delay = null, ?int $ttr = null): ?string
+    public function push($job, ?int $priority = null, ?int $delay = null, ?int $ttr = null): ?string
     {
         return QueueHelper::push($job, $priority, $delay, $ttr);
     }
@@ -76,7 +78,7 @@ class QueueComponent extends Component implements QueueInterface
         $failedJobProvider->forget($id);
 
         // Clean up the failed job entry from jobprogress
-        app(JobProgressService::class)->delete($id);
+        app(JobProgress::class)->delete($id);
     }
 
     /**
@@ -86,7 +88,7 @@ class QueueComponent extends Component implements QueueInterface
     {
         $failedJobProvider = app(FailedJobProviderInterface::class);
         $queue = app(LaravelQueue::class);
-        $progressService = app(JobProgressService::class);
+        $progressService = app(JobProgress::class);
 
         foreach ($failedJobProvider->all() as $failedJob) {
             $queue->pushRaw($failedJob->payload, $failedJob->queue);
@@ -124,7 +126,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getHasReservedJobs(): bool
     {
-        return app(JobProgressService::class)->getActive()->isNotEmpty();
+        return app(JobProgress::class)->getActive()->isNotEmpty();
     }
 
     /**
@@ -132,7 +134,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getTotalJobs(): int
     {
-        return app(LaravelQueue::class)->size();
+        return app(JobProgress::class)->getActive()->count();
     }
 
     /**
@@ -149,18 +151,18 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getJobInfo(?int $limit = null): array
     {
-        $activeJobs = app(JobProgressService::class)->getActive();
+        $activeJobs = app(JobProgress::class)->getActive();
 
         if ($limit !== null) {
             $activeJobs = $activeJobs->take($limit);
         }
 
-        return $activeJobs->map(fn(array $job) => [
-            'id' => $job['uid'],
-            'status' => $job['status'],
-            'progress' => $job['progress'],
-            'progressLabel' => $job['progressLabel'],
-            'description' => $job['description'],
+        return $activeJobs->map(fn(ProgressData $job) => [
+            'id' => $job->uid,
+            'status' => $job->status,
+            'progress' => $job->progress,
+            'progressLabel' => $job->label,
+            'description' => $job->description,
         ])->toArray();
     }
 
@@ -178,7 +180,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getJobDetails(string $id): array
     {
-        $progress = app(JobProgressService::class)->getProgress($id);
+        $progress = app(JobProgress::class)->getProgress($id);
 
         if ($progress === null) {
             // Check failed jobs
@@ -204,11 +206,11 @@ class QueueComponent extends Component implements QueueInterface
         }
 
         return [
-            'status' => $progress['status'],
-            'progress' => $progress['progress'],
-            'progressLabel' => $progress['progressLabel'],
-            'description' => $progress['description'],
-            'error' => $progress['error'],
+            'status' => $progress->status,
+            'progress' => $progress->progress,
+            'progressLabel' => $progress->label,
+            'description' => $progress->description,
+            'error' => $progress->error,
         ];
     }
 
@@ -222,7 +224,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function release(string $id): void
     {
-        app(JobProgressService::class)->cancel($id);
+        app(JobProgress::class)->cancel($id);
     }
 
     /**
@@ -233,6 +235,6 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function releaseAll(): void
     {
-        app(JobProgressService::class)->clear();
+        app(JobProgress::class)->clear();
     }
 }

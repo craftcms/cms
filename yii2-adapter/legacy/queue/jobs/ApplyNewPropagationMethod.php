@@ -34,7 +34,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.4.8
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod} instead.
  */
 class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {

@@ -10,22 +10,18 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * Localizes relations for a field that has changed from global to site-specific.
- *
- * @since 6.0.0
  */
 final class LocalizeRelations extends Job
 {
-    /**
-     * Creates a new LocalizeRelations job.
-     *
-     * @param  int  $fieldId  The field ID whose relations should be localized.
-     */
     public function __construct(
         public int $fieldId,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
@@ -54,22 +50,21 @@ final class LocalizeRelations extends Job
 
             // Duplicate it for the other sites
             foreach ($allSiteIds as $siteId) {
-                DB::table(Table::RELATIONS)
-                    ->insert([
-                        'fieldId' => $this->fieldId,
-                        'sourceId' => $relation->sourceId,
-                        'sourceSiteId' => $siteId,
-                        'targetId' => $relation->targetId,
-                        'sortOrder' => $relation->sortOrder,
-                        'uid' => Str::uuid(),
-                        'dateCreated' => $now,
-                        'dateUpdated' => $now,
-                    ]);
+                DB::table(Table::RELATIONS)->insert([
+                    'fieldId' => $this->fieldId,
+                    'sourceId' => $relation->sourceId,
+                    'sourceSiteId' => $siteId,
+                    'targetId' => $relation->targetId,
+                    'sortOrder' => $relation->sortOrder,
+                    'uid' => Str::uuid(),
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                ]);
             }
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Localizing relations');

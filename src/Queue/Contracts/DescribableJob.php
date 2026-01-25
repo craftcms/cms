@@ -12,8 +12,5 @@ namespace CraftCms\Cms\Queue\Contracts;
  */
 interface DescribableJob
 {
-    /**
-     * Returns the job's description.
-     */
     public function getDescription(): string;
 }

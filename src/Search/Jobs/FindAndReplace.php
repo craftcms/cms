@@ -4,57 +4,48 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search\Jobs;
 
-use Craft;
 use craft\base\Batchable;
-use craft\db\Query;
 use craft\db\QueryBatcher;
-use craft\db\Table;
+use CraftCms\Cms\Database\Expressions\Cast;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * Finds and replaces text in element content.
- *
- * @since 6.0.0
  */
 final class FindAndReplace extends BatchedJob
 {
-    /**
-     * Creates a new FindAndReplace job.
-     *
-     * @param  string  $find  The search text.
-     * @param  string  $replace  The replacement text.
-     */
     public function __construct(
         public string $find,
         public string $replace,
-    ) {}
+        protected ?string $description = null,
+    ) {
+        parent::__construct();
+    }
 
     protected function loadData(): Batchable
     {
-        $where = [
-            'or',
-            ['like', 'title', $this->find],
-        ];
-
-        if (Craft::$app->getDb()->getIsPgsql()) {
-            $where[] = ['like', 'CAST("content" AS TEXT)', $this->find];
-        } else {
-            $where[] = ['like', 'content', $this->find];
-        }
-
         return new QueryBatcher(
-            (new Query)
+            DB::table(Table::ELEMENTS_SITES)
                 ->select(['id', 'title', 'content'])
-                ->from(Table::ELEMENTS_SITES)
-                ->orderBy(['id' => SORT_ASC])
-                ->where($where),
+                ->orderBy('id')
+                ->where(fn (Builder $query) => $query
+                    ->orWhere('title', 'like', "%$this->find%")
+                    ->when(
+                        DB::getDriverName() === 'pgsql',
+                        fn (Builder $query) => $query->orWhereLike(new Cast('content', 'TEXT'), "%$this->find%"),
+                        fn (Builder $query) => $query->orWhereLike('content', "%$this->find%"),
+                    )
+                )
         );
     }
 
-    #[\Override]
+    #[Override]
     public function handle(): void
     {
         // Reset offset for each batch since items from previous batch
@@ -66,18 +57,18 @@ final class FindAndReplace extends BatchedJob
 
     protected function processItem(mixed $item): void
     {
-        if (is_string($item['content'])) {
-            $item['content'] = Json::decode($item['content']);
+        if (is_string($item->content)) {
+            $item->content = Json::decode($item->content);
         }
 
-        $this->replaceRecursive($item['title']);
-        $this->replaceRecursive($item['content']);
+        $this->replaceRecursive($item->title);
+        $this->replaceRecursive($item->content);
 
-        DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES)
-            ->where('id', $item['id'])
+        DB::table(Table::ELEMENTS_SITES)
+            ->where('id', $item->id)
             ->update([
-                'title' => $item['title'],
-                'content' => $item['content'],
+                'title' => $item->title,
+                'content' => $item->content,
             ]);
     }
 
@@ -103,7 +94,7 @@ final class FindAndReplace extends BatchedJob
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Replacing "{find}" with "{replace}"', [

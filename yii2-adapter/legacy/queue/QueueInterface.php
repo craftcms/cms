@@ -16,6 +16,7 @@ use yii\queue\Queue as BaseQueue;
  * @mixin BaseQueue
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 interface QueueInterface extends ReleasableQueueInterface
 {

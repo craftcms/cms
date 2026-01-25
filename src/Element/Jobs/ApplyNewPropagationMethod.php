@@ -19,13 +19,12 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Override;
 use Throwable;
 
 /**
  * Applies a new propagation method to elements, duplicating them for sites
  * where they would have been deleted in the process.
- *
- * @since 6.0.0
  */
 final class ApplyNewPropagationMethod extends BatchedJob
 {
@@ -47,7 +46,10 @@ final class ApplyNewPropagationMethod extends BatchedJob
     public function __construct(
         private readonly string $elementType,
         private readonly ?array $criteria = null,
-    ) {}
+        protected ?string $description = null,
+    ) {
+        parent::__construct();
+    }
 
     protected function loadData(): Batchable
     {
@@ -58,7 +60,7 @@ final class ApplyNewPropagationMethod extends BatchedJob
             ->status(null)
             ->drafts(null)
             ->provisionalDrafts(null)
-            ->orderBy(['elements.id' => SORT_ASC]);
+            ->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -69,7 +71,6 @@ final class ApplyNewPropagationMethod extends BatchedJob
 
     protected function processItem(mixed $item): void
     {
-        // Skip revisions
         try {
             if (ElementHelper::isRevision($item)) {
                 return;
@@ -139,7 +140,8 @@ final class ApplyNewPropagationMethod extends BatchedJob
                     $otherSiteElement->siteId,
                     $e->getMessage()
                 ));
-                Craft::$app->getErrorHandler()->logException($e);
+
+                report($e);
 
                 continue;
             }
@@ -196,15 +198,12 @@ final class ApplyNewPropagationMethod extends BatchedJob
         $this->resaveItem($item);
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Applying new propagation method to elements');
     }
 
-    /**
-     * Resave item that's being processed.
-     */
     private function resaveItem(ElementInterface $item): void
     {
         $item->setScenario(Element::SCENARIO_ESSENTIALS);

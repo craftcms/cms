@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Queue\JobProgressService;
-use CraftCms\Cms\Queue\JobStatus;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueServiceProvider;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Event;
 
 it('registers JobProgressService as singleton', function () {
-    $service1 = app(JobProgressService::class);
-    $service2 = app(JobProgressService::class);
+    $service1 = app(JobProgress::class);
+    $service2 = app(JobProgress::class);
 
-    expect($service1)->toBeInstanceOf(JobProgressService::class)
+    expect($service1)->toBeInstanceOf(JobProgress::class)
         ->and($service1)->toBe($service2);
 });
 
@@ -26,7 +26,7 @@ it('is registered in the application', function () {
 });
 
 it('cleans up progress when job is processed', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $uid = 'test-cleanup-processed';
 
     $progressService->setProgress($uid, 'Test Job', 50);
@@ -54,7 +54,7 @@ it('cleans up progress when job is processed', function () {
 });
 
 it('tracks failed jobs with error message', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $uid = 'test-cleanup-failed';
 
     $progressService->setProgress($uid, 'Test Job', 50);
@@ -82,12 +82,12 @@ it('tracks failed jobs with error message', function () {
     $progress = $progressService->getProgress($uid);
     expect($progress)
         ->not->toBeNull()
-        ->status->toBe(JobStatus::Failed->value)
+        ->status->toBe(JobStatus::Failed)
         ->error->toBe('Test failure');
 });
 
 it('handles jobs without uuid method gracefully', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $uid = 'test-no-uuid';
 
     $progressService->setProgress($uid, 'Test Job', 50);
@@ -106,7 +106,7 @@ it('handles jobs without uuid method gracefully', function () {
 });
 
 it('handles jobs with null uuid gracefully', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $uid = 'test-null-uuid';
 
     $progressService->setProgress($uid, 'Test Job', 50);
@@ -142,7 +142,7 @@ it('listens for JobFailed events', function () {
 });
 
 it('does not track jobs on non-tracked queues', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $uid = 'test-non-tracked-queue';
 
     // Manually set progress to simulate a job that was tracked

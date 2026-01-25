@@ -28,6 +28,8 @@ class TestBatchedElementJob extends BatchedElementJob
         string $elementType,
         array $criteria = [],
     ) {
+        parent::__construct();
+
         $this->elementType = $elementType;
         $this->criteria = $criteria;
     }

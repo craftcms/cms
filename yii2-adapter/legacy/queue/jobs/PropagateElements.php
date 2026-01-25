@@ -24,7 +24,7 @@ use CraftCms\Cms\Support\Facades\I18N;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.13
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\PropagateElements]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PropagateElements} instead.
  */
 class PropagateElements extends BaseBatchedElementJob
 {

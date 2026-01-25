@@ -128,7 +128,7 @@ it('throws exception when queued with non-int element id', function () {
         queued: true,
     );
 
-    expect(fn () => $job->handle())->toThrow(\yii\base\InvalidConfigException::class);
+    expect(fn () => $job->handle())->toThrow(InvalidArgumentException::class);
 });
 
 it('throws exception when queued with non-int site id', function () {
@@ -139,5 +139,5 @@ it('throws exception when queued with non-int site id', function () {
         queued: true,
     );
 
-    expect(fn () => $job->handle())->toThrow(\yii\base\InvalidConfigException::class);
+    expect(fn () => $job->handle())->toThrow(InvalidArgumentException::class);
 });

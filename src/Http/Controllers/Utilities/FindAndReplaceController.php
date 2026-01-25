@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\Queue;
-use craft\queue\jobs\FindAndReplace;
+use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,10 +26,10 @@ final readonly class FindAndReplaceController
             'params.replace' => ['required', 'string'],
         ])['params'];
 
-        Queue::push(new FindAndReplace([
-            'find' => $params['find'],
-            'replace' => $params['replace'],
-        ]));
+        dispatch(new FindAndReplace(
+            find: $params['find'],
+            replace: $params['replace']
+        ));
 
         return new JsonResponse;
     }

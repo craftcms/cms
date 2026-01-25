@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\LocalizeRelations]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\LocalizeRelations} instead.
  */
 class LocalizeRelations extends BaseJob
 {

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Queue;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Queue\Data\ProgressData;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Database\DatabaseManager;
@@ -12,12 +15,9 @@ use Illuminate\Support\Collection;
 
 /**
  * Service for tracking job progress and status.
- *
- * Uses database for persistent storage and cache for fast access
- * during CP polling.
  */
 #[Singleton]
-final readonly class JobProgressService
+final readonly class JobProgress
 {
     private const string CACHE_PREFIX = 'craft_job_progress:';
 
@@ -28,72 +28,34 @@ final readonly class JobProgressService
         private CacheRepository $cache,
     ) {}
 
-    /**
-     * Tracks a new job being queued.
-     *
-     * @param  string  $uid  The job UUID
-     * @param  string  $description  The job description
-     * @param  bool  $delayed  Whether the job is delayed
-     */
-    public function trackQueued(string $uid, string $description, bool $delayed = false): void
+    public function queued(string $uid, string $description, bool $delayed = false): void
     {
         $status = $delayed ? JobStatus::Delayed : JobStatus::Pending;
+
         $this->upsertJob($uid, $description, $status, 0, null, null);
     }
 
-    /**
-     * Tracks a job starting processing.
-     *
-     * @param  string  $uid  The job UUID
-     * @param  string  $description  The job description
-     */
-    public function trackProcessing(string $uid, string $description): void
+    public function processing(string $uid, string $description): void
     {
         $this->upsertJob($uid, $description, JobStatus::Reserved, 0, null, null);
     }
 
-    /**
-     * Tracks a job completing successfully.
-     *
-     * @param  string  $uid  The job UUID
-     */
-    public function trackCompleted(string $uid): void
+    public function completed(string $uid): void
     {
-        // Remove the job from tracking - it's done
         $this->delete($uid);
     }
 
-    /**
-     * Tracks a job failing.
-     *
-     * @param  string  $uid  The job UUID
-     * @param  string  $description  The job description
-     * @param  string|null  $error  The error message
-     */
-    public function trackFailed(string $uid, string $description, ?string $error = null): void
+    public function failed(string $uid, string $description, ?string $error = null): void
     {
         $this->upsertJob($uid, $description, JobStatus::Failed, 0, null, $error);
     }
 
-    /**
-     * Sets/updates the progress for a job (upsert pattern).
-     *
-     * @param  string  $uid  The job UUID
-     * @param  string  $description  The job description
-     * @param  int  $progress  Progress percentage (0-100)
-     * @param  string|null  $label  Optional progress label
-     */
     public function setProgress(string $uid, string $description, int $progress, ?string $label = null): void
     {
         $this->upsertJob($uid, $description, JobStatus::Reserved, $progress, $label, null);
     }
 
-    /**
-     * Gets the progress for a specific job.
-     *
-     * @return array{uid: string, description: string, status: int, progress: int, progressLabel: string|null, error: string|null}|null
-     */
-    public function getProgress(string $uid): ?array
+    public function getProgress(string $uid): ?ProgressData
     {
         $cached = $this->cache->get(self::CACHE_PREFIX.$uid);
 
@@ -109,14 +71,14 @@ final readonly class JobProgressService
             return null;
         }
 
-        $data = [
+        $data = ProgressData::from([
             'uid' => $row->uid,
             'description' => $row->description,
             'status' => (int) $row->status,
             'progress' => (int) $row->progress,
-            'progressLabel' => $row->progressLabel,
+            'label' => $row->progressLabel,
             'error' => $row->error,
-        ];
+        ]);
 
         $this->cache->put(self::CACHE_PREFIX.$uid, $data, self::CACHE_TTL);
 
@@ -126,34 +88,26 @@ final readonly class JobProgressService
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<int, array{uid: string, description: string, status: int, progress: int, progressLabel: string|null, error: string|null}>
+     * @return Collection<ProgressData>
      */
     public function getActive(): Collection
     {
-        /** @phpstan-ignore return.type */
         return $this->db->table(Table::JOBPROGRESS)
             ->whereIn('status', [
-                JobStatus::Pending->value,
-                JobStatus::Delayed->value,
-                JobStatus::Reserved->value,
+                JobStatus::Pending,
+                JobStatus::Delayed,
+                JobStatus::Reserved,
+                JobStatus::Failed,
             ])
             ->orderBy('dateCreated')
             ->get()
-            ->map(fn (object $row) => [
-                'uid' => (string) $row->uid,
-                'description' => (string) $row->description,
-                'status' => (int) $row->status,
-                'progress' => (int) $row->progress,
-                'progressLabel' => $row->progressLabel !== null ? (string) $row->progressLabel : null,
-                'error' => $row->error !== null ? (string) $row->error : null,
-            ])
-            ->values();
+            ->map(fn (object $row) => ProgressData::from($row));
     }
 
     /**
      * Gets all jobs with a specific status.
      *
-     * @return Collection<int, array{uid: string, description: string, status: int, progress: int, progressLabel: string|null, error: string|null}>
+     * @return Collection<ProgressData>
      */
     public function getByStatus(JobStatus $status): Collection
     {
@@ -162,30 +116,17 @@ final readonly class JobProgressService
             ->where('status', $status->value)
             ->orderBy('dateCreated')
             ->get()
-            ->map(fn (object $row) => [
-                'uid' => (string) $row->uid,
-                'description' => (string) $row->description,
-                'status' => (int) $row->status,
-                'progress' => (int) $row->progress,
-                'progressLabel' => $row->progressLabel !== null ? (string) $row->progressLabel : null,
-                'error' => $row->error !== null ? (string) $row->error : null,
-            ])
-            ->values();
+            ->map(fn (object $row) => ProgressData::from($row));
     }
 
     /**
-     * Gets all failed jobs.
-     *
-     * @return Collection<int, array{uid: string, description: string, status: int, progress: int, progressLabel: string|null, error: string|null}>
+     * @return Collection<ProgressData>
      */
     public function getFailed(): Collection
     {
         return $this->getByStatus(JobStatus::Failed);
     }
 
-    /**
-     * Deletes a job progress entry.
-     */
     public function delete(string $uid): void
     {
         $this->db->table(Table::JOBPROGRESS)
@@ -195,9 +136,6 @@ final readonly class JobProgressService
         $this->cache->forget(self::CACHE_PREFIX.$uid);
     }
 
-    /**
-     * Clears all job progress entries.
-     */
     public function clear(): void
     {
         $uids = $this->db->table(Table::JOBPROGRESS)->pluck('uid');
@@ -209,9 +147,6 @@ final readonly class JobProgressService
         }
     }
 
-    /**
-     * Clears completed jobs (keeps failed for retry).
-     */
     public function clearCompleted(): void
     {
         $this->db->table(Table::JOBPROGRESS)
@@ -219,9 +154,6 @@ final readonly class JobProgressService
             ->delete();
     }
 
-    /**
-     * Updates the status of a job.
-     */
     public function updateStatus(string $uid, JobStatus $status): void
     {
         $this->db->table(Table::JOBPROGRESS)
@@ -268,38 +200,26 @@ final readonly class JobProgressService
     ): void {
         $now = now();
 
+        $data = [
+            'uid' => $uid,
+            'description' => $description,
+            'status' => $status->value,
+            'progress' => $progress,
+            'progressLabel' => $label,
+            'error' => $error,
+            'dateCreated' => $now,
+            'dateUpdated' => $now,
+        ];
+
         $this->db->table(Table::JOBPROGRESS)->upsert(
-            [
-                'uid' => $uid,
-                'description' => $description,
-                'status' => $status->value,
-                'progress' => $progress,
-                'progressLabel' => $label,
-                'error' => $error,
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-            ],
-            ['uid'],
-            [
-                'description' => $description,
-                'status' => $status->value,
-                'progress' => $progress,
-                'progressLabel' => $label,
-                'error' => $error,
-                'dateUpdated' => $now,
-            ],
+            values: $data,
+            uniqueBy: ['uid'],
+            update: Arr::only($data, ['description', 'status', 'progress', 'progressLabel', 'error', 'dateUpdated']),
         );
 
         $this->cache->put(
             self::CACHE_PREFIX.$uid,
-            [
-                'uid' => $uid,
-                'description' => $description,
-                'status' => $status->value,
-                'progress' => $progress,
-                'progressLabel' => $label,
-                'error' => $error,
-            ],
+            ProgressData::from($data),
             self::CACHE_TTL,
         );
     }

@@ -12,22 +12,15 @@ use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Log;
+use Override;
 
 /**
  * Updates element slugs and URIs.
- *
- * @since 6.0.0
  */
 final class UpdateElementSlugsAndUris extends Job
 {
-    /**
-     * The total number of elements to process.
-     */
     private int $totalToProcess = 0;
 
-    /**
-     * The number of elements processed so far.
-     */
     private int $totalProcessed = 0;
 
     /**
@@ -45,20 +38,21 @@ final class UpdateElementSlugsAndUris extends Job
         public ?int $siteId = null,
         public bool $updateOtherSites = true,
         public bool $updateDescendants = true,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
         $this->totalToProcess = 0;
         $this->totalProcessed = 0;
 
-        $query = $this->createElementQuery()
-            ->id($this->elementId);
+        $query = $this->createElementQuery()->id($this->elementId);
 
         $this->processElements($query);
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Updating element slugs and URIs');

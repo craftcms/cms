@@ -26,7 +26,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.7.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Announcement\Jobs\SendAnnouncement]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Announcement\Jobs\SendAnnouncement} instead.
  */
 class Announcement extends BaseJob
 {

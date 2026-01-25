@@ -5,11 +5,12 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Queue\JobProgressService;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 
 beforeEach(function () {
-    $this->progressService = app(JobProgressService::class);
+    $this->progressService = app(JobProgress::class);
 });
 
 it('can be instantiated with element type', function () {
@@ -60,7 +61,7 @@ it('resaves elements when executed', function () {
         ->toArray();
 
     // Wait a second to ensure timestamp difference
-    \Illuminate\Support\Sleep::sleep(1);
+    Sleep::sleep(1);
 
     $job = new ResaveElements(
         elementType: EntryElement::class,
@@ -86,7 +87,7 @@ it('respects criteria when resaving', function () {
     $entries = EntryElement::find()->collect();
     $firstEntry = $entries->first();
 
-    \Illuminate\Support\Sleep::sleep(1);
+    Sleep::sleep(1);
 
     $job = new ResaveElements(
         elementType: EntryElement::class,

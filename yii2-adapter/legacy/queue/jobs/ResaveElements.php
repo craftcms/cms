@@ -26,7 +26,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\ResaveElements]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\ResaveElements} instead.
  */
 class ResaveElements extends BaseBatchedElementJob
 {

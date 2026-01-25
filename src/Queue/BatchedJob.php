@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use craft\base\Batchable;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -65,7 +66,7 @@ abstract class BatchedJob extends Job
         $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
 
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
-        $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
+        $startMemory = $memoryLimit !== -1 ? memory_get_usage() : null;
         $start = microtime(true);
 
         if ($this->itemOffset === 0) {
@@ -134,7 +135,7 @@ abstract class BatchedJob extends Job
         dispatch($nextJob);
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         $description = $this->description ?? $this->defaultDescription();

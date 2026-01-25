@@ -9,10 +9,9 @@ use craft\base\MemoizableArray;
 use craft\errors\EntryTypeNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
-use craft\helpers\Queue;
 use craft\models\FieldLayout;
-use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
@@ -409,18 +408,18 @@ final class EntryTypes
 
         if (! $isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
-            Queue::push(new ResaveElements([
-                'description' => I18N::prep('Resaving {type} entries', [
-                    'type' => $entryType->name,
-                ]),
-                'elementType' => Entry::class,
-                'criteria' => [
+            dispatch(new ResaveElements(
+                elementType: Entry::class,
+                criteria: [
                     'typeId' => $entryType->id,
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
                 ],
-            ]));
+                description: I18N::prep('Resaving {type} entries', [
+                    'type' => $entryType->name,
+                ]),
+            ));
         }
 
         if (Event::hasListeners(EntryTypeSaved::class)) {

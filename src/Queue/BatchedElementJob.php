@@ -39,15 +39,12 @@ abstract class BatchedElementJob extends BatchedJob
      */
     public string $bulkOpKey = '';
 
-    /**
-     * Processes a single element.
-     */
     abstract protected function processElement(ElementInterface $element): void;
 
     protected function loadData(): Batchable
     {
         /** @var ElementQuery $query */
-        $query = $this->elementType::find()->orderBy(['elements.id' => SORT_ASC]);
+        $query = $this->elementType::find()->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
             Craft::configure($query, $this->criteria);

@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Queue\JobProgressService;
-use CraftCms\Cms\Queue\JobStatus;
+use CraftCms\Cms\Queue\Data\ProgressData;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
-    $this->service = app(JobProgressService::class);
+    $this->service = app(JobProgress::class);
 });
 
 it('can set and retrieve job progress', function () {
@@ -20,11 +21,11 @@ it('can set and retrieve job progress', function () {
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->toBeArray()
+        ->toBeInstanceOf(ProgressData::class)
         ->uid->toBe($uid)
         ->description->toBe('Test Job')
         ->progress->toBe(50)
-        ->progressLabel->toBe('Processing item 5 of 10');
+        ->label->toBe('Processing item 5 of 10');
 });
 
 it('can update existing job progress', function () {
@@ -38,7 +39,7 @@ it('can update existing job progress', function () {
     expect($progress)
         ->description->toBe('Test Job Updated')
         ->progress->toBe(75)
-        ->progressLabel->toBe('Almost done');
+        ->label->toBe('Almost done');
 
     // Verify only one row exists
     $count = DB::table(Table::JOBPROGRESS)->where('uid', $uid)->count();
@@ -135,7 +136,7 @@ it('handles progress labels with null value', function () {
 
     expect($progress)
         ->progress->toBe(60)
-        ->progressLabel->toBeNull();
+        ->label->toBeNull();
 });
 
 it('orders active jobs by creation date', function () {
@@ -146,19 +147,19 @@ it('orders active jobs by creation date', function () {
 
     $active = $this->service->getActive();
 
-    expect($active->first()['uid'])->toBe('first');
-    expect($active->last()['uid'])->toBe('third');
+    expect($active->first()->uid)->toBe('first');
+    expect($active->last()->uid)->toBe('third');
 });
 
 it('can track a queued job with pending status', function () {
     $uid = 'queued-job-123';
 
-    $this->service->trackQueued($uid, 'Pending Job');
+    $this->service->queued($uid, 'Pending Job');
 
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->status->toBe(JobStatus::Pending->value)
+        ->status->toBe(JobStatus::Pending)
         ->description->toBe('Pending Job')
         ->progress->toBe(0);
 });
@@ -166,24 +167,24 @@ it('can track a queued job with pending status', function () {
 it('can track a delayed job with delayed status', function () {
     $uid = 'delayed-job-123';
 
-    $this->service->trackQueued($uid, 'Delayed Job', delayed: true);
+    $this->service->queued($uid, 'Delayed Job', delayed: true);
 
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->status->toBe(JobStatus::Delayed->value)
+        ->status->toBe(JobStatus::Delayed)
         ->description->toBe('Delayed Job');
 });
 
 it('can track a job starting processing with reserved status', function () {
     $uid = 'processing-job-123';
 
-    $this->service->trackProcessing($uid, 'Processing Job');
+    $this->service->processing($uid, 'Processing Job');
 
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->status->toBe(JobStatus::Reserved->value)
+        ->status->toBe(JobStatus::Reserved)
         ->description->toBe('Processing Job')
         ->progress->toBe(0);
 });
@@ -191,10 +192,10 @@ it('can track a job starting processing with reserved status', function () {
 it('can track a job completing and removes it from tracking', function () {
     $uid = 'completed-job-123';
 
-    $this->service->trackQueued($uid, 'Job to Complete');
+    $this->service->queued($uid, 'Job to Complete');
     expect($this->service->getProgress($uid))->not->toBeNull();
 
-    $this->service->trackCompleted($uid);
+    $this->service->completed($uid);
 
     expect($this->service->getProgress($uid))->toBeNull();
 });
@@ -203,21 +204,21 @@ it('can track a failed job with error message', function () {
     $uid = 'failed-job-123';
     $errorMessage = 'Something went wrong: Database connection failed';
 
-    $this->service->trackFailed($uid, 'Failed Job', $errorMessage);
+    $this->service->failed($uid, 'Failed Job', $errorMessage);
 
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->status->toBe(JobStatus::Failed->value)
+        ->status->toBe(JobStatus::Failed)
         ->description->toBe('Failed Job')
         ->error->toBe($errorMessage);
 });
 
 it('can get jobs by status', function () {
-    $this->service->trackQueued('pending-1', 'Pending Job 1');
-    $this->service->trackQueued('pending-2', 'Pending Job 2');
-    $this->service->trackProcessing('reserved-1', 'Reserved Job');
-    $this->service->trackFailed('failed-1', 'Failed Job', 'Error');
+    $this->service->queued('pending-1', 'Pending Job 1');
+    $this->service->queued('pending-2', 'Pending Job 2');
+    $this->service->processing('reserved-1', 'Reserved Job');
+    $this->service->failed('failed-1', 'Failed Job', 'Error');
 
     $pending = $this->service->getByStatus(JobStatus::Pending);
     $reserved = $this->service->getByStatus(JobStatus::Reserved);
@@ -229,9 +230,9 @@ it('can get jobs by status', function () {
 });
 
 it('can get all failed jobs', function () {
-    $this->service->trackQueued('pending-1', 'Pending Job');
-    $this->service->trackFailed('failed-1', 'Failed Job 1', 'Error 1');
-    $this->service->trackFailed('failed-2', 'Failed Job 2', 'Error 2');
+    $this->service->queued('pending-1', 'Pending Job');
+    $this->service->failed('failed-1', 'Failed Job 1', 'Error 1');
+    $this->service->failed('failed-2', 'Failed Job 2', 'Error 2');
 
     $failed = $this->service->getFailed();
 
@@ -240,31 +241,30 @@ it('can get all failed jobs', function () {
         ->pluck('uid')->toContain('failed-1', 'failed-2');
 });
 
-it('getActive includes pending delayed and reserved jobs but not failed', function () {
-    $this->service->trackQueued('pending-1', 'Pending Job');
-    $this->service->trackQueued('delayed-1', 'Delayed Job', delayed: true);
-    $this->service->trackProcessing('reserved-1', 'Reserved Job');
-    $this->service->trackFailed('failed-1', 'Failed Job', 'Error');
+it('getActive includes pending delayed reserved and failed jobs', function () {
+    $this->service->queued('pending-1', 'Pending Job');
+    $this->service->queued('delayed-1', 'Delayed Job', delayed: true);
+    $this->service->processing('reserved-1', 'Reserved Job');
+    $this->service->failed('failed-1', 'Failed Job', 'Error');
 
     $active = $this->service->getActive();
 
     expect($active)
-        ->toHaveCount(3)
-        ->pluck('uid')->toContain('pending-1', 'delayed-1', 'reserved-1')
-        ->pluck('uid')->not->toContain('failed-1');
+        ->toHaveCount(4)
+        ->pluck('uid')->toContain('pending-1', 'delayed-1', 'reserved-1', 'failed-1');
 });
 
 it('can update job status', function () {
     $uid = 'status-update-job';
 
-    $this->service->trackQueued($uid, 'Job');
-    expect($this->service->getProgress($uid)['status'])->toBe(JobStatus::Pending->value);
+    $this->service->queued($uid, 'Job');
+    expect($this->service->getProgress($uid)->status)->toBe(JobStatus::Pending);
 
     $this->service->updateStatus($uid, JobStatus::Reserved);
 
     // Clear cache to force database read
     Cache::forget('craft_job_progress:'.$uid);
-    expect($this->service->getProgress($uid)['status'])->toBe(JobStatus::Reserved->value);
+    expect($this->service->getProgress($uid)->status)->toBe(JobStatus::Reserved);
 });
 
 it('setProgress sets status to reserved', function () {
@@ -275,13 +275,13 @@ it('setProgress sets status to reserved', function () {
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->status->toBe(JobStatus::Reserved->value)
+        ->status->toBe(JobStatus::Reserved)
         ->progress->toBe(50);
 });
 
 it('clearCompleted only removes done status jobs', function () {
-    $this->service->trackQueued('pending-1', 'Pending Job');
-    $this->service->trackFailed('failed-1', 'Failed Job', 'Error');
+    $this->service->queued('pending-1', 'Pending Job');
+    $this->service->failed('failed-1', 'Failed Job', 'Error');
 
     // Manually set a job to Done status via database
     DB::table(Table::JOBPROGRESS)->insert([
@@ -303,7 +303,7 @@ it('clearCompleted only removes done status jobs', function () {
 it('can cancel a job by deleting its progress entry', function () {
     $uid = 'job-to-cancel';
 
-    $this->service->trackQueued($uid, 'Job to Cancel');
+    $this->service->queued($uid, 'Job to Cancel');
     expect($this->service->getProgress($uid))->not->toBeNull();
 
     $this->service->cancel($uid);
@@ -314,7 +314,7 @@ it('can cancel a job by deleting its progress entry', function () {
 it('can check if a job exists', function () {
     $uid = 'existing-job';
 
-    $this->service->trackQueued($uid, 'Existing Job');
+    $this->service->queued($uid, 'Existing Job');
 
     expect($this->service->exists($uid))->toBeTrue();
     expect($this->service->exists('non-existent-job'))->toBeFalse();
@@ -323,7 +323,7 @@ it('can check if a job exists', function () {
 it('returns false for exists when job was cancelled', function () {
     $uid = 'cancelled-job';
 
-    $this->service->trackQueued($uid, 'Job to Cancel');
+    $this->service->queued($uid, 'Job to Cancel');
     expect($this->service->exists($uid))->toBeTrue();
 
     $this->service->cancel($uid);

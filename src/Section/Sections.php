@@ -8,12 +8,11 @@ use Craft;
 use craft\base\MemoizableArray;
 use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
-use craft\helpers\Queue;
-use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -669,23 +668,20 @@ final class Sections
             if (! $isNewSection && $resaveEntries) {
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
-                    Queue::push(new ApplyNewPropagationMethod([
-                        'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                            'name' => $sectionModel->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    dispatch(new ApplyNewPropagationMethod(
+                        elementType: Entry::class,
+                        criteria: [
                             'sectionId' => $sectionModel->id,
                             'structureId' => $sectionModel->structureId,
                         ],
-                    ]));
-                } elseif ($this->autoResaveEntries) {
-                    Queue::push(new ResaveElements([
-                        'description' => I18N::prep('Resaving {name} entries', [
+                        description: I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    ));
+                } elseif ($this->autoResaveEntries) {
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
                             'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
                             'preferSites' => [Sites::getPrimarySite()->id],
@@ -695,8 +691,11 @@ final class Sections
                             'provisionalDrafts' => null,
                             'revisions' => null,
                         ],
-                        'updateSearchIndex' => $hasNewSite,
-                    ]));
+                        updateSearchIndex: $hasNewSite,
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $sectionModel->name,
+                        ]),
+                    ));
                 }
             }
 

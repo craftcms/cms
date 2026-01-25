@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\Job;
-use CraftCms\Cms\Queue\JobProgressService;
-use CraftCms\Cms\Queue\Middleware\CheckShouldRun;
+use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\Middleware\ShouldRun;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Queue;
 
@@ -142,7 +142,7 @@ it('returns middleware array with CheckShouldRun', function () {
 
     expect($middleware)->toBeArray()
         ->toHaveCount(1)
-        ->and($middleware[0])->toBeInstanceOf(CheckShouldRun::class);
+        ->and($middleware[0])->toBeInstanceOf(ShouldRun::class);
 });
 
 it('returns true from shouldStillRun when progress exists', function () {
@@ -165,7 +165,7 @@ it('returns true from shouldStillRun when progress exists', function () {
     $reflection->setValue($job, $mockQueueJob);
 
     // Track the job so it exists
-    app(JobProgressService::class)->trackQueued('test-job-uuid', 'Test Job');
+    app(JobProgress::class)->queued('test-job-uuid', 'Test Job');
 
     expect($job->shouldStillRun())->toBeTrue();
 });

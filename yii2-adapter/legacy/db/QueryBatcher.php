@@ -10,7 +10,7 @@
 namespace craft\db;
 
 use craft\base\Batchable;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Contracts\Database\Query\Builder;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
@@ -33,7 +33,7 @@ class QueryBatcher implements Batchable
      * :::
      */
     public function __construct(
-        private QueryInterface|ElementQueryInterface $query,
+        private QueryInterface|Builder $query,
         private ?YiiConnection $db = null,
     ) {
     }
@@ -44,7 +44,9 @@ class QueryBatcher implements Batchable
     public function count(): int
     {
         try {
-            $count = $this->query->count();
+            $query = clone $this->query;
+            $query->offset(0)->limit(PHP_INT_MAX);
+            $count = $query->count();
         } catch (QueryAbortedException) {
             return 0;
         }
@@ -65,7 +67,7 @@ class QueryBatcher implements Batchable
      */
     public function getSlice(int $offset, int $limit): iterable
     {
-        /** @var YiiQuery $query */
+        /** @var YiiQuery|Builder $query */
         $query = $this->query;
 
         if (is_int($query->limit)) {
@@ -79,13 +81,21 @@ class QueryBatcher implements Batchable
         $queryOffset = $query->offset;
         $queryLimit = $query->limit;
 
+        /**
+         * Cannot use offset without limit in MySQL
+         */
+        if (is_null($queryLimit) && !is_null($queryOffset)) {
+            $queryLimit = PHP_INT_MAX;
+        }
+
         try {
-            // For Laravel ElementQuery, call all() without arguments
+            // For Laravel Builder, call all() without arguments
             // For Yii2 Query, pass the database connection
-            if ($this->query instanceof ElementQueryInterface) {
+            if ($this->query instanceof Builder) {
                 $slice = $query
                     ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
                     ->limit($limit)
+                    ->get()
                     ->all();
             } else {
                 $slice = $query

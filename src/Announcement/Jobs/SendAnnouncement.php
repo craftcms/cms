@@ -13,12 +13,8 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Override;
 
-/**
- * Sends an announcement to control panel users.
- *
- * @since 6.0.0
- */
 final class SendAnnouncement extends Job
 {
     /**
@@ -34,7 +30,9 @@ final class SendAnnouncement extends Job
         public string $body,
         public ?string $pluginHandle = null,
         public bool $adminsOnly = false,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
@@ -54,7 +52,7 @@ final class SendAnnouncement extends Job
         // Fetch all of the control panel users
         $userQuery = User::find();
 
-        if (Edition::get()->value >= Edition::Pro->value) {
+        if (Edition::isAtLeast(Edition::Pro)) {
             $userQuery->can('accessCp');
         }
 
@@ -85,7 +83,7 @@ final class SendAnnouncement extends Job
         });
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Pushing announcement to control panel users');

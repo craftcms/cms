@@ -6,11 +6,10 @@ namespace CraftCms\Cms\Site;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Queue;
-use craft\queue\jobs\PropagateElements;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
@@ -514,14 +513,14 @@ final class Sites
             ];
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $oldPrimarySiteId,
                     ],
-                    'siteId' => $site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $site->id,
+                    isNewSite: true,
+                ));
             }
         }
 

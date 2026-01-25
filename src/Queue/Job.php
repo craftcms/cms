@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Queue;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
-use CraftCms\Cms\Queue\Middleware\CheckShouldRun;
+use CraftCms\Cms\Queue\Middleware\ShouldRun;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,13 +26,7 @@ abstract class Job implements DescribableJob, ShouldQueue
     use SerializesModels;
 
     /**
-     * The job's human-readable description.
-     */
-    protected ?string $description = null;
-
-    /**
      * The number of seconds the job can run before timing out.
-     * This maps to Laravel's TTR equivalent.
      */
     public int $timeout = 300;
 
@@ -41,9 +35,6 @@ abstract class Job implements DescribableJob, ShouldQueue
         $this->queue = Cms::config()->queueName;
     }
 
-    /**
-     * Execute the job.
-     */
     abstract public function handle(): void;
 
     public function getDescription(): string
@@ -51,9 +42,6 @@ abstract class Job implements DescribableJob, ShouldQueue
         return $this->description ?? $this->defaultDescription();
     }
 
-    /**
-     * Returns a default description for the job.
-     */
     protected function defaultDescription(): string
     {
         return static::class;
@@ -64,6 +52,8 @@ abstract class Job implements DescribableJob, ShouldQueue
      *
      * Creates or updates the progress entry in the database.
      * Progress is displayed in the Control Panel Queue Manager.
+     *
+     * @param  int<0, 100>  $progress
      */
     protected function setProgress(int $progress, ?string $label = null): void
     {
@@ -73,7 +63,7 @@ abstract class Job implements DescribableJob, ShouldQueue
             return;
         }
 
-        app(JobProgressService::class)->setProgress(
+        app(JobProgress::class)->setProgress(
             uid: $uuid,
             description: $this->getDescription(),
             progress: $progress,
@@ -88,7 +78,7 @@ abstract class Job implements DescribableJob, ShouldQueue
      */
     public function middleware(): array
     {
-        return [new CheckShouldRun];
+        return [new ShouldRun];
     }
 
     /**
@@ -105,6 +95,6 @@ abstract class Job implements DescribableJob, ShouldQueue
             return true;
         }
 
-        return app(JobProgressService::class)->exists($uuid);
+        return app(JobProgress::class)->exists($uuid);
     }
 }

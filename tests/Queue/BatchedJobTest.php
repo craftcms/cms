@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use craft\base\Batchable;
 use CraftCms\Cms\Queue\BatchedJob;
-use CraftCms\Cms\Queue\JobProgressService;
+use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Support\Facades\Queue;
 
 /**
@@ -44,7 +44,9 @@ class TestBatchedJob extends BatchedJob
 
     public function __construct(
         public array $items = [],
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     protected function loadData(): Batchable
     {
@@ -226,7 +228,9 @@ it('returns single batch description when only one batch', function () {
 
         public function __construct(
             public array $items = [],
-        ) {}
+        ) {
+            parent::__construct();
+        }
 
         protected function loadData(): Batchable
         {
@@ -249,7 +253,9 @@ it('includes batch info in description for multi-batch jobs', function () {
 
         public function __construct(
             public array $items = [],
-        ) {}
+        ) {
+            parent::__construct();
+        }
 
         protected function loadData(): Batchable
         {
@@ -318,7 +324,9 @@ class CancellableBatchedJob extends BatchedJob
 
     public function __construct(
         public array $items = [],
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function setTestUuid(string $uuid): void
     {
@@ -337,24 +345,24 @@ class CancellableBatchedJob extends BatchedJob
         // Simulate cancellation by deleting the progress entry after processing N items
         if ($this->cancelAfterItem >= 0 && count($this->processedItems) >= $this->cancelAfterItem) {
             if ($this->testUuid !== null) {
-                app(JobProgressService::class)->cancel($this->testUuid);
+                app(JobProgress::class)->cancel($this->testUuid);
             }
         }
     }
 
-    #[\Override]
+    #[Override]
     public function shouldStillRun(): bool
     {
         if ($this->testUuid === null) {
             return true;
         }
 
-        return app(JobProgressService::class)->exists($this->testUuid);
+        return app(JobProgress::class)->exists($this->testUuid);
     }
 }
 
 it('stops processing when cancelled between items', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $testUuid = 'test-cancellation-'.uniqid();
 
     // Create initial progress entry
@@ -374,7 +382,7 @@ it('stops processing when cancelled between items', function () {
 });
 
 it('does not process any items when already cancelled', function () {
-    $progressService = app(JobProgressService::class);
+    $progressService = app(JobProgress::class);
     $testUuid = 'test-precancelled-'.uniqid();
 
     // Don't create a progress entry - simulates already cancelled

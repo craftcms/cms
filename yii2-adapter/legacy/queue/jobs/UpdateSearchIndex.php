@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.2.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Search\Jobs\UpdateSearchIndex]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\UpdateSearchIndex} instead.
  */
 class UpdateSearchIndex extends BaseJob
 {

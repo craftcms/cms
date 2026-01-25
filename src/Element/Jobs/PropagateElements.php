@@ -11,12 +11,12 @@ use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Queue\BatchedElementJob;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use Override;
 
 /**
  * Propagates elements to other sites.
- *
- * @since 6.0.0
  */
 final class PropagateElements extends BatchedElementJob
 {
@@ -43,12 +43,14 @@ final class PropagateElements extends BatchedElementJob
         int|array|null $siteId = null,
         public bool $isNewSite = false,
     ) {
+        parent::__construct();
+
         $this->siteId = $siteId !== null
-            ? array_map(fn ($id) => $id, (array) $siteId)
+            ? array_map(fn ($id) => $id, Arr::wrap($siteId))
             : null;
     }
 
-    #[\Override]
+    #[Override]
     protected function loadData(): Batchable
     {
         $query = $this->elementType::find()
@@ -57,7 +59,7 @@ final class PropagateElements extends BatchedElementJob
             ->provisionalDrafts(null)
             ->offset(null)
             ->limit(null)
-            ->orderBy(['elements.id' => SORT_ASC]);
+            ->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -91,13 +93,13 @@ final class PropagateElements extends BatchedElementJob
         $element->afterPropagate(false);
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         $totalItems = $this->totalItems();
 
         return I18N::prep('Propagating {type}', [
-            'type' => $totalItems == 1
+            'type' => $totalItems === 1
                 ? $this->elementType::lowerDisplayName()
                 : $this->elementType::pluralLowerDisplayName(),
         ]);

@@ -2,28 +2,26 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Queue\Middleware;
+namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Queue\JobProgressService;
+use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\action_url;
+
 /**
  * Injects JavaScript into HTML responses to trigger the queue runner.
- *
- * This preserves the Craft behavior of automatically running queue jobs
- * on site (frontend) requests when `runQueueAutomatically` is enabled.
  */
-final readonly class RunQueueMiddleware
+final readonly class RunQueue
 {
     public function __construct(
         private Queue $queue,
-        private JobProgressService $progressService,
+        private JobProgress $progressService,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -77,24 +75,23 @@ final readonly class RunQueueMiddleware
             return $response;
         }
 
-        $url = Json::encode(UrlHelper::actionUrl('queue/run'));
+        $url = Json::encode(action_url('queue/run'));
 
         $js = <<<JS
-<script type="text/javascript">
-/*<![CDATA[*/
-(function(){
-  try {
-    var req = new XMLHttpRequest();
-    req.open('GET', $url, true)
-    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    if (req.readyState === 4) return;
-    req.send();
-  } catch (e) {}
-})();
-/*]]>*/
-</script>
-
-JS;
+        <script type="text/javascript">
+        /*<![CDATA[*/
+        (function(){
+          try {
+            var req = new XMLHttpRequest();
+            req.open('GET', $url, true)
+            req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            if (req.readyState === 4) return;
+            req.send();
+          } catch (e) {}
+        })();
+        /*]]>*/
+        </script>
+        JS;
 
         $pos = strripos($content, '</body>');
 

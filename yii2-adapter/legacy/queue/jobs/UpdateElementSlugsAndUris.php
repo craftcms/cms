@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\queue\BaseJob;
+use craft\queue\LegacyQueueAdapter;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -27,7 +28,7 @@ use yii\queue\Queue;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris} instead.
  */
 class UpdateElementSlugsAndUris extends BaseJob
 {
@@ -101,7 +102,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * Updates the given elements’ slugs and URIs
      */
-    private function _processElements(Queue|QueueInterface $queue, ElementQueryInterface $query): void
+    private function _processElements(Queue|QueueInterface|LegacyQueueAdapter $queue, ElementQueryInterface $query): void
     {
         /** @var ElementQueryInterface|ElementQuery $query */
         $this->_totalToProcess += $query->count();

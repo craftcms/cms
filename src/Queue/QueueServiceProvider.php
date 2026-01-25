@@ -50,7 +50,7 @@ final class QueueServiceProvider extends ServiceProvider
         }
 
         $job = $event->job;
-        $uuid = $this->getJobUuid($job);
+        $uuid = $event->payload()['uuid'] ?? $this->getJobUuid($job);
 
         if ($uuid === null) {
             return;
@@ -59,7 +59,7 @@ final class QueueServiceProvider extends ServiceProvider
         $description = $this->getJobDescription($job);
         $delayed = $event->delay !== null && $event->delay > 0;
 
-        $this->app->make(JobProgressService::class)->trackQueued($uuid, $description, $delayed);
+        $this->app->make(JobProgress::class)->queued($uuid, $description, $delayed);
     }
 
     private function trackProcessing(JobProcessing $event): void
@@ -76,7 +76,7 @@ final class QueueServiceProvider extends ServiceProvider
 
         $description = $this->getQueueJobDescription($event->job);
 
-        $this->app->make(JobProgressService::class)->trackProcessing($uuid, $description);
+        $this->app->make(JobProgress::class)->processing($uuid, $description);
     }
 
     private function trackCompleted(JobProcessed $event): void
@@ -91,7 +91,7 @@ final class QueueServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->app->make(JobProgressService::class)->trackCompleted($uuid);
+        $this->app->make(JobProgress::class)->completed($uuid);
     }
 
     private function trackFailed(JobFailed $event): void
@@ -109,7 +109,7 @@ final class QueueServiceProvider extends ServiceProvider
         $description = $this->getQueueJobDescription($event->job);
         $error = $event->exception?->getMessage();
 
-        $this->app->make(JobProgressService::class)->trackFailed($uuid, $description, $error);
+        $this->app->make(JobProgress::class)->failed($uuid, $description, $error);
     }
 
     private function shouldTrackQueue(?string $queueName): bool

@@ -5,21 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
 use craft\console\controllers\ResaveController;
-use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\I18N;
+use Override;
 use Throwable;
 
-/**
- * Resaves elements matching the given criteria.
- *
- * @since 6.0.0
- */
 final class ResaveElements extends BatchedElementJob
 {
     /**
@@ -43,19 +37,10 @@ final class ResaveElements extends BatchedElementJob
         public bool $ifEmpty = false,
         public bool $ifInvalid = false,
         public bool $touch = false,
-    ) {}
-
-    #[\Override]
-    protected function loadData(): Batchable
-    {
-        $query = $this->elementType::find()
-            ->orderBy(['elements.id' => SORT_ASC]);
-
-        if (! empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return new QueryBatcher($query);
+        public int $batchSize = 100,
+        protected ?string $description = null,
+    ) {
+        parent::__construct();
     }
 
     protected function processElement(ElementInterface $element): void
@@ -92,11 +77,11 @@ final class ResaveElements extends BatchedElementJob
                 saveContent: true,
             );
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Resaving {type}', [

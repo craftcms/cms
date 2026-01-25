@@ -22,7 +22,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.4.0
- * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Image\Jobs\GenerateImageTransform]] instead.
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Image\Jobs\GenerateImageTransform} instead.
  */
 class GenerateImageTransform extends BaseJob
 {

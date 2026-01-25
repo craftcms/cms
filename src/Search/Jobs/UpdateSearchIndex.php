@@ -8,18 +8,12 @@ use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
-use yii\base\InvalidConfigException;
+use InvalidArgumentException;
+use Override;
 
-/**
- * Updates the search index for elements.
- *
- * @since 6.0.0
- */
 final class UpdateSearchIndex extends Job
 {
     /**
-     * Creates a new UpdateSearchIndex job.
-     *
      * @param  class-string<ElementInterface>  $elementType  The element type.
      * @param  int|int[]|null  $elementId  The element ID(s) to update.
      * @param  int|string|null  $siteId  The site ID or '*' for all sites.
@@ -32,7 +26,9 @@ final class UpdateSearchIndex extends Job
         public int|string|null $siteId = '*',
         public ?array $fieldHandles = null,
         public bool $queued = false,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
@@ -40,8 +36,9 @@ final class UpdateSearchIndex extends Job
 
         if ($this->queued) {
             if (! is_int($this->elementId) || ! is_int($this->siteId)) {
-                throw new InvalidConfigException('`elementId` and `siteId` must be an integer when `queued` is true.');
+                throw new InvalidArgumentException('`elementId` and `siteId` must be an integer when `queued` is true.');
             }
+
             $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
 
             return;
@@ -54,6 +51,7 @@ final class UpdateSearchIndex extends Job
             ->siteId($this->siteId)
             ->status(null)
             ->all();
+
         $total = count($elements);
 
         foreach ($elements as $i => $element) {
@@ -62,7 +60,7 @@ final class UpdateSearchIndex extends Job
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function defaultDescription(): string
     {
         return I18N::prep('Updating search indexes');
