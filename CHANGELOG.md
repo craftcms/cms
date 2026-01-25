@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Composer package constraints in `composer.json` are now set with caret operators (e.g. `^1.2.3`). ([#18297](https://github.com/craftcms/cms/pull/18297))
+- The `up` command now warns about any astray license issues before running migrations. ([#18297](https://github.com/craftcms/cms/pull/18297))
 - Improved the accessibility of user permission lists and GraphQL schema component lists. ([#18290](https://github.com/craftcms/cms/pull/18290))
 - `config/twig-sandbox.php` can now include an `allowedClasses` array, with class names whose entire collection of properties and methods should be allowed in sandboxed Twig environments.
 - `craft\fields\data\ColorData`, `craft\fields\data\IconData`, `craft\fields\data\JsonData`, `craft\fields\data\LinkData`, `craft\fields\data\MultiOptionsFieldData`, and `craft\fields\data\OptionData` are now allowed in their entirety within sandboxed Twig environments.
