@@ -275,6 +275,7 @@ return [
     'Change icon' => '아이콘 변경',
     'Change logo' => '로고 변경',
     'Change photo' => '사진 변경',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Change your Password' => '비밀번호 변경',
     'Change' => '변경',
     'Changelog' => '로그 변경',
