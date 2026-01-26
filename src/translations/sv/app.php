@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Ändra ikon',
     'Change logo' => 'Ändra logo',
     'Change photo' => 'Byt foto',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Ändringslogg',
     'Changes discarded.' => 'Ändringarna har kasserats.',
     'Changing this may result in data loss.' => 'Ändring av detta kan resultera i att data försvinner.',
