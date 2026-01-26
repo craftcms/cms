@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value}は有効な言語ではありません。',
     '{value} is not a valid site language.' => '{value}は有効なサイト言語ではありません。',
     '{volume} root' => '{volume}のルート',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '「{extension}」は許可されていないファイル拡張子です。',
     '“{filename}” is not allowed in this field.' => '「{filename}」はこのフィールドで使用できません。',
     '“{filename}” is too large.' => '「{filename}」は大きすぎます。',
