@@ -275,6 +275,7 @@ return [
     'Change icon' => 'Ikon megváltoztatása',
     'Change logo' => 'Logo megváltoztatása',
     'Change photo' => 'Kép csere',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Change your Password' => 'Változtassa meg a jelszavát',
     'Change' => 'Változtatás',
     'Changelog' => 'Változásnapló',
