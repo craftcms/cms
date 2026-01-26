@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} یک زبان صحیح نیست.',
     '{value} is not a valid site language.' => '{value} یک زبان سایت صحیح نیست.',
     '{volume} root' => 'روت کردن {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" یک پسوند فایل مجاز نیست.',
     '“{filename}” is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
     '“{filename}” is too large.' => '"{filename}" بیش از حد طولانی است.',
