@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4.17 (WIP)
 
 ### Administration
+- Added the “Change the author of other users’ entries” permission for channel and structure sections. ([#18298](https://github.com/craftcms/cms/pull/18298))
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
 - Composer package constraints in `composer.json` are now set with caret operators (e.g. `^1.2.3`). ([#18297](https://github.com/craftcms/cms/pull/18297))
 - The `clear-cache` command now accepts a space-delimited list of cache IDs that should be cleared.
