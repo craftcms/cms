@@ -2033,7 +2033,6 @@ return [
     '{value} is not a valid language.' => '{value} ไม่ได้เป็นภาษาที่ถูกต้อง',
     '{value} is not a valid site language.' => '{value} ไม่ได้เป็นภาษาเว็บไซต์ที่ถูกต้อง',
     '{volume} root' => 'ราก {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” เป็นนามสกุลไฟล์ที่ไม่ได้รับอนุญาต',
     '“{filename}” is not allowed in this field.' => 'ห้ามมี “{filename}” ในฟิลด์นี้',
     '“{filename}” is too large.' => '“{filename}” มีขนาดใหญ่เกินไป',
