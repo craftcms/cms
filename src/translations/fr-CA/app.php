@@ -2033,7 +2033,6 @@ return [
     '{value} is not a valid language.' => '{value} n’est pas une langue valide.',
     '{value} is not a valid site language.' => '{value} n’est pas une langue valide pour le site.',
     '{volume} root' => 'Racine de {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” n’est pas une extension de fichier autorisée.',
     '“{filename}” is not allowed in this field.' => '« {filename} » n’est pas autorisé dans ce champ.',
     '“{filename}” is too large.' => '« {filename} » est trop grand.',
