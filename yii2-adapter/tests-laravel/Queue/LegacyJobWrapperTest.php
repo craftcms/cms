@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use craft\queue\JobInterface;
 use craft\queue\LegacyJobWrapper;
-use craft\queue\Queue;
+use craft\queue\QueueComponent as Queue;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Queue as QueueFacade;

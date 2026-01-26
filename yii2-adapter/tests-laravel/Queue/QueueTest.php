@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use craft\queue\JobInterface;
 use craft\queue\LegacyJobWrapper;
-use craft\queue\Queue;
+use craft\queue\QueueComponent as Queue;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Database\QueryException;
@@ -12,11 +12,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue as QueueFacade;
 use yii\base\Component;
 
-beforeEach(function () {
+beforeEach(function() {
     $this->mock(JobProgress::class)
         ->shouldReceive('clear')
-        ->shouldReceive('getActive')->andReturn(new Collection)
-        ->shouldReceive('getAll')->andReturn(new Collection)
+        ->shouldReceive('getActive')->andReturn(new Collection())
+        ->shouldReceive('getAll')->andReturn(new Collection())
         ->shouldReceive('getProgress')->andReturn(null)
         ->shouldReceive('cancel');
 });
