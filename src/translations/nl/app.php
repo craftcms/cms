@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => 'Hoofdmap {volume}',
     '“Add” Button Label' => 'Label knop "Toevoegen"',
     '“New” Button Label' => 'Label knop "Nieuw"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '\'{extension}\' is geen toegestane bestandsextensie.',
     '“{filename}” is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
     '“{filename}” is too large.' => '"{filename}" is te groot.',
