@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => 'روت کردن {volume}',
     '“Add” Button Label' => 'برچسب دکمه "افزودن"',
     '“New” Button Label' => 'برچسب دکمه "جدید"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" یک پسوند فایل مجاز نیست.',
     '“{filename}” is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
     '“{filename}” is too large.' => '"{filename}" بیش از حد طولانی است.',
