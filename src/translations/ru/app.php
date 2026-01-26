@@ -2357,7 +2357,6 @@ return [
     '{volume} root' => 'Корень тома {volume}',
     '“Add” Button Label' => 'Метка кнопки «Добавить»',
     '“New” Button Label' => 'Метка кнопки «Создать»',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '«{extension}» не является допустимым расширением файла.',
     '“{filename}” is not allowed in this field.' => '«{filename}» не допускается в этом поле.',
     '“{filename}” is too large.' => 'Файл {filename} слишком большой.',
