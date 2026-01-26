@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Pictogram wijzigen',
     'Change logo' => 'Logo wijzigen',
     'Change photo' => 'Foto wijzigen',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Wijzigingslogbestand',
     'Changes discarded.' => 'Wijzigingen geannuleerd.',
     'Changing this may result in data loss.' => 'Dit wijzigen kan leiden tot gegevensverlies',
