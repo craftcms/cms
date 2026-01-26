@@ -2358,7 +2358,6 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{volume} root' => '{volume} kökü',
     '“Add” Button Label' => '“Ekle” Düğme Etiketi',
     '“New” Button Label' => '“Yeni” Düğme Etiketi',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" izin verilen bir dosya uzantısı değil.',
     '“{filename}” is not allowed in this field.' => '"{filename}" bu alan adında kullanılamaz.',
     '“{filename}” is too large.' => '"{filename}" çok büyük.',
