@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} is not a valid language.',
     '{value} is not a valid site language.' => '{value} is not a valid site language.',
     '{volume} root' => '{volume} root',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” is not an allowed file extension.',
     '“{filename}” is not allowed in this field.' => '“{filename}” is not allowed in this field.',
     '“{filename}” is too large.' => '“{filename}” is too large.',
