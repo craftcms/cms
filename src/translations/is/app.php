@@ -275,6 +275,7 @@ return [
     'Change icon' => 'Breyta tákni',
     'Change logo' => 'Breyta lógói',
     'Change photo' => 'Skipta um mynd',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Change your Password' => 'Breyttu lykilorðinu þínu',
     'Change' => 'Breyta',
     'Changelog' => 'Breytingaskrá',
