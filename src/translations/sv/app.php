@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume}-rot',
     '“Add” Button Label' => 'Etikett för knappen “Lägg till”',
     '“New” Button Label' => 'Etikett för knappen “Ny”',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '”{extension}” är inte ett tillåtet filtillägg.',
     '“{filename}” is not allowed in this field.' => '"{filename}" är inte tillåtet i detta fält.',
     '“{filename}” is too large.' => '”{filename}" är för stor.',
