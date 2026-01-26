@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} אינו שפה תקינה.',
     '{value} is not a valid site language.' => '{value} אינה  שפת אתר תקינה.',
     '{volume} root' => '{volume} שורש',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" אינה סיומת קובץ מותרת.',
     '“{filename}” is not allowed in this field.' => '"{filename}" אסור לשימוש בשדה זה.',
     '“{filename}” is too large.' => '"{filename}" גדול מדי.',
