@@ -2034,7 +2034,6 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{value} is not a valid language.' => '{value} geçerli bir dil değil.',
     '{value} is not a valid site language.' => '{value} geçerli bir site dili değil.',
     '{volume} root' => '{volume} kökü',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" izin verilen bir dosya uzantısı değil.',
     '“{filename}” is not allowed in this field.' => '"{filename}" bu alan adında kullanılamaz.',
     '“{filename}” is too large.' => '"{filename}" çok büyük.',
