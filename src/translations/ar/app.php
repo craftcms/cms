@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => 'جذر {volume}',
     '“Add” Button Label' => 'تسمية الزر "إضافة"',
     '“New” Button Label' => 'تسمية الزر "جديد"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" ليس ملحق ملف مسموحًا به.',
     '“{filename}” is not allowed in this field.' => '"{filename}" غير مسموح به في هذا الحقل.',
     '“{filename}” is too large.' => '"{filename}" كبير للغاية.',
