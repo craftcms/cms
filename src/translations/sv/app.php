@@ -275,6 +275,7 @@ return [
     'Change icon' => 'Ändra ikon',
     'Change logo' => 'Ändra logo',
     'Change photo' => 'Byt foto',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Change your Password' => 'Ändra ditt lösenord',
     'Change' => 'Ändra',
     'Changelog' => 'Ändringslogg',
