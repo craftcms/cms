@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} não é um idioma válido.',
     '{value} is not a valid site language.' => '{value} não é um idioma de site válido.',
     '{volume} root' => 'Raiz de {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” não é uma extensão de ficheiro permitida.',
     '“{filename}” is not allowed in this field.' => '"{filename}" não é permitido neste campo.',
     '“{filename}” is too large.' => '"{filename}" é demasiado grande.',
