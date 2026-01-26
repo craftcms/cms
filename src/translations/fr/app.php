@@ -275,6 +275,7 @@ return [
     'Change icon' => 'Changer d\'icône',
     'Change logo' => 'Changer de logo',
     'Change photo' => 'Changer de photo',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Change your Password' => 'Changer votre mot de passe',
     'Change' => 'Changer',
     'Changelog' => 'Journal des modifications',
