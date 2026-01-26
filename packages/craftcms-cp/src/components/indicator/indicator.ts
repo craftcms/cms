@@ -36,7 +36,9 @@ export default class CraftIndicator extends LitElement {
         'indicator--warning': this.variant === Variant.Warning,
         'indicator--info': this.variant === Variant.Info,
       })}"
-    ></span>`;
+    >
+      <slot></slot>
+    </span>`;
   }
 }
 
