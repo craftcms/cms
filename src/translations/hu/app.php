@@ -2360,7 +2360,6 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{volume} root' => '{volume} gyökér',
     '“Add” Button Label' => '„Hozzáadás” gomb címkéje',
     '“New” Button Label' => '„Új” gomb címkéje',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => 'A(z) {extension} nem engedélyezett fájlnév-kiterjesztés.',
     '“{filename}” is not allowed in this field.' => '"{filename}" nem engedélyezett ebben a mezőben.',
     '“{filename}” is too large.' => '"{filename}" túl nagy.',
