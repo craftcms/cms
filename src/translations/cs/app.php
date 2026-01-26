@@ -2358,7 +2358,6 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{volume} root' => 'Kořenový adresář svazku {volume}',
     '“Add” Button Label' => 'Popisek tlačítka "Přidat"',
     '“New” Button Label' => 'Popisek tlačítka "Nový"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '„{extension}“ není povolená přípona souboru.',
     '“{filename}” is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
     '“{filename}” is too large.' => 'Soubor {filename} je příliš velký.',
