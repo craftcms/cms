@@ -52,7 +52,7 @@ it('shows licensing screen when license issues exist', function () {
     $hash = 'abc123';
 
     $mockLicense = Mockery::mock(License::class)->makePartial();
-    $mockLicense->shouldReceive('issues')->with(false)->andReturn($licenseIssues);
+    $mockLicense->shouldReceive('issues')->andReturn($licenseIssues);
     $mockLicense->shouldReceive('issuesHash')->with($licenseIssues)->andReturn($hash);
     $mockLicense->shouldReceive('shunCookieName')->andReturn('craft_license_shun');
     $middleware = new EnforceLicenses($mockLicense);
