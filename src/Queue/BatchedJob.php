@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
-use craft\base\Batchable;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -39,14 +39,9 @@ abstract class BatchedJob extends Job
      */
     public int $itemOffset = 0;
 
-    private ?Batchable $data = null;
-
     private ?int $totalItems = null;
 
-    /**
-     * Loads the batchable data.
-     */
-    abstract protected function loadData(): Batchable;
+    abstract protected function getQuery(): Builder;
 
     /**
      * Processes a single item.
@@ -63,7 +58,7 @@ abstract class BatchedJob extends Job
 
     public function handle(): void
     {
-        $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
+        $items = $this->getQuery()->offset($this->itemOffset)->limit($this->batchSize)->get();
 
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit !== -1 ? memory_get_usage() : null;
@@ -173,24 +168,12 @@ abstract class BatchedJob extends Job
     protected function afterBatch(): void {}
 
     /**
-     * Returns the batchable data.
-     */
-    final protected function data(): Batchable
-    {
-        if (! isset($this->data)) {
-            $this->data = $this->loadData();
-        }
-
-        return $this->data;
-    }
-
-    /**
      * Returns the total number of items across all batches.
      */
     final protected function totalItems(): int
     {
         if (! isset($this->totalItems)) {
-            $this->totalItems = $this->data()->count();
+            $this->totalItems = $this->getQuery()->count();
         }
 
         return $this->totalItems;

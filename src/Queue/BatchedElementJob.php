@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Queue;
 
 use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\db\QueryBatcher;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 
 /**
  * Base class for large jobs that perform actions on elements.
@@ -41,7 +40,7 @@ abstract class BatchedElementJob extends BatchedJob
 
     abstract protected function processElement(ElementInterface $element): void;
 
-    protected function loadData(): Batchable
+    protected function getQuery(): Builder
     {
         /** @var ElementQuery $query */
         $query = $this->elementType::find()->orderBy('elements.id');
@@ -50,7 +49,7 @@ abstract class BatchedElementJob extends BatchedJob
             Craft::configure($query, $this->criteria);
         }
 
-        return new QueryBatcher($query);
+        return $query;
     }
 
     protected function processItem(mixed $item): void

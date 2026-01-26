@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 /**
@@ -51,7 +50,7 @@ final class PropagateElements extends BatchedElementJob
     }
 
     #[Override]
-    protected function loadData(): Batchable
+    protected function getQuery(): Builder
     {
         $query = $this->elementType::find()
             ->status(null)
@@ -65,7 +64,7 @@ final class PropagateElements extends BatchedElementJob
             Craft::configure($query, $this->criteria);
         }
 
-        return new QueryBatcher($query);
+        return $query;
     }
 
     protected function processElement(ElementInterface $element): void

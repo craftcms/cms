@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\db\QueryBatcher;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
@@ -17,6 +15,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Override;
@@ -51,7 +50,7 @@ final class ApplyNewPropagationMethod extends BatchedJob
         parent::__construct();
     }
 
-    protected function loadData(): Batchable
+    protected function getQuery(): Builder
     {
         $query = $this->elementType::find()
             ->site('*')
@@ -66,7 +65,7 @@ final class ApplyNewPropagationMethod extends BatchedJob
             Craft::configure($query, $this->criteria);
         }
 
-        return new QueryBatcher($query);
+        return $query;
     }
 
     protected function processItem(mixed $item): void

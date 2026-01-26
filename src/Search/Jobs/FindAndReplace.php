@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search\Jobs;
 
-use craft\base\Batchable;
-use craft\db\QueryBatcher;
 use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\BatchedJob;
@@ -28,21 +26,19 @@ final class FindAndReplace extends BatchedJob
         parent::__construct();
     }
 
-    protected function loadData(): Batchable
+    protected function getQuery(): Builder
     {
-        return new QueryBatcher(
-            DB::table(Table::ELEMENTS_SITES)
-                ->select(['id', 'title', 'content'])
-                ->orderBy('id')
-                ->where(fn (Builder $query) => $query
-                    ->orWhere('title', 'like', "%$this->find%")
-                    ->when(
-                        DB::getDriverName() === 'pgsql',
-                        fn (Builder $query) => $query->orWhereLike(new Cast('content', 'TEXT'), "%$this->find%"),
-                        fn (Builder $query) => $query->orWhereLike('content', "%$this->find%"),
-                    )
+        return DB::table(Table::ELEMENTS_SITES)
+            ->select(['id', 'title', 'content'])
+            ->orderBy('id')
+            ->where(fn (Builder $query) => $query
+                ->orWhere('title', 'like', "%$this->find%")
+                ->when(
+                    DB::getDriverName() === 'pgsql',
+                    fn (Builder $query) => $query->orWhereLike(new Cast('content', 'TEXT'), "%$this->find%"),
+                    fn (Builder $query) => $query->orWhereLike('content', "%$this->find%"),
                 )
-        );
+            );
     }
 
     #[Override]

@@ -2,66 +2,10 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Queue\BatchedElementJob;
+use CraftCms\Cms\Tests\Queue\TestClasses\TestBatchedElementJob;
 use Illuminate\Support\Facades\Queue;
-
-/**
- * Concrete BatchedElementJob implementation for testing
- */
-class TestBatchedElementJob extends BatchedElementJob
-{
-    protected ?string $description = 'Test Element Job';
-
-    /**
-     * @var array<int, int>
-     */
-    public array $processedElementIds = [];
-
-    /**
-     * @param  class-string<ElementInterface>  $elementType
-     * @param  array<string, mixed>  $criteria
-     */
-    public function __construct(
-        string $elementType,
-        array $criteria = [],
-    ) {
-        parent::__construct();
-
-        $this->elementType = $elementType;
-        $this->criteria = $criteria;
-    }
-
-    protected function processElement(ElementInterface $element): void
-    {
-        $this->processedElementIds[] = $element->id;
-    }
-}
-
-it('extends BatchedJob', function () {
-    $job = new TestBatchedElementJob(EntryElement::class);
-
-    expect($job)->toBeInstanceOf(CraftCms\Cms\Queue\BatchedJob::class);
-});
-
-it('accepts element type in constructor', function () {
-    $job = new TestBatchedElementJob(EntryElement::class);
-
-    $reflection = new ReflectionProperty($job, 'elementType');
-    expect($reflection->getValue($job))->toBe(EntryElement::class);
-});
-
-it('accepts criteria in constructor', function () {
-    $job = new TestBatchedElementJob(
-        EntryElement::class,
-        ['status' => 'active'],
-    );
-
-    $reflection = new ReflectionProperty($job, 'criteria');
-    expect($reflection->getValue($job))->toBe(['status' => 'active']);
-});
 
 it('can be dispatched to the queue', function () {
     Queue::fake();

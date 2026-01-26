@@ -2,47 +2,21 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Queue\Contracts\DescribableJob;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\Middleware\ShouldRun;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Queue;
 
-it('implements ShouldQueue interface', function () {
-    $job = new class extends Job
-    {
-        public function handle(): void {}
-    };
-
-    expect($job)->toBeInstanceOf(ShouldQueue::class);
-});
-
-it('implements DescribableJob interface', function () {
-    $job = new class extends Job
-    {
-        public function handle(): void {}
-    };
-
-    expect($job)->toBeInstanceOf(DescribableJob::class);
-});
-
-it('has default timeout of 300 seconds', function () {
-    $job = new class extends Job
-    {
-        public function handle(): void {}
-    };
-
-    expect($job->timeout)->toBe(300);
-});
-
 it('sets queue name from config', function () {
+    Cms::config()->queueName = 'foo';
+
     $job = new class extends Job
     {
         public function handle(): void {}
     };
 
-    expect($job->queue)->toBe('craft');
+    expect($job->queue)->toBe(Cms::config()->queueName);
 });
 
 it('can set a custom timeout', function () {

@@ -2,82 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\base\Batchable;
-use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Tests\Queue\TestClasses\TestBatchedJob;
 use Illuminate\Support\Facades\Queue;
-
-/**
- * Simple Batchable implementation for testing
- */
-class TestBatchable implements Batchable
-{
-    public function __construct(
-        private readonly array $items,
-    ) {}
-
-    public function count(): int
-    {
-        return count($this->items);
-    }
-
-    public function getSlice(int $offset, int $limit): iterable
-    {
-        return array_slice($this->items, $offset, $limit);
-    }
-}
-
-/**
- * Concrete BatchedJob implementation for testing
- */
-class TestBatchedJob extends BatchedJob
-{
-    public array $processedItems = [];
-
-    public bool $beforeCalled = false;
-
-    public bool $afterCalled = false;
-
-    public int $beforeBatchCalls = 0;
-
-    public int $afterBatchCalls = 0;
-
-    public function __construct(
-        public array $items = [],
-    ) {
-        parent::__construct();
-    }
-
-    protected function loadData(): Batchable
-    {
-        return new TestBatchable($this->items);
-    }
-
-    protected function processItem(mixed $item): void
-    {
-        $this->processedItems[] = $item;
-    }
-
-    protected function before(): void
-    {
-        $this->beforeCalled = true;
-    }
-
-    protected function after(): void
-    {
-        $this->afterCalled = true;
-    }
-
-    protected function beforeBatch(): void
-    {
-        $this->beforeBatchCalls++;
-    }
-
-    protected function afterBatch(): void
-    {
-        $this->afterBatchCalls++;
-    }
-}
 
 it('has default batch size of 100', function () {
     $job = new TestBatchedJob;
@@ -222,23 +149,7 @@ it('calculates total batches correctly', function () {
 });
 
 it('returns single batch description when only one batch', function () {
-    $job = new class(['a']) extends BatchedJob
-    {
-        protected ?string $description = 'Test Job';
-
-        public function __construct(
-            public array $items = [],
-        ) {
-            parent::__construct();
-        }
-
-        protected function loadData(): Batchable
-        {
-            return new TestBatchable($this->items);
-        }
-
-        protected function processItem(mixed $item): void {}
-    };
+    $job = new TestBatchedJob(description: 'Test Job');
 
     $job->batchSize = 100;
 
@@ -247,23 +158,7 @@ it('returns single batch description when only one batch', function () {
 
 it('includes batch info in description for multi-batch jobs', function () {
     $items = range(1, 10);
-    $job = new class($items) extends BatchedJob
-    {
-        protected ?string $description = 'Test Job';
-
-        public function __construct(
-            public array $items = [],
-        ) {
-            parent::__construct();
-        }
-
-        protected function loadData(): Batchable
-        {
-            return new TestBatchable($this->items);
-        }
-
-        protected function processItem(mixed $item): void {}
-    };
+    $job = new TestBatchedJob($items, 'Test Job');
 
     $job->batchSize = 3;
     $job->batchIndex = 1;
@@ -309,58 +204,6 @@ it('clones job for next batch with incremented batchIndex', function () {
         && $pushedJob->itemOffset === 2);
 });
 
-/**
- * Batched job that can simulate cancellation after processing N items
- */
-class CancellableBatchedJob extends BatchedJob
-{
-    public array $processedItems = [];
-
-    public int $cancelAfterItem = -1;
-
-    public bool $jobDeleteCalled = false;
-
-    private ?string $testUuid = null;
-
-    public function __construct(
-        public array $items = [],
-    ) {
-        parent::__construct();
-    }
-
-    public function setTestUuid(string $uuid): void
-    {
-        $this->testUuid = $uuid;
-    }
-
-    protected function loadData(): Batchable
-    {
-        return new TestBatchable($this->items);
-    }
-
-    protected function processItem(mixed $item): void
-    {
-        $this->processedItems[] = $item;
-
-        // Simulate cancellation by deleting the progress entry after processing N items
-        if ($this->cancelAfterItem >= 0 && count($this->processedItems) >= $this->cancelAfterItem) {
-            if ($this->testUuid !== null) {
-                app(JobProgress::class)->cancel($this->testUuid);
-            }
-        }
-    }
-
-    #[Override]
-    public function shouldStillRun(): bool
-    {
-        if ($this->testUuid === null) {
-            return true;
-        }
-
-        return app(JobProgress::class)->exists($this->testUuid);
-    }
-}
-
 it('stops processing when cancelled between items', function () {
     $progressService = app(JobProgress::class);
     $testUuid = 'test-cancellation-'.uniqid();
@@ -369,7 +212,7 @@ it('stops processing when cancelled between items', function () {
     $progressService->setProgress($testUuid, 'Test job', 0);
 
     $items = ['a', 'b', 'c', 'd', 'e'];
-    $job = new CancellableBatchedJob($items);
+    $job = new TestBatchedJob($items);
     $job->batchSize = 10;
     $job->setTestUuid($testUuid);
     $job->cancelAfterItem = 2; // Cancel after processing 2 items
@@ -382,12 +225,11 @@ it('stops processing when cancelled between items', function () {
 });
 
 it('does not process any items when already cancelled', function () {
-    $progressService = app(JobProgress::class);
     $testUuid = 'test-precancelled-'.uniqid();
 
     // Don't create a progress entry - simulates already cancelled
     $items = ['a', 'b', 'c'];
-    $job = new CancellableBatchedJob($items);
+    $job = new TestBatchedJob($items);
     $job->batchSize = 10;
     $job->setTestUuid($testUuid);
 
