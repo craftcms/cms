@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Zmień ikonę',
     'Change logo' => 'Zmień logo',
     'Change photo' => 'Zmień zdjęcie',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Dziennik zmian',
     'Changes discarded.' => 'Zmiany odrzucono.',
     'Changing this may result in data loss.' => 'Zmiana ta może spowodować utratę danych.',
