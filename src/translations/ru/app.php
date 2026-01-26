@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Изменить значок',
     'Change logo' => 'Изменить логотип',
     'Change photo' => 'Изменить фото',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Журнал изменений',
     'Changes discarded.' => 'Изменения отменены.',
     'Changing this may result in data loss.' => 'Это изменение может привести к потере данных.',
