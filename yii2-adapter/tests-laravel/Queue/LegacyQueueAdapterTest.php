@@ -32,24 +32,24 @@ class ProgressTrackingLegacyJob implements JobInterface
     }
 }
 
-it('can be instantiated with a LegacyJobWrapper', function () {
-    $legacyJob = new ProgressTrackingLegacyJob;
+it('can be instantiated with a LegacyJobWrapper', function() {
+    $legacyJob = new ProgressTrackingLegacyJob();
     $wrapper = new LegacyJobWrapper($legacyJob);
     $adapter = new LegacyQueueAdapter($wrapper);
 
     expect($adapter)->toBeInstanceOf(LegacyQueueAdapter::class);
 });
 
-it('has setProgress method', function () {
-    $legacyJob = new ProgressTrackingLegacyJob;
+it('has setProgress method', function() {
+    $legacyJob = new ProgressTrackingLegacyJob();
     $wrapper = new LegacyJobWrapper($legacyJob);
     $adapter = new LegacyQueueAdapter($wrapper);
 
     expect(method_exists($adapter, 'setProgress'))->toBeTrue();
 });
 
-it('forwards setProgress to wrapper updateProgress', function () {
-    $legacyJob = new ProgressTrackingLegacyJob;
+it('forwards setProgress to wrapper updateProgress', function() {
+    $legacyJob = new ProgressTrackingLegacyJob();
     $wrapper = new LegacyJobWrapper($legacyJob);
     $adapter = new LegacyQueueAdapter($wrapper);
 
@@ -60,9 +60,8 @@ it('forwards setProgress to wrapper updateProgress', function () {
     expect(true)->toBeTrue();
 });
 
-it('allows legacy jobs to call setProgress during execution', function () {
-    $legacyJob = new class implements JobInterface
-    {
+it('allows legacy jobs to call setProgress during execution', function() {
+    $legacyJob = new class() implements JobInterface {
         public bool $progressCalled = false;
 
         public function execute($queue): void

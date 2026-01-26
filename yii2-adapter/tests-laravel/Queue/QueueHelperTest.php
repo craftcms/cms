@@ -8,12 +8,13 @@ use craft\queue\LegacyJobWrapper;
 use CraftCms\Cms\Queue\Job;
 use Illuminate\Support\Facades\Queue as QueueFacade;
 
-it('can push a legacy job', function () {
+it('can push a legacy job', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -32,12 +33,13 @@ it('can push a legacy job', function () {
     QueueFacade::assertPushed(LegacyJobWrapper::class);
 });
 
-it('can push a Laravel job', function () {
+it('can push a Laravel job', function() {
     QueueFacade::fake();
 
-    $laravelJob = new class extends Job
-    {
-        public function handle(): void {}
+    $laravelJob = new class() extends Job {
+        public function handle(): void
+        {
+        }
 
         protected function defaultDescription(): string
         {
@@ -51,12 +53,13 @@ it('can push a Laravel job', function () {
     QueueFacade::assertPushed($laravelJob::class);
 });
 
-it('wraps legacy jobs in LegacyJobWrapper', function () {
+it('wraps legacy jobs in LegacyJobWrapper', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -66,15 +69,16 @@ it('wraps legacy jobs in LegacyJobWrapper', function () {
 
     Queue::push($legacyJob);
 
-    QueueFacade::assertPushed(LegacyJobWrapper::class, fn ($job) => $job->getLegacyJob() === $legacyJob);
+    QueueFacade::assertPushed(LegacyJobWrapper::class, fn($job) => $job->getLegacyJob() === $legacyJob);
 });
 
-it('does not wrap jobs that implement ShouldQueue', function () {
+it('does not wrap jobs that implement ShouldQueue', function() {
     QueueFacade::fake();
 
-    $laravelJob = new class extends Job
-    {
-        public function handle(): void {}
+    $laravelJob = new class() extends Job {
+        public function handle(): void
+        {
+        }
 
         protected function defaultDescription(): string
         {
@@ -89,12 +93,13 @@ it('does not wrap jobs that implement ShouldQueue', function () {
     QueueFacade::assertNotPushed(LegacyJobWrapper::class);
 });
 
-it('applies custom TTR to legacy job wrapper', function () {
+it('applies custom TTR to legacy job wrapper', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -109,15 +114,16 @@ it('applies custom TTR to legacy job wrapper', function () {
 
     Queue::push($legacyJob, null, null, 600);
 
-    QueueFacade::assertPushed(LegacyJobWrapper::class, fn ($job) => $job->timeout === 600);
+    QueueFacade::assertPushed(LegacyJobWrapper::class, fn($job) => $job->timeout === 600);
 });
 
-it('applies custom TTR to Laravel job', function () {
+it('applies custom TTR to Laravel job', function() {
     QueueFacade::fake();
 
-    $laravelJob = new class extends Job
-    {
-        public function handle(): void {}
+    $laravelJob = new class() extends Job {
+        public function handle(): void
+        {
+        }
 
         protected function defaultDescription(): string
         {
@@ -127,15 +133,16 @@ it('applies custom TTR to Laravel job', function () {
 
     Queue::push($laravelJob, null, null, 900);
 
-    QueueFacade::assertPushed($laravelJob::class, fn ($job) => $job->timeout === 900);
+    QueueFacade::assertPushed($laravelJob::class, fn($job) => $job->timeout === 900);
 });
 
-it('dispatches with delay when specified', function () {
+it('dispatches with delay when specified', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -148,12 +155,13 @@ it('dispatches with delay when specified', function () {
     QueueFacade::assertPushed(LegacyJobWrapper::class);
 });
 
-it('ignores priority parameter', function () {
+it('ignores priority parameter', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -168,12 +176,13 @@ it('ignores priority parameter', function () {
     QueueFacade::assertPushed(LegacyJobWrapper::class);
 });
 
-it('ignores queue parameter', function () {
+it('ignores queue parameter', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
@@ -188,12 +197,13 @@ it('ignores queue parameter', function () {
     QueueFacade::assertPushed(LegacyJobWrapper::class);
 });
 
-it('always returns null', function () {
+it('always returns null', function() {
     QueueFacade::fake();
 
-    $legacyJob = new class implements JobInterface
-    {
-        public function execute($queue): void {}
+    $legacyJob = new class() implements JobInterface {
+        public function execute($queue): void
+        {
+        }
 
         public function getDescription(): string
         {
