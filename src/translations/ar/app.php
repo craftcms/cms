@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => 'لغة {value} غير صالحة',
     '{value} is not a valid site language.' => 'لغة {value} هي لغة غير صالحة للموقع',
     '{volume} root' => 'جذر {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" ليس ملحق ملف مسموحًا به.',
     '“{filename}” is not allowed in this field.' => '"{filename}" غير مسموح به في هذا الحقل.',
     '“{filename}” is too large.' => '"{filename}" كبير للغاية.',
