@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value}은(는) 유효한 언어가 아닙니다.',
     '{value} is not a valid site language.' => '{value} 은(는) 유효한 사이트 언어가 아닙니다.',
     '{volume} root' => '{volume} 루트',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}”은(는) 허용되지 않는 파일 확장명입니다.',
     '“{filename}” is not allowed in this field.' => '"{filename}"(은)는 이 필드에서 허용되지 않습니다.',
     '“{filename}” is too large.' => '"{filename}"의 용량이 너무 큽니다.',
