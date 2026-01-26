@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} is geen geldige taal.',
     '{value} is not a valid site language.' => '{value} is geen geldige taal voor websites.',
     '{volume} root' => 'Hoofdmap {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '\'{extension}\' is geen toegestane bestandsextensie.',
     '“{filename}” is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
     '“{filename}” is too large.' => '"{filename}" is te groot.',
