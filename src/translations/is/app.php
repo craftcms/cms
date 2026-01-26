@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume} rót',
     '“Add” Button Label' => '„Bæta við“ hnappamerki',
     '“New” Button Label' => '„Nýtt“ hnappamerki',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '„{extension}“ er ekki leyfileg skráarlenging.',
     '“{filename}” is not allowed in this field.' => '„{filename}“ er ekki leyft í þessum reit.',
     '“{filename}” is too large.' => '„{filename}“ er of stórt.',
