@@ -2358,7 +2358,6 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{volume} root' => '{volume}-Stamm',
     '“Add” Button Label' => 'Beschriftung der Schaltfläche «Hinzufügen»',
     '“New” Button Label' => 'Beschriftung der Schaltfläche «Neu»',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '«{extension}» ist keine zulässige Dateierweiterung.',
     '“{filename}” is not allowed in this field.' => '«{filename}» ist in diesem Feld nicht zulässig.',
     '“{filename}” is too large.' => '«{filename}» ist zu lang.',
