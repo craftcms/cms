@@ -2658,7 +2658,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public string $queueName = 'craft';
+    public string $queueName = 'default';
 
     /**
      * @var string The name of the queue that Craft lower priority jobs should be sent to.
@@ -2677,7 +2677,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public string $lowPriorityQueueName = 'craft';
+    public string $lowPriorityQueueName = 'default';
 
     /**
      * @var array<string> The queue names that should have their job progress tracked.
@@ -2693,7 +2693,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public array $trackedQueueNames = ['craft'];
+    public array $trackedQueueNames = ['default'];
 
     /**
      * @var bool Whether the system should run in Safe Mode.
