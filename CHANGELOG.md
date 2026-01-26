@@ -5,6 +5,7 @@
 - Composer package constraints in `composer.json` are now set with caret operators (e.g. `^1.2.3`). ([#18297](https://github.com/craftcms/cms/pull/18297))
 - The `up` command now warns about any astray license issues before running migrations. ([#18297](https://github.com/craftcms/cms/pull/18297))
 - Added the “Change the author of other users’ entries” permission for channel and structure sections. ([#18298](https://github.com/craftcms/cms/pull/18298))
+- Fixed a bug where element index pages weren’t retaining their `search` query param if present on the initial request.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
 
 ## 4.17.0-beta.1 - 2026-01-20
