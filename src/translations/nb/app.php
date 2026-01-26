@@ -2358,7 +2358,6 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{volume} root' => '{volume} rot',
     '“Add” Button Label' => '«Legg til»-knappetikett',
     '“New” Button Label' => '«Ny»-knappetikett',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '«{extension}» er ikke en gyldig filtype.',
     '“{filename}” is not allowed in this field.' => '«{filename}» er ikke tillatt for dette feltet.',
     '“{filename}” is too large.' => '«{filename}» er for stor.',
