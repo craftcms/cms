@@ -238,7 +238,9 @@ class Asset extends ElementMutationResolver
                 }
 
                 if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                    throw new AssetDisallowedExtensionException(Craft::t('app', '“{$extension}” is not an allowed file extension.'));
+                    throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                        'extension' => $extension,
+                    ]));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -261,7 +263,9 @@ class Asset extends ElementMutationResolver
 
             $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                throw new AssetDisallowedExtensionException(Craft::t('app', '“{$extension}” is not an allowed file extension.'));
+                throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
             }
 
             // Download the file
