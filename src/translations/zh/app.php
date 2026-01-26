@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume} 根',
     '“Add” Button Label' => '“添加”按钮标签',
     '“New” Button Label' => '“新建”按钮标签',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}”不是允许的文件扩展名。',
     '“{filename}” is not allowed in this field.' => '此字段中不允许使用“{filename} ”。',
     '“{filename}” is too large.' => '“{filename}”太大。',
