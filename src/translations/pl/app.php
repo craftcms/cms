@@ -2358,7 +2358,6 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{volume} root' => '{volume} — katalog główny',
     '“Add” Button Label' => 'Etykieta przycisku „Dodaj”',
     '“New” Button Label' => 'Etykieta przycisku „Nowy”',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '{extension} nie jest dozwolonym rozszerzeniem pliku.',
     '“{filename}” is not allowed in this field.' => 'Plik „{filename}” jest niedozwolony w tym polu.',
     '“{filename}” is too large.' => 'Plik „{filename}” jest za duży.',
