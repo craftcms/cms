@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume} שורש',
     '“Add” Button Label' => 'תג לחצן "הוספה"',
     '“New” Button Label' => 'תג לחצן "חדש"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '"{extension}" אינה סיומת קובץ מותרת.',
     '“{filename}” is not allowed in this field.' => '"{filename}" אסור לשימוש בשדה זה.',
     '“{filename}” is too large.' => '"{filename}" גדול מדי.',
