@@ -2034,7 +2034,6 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{value} is not a valid language.' => '{value} non è una lingua valida.',
     '{value} is not a valid site language.' => '{value} non è una lingua valida per il sito.',
     '{volume} root' => 'radice {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => 'L\'estensione "{extension}" non è consentita.',
     '“{filename}” is not allowed in this field.' => '"{filename}" non è consentito in questo campo.',
     '“{filename}” is too large.' => '"{filename}" è troppo grande.',
