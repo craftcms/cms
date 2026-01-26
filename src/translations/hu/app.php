@@ -2036,7 +2036,6 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{value} is not a valid language.' => 'A(z) {value} nem érvényes nyelv.',
     '{value} is not a valid site language.' => 'A(z) {value} nem érvényes webhelynyelv.',
     '{volume} root' => '{volume} gyökér',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => 'A(z) {extension} nem engedélyezett fájlnév-kiterjesztés.',
     '“{filename}” is not allowed in this field.' => '"{filename}" nem engedélyezett ebben a mezőben.',
     '“{filename}” is too large.' => '"{filename}" túl nagy.',
