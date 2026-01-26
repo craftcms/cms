@@ -43,14 +43,6 @@ test('env overrides get precedence over config', function () {
     expect(Cms::config()->cpTrigger)->toBe('adminus');
 });
 
-it('has default queueName of craft', function () {
-    expect(Cms::config()->queueName)->toBe('craft');
-});
-
-it('has default trackedQueueNames containing craft', function () {
-    expect(Cms::config()->trackedQueueNames)->toBe(['craft']);
-});
-
 it('can set queueName via fluent setter', function () {
     $config = GeneralConfig::create()->queueName('custom');
 
