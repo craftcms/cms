@@ -2034,7 +2034,6 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{value} is not a valid language.' => '{value} není platný jazyk.',
     '{value} is not a valid site language.' => '{value} není platný jazyk webu.',
     '{volume} root' => 'Kořenový adresář svazku {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '„{extension}“ není povolená přípona souboru.',
     '“{filename}” is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
     '“{filename}” is too large.' => 'Soubor {filename} je příliš velký.',
