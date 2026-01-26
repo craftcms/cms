@@ -243,6 +243,7 @@ return [
     'Change icon' => 'שנה אייקון',
     'Change logo' => 'שנה לוגו',
     'Change photo' => 'החלף תצלום',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'שנה יומן',
     'Changes discarded.' => 'השינויים בוטלו.',
     'Changing this may result in data loss.' => 'שינוי עלול להביא לאובדן נתונים.',
