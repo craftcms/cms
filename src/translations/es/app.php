@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => 'Raíz de {volume}',
     '“Add” Button Label' => 'Etiqueta del botón “Añadir”',
     '“New” Button Label' => 'Etiqueta del botón “Nuevo”',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” no es una extensión de archivo permitida.',
     '“{filename}” is not allowed in this field.' => '"{filename}" no se permite en este campo.',
     '“{filename}” is too large.' => '"{filename}" es demasiado grande.',
