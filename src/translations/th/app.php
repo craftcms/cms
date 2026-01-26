@@ -2357,7 +2357,6 @@ return [
     '{volume} root' => 'ราก {volume}',
     '“Add” Button Label' => 'ชื่อปุ่ม "เพิ่ม"',
     '“New” Button Label' => 'ชื่อปุ่ม "ใหม่"',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” เป็นนามสกุลไฟล์ที่ไม่ได้รับอนุญาต',
     '“{filename}” is not allowed in this field.' => 'ห้ามมี “{filename}” ในฟิลด์นี้',
     '“{filename}” is too large.' => '“{filename}” มีขนาดใหญ่เกินไป',
