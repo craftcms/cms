@@ -876,7 +876,7 @@ class Entry extends Element implements ExpirableElementInterface
         if (
             $authorId !== null &&
             $authorId !== $this->getAuthorId() &&
-            Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+            $this->canChangeAuthor()
         ) {
             $this->setAuthorId($authorId);
         }
@@ -1759,8 +1759,8 @@ EOD;
 
         if ($section->type !== Section::TYPE_SINGLE) {
             // Author
-            if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
-                $fields[] = (function() use ($static, $section) {
+            if (Craft::$app->getEdition() === Craft::Pro) {
+                $fields[] = (function() use ($static, $section, $user) {
                     $author = $this->getAuthor();
                     return Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorId'),
@@ -1774,7 +1774,7 @@ EOD;
                         ],
                         'single' => true,
                         'elements' => $author ? [$author] : null,
-                        'disabled' => $static,
+                        'disabled' => $static || !$this->canChangeAuthor($user),
                         'errors' => $this->getErrors('authorId'),
                     ]);
                 })();
@@ -1812,6 +1812,33 @@ EOD;
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
+    }
+
+    /**
+     * Returns whether the current user has permission to change this entry’s author.
+     */
+    private function canChangeAuthor(?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        $section = $this->getSection();
+
+        if (!$user->can("viewPeerEntries:$section->uid")) {
+            return false;
+        }
+
+        $authorId = $this->getAuthorId();
+
+        return (
+            !$authorId ||
+            $authorId === $user->id ||
+            $user->can("changeAuthorForPeerEntries:$section->uid")
+        );
     }
 
     /**
