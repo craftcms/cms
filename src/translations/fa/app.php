@@ -243,6 +243,7 @@ return [
     'Change icon' => 'تغییر آیکن',
     'Change logo' => 'تغییر لوگو',
     'Change photo' => 'تغییر عکس',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'لیست تغییرات',
     'Changes discarded.' => 'تغییرات لغو گردید.',
     'Changing this may result in data loss.' => 'تغییر دادن ممکن است منجر به از دست دادن داده شود.',
