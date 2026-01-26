@@ -2034,7 +2034,6 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{value} is not a valid language.' => '{value} nie jest prawidłowym językiem.',
     '{value} is not a valid site language.' => '{value} nie jest prawidłowym językiem witryny.',
     '{volume} root' => '{volume} — katalog główny',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '{extension} nie jest dozwolonym rozszerzeniem pliku.',
     '“{filename}” is not allowed in this field.' => 'Plik „{filename}” jest niedozwolony w tym polu.',
     '“{filename}” is too large.' => 'Plik „{filename}” jest za duży.',
