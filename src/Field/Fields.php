@@ -890,6 +890,7 @@ final class Fields
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
         $config = ComponentHelper::cleanseConfig($config);
+
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
