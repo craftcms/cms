@@ -91,7 +91,9 @@ final class SystemReport extends Utility
                     }
                 }
             } else {
-                $aliases[$alias] = $value;
+                if (! str_starts_with((string) $alias, '@appicons/')) {
+                    $aliases[$alias] = $value;
+                }
             }
         }
         ksort($aliases);
