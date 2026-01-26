@@ -5,7 +5,7 @@ use craft\i18n\MessageFormatter;
 use craft\i18n\PhpMessageSource;
 use craft\log\Dispatcher;
 use craft\mutex\Mutex;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\Addresses;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
@@ -139,7 +139,7 @@ return [
             'class' => Plugins::class,
         ],
         'queue' => [
-            'class' => Queue::class,
+            'class' => QueueComponent::class,
         ],
         'relations' => [
             'class' => Relations::class,
