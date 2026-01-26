@@ -5,7 +5,7 @@ use craft\i18n\MessageFormatter;
 use craft\i18n\PhpMessageSource;
 use craft\log\Dispatcher;
 use craft\mutex\Mutex;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\Addresses;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
@@ -139,7 +139,7 @@ return [
             'class' => Plugins::class,
         ],
         'queue' => [
-            'class' => Queue::class,
+            'class' => QueueComponent::class,
         ],
         'relations' => [
             'class' => Relations::class,
@@ -244,16 +244,19 @@ return [
 
         'cache' => function() {
             $config = App::cacheConfig();
+
             return Craft::createObject($config);
         },
 
         'db' => function() {
             $config = App::dbConfig();
+
             return Craft::createObject($config);
         },
 
         'db2' => function() {
             $config = App::dbConfig();
+
             return Craft::createObject($config);
         },
 
@@ -267,16 +270,19 @@ return [
 
         'mailer' => function() {
             $config = App::mailerConfig();
+
             return Craft::createObject($config);
         },
 
         'projectConfig' => function() {
             $config = App::projectConfigConfig();
+
             return Craft::createObject($config);
         },
 
         'view' => function() {
             $config = App::viewConfig();
+
             return Craft::createObject($config);
         },
     ],

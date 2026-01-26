@@ -40,7 +40,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
-use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Address\Elements\Address;
@@ -56,6 +55,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -2462,17 +2462,17 @@ class Elements extends Component
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "\{$refHandle:";
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . ':',
-                    'replace' => $refTagPrefix . $prevailingElement->id . ':',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . ':',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: I18N::prep('Updating element references'),
+                ));
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . '}',
-                    'replace' => $refTagPrefix . $prevailingElement->id . '}',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . '}',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: $refTagPrefix . $prevailingElement->id . '}',
+                ));
             }
 
             // Fire an 'afterMergeElements' event

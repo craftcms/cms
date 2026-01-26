@@ -17,15 +17,15 @@ use craft\events\SearchEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\Queue;
-use craft\queue\jobs\UpdateSearchIndex;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Search as SearchHelper;
@@ -228,12 +228,12 @@ class Search extends Component
             return;
         }
 
-        Queue::push(new UpdateSearchIndex([
-            'elementType' => get_class($element),
-            'elementId' => $element->id,
-            'siteId' => $element->siteId,
-            'queued' => true,
-        ]), 2048);
+        dispatch(new UpdateSearchIndex(
+            elementType: $element::class,
+            elementId: $element->id,
+            siteId: $element->siteId,
+            queued: true,
+        ))->onQueue(Cms::config()->lowPriorityQueueName);
     }
 
     /**
@@ -422,7 +422,7 @@ class Search extends Component
             return [];
         }
 
-        if ($elementQuery instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
+        if ($elementQuery instanceof ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
             $elementQuery->getSubQuery()->offset = null;

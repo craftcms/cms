@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Element;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Queue;
-use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\CreatingRevision;
@@ -15,6 +13,7 @@ use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
@@ -167,11 +166,11 @@ final readonly class Revisions
 
         // Prune any excess revisions
         if (Cms::config()->maxRevisions) {
-            Queue::push(new PruneRevisions([
-                'elementType' => $canonical::class,
-                'canonicalId' => $canonical->id,
-                'siteId' => $canonical->siteId,
-            ]), 2049);
+            dispatch(new PruneRevisions(
+                elementType: $canonical::class,
+                canonicalId: $canonical->id,
+                siteId: $canonical->siteId,
+            ))->onQueue(Cms::config()->lowPriorityQueueName);
         }
 
         return $revision->id;

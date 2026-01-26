@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -18,7 +20,9 @@ use Throwable;
  * GenerateImageTransform job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.4.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Image\Jobs\GenerateImageTransform} instead.
  */
 class GenerateImageTransform extends BaseJob
 {
@@ -28,7 +32,7 @@ class GenerateImageTransform extends BaseJob
     public int $transformId;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -49,7 +53,7 @@ class GenerateImageTransform extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

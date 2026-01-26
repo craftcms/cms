@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
@@ -95,6 +96,7 @@ final class RouteServiceProvider extends ServiceProvider
         collect([
             'web',
             AuthenticateSession::class,
+            RunQueue::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

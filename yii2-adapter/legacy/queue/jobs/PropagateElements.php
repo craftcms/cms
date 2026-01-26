@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -20,7 +22,9 @@ use CraftCms\Cms\Support\Facades\I18N;
  * PropagateElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.13
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PropagateElements} instead.
  */
 class PropagateElements extends BaseBatchedElementJob
 {
@@ -43,24 +47,25 @@ class PropagateElements extends BaseBatchedElementJob
 
     /**
      * @var bool Whether this is for a newly-added site.
+     *
      * @since 5.6.10
      */
     public bool $isNewSite = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
         parent::init();
 
         if ($this->siteId !== null) {
-            $this->siteId = array_map(fn($siteId) => (int)$siteId, (array)$this->siteId);
+            $this->siteId = array_map(fn($siteId) => (int) $siteId, (array) $this->siteId);
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function loadData(): Batchable
     {
@@ -80,7 +85,7 @@ class PropagateElements extends BaseBatchedElementJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function processItem(mixed $item): void
     {
@@ -108,7 +113,7 @@ class PropagateElements extends BaseBatchedElementJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

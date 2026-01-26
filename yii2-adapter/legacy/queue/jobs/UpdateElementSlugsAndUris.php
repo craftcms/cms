@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -12,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\queue\BaseJob;
+use craft\queue\LegacyQueueAdapter;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -23,7 +26,9 @@ use yii\queue\Queue;
  * UpdateElementSlugsAndUris job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris} instead.
  */
 class UpdateElementSlugsAndUris extends BaseJob
 {
@@ -63,7 +68,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     private int $_totalProcessed;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -77,7 +82,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {
@@ -86,8 +91,6 @@ class UpdateElementSlugsAndUris extends BaseJob
 
     /**
      * Creates an element query for the configured element type.
-     *
-     * @return ElementQueryInterface
      */
     private function _createElementQuery(): ElementQueryInterface
     {
@@ -98,11 +101,8 @@ class UpdateElementSlugsAndUris extends BaseJob
 
     /**
      * Updates the given elements’ slugs and URIs
-     *
-     * @param Queue|QueueInterface $queue
-     * @param ElementQueryInterface $query
      */
-    private function _processElements(Queue|QueueInterface $queue, ElementQueryInterface $query): void
+    private function _processElements(Queue|QueueInterface|LegacyQueueAdapter $queue, ElementQueryInterface $query): void
     {
         /** @var ElementQueryInterface|ElementQuery $query */
         $this->_totalToProcess += $query->count();
@@ -121,6 +121,7 @@ class UpdateElementSlugsAndUris extends BaseJob
                 $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
             } catch (OperationAbortedException $e) {
                 Log::info("Couldn’t update slug and URI for element $element->id: {$e->getMessage()}");
+
                 continue;
             }
 
