@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Simgeyi değiştir',
     'Change logo' => 'Logoyu değiştir',
     'Change photo' => 'Fotoğrafı değiştir',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Değişiklik Günlüğü',
     'Changes discarded.' => 'Değişiklikler iptal edildi.',
     'Changing this may result in data loss.' => 'Bunu değiştirmek veri kaybına neden olabilir.',
