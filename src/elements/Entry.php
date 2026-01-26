@@ -1128,7 +1128,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
             if (
                 $authorIds !== $this->getAuthorIds() &&
-                Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+                $this->canChangeAuthor()
             ) {
                 $this->setAuthorIds($authorIds);
             }
@@ -2618,12 +2618,11 @@ JS, [
             // Author
             if (
                 $section->maxAuthors !== 0 &&
-                Craft::$app->edition !== CmsEdition::Solo &&
-                $user->can("viewPeerEntries:$section->uid")
+                Craft::$app->edition !== CmsEdition::Solo
             ) {
-                $fields['authors'] = (function() use ($static, $section) {
+                $fields['authors'] = (function() use ($static, $section, $user) {
                     $authors = $this->getAuthors();
-                    $html = Cp::elementSelectFieldHtml([
+                    return Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
                         'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
                             'max' => $section->maxAuthors ?? PHP_INT_MAX,
@@ -2637,11 +2636,10 @@ JS, [
                         ],
                         'single' => false,
                         'elements' => $authors ?: null,
-                        'disabled' => $static,
+                        'disabled' => $static || !$this->canChangeAuthor($user),
                         'errors' => $this->getErrors('authorIds'),
                         'limit' => $section->maxAuthors,
                     ]);
-                    return $html;
                 })();
             }
 
@@ -2730,6 +2728,33 @@ if (revertRevisionBtn.length > 0) {
 JS;
             Craft::$app->getView()->registerJs($js);
         }
+    }
+
+    /**
+     * Returns whether the current user has permission to change this entry’s author.
+     */
+    private function canChangeAuthor(?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        $section = $this->getSection();
+
+        if (!$user->can("viewPeerEntries:$section->uid")) {
+            return false;
+        }
+
+        $authorIds = $this->getAuthorIds();
+
+        return (
+            empty($authorIds) ||
+            in_array($user->id, $authorIds) ||
+            $user->can("changeAuthorForPeerEntries:$section->uid")
+        );
     }
 
     /**
