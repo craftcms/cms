@@ -31,6 +31,7 @@ use craft\search\SearchQueryTermGroup;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -208,6 +209,11 @@ class Search extends Component
 
         // Release the lock
         $mutex->release($lockKey);
+
+        // Invalidate search query caches for this element type
+        TagDependency::invalidate(Craft::$app->getCache(), [
+            sprintf('element-search-query:%s', get_class($element)),
+        ]);
 
         return true;
     }
@@ -425,7 +431,8 @@ class Search extends Component
             ->cache(true, new ElementQueryTagDependency($elementQuery, [
                 'tags' => [
                     'element-index-query',
-                    sprintf('element-index-query::%s', $elementQuery->elementType),
+                    "element-index-query::$elementQuery->elementType",
+                    "element-search-query::$elementQuery->elementType",
                 ],
             ]))
             ->all();
