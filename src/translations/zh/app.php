@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} 不是有效语言。',
     '{value} is not a valid site language.' => '{value} 不是有效的站点语言。',
     '{volume} root' => '{volume} 根',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}”不是允许的文件扩展名。',
     '“{filename}” is not allowed in this field.' => '此字段中不允许使用“{filename} ”。',
     '“{filename}” is too large.' => '“{filename}”太大。',
