@@ -2032,7 +2032,6 @@ return [
     '{value} is not a valid language.' => '{value} не є допустимою мовою.',
     '{value} is not a valid site language.' => '{value} не є допустимою мовою сайту.',
     '{volume} root' => 'Корінь тому {volume}',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '«{extension}» не є допустимим розширенням файлу.',
     '“{filename}” is not allowed in this field.' => '«{filename}» не допускається в цьому полі.',
     '“{filename}” is too large.' => 'Файл {filename} завеликий.',
