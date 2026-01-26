@@ -37,7 +37,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -104,12 +103,9 @@ final class UserPermissions
         $this->volumePermissions($this->allPermissions);
         $this->utilityPermissions($this->allPermissions);
 
-        if (Event::hasListeners(RegisterUserPermissions::class)) {
-            Event::dispatch($event = new RegisterUserPermissions($this->allPermissions));
-            $this->allPermissions = $event->permissions;
-        }
+        event($event = new RegisterUserPermissions($this->allPermissions));
 
-        return $this->allPermissions;
+        return $event->permissions;
     }
 
     /**
@@ -210,9 +206,7 @@ final class UserPermissions
             message: "Update permissions for user group “{$group->handle}”",
         );
 
-        if (Event::hasListeners(UserGroupPermissionsSaved::class)) {
-            Event::dispatch(new UserGroupPermissionsSaved($groupId, $permissions));
-        }
+        event(new UserGroupPermissionsSaved($groupId, $permissions));
 
         return true;
     }
@@ -328,9 +322,7 @@ final class UserPermissions
         $this->permissionsByUserId ??= collect();
         $this->permissionsByUserId[$userId] = $groupPermissions->merge($permissions)->unique();
 
-        if (Event::hasListeners(UserPermissionsSaved::class)) {
-            Event::dispatch(new UserPermissionsSaved($userId, $permissions));
-        }
+        event(new UserPermissionsSaved($userId, $permissions));
 
         return true;
     }
@@ -637,6 +629,12 @@ final class UserPermissions
                         new Permission(
                             key: "savePeerEntries:$section->uid",
                             label: mb_ucfirst(t('Save other users’ {type}', ['type' => $pluralType])),
+                            nested: collect([
+                                new Permission(
+                                    key: "changeAuthorForPeerEntries:$section->uid",
+                                    label: t('Change the author of other users’ entries'),
+                                ),
+                            ]),
                         ),
                         $hasCustomPropagation ? new Permission(
                             key: "deletePeerEntriesForSite:$section->uid",

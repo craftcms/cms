@@ -2968,6 +2968,12 @@ abstract class Element extends Component implements ElementInterface
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             'when' => $this->shouldValidateTitle(...),
         ];
+        $rules[] = [
+            ['title'],
+            function () {
+                $this->title = Str::convertLineBreaks($this->title);
+            },
+        ];
 
         if (static::hasUris()) {
             try {
@@ -6082,7 +6088,7 @@ JS, [
         $field = null;
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
-            $field = app(Fields::class)->getFieldByUid($fieldUid);
+            $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
         } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
             $instanceUid = $matches[1];
             $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
@@ -6098,19 +6104,25 @@ JS, [
 
         if ($field !== null) {
             if ($field instanceof InlineEditableFieldInterface) {
-                // Was this field value eager-loaded?
-                if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                    $value = $this->getEagerLoadedElements($field->handle);
-                } else {
-                    // The field might not actually belong to this element
-                    try {
-                        $value = $this->getFieldValue($field->handle);
-                    } catch (InvalidFieldException) {
-                        return '';
+                $layoutElement = $field->layoutElement;
+                // if the layout element should be visible and editable in the "normal" edit form
+                // proceed with showing the input html, otherwise show the standard attribute html
+                /** @var CustomField $layoutElement */
+                if ($layoutElement && $layoutElement->showInForm($this) && $layoutElement->editable($this)) {
+                    // Was this field value eager-loaded?
+                    if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                        $value = $this->getEagerLoadedElements($field->handle);
+                    } else {
+                        // The field might not actually belong to this element
+                        try {
+                            $value = $this->getFieldValue($field->handle);
+                        } catch (InvalidFieldException) {
+                            return '';
+                        }
                     }
-                }
 
-                return $field->getInlineInputHtml($value, $this);
+                    return $field->getInlineInputHtml($value, $this);
+                }
             }
 
             return $this->getAttributeHtml($attribute);

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
+use Stringable;
 
-/**
- * Class OptionData
- */
-class OptionData implements \Stringable, Serializable
+#[AllowedInSandbox]
+class OptionData implements Serializable, Stringable
 {
     public function __construct(
         public ?string $label,

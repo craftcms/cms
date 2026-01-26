@@ -7,13 +7,16 @@ namespace CraftCms\Cms\Field\Data;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Support\Json;
 use IteratorAggregate;
 use Spatie\LaravelData\Dto;
+use Stringable;
 use Traversable;
 use yii\base\InvalidCallException;
 
-final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAggregate, Serializable
+#[AllowedInSandbox]
+final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,

@@ -23,7 +23,6 @@ use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
 /**
  * The Utilities service provides APIs for managing utilities.
@@ -71,14 +70,11 @@ final readonly class Utilities
                 Migrations::class,
             );
 
-        if (Event::hasListeners(RegisterUtilities::class)) {
-            Event::dispatch($event = new RegisterUtilities($utilityTypes));
-            $utilityTypes = $event->types;
-        }
+        event($event = new RegisterUtilities($utilityTypes));
 
         $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
 
-        return $utilityTypes
+        return $event->types
             /** @var class-string<Utility> $class */
             ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable());
     }

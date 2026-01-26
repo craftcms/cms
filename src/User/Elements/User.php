@@ -835,6 +835,12 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     private ?array $_groups = null;
 
     /**
+     * @see setAttributesFromRequest()
+     * @see afterSave()
+     */
+    private bool $sendVerificationEmailAfterRequest = false;
+
+    /**
      * {@inheritdoc}
      */
     public function sendPasswordResetNotification($token): void
@@ -1166,6 +1172,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = Arr::pull($values, 'email');
+                        $this->sendVerificationEmailAfterRequest = true;
                     }
                 } else {
                     unset($values['email']);
@@ -2525,6 +2532,17 @@ JS, [
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
             Auth::logoutOtherDevices($newPassword);
+        }
+
+        if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
+            // Temporarily set the unverified email on the User so the verification email goes to the right place
+            $originalEmail = $this->email;
+            $this->email = $this->unverifiedEmail;
+
+            $this->sendEmailVerificationNotification();
+
+            // Put the original email back into place
+            $this->email = $originalEmail;
         }
     }
 

@@ -13,7 +13,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
 
@@ -102,9 +101,7 @@ enum Edition: int implements Arrayable
 
         Context::addHidden(self::class, $edition);
 
-        if (Event::hasListeners(EditionChanged::class)) {
-            Event::dispatch(new EditionChanged($oldEdition, $edition));
-        }
+        event(new EditionChanged($oldEdition, $edition));
     }
 
     /** @internal */

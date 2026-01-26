@@ -575,13 +575,9 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     {
         $items = $this->actionMenuItems();
 
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event = new DefineFieldActionMenuItems($this, $items));
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event = new DefineFieldActionMenuItems($this, $items));
 
-            return $event->items;
-        }
-
-        return $items;
+        return $event->items;
     }
 
     protected function actionMenuItems(): array
@@ -725,19 +721,15 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, false);
 
-        if ($this->hasComponentListeners(static::EVENT_DEFINE_INPUT_HTML)) {
-            $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
-                field: $this,
-                value: $value,
-                inline: false,
-                element: $element,
-                html: $html,
-            ));
+        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+            field: $this,
+            value: $value,
+            inline: false,
+            element: $element,
+            html: $html,
+        ));
 
-            return $event->html;
-        }
-
-        return $html;
+        return $event->html;
     }
 
     /**
@@ -747,19 +739,15 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, true);
 
-        if ($this->hasComponentListeners(static::EVENT_DEFINE_INPUT_HTML)) {
-            $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
-                field: $this,
-                value: $value,
-                inline: true,
-                element: $element,
-                html: $html,
-            ));
+        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+            field: $this,
+            value: $value,
+            inline: true,
+            element: $element,
+            html: $html,
+        ));
 
-            return $event->html;
-        }
-
-        return $html;
+        return $event->html;
     }
 
     /**
@@ -805,16 +793,14 @@ JS, [
      * {@inheritdoc} */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_KEYWORDS)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
-                field: $this,
-                element: $element,
-                value: $value,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
+            field: $this,
+            element: $element,
+            value: $value,
+        ));
 
-            if ($event->handled) {
-                return $event->keywords;
-            }
+        if ($event->handled) {
+            return $event->keywords;
         }
 
         return $this->searchKeywords($value, $element);
@@ -916,10 +902,7 @@ JS, [
      */
     public function afterMergeInto(FieldInterface $persistingField)
     {
-        // Fire an 'afterMergeInto' event
-        if ($this->hasComponentListeners(self::EVENT_AFTER_MERGE_INTO)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_INTO, new FieldEvent($persistingField));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_INTO, new FieldEvent($persistingField));
     }
 
     /**
@@ -936,10 +919,7 @@ JS, [
                 ]);
         }
 
-        // Fire an 'afterMergeFrom' event
-        if ($this->hasComponentListeners(self::EVENT_AFTER_MERGE_FROM)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
     }
 
     /** {@inheritdoc} */
@@ -1156,88 +1136,68 @@ JS, [
             $this->context = Fields::getFieldContext();
         }
 
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_SAVE, $event = new ComponentEvent($this, $isNew));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_SAVE, $event = new ComponentEvent($this, $isNew));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     public function afterSave(bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
     }
 
     /**
      * {@inheritdoc} */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /**
      * {@inheritdoc} */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
     }
 
     /** {@inheritdoc} */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
     }
 
     /** {@inheritdoc} */
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_DELETE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /** {@inheritdoc} */
     public function afterElementDelete(ElementInterface $element): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_DELETE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
     }
 
     /** {@inheritdoc} */
@@ -1255,27 +1215,21 @@ JS, [
     /** {@inheritdoc} */
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_RESTORE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /** {@inheritdoc} */
     public function afterElementRestore(ElementInterface $element): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_RESTORE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
     }
 
     /**

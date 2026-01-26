@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 use stdClass;
 
 /**
@@ -90,13 +89,9 @@ trait HydratesElements
             ElementHelper::swapInProvisionalDrafts($elements);
         }
 
-        if (Event::hasListeners(ElementsHydrated::class)) {
-            Event::dispatch($event = new ElementsHydrated($elements, $items));
+        event($event = new ElementsHydrated($elements, $items));
 
-            return $event->elements;
-        }
-
-        return $elements;
+        return $event->elements;
     }
 
     public function afterHydrate(Collection $elements): Collection
@@ -193,34 +188,20 @@ trait HydratesElements
             }
         }
 
-        $element = null;
-
-        if (Event::hasListeners(HydratingElement::class)) {
-            Event::dispatch($event = new HydratingElement($row));
-
-            $row = $event->row;
-
-            if (isset($event->element)) {
-                $element = $event->element;
-            }
-        }
+        event($event = new HydratingElement($row));
 
         /**
          * When using addSelect() to select extra columns, they might appear
          * as `table.column`. We just want `column`
          */
-        $row = collect($row)
+        $row = collect($event->row)
             ->mapWithKeys(fn (mixed $value, string $key) => [Str::after($key, '.') => $value])
             ->all();
 
-        $element ??= new $class($row);
+        $element = $event->element ?? new $class($row);
 
-        if (Event::hasListeners(ElementHydrated::class)) {
-            Event::dispatch($event = new ElementHydrated($element, $row));
+        event($event = new ElementHydrated($element, $row));
 
-            return $event->element;
-        }
-
-        return $element;
+        return $event->element;
     }
 }

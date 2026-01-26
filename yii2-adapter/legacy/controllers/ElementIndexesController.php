@@ -161,28 +161,34 @@ class ElementIndexesController extends BaseElementsController
     {
         $elementSources = app(ElementSources::class);
 
-        $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
-            ->map(fn(array $option) => [
-                'label' => $option['label'],
-                'attr' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
+        if ($this->sourceKey) {
+            $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
+                ->map(fn(array $option) => [
+                    'label' => $option['label'],
+                    'attr' => $option['attribute'] ?? $option['orderBy'],
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
 
-        $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
-            ->map(fn(array $attribute, string $key) => [
-                ...$attribute,
-                'attr' => $key,
-            ])
-            ->values()
-            ->all();
+            $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
+                ->map(fn(array $attribute, string $key) => [
+                    ...$attribute,
+                    'attr' => $key,
+                ])
+                ->values()
+                ->all();
 
-        $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
-            ->map(fn(array $attribute) => $attribute[0])
-            ->filter(fn(string $attribute) => $attribute !== 'title')
-            ->values()
-            ->all();
+            $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
+                ->map(fn(array $attribute) => $attribute[0])
+                ->filter(fn(string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        } else {
+            $sortOptions = [];
+            $tableColumns = [];
+            $defaultTableColumns = [];
+        }
 
         return $this->asJson(compact(
             'sortOptions',
@@ -565,7 +571,7 @@ class ElementIndexesController extends BaseElementsController
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributes($attributes);
+                $element->setAttributesFromRequest($attributes);
                 $element->setScenario($scenario);
             }
 

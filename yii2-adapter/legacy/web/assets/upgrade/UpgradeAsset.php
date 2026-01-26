@@ -59,7 +59,7 @@ class UpgradeAsset extends AssetBundle
                 'Not ready',
                 'Plugin',
                 'Plugins',
-                'Prep {file}' => 'Prep {file}',
+                'Prep {file}',
                 'Ready to upgrade?',
                 'Ready',
                 'Requires PHP {version}',

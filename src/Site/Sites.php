@@ -37,7 +37,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -396,13 +395,11 @@ final class Sites
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
-        if (Event::hasListeners(SavingSite::class)) {
-            Event::dispatch(new SavingSite(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $primarySite->id ?? null,
-            ));
-        }
+        event(new SavingSite(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $primarySite->id ?? null,
+        ));
 
         if ($isNewSite) {
             $site->uid = Str::uuid()->toString();
@@ -524,13 +521,11 @@ final class Sites
             }
         }
 
-        if (Event::hasListeners(SiteSaved::class)) {
-            Event::dispatch(new SiteSaved(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $oldPrimarySiteId,
-            ));
-        }
+        event(new SiteSaved(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $oldPrimarySiteId,
+        ));
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -546,11 +541,7 @@ final class Sites
      */
     public function reorderSites(array $siteIds): bool
     {
-        if (Event::hasListeners(ReorderingSites::class)) {
-            Event::dispatch(new ReorderingSites(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new ReorderingSites(siteIds: $siteIds));
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
@@ -566,11 +557,7 @@ final class Sites
             );
         }
 
-        if (Event::hasListeners(SitesReordered::class)) {
-            Event::dispatch(new SitesReordered(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new SitesReordered(siteIds: $siteIds));
 
         return true;
     }
@@ -612,15 +599,10 @@ final class Sites
             throw new Exception('You cannot delete the primary site.');
         }
 
-        if (Event::hasListeners(DeletingSite::class)) {
-            Event::dispatch($event = new DeletingSite(
-                site: $site,
-                transferContentTo: $transferContentTo,
-            ));
+        event($event = new DeletingSite(site: $site, transferContentTo: $transferContentTo));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         // TODO: Move this code into entries module, etc.
@@ -755,9 +737,7 @@ final class Sites
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
-        if (Event::hasListeners(ApplyingSiteDelete::class)) {
-            Event::dispatch(new ApplyingSiteDelete($site));
-        }
+        event(new ApplyingSiteDelete($site));
 
         DB::transaction(function () use ($siteRecord) {
             DB::table(Table::SITES)->softDelete($siteRecord->id);
@@ -774,9 +754,7 @@ final class Sites
             $this->setCurrentSite($this->primarySite);
         }
 
-        if (Event::hasListeners(SiteDeleted::class)) {
-            Event::dispatch(new SiteDeleted($site));
-        }
+        event(new SiteDeleted($site));
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -974,8 +952,6 @@ final class Sites
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        if (Event::hasListeners(PrimarySiteChanged::class)) {
-            Event::dispatch(new PrimarySiteChanged($this->primarySite));
-        }
+        event(new PrimarySiteChanged($this->primarySite));
     }
 }

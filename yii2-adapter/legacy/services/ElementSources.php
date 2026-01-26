@@ -109,7 +109,7 @@ class ElementSources extends Component
      */
     public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
-        return app(\CraftCms\Cms\Element\ElementSources::class)->getPages($elementType, $context, $withDisabled)->all();
+        return app(\CraftCms\Cms\Element\ElementSources::class)->getPages($elementType)->all();
     }
 
     /**

@@ -515,11 +515,15 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 $user->can("saveEntries:$section->uid")
             ) {
                 // Duplicate
-                $actions[] = Duplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'asDrafts' => true,
+                ];
 
                 if ($section->type === SectionType::Structure && $section->maxLevels !== 1) {
                     $actions[] = [
                         'type' => Duplicate::class,
+                        'asDrafts' => true,
                         'deep' => true,
                     ];
                 }
@@ -1184,7 +1188,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
             if (
                 $authorIds !== $this->getAuthorIds() &&
-                Craft::$app->getUser()->checkPermission(sprintf('viewPeerEntries:%s', $this->getSection()->uid))
+                $this->canChangeAuthor()
             ) {
                 $this->setAuthorIds($authorIds);
             }
@@ -2678,10 +2682,9 @@ JS, [
             // Author
             if (
                 $section->maxAuthors !== 0 &&
-                Edition::get() !== Edition::Solo &&
-                $user->can("viewPeerEntries:$section->uid")
+                Edition::get() !== Edition::Solo
             ) {
-                $fields['authors'] = (function () use ($static, $section) {
+                $fields['authors'] = (function () use ($static, $section, $user) {
                     $authors = $this->getAuthors();
 
                     return Cp::elementSelectFieldHtml([
@@ -2698,7 +2701,7 @@ JS, [
                         ],
                         'single' => false,
                         'elements' => $authors ?: null,
-                        'disabled' => $static,
+                        'disabled' => $static || ! $this->canChangeAuthor($user),
                         'errors' => $this->getErrors('authorIds'),
                         'limit' => $section->maxAuthors,
                     ]);
@@ -2783,6 +2786,29 @@ if (revertRevisionBtn.length > 0) {
 JS;
             Craft::$app->getView()->registerJs($js);
         }
+    }
+
+    /**
+     * Returns whether the current user has permission to change this entry’s author.
+     */
+    private function canChangeAuthor(?User $user = null): bool
+    {
+        if (! $user && ! $user = Auth::user()) {
+            return false;
+        }
+
+        $section = $this->getSection();
+
+        if (! $user->can("viewPeerEntries:$section->uid")) {
+            return false;
+        }
+
+        $authorIds = $this->getAuthorIds();
+
+        return
+            empty($authorIds) ||
+            in_array($user->id, $authorIds) ||
+            $user->can("changeAuthorForPeerEntries:$section->uid");
     }
 
     /**

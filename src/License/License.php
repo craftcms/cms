@@ -7,6 +7,7 @@ namespace CraftCms\Cms\License;
 use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\Data\LicenseData;
@@ -103,14 +104,29 @@ final readonly class License
      *
      * @return array{0:string,1:string,2:array|null}[]
      */
-    public function issues(bool $withUnresolvables = true, bool $fetch = false): array
+    public function issues(array|bool|null $only = null, bool $fetch = false): array
     {
-        /** @var ?User $user */
-        $user = $this->auth->user();
-
-        if (! $user) {
-            return [];
+        // maintain BC support for $withUnresolvables
+        // todo: remove support for true/false
+        if (is_bool($only)) {
+            if ($only) {
+                $only = null;
+            } else {
+                $only = [
+                    LicenseKeyStatus::Trial->value,
+                    LicenseKeyStatus::Astray->value,
+                    'wrong_edition',
+                ];
+            }
         }
+
+        $only ??= [
+            LicenseKeyStatus::Invalid->value,
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Mismatched->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ];
 
         $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached();
 
@@ -134,11 +150,11 @@ final readonly class License
             }
 
             $issues[] = match (true) {
-                $licenseData->status === LicenseKeyStatus::Invalid => $this->statusIssueInvalid($licenseData, $withUnresolvables),
-                $licenseData->status === LicenseKeyStatus::Trial => $this->statusIssueTrial($licenseData),
-                $licenseData->status === LicenseKeyStatus::Mismatched => $this->statusIssueMismatched($licenseData, $withUnresolvables),
-                $licenseData->status === LicenseKeyStatus::Astray => $this->statusIssueAstray($licenseData),
-                $licenseData->licenseEdition !== $licenseData->currentEdition => $this->issueWrongEdition($licenseData),
+                $licenseData->status === LicenseKeyStatus::Invalid => $this->statusIssueInvalid($licenseData, $only),
+                $licenseData->status === LicenseKeyStatus::Trial => $this->statusIssueTrial($licenseData, $only),
+                $licenseData->status === LicenseKeyStatus::Mismatched => $this->statusIssueMismatched($licenseData, $only),
+                $licenseData->status === LicenseKeyStatus::Astray => $this->statusIssueAstray($licenseData, $only),
+                $licenseData->licenseEdition !== $licenseData->currentEdition => $this->issueWrongEdition($licenseData, $only),
                 default => [],
             };
 
@@ -165,7 +181,7 @@ final readonly class License
                 currentEditionName: Edition::get()->name,
                 licenseEdition: $licenseInfo['edition'],
                 licenseEditionName: $licenseEdition->name,
-                version: app('Craft')->getVersion(),
+                version: Cms::VERSION,
                 status: $licenseInfo['status'],
             );
         }
@@ -201,9 +217,9 @@ final readonly class License
         );
     }
 
-    private function statusIssueInvalid(LicenseData $licenseData, bool $withUnresolvables): array
+    private function statusIssueInvalid(LicenseData $licenseData, array|bool|null $only = null): array
     {
-        if (! $withUnresolvables) {
+        if (! in_array(LicenseKeyStatus::Invalid->value, $only)) {
             return [];
         }
 
@@ -215,8 +231,12 @@ final readonly class License
         ];
     }
 
-    private function statusIssueTrial(LicenseData $licenseData): array
+    private function statusIssueTrial(LicenseData $licenseData, array|bool|null $only = null): array
     {
+        if (! in_array(LicenseKeyStatus::Trial->value, $only)) {
+            return [];
+        }
+
         // trial license
         return [
             $licenseData->isMultiEdition() ? sprintf('%s %s', $licenseData->name, $licenseData->currentEditionName) : $licenseData->name,
@@ -230,9 +250,9 @@ final readonly class License
         ];
     }
 
-    private function statusIssueMismatched(LicenseData $licenseData, bool $withUnresolvables): array
+    private function statusIssueMismatched(LicenseData $licenseData, array|bool|null $only = null): array
     {
-        if (! $withUnresolvables) {
+        if (! in_array(LicenseKeyStatus::Mismatched->value, $only)) {
             return [];
         }
 
@@ -308,8 +328,12 @@ final readonly class License
         ];
     }
 
-    private function statusIssueAstray(LicenseData $licenseData): array
+    private function statusIssueAstray(LicenseData $licenseData, array|bool|null $only = null): array
     {
+        if (! in_array(LicenseKeyStatus::Astray->value, $only)) {
+            return [];
+        }
+
         // updated too far
         return [
             sprintf('%s %s', $licenseData->name, $licenseData->version),
@@ -325,8 +349,12 @@ final readonly class License
         ];
     }
 
-    private function issueWrongEdition(LicenseData $licenseData): array
+    private function issueWrongEdition(LicenseData $licenseData, array|bool|null $only = null): array
     {
+        if (! in_array('wrong_edition', $only)) {
+            return [];
+        }
+
         // wrong edition
         $message = t(
             '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
