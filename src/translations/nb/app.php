@@ -243,6 +243,7 @@ return [
     'Change icon' => 'Bytt ikon',
     'Change logo' => 'Bytt logo',
     'Change photo' => 'Bytt bilde',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => 'Endringslogg',
     'Changes discarded.' => 'Endringer forkastet.',
     'Changing this may result in data loss.' => 'Å endre denne kan føre til tap av data.',
