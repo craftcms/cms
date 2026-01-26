@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume}のルート',
     '“Add” Button Label' => '「追加」ボタンラベル',
     '“New” Button Label' => '「新規」ボタンラベル',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '「{extension}」は許可されていないファイル拡張子です。',
     '“{filename}” is not allowed in this field.' => '「{filename}」はこのフィールドで使用できません。',
     '“{filename}” is too large.' => '「{filename}」は大きすぎます。',
