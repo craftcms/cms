@@ -1097,6 +1097,7 @@ JS, [
                     'editable' => $editable,
                     'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
                     'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
+                    'duplicatable-as-draft' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
                     'copyable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
                     'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
                     'deletable-for-site' => (
@@ -3130,9 +3131,26 @@ JS, [
                 $tab->uid = Str::uuid()->toString();
             }
 
+            $layoutElements = [];
+
             foreach ($tab->getElements() as $layoutElement) {
-                $layoutElement->uid ??= Str::uuid()->toString();
+                // If this is a custom field, make sure the field still exists
+                if ($layoutElement instanceof CustomField) {
+                    try {
+                        $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+                }
+
+                if (!isset($layoutElement->uid)) {
+                    $layoutElement->uid = Str::uuid()->toString();
+                }
+
+                $layoutElements[] = $layoutElement;
             }
+
+            $tab->setElements($layoutElements);
         }
 
         $view = Craft::$app->getView();

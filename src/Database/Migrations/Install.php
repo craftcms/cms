@@ -413,6 +413,7 @@ class Install extends Migration
             $table->string('titleTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('titleFormat')->nullable();
+            $table->boolean('allowLineBreaksInTitles')->default(false);
             $table->boolean('showSlugField')->default(true)->nullable();
             $table->string('slugTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
             $table->text('slugTranslationKeyFormat')->nullable();

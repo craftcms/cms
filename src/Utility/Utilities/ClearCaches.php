@@ -108,7 +108,9 @@ final class ClearCaches extends Utility
             [
                 'key' => 'data',
                 'label' => t('Data caches'),
-                'info' => t('Anything cached with `Cache::put`'),
+                'info' => t('Anything cached with {method}', [
+                    'method' => '`Cache::put`',
+                ]),
                 'action' => [Cache::getFacadeRoot(), 'clear'],
             ],
             [

@@ -629,6 +629,12 @@ final class UserPermissions
                         new Permission(
                             key: "savePeerEntries:$section->uid",
                             label: mb_ucfirst(t('Save other users’ {type}', ['type' => $pluralType])),
+                            nested: collect([
+                                new Permission(
+                                    key: "changeAuthorForPeerEntries:$section->uid",
+                                    label: t('Change the author of other users’ entries'),
+                                ),
+                            ]),
                         ),
                         $hasCustomPropagation ? new Permission(
                             key: "deletePeerEntriesForSite:$section->uid",

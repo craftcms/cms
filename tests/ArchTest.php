@@ -18,6 +18,11 @@ arch('Don\'t use legacy logging')
     ->not()
     ->toBeUsed();
 
+arch('Don\'t use legacy translations')
+    ->expect('Craft::t')
+    ->not()
+    ->toBeUsed();
+
 /**
  * We only want our own Env helpers to be used.
  */

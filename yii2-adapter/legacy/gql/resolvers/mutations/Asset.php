@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Http;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class Asset
@@ -240,7 +241,7 @@ class Asset extends ElementMutationResolver
                 }
 
                 if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                    throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                    throw new AssetDisallowedExtensionException(t('“{$extension}” is not an allowed file extension.'));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -263,7 +264,7 @@ class Asset extends ElementMutationResolver
 
             $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                throw new AssetDisallowedExtensionException(t('“{$extension}” is not an allowed file extension.'));
             }
 
             // Download the file

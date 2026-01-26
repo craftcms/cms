@@ -49,6 +49,15 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
 ]);
 
+test('convertLineBreaks', function (string $expected, string $string) {
+    expect(Str::convertLineBreaks($string))->toBe($expected);
+})->with([
+    ['foo bar', 'foo bar'],
+    ["foo\nbar", "foo\nbar"],
+    ["foo\nbar", "foo\rbar"],
+    ["foo\nbar", "foo\r\nbar"],
+]);
+
 test('encDec', function (string $string) {
     $enc = Str::encenc($string);
     expect($enc)->toStartWith('base64:');

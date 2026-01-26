@@ -118,6 +118,12 @@ final readonly class Revisions
 
             DB::beginTransaction();
             try {
+                // Even if no existing revision info was found, there could be an orphaned row in there
+                DB::table(Table::REVISIONS)
+                    ->where('canonicalId', $canonical->id)
+                    ->where('num', $num)
+                    ->delete();
+
                 // Create the revision row
                 $newAttributes['revisionId'] = DB::table(Table::REVISIONS)->insertGetId([
                     'canonicalId' => $canonical->id,

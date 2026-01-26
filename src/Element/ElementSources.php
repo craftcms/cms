@@ -102,7 +102,7 @@ final class ElementSources
             ->sources($elementType, $context)
             ->when(
                 ! $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
             );
 
         if ($page && isset($sources[0]['page'])) {
@@ -251,17 +251,15 @@ final class ElementSources
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  string  $context  The context
-     * @param  bool  $withDisabled  Whether disabled sources should be included
      * @return Collection<string>
      */
-    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): Collection
+    public function getPages(string $elementType): Collection
     {
-        return $this->getSources($elementType, $context, $withDisabled)
-            ->map(fn (array $source) => $source['page'] ?? null)
-            ->filter()
-            ->unique()
-            ->values();
+        return collect($this->sourceConfigs($elementType) ?? [])
+            ->filter(fn (array $source) => isset($source['page']))
+            ->groupBy('page')
+            ->filter(fn (Collection $pageWithSources) => $pageWithSources->contains(fn (array $source) => ! isset($source['disabled']) || $source['disabled'] === true))
+            ->keys();
     }
 
     /**
@@ -331,7 +329,7 @@ final class ElementSources
 
         return array_any(
             $user->getGroups(),
-            fn ($group) => in_array($group->uid, $source['userGroups'], true)
+            fn ($group) => in_array($group->uid, $source['userGroups'], true),
         );
     }
 
@@ -701,7 +699,7 @@ final class ElementSources
 
         return Arr::first(
             $sourceConfigs,
-            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey
+            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey,
         );
     }
 
@@ -713,7 +711,7 @@ final class ElementSources
     public function getPageSettings(string $elementType): array
     {
         return $this->projectConfig->get(
-            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
+            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
         ) ?? [];
     }
 

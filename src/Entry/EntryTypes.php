@@ -138,6 +138,7 @@ final class EntryTypes
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
+                'allowLineBreaksInTitles',
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
@@ -328,6 +329,7 @@ final class EntryTypes
             $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
+            $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;

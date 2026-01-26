@@ -46,7 +46,7 @@ final class EntryTypesController
         Request $request,
         Fields $fields,
         GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
+        private readonly EntryTypes $entryTypes,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 

@@ -612,6 +612,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $labels[] = array_pop($options)['label'];
         }
 
+        $labels = array_map(Html::encode(...), $labels);
+
         return implode(', ', $labels);
     }
 

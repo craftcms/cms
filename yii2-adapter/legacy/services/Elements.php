@@ -88,6 +88,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
+use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\t;
 
 /**
@@ -4240,6 +4241,10 @@ class Elements extends Component
 
                             foreach ($generatedFields as $field) {
                                 $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                // handle 'true'/'false'/'null'/int/float values
+                                $value = normalizeValue($value) ?? '';
+
                                 if ($value !== ($content[$field['uid']] ?? '')) {
                                     $updated = true;
                                 }

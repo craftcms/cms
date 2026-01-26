@@ -1118,7 +1118,9 @@ class ElementHelper
                 $element->hasProvisionalChanges = true;
 
                 foreach ($draft->getModifiedAttributes() as $name) {
-                    $element->$name = $draft->$name;
+                    if ($element->canSetProperty($name)) {
+                        $element->$name = $draft->$name;
+                    }
                 }
 
                 foreach ($draft->getModifiedFields() as $handle) {
