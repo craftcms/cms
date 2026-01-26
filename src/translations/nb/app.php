@@ -2034,7 +2034,6 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{value} is not a valid language.' => '{value} er ikke et gyldig språk.',
     '{value} is not a valid site language.' => '{value} er ikke et gyldig nettstedspråk.',
     '{volume} root' => '{volume} rot',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '«{extension}» er ikke en gyldig filtype.',
     '“{filename}” is not allowed in this field.' => '«{filename}» er ikke tillatt for dette feltet.',
     '“{filename}” is too large.' => '«{filename}» er for stor.',
