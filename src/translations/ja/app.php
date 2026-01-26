@@ -243,6 +243,7 @@ return [
     'Change icon' => 'アイコンを変更',
     'Change logo' => 'ロゴを変更',
     'Change photo' => '写真を変更',
+    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
     'Changelog' => '変更ログ',
     'Changes discarded.' => '変更を破棄しました。',
     'Changing this may result in data loss.' => 'これを変更するとデータが失われる場合があります。',
