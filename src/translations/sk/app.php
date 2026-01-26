@@ -2356,7 +2356,6 @@ return [
     '{volume} root' => '{volume} koreň',
     '“Add” Button Label' => 'Štítok tlačidla „Pridať“',
     '“New” Button Label' => 'Štítok tlačidla „Nový“',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '„{extension}“ nie je povolená prípona súboru.',
     '“{filename}” is not allowed in this field.' => '„{filename}“ nie je v tomto poli povolený.',
     '“{filename}” is too large.' => 'Súbor {filename} je príliš veľký.',
