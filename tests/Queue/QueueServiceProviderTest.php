@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueServiceProvider;
@@ -44,7 +45,7 @@ it('cleans up progress when job is processed', function () {
 
         public function getQueue(): string
         {
-            return 'craft';
+            return Cms::config()->queueName;
         }
     };
 
@@ -72,7 +73,7 @@ it('tracks failed jobs with error message', function () {
 
         public function getQueue(): string
         {
-            return 'craft';
+            return Cms::config()->queueName;
         }
     };
 
@@ -96,7 +97,7 @@ it('handles jobs without uuid method gracefully', function () {
     {
         public function getQueue(): string
         {
-            return 'craft';
+            return Cms::config()->queueName;
         }
 
         public function payload(): array
@@ -125,7 +126,7 @@ it('handles jobs with null uuid gracefully', function () {
 
         public function getQueue(): string
         {
-            return 'craft';
+            return Cms::config()->queueName;
         }
     };
 
@@ -167,7 +168,7 @@ it('does not track jobs on non-tracked queues', function () {
 
         public function getQueue(): string
         {
-            return 'default';
+            return 'non-tracked';
         }
     };
 
