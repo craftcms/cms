@@ -806,11 +806,11 @@ class Cp extends Component
         }, $options);
     }
 
-    private function formatLegacyOptions(array $options): array
+    private function formatLegacyOptions(array $originalOptions): array
     {
         $options = [];
 
-        foreach ($options as $value) {
+        foreach ($originalOptions as $value) {
             if ($value['type'] === 'optgroup') {
                 $options[] = ['optgroup' => $value['label']];
                 array_push($options, ...($value['options'] ?? []));
