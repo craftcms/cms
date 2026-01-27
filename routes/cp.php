@@ -163,9 +163,12 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/sites/{site}', [SitesController::class, 'edit']);
 
         // Site Groups
-        Route::post('settings/site-groups', [SiteGroupsController::class, 'store']);
-        Route::delete('settings/site-groups/{groupId}', [SiteGroupsController::class, 'destroy'])
-            ->name('settings.site-groups.destroy');
+        Route::middleware(RequireAdminChanges::class)
+            ->group(function () {
+                Route::post('settings/site-groups', [SiteGroupsController::class, 'store']);
+                Route::delete('settings/site-groups/{groupId}', [SiteGroupsController::class, 'destroy'])
+                    ->name('settings.site-groups.destroy');
+            });
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
