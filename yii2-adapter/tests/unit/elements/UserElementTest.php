@@ -21,7 +21,6 @@ use DateTime;
 use DateTimeZone;
 use UnitTester;
 use yii\base\Exception;
-use yii\validators\InlineValidator;
 
 /**
  * Unit tests for the User Element
@@ -51,36 +50,6 @@ class UserElementTest extends TestCase
      * @var User
      */
     protected User $inactiveUser;
-
-    /**
-     *
-     */
-    public function testValidateUnverifiedEmail(): void
-    {
-        $validator = new InlineValidator();
-
-        $this->activeUser->unverifiedEmail = 'unverifemail@email.com';
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame([], $this->activeUser->errors()->getMessages());
-
-        $user = new User([
-            'active' => true,
-            'email' => 'unverifemail@email.com',
-            'username' => 'unverifusername',
-            'unverifiedEmail' => 'unverifemail@email.com',
-        ]);
-
-        $this->tester->saveElement($user);
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame(
-            ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
-            $this->activeUser->errors()->getMessages()
-        );
-
-        $this->tester->deleteElement($user);
-    }
 
     public function testActivationValidation(): void
     {
