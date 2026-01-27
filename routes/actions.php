@@ -34,7 +34,6 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -319,13 +318,6 @@ Route::prefix(implode('/', [
         ])->group(function () {
             Route::post('sections/save-section', [SectionsController::class, 'store']);
             Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
-        });
-
-        // Sites & Site Groups
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
         });
 
         // Structures

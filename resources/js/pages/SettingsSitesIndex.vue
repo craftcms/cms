@@ -7,12 +7,12 @@
     getCoreRowModel,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {computed, h, ref} from 'vue';
+  import {computed, h, nextTick, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
-  import {create, edit} from '@actions/Settings/SitesController';
+  import {create, edit, reorder} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
@@ -59,6 +59,39 @@
     }
 
     modalActive.value = true;
+  }
+
+  const siteIds = ref(props.sites.map((site) => site.id));
+  const sites = computed(() => {
+    return siteIds.value
+      .map((id) => props.sites.find((site) => site.id === id))
+      .filter(Boolean);
+  });
+
+  watch(siteIds, (newValue, oldValue) => {
+    // Defer to next tick to avoid issues during drag-and-drop event handling
+    nextTick(() => {
+      router.post(
+        reorder(),
+        {
+          ids: [...newValue], // Copy to ensure we have the current value
+        },
+        {
+          preserveScroll: true,
+          preserveState: true,
+          onError: () => {
+            siteIds.value = oldValue;
+          },
+        }
+      );
+    });
+  });
+
+  function handleReorder(startIndex: number, finishIndex: number) {
+    const newIds = [...siteIds.value];
+    const [id] = newIds.splice(startIndex, 1);
+    newIds.splice(finishIndex, 0, id);
+    siteIds.value = newIds;
   }
 
   const columns = ref([
@@ -121,20 +154,21 @@
       header: () => t('Group'),
     }),
     columnHelper.display({
-      id: 'delete',
+      id: 'actions',
       cell: ({row}) =>
-        !row.original.primary
-          ? h(
-              'div',
-              {
-                class: 'flex justify-end gap-2',
-              },
-              h(DeleteSiteButton, {
-                site: row.original,
-                class: 'whitespace-normal',
-              })
-            )
-          : null,
+        h(
+          'div',
+          {
+            class: 'flex justify-end',
+          },
+          [
+            h(DeleteSiteButton, {
+              site: row.original,
+              disabled: row.original.primary,
+              class: 'whitespace-normal',
+            }),
+          ]
+        ),
       meta: {
         wrap: true,
       },
@@ -143,12 +177,13 @@
 
   const sitesTable = useVueTable({
     get data() {
-      return props.sites;
+      return sites.value;
     },
     get columns() {
       return columns.value;
     },
     getCoreRowModel: getCoreRowModel<Site>(),
+    getRowId: (row) => row.id.toString(),
     defaultColumn: {
       // @ts-ignore this is technically invalid, but gives us the behavior we want
       size: 'auto',
@@ -252,7 +287,18 @@
       </template>
 
       <template v-if="sites.length">
-        <AdminTable :table="sitesTable"></AdminTable>
+        <AdminTable
+          :table="sitesTable"
+          :read-only="readOnly"
+          :reorderable="!!group?.id"
+          @reorder="handleReorder"
+        >
+          <template #drag-preview="{row}">
+            <div class="border-border-subtle rounded p-2 bg-white">
+              {{ row.original.name }}
+            </div>
+          </template>
+        </AdminTable>
       </template>
       <template v-else>
         <div class="py-20">

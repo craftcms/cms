@@ -156,6 +156,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)
             ->group(function () {
                 Route::get('settings/sites/new', [SitesController::class, 'create']);
+                Route::post('settings/sites/reorder', [SitesController::class, 'reorder']);
                 Route::post('settings/sites', [SitesController::class, 'store']);
                 Route::delete('settings/sites/{site}', [SitesController::class, 'destroy']);
             });
