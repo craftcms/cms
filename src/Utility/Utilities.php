@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility;
 
-use craft\queue\QueueInterface;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
@@ -50,18 +49,15 @@ final readonly class Utilities
                 PhpInfo::class,
             )
             ->when(
-                Edition::get()->value >= Edition::Pro->value,
+                Edition::isAtLeast(Edition::Pro),
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->unless(
                 empty(app('Craft')->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
-            ->when(
-                app('Craft')->getQueue() instanceof QueueInterface,
-                fn (Collection $c) => $c->push(QueueManager::class)
-            )
             ->push(
+                QueueManager::class,
                 ClearCaches::class,
                 DeprecationErrors::class,
             )

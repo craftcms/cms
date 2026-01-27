@@ -43,11 +43,9 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
-use craft\helpers\Queue;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
-use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
 use craft\services\Auth;
 use craft\services\Dashboard;
@@ -81,6 +79,7 @@ use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
@@ -598,14 +597,14 @@ class Yii2ServiceProvider extends ServiceProvider
             ]));
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $event->oldPrimarySiteId,
                     ],
-                    'siteId' => $event->site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $event->site->id,
+                    isNewSite: true,
+                ));
             }
         });
 

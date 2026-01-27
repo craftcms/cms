@@ -18,8 +18,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Queue;
-use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
@@ -27,6 +25,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -1210,9 +1209,7 @@ JS, [
         if (isset($this->oldSettings)) {
             $oldLocalizeRelations = (bool) ($this->oldSettings['localizeRelations'] ?? false);
             if ($this->localizeRelations !== $oldLocalizeRelations) {
-                Queue::push(new LocalizeRelations([
-                    'fieldId' => $this->id,
-                ]));
+                dispatch(new LocalizeRelations($this->id));
             }
         }
 

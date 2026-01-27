@@ -19,9 +19,6 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
-use craft\helpers\Queue;
-use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
@@ -34,6 +31,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -1655,15 +1654,15 @@ JS,
                 ?? PropagationMethod::All;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
-                Queue::push(new ApplyNewPropagationMethod([
-                    'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                        'name' => $this->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
+                dispatch(new ApplyNewPropagationMethod(
+                    elementType: Entry::class,
+                    criteria: [
                         'fieldId' => $this->id,
                     ],
-                ]));
+                    description: I18N::prep('Applying new propagation method to {name} entries', [
+                        'name' => $this->name,
+                    ]),
+                ));
             } else {
                 $resaveSiteIds = [];
 
@@ -1676,12 +1675,9 @@ JS,
                 }
 
                 if (! empty($resaveSiteIds)) {
-                    Queue::push(new ResaveElements([
-                        'description' => I18N::prep('Resaving {name} entries', [
-                            'name' => $this->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
                             'fieldId' => $this->id,
                             'siteId' => $resaveSiteIds,
                             'unique' => true,
@@ -1690,7 +1686,10 @@ JS,
                             'provisionalDrafts' => null,
                             'revisions' => null,
                         ],
-                    ]));
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $this->name,
+                        ]),
+                    ));
                 }
             }
         }

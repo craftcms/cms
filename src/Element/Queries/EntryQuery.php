@@ -300,7 +300,7 @@ final class EntryQuery extends ElementQuery
 
         // If the type is set, go with that instead of the section
         if ($this->typeId) {
-            foreach ($this->typeId as $typeId) {
+            foreach (Arr::wrap($this->typeId) as $typeId) {
                 $tags[] = "entryType:$typeId";
             }
         } elseif ($this->sectionId) {

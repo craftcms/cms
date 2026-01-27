@@ -7,8 +7,8 @@
 
 namespace craft\web;
 
+use Carbon\CarbonInterval;
 use Craft;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -205,18 +205,8 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getRemainingSessionTime(): int
     {
         // Are they logged in?
-        if (!Auth::guest()) {
-            if (!isset($this->authTimeout)) {
-                // The session duration must have been empty (expire when the HTTP session ends)
-                return -1;
-            }
-
-            $expire = \Illuminate\Support\Facades\Session::get($this->authTimeoutParam);
-            $time = DateTimeHelper::currentTimeStamp();
-
-            if ($expire !== null && $expire > $time) {
-                return $expire - $time;
-            }
+        if (Auth::check()) {
+            return (int) CarbonInterval::minutes(config('session.lifetime', 120))->totalSeconds;
         }
 
         return 0;

@@ -508,23 +508,15 @@ class Install extends Migration
             $table->text('value');
         });
 
-        Schema::create('queue', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->string('channel')->default('queue');
-            $table->binary('job');
-            $table->text('description')->nullable();
-            $table->integer('timePushed');
-            $table->integer('ttr');
-            $table->integer('delay')->default(0);
-            $table->unsignedInteger('priority')->default(1024);
-            $table->dateTime('dateReserved')->nullable();
-            $table->integer('timeUpdated')->nullable();
-            $table->smallInteger('progress')->default(0);
+        Schema::create('jobprogress', function (Blueprint $table) {
+            $table->string('uid')->primary();
+            $table->string('description')->nullable();
+            $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
+            $table->unsignedTinyInteger('progress')->default(0);
             $table->string('progressLabel')->nullable();
-            $table->integer('attempt')->nullable();
-            $table->boolean('fail')->default(false)->nullable();
-            $table->dateTime('dateFailed')->nullable();
             $table->text('error')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
         });
 
         Schema::create('recoverycodes', function (Blueprint $table) {
@@ -901,8 +893,6 @@ class Install extends Migration
         Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
         Schema::createIndex(Table::PLUGINS, ['handle'], unique: true);
-        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
-        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
         Schema::createIndex(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
         Schema::createIndex(Table::RELATIONS, ['sourceId']);
         Schema::createIndex(Table::RELATIONS, ['targetId']);

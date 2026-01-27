@@ -20,21 +20,19 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
-use craft\queue\jobs\GenerateImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -122,12 +120,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         if (!$index->fileExists) {
             if (!$immediately) {
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
-                Queue::push(new GenerateImageTransform([
-                    'transformId' => $index->id,
-                    'description' => I18N::prep('Generating image transform for {file}', [
+                dispatch(new GenerateImageTransform(
+                    transformId: $index->id,
+                    description: I18N::prep('Generating image transform for {file}', [
                         'file' => $asset->getFilename(),
                     ]),
-                ]), 2048);
+                ))->onQueue(Cms::config()->lowPriorityQueueName);
 
                 // Prevent the page from being cached
                 if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
