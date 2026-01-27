@@ -151,7 +151,7 @@ final readonly class SitesController
         ]);
     }
 
-    public function store(Request $request, Site $siteData): Response
+    public function store(Request $request, Site $siteData): RedirectResponse
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
@@ -190,7 +190,7 @@ final readonly class SitesController
 
         $this->sites->reorderSites($ids);
 
-        return back();
+        return back()->with('success', t('New order saved.'));
     }
 
     public function destroy(Request $request, SiteModel $siteData): RedirectResponse
