@@ -275,7 +275,7 @@ return [
     'Change icon' => 'שנה אייקון',
     'Change logo' => 'שנה לוגו',
     'Change photo' => 'החלף תצלום',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'החלף את המחבר של רשומות המשתמשים האחרים',
     'Change your Password' => 'שנה את הסיסמה שלך',
     'Change' => 'שינוי',
     'Changelog' => 'שנה יומן',

@@ -275,7 +275,7 @@ return [
     'Change icon' => 'Bytt ikon',
     'Change logo' => 'Bytt logo',
     'Change photo' => 'Bytt bilde',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Endre forfatteren av andre brukeres oppføringer',
     'Change your Password' => 'Endre passordet ditt',
     'Change' => 'Endre',
     'Changelog' => 'Endringslogg',
