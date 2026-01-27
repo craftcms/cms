@@ -26,7 +26,11 @@ final class EntryRules extends ElementRules
         $rules = parent::defineRules();
 
         $rules['sectionId'] = ['nullable', 'integer', 'required_without:fieldId'];
-        $rules['fieldId'] = ['nullable', 'integer', 'missing_with:sectionId'];
+        $rules['fieldId'] = ['nullable', 'integer', function (string $attribute, mixed $value, Closure $fail) {
+            if ($this->component->sectionId && $this->component->fieldId) {
+                $fail(t('`sectionId` and `fieldId` cannot both be set on an entry.'));
+            }
+        }];
         $rules['ownerId'] = ['nullable', 'integer'];
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
         $rules['sortOrder'] = ['nullable', 'integer'];
@@ -122,13 +126,5 @@ final class EntryRules extends ElementRules
         $rules['authorIds.*'] = ['integer'];
 
         return $rules;
-    }
-
-    #[Override]
-    public function messages(): array
-    {
-        return array_merge(parent::messages(), [
-            'fieldId.missing_with' => t('`sectionId` and `fieldId` cannot both be set on an entry.'),
-        ]);
     }
 }

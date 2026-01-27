@@ -68,7 +68,7 @@ trait ValidatesWithRuleset
         $rules = $this->getRuleset()->rules();
 
         return $this->validator
-            ->setData(Arr::whereNotNull($this->getAttributes()))
+            ->setData($this->getAttributes())
             ->setCustomMessages($this->getRuleset()->messages())
             ->setRules(is_null($attributeNames)
                 ? $rules
