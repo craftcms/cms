@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use Craft;
-use craft\base\Element;
 use craft\errors\UnsupportedSiteException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
@@ -24,7 +24,6 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -147,9 +146,7 @@ final class Entries
     public function moveEntryToSection(Entry $entry, Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        if (Event::hasListeners(MovingEntryToSection::class)) {
-            Event::dispatch(new MovingEntryToSection($entry, $section));
-        }
+        event(new MovingEntryToSection($entry, $section));
 
         // Make sure the element exists
         if (! $entry->id) {
@@ -278,9 +275,7 @@ final class Entries
             }
         });
 
-        if (Event::hasListeners(EntryMovedToSection::class)) {
-            Event::dispatch(new EntryMovedToSection($entry, $section));
-        }
+        event(new EntryMovedToSection($entry, $section));
 
         return true;
     }

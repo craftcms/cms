@@ -11,11 +11,11 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\helpers\Db;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -52,8 +52,9 @@ use yii\base\InvalidConfigException;
  * @replace {elements} entries
  * @replace {twig-method} craft.entries()
  * @replace {myElement} myEntry
- * @replace {element-class} \craft\elements\Entry
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\EntryQuery} instead.
+ * @replace {element-class} \CraftCms\Cms\Entry\Elements\Entry
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\EntryQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
@@ -84,7 +85,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries in the News section
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->section('news')
      *     ->all();
      * ```
@@ -104,7 +105,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php{4}
      * // fetch Article entries in the News section
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->section('news')
      *     ->type('article')
      *     ->all();
@@ -132,7 +133,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries authored by people in the Authors group
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->authorGroup('authors')
      *     ->all();
      * ```
@@ -152,7 +153,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written in 2018
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
      *     ->all();
      * ```
@@ -171,7 +172,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written before 4/4/2018
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->before('2018-04-04')
      *     ->all();
      * ```
@@ -190,7 +191,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written in the last 7 days
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->after((new \DateTime())->modify('-7 days'))
      *     ->all();
      * ```

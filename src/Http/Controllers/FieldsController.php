@@ -290,7 +290,7 @@ final class FieldsController
             'thumbAlignment' => ['nullable', 'string'],
         ]);
 
-        $fieldLayoutConfig = $request->input('fieldLayoutConfig');
+        $fieldLayoutConfig = Component::cleanseConfig($request->input('fieldLayoutConfig'));
         $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([

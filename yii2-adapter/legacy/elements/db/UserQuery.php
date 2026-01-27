@@ -11,10 +11,10 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\helpers\Db;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -40,8 +40,8 @@ use yii\db\Expression;
  * @replace {twig-method} craft.users()
  * @replace {myElement} myUser
  * @replace {element-class} \CraftCms\Cms\User\Elements\User
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\UserQuery} instead.
- * @phpstan-ignore generics.notSubtype
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\UserQuery} instead.
+ * @phpstan-ignore generics.notSubtype, class.missingExtends
  */
 class UserQuery extends ElementQuery
 {

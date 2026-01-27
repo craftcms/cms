@@ -5742,6 +5742,57 @@ table.data tbody tr:not(.disabled).active-drop-target {
     box-shadow: none;
   }
 
+  &.tip,
+  &.warning {
+    padding-inline-start: 50px;
+
+    &::before {
+      @include mixins.icon;
+      opacity: 1;
+      position: absolute;
+      inset-block-start: 24px;
+      inset-inline-start: 18px;
+      font-size: 18px;
+      width: 24px;
+    }
+
+    &.dismissible {
+      padding-inline-end: 48px;
+    }
+
+    .tip-dismiss-btn {
+      position: absolute;
+      inset-block-start: 23px;
+      inset-inline-end: 18px;
+
+      & + p {
+        margin-block-start: 0;
+      }
+    }
+  }
+
+  &.tip {
+    border-color: var(--sky-600) !important;
+    background-color: var(--sky-050) !important;
+    color: var(--fg-notice);
+
+    &::before {
+      content: 'lightbulb';
+      color: var(--fg-notice);
+    }
+  }
+
+  &.warning {
+    border-color: var(--amber-600) !important;
+    background-color: var(--amber-050) !important;
+    color: var(--fg-warning);
+
+    &::before {
+      content: 'alert';
+      color: var(--fg-warning);
+    }
+  }
+
   &.padding-xs {
     --pane-padding: var(--xs);
   }
@@ -6542,7 +6593,7 @@ $min2ColWidth: 400px;
       transition:
         inset-inline-start linear 250ms,
         inset-inline-end linear 250ms;
-      will-change: inset-inline-start, inset-inline-end;
+      will-change: transform;
     }
   }
 

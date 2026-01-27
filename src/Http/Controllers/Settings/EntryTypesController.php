@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
 use craft\base\FieldLayoutElement;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
@@ -14,6 +13,7 @@ use craft\models\FieldLayout;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -46,7 +46,7 @@ final class EntryTypesController
         Request $request,
         Fields $fields,
         GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
+        private readonly EntryTypes $entryTypes,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 

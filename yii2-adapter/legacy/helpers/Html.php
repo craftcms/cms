@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;

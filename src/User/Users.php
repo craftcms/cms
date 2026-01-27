@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\elements\Asset;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\VolumeException;
@@ -16,11 +15,12 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\web\Request;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -343,13 +343,10 @@ final class Users
         $assetsService = Craft::$app->getAssets();
         $photoId = $user->photoId;
 
-        if (Event::hasListeners(SavingUserPhoto::class)) {
-            Event::dispatch($event = new SavingUserPhoto($user, $photoId));
-            $photoId = $event->photoId;
-        }
+        event($event = new SavingUserPhoto($user, $photoId));
 
         // If the photo exists, just replace the file.
-        if ($photoId && ($photo = Craft::$app->getAssets()->getAssetById($photoId)) !== null) {
+        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
             $assetsService->replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
             $volume = $this->userPhotoVolume();
@@ -372,9 +369,7 @@ final class Users
             $elementsService->saveElement($user, false);
         }
 
-        if (Event::hasListeners(UserPhotoSaved::class)) {
-            Event::dispatch(new UserPhotoSaved($user, $photo->id));
-        }
+        event(new UserPhotoSaved($user, $photo->id));
     }
 
     /**
@@ -453,18 +448,14 @@ final class Users
     {
         $photoId = $user->photoId;
 
-        if (Event::hasListeners(DeletingUserPhoto::class)) {
-            Event::dispatch(new DeletingUserPhoto($user, $photoId));
-        }
+        event(new DeletingUserPhoto($user, $photoId));
 
         $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto();
 
-            if (Event::hasListeners(UserPhotoDeleted::class)) {
-                Event::dispatch(new UserPhotoDeleted($user, $photoId));
-            }
+            event(new UserPhotoDeleted($user, $photoId));
         }
 
         return $result;
@@ -551,8 +542,8 @@ final class Users
         // Update the User element too
         $user->lastInvalidLoginDate = $now;
 
-        if (! $alreadyLocked && $user->locked && Event::hasListeners(UserLocked::class)) {
-            Event::dispatch(new UserLocked($user));
+        if (! $alreadyLocked && $user->locked) {
+            event(new UserLocked($user));
         }
 
         if ($indexAttributesChanged) {
@@ -569,11 +560,10 @@ final class Users
      */
     public function activateUser(User $user): void
     {
-        if (Event::hasListeners(ActivatingUser::class)) {
-            Event::dispatch($event = new ActivatingUser($user));
-            if (! $event->isValid) {
-                throw new InvalidElementException($user);
-            }
+        event($event = new ActivatingUser($user));
+
+        if (! $event->isValid) {
+            throw new InvalidElementException($user);
         }
 
         $originalUser = clone $user;
@@ -621,9 +611,7 @@ final class Users
             throw $e;
         }
 
-        if (Event::hasListeners(UserActivated::class)) {
-            Event::dispatch(new UserActivated($user));
-        }
+        event(new UserActivated($user));
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -640,11 +628,10 @@ final class Users
      */
     public function deactivateUser(User $user): void
     {
-        if (Event::hasListeners(DeactivatingUser::class)) {
-            Event::dispatch($event = new DeactivatingUser($user));
-            if (! $event->isValid) {
-                throw new InvalidElementException($user);
-            }
+        event($event = new DeactivatingUser($user));
+
+        if (! $event->isValid) {
+            throw new InvalidElementException($user);
         }
 
         DB::beginTransaction();
@@ -676,9 +663,7 @@ final class Users
             throw $e;
         }
 
-        if (Event::hasListeners(UserDeactivated::class)) {
-            Event::dispatch(new UserDeactivated($user));
-        }
+        event(new UserDeactivated($user));
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -730,11 +715,10 @@ final class Users
      */
     public function unlockUser(User $user): void
     {
-        if (Event::hasListeners(UnlockingUser::class)) {
-            Event::dispatch($event = new UnlockingUser($user));
-            if (! $event->isValid) {
-                throw new InvalidElementException($user);
-            }
+        event($event = new UnlockingUser($user));
+
+        if (! $event->isValid) {
+            throw new InvalidElementException($user);
         }
 
         DB::beginTransaction();
@@ -759,9 +743,7 @@ final class Users
         $user->invalidLoginCount = null;
         $user->lockoutDate = null;
 
-        if (Event::hasListeners(UserUnlocked::class)) {
-            Event::dispatch($event = new UserUnlocked($user));
-        }
+        event(new UserUnlocked($user));
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -777,11 +759,10 @@ final class Users
      */
     public function suspendUser(User $user): void
     {
-        if (Event::hasListeners(SuspendingUser::class)) {
-            Event::dispatch($event = new SuspendingUser($user));
-            if (! $event->isValid) {
-                throw new InvalidElementException($user);
-            }
+        event($event = new SuspendingUser($user));
+
+        if (! $event->isValid) {
+            throw new InvalidElementException($user);
         }
 
         $userModel = UserModel::findOrFail($user->id);
@@ -796,9 +777,7 @@ final class Users
             ->where('user_id', $user->id)
             ->delete();
 
-        if (Event::hasListeners(UserSuspended::class)) {
-            Event::dispatch(new UserSuspended($user));
-        }
+        event(new UserSuspended($user));
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -814,11 +793,10 @@ final class Users
      */
     public function unsuspendUser(User $user): void
     {
-        if (Event::hasListeners(UnsuspendingUser::class)) {
-            Event::dispatch($event = new UnsuspendingUser($user));
-            if (! $event->isValid) {
-                throw new InvalidElementException($user);
-            }
+        event($event = new UnsuspendingUser($user));
+
+        if (! $event->isValid) {
+            throw new InvalidElementException($user);
         }
 
         DB::beginTransaction();
@@ -840,9 +818,7 @@ final class Users
         // Update the User model too
         $user->suspended = false;
 
-        if (Event::hasListeners(UserUnsuspended::class)) {
-            Event::dispatch($event = new UserUnsuspended($user));
-        }
+        event(new UserUnsuspended($user));
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -1011,20 +987,19 @@ final class Users
 
         $newGroupIds = array_keys($newGroupIds);
 
-        if (Event::hasListeners(AssigningUserToGroups::class)) {
-            Event::dispatch($event = new AssigningUserToGroups(
-                userId: $userId,
-                groupIds: $groupIds,
-                removedGroupIds: $removedGroupIds,
-                newGroupIds: $newGroupIds,
-            ));
+        event($event = new AssigningUserToGroups(
+            userId: $userId,
+            groupIds: $groupIds,
+            removedGroupIds: $removedGroupIds,
+            newGroupIds: $newGroupIds,
+        ));
 
-            if (! $event->isValid) {
-                return false;
-            }
-            $removedGroupIds = $event->removedGroupIds;
-            $newGroupIds = $event->newGroupIds;
+        if (! $event->isValid) {
+            return false;
         }
+
+        $removedGroupIds = $event->removedGroupIds;
+        $newGroupIds = $event->newGroupIds;
 
         // Make sure the event hasn't left us with nothing to do
         if (empty($removedGroupIds) && empty($newGroupIds)) {
@@ -1058,14 +1033,12 @@ final class Users
             throw $e;
         }
 
-        if (Event::hasListeners(UserAssignedToGroups::class)) {
-            Event::dispatch(new UserAssignedToGroups(
-                userId: $userId,
-                groupIds: $groupIds,
-                removedGroupIds: $removedGroupIds,
-                newGroupIds: $newGroupIds,
-            ));
-        }
+        event(new UserAssignedToGroups(
+            userId: $userId,
+            groupIds: $groupIds,
+            removedGroupIds: $removedGroupIds,
+            newGroupIds: $newGroupIds,
+        ));
 
         $this->invalidateIndexCaches();
 
@@ -1089,13 +1062,9 @@ final class Users
             }
         }
 
-        if (Event::hasListeners(DefineDefaultUserGroups::class)) {
-            Event::dispatch($event = new DefineDefaultUserGroups($user, $groups));
+        event($event = new DefineDefaultUserGroups($user, $groups));
 
-            return $event->userGroups;
-        }
-
-        return $groups;
+        return $event->userGroups;
     }
 
     /**
@@ -1114,11 +1083,10 @@ final class Users
             return false;
         }
 
-        if (Event::hasListeners(AssigningUserToDefaultGroups::class)) {
-            Event::dispatch($event = new AssigningUserToDefaultGroups($user, $groups));
-            if (! $event->isValid) {
-                return false;
-            }
+        event($event = new AssigningUserToDefaultGroups($user, $groups));
+
+        if (! $event->isValid) {
+            return false;
         }
 
         $groupIds = Arr::pluck($groups, 'id');
@@ -1127,9 +1095,7 @@ final class Users
             return false;
         }
 
-        if (Event::hasListeners(UserAssignedToDefaultGroups::class)) {
-            Event::dispatch(new UserAssignedToDefaultGroups($user, $groups));
-        }
+        event(new UserAssignedToDefaultGroups($user, $groups));
 
         return true;
     }

@@ -5,9 +5,9 @@ namespace craft\elements\conditions\entries;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 

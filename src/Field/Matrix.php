@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
@@ -22,20 +19,22 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
-use craft\helpers\Queue;
-use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
-use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -54,7 +53,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -439,22 +438,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $entryTypes = $this->_entryTypes;
 
-        // Fire a 'defineEntryTypes' event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
-                field: $this,
-                entryTypes: $entryTypes,
-                element: $element,
-                value: $value,
-            ));
-            $entryTypes = $event->entryTypes;
-        }
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+            field: $this,
+            entryTypes: $entryTypes,
+            element: $element,
+            value: $value,
+        ));
 
-        if (empty($entryTypes)) {
+        if (empty($event->entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return array_values($entryTypes);
+        return array_values($event->entryTypes);
     }
 
     /**
@@ -1003,7 +998,7 @@ JS);
   }
 
   const getEntries = () => {
-    const entries = field.find($entrySelector);
+    const entries = field.find($entrySelector)
     const selectedEntries = entries.filter('.sel');
     return (selectedEntries.length ? selectedEntries : entries).toArray();
   };
@@ -1018,7 +1013,7 @@ JS);
           revisionId: element.data('revisionId'),
           ownerId: element.data('ownerId'),
           siteId: element.data('siteId'),
-        };
+        }
     }));
   });
 
@@ -1609,7 +1604,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
         return [
@@ -1659,15 +1654,15 @@ JS,
                 ?? PropagationMethod::All;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
-                Queue::push(new ApplyNewPropagationMethod([
-                    'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                        'name' => $this->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
+                dispatch(new ApplyNewPropagationMethod(
+                    elementType: Entry::class,
+                    criteria: [
                         'fieldId' => $this->id,
                     ],
-                ]));
+                    description: I18N::prep('Applying new propagation method to {name} entries', [
+                        'name' => $this->name,
+                    ]),
+                ));
             } else {
                 $resaveSiteIds = [];
 
@@ -1680,12 +1675,9 @@ JS,
                 }
 
                 if (! empty($resaveSiteIds)) {
-                    Queue::push(new ResaveElements([
-                        'description' => I18N::prep('Resaving {name} entries', [
-                            'name' => $this->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
                             'fieldId' => $this->id,
                             'siteId' => $resaveSiteIds,
                             'unique' => true,
@@ -1694,7 +1686,10 @@ JS,
                             'provisionalDrafts' => null,
                             'revisions' => null,
                         ],
-                    ]));
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $this->name,
+                        ]),
+                    ));
                 }
             }
         }

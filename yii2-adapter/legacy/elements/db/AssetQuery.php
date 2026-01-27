@@ -12,10 +12,10 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\models\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -39,8 +39,9 @@ use yii\db\Schema;
  * @replace {elements} assets
  * @replace {twig-method} craft.assets()
  * @replace {myElement} myAsset
- * @replace {element-class} \craft\elements\Asset
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AssetQuery} instead.
+ * @replace {element-class} \CraftCms\Cms\Asset\Elements\Asset
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AssetQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class AssetQuery extends ElementQuery
 {
@@ -66,7 +67,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php
      * // fetch assets in the Logos volume
-     * $logos = \craft\elements\Asset::find()
+     * $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->volume('logos')
      *     ->all();
      * ```
@@ -128,7 +129,7 @@ class AssetQuery extends ElementQuery
      *
      * ```php
      * // fetch only images
-     * $logos = \craft\elements\Asset::find()
+     * $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->all();
      * ```
@@ -154,7 +155,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels wide
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->width('>= 500')
      *     ->all();
@@ -175,7 +176,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels high
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->height('>= 500')
      *     ->all();
@@ -221,7 +222,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images with their 'thumb' transforms preloaded
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->withTransforms(['thumb'])
      *     ->all();

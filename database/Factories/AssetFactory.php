@@ -27,6 +27,13 @@ final class AssetFactory extends Factory
         ];
     }
 
+    public function createElement(array $attributes = []): \CraftCms\Cms\Asset\Elements\Asset
+    {
+        $model = $this->create($attributes);
+
+        return \CraftCms\Cms\Asset\Elements\Asset::find()->id($model->id)->one();
+    }
+
     #[Override]
     public function configure(): self
     {

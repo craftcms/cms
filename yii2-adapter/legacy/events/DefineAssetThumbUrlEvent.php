@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Class DefineAssetThumbUrlEvent

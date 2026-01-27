@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -9,13 +11,13 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Batchable;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseBatchedElementJob;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -30,7 +32,9 @@ use Throwable;
  * where they would have been deleted in the process.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.4.8
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod} instead.
  */
 class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {
@@ -41,7 +45,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
 
     /**
      * @var array|null The element criteria that determines which elements the
-     * new propagation method should be applied to
+     *                 new propagation method should be applied to
      */
     public ?array $criteria = null;
 
@@ -49,7 +53,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
     public array $duplicatedElementIds = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function loadData(): Batchable
     {
@@ -70,7 +74,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function processItem(mixed $item): void
     {
@@ -98,6 +102,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
 
         if (empty($otherSiteIds)) {
             $this->resaveItem($item);
+
             return;
         }
 
@@ -120,6 +125,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
 
         if (empty($otherSiteElements)) {
             $this->resaveItem($item);
+
             return;
         }
 
@@ -137,12 +143,13 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
             } catch (UnsupportedSiteException $e) {
                 // Just log it and move along
                 Log::warning(sprintf(
-                    "Unable to duplicate “%s” to site %d: %s",
+                    'Unable to duplicate “%s” to site %d: %s',
                     get_class($otherSiteElement),
                     $otherSiteElement->siteId,
                     $e->getMessage()
                 ));
                 Craft::$app->getErrorHandler()->logException($e);
+
                 continue;
             }
 
@@ -167,9 +174,9 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                         ->drafts(null)
                         ->provisionalDrafts(null)
                         ->select(['elements.id'])
-                        ->scalar();
+                        ->value('id');
 
-                    if ($parentId !== false) {
+                    if ($parentId !== null) {
                         // If we've cloned the parent, use the clone's ID instead
                         if (isset($this->duplicatedElementIds[$parentId][$newElement->siteId])) {
                             $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];
@@ -198,7 +205,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {
@@ -207,9 +214,6 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
 
     /**
      * Resave item that's being processed.
-     *
-     * @param mixed $item
-     * @return void
      */
     private function resaveItem(mixed $item): void
     {

@@ -17,7 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -540,7 +540,7 @@ class TestSetup
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
             [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
-            [Queue::class, ['getQueue', 'queue']],
+            [QueueComponent::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],

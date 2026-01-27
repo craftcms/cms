@@ -9,7 +9,7 @@ namespace craft\events;
 
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Event;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Asset preview event class.

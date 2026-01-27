@@ -8,6 +8,7 @@ use Closure;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Http\Request;
@@ -29,7 +30,11 @@ final readonly class EnforceLicenses
             return $next($request);
         }
 
-        $licenseIssues = $this->license->issues(false);
+        $licenseIssues = $this->license->issues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]);
 
         if (empty($licenseIssues)) {
             return $next($request);

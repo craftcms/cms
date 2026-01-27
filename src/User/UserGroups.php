@@ -235,9 +235,7 @@ final readonly class UserGroups
 
         $isNewGroup = ! $group->id;
 
-        if (Event::hasListeners(SavingUserGroup::class)) {
-            Event::dispatch(new SavingUserGroup($group, $isNewGroup));
-        }
+        event(new SavingUserGroup($group, $isNewGroup));
 
         $group->uid ??= $isNewGroup
             ? Str::uuid()->toString()
@@ -275,9 +273,7 @@ final readonly class UserGroups
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
         $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
 
-        if (Event::hasListeners(UserGroupSaved::class)) {
-            Event::dispatch(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
-        }
+        event(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);
@@ -297,15 +293,11 @@ final readonly class UserGroups
             return;
         }
 
-        if (Event::hasListeners(ApplyingUserGroupDelete::class)) {
-            Event::dispatch(new ApplyingUserGroupDelete($group));
-        }
+        event(new ApplyingUserGroupDelete($group));
 
         DB::table(Table::USERGROUPS)->where('uid', $uid)->delete();
 
-        if (Event::hasListeners(UserGroupDeleted::class)) {
-            Event::dispatch(new UserGroupDeleted($group));
-        }
+        event(new UserGroupDeleted($group));
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);
@@ -328,9 +320,7 @@ final readonly class UserGroups
     {
         Edition::require(Edition::Pro);
 
-        if (Event::hasListeners(DeletingUserGroup::class)) {
-            Event::dispatch(new DeletingUserGroup($group));
-        }
+        event(new DeletingUserGroup($group));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,

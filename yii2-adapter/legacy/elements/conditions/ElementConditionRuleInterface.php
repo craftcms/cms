@@ -9,7 +9,7 @@ namespace craft\elements\conditions;
 
 use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementConditionRuleInterface defines the common interface to be implemented by element condition rule classes.

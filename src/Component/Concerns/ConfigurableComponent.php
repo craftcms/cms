@@ -28,16 +28,12 @@ trait ConfigurableComponent
     {
         $attributes = array_keys(Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class));
 
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event = new DefineSettingsAttributes(
-                component: $this,
-                attributes: $attributes,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event = new DefineSettingsAttributes(
+            component: $this,
+            attributes: $attributes,
+        ));
 
-            return $event->attributes;
-        }
-
-        return $attributes;
+        return $event->attributes;
     }
 
     public static function onDefineSettingsAttributes(callable $callback): void

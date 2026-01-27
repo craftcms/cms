@@ -19,6 +19,7 @@ use yii\web\ForbiddenHttpException;
  * @property Controller $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0
  */
 class UtilityAccess extends ActionFilter
 {

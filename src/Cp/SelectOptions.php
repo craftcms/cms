@@ -35,8 +35,6 @@ class SelectOptions
      * @return array[]
      *
      * @phpstan-return array{label:string,data:array}[]
-     *
-     * @since 6.0.0
      */
     public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
@@ -110,8 +108,6 @@ class SelectOptions
 
     /**
      * Returns environment variable options for a select input.
-     *
-     * @since 6.0.0
      */
     public static function getEnvOptions(?array $allowedValues = null): array
     {
@@ -150,8 +146,6 @@ class SelectOptions
 
     /**
      * Returns environment variable options for a boolean menu.
-     *
-     * @since 6.0.0
      */
     public static function getBooleanEnvOptions(): array
     {
@@ -193,8 +187,6 @@ class SelectOptions
      * Returns environment variable options for a language menu.
      *
      * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
-     *
-     * @since 6.0.0
      */
     public static function getLanguageEnvOptions(bool $appOnly = false): array
     {
@@ -242,8 +234,6 @@ class SelectOptions
      * @param  bool  $showLocaleIds  Whether to show the hint as locale id; e.g. en, en-GB
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
-     *
-     * @since 6.0.0
      */
     public static function getLanguageOptions(
         bool $showLocaleIds = false,
@@ -292,8 +282,6 @@ class SelectOptions
 
     /**
      * Returns all options for a filesystem input.
-     *
-     * @since 6.0.0
      */
     public static function getFsOptions(): array
     {
@@ -309,8 +297,6 @@ class SelectOptions
 
     /**
      * Returns all options for a volume input.
-     *
-     * @since 6.0.0
      */
     public static function getVolumeOptions(): array
     {

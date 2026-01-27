@@ -13,6 +13,7 @@ namespace craft\filters;
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use Laravel's CORS settings instead. @see https://laravel.com/docs/12.x/routing#cors
  */
 class Cors extends \yii\filters\Cors
 {

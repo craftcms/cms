@@ -16,6 +16,7 @@ use yii\web\Session as YiiSession;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.9
+ * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session} instead.
  */
 class Session
 {

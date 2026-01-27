@@ -6,13 +6,13 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\elements\Address;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\services\ElementSources;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -1136,16 +1136,13 @@ final class ProjectConfig
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        if (Event::hasListeners(RebuildConfig::class)) {
-            Event::dispatch($event = new RebuildConfig($config));
-            $config = $event->config;
-        }
+        event($event = new RebuildConfig($config));
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
 
         // Process the changes
-        foreach ($config as $path => $value) {
+        foreach ($event->config as $path => $value) {
             $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 
@@ -1239,9 +1236,7 @@ final class ProjectConfig
 
         Log::info('Finalizing configuration parsing', [__METHOD__]);
 
-        if (Event::hasListeners(ChangesApplied::class)) {
-            Event::dispatch(new ChangesApplied);
-        }
+        event(new ChangesApplied);
 
         $this->updateParsedConfigTimesAfterRequest();
         $this->isApplyingExternalChanges = false;
@@ -1537,7 +1532,7 @@ final class ProjectConfig
         Cache::forget(self::FILE_ISSUES_CACHE_KEY);
 
         // Let plugins know about it
-        Event::dispatch(new YamlFilesWritten);
+        event(new YamlFilesWritten);
 
         $this->_updateYaml = false;
     }

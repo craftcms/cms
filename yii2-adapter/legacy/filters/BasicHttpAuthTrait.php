@@ -15,6 +15,7 @@ use yii\web\UnauthorizedHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use the `auth.basic` middleware instead. @see https://laravel.com/docs/12.x/authentication#http-basic-authentication
  */
 trait BasicHttpAuthTrait
 {

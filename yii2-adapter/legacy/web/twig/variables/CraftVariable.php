@@ -10,8 +10,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
-use craft\elements\Address;
-use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\AssetQuery;
@@ -19,15 +17,17 @@ use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\TagQuery;
-use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Auth;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Route\Routes;
@@ -171,7 +171,7 @@ class CraftVariable extends ServiceLocator
      */
     public function addresses(array $criteria = []): AddressQuery
     {
-        $query = Address::find();
+        $query = new AddressQuery(Address::class);
         Craft::configure($query, $criteria);
         return $query;
     }
@@ -184,7 +184,7 @@ class CraftVariable extends ServiceLocator
      */
     public function assets(array $criteria = []): AssetQuery
     {
-        $query = Asset::find();
+        $query = new AssetQuery(Asset::class);
         Craft::configure($query, $criteria);
         return $query;
     }
@@ -221,7 +221,7 @@ class CraftVariable extends ServiceLocator
      */
     public function entries(array $criteria = []): EntryQuery
     {
-        $query = Entry::find();
+        $query = new EntryQuery(Entry::class);
         Craft::configure($query, $criteria);
         return $query;
     }
@@ -320,7 +320,7 @@ class CraftVariable extends ServiceLocator
      * Returns a new [user query](https://craftcms.com/docs/5.x/reference/element-types/users.html#querying-users).
      *
      * @param array $criteria
-     * @return \CraftCms\Cms\Database\Queries\UserQuery
+     * @return \CraftCms\Cms\Element\Queries\UserQuery
      */
     public function users(array $criteria = []): UserQuery
     {

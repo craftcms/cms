@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Entry\Data;
 use Craft;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
@@ -54,6 +54,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
         public ?string $titleFormat = null,
+        public bool $allowLineBreaksInTitles = false,
         public ?bool $showSlugField = true,
         public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
         public ?string $slugTranslationKeyFormat = null,
@@ -305,6 +306,7 @@ JS, [
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,
+            'allowLineBreaksInTitles' => $this->allowLineBreaksInTitles,
             'showSlugField' => $this->showSlugField,
             'slugTranslationMethod' => $this->slugTranslationMethod->value,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,

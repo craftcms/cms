@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
  * Class DefineEntryTypesForFieldEvent

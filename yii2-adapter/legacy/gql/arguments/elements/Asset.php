@@ -8,9 +8,9 @@
 namespace craft\gql\arguments\elements;
 
 use Craft;
-use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use GraphQL\Type\Definition\Type;
 
 /**

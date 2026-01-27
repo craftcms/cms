@@ -9,9 +9,7 @@ namespace crafttests\unit\gql;
 
 use Codeception\Stub;
 use Craft;
-use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
-use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\Tag as TagElement;
 use craft\errors\GqlException;
@@ -32,6 +30,8 @@ use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Table;
 use Exception;

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\elements\Entry;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Typecast;
 
 test('scalar properties', function (string $class, string $property, mixed $expected, mixed $value) {

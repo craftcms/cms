@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
@@ -17,14 +16,9 @@ use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
-use craft\elements\Address;
-use craft\elements\Asset;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
 use craft\errors\UnsupportedSiteException;
@@ -46,16 +40,22 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
-use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -88,6 +88,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
+use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\t;
 
 /**
@@ -577,7 +578,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -917,7 +918,7 @@ class Elements extends Component
     public function getElementById(
         int $elementId,
         ?string $elementType = null,
-        array|int|string $siteId = null,
+        array|int|string|null $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
@@ -1592,7 +1593,7 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query The element query to fetch elements with
+     * @param ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
@@ -1603,7 +1604,7 @@ class Elements extends Component
      * @since 3.2.0
      */
     public function resaveElements(
-        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query,
+        ElementQueryInterface $query,
         bool $continueOnError = false,
         bool $skipRevisions = true,
         ?bool $updateSearchIndex = null,
@@ -2461,17 +2462,17 @@ class Elements extends Component
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "\{$refHandle:";
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . ':',
-                    'replace' => $refTagPrefix . $prevailingElement->id . ':',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . ':',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: I18N::prep('Updating element references'),
+                ));
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . '}',
-                    'replace' => $refTagPrefix . $prevailingElement->id . '}',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . '}',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: $refTagPrefix . $prevailingElement->id . '}',
+                ));
             }
 
             // Fire an 'afterMergeElements' event
@@ -2678,7 +2679,8 @@ class Elements extends Component
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
-            ->column();
+            ->pluck('id')
+            ->all();
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -3215,7 +3217,7 @@ class Elements extends Component
 
                     if ($refType === 'id') {
                         $elementQuery->id($refNames);
-                    } else {
+                    } elseif (method_exists($elementQuery, 'ref')) {
                         $elementQuery->ref($refNames);
                     }
 
@@ -3516,15 +3518,9 @@ class Elements extends Component
                         $query = $this->createElementQuery($map['elementType']);
 
                         // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                        if ($query instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
-                            $query->reorder();
-                            $query->offset(null);
-                            $query->limit(null);
-                        } else {
-                            $query->orderBy = null;
-                            $query->offset = null;
-                            $query->limit = null;
-                        }
+                        $query->reorder();
+                        $query->offset(null);
+                        $query->limit(null);
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
@@ -3544,9 +3540,7 @@ class Elements extends Component
                         if (!$query->id) {
                             $query->id = array_keys($uniqueTargetElementIds);
                         } else {
-                            $query->andWhere([
-                                'elements.id' => array_keys($uniqueTargetElementIds),
-                            ]);
+                            $query->whereIn('elements.id', array_keys($uniqueTargetElementIds));
                         }
                     }
 
@@ -3676,7 +3670,7 @@ class Elements extends Component
                         // Pass the instantiated elements to afterPopulate()
                         $query->asArray = false;
                         if ($query instanceof ElementQueryInterface) {
-                            $query->afterPopulate($flatTargetElements);
+                            $query->afterHydrate(collect($flatTargetElements));
                         }
                     }
 
@@ -4247,6 +4241,10 @@ class Elements extends Component
 
                             foreach ($generatedFields as $field) {
                                 $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                // handle 'true'/'false'/'null'/int/float values
+                                $value = normalizeValue($value) ?? '';
+
                                 if ($value !== ($content[$field['uid']] ?? '')) {
                                     $updated = true;
                                 }

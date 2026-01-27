@@ -29,6 +29,7 @@ final class EntryType extends BaseModel
             'hasTitleField' => 'bool',
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
+            'allowLineBreaksInTitles' => 'bool',
         ];
     }
 

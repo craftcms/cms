@@ -8,8 +8,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -31,7 +29,9 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -899,20 +899,15 @@ final class Assets extends BaseRelationField
             }
         }
 
-        // Fire a 'locateUploadedFiles' event
-        if ($this->hasComponentListeners(self::EVENT_LOCATE_UPLOADED_FILES)) {
-            $event = new LocateUploadedFiles(
-                field: $this,
-                element: $element,
-                files: $files,
-            );
+        $event = new LocateUploadedFiles(
+            field: $this,
+            element: $element,
+            files: $files,
+        );
 
-            $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
 
-            return $event->files;
-        }
-
-        return $files;
+        return $event->files;
     }
 
     /**

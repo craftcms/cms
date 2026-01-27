@@ -2,15 +2,15 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
+use Illuminate\Database\Query\Builder;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -145,29 +145,23 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
             $valueSql = $field->getValueSql();
             switch ($this->operator) {
                 case self::OPERATOR_RELATED_TO:
-                    $qb = Craft::$app->getDb()->getQueryBuilder();
-                    $query->andWhere([
-                        'or',
-                        ...array_map(fn(int $id) => $qb->jsonContains($valueSql, $id), $this->getElementIds()),
-                    ]);
+                    $query->where(function(Builder $query) use ($valueSql) {
+                        foreach ($this->getElementIds() as $id) {
+                            $query->orWhereJsonContains($valueSql, $id);
+                        }
+                    });
                     break;
                 case self::OPERATOR_NOT_EMPTY:
-                    $query->andWhere(
-                        [
-                            'and',
-                            ['not', [$valueSql => null]],
-                            ['not', [$valueSql => '[]']],
-                        ]
-                    );
+                    $query->where(function(Builder $query) use ($valueSql) {
+                        $query->whereNotNull($valueSql)
+                            ->where($valueSql, '!=', '[]');
+                    });
                     break;
                 case self::OPERATOR_EMPTY:
-                    $query->andWhere(
-                        [
-                            'or',
-                            [$valueSql => null],
-                            [$valueSql => '[]'],
-                        ]
-                    );
+                    $query->where(function(Builder $query) use ($valueSql) {
+                        $query->whereNull($valueSql)
+                            ->orWhere($valueSql, '=', '[]');
+                    });
                     break;
             }
             return;
@@ -183,13 +177,9 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
 
             // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
             // so conditions reflect what authors see in the UI
-            $query->andWhere(
-                $this->operator === self::OPERATOR_NOT_EMPTY
-                    /** @phpstan-ignore-next-line */
-                    ? $field::existsQueryCondition($field, false, false)
-                    /** @phpstan-ignore-next-line */
-                    : ['not', $field::existsQueryCondition($field, false, false)]
-            );
+            $this->operator === self::OPERATOR_NOT_EMPTY
+                ? $query->whereExists($field::existsQuery($field, false, false))
+                : $query->whereNotExists($field::existsQuery($field, false, false));
         }
     }
 

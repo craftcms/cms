@@ -103,7 +103,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
       this.userSelect = new Craft.BaseElementSelectInput({
         id: 'transferselect' + this.id,
         name: 'transferContentTo',
-        elementType: 'craft\\elements\\User',
+        elementType: 'CraftCms\\Cms\\User\\Elements\\User',
         criteria: {
           id: idParam,
         },

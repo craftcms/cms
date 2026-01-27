@@ -216,7 +216,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       data: {
         elements: [
           {
-            type: 'craft\\elements\\Asset',
+            type: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
             id: result.assetId,
             siteId: this.settings.criteria.siteId,
             instances: [
