@@ -267,7 +267,7 @@ class SelectOptions
             }
             if ($showLocalizedNames) {
                 $hints[] = $name;
-                $option['lang'] = $locale->id;
+                $option['data']['hintLang'] = $locale->id;
             }
             if (! empty($hints)) {
                 $option['data']['hint'] = implode(', ', $hints);
