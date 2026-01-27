@@ -275,7 +275,7 @@ return [
     'Change icon' => 'Zmień ikonę',
     'Change logo' => 'Zmień logo',
     'Change photo' => 'Zmień zdjęcie',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Zmień autora wpisów innych użytkowników',
     'Change your Password' => 'Zmień hasło',
     'Change' => 'Zmień',
     'Changelog' => 'Dziennik zmian',
