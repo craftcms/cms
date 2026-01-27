@@ -3007,7 +3007,8 @@ abstract class Element extends Component implements ElementInterface, Validatabl
                         in_array($scenario, $validator->on) ||
                         (empty($validator->on) && ! in_array($scenario, $validator->except))
                     ) {
-                        $validator->validateAttributes($this);
+                        // TODO: Port afterValidate to Laravel validations
+                        // $validator->validateAttributes($this);
                     }
                 }
             }

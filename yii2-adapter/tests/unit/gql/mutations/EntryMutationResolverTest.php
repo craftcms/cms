@@ -32,6 +32,7 @@ class EntryMutationResolverTest extends TestCase
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
         $entry = $this->make(Entry::class, [
+            'title' => 'Test title',
             'getType' => new EntryType(),
         ]);
 
@@ -62,6 +63,7 @@ class EntryMutationResolverTest extends TestCase
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
         $entry = $this->make(Entry::class, [
+            'title' => 'Test title',
             'getType' => new EntryType(),
         ]);
 
