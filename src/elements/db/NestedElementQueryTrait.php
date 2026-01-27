@@ -141,8 +141,10 @@ trait NestedElementQueryTrait
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
         $this->primaryOwnerId = [$primaryOwner->id];
-        $this->siteId = $primaryOwner->siteId;
         $this->_owner = $primaryOwner;
+        if ($this->elementType::isLocalized()) {
+            $this->siteId = $primaryOwner->siteId;
+        }
         return $this;
     }
 
@@ -166,8 +168,10 @@ trait NestedElementQueryTrait
     public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
-        $this->siteId = $owner->siteId;
         $this->_owner = $owner;
+        if ($this->elementType::isLocalized()) {
+            $this->siteId = $owner->siteId;
+        }
         return $this;
     }
 

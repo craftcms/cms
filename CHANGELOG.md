@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where bulk nested element reordering wasn’t working as expected.
+- Fixed a bug where Addresses fields weren’t working properly when editing elements for non-primary sites. ([#18306](https://github.com/craftcms/cms/issues/18306))
 
 ## 5.9.0-beta.2 - 2026-01-26
 
