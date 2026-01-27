@@ -243,7 +243,7 @@ return [
     'Change icon' => 'Icon ändern',
     'Change logo' => 'Logo ändern',
     'Change photo' => 'Foto ändern',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Ändern Sie den Autor der Einträge anderer Benutzer',
     'Changelog' => 'Änderungsprotokoll',
     'Changes discarded.' => 'Änderungen verworfen.',
     'Changing this may result in data loss.' => 'Eine Änderung an dieser Einstellung kann zu Datenverlust führen.',

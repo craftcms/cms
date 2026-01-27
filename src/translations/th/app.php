@@ -243,7 +243,7 @@ return [
     'Change icon' => 'เปลี่ยนไอคอน',
     'Change logo' => 'เปลี่ยนโลโก้',
     'Change photo' => 'เปลี่ยนรูปภาพ',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'เปลี่ยนผู้เขียนบทความของผู้ใช้รายอื่น',
     'Changelog' => 'บันทึกการเปลี่ยนแปลง',
     'Changes discarded.' => 'ละทิ้งการเปลี่ยนแปลงแล้ว',
     'Changing this may result in data loss.' => 'การเปลี่ยนแปลงนี้อาจส่งผลให้เกิดการสูญเสียข้อมูล',
