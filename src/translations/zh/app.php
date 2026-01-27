@@ -275,7 +275,7 @@ return [
     'Change icon' => '更改图标',
     'Change logo' => '更改 logo',
     'Change photo' => '更改照片',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => '更改其他用户条目的作者',
     'Change your Password' => '更改密码',
     'Change' => '更改',
     'Changelog' => '更改日志',
