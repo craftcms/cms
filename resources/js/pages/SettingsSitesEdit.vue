@@ -7,8 +7,8 @@
   import TransitionFade from '@/components/TransitionFade.vue';
   import {store} from '@actions/Settings/SitesController';
   import {useEventListener} from '@vueuse/core';
-  import SiteFields from '@/components/SiteFields.vue';
-  import DeleteSiteModal from '@/components/DeleteSiteModal.vue';
+  import SiteFields from '@/components/sites/SiteFields.vue';
+  import DeleteSiteModal from '@/components/sites/DeleteSiteModal.vue';
   import {ref} from 'vue';
   import Badge from '@/components/Badge.vue';
 

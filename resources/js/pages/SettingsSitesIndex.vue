@@ -13,7 +13,7 @@
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import {create, edit, reorder} from '@actions/Settings/SitesController';
-  import DeleteSiteButton from '@/components/DeleteSiteButton.vue';
+  import DeleteSiteButton from '@/components/sites/DeleteSiteButton.vue';
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
   import {index} from '@routes/cp/settings/sites';

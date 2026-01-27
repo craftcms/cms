@@ -3,7 +3,7 @@
   import {type InertiaForm, usePage} from '@inertiajs/vue3';
   import {computed, useTemplateRef, watch} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/types';
-  import {CraftInput} from '../../../packages/craftcms-cp/src';
+  import type {CraftInput} from '@craftcms/cp';
   import InputCombobox from '@/components/InputCombobox.vue';
 
   const props = withDefaults(

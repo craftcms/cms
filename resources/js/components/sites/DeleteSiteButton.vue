@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type {Site} from '@/types';
   import {ref} from 'vue';
-  import DeleteSiteModal from '@/components/DeleteSiteModal.vue';
+  import DeleteSiteModal from '@/components/sites/DeleteSiteModal.vue';
 
   withDefaults(
     defineProps<{
