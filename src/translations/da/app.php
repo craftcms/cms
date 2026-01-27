@@ -275,7 +275,7 @@ return [
     'Change icon' => 'Skift ikon',
     'Change logo' => 'Skift logo',
     'Change photo' => 'Skift foto',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Skift forfatter på andre brugeres poster',
     'Change your Password' => 'Skift din adgangskode',
     'Change' => 'Skift',
     'Changelog' => 'Logfil med ændringer',
