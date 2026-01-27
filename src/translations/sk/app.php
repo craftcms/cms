@@ -243,7 +243,7 @@ return [
     'Change icon' => 'Zmeniť ikonu',
     'Change logo' => 'Zmeniť logo',
     'Change photo' => 'Zmeniť fotografiu',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Zmeniť autora príspevkov iných používateľov',
     'Changelog' => 'Denník zmien',
     'Changes discarded.' => 'Zmeny odstránené.',
     'Changing this may result in data loss.' => 'Zmena tohoto môže mať za následok stratu údajov.',
