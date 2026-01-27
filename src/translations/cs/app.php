@@ -275,7 +275,7 @@ return [
     'Change icon' => 'Změnit ikonu',
     'Change logo' => 'Změnit logo',
     'Change photo' => 'Změnit fotku',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Změnit autora záznamů jiných uživatelů',
     'Change your Password' => 'Změňte si heslo',
     'Change' => 'Změnit',
     'Changelog' => 'Protokol změn',
