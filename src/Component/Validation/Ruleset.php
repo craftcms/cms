@@ -62,6 +62,16 @@ abstract class Ruleset
         return [];
     }
 
+    /**
+     * Prepare the component for validation.
+     *
+     * Use this method to normalize or transform attribute values before
+     * validation runs (e.g., trimming strings, normalizing slugs).
+     *
+     * @param  array<string>|null  $attributeNames  The attributes being validated, or null for all
+     */
+    public function prepareForValidation(?array $attributeNames = null): void {}
+
     protected function defineRules(): array
     {
         return [];

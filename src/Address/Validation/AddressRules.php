@@ -15,13 +15,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Rules\DisallowMb4;
-use CraftCms\Cms\Shared\Rules\Trim;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Validation\Rule;
 use Override;
 
 /**
  * @extends ElementRules<Address>
+ *
+ * @property Address $component
  */
 final class AddressRules extends ElementRules
 {
@@ -34,6 +35,43 @@ final class AddressRules extends ElementRules
         FullNameField::class,
         LatLongField::class,
     ];
+
+    private const array TRIMMABLE_ATTRIBUTES = [
+        'countryCode',
+        'administrativeArea',
+        'locality',
+        'dependentLocality',
+        'postalCode',
+        'sortingCode',
+        'addressLine1',
+        'addressLine2',
+        'addressLine3',
+        'organization',
+        'organizationTaxId',
+        'fullName',
+        'firstName',
+        'lastName',
+        'latitude',
+        'longitude',
+    ];
+
+    #[Override]
+    public function prepareForValidation(?array $attributeNames = null): void
+    {
+        parent::prepareForValidation($attributeNames);
+
+        $attributesToTrim = is_null($attributeNames)
+            ? self::TRIMMABLE_ATTRIBUTES
+            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
+
+        foreach ($attributesToTrim as $attribute) {
+            $value = $this->component->{$attribute};
+
+            if (is_string($value)) {
+                $this->component->{$attribute} = trim($value);
+            }
+        }
+    }
 
     #[Override]
     protected function defineRules(): array
@@ -53,22 +91,22 @@ final class AddressRules extends ElementRules
         $rules['fieldId'] = ['nullable', 'integer'];
         $rules['ownerId'] = ['nullable', 'integer'];
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
-        $rules['countryCode'] = ['required', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['administrativeArea'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['locality'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['dependentLocality'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['postalCode'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['sortingCode'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['addressLine1'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['addressLine2'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['addressLine3'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['organization'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['organizationTaxId'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['fullName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['firstName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['lastName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['latitude'] = ['nullable', new DisallowMb4, new Trim($this->component)];
-        $rules['longitude'] = ['nullable', new DisallowMb4, new Trim($this->component)];
+        $rules['countryCode'] = ['required', 'string', 'max:255', new DisallowMb4];
+        $rules['administrativeArea'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['locality'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['dependentLocality'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['postalCode'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['sortingCode'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['addressLine1'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['addressLine2'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['addressLine3'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['organization'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['organizationTaxId'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['fullName'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['firstName'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['lastName'] = ['nullable', 'string', 'max:255', new DisallowMb4];
+        $rules['latitude'] = ['nullable', new DisallowMb4];
+        $rules['longitude'] = ['nullable', new DisallowMb4];
 
         return $rules;
     }

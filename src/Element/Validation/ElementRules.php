@@ -41,6 +41,20 @@ abstract class ElementRules extends Ruleset
         ];
     }
 
+    #[Override]
+    public function prepareForValidation(?array $attributeNames = null): void
+    {
+        $shouldPrepare = fn (string $attribute) => is_null($attributeNames) || in_array($attribute, $attributeNames, true);
+
+        if ($shouldPrepare('title')) {
+            $this->prepareTitle();
+        }
+
+        if ($shouldPrepare('slug') && $this->component->hasUris()) {
+            $this->prepareSlug($this->component->getSite()->language);
+        }
+    }
+
     /**
      * Define validation rules in Laravel format.
      *
@@ -60,13 +74,7 @@ abstract class ElementRules extends Ruleset
             'lft' => $int,
             'rgt' => $int,
             'level' => Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), ['nullable', 'integer']),
-            'title' => ['string', 'max:255', new DisallowMb4, function ($attribute, $value) {
-                if (! is_string($value)) {
-                    return;
-                }
-
-                $this->component->$attribute = trim(Str::convertLineBreaks($value));
-            }],
+            'title' => ['string', 'max:255', new DisallowMb4],
             'siteId' => Rule::when(
                 $this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
                 [
@@ -101,10 +109,6 @@ abstract class ElementRules extends Ruleset
             return $rules;
         }
 
-        if ($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS)) {
-            $this->prepareSlug($this->component->getSite()->language);
-        }
-
         $rules['slug'] = [Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
             'string',
             'max:255',
@@ -129,6 +133,17 @@ abstract class ElementRules extends Ruleset
         ]);
 
         return $rules;
+    }
+
+    private function prepareTitle(): void
+    {
+        $title = $this->component->title;
+
+        if (! is_string($title)) {
+            return;
+        }
+
+        $this->component->title = trim(Str::convertLineBreaks($title));
     }
 
     private function prepareSlug(string $language): void
@@ -167,7 +182,7 @@ abstract class ElementRules extends Ruleset
 
     private function setSlugOnElement(?ElementInterface $element, string $slug): void
     {
-        if ($element !== null && property_exists($element, 'slug')) {
+        if ($element !== null) {
             $element->slug = $slug;
         }
     }

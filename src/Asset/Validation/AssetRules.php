@@ -13,6 +13,8 @@ use Override;
 
 /**
  * @extends ElementRules<Asset>
+ *
+ * @property Asset $component
  */
 final class AssetRules extends ElementRules
 {

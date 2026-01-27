@@ -7,7 +7,6 @@ namespace CraftCms\Cms\User\Validation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Shared\Rules\Trim;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
@@ -20,9 +19,20 @@ use function CraftCms\Cms\t;
 
 /**
  * @extends ElementRules<User>
+ *
+ * @property User $component
  */
 final class UserRules extends ElementRules
 {
+    private const array TRIMMABLE_ATTRIBUTES = [
+        'email',
+        'unverifiedEmail',
+        'fullName',
+        'firstName',
+        'lastName',
+        'username',
+    ];
+
     #[Override]
     public function scenarios(): array
     {
@@ -34,6 +44,24 @@ final class UserRules extends ElementRules
     }
 
     #[Override]
+    public function prepareForValidation(?array $attributeNames = null): void
+    {
+        parent::prepareForValidation($attributeNames);
+
+        $attributesToTrim = is_null($attributeNames)
+            ? self::TRIMMABLE_ATTRIBUTES
+            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
+
+        foreach ($attributesToTrim as $attribute) {
+            $value = $this->component->{$attribute};
+
+            if (is_string($value)) {
+                $this->component->{$attribute} = trim($value);
+            }
+        }
+    }
+
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -42,8 +70,6 @@ final class UserRules extends ElementRules
             User::SCENARIO_REGISTRATION,
             User::SCENARIO_ACTIVATION,
         );
-
-        $trim = new Trim($this->component);
 
         $unique = fn (string $column) => Rule::unique(Table::USERS, $column)
             ->where(fn (Builder $query) => $query
@@ -72,19 +98,17 @@ final class UserRules extends ElementRules
                 'max:255',
                 Rule::requiredIf(fn () => ! $this->component->getIsDraft()),
                 'email',
-                $trim,
             ],
             'unverifiedEmail' => [
                 'nullable',
                 'string',
                 'max:255',
                 'email',
-                $trim,
             ],
-            'fullName' => ['nullable', 'string', 'max:255', $trim, $noProtocol],
-            'firstName' => ['nullable', 'string', 'max:255', $trim, $noProtocol],
-            'lastName' => ['nullable', 'string', 'max:255', $trim, $noProtocol],
-            'username' => ['nullable', 'string', 'max:255', $noProtocol, new UsernameRule, $trim],
+            'fullName' => ['nullable', 'string', 'max:255', $noProtocol],
+            'firstName' => ['nullable', 'string', 'max:255', $noProtocol],
+            'lastName' => ['nullable', 'string', 'max:255', $noProtocol],
+            'username' => ['nullable', 'string', 'max:255', $noProtocol, new UsernameRule],
             'password' => ['nullable', 'string', 'max:255'],
             'lastLoginAttemptIp' => ['nullable', 'string', 'max:45'],
         ]);

@@ -15,6 +15,8 @@ use function CraftCms\Cms\t;
 
 /**
  * @extends ElementRules<Entry>
+ *
+ * @property Entry $component
  */
 final class EntryRules extends ElementRules
 {

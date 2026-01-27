@@ -114,6 +114,7 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use ReflectionClass;
 use Stringable;
+use Throwable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
@@ -2754,8 +2755,13 @@ abstract class Element extends Component implements ElementInterface, Validatabl
         $attributes = $this->attributes();
         $values = [];
 
-        foreach ($attributes as $attribute) {
-            $values[$attribute] = $this->$attribute;
+        try {
+            foreach ($attributes as $attribute) {
+                $values[$attribute] = $this->$attribute;
+            }
+        } catch (Throwable) {
+            // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
+            // This is expected for attributes that may not be accessible in all contexts
         }
 
         return $values;

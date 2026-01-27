@@ -84,7 +84,7 @@ trait ValidatesWithRuleset
     /**
      * Validate the component.
      *
-     * @param  array<string>  $attributeNames  Attributes to validate (empty array for all)
+     * @param  array<string>|null  $attributeNames  Attributes to validate (null for all)
      * @param  bool  $clearErrors  Whether to clear existing errors first
      */
     public function validate($attributeNames = null, $clearErrors = true): bool
@@ -92,6 +92,8 @@ trait ValidatesWithRuleset
         $previousErrors = ! $clearErrors && isset($this->validator)
             ? $this->errors()->getMessages()
             : [];
+
+        $this->getRuleset()->prepareForValidation($attributeNames);
 
         $result = $this->getValidator($attributeNames, fresh: $clearErrors)
             /** @phpstan-ignore-next-line */
