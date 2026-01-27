@@ -243,7 +243,7 @@ return [
     'Change icon' => 'Changer d\'icône',
     'Change logo' => 'Changer de logo',
     'Change photo' => 'Changer de photo',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'Modifier l\'auteur des entrées d\'autres utilisateurs',
     'Changelog' => 'Journal des modifications',
     'Changes discarded.' => 'Modifications abandonnées.',
     'Changing this may result in data loss.' => 'Modifier cela pourrait entraîner une perte de données.',
