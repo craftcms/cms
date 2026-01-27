@@ -275,7 +275,7 @@ return [
     'Change icon' => 'تغییر آیکن',
     'Change logo' => 'تغییر لوگو',
     'Change photo' => 'تغییر عکس',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => 'تغییر نویسنده‌ی نوشته‌های سایر کاربران',
     'Change your Password' => 'تغییر رمز عبور شما',
     'Change' => 'تغییر',
     'Changelog' => 'لیست تغییرات',
