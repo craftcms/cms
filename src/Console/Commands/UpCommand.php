@@ -6,12 +6,16 @@ namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Throwable;
+
+use function Laravel\Prompts\confirm;
 
 final class UpCommand extends Command implements Isolatable
 {
@@ -21,8 +25,10 @@ final class UpCommand extends Command implements Isolatable
 
     protected $description = 'Runs pending migrations and applies pending project config changes.';
 
-    public function handle(Updates $updates, ProjectConfig $projectConfig): int
+    public function handle(Updates $updates, License $license, ProjectConfig $projectConfig): int
     {
+        $this->showLicensingIssues($updates, $license);
+
         try {
             $pendingChanges = $projectConfig->areChangesPending(force: true);
             $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
@@ -67,10 +73,6 @@ final class UpCommand extends Command implements Isolatable
             $this->call('craft:clear-caches', [
                 'keys' => ['compiled-templates'],
             ]);
-
-            $this->components->task('Updating license info', function () use ($updates) {
-                $updates->getUpdates(refresh: true);
-            });
         } catch (Throwable $e) {
             if (! $e instanceof OperationAbortedException) {
                 throw $e;
@@ -86,5 +88,23 @@ final class UpCommand extends Command implements Isolatable
         }
 
         return self::SUCCESS;
+    }
+
+    private function showLicensingIssues(Updates $updates, License $license): bool
+    {
+        $this->components->task('Updating license info', function () use ($updates) {
+            $updates->getUpdates(refresh: true);
+        });
+
+        $issues = $license->issues([LicenseKeyStatus::Astray->value]);
+
+        if (empty($issues)) {
+            return true;
+        }
+
+        $this->components->error('The following licensing issues were detected:');
+        $this->components->bulletList(array_map(fn (array $issue) => $issues[1], $issues));
+
+        return confirm('Continue anyway?');
     }
 }

@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\elements\Entry;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -22,8 +21,10 @@ use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
@@ -434,7 +435,11 @@ class Cp extends Component
      */
     public function trialInfo(): ?array
     {
-        $issues = Collection::make(app(License::class)->issues(false));
+        $issues = Collection::make(app(License::class)->issues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]));
 
         if ($issues->isEmpty()) {
             return null;

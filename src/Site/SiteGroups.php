@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 #[Singleton]
@@ -80,9 +79,7 @@ final class SiteGroups
     {
         $isNewGroup = ! $group->id;
 
-        if (Event::hasListeners(SavingSiteGroup::class)) {
-            Event::dispatch(new SavingSiteGroup($group, $isNewGroup));
-        }
+        event(new SavingSiteGroup($group, $isNewGroup));
 
         if ($isNewGroup) {
             $group->uid = Str::uuid()->toString();
@@ -127,9 +124,7 @@ final class SiteGroups
         // Clear caches
         $this->refreshGroups();
 
-        if (Event::hasListeners(SavedSiteGroup::class)) {
-            Event::dispatch(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
-        }
+        event(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
     }
 
     /**
@@ -146,18 +141,14 @@ final class SiteGroups
 
         $group = $this->getGroupById($groupModel->id);
 
-        if (Event::hasListeners(ApplyingSiteGroupDelete::class)) {
-            Event::dispatch(new ApplyingSiteGroupDelete($group));
-        }
+        event(new ApplyingSiteGroupDelete($group));
 
         $groupModel->delete();
 
         // Clear caches
         $this->refreshGroups();
 
-        if (Event::hasListeners(DeletedSiteGroup::class)) {
-            Event::dispatch(new DeletedSiteGroup($group));
-        }
+        event(new DeletedSiteGroup($group));
     }
 
     /**
@@ -193,9 +184,7 @@ final class SiteGroups
             return false;
         }
 
-        if (Event::hasListeners(DeletingSiteGroup::class)) {
-            Event::dispatch(new DeletingSiteGroup($group));
-        }
+        event(new DeletingSiteGroup($group));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_SITE_GROUPS.'.'.$group->uid,

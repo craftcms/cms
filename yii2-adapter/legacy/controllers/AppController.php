@@ -11,7 +11,6 @@ use Carbon\CarbonInterval;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\filters\UtilityAccess;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -32,10 +31,8 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -63,21 +60,6 @@ class AppController extends Controller
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
         'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors(): array
-    {
-        return array_merge(parent::behaviors(), [
-            [
-                'class' => UtilityAccess::class,
-                'utility' => UpdatesUtility::class,
-                'only' => ['check-for-updates', 'cache-updates'],
-                'when' => fn() => !Gate::check('performUpdates'),
-            ],
-        ]);
-    }
 
     /**
      * @inheritdoc
@@ -117,7 +99,7 @@ class AppController extends Controller
         }
 
         // Close the PHP session in case this takes a while
-        Session::close();
+        \Illuminate\Support\Facades\Session::save();
 
         $response = Http::create()->get($url);
         $this->response->setCacheHeaders();

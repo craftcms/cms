@@ -7,9 +7,9 @@
 
 namespace craft\gql\types\elements;
 
-use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

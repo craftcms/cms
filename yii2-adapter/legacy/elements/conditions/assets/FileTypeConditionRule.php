@@ -4,11 +4,11 @@ namespace craft\elements\conditions\assets;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**

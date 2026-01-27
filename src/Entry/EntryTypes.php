@@ -9,10 +9,9 @@ use craft\base\MemoizableArray;
 use craft\errors\EntryTypeNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
-use craft\helpers\Queue;
 use craft\models\FieldLayout;
-use craft\queue\jobs\ResaveElements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
@@ -138,6 +137,7 @@ final class EntryTypes
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
+                'allowLineBreaksInTitles',
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
@@ -280,9 +280,7 @@ final class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        if (Event::hasListeners(SavingEntryType::class)) {
-            Event::dispatch(new SavingEntryType($entryType, $isNewEntryType));
-        }
+        event(new SavingEntryType($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
@@ -330,6 +328,7 @@ final class EntryTypes
             $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
+            $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
@@ -409,23 +408,21 @@ final class EntryTypes
 
         if (! $isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
-            Queue::push(new ResaveElements([
-                'description' => I18N::prep('Resaving {type} entries', [
-                    'type' => $entryType->name,
-                ]),
-                'elementType' => Entry::class,
-                'criteria' => [
+            dispatch(new ResaveElements(
+                elementType: Entry::class,
+                criteria: [
                     'typeId' => $entryType->id,
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
                 ],
-            ]));
+                description: I18N::prep('Resaving {type} entries', [
+                    'type' => $entryType->name,
+                ]),
+            ));
         }
 
-        if (Event::hasListeners(EntryTypeSaved::class)) {
-            Event::dispatch(new EntryTypeSaved($entryType, $isNewEntryType));
-        }
+        event(new EntryTypeSaved($entryType, $isNewEntryType));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
@@ -472,9 +469,7 @@ final class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        if (Event::hasListeners(DeletingEntryType::class)) {
-            Event::dispatch(new DeletingEntryType($entryType));
-        }
+        event(new DeletingEntryType($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
@@ -499,9 +494,7 @@ final class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        if (Event::hasListeners(ApplyingDeleteEntryType::class)) {
-            Event::dispatch(new ApplyingDeleteEntryType($entryType));
-        }
+        event(new ApplyingDeleteEntryType($entryType));
 
         DB::beginTransaction();
 
@@ -552,9 +545,7 @@ final class EntryTypes
         // Clear caches
         $this->refreshEntryTypes();
 
-        if (Event::hasListeners(EntryTypeDeleted::class)) {
-            Event::dispatch(new EntryTypeDeleted($entryType));
-        }
+        event(new EntryTypeDeleted($entryType));
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
@@ -566,6 +557,9 @@ final class EntryTypes
     public function refreshEntryTypes(): void
     {
         $this->entryTypes = null;
+
+        // Sections cache entry types internally, so ensure those get refreshed as well.
+        Sections::refreshSections();
     }
 
     /**

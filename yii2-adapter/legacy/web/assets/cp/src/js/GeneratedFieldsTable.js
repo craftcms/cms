@@ -49,7 +49,7 @@ Craft.GeneratedFieldsTable.Row = Craft.EditableTable.Row.extend({
         } else {
           cvd.addCheckbox({
             value: `generatedField:${this.uid}`,
-            label: name,
+            labelHtml: name,
             data: {
               'field-id': this.fieldId,
               'field-label': name,

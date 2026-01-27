@@ -56,7 +56,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\ValidationException;
@@ -138,13 +137,9 @@ final class Fields
             UsersField::class,
         ]);
 
-        if (Event::hasListeners(RegisterFieldTypes::class)) {
-            Event::dispatch($event = new RegisterFieldTypes($fieldTypes));
+        event($event = new RegisterFieldTypes($fieldTypes));
 
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
@@ -195,13 +190,9 @@ final class Fields
             $types->add($field::class);
         }
 
-        if (Event::hasListeners(DefineCompatibleFieldTypes::class)) {
-            Event::dispatch($event = new DefineCompatibleFieldTypes($field, $types));
+        event($event = new DefineCompatibleFieldTypes($field, $types));
 
-            return $event->compatibleTypes;
-        }
-
-        return $types;
+        return $event->compatibleTypes;
     }
 
     /**
@@ -240,13 +231,9 @@ final class Fields
             MatrixField::class,
         ]);
 
-        if (Event::hasListeners(RegisterNestedEntryFieldTypes::class)) {
-            Event::dispatch($event = new RegisterNestedEntryFieldTypes($fieldTypes));
+        event($event = new RegisterNestedEntryFieldTypes($fieldTypes));
 
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
@@ -493,9 +480,7 @@ final class Fields
 
         $isNewField = $field->getIsNew();
 
-        if (Event::hasListeners(FieldSaving::class)) {
-            Event::dispatch(new FieldSaving($field, $isNewField));
-        }
+        event(new FieldSaving($field, $isNewField));
 
         if (! $field->beforeSave($isNewField)) {
             return false;
@@ -605,9 +590,7 @@ final class Fields
      */
     public function deleteField(FieldInterface $field): bool
     {
-        if (Event::hasListeners(FieldDeleting::class)) {
-            Event::dispatch(new FieldDeleting($field));
-        }
+        event(new FieldDeleting($field));
 
         if (! $field->beforeDelete()) {
             return false;
@@ -651,9 +634,7 @@ final class Fields
 
         $field = $this->getFieldById($fieldRecord->id);
 
-        if (Event::hasListeners(ApplyingFieldDelete::class)) {
-            Event::dispatch(new ApplyingFieldDelete($field));
-        }
+        event(new ApplyingFieldDelete($field));
 
         DB::beginTransaction();
 
@@ -677,9 +658,7 @@ final class Fields
         // Update the field version
         $this->updateFieldVersion();
 
-        if (Event::hasListeners(FieldDeleted::class)) {
-            Event::dispatch(new FieldDeleted($field));
-        }
+        event(new FieldDeleted($field));
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -911,6 +890,7 @@ final class Fields
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
         $config = ComponentHelper::cleanseConfig($config);
+
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -941,9 +921,7 @@ final class Fields
 
         $isNewLayout = ! $layout->id;
 
-        if (Event::hasListeners(FieldLayoutSaving::class)) {
-            Event::dispatch(new FieldLayoutSaving($layout, $isNewLayout));
-        }
+        event(new FieldLayoutSaving($layout, $isNewLayout));
 
         if ($runValidation && ! $layout->validate()) {
             Log::info('Field layout not saved due to validation error.', [__METHOD__]);
@@ -979,9 +957,7 @@ final class Fields
 
         $layout->uid = $layoutModel->uid;
 
-        if (Event::hasListeners(FieldLayoutSaved::class)) {
-            Event::dispatch(new FieldLayoutSaved($layout, $isNewLayout));
-        }
+        event(new FieldLayoutSaved($layout, $isNewLayout));
 
         // Clear caches
         $this->_layouts = null;
@@ -1028,15 +1004,11 @@ final class Fields
      */
     public function deleteLayout(FieldLayout $layout): bool
     {
-        if (Event::hasListeners(FieldLayoutDeleting::class)) {
-            Event::dispatch(new FieldLayoutDeleting($layout));
-        }
+        event(new FieldLayoutDeleting($layout));
 
         DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
 
-        if (Event::hasListeners(FieldLayoutDeleted::class)) {
-            Event::dispatch(new FieldLayoutDeleted($layout));
-        }
+        event(new FieldLayoutDeleted($layout));
 
         // Clear caches
         $this->_layouts = null;
@@ -1121,9 +1093,7 @@ final class Fields
         // For control panel save requests, make sure we have all the custom data already saved on the object.
         $field = $this->_savingFields[$fieldUid] ?? null;
 
-        if (Event::hasListeners(ApplyingFieldSave::class)) {
-            Event::dispatch(new ApplyingFieldSave($oldField, $data));
-        }
+        event(new ApplyingFieldSave($oldField, $data));
 
         DB::beginTransaction();
 
@@ -1186,9 +1156,7 @@ final class Fields
 
         $field->afterSave($isNewField);
 
-        if (Event::hasListeners(FieldSaved::class)) {
-            Event::dispatch(new FieldSaved($field, $isNewField));
-        }
+        event(new FieldSaved($field, $isNewField));
 
         // If we just dropped `searchable`, delete the field’s search indexes immediately.
         if ($deleteSearchIndexes) {

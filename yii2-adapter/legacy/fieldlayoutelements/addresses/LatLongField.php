@@ -8,9 +8,9 @@
 namespace craft\fieldlayoutelements\addresses;
 
 use craft\base\ElementInterface;
-use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidArgumentException;

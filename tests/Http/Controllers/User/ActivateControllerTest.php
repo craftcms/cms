@@ -3,6 +3,7 @@
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Notification;
 
@@ -72,7 +73,7 @@ it('requires login for sendActivationEmail', function () {
     postJson(action([ActivateController::class, 'sendActivationEmail']))->assertUnauthorized();
 });
 
-test('sendActivationEmail works for pending users without moderateUsers permission', function () {
+test('sendActivationEmail requires moderateUsers for pending users', function () {
     Notification::fake();
 
     Edition::set(Edition::Pro);
@@ -84,6 +85,16 @@ test('sendActivationEmail works for pending users without moderateUsers permissi
     ]);
 
     actingAs($user->asElement());
+
+    postJson(action([ActivateController::class, 'sendActivationEmail']), [
+        'userId' => $pendingUser->id,
+    ])->assertForbidden();
+
+    UserPermissions::saveUserPermissions($user->id, [
+        'viewUsers',
+        'editUsers',
+        'moderateUsers',
+    ]);
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $pendingUser->id,
@@ -121,12 +132,7 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
 it('returns 400 for non-existent user on sendActivationEmail', function () {
     Edition::set(Edition::Pro);
 
-    $user = User::factory()->create([
-        'active' => false,
-        'pending' => true,
-    ]);
-
-    actingAs($user->asElement());
+    actingAs(UserElement::findOne());
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), ['userId' => 999999])
         ->assertStatus(400)
@@ -136,12 +142,7 @@ it('returns 400 for non-existent user on sendActivationEmail', function () {
 it('validates userId is required for sendActivationEmail', function () {
     Edition::set(Edition::Pro);
 
-    $user = User::factory()->create([
-        'active' => false,
-        'pending' => true,
-    ]);
-
-    actingAs($user->asElement());
+    actingAs(UserElement::findOne());
 
     postJson(action([ActivateController::class, 'sendActivationEmail']))
         ->assertJsonValidationErrorFor('userId');
@@ -150,12 +151,11 @@ it('validates userId is required for sendActivationEmail', function () {
 it('returns 400 for active users on sendActivationEmail', function () {
     Edition::set(Edition::Pro);
 
-    $user = User::factory()->create();
     $activeUser = User::factory()->create([
         'active' => true,
     ]);
 
-    actingAs($user->asElement());
+    actingAs(UserElement::findOne());
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $activeUser->id,

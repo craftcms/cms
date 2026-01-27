@@ -23,7 +23,6 @@ final class IconServiceProvider extends ServiceProvider
         $aliases->set('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
         $aliases->set('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
         $aliases->set('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
-        $aliases->set('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
 
         require $aliases->get('@icons/aliases.php');
 

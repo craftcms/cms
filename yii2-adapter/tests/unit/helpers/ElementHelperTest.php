@@ -14,6 +14,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use crafttests\fixtures\EntryFixture;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use PDO;
 use UnitTester;
 
 /**
@@ -92,6 +94,8 @@ class ElementHelperTest extends TestCase
                 'class' => EntryFixture::class,
             ],
         ]);
+
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         $example = new ExampleElement($config);
         ElementHelper::setUniqueUri($example);

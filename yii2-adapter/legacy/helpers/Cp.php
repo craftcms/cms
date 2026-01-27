@@ -9,14 +9,10 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\Indicative;
 use craft\base\NestedElementInterface;
-use craft\base\Statusable;
-use craft\base\Thumbable;
-use craft\elements\Address;
 use craft\errors\FieldNotFoundException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
@@ -29,6 +25,7 @@ use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -37,7 +34,10 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Component\Contracts\Statusable;
+use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -1097,6 +1097,7 @@ JS, [
                     'editable' => $editable,
                     'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
                     'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
+                    'duplicatable-as-draft' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
                     'copyable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
                     'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
                     'deletable-for-site' => (
@@ -3130,9 +3131,26 @@ JS, [
                 $tab->uid = Str::uuid()->toString();
             }
 
+            $layoutElements = [];
+
             foreach ($tab->getElements() as $layoutElement) {
-                $layoutElement->uid ??= Str::uuid()->toString();
+                // If this is a custom field, make sure the field still exists
+                if ($layoutElement instanceof CustomField) {
+                    try {
+                        $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+                }
+
+                if (!isset($layoutElement->uid)) {
+                    $layoutElement->uid = Str::uuid()->toString();
+                }
+
+                $layoutElements[] = $layoutElement;
             }
+
+            $tab->setElements($layoutElements);
         }
 
         $view = Craft::$app->getView();

@@ -4,8 +4,8 @@ namespace craft\elements\conditions;
 
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**

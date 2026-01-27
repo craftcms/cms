@@ -40,7 +40,8 @@
           Craft.namespaceInputName(n, this.settings.baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.settings.visibleLayoutElements,
-          [param('elementType')]: 'craft\\elements\\ContentBlock',
+          [param('elementType')]:
+            'CraftCms\\Cms\\Field\\Elements\\ContentBlock',
           [param('ownerId')]:
             elementEditor?.getDraftElementId(this.settings.ownerId) ??
             this.settings.ownerId,

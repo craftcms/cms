@@ -23,7 +23,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
@@ -612,6 +612,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $labels[] = array_pop($options)['label'];
         }
 
+        $labels = array_map(Html::encode(...), $labels);
+
         return implode(', ', $labels);
     }
 
@@ -710,19 +712,17 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = $this->options();
         $translatedOptions = [];
 
-        // Fire a 'defineOptions' event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_OPTIONS)) {
+        $this->dispatchComponentEvent(
+            self::EVENT_DEFINE_OPTIONS,
             $event = new DefineInputOptions(
                 field: $this,
                 options: $options,
                 value: $value,
                 element: $element,
-            );
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_OPTIONS, $event);
-            $options = $event->options;
-        }
+            ),
+        );
 
-        foreach ($options as $option) {
+        foreach ($event->options as $option) {
             if (isset($option['optgroup'])) {
                 $translatedOptions[] = [
                     'optgroup' => t($option['optgroup'], category: 'site'),

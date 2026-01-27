@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -18,7 +20,9 @@ use Illuminate\Support\Facades\DB;
  * LocalizeRelations job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\LocalizeRelations} instead.
  */
 class LocalizeRelations extends BaseJob
 {
@@ -28,7 +32,7 @@ class LocalizeRelations extends BaseJob
     public ?int $fieldId = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -72,7 +76,7 @@ class LocalizeRelations extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

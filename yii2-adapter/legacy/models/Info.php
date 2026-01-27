@@ -15,6 +15,7 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Models\Info} instead.
  */
 class Info extends Model
 {

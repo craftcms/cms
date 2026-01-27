@@ -8,6 +8,6 @@ final class RegisterMigrators
 {
     public function __construct(
         /** @var \CraftCms\Cms\Database\Migrator[] */
-        public array $migrators,
+        public array $migrators = [],
     ) {}
 }

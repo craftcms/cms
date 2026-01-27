@@ -51,16 +51,16 @@ test('getAssignablePermissions', function () {
 
     actingAs($admin);
 
-    expect($this->userPermissions->getAllPermissions())
-        ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions());
+    expect($this->userPermissions->getAllPermissions()->toArray())
+        ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions()->toArray());
 
     $user = \CraftCms\Cms\User\Models\User::factory()->create();
 
     actingAs($user->asElement());
 
-    expect($this->userPermissions->getAllPermissions())
+    expect($this->userPermissions->getAllPermissions()->toArray())
         ->not()
-        ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions());
+        ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions()->toArray());
 });
 
 test('getPermissionsByGroupId & doesGroupHavePermission', function () {

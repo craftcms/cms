@@ -9,20 +9,15 @@ namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\ElementCollection;
 use craft\errors\AssetException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\HtmlPurifier;
-use craft\helpers\Sequence;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
@@ -55,13 +50,17 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\AddressQuery;
-use CraftCms\Cms\Database\Queries\AssetQuery;
-use CraftCms\Cms\Database\Queries\ContentBlockQuery;
-use CraftCms\Cms\Database\Queries\ElementQuery;
-use CraftCms\Cms\Database\Queries\EntryQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -74,6 +73,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
@@ -1696,6 +1696,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         if ($next) {
             return Sequence::next($name, $length);
         }
+
         return Sequence::current($name, $length);
     }
 

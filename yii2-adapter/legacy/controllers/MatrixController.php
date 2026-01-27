@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
-use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;

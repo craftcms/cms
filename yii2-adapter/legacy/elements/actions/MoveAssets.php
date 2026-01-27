@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use function CraftCms\Cms\t;
 
 /**
@@ -104,7 +104,7 @@ class MoveAssets extends ElementAction
         },
       });
     },
-  });
+  })
 })();
 JS, [
             static::class,

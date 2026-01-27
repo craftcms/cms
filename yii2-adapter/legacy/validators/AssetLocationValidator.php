@@ -8,9 +8,9 @@
 namespace craft\validators;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use yii\base\InvalidConfigException;
 use yii\base\Model;

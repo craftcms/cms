@@ -133,4 +133,5 @@ return [
     ],
     'allowedMethods' => [],
     'allowedProperties' => [],
+    'allowedClasses' => [],
 ];

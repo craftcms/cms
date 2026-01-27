@@ -1246,13 +1246,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.tab.designer.settings.withCardViewDesigner) {
       const cvd = this.tab.designer.cvd;
       if (cvd) {
-        // update labels in cvd checkboxes
-        $newContainer.data('preview-options').forEach((option) => {
-          cvd.updateCheckboxLabel(
-            option.value.replace(/\{uid}/g, this.uid),
-            option.label
-          );
-        });
+        const previewOptions = $newContainer.data('preview-options');
+        if (previewOptions) {
+          // update labels in cvd checkboxes
+          previewOptions.forEach((option) => {
+            cvd.updateCheckboxLabel(
+              option.value.replace(/\{uid}/g, this.uid),
+              option.label
+            );
+          });
+        }
 
         // update label in the element thumbnails dropdown
         cvd.updateThumbnailsDropdownOptionLabel(this.$container);

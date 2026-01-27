@@ -13,7 +13,6 @@ use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Event;
 
 final class ProjectConfigData extends ReadOnlyProjectConfigData
 {
@@ -55,7 +54,7 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
         );
 
         if ($valueChanged && ! $this->projectConfig->muteEvents) {
-            Event::dispatch(match (true) {
+            event(match (true) {
                 $newValue === null && $oldValue !== null => new RemovingItem($path, $oldValue, $newValue),
                 $oldValue === null && $newValue !== null => new AddingItem($path, $oldValue, $newValue),
                 default => new UpdatingItem($path, $oldValue, $newValue),
@@ -67,7 +66,7 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
         }
 
         if ($valueChanged && ! $this->projectConfig->muteEvents) {
-            Event::dispatch(match (true) {
+            event(match (true) {
                 $newValue === null && $oldValue !== null => new ItemRemoved($path, $oldValue, $newValue),
                 $oldValue === null && $newValue !== null => new ItemAdded($path, $oldValue, $newValue),
                 default => new ItemUpdated($path, $oldValue, $newValue),

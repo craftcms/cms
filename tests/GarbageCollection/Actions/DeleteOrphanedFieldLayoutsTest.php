@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use Illuminate\Support\Facades\DB;

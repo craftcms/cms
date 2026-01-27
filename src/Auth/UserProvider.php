@@ -14,7 +14,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use SensitiveParameter;
 
 #[Scoped]
@@ -82,21 +81,13 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
 
         $loginName = $credentials['loginName'];
 
-        $user = null;
-        if (Event::hasListeners(RetrievingLoginUser::class)) {
-            Event::dispatch($event = new RetrievingLoginUser($loginName));
-            $user = $event->user;
-        }
+        event($event = new RetrievingLoginUser($loginName));
 
-        $user ??= $this->users->getUserByUsernameOrEmail($loginName);
+        $user = $event->user ?? $this->users->getUserByUsernameOrEmail($loginName);
 
-        if (Event::hasListeners(LoginUserRetrieved::class)) {
-            Event::dispatch($event = new LoginUserRetrieved($loginName, $user));
+        event($event = new LoginUserRetrieved($loginName, $user));
 
-            return $event->user;
-        }
-
-        return $user;
+        return $event->user;
     }
 
     /**

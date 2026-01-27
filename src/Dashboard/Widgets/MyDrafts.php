@@ -77,7 +77,7 @@ final class MyDrafts extends Widget
     #[Override]
     public function getBodyHtml(): string
     {
-        /** @var \craft\elements\ElementCollection<Entry> $drafts */
+        /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)

@@ -378,8 +378,13 @@ class FileHelper extends \yii\helpers\FileHelper
             $mimeType = null;
         }
 
-        // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
+        if (
+            // Be forgiving of SVG files, etc., that don't have an XML declaration
+            // also, if we're not supposed to check the extension, but the extension is mp3 and the reported mime type is application/octet-stream,
+            // check by extension anyway
+            ($checkExtension || (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'mp3')) &&
+            ($mimeType === null || !static::canTrustMimeType($mimeType))
+        ) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 

@@ -56,6 +56,7 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -245,6 +246,13 @@ Route::prefix(implode('/', [
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
 
+        // Asset Indexes
+        Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
+        Route::post('asset-indexes/stop-indexing-session', [AssetIndexesController::class, 'stopIndexingSession']);
+        Route::post('asset-indexes/process-indexing-session', [AssetIndexesController::class, 'processIndexingSession']);
+        Route::post('asset-indexes/indexing-session-overview', [AssetIndexesController::class, 'indexingSessionOverview']);
+        Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
+
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
 
@@ -339,21 +347,30 @@ Route::prefix(implode('/', [
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
         // Users
+        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
+
         Route::middleware('password.confirm')->group(function () {
-            Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
-            Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
             Route::post('users/save-password', [PasswordController::class, 'store']);
         });
-        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
+
+        Route::middleware([RequireEdition::class.':'.Edition::Pro->value, 'can:editUsers'])->group(function () {
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
+                Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+            });
+
+            Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+            Route::post('users/enable-user', EnableController::class);
+            Route::post('users/activate-user', [ActivateController::class, 'activate']);
+            Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
+            Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
+            Route::post('users/unlock-user', UnlockController::class);
+            Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
+            Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
+        });
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);
-        Route::post('users/activate-user', [ActivateController::class, 'activate']);
-        Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
-        Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
-        Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
-        Route::post('users/enable-user', EnableController::class);
-        Route::post('users/unlock-user', UnlockController::class);
         Route::post('users/delete-user', [UsersController::class, 'destroy']);
         Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
@@ -361,9 +378,7 @@ Route::prefix(implode('/', [
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
-        Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
-        Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
         Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // User groups

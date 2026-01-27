@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
+use Stringable;
 
-final class IconData implements \Stringable, Serializable
+#[AllowedInSandbox]
+final class IconData implements Serializable, Stringable
 {
     /**
      * Constructor

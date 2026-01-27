@@ -1516,7 +1516,7 @@ Craft.CustomizeSourcesModal.Source =
             return o.optgroup
               ? o
               : {
-                  label: Craft.escapeHtml(o.label),
+                  label: o.label,
                   value: o.attr,
                 };
           }),
