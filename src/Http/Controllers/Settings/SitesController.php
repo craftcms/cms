@@ -15,10 +15,11 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Response;
+use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
@@ -36,7 +37,7 @@ final readonly class SitesController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Sites $sitesService)
+    public function index(Request $request, Sites $sitesService): Response
     {
         if (($groupId = $request->integer('groupId')) && ! $group = $this->siteGroups->getGroupById($groupId)) {
             abort(404, 'Invalid site group ID: '.$groupId);
@@ -109,7 +110,7 @@ final readonly class SitesController
         ]);
     }
 
-    public function edit(SiteModel $site, Sites $sitesService)
+    public function edit(SiteModel $site, Sites $sitesService): Response
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -179,7 +180,7 @@ final readonly class SitesController
             ->with('success', t('Site saved.'));
     }
 
-    public function reorder(Request $request)
+    public function reorder(Request $request): RedirectResponse
     {
         $ids = $request->input('ids', []);
 
@@ -192,7 +193,7 @@ final readonly class SitesController
         return back();
     }
 
-    public function destroy(Request $request, SiteModel $siteData): \Illuminate\Http\RedirectResponse
+    public function destroy(Request $request, SiteModel $siteData): RedirectResponse
     {
         if (! $siteData) {
             abort(404, t('Site not found.'));
@@ -215,7 +216,10 @@ final readonly class SitesController
             ->with('success', t('Site deleted.'));
     }
 
-    private function getViewData()
+    /**
+     * @return array<string,mixed>
+     */
+    private function getViewData(): array
     {
         $isValidUrl = fn ($value) => Str::isUrl($value);
 

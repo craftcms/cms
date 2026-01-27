@@ -7,7 +7,7 @@
     getCoreRowModel,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {computed, h, ref, watch} from 'vue';
+  import {computed, h, nextTick, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
@@ -19,8 +19,6 @@
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
-  import ReorderButton from '@/components/ReorderButton.vue';
-  import VarDump from '@/components/VarDump.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -70,39 +68,30 @@
       .filter(Boolean);
   });
 
-  watch(
-    siteIds,
-    (newValue, oldValue) => {
+  watch(siteIds, (newValue, oldValue) => {
+    // Defer to next tick to avoid issues during drag-and-drop event handling
+    nextTick(() => {
       router.post(
         reorder(),
         {
-          ids: newValue,
+          ids: [...newValue], // Copy to ensure we have the current value
         },
         {
           preserveScroll: true,
+          preserveState: true,
           onError: () => {
             siteIds.value = oldValue;
           },
         }
       );
-    },
-    {deep: true}
-  );
+    });
+  });
 
-  function moveUp(site: Site) {
-    const oldIndex = siteIds.value.indexOf(site.id);
-    const newIndex = oldIndex - 1;
-
-    siteIds.value.splice(oldIndex, 1);
-    siteIds.value.splice(newIndex, 0, site.id);
-  }
-
-  function moveDown(site: Site) {
-    const oldIndex = siteIds.value.indexOf(site.id);
-    const newIndex = oldIndex + 1;
-
-    siteIds.value.splice(oldIndex, 1);
-    siteIds.value.splice(newIndex, 0, site.id);
+  function handleReorder(startIndex: number, finishIndex: number) {
+    const newIds = [...siteIds.value];
+    const [id] = newIds.splice(startIndex, 1);
+    newIds.splice(finishIndex, 0, id);
+    siteIds.value = newIds;
   }
 
   const columns = ref([
@@ -170,31 +159,9 @@
         h(
           'div',
           {
-            class: 'flex justify-end gap-1',
+            class: 'flex justify-end',
           },
           [
-            h(
-              'craft-button',
-              {
-                size: 'small',
-                appearance: 'plain',
-                icon: true,
-                disabled: row.index === 0,
-                onClick: () => moveUp(row.original),
-              },
-              h('craft-icon', {name: 'chevron-up', label: 'Move site up'})
-            ),
-            h(
-              'craft-button',
-              {
-                size: 'small',
-                appearance: 'plain',
-                icon: true,
-                disabled: sites.value.length === row.index + 1,
-                onClick: () => moveDown(row.original),
-              },
-              h('craft-icon', {name: 'chevron-down', label: 'Move site down'})
-            ),
             h(DeleteSiteButton, {
               site: row.original,
               disabled: row.original.primary,
@@ -320,7 +287,18 @@
       </template>
 
       <template v-if="sites.length">
-        <AdminTable :table="sitesTable"></AdminTable>
+        <AdminTable
+          :table="sitesTable"
+          :read-only="readOnly"
+          :reorderable="!!group?.id"
+          @reorder="handleReorder"
+        >
+          <template #drag-preview="{row}">
+            <div class="border-border-subtle rounded p-2 bg-white">
+              {{ row.original.name }}
+            </div>
+          </template>
+        </AdminTable>
       </template>
       <template v-else>
         <div class="py-20">

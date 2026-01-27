@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <craft-button size="small" icon class="cursor-move" appearance="plain">
+  <craft-button type="button" icon size="small" appearance="plain">
     <craft-icon name="custom-icons/grip-dots" :label="label"></craft-icon>
   </craft-button>
 </template>
