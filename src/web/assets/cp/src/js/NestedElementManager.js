@@ -416,9 +416,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     async updateSortOrder(elementIds) {
-      elementIds = Array.isArray(elementIds)
-        ? elementIds
-        : [parseInt(elementId)];
+      elementIds = Array.isArray(elementIds) ? elementIds : [elementIds];
+      elementIds = elementIds.map((id) => parseInt(id));
       const allIds = this.getElementIds();
 
       const data = Object.assign(await this.getBaseActionData(), {
