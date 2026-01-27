@@ -9,15 +9,15 @@ namespace crafttests\unit\web\twig;
 
 use ArrayObject;
 use Craft;
-use craft\elements\Address;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;

@@ -43,12 +43,11 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
-use craft\helpers\Queue;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
-use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
+use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
 use craft\services\Elements;
@@ -76,12 +75,12 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
-use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
@@ -109,6 +108,8 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
+use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -122,9 +123,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
-use SensitiveParameter;
 use Symfony\Component\Finder\Finder;
-use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Event as YiiEvent;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
@@ -221,61 +220,8 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->dispatchComponentEvent($name, $event);
         });
 
-        ElementQuery::macro('getCachedResult', function() {
-            Deprecator::log('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            return $this->getResultOverride();
-        });
-
-        ElementQuery::macro('setCachedResult', function(array $elements) {
-            Deprecator::log('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            $this->setResultOverride($elements);
-        });
-
-        ElementQuery::macro('clearCachedResult', function() {
-            Deprecator::log('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            $this->clearResultOverride();
-        });
-
-        ElementQuery::macro('collect', function() {
-            Deprecator::log('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
-
-            return $this->get();
-        });
-
-        User::macro(
-            'authenticate',
-            function(#[SensitiveParameter] string $password) {
-                Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
-
-                return app(Auth::class)->authenticate($this, [
-                    'password' => $password,
-                ]);
-            },
-        );
-
-        User::macro(
-            'authenticateWithPasskey',
-            function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
-                Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
-
-                return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
-            },
-        );
-
-        User::macro(
-            'handleInvalidLoginParam',
-            function(): void {
-                Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
-
-                app(Auth::class)->handleInvalidLogin($this);
-            },
-        );
+        ElementQuery::mixin(new ElementQueryMixin());
+        User::mixin(new UserMixin());
     }
 
     protected function registerLegacyApp(): void
@@ -521,7 +467,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
-        \craft\services\Auth::registerEvents();
+        Auth::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
@@ -654,14 +600,14 @@ class Yii2ServiceProvider extends ServiceProvider
             ]));
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $event->oldPrimarySiteId,
                     ],
-                    'siteId' => $event->site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $event->site->id,
+                    isNewSite: true,
+                ));
             }
         });
 

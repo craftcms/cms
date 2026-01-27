@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -14,7 +16,9 @@ use Craft;
  * additional jobs to complete the workload, which perform actions on elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.0.0
+ * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Queue\BatchedElementJob]] instead.
  */
 abstract class BaseBatchedElementJob extends BaseBatchedJob
 {
@@ -22,7 +26,7 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
     public string $bulkOpKey;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function before(): void
     {
@@ -30,7 +34,7 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function beforeBatch(): void
     {
@@ -38,7 +42,7 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function after(): void
     {

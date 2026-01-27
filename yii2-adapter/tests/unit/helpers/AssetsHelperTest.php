@@ -7,11 +7,13 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use crafttests\fixtures\AssetFixture;
+use Illuminate\Support\Facades\DB;
+use PDO;
 use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -42,6 +44,8 @@ class AssetsHelperTest extends TestCase
         $this->tester->haveFixtures([
             'assets' => AssetFixture::class,
         ]);
+
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         $assetQuery = Asset::find();
 

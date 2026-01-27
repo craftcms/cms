@@ -9,11 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\elements\Asset;
 use craft\events\VolumeEvent;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
@@ -408,8 +408,9 @@ class Volumes extends Component
             $assets = Asset::find()
                 ->volumeId($volumeModel->id)
                 ->trashed()
-                ->andWhere(['assets.deletedWithVolume' => true])
+                ->where('assets.deletedWithVolume', true)
                 ->all();
+
             Craft::$app->getElements()->restoreElements($assets);
         }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Events;
 
 use craft\base\ElementInterface;
-use craft\elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**

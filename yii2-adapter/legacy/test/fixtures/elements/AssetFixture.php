@@ -9,9 +9,9 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\records\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Class AssetFixture.

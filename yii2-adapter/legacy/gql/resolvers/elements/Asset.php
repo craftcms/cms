@@ -8,11 +8,11 @@
 namespace craft\gql\resolvers\elements;
 
 use Craft;
-use craft\elements\Asset as AssetElement;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\UnknownMethodException;
 
 /**
@@ -63,7 +63,7 @@ class Asset extends ElementResolver
             return $volume->id ?? null;
         }, $pairs['volumes']));
 
-        $query->andWhere(['in', 'assets.volumeId', $volumeIds]);
+        $query->whereIn('assets.volumeId', $volumeIds);
 
         return $query;
     }

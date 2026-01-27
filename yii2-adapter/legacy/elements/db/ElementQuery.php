@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
@@ -19,20 +18,20 @@ use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\ElementCollection;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -72,7 +71,8 @@ use function CraftCms\Cms\backTraceAsString;
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ElementQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ElementQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -1118,7 +1118,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $siteId
      * @return static
      */
-    public function language($value): self
+    public function language($value): static
     {
         if (is_string($value)) {
             $sites = Sites::getSitesByLanguage($value);
@@ -1592,7 +1592,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             Log::warning(
                 "Element query executed before Craft is fully initialized.\nStack trace:\n" .
                 backTraceAsString(),
-                [__METHOD__]
+                [__METHOD__],
             );
         }
 
@@ -1900,9 +1900,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement[]|array
+     * @phpstan-ignore method.childParameterType
      */
     public function all($db = null): array
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
@@ -1968,9 +1973,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement|array|null
+     * @phpstan-ignore method.childParameterType
      */
     public function one($db = null): mixed
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return reset($cachedResult) ?: null;
@@ -2053,9 +2063,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement|array|null
+     * @phpstan-ignore method.childParameterType
      */
-    public function nth(int $n, ?YiiConnection $db = null): mixed
+    public function nth(int $n, $db = null): mixed
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult[$n] ?? null;
@@ -2407,7 +2422,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 unset(
                     $row['draftCreatorId'],
                     $row['draftName'],
-                    $row['draftNotes']
+                    $row['draftNotes'],
                 );
             }
         }
@@ -2874,7 +2889,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                                 $generatedFieldsByHandle,
                                 $fieldAttributes,
                                 $fieldsByHandle,
-                                false
+                                false,
                             );
                             $conditions = array_merge($conditions, $generatedFieldsConditions);
                         }
@@ -3600,7 +3615,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $keyParamSuffix = sprintf('%s_%s', $paramSuffix, $i);
                 $scoreSql .= sprintf(
                     ' WHEN [[elements.id]] = :elementId_%s AND [[elements_sites.siteId]] = :siteId_%s THEN :value_%s',
-                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix
+                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix,
                 );
                 $scoreParams[":elementId_$keyParamSuffix"] = $elementId;
                 $scoreParams[":siteId_$keyParamSuffix"] = $siteId;
@@ -3935,5 +3950,30 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $this->_columnMap[$key];
+    }
+
+    public function getResultOverride(): ?array
+    {
+        return $this->getCachedResult();
+    }
+
+    public function setResultOverride(array $elements): void
+    {
+        $this->setCachedResult($elements);
+    }
+
+    public function clearResultOverride(): void
+    {
+        $this->clearCachedResult();
+    }
+
+    public function afterHydrate(Collection $items): Collection
+    {
+        return collect($this->afterPopulate($items->all()));
+    }
+
+    public function whereIn($column, $values, $boolean = 'and', $not = false): static
+    {
+        return $this->andWhere(['in', $column, $values]);
     }
 }

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,7 +19,9 @@ use yii\base\InvalidConfigException;
  * UpdateSearchIndex job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.2.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\UpdateSearchIndex} instead.
  */
 class UpdateSearchIndex extends BaseJob
 {
@@ -38,18 +42,20 @@ class UpdateSearchIndex extends BaseJob
 
     /**
      * @var string[]|null The field handles that should be indexed
+     *
      * @since 3.4.0
      */
     public ?array $fieldHandles = null;
 
     /**
      * @var bool Whether to check if the element’s search indexes are queued to be updated before proceeding.
+     *
      * @since 5.7.0
      */
     public bool $queued = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -60,6 +66,7 @@ class UpdateSearchIndex extends BaseJob
                 throw new InvalidConfigException('`elementId` and `siteId` must be an integer when `queued` is true.');
             }
             $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
+
             return;
         }
 
@@ -79,7 +86,7 @@ class UpdateSearchIndex extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

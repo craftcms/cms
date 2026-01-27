@@ -1,8 +1,8 @@
 <?php
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\AddressQuery;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;

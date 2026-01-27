@@ -23,4 +23,11 @@ final class AddressFactory extends Factory
             'dateUpdated' => $created,
         ];
     }
+
+    public function createElement(array $attributes = []): \CraftCms\Cms\Address\Elements\Address
+    {
+        $model = $this->create($attributes);
+
+        return \CraftCms\Cms\Address\Elements\Address::find()->id($model->id)->one();
+    }
 }

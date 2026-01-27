@@ -381,6 +381,18 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Converts line breaks to Unix line breaks (LF) within the given string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.9.0
+     */
+    public static function convertLineBreaks(string $str): string
+    {
+        return preg_replace('/\R/u', "\n", $str);
+    }
+
+    /**
      * Returns the length of the string, implementing the countable interface.
      *
      * @param string $str The string to count.

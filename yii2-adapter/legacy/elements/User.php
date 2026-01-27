@@ -9,7 +9,7 @@
 
 namespace craft\elements;
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\User\Elements\User as UserElement;
 
 /** @phpstan-ignore-next-line */

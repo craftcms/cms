@@ -15,6 +15,7 @@ use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\Table;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Money as MoneyHelper;
@@ -1675,12 +1676,12 @@ class Db
      * reflect any changes that have been made over the main DB connection, if a transaction is currently
      * active.
      *
-     * @param QueryInterface $query The query that should be executed
+     * @param QueryInterface|ElementQueryInterface $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
      * @since 3.7.0
      */
-    public static function each(QueryInterface $query, int $batchSize = 100): BatchQueryResult
+    public static function each(QueryInterface|ElementQueryInterface $query, int $batchSize = 100): BatchQueryResult
     {
         return self::_batch($query, $batchSize, true);
     }
@@ -1688,12 +1689,12 @@ class Db
     /**
      * Starts a new batch query for batch() and each().
      *
-     * @param QueryInterface $query
+     * @param QueryInterface|ElementQueryInterface $query
      * @param int $batchSize
      * @param bool $each
      * @return BatchQueryResult
      */
-    private static function _batch(QueryInterface $query, int $batchSize, bool $each): BatchQueryResult
+    private static function _batch(QueryInterface|ElementQueryInterface $query, int $batchSize, bool $each): BatchQueryResult
     {
         $db = self::db();
         $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;

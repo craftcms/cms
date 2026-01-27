@@ -1,14 +1,14 @@
 {% extends "_layouts/elementindex" %}
 
-{% if page is defined and not craft.elementSources.pageExists("craft\\elements\\Entry", page) %}
-  {% set firstPage = craft.elementSources.getFirstPage("craft\\elements\\Entry") %}
+{% if page is defined and not craft.elementSources.pageExists("CraftCms\\Cms\\Entry\\Elements\\Entry", page) %}
+  {% set firstPage = craft.elementSources.getFirstPage("CraftCms\\Cms\\Entry\\Elements\\Entry") %}
   {% if firstPage or (not firstPage and page != 'entries') %}
     {% redirect 'content/' ~ (firstPage ? firstPage|kebab : 'entries') %}
   {% endif %}
 {% endif %}
 
 {% set title = "Entries"|t('app') %}
-{% set elementType = 'craft\\elements\\Entry' %}
+{% set elementType = 'CraftCms\\Cms\\Entry\\Elements\\Entry' %}
 
 {% if sectionHandle is defined %}
   {% js %}

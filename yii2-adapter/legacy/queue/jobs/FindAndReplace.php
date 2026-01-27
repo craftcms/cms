@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -21,7 +23,9 @@ use Illuminate\Support\Facades\DB;
  * FindAndReplace job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\FindAndReplace} instead.
  */
 class FindAndReplace extends BaseBatchedJob
 {
@@ -43,9 +47,9 @@ class FindAndReplace extends BaseBatchedJob
         ];
 
         if (Craft::$app->getDb()->getIsPgsql()) {
-            $where[] = ['like', "CAST(\"content\" AS TEXT)", $this->find];
+            $where[] = ['like', 'CAST("content" AS TEXT)', $this->find];
         } else {
-            $where[] = ['like', "content", $this->find];
+            $where[] = ['like', 'content', $this->find];
         }
 
         return new QueryBatcher(
@@ -58,7 +62,7 @@ class FindAndReplace extends BaseBatchedJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -96,6 +100,7 @@ class FindAndReplace extends BaseBatchedJob
 
         if (is_string($value)) {
             $value = str_replace($this->find, $this->replace, $value);
+
             return;
         }
 
@@ -107,7 +112,7 @@ class FindAndReplace extends BaseBatchedJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

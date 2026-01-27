@@ -12,6 +12,8 @@
 - Deprecated `craft\helpers\ConfigHelper`. `CraftCms\Cms\Support\Config` should be used instead.
 - Deprecated `craft\helpers\Diff`. `CraftCms\Cms\Support\Diff` should be used instead.
 - Deprecated `craft\helpers\Html`. `CraftCms\Cms\Support\Html` should be used instead.
+- Deprecated `craft\helpers\SessionHelper`. `Illuminate\Support\Facades\Session` should be used instead.
+- Deprecated `craft\helpers\Sequence`. `CraftCms\Cms\Support\Sequence` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
@@ -29,6 +31,7 @@
 - Deprecated `craft\services\Gc`. `CraftCms\Cms\GarbageCollection\GarbageCollection` should be used instead.
 - Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\nameparsing\CustomLanguage`. `CraftCms\Cms\Shared\Nameparser\CustomLanguage` should be used instead.
 - Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
   - #### General helpers
   - `App:devMode()` -> `app()->hasDebugModeEnabled()`
@@ -135,6 +138,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `\craft\records\AssetIndexingSession`. `\CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
 - Deprecated `\craft\records\Volume`. `\CraftCms\Cms\Asset\Models\Volume` should be used instead.
 - Deprecated `\craft\records\VolumeFolder`. `\CraftCms\Cms\Asset\Models\VolumeFolder` should be used instead.
+- Deprecated `\craft\controllers\AssetIndexesController`. `\CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController` should be used instead.
 
 ## Auth
 
@@ -196,13 +200,13 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Element Queries
 
-- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Database\Queries\AddressQuery` should be used instead.
-- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Database\Queries\AssetQuery` should be used instead.
-- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Database\Queries\ContentBlockQuery` should be used instead.
-- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Database\Queries\ElementQuery` should be used instead.
+- Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Element\Queries\AddressQuery` should be used instead.
+- Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Element\Queries\AssetQuery` should be used instead.
+- Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Element\Queries\ContentBlockQuery` should be used instead.
+- Deprecated `\craft\elements\db\ElementQuery` `\CraftCms\Cms\Element\Queries\ElementQuery` should be used instead.
 - Deprecated `\craft\elements\db\ElementQueryInterface`
-- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Database\Queries\EntryQuery` should be used instead.
-- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Database\Queries\UserQuery` should be used instead.
+- Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Element\Queries\EntryQuery` should be used instead.
+- Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Element\Queries\UserQuery` should be used instead.
 
 ## Entries & Entry Types
 
@@ -216,9 +220,67 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
   - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleted`
   - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\SavingEntryType`
   - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
+- Removed `craft\controllers\EntriesController`. The following controllers now implement this functionality:
+    - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
+    - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
+    - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
+    - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
 - Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
+
+## Fields
+
+- Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
+- Deprecated `craft\fields\data\ColorData`. `CraftCms\Cms\Field\Data\ColorData` should be used instead.
+- Deprecated `craft\fields\data\IconData`. `CraftCms\Cms\Field\Data\IconData` should be used instead.
+- Deprecated `craft\fields\data\JsonData`. `CraftCms\Cms\Field\Data\JsonData` should be used instead.
+- Deprecated `craft\fields\data\LinkData`. `CraftCms\Cms\Field\Data\LinkData` should be used instead.
+- Deprecated `craft\fields\data\MultiOptionsFieldData`. `CraftCms\Cms\Field\Data\MultiOptionsFieldData` should be used instead.
+- Deprecated `craft\fields\data\OptionData`. `CraftCms\Cms\Field\Data\OptionData` should be used instead.
+- Deprecated `craft\fields\data\SingleOptionFieldData`. `CraftCms\Cms\Field\Data\SingleOptionFieldData` should be used instead.
+- Deprecated `craft\fields\linktypes\Asset`. `CraftCms\Cms\Field\LinkTypes\Asset` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseElementLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseElementLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\BaseTextLinkType`. `CraftCms\Cms\Field\LinkTypes\BaseTextLinkType` should be used instead.
+- Deprecated `craft\fields\linktypes\Category`. `CraftCms\Cms\Field\LinkTypes\Category` should be used instead.
+- Deprecated `craft\fields\linktypes\Email`. `CraftCms\Cms\Field\LinkTypes\Email` should be used instead.
+- Deprecated `craft\fields\linktypes\Entry`. `CraftCms\Cms\Field\LinkTypes\Entry` should be used instead.
+- Deprecated `craft\fields\linktypes\Phone`. `CraftCms\Cms\Field\LinkTypes\Phone` should be used instead.
+- Deprecated `craft\fields\linktypes\Sms`. `CraftCms\Cms\Field\LinkTypes\Sms` should be used instead.
+- Deprecated `craft\fields\linktypes\Url`. `CraftCms\Cms\Field\LinkTypes\Url` should be used instead.
+- Deprecated `craft\fields\Addresses`. `CraftCms\Cms\Field\Addresses` should be used instead.
+- Deprecated `craft\fields\Assets`. `CraftCms\Cms\Field\Assets` should be used instead.
+- Deprecated `craft\fields\BaseOptionsField`. `CraftCms\Cms\Field\BaseOptionsField` should be used instead.
+- Deprecated `craft\fields\BaseRelationField`. `CraftCms\Cms\Field\BaseRelationField` should be used instead.
+- Deprecated `craft\fields\ButtonGroup`. `CraftCms\Cms\Field\ButtonGroup` should be used instead.
+- Deprecated `craft\fields\Categories`. `CraftCms\Cms\Field\Categories` should be used instead.
+- Deprecated `craft\fields\Checkboxes`. `CraftCms\Cms\Field\Checkboxes` should be used instead.
+- Deprecated `craft\fields\Color`. `CraftCms\Cms\Field\Color` should be used instead.
+- Deprecated `craft\fields\ContentBlock`. `CraftCms\Cms\Field\ContentBlock` should be used instead.
+- Deprecated `craft\fields\Country`. `CraftCms\Cms\Field\Country` should be used instead.
+- Deprecated `craft\fields\Date`. `CraftCms\Cms\Field\Date` should be used instead.
+- Deprecated `craft\fields\Dropdown`. `CraftCms\Cms\Field\Dropdown` should be used instead.
+- Deprecated `craft\fields\Email`. `CraftCms\Cms\Field\Email` should be used instead.
+- Deprecated `craft\fields\Entries`. `CraftCms\Cms\Field\Entries` should be used instead.
+- Deprecated `craft\fields\Icon`. `CraftCms\Cms\Field\Icon` should be used instead.
+- Deprecated `craft\fields\Json`. `CraftCms\Cms\Field\Json` should be used instead.
+- Deprecated `craft\fields\Lightswitch`. `CraftCms\Cms\Field\Lightswitch` should be used instead.
+- Deprecated `craft\fields\Link`. `CraftCms\Cms\Field\Link` should be used instead.
+- Deprecated `craft\fields\Matrix`. `CraftCms\Cms\Field\Matrix` should be used instead.
+- Deprecated `craft\fields\MissingField`. `CraftCms\Cms\Field\MissingField` should be used instead.
+- Deprecated `craft\fields\Money`. `CraftCms\Cms\Field\Money` should be used instead.
+- Deprecated `craft\fields\MultiSelect`. `CraftCms\Cms\Field\MultiSelect` should be used instead.
+- Deprecated `craft\fields\Number`. `CraftCms\Cms\Field\Number` should be used instead.
+- Deprecated `craft\fields\PlainText`. `CraftCms\Cms\Field\PlainText` should be used instead.
+- Deprecated `craft\fields\RadioButtons`. `CraftCms\Cms\Field\RadioButtons` should be used instead.
+- Deprecated `craft\fields\Range`. `CraftCms\Cms\Field\Range` should be used instead.
+- Deprecated `craft\fields\Table`. `CraftCms\Cms\Field\Table` should be used instead.
+- Deprecated `craft\fields\Tags`. `CraftCms\Cms\Field\Tags` should be used instead.
+- Deprecated `craft\fields\Time`. `CraftCms\Cms\Field\Time` should be used instead.
+- Deprecated `craft\fields\Url`. `CraftCms\Cms\Field\Url` should be used instead.
+- Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
+- Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
 
 ## GQL
 
@@ -227,6 +289,14 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## HTTP
 
+- Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
+- Deprecated `craft\filters\Cors`. Use Laravel's CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
+- Deprecated `craft\filters\Headers`. Use Laravel middleware instead. (see https://laravel.com/docs/middleware)
+- Deprecated `craft\filters\ConditionalFilterTrait`.
+- Deprecated `craft\filters\SiteFilterTrait`.
+- Deprecated `craft\filters\UtilityAccess`.
 - Deprecated `craft\controllers\AppController::actionLicensingIssues()`. `CraftCms\Cms\Http\Middleware\EnforceLicenses` should be used instead.
 - Removed `craft\controllers\AppController::actionIconPickerOptions()`. Use `CraftCms\Cms\Http\Controllers\IconController::pickerOptions()` instead.
 - Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.

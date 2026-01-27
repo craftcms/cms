@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Field\Data;
 
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Template;
+use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Support\Html;
@@ -15,9 +16,7 @@ use Spatie\LaravelData\Dto;
 use Stringable;
 use Twig\Markup;
 
-/**
- * Link field data class.
- */
+#[AllowedInSandbox]
 final class LinkData extends Dto implements Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */

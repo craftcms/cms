@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\web\View;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;

@@ -8,9 +8,9 @@
 namespace craft\fieldlayoutelements\assets;
 
 use craft\base\ElementInterface;
-use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;

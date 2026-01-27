@@ -2,12 +2,12 @@
 
 namespace craft\fields\conditions;
 
-use craft\db\CoalesceColumnsExpression;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use yii\db\QueryInterface;
+use Illuminate\Contracts\Database\Query\Builder;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\t;
 
 /**
@@ -69,15 +69,13 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         return parent::inputHtml();
     }
 
-    public function modifyQuery(QueryInterface $query): void
+    public function modifyQuery(Builder $query): void
     {
         if ($this->operator === self::OPERATOR_TYPE) {
             /** @phpstan-ignore-next-line */
             $valueSql = array_map(fn(Link $field) => $field->getValueSql('type'), $this->fieldInstances());
 
-            $query->andWhere([
-                (new CoalesceColumnsExpression($valueSql))->getSql($query->params) => $this->linkType,
-            ]);
+            $query->where(new Coalesce($valueSql), $this->linkType);
         } else {
             parent::modifyQuery($query);
         }

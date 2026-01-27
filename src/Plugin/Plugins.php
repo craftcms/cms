@@ -43,7 +43,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
@@ -160,10 +159,7 @@ final class Plugins
         // Prevent this function from getting called twice.
         $this->loadingPlugins = true;
 
-        // Fire a 'beforeLoadPlugins' event
-        if (Event::hasListeners(LoadingPlugins::class)) {
-            Event::dispatch(new LoadingPlugins);
-        }
+        event(new LoadingPlugins);
 
         // Find all of the installed plugins
         $this->storedPluginInfo = DB::table(Table::PLUGINS)
@@ -256,9 +252,7 @@ final class Plugins
         $this->loadingPlugins = false;
         $this->pluginsLoaded = true;
 
-        if (Event::hasListeners(PluginsLoaded::class)) {
-            Event::dispatch(PluginsLoaded::class);
-        }
+        event(PluginsLoaded::class);
     }
 
     /**
@@ -364,9 +358,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        if (Event::hasListeners(EnablingPlugin::class)) {
-            Event::dispatch(new EnablingPlugin($plugin));
-        }
+        event(new EnablingPlugin($plugin));
 
         // Enable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -378,9 +370,7 @@ final class Plugins
         $this->storedPluginInfo[$handle]['enabled'] = true;
         $this->registerPlugin($plugin);
 
-        if (Event::hasListeners(PluginEnabled::class)) {
-            Event::dispatch(new PluginEnabled($plugin));
-        }
+        event(new PluginEnabled($plugin));
 
         return true;
     }
@@ -407,9 +397,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        if (Event::hasListeners(DisablingPlugin::class)) {
-            Event::dispatch(new DisablingPlugin($plugin));
-        }
+        event(new DisablingPlugin($plugin));
 
         // Disable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -421,9 +409,7 @@ final class Plugins
         $this->storedPluginInfo[$handle]['enabled'] = false;
         $this->unregisterPlugin($plugin);
 
-        if (Event::hasListeners(PluginDisabled::class)) {
-            Event::dispatch(new PluginDisabled($plugin));
-        }
+        event(new PluginDisabled($plugin));
 
         return true;
     }
@@ -473,10 +459,7 @@ final class Plugins
 
         $plugin->edition = $edition;
 
-        // Fire a 'beforeInstallPlugin' event
-        if (Event::hasListeners(InstallingPlugin::class)) {
-            Event::dispatch(new InstallingPlugin($plugin));
-        }
+        event(new InstallingPlugin($plugin));
 
         DB::beginTransaction();
 
@@ -539,9 +522,7 @@ final class Plugins
         $this->storedPluginInfo[$handle] = $info;
         $this->registerPlugin($plugin);
 
-        if (Event::hasListeners(PluginInstalled::class)) {
-            Event::dispatch(new PluginInstalled($plugin));
-        }
+        event(new PluginInstalled($plugin));
 
         $projectConfig->readOnly = $readOnly;
 
@@ -585,10 +566,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        // Fire a 'beforeUninstallPlugin' event
-        if (Event::hasListeners(UninstallingPlugin::class)) {
-            Event::dispatch(new UninstallingPlugin($plugin));
-        }
+        event(new UninstallingPlugin($plugin));
 
         DB::beginTransaction();
         try {
@@ -630,10 +608,7 @@ final class Plugins
 
         unset($this->storedPluginInfo[$handle]);
 
-        // Fire an 'afterUninstallPlugin' event
-        if (Event::hasListeners(PluginUninstalled::class)) {
-            Event::dispatch(new PluginUninstalled($plugin));
-        }
+        event(new PluginUninstalled($plugin));
 
         $projectConfig->readOnly = $readOnly;
 
@@ -702,12 +677,10 @@ final class Plugins
             return false;
         }
 
-        if (Event::hasListeners(SavingPluginSettings::class)) {
-            Event::dispatch($event = new SavingPluginSettings($plugin));
+        event($event = new SavingPluginSettings($plugin));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         if (! $plugin->beforeSaveSettings()) {
@@ -724,9 +697,7 @@ final class Plugins
 
         $plugin->afterSaveSettings();
 
-        if (Event::hasListeners(PluginSettingsSaved::class)) {
-            Event::dispatch(new PluginSettingsSaved($plugin));
-        }
+        event(new PluginSettingsSaved($plugin));
 
         return true;
     }

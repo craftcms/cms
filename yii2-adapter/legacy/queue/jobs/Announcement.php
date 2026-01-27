@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -22,7 +24,9 @@ use yii\base\Exception;
  * Announcement job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.7.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Announcement\Jobs\SendAnnouncement} instead.
  */
 class Announcement extends BaseJob
 {
@@ -43,12 +47,14 @@ class Announcement extends BaseJob
 
     /**
      * @var bool Whether only admins should receive the announcement.
+     *
      * @since 4.5.6
      */
     public bool $adminsOnly = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws Exception
      */
     public function execute($queue): void
@@ -57,6 +63,7 @@ class Announcement extends BaseJob
             $pluginInfo = app(Plugins::class)->getStoredPluginInfo($this->pluginHandle);
             if ($pluginInfo === null) {
                 Log::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", [__METHOD__]);
+
                 return;
             }
             $pluginId = $pluginInfo['id'];
@@ -99,7 +106,7 @@ class Announcement extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\validators\ColorValidator;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -16,7 +16,9 @@ use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use Deprecated;
 use Illuminate\Support\Collection;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -31,7 +33,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Color');
@@ -40,7 +42,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'palette';
@@ -49,7 +51,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
@@ -58,7 +60,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
         return sprintf('%s(7)', Schema::TYPE_CHAR);
@@ -143,7 +145,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @return string[]
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function getPresets(): array
     {
         return array_values(array_filter(array_map(fn (array $color) => $color['color'], $this->palette)));
@@ -152,7 +154,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @param  string[]  $presets
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function setPresets(array $presets): void
     {
         $this->palette = array_map(
@@ -217,7 +219,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -239,7 +241,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
@@ -248,7 +250,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
@@ -296,7 +298,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -320,7 +322,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $id = $this->getInputId();
@@ -429,7 +431,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -456,7 +458,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -487,7 +489,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

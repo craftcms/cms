@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\elements\db;
 
-use craft\elements\Entry;
 use craft\test\TestCase;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Data\UserGroup;
 
 /**

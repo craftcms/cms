@@ -60,11 +60,7 @@ trait SavableComponent
 
     public function beforeSave(bool $isNew): bool
     {
-        if (! Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_SAVE))) {
-            return true;
-        }
-
-        Event::dispatch(
+        event(
             self::componentEventName(self::EVENT_BEFORE_SAVE),
             $event = new ComponentEvent($this, $isNew),
         );
@@ -82,11 +78,7 @@ trait SavableComponent
      */
     public function afterSave(bool $isNew): void
     {
-        if (! Event::hasListeners(self::componentEventName(self::EVENT_AFTER_SAVE))) {
-            return;
-        }
-
-        Event::dispatch(self::componentEventName(self::EVENT_AFTER_SAVE), new ComponentEvent($this, $isNew));
+        event(self::componentEventName(self::EVENT_AFTER_SAVE), new ComponentEvent($this, $isNew));
     }
 
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
@@ -99,11 +91,7 @@ trait SavableComponent
      */
     public function beforeDelete(): bool
     {
-        if (! Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_DELETE))) {
-            return true;
-        }
-
-        Event::dispatch(
+        event(
             self::componentEventName(self::EVENT_BEFORE_DELETE),
             $event = new ComponentEvent($this),
         );
@@ -121,11 +109,7 @@ trait SavableComponent
      */
     public function beforeApplyDelete(): void
     {
-        if (! Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_APPLY_DELETE))) {
-            return;
-        }
-
-        Event::dispatch(self::componentEventName(self::EVENT_BEFORE_APPLY_DELETE), new ComponentEvent($this));
+        event(self::componentEventName(self::EVENT_BEFORE_APPLY_DELETE), new ComponentEvent($this));
     }
 
     public static function onAfterDelete(QueuedClosure|callable|array|string $callback): void
@@ -138,10 +122,6 @@ trait SavableComponent
      */
     public function afterDelete(): void
     {
-        if (! Event::hasListeners(self::componentEventName(self::EVENT_AFTER_DELETE))) {
-            return;
-        }
-
-        Event::dispatch(self::componentEventName(self::EVENT_AFTER_DELETE), new ComponentEvent($this));
+        event(self::componentEventName(self::EVENT_AFTER_DELETE), new ComponentEvent($this));
     }
 }

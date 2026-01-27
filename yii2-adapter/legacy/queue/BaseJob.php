@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -14,7 +16,9 @@ use yii\queue\Queue;
  * Job is the base class for classes representing jobs in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
+ * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Queue\Job]] instead.
  */
 abstract class BaseJob extends BaseObject implements JobInterface
 {
@@ -23,7 +27,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * ::: tip
      * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
-     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * so it can be lazy-translated for users' preferred languages rather that the current app language.
      * :::
      */
     public ?string $description = null;
@@ -31,7 +35,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @var int|float The current progress
      */
-    private int|float $_progress;
+    private int|float $_progress = 0;
 
     /**
      * @var string|null The current progress label
@@ -45,7 +49,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -56,7 +60,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDescription(): ?string
     {
@@ -68,10 +72,8 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * ::: tip
      * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
-     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * so it can be lazy-translated for users' preferred languages rather that the current app language.
      * :::
-     *
-     * @return string|null
      */
     protected function defaultDescription(): ?string
     {
@@ -83,14 +85,13 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * ::: tip
      * Run the label through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
-     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * so it can be lazy-translated for users' preferred languages rather that the current app language.
      * :::
      *
-     * @param Queue|QueueInterface $queue
-     * @param float $progress A number between 0 and 1
-     * @param string|null $label The progress label
+     * @param  float  $progress  A number between 0 and 1
+     * @param  string|null  $label  The progress label
      */
-    protected function setProgress(Queue|QueueInterface $queue, float $progress, ?string $label = null): void
+    protected function setProgress(Queue|QueueInterface|LegacyQueueAdapter $queue, float $progress, ?string $label = null): void
     {
         $progress = round(100 * $progress);
 
@@ -105,8 +106,10 @@ abstract class BaseJob extends BaseObject implements JobInterface
                 $this->_progressLabel = $label;
             }
 
-            if ($queue instanceof QueueInterface) {
-                $queue->setProgress((int)$progress, $label);
+            if ($queue instanceof LegacyQueueAdapter) {
+                $queue->setProgress((int) $progress, $label);
+            } elseif ($queue instanceof QueueInterface) {
+                $queue->setProgress((int) $progress, $label);
             }
         }
     }

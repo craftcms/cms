@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;

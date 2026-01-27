@@ -8,11 +8,11 @@
 namespace craft\gql\arguments\elements;
 
 use Craft;
-use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use GraphQL\Type\Definition\Type;
 
 /**

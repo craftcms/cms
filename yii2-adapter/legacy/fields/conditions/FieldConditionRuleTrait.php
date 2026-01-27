@@ -12,7 +12,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
-use yii\db\QueryInterface;
 use function CraftCms\Cms\t;
 
 /**
@@ -215,29 +214,18 @@ trait FieldConditionRuleTrait
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): void
+    public function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query): void
     {
         $value = $this->elementQueryParam();
         if ($value !== null) {
             $instances = $this->fieldInstances();
             $firstInstance = $instances[0];
 
-            $params = [];
-
-            if (!method_exists($firstInstance, 'queryCondition')) {
+            if (!method_exists($firstInstance, 'modifyQuery')) {
                 return;
             }
 
-            /** @phpstan-ignore-next-line */
-            $condition = $firstInstance::queryCondition($instances, $value, $params);
-
-            if ($condition === false) {
-                /** @phpstan-ignore-next-line */
-                $query->andWhere('0=1');
-            } elseif ($condition !== null) {
-                /** @phpstan-ignore-next-line */
-                $query->andWhere($condition, $params);
-            }
+            $firstInstance::modifyQuery($query, $instances, $value);
         }
     }
 

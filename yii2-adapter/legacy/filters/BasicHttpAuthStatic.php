@@ -20,6 +20,7 @@ use yii\filters\auth\HttpBasicAuth;
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-auth-httpbasicauth
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use the `auth.basic` middleware instead. @see https://laravel.com/docs/12.x/authentication#http-basic-authentication
  */
 class BasicHttpAuthStatic extends HttpBasicAuth
 {

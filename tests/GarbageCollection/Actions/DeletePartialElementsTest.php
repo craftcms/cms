@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\elements\Entry;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use Illuminate\Support\Facades\DB;
 

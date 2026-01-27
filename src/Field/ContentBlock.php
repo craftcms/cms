@@ -5,20 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\elements\ContentBlock as ContentBlockElement;
-use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
-use craft\events\CancelableEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
@@ -26,8 +18,13 @@ use craft\helpers\Gql;
 use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -445,7 +442,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
                     // (see https://github.com/craftcms/cms/pull/18161)
                     ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
-                    ->collect();
+                    ->get();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
@@ -489,26 +486,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
         // Existing element?
         if ($owner?->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function (
-                    CancelableEvent $event,
-                    ContentBlockQuery $query,
-                ) use ($owner) {
-                    $query->owner($owner);
+            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
+                $query->owner($owner);
 
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
+                // Clear out id=false if this query was populated previously
+                if ($query->id === false) {
+                    $query->id = null;
+                }
 
-                    // If the owner is a revision, allow revision elements to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
+                // If the owner is a revision, allow revision elements to be returned as well
+                if ($owner->getIsRevision()) {
+                    $query
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -709,7 +701,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [

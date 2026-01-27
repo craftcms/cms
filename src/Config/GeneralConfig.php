@@ -554,7 +554,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      * ```shell Environment Override
      * CRAFT_BUILD_ID=$GIT_SHA
@@ -2002,7 +2002,7 @@ class GeneralConfig extends BaseConfig
      * @var string The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -2643,6 +2643,57 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $runQueueAutomatically = true;
+
+    /**
+     * @var string The name of the queue that Craft jobs should be sent to.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->queueName('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_QUEUE_NAME=craft
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $queueName = 'default';
+
+    /**
+     * @var string The name of the queue that Craft lower priority jobs should be sent to.
+     *             By default, all jobs go to the same queue. Make sure to update `trackedQueueNames`
+     *             as well if you change this setting.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ->trackedQueueNames(['craft', 'craft-low-prio'])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_LOW_PRIORITY_QUEUE_NAME=craft-low-prio
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $lowPriorityQueueName = 'default';
+
+    /**
+     * @var array<string> The queue names that should have their job progress tracked.
+     *
+     * By default, only jobs on the `craft` queue are tracked. Add additional queue names
+     * if you want to track progress for jobs on other queues.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public array $trackedQueueNames = ['default'];
 
     /**
      * @var bool Whether the system should run in Safe Mode.
@@ -3904,7 +3955,7 @@ class GeneralConfig extends BaseConfig
      * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
      *
      * ```php
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      *
      * @group Environment
@@ -5565,7 +5616,7 @@ class GeneralConfig extends BaseConfig
      * The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -6300,6 +6351,60 @@ class GeneralConfig extends BaseConfig
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->queueName('craft')
+     * ```
+     *
+     * @group System
+     *
+     * @see $queueName
+     */
+    public function queueName(string $value): self
+    {
+        $this->queueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ```
+     *
+     * @group System
+     *
+     * @see $lowPriorityQueueName
+     */
+    public function lowPriorityQueueName(string $value): self
+    {
+        $this->lowPriorityQueueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The queue names that should have their job progress tracked.
+     *
+     * ```php
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     *
+     * @group System
+     *
+     * @see $trackedQueueNames
+     */
+    public function trackedQueueNames(array $value): self
+    {
+        $this->trackedQueueNames = $value;
 
         return $this;
     }

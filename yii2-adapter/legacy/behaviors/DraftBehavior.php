@@ -7,7 +7,7 @@
 
 namespace craft\behaviors;
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
 use DateTime;

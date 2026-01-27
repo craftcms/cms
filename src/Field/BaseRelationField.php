@@ -6,31 +6,28 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\conditions\ConditionInterface;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\db\Query;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\elements\ElementCollection;
-use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Queue;
-use craft\queue\jobs\LocalizeRelations;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
-use CraftCms\Cms\Database\Queries\EntryQuery;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Jobs\LocalizeRelations;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -132,7 +129,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * {@inheritdoc}
      */
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
     {
         /** @var self $field */
         $field = reset($instances);
@@ -658,6 +655,7 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
+                /** @var Element $target */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -708,7 +706,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -772,7 +770,7 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->beforeQuery(function (\CraftCms\Cms\Database\Queries\ElementQuery $elementQuery) use (
+            $query->beforeQuery(function (\CraftCms\Cms\Element\Queries\ElementQuery $elementQuery) use (
                 $element,
                 $relationsAlias) {
                 if ($elementQuery->id !== null) {
@@ -903,7 +901,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var \CraftCms\Cms\Database\Queries\ElementQuery $query */
+            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1091,7 +1089,7 @@ JS, [
             if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }
-            if ($rawValue instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
+            if ($rawValue instanceof \CraftCms\Cms\Element\Queries\ElementQuery) {
                 $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
                 $rawValue = $where['value'] ?? null;
             }
@@ -1200,9 +1198,7 @@ JS, [
         if (isset($this->oldSettings)) {
             $oldLocalizeRelations = (bool) ($this->oldSettings['localizeRelations'] ?? false);
             if ($this->localizeRelations !== $oldLocalizeRelations) {
-                Queue::push(new LocalizeRelations([
-                    'fieldId' => $this->id,
-                ]));
+                dispatch(new LocalizeRelations($this->id));
             }
         }
 
@@ -1230,7 +1226,7 @@ JS, [
      */
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var \CraftCms\Cms\Database\Queries\ElementQuery|ElementCollection $value */
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1242,7 +1238,7 @@ JS, [
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
-            $value instanceof \CraftCms\Cms\Database\Queries\ElementQuery &&
+            $value instanceof \CraftCms\Cms\Element\Queries\ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
             Arr::isNumeric($where['values'])
         ) {
@@ -1257,7 +1253,7 @@ JS, [
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->collect()
+                ->get()
                 ->pluck('id')
                 ->all();
         }
@@ -1650,17 +1646,12 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        // Fire a 'defineSelectionCriteria event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_SELECTION_CRITERIA)) {
-            $this->dispatchComponentEvent(
-                self::EVENT_DEFINE_SELECTION_CRITERIA,
-                $event = new DefineElementCriteria,
-            );
+        $this->dispatchComponentEvent(
+            self::EVENT_DEFINE_SELECTION_CRITERIA,
+            $event = new DefineElementCriteria,
+        );
 
-            return $event->criteria;
-        }
-
-        return [];
+        return $event->criteria;
     }
 
     /**
@@ -1798,6 +1789,7 @@ JS, [
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
+        /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
         $clone = (clone $query)
             ->drafts(null)
             ->status(null)

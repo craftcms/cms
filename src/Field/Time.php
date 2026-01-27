@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\validators\TimeValidator;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -32,7 +33,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Time');
@@ -41,7 +42,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'clock';
@@ -50,7 +51,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
@@ -59,7 +60,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_STRING;
@@ -101,7 +102,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -110,7 +111,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -153,7 +154,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getInputId(): string
     {
         return sprintf('%s-time', parent::getInputId());
@@ -162,7 +163,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/time.twig', [
@@ -179,7 +180,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getElementValidationRules(): array
     {
         return [
@@ -190,7 +191,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
@@ -199,7 +200,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (! $value) {
@@ -212,7 +213,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -225,7 +226,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?DateTime
     {
         if (! $value) {
@@ -250,7 +251,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): ?string
     {
         /** @var DateTime|null $value */
@@ -260,7 +261,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ?ElementInterface $element): mixed
     {
         // Bypass Db::prepareDateForDb()
@@ -278,7 +279,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type
     {
         return DateTimeType::getType();
@@ -287,7 +288,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [

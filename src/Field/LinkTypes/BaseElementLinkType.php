@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;

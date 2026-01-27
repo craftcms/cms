@@ -9,10 +9,10 @@ namespace craft\fieldlayoutelements\addresses;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;

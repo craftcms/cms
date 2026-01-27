@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,7 +19,9 @@ use CraftCms\Cms\Support\Facades\I18N;
  * PruneRevisions job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PruneRevisions} instead.
  */
 class PruneRevisions extends BaseJob
 {
@@ -38,12 +42,13 @@ class PruneRevisions extends BaseJob
 
     /**
      * @var int|null The maximum number of revisions an element can have
+     *
      * @since 3.5.13
      */
     public ?int $maxRevisions = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -77,7 +82,7 @@ class PruneRevisions extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {
