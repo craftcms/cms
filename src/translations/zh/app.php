@@ -243,7 +243,7 @@ return [
     'Change icon' => '更改图标',
     'Change logo' => '更改 logo',
     'Change photo' => '更改照片',
-    'Change the author of other users’ entries' => 'Change the author of other users’ entries',
+    'Change the author of other users’ entries' => '更改其他用户条目的作者',
     'Changelog' => '更改日志',
     'Changes discarded.' => '已舍弃更改。',
     'Changing this may result in data loss.' => '进行此修改可能会导致数据丢失。',
