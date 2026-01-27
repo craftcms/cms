@@ -250,7 +250,7 @@ class ElementSources extends Component
 
         foreach ($pages as $key => $pageWithSources) {
             // Remove nav items that have no enabled native sources:
-            if (count(array_filter($pageWithSources, fn(array $source) => isset($source['disabled']) && $source['disabled'] === true)) == count($pageWithSources)) {
+            if (count(array_filter($pageWithSources, fn(array $source) => isset($source['disabled']) && $source['disabled'] === true)) === count($pageWithSources)) {
                 unset($pages[$key]);
             }
         }
