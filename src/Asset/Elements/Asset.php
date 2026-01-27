@@ -177,15 +177,15 @@ final class Asset extends Element
     /**
      * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
      */
-    public const string SCENARIO_MOVE = AssetRules::SCENARIO_MOVE;
+    public const string SCENARIO_MOVE = 'move';
 
-    public const string SCENARIO_FILEOPS = AssetRules::SCENARIO_FILEOPS;
+    public const string SCENARIO_FILEOPS = 'fileOperations';
 
-    public const string SCENARIO_INDEX = AssetRules::SCENARIO_INDEX;
+    public const string SCENARIO_INDEX = 'index';
 
-    public const string SCENARIO_CREATE = AssetRules::SCENARIO_CREATE;
+    public const string SCENARIO_CREATE = 'create';
 
-    public const string SCENARIO_REPLACE = AssetRules::SCENARIO_REPLACE;
+    public const string SCENARIO_REPLACE = 'replace';
 
     // File kinds
     // -------------------------------------------------------------------------

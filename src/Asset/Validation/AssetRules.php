@@ -16,25 +16,15 @@ use Override;
  */
 final class AssetRules extends ElementRules
 {
-    public const string SCENARIO_MOVE = 'move';
-
-    public const string SCENARIO_FILEOPS = 'fileOperations';
-
-    public const string SCENARIO_INDEX = 'index';
-
-    public const string SCENARIO_CREATE = 'create';
-
-    public const string SCENARIO_REPLACE = 'replace';
-
     #[Override]
     public function scenarios(): array
     {
         return array_merge(parent::scenarios(), [
-            self::SCENARIO_MOVE => null,
-            self::SCENARIO_FILEOPS => null,
-            self::SCENARIO_INDEX => [],
-            self::SCENARIO_CREATE => null,
-            self::SCENARIO_REPLACE => null,
+            Asset::SCENARIO_MOVE => null,
+            Asset::SCENARIO_FILEOPS => null,
+            Asset::SCENARIO_INDEX => [],
+            Asset::SCENARIO_CREATE => null,
+            Asset::SCENARIO_REPLACE => null,
         ]);
     }
 
@@ -64,18 +54,18 @@ final class AssetRules extends ElementRules
 
         $rules['newLocation'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS)),
-            Rule::when(! $this->inScenarios(self::SCENARIO_MOVE), [
+            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
+            Rule::when(! $this->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->component),
             ]),
-            Rule::when($this->inScenarios(self::SCENARIO_MOVE), [
+            Rule::when($this->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->component, allowedExtensions: '*'),
             ]),
         ];
 
         $rules['tempFilePath'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_REPLACE)),
+            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
         ];
 
         return $rules;

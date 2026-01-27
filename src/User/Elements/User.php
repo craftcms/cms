@@ -183,11 +183,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     /**
      * @since 4.4.8
      */
-    public const string SCENARIO_ACTIVATION = UserRules::SCENARIO_ACTIVATION;
+    public const string SCENARIO_ACTIVATION = 'activation';
 
-    public const string SCENARIO_REGISTRATION = UserRules::SCENARIO_REGISTRATION;
+    public const string SCENARIO_REGISTRATION = 'registration';
 
-    public const string SCENARIO_PASSWORD = UserRules::SCENARIO_PASSWORD;
+    public const string SCENARIO_PASSWORD = 'password';
 
     /**
      * {@inheritdoc}

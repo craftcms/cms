@@ -8,7 +8,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Rules\Trim;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
@@ -24,19 +23,13 @@ use function CraftCms\Cms\t;
  */
 final class UserRules extends ElementRules
 {
-    public const string SCENARIO_ACTIVATION = 'activation';
-
-    public const string SCENARIO_REGISTRATION = 'registration';
-
-    public const string SCENARIO_PASSWORD = 'password';
-
     #[Override]
     public function scenarios(): array
     {
         return array_merge(parent::scenarios(), [
-            self::SCENARIO_PASSWORD => ['newPassword'],
-            self::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
-            self::SCENARIO_ACTIVATION => ['username', 'email'],
+            User::SCENARIO_PASSWORD => ['newPassword'],
+            User::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
+            User::SCENARIO_ACTIVATION => ['username', 'email'],
         ]);
     }
 
@@ -126,10 +119,6 @@ final class UserRules extends ElementRules
                 currentPassword: $currentPassword,
             ),
         ];
-
-        if (! is_null($attributes = $this->scenarios()[$this->scenario] ?? null)) {
-            return Arr::only($rules, $attributes);
-        }
 
         return $rules;
     }

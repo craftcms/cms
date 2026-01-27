@@ -67,8 +67,8 @@ final class AddressRules extends ElementRules
         $rules['fullName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
         $rules['firstName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
         $rules['lastName'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['latitude'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
-        $rules['longitude'] = ['nullable', 'string', 'max:255', new DisallowMb4, new Trim($this->component)];
+        $rules['latitude'] = ['nullable', new DisallowMb4, new Trim($this->component)];
+        $rules['longitude'] = ['nullable', new DisallowMb4, new Trim($this->component)];
 
         return $rules;
     }
