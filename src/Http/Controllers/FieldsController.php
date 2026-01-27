@@ -264,9 +264,9 @@ final class FieldsController
             }
 
             if (! $field->validate($validateAttributes)) {
-                if ($field->hasErrors('name')) {
-                    $field->addErrors(['label' => $field->getErrors('name')]);
-                    $field->clearErrors('name');
+                if ($field->errors()->has('name')) {
+                    $field->errors()->merge(['label' => $field->errors()->get('name')]);
+                    $field->errors()->forget('name');
                 }
 
                 return $this->asModelFailure($field, t('Couldn’t apply changes.'), 'field');

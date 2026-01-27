@@ -371,7 +371,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
-            'errors' => $this->getErrors('columns'),
+            'errors' => $this->errors()->get('columns'),
             'readOnly' => $readOnly,
         ]);
 
@@ -463,7 +463,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     }
 
                     if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
-                        $element->addError($this->handle, $error);
+                        $element->errors()->add($this->handle, $error);
                     }
                 }
             }
@@ -871,7 +871,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         // Explicitly set each cell value to an array with a 'value' key
-        $checkForErrors = $element && $element->hasErrors($this->handle);
+        $checkForErrors = $element && $element->errors()->has($this->handle);
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if (isset($row[$colId])) {

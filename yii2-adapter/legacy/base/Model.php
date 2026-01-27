@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 
 /**
@@ -257,6 +258,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getAttributes($names, $except);
     }
 
+    public function attributes(): array
+    {
+        return parent::attributes();
+    }
+
+    public function errors(): MessageBag
+    {
+        return new \Illuminate\Support\MessageBag($this->getErrors());
+    }
+
     /**
      * @inheritdoc
      */
@@ -324,33 +335,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addError($attribute, $error = ''): void
-    {
-        parent::addError($attribute, $error);
-    }
-
     public function activeAttributes(): array
     {
         return parent::activeAttributes();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addErrors(array $items): void
-    {
-        parent::addErrors($items);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFirstError($attribute): ?string
-    {
-        return parent::getFirstError($attribute);
     }
 
     /**
@@ -377,12 +364,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getErrorSummary($showAllErrors);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearErrors($attribute = null): void
+    public function beforeValidate(): bool
     {
-        parent::clearErrors($attribute);
+        return true;
     }
 
     public function validate($attributeNames = null, $clearErrors = true): bool

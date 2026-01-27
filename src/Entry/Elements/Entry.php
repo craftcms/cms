@@ -2407,7 +2407,7 @@ JS, [
                     'single' => false,
                     'elements' => $authors ?: null,
                     'disabled' => false,
-                    'errors' => $this->getErrors('authorIds'),
+                    'errors' => $this->errors()->get('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
             default:
@@ -2533,7 +2533,7 @@ JS, [
                 ], $entryTypes),
                 'disabled' => $static,
                 'attribute' => 'typeId',
-                'errors' => $this->getErrors('typeId'),
+                'errors' => $this->errors()->get('typeId'),
             ]);
         })();
 
@@ -2575,7 +2575,7 @@ JS, [
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
                     'describedBy' => 'parentId-label',
-                    'errors' => $this->getErrors('parentId'),
+                    'errors' => $this->errors()->get('parentId'),
                 ]);
             })();
         }
@@ -2604,7 +2604,7 @@ JS, [
                         'single' => false,
                         'elements' => $authors ?: null,
                         'disabled' => $static || ! $this->canChangeAuthor($user),
-                        'errors' => $this->getErrors('authorIds'),
+                        'errors' => $this->errors()->get('authorIds'),
                         'limit' => $section->maxAuthors,
                     ]);
                 })();
@@ -2623,7 +2623,7 @@ JS, [
                 'id' => 'postDate',
                 'name' => 'postDate',
                 'value' => $this->_userPostDate(),
-                'errors' => $this->getErrors('postDate'),
+                'errors' => $this->errors()->get('postDate'),
                 'disabled' => $static,
             ]);
 
@@ -2634,7 +2634,7 @@ JS, [
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',
                 'value' => $this->expiryDate,
-                'errors' => $this->getErrors('expiryDate'),
+                'errors' => $this->errors()->get('expiryDate'),
                 'disabled' => $static,
             ]);
         }

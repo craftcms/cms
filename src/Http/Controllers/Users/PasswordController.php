@@ -69,7 +69,7 @@ final readonly class PasswordController
         if (! Craft::$app->getElements()->saveElement($user)) {
             return $this->asFailure(
                 t('Couldn’t save password.'),
-                $user->getErrors('newPassword'),
+                $user->errors()->get('newPassword'),
             );
         }
 

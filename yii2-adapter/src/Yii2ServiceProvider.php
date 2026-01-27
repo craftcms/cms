@@ -49,6 +49,7 @@ use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
+use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
 use craft\services\Elements;
@@ -79,6 +80,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
@@ -107,6 +109,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use GraphQL\Type\Definition\Type;
@@ -219,6 +222,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->dispatchComponentEvent($name, $event);
         });
 
+        Element::mixin(new ElementMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
     }
@@ -466,7 +470,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
-        \craft\services\Auth::registerEvents();
+        Auth::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();

@@ -757,12 +757,12 @@ JS, [
     private function hasErrors(ElementInterface $owner): bool
     {
         if (isset($this->attribute)) {
-            return $owner->hasErrors("$this->attribute.*");
+            return $owner->errors()->has("$this->attribute.*");
         }
 
         foreach ($this->fieldInstances($owner) as $instance) {
             /** @var FieldInterface $instance */
-            if ($owner->hasErrors("$instance->handle.*")) {
+            if ($owner->errors()->has("$instance->handle.*")) {
                 return true;
             }
         }

@@ -645,7 +645,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             'allowOverrides' => true,
             'create' => true,
             'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
-            'errors' => $this->getErrors('entryTypes'),
+            'errors' => $this->errors()->get('entryTypes'),
             'data' => [
                 'error-key' => 'entryTypes',
                 'disabled' => $readOnly,
@@ -1208,7 +1208,7 @@ JS, [
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
-            ! $element->hasErrors($this->handle)
+            ! $element->errors()->has($this->handle)
         );
         $staticEntries = (
             $static ||
@@ -1327,7 +1327,7 @@ JS,
                 'maxElements' => $this->maxEntries,
             ];
 
-            if ($owner->hasErrors($this->handle)) {
+            if ($owner->errors()->has($this->handle)) {
                 $config['prevalidate'] = true;
             }
         }
@@ -1448,7 +1448,7 @@ JS,
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
                     // in card/index modes, we want to show a top level error to let users know
                     // that there are validation errors in the nested entries
-                    $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                    $element->errors()->add($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
                         'count' => count($invalidEntryIds),
                         'fieldName' => $this->getUiLabel(),
                     ]));
@@ -1477,7 +1477,7 @@ JS,
             ]);
 
             if (! $arrayValidator->validate($entries, $error)) {
-                $element->addError($this->handle, $error);
+                $element->errors()->add($this->handle, $error);
             }
         }
     }

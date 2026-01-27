@@ -34,7 +34,7 @@ describe('Edge cases', function () {
             Cms::setIsInstalled(true);
         }
 
-        expect($contentBlock->hasErrors('fieldId'))->toBeFalse();
+        expect($contentBlock->errors()->has('fieldId'))->toBeFalse();
     });
 
     test('inherited base Element validation works', function () {
@@ -43,6 +43,6 @@ describe('Edge cases', function () {
 
         $contentBlock->validate(['title']);
 
-        expect($contentBlock->hasErrors('title'))->toBeTrue();
+        expect($contentBlock->errors()->has('title'))->toBeTrue();
     });
 });

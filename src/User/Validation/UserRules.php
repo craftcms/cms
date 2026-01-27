@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Rules\Trim;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
@@ -125,6 +126,10 @@ final class UserRules extends ElementRules
                 currentPassword: $currentPassword,
             ),
         ];
+
+        if (! is_null($attributes = $this->scenarios()[$this->scenario] ?? null)) {
+            return Arr::only($rules, $attributes);
+        }
 
         return $rules;
     }

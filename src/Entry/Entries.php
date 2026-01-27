@@ -171,18 +171,18 @@ final class Entries
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
+        if ($entry->errors()->has('uri') && $entry->enabled) {
             $entry->enabled = false;
             $entry->validate();
         }
 
         // When moving to a section that allows for less authors than the entry has, allow the move.
         // The error will be shown the next time that entry is saved.
-        if ($entry->hasErrors('authorIds')) {
-            $entry->clearErrors('authorIds');
+        if ($entry->errors()->has('authorIds')) {
+            $entry->errors()->forget('authorIds');
         }
 
-        if ($entry->hasErrors()) {
+        if ($entry->errors()->isNotEmpty()) {
             throw new InvalidElementException($entry,
                 'Element '.$entry->id.' could not be moved because it doesn\'t validate.');
         }

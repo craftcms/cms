@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Concerns;
 
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
 trait ValidatableComponent
@@ -32,6 +34,10 @@ trait ValidatableComponent
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
     {
+        if (! $this->beforeValidate()) {
+            return false;
+        }
+
         $result = $this->getValidator()
             ->after(fn ($validator) => $this->afterValidate($validator))
             ->passes();
@@ -41,69 +47,21 @@ trait ValidatableComponent
         return $result;
     }
 
+    public function beforeValidate(): bool
+    {
+        return true;
+    }
+
     public function afterValidate(Validator $validator): void {}
-
-    public function hasErrors(?string $attribute = null): bool
-    {
-        if (! $this->validated) {
-            return false;
-        }
-
-        if (! $attribute) {
-            return $this->getValidator()->fails();
-        }
-
-        return $this->getValidator()->errors()->has($attribute);
-    }
-
-    public function addErrors(array $errors): void
-    {
-        foreach ($errors as $attribute => $message) {
-            $this->getValidator()->errors()->add($attribute, $message);
-        }
-    }
-
-    public function clearErrors(?string $attribute = null): void
-    {
-        if (is_null($attribute)) {
-            foreach ($this->getValidator()->errors()->all() as $attribute => $messages) {
-                $this->getValidator()->errors()->forget($attribute);
-            }
-
-            return;
-        }
-
-        $this->getValidator()->errors()->forget($attribute);
-    }
-
-    public function getErrors(?string $attribute = null): array
-    {
-        if (! $this->validated) {
-            return [];
-        }
-
-        if (! $attribute) {
-            return array_map(
-                fn (array $messages) => $messages[0],
-                $this->getValidator()->errors()->getMessages(),
-            );
-        }
-
-        return $this->getValidator()->errors()->get($attribute);
-    }
 
     public function getFirstErrors(): array
     {
-        return $this->getErrors();
+        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
     }
 
-    public function getFirstError(string $attribute): ?string
+    public function errors(): MessageBag
     {
-        if (! $this->validated) {
-            return null;
-        }
-
-        return $this->getValidator()->errors()->first($attribute);
+        return $this->getValidator()->errors();
     }
 
     public function setAttributes(array $values, bool $safeOnly = true): void
@@ -118,5 +76,10 @@ trait ValidatableComponent
     public function getAttributes(): array
     {
         return Utils::getPublicProperties($this);
+    }
+
+    public function attributes(): array
+    {
+        return Utils::getPublicAttributes($this);
     }
 }

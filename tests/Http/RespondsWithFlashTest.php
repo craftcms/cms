@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\Concerns\ValidatableComponent;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\MessageBag;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -42,13 +45,15 @@ class TestFlashController extends Controller
 
     public function modelFailure()
     {
-        $model = new class
+        $model = new class implements ValidatableComponentInterface
         {
+            use ValidatableComponent;
+
             public string $name = 'Test Model';
 
-            public function getErrors(): array
+            public function errors(): MessageBag
             {
-                return ['name' => ['Name is required']];
+                return new MessageBag(['name' => ['Name is required']]);
             }
         };
 

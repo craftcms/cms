@@ -98,6 +98,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
@@ -108,6 +109,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Traits\Macroable;
 use Override;
 use ReflectionClass;
 use Stringable;
@@ -180,6 +182,7 @@ abstract class Element extends Component implements ElementInterface, Validatabl
         canCreateDrafts as traitCanCreateDrafts;
     }
     use ElementTrait;
+    use Macroable;
     use Revisionable;
     use ValidatesElement;
 
@@ -2732,12 +2735,28 @@ abstract class Element extends Component implements ElementInterface, Validatabl
     }
 
     /**
+     * @TODO: Remove parameters once Element no longer extends Yii Model
+     */
+    #[Override]
+    public function getAttributes($names = null, $except = []): array
+    {
+        $attributes = $this->attributes();
+        $values = [];
+
+        foreach ($attributes as $attribute) {
+            $values[$attribute] = $this->$attribute;
+        }
+
+        return $values;
+    }
+
+    /**
      * {@inheritdoc}
      */
     #[Override]
     public function attributes(): array
     {
-        $names = array_flip(parent::attributes());
+        $names = array_flip(Utils::getPublicAttributes($this));
 
         if ($this->structureId) {
             $names['parentId'] = true;
@@ -2970,22 +2989,6 @@ abstract class Element extends Component implements ElementInterface, Validatabl
         }
 
         return $field->isValueEmpty($this->getFieldValue($handle), $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function addError($attribute, $error = ''): void
-    {
-        if (str_starts_with($attribute, 'field:')) {
-            $attribute = substr($attribute, 6);
-        }
-
-        $this->getValidator()->errors()->add($attribute, $error);
-        $this->validated = true;
-
-        parent::addError($attribute, $error);
     }
 
     /**
@@ -4769,6 +4772,12 @@ JS, [
         $this->setAttributes($values);
     }
 
+    #[Override]
+    public function safeAttributes(): array
+    {
+        return array_keys($this->getRuleset()->rules());
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -5479,7 +5488,7 @@ JS, [
      */
     public function getIsFresh(): bool
     {
-        if ($this->hasErrors()) {
+        if ($this->errors()->isNotEmpty()) {
             return false;
         }
 
@@ -5999,7 +6008,7 @@ JS, [
             'autocapitalize' => false,
             'value' => $slug,
             'disabled' => $static,
-            'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
+            'errors' => array_merge($this->errors()->get('slug'), $this->errors()->get('uri')),
         ]);
     }
 

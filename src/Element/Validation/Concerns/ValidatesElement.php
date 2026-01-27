@@ -61,14 +61,12 @@ trait ValidatesElement
         }
 
         if (Request::isCpRequest()) {
-            $allErrors = $this->getErrors();
-            $this->clearErrors();
-
-            foreach ($allErrors as $attribute => $errors) {
+            foreach ($this->errors()->getMessages() as $attribute => $errors) {
                 $label = $this->getAttributeLabel($attribute);
-                /** @phpstan-ignore foreach.nonIterable */
+
                 foreach ($errors as $error) {
-                    $this->addError($attribute, str_replace($label, "*$label*", $error));
+                    $this->errors()->forget($attribute);
+                    $this->errors()->add($attribute, str_replace($label, "*$label*", $error));
                 }
             }
         }

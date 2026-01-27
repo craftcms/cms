@@ -80,7 +80,7 @@ class UpdateStatusesController extends Controller
                         if ($e->exception) {
                             $this->stdout('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                             $fail = true;
-                        } elseif ($e->element->hasErrors()) {
+                        } elseif ($e->element->errors()->isNotEmpty()) {
                             $this->stdout('failed: ' . implode(', ', $e->element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                             $fail = true;
                         } else {

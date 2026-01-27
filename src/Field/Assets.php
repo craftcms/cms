@@ -340,7 +340,7 @@ final class Assets extends BaseRelationField
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                $element->addError($this->handle, t('“{filename}” is not allowed in this field.', [
+                $element->errors()->add($this->handle, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
             }
@@ -375,7 +375,7 @@ final class Assets extends BaseRelationField
         }
 
         foreach ($filenames as $filename) {
-            $element->addError($this->handle, t('“{filename}” is too large.', [
+            $element->errors()->add($this->handle, t('“{filename}” is too large.', [
                 'filename' => $filename,
             ]));
         }

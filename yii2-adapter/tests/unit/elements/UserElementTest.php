@@ -62,7 +62,7 @@ class UserElementTest extends TestCase
         $this->activeUser->unverifiedEmail = 'unverifemail@email.com';
 
         $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame([], $this->activeUser->getErrors());
+        self::assertSame([], $this->activeUser->errors()->getMessages());
 
         $user = new User([
             'active' => true,
@@ -76,7 +76,7 @@ class UserElementTest extends TestCase
         $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
         self::assertSame(
             ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
-            $this->activeUser->getErrors()
+            $this->activeUser->errors()->getMessages()
         );
 
         $this->tester->deleteElement($user);
@@ -105,9 +105,9 @@ class UserElementTest extends TestCase
         }
 
         self::assertNotNull($e);
-        self::assertFalse($user->hasErrors('fullName'));
-        self::assertTrue($user->hasErrors('username'));
-        self::assertTrue($user->hasErrors('email'));
+        self::assertFalse($user->errors()->has('fullName'));
+        self::assertTrue($user->errors()->has('username'));
+        self::assertTrue($user->errors()->has('email'));
 
         $e = null;
         try {

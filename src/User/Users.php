@@ -99,7 +99,7 @@ final class Users
         $user->email = $email;
 
         if (! $user->validate(['email'])) {
-            throw new InvalidArgumentException($user->getFirstError('email'));
+            throw new InvalidArgumentException($user->errors()->first('email'));
         }
 
         if (! Craft::$app->getElements()->saveElement($user, false)) {

@@ -13,7 +13,7 @@ describe('Country code format validation', function () {
 
         $address->validate(['countryCode']);
 
-        expect($address->hasErrors('countryCode'))->toBeFalse();
+        expect($address->errors()->has('countryCode'))->toBeFalse();
     })->with([
         ['US'],
         ['BE'],
@@ -31,7 +31,7 @@ describe('Country code format validation', function () {
 
         $address->validate(['countryCode']);
 
-        expect($address->hasErrors('countryCode'))->toBeTrue();
+        expect($address->errors()->has('countryCode'))->toBeTrue();
     })->with([
         'XX is invalid' => ['XX'],
         'lowercase us is invalid' => ['us'],
@@ -74,7 +74,7 @@ describe('String max length validation (255 chars)', function () {
 
         $address->validate([$field]);
 
-        expect($address->hasErrors($field))->toBe($expectError);
+        expect($address->errors()->has($field))->toBe($expectError);
     })->with([
         'addressLine1 accepts 255 chars' => ['addressLine1', 'a', 255, false],
         'addressLine1 rejects 256 chars' => ['addressLine1', 'a', 256, true],
@@ -98,7 +98,7 @@ describe('Latitude validation', function () {
 
         $address->validate(['latitude']);
 
-        expect($address->hasErrors('latitude'))->toBe($expectError);
+        expect($address->errors()->has('latitude'))->toBe($expectError);
     })->with([
         'positive value 45.5 is valid' => ['45.5', false],
         'negative value -45.5 is valid' => ['-45.5', false],
@@ -118,7 +118,7 @@ describe('Longitude validation', function () {
 
         $address->validate(['longitude']);
 
-        expect($address->hasErrors('longitude'))->toBe($expectError);
+        expect($address->errors()->has('longitude'))->toBe($expectError);
     })->with([
         'positive value 120.5 is valid' => ['120.5', false],
         'negative value -120.5 is valid' => ['-120.5', false],
@@ -139,7 +139,7 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
         $address->validate([$field]);
 
-        expect($address->hasErrors($field))->toBe($expectError);
+        expect($address->errors()->has($field))->toBe($expectError);
     })->with([
         'locality is required' => ['locality', true],
         'administrativeArea is required' => ['administrativeArea', true],
@@ -154,7 +154,7 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
         $address->validate([$field]);
 
-        expect($address->hasErrors($field))->toBe($expectError);
+        expect($address->errors()->has($field))->toBe($expectError);
     })->with([
         'locality is required' => ['locality', true],
         'postalCode is required' => ['postalCode', true],
@@ -169,8 +169,8 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
         $address->validate(['dependentLocality', 'sortingCode']);
 
-        expect($address->hasErrors('dependentLocality'))->toBeFalse();
-        expect($address->hasErrors('sortingCode'))->toBeFalse();
+        expect($address->errors()->has('dependentLocality'))->toBeFalse();
+        expect($address->errors()->has('sortingCode'))->toBeFalse();
     });
 
     test('required fields are not required on default scenario', function () {
@@ -182,10 +182,10 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
         $address->validate(['locality', 'administrativeArea', 'postalCode', 'addressLine1']);
 
-        expect($address->hasErrors('locality'))->toBeFalse();
-        expect($address->hasErrors('administrativeArea'))->toBeFalse();
-        expect($address->hasErrors('postalCode'))->toBeFalse();
-        expect($address->hasErrors('addressLine1'))->toBeFalse();
+        expect($address->errors()->has('locality'))->toBeFalse();
+        expect($address->errors()->has('administrativeArea'))->toBeFalse();
+        expect($address->errors()->has('postalCode'))->toBeFalse();
+        expect($address->errors()->has('addressLine1'))->toBeFalse();
     });
 });
 
@@ -198,7 +198,7 @@ describe('Safe attribute validation', function () {
 
         $address->validate(['firstName']);
 
-        expect($address->hasErrors('firstName'))->toBeFalse();
+        expect($address->errors()->has('firstName'))->toBeFalse();
     });
 
     test('lastName is a safe attribute when config enabled', function () {
@@ -209,7 +209,7 @@ describe('Safe attribute validation', function () {
 
         $address->validate(['lastName']);
 
-        expect($address->hasErrors('lastName'))->toBeFalse();
+        expect($address->errors()->has('lastName'))->toBeFalse();
     });
 });
 
@@ -222,9 +222,9 @@ describe('Edge cases', function () {
 
         $address->validate(['addressLine1', 'locality', 'organization']);
 
-        expect($address->hasErrors('addressLine1'))->toBeFalse();
-        expect($address->hasErrors('locality'))->toBeFalse();
-        expect($address->hasErrors('organization'))->toBeFalse();
+        expect($address->errors()->has('addressLine1'))->toBeFalse();
+        expect($address->errors()->has('locality'))->toBeFalse();
+        expect($address->errors()->has('organization'))->toBeFalse();
     });
 
     test('special characters in address fields', function () {
@@ -234,8 +234,8 @@ describe('Edge cases', function () {
 
         $address->validate(['addressLine1', 'organization']);
 
-        expect($address->hasErrors('addressLine1'))->toBeFalse();
-        expect($address->hasErrors('organization'))->toBeFalse();
+        expect($address->errors()->has('addressLine1'))->toBeFalse();
+        expect($address->errors()->has('organization'))->toBeFalse();
     });
 
     test('multiple validation errors can be collected', function () {
@@ -246,9 +246,9 @@ describe('Edge cases', function () {
 
         $address->validate(['countryCode', 'latitude', 'longitude']);
 
-        expect($address->hasErrors('countryCode'))->toBeTrue();
-        expect($address->hasErrors('latitude'))->toBeTrue();
-        expect($address->hasErrors('longitude'))->toBeTrue();
+        expect($address->errors()->has('countryCode'))->toBeTrue();
+        expect($address->errors()->has('latitude'))->toBeTrue();
+        expect($address->errors()->has('longitude'))->toBeTrue();
     });
 
     test('empty strings are handled for nullable string fields', function () {
@@ -259,8 +259,8 @@ describe('Edge cases', function () {
 
         $address->validate(['addressLine1', 'locality', 'organization']);
 
-        expect($address->hasErrors('addressLine1'))->toBeFalse();
-        expect($address->hasErrors('locality'))->toBeFalse();
-        expect($address->hasErrors('organization'))->toBeFalse();
+        expect($address->errors()->has('addressLine1'))->toBeFalse();
+        expect($address->errors()->has('locality'))->toBeFalse();
+        expect($address->errors()->has('organization'))->toBeFalse();
     });
 });

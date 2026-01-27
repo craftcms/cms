@@ -883,13 +883,13 @@ final class Sections
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
+        if ($entry->errors()->has('uri') && $entry->enabled) {
             $entry->enabled = false;
             $entry->validate();
         }
 
         if (
-            $entry->hasErrors() ||
+            $entry->errors()->isNotEmpty() ||
             ! Craft::$app->getElements()->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',

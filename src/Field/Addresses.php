@@ -750,7 +750,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 $element->addInvalidNestedElementIds($invalidAddressIds);
 
                 // show a top level error to let users know that there are validation errors in the nested entries
-                $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
+                $element->errors()->add($this->handle, t('Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
                     'count' => count($invalidAddressIds),
                     'fieldName' => $this->getUiLabel(),
                 ]));
@@ -778,7 +778,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
             ]);
 
             if (! $arrayValidator->validate($addresses, $error)) {
-                $element->addError($this->handle, $error);
+                $element->errors()->add($this->handle, $error);
             }
         }
     }

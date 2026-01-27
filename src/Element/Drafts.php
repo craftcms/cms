@@ -279,7 +279,7 @@ final readonly class Drafts
 
             if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
-                $draft->addErrors($e->element->getErrors());
+                $draft->errors()->merge($e->element->errors()->getMessages());
             }
 
             throw $e;
@@ -319,7 +319,7 @@ final readonly class Drafts
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($draft->hasErrors('uri') && $draft->enabled) {
+        if ($draft->errors()->has('uri') && $draft->enabled) {
             $draft->enabled = false;
             $draft->validate();
         }
@@ -327,7 +327,7 @@ final readonly class Drafts
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
+            if ($draft->errors()->isNotEmpty() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
 

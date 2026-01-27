@@ -426,7 +426,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'min' => '10',
                 'step' => '10',
                 'value' => $this->maxLength,
-                'errors' => $this->getErrors('maxLength'),
+                'errors' => $this->errors()->get('maxLength'),
                 'data' => ['error-key' => 'maxLength'],
                 'disabled' => $readOnly,
             ]);
@@ -786,7 +786,7 @@ JS;
                     $linkTypes = $this->getLinkTypes();
                     if (! isset($linkTypes[$value->getType()])) {
                         $type = self::types()[$value->getType()] ?? null;
-                        $element->addError("field:$this->handle", t('{attribute} no longer allows {type} links.', [
+                        $element->errors()->add($this->handle, t('{attribute} no longer allows {type} links.', [
                             'attribute' => $this->getUiLabel(),
                             'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
                         ]));
@@ -798,7 +798,7 @@ JS;
                     $error = null;
                     if (! $linkType->validateValue($value, $error)) {
                         /** @var string|null $error */
-                        $element->addError("field:$this->handle", $error ?? t('{attribute} is invalid.', [
+                        $element->errors()->add($this->handle, $error ?? t('{attribute} is invalid.', [
                             'attribute' => $this->getUiLabel(),
                         ]));
 
@@ -807,7 +807,7 @@ JS;
 
                     $stringValidator = new StringValidator(['max' => $this->maxLength]);
                     if (! $stringValidator->validate($value, $error)) {
-                        $element->addError("field:$this->handle", $error);
+                        $element->errors()->add($this->handle, $error);
                     }
                 },
             ],

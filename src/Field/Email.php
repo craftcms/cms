@@ -102,7 +102,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
             'id' => 'placeholder',
             'name' => 'placeholder',
             'value' => $this->placeholder,
-            'errors' => $this->getErrors('placeholder'),
+            'errors' => $this->errors()->get('placeholder'),
             'disabled' => $readOnly,
         ]);
     }

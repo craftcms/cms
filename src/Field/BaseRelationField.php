@@ -637,7 +637,7 @@ JS, [
             ]);
 
             if (! $arrayValidator->validate($value->count(), $error)) {
-                $element->addError($this->handle, $error);
+                $element->errors()->add($this->handle, $error);
             }
         }
     }
@@ -675,7 +675,7 @@ JS, [
 
         if ($errorCount) {
             $selectedCount = (int) $value->count();
-            $element->addError($this->handle, t(
+            $element->errors()->add($this->handle, t(
                 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.',
                 [
                     'relatedType' => $selectedCount === 1

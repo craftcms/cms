@@ -333,7 +333,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
-            'errors' => $this->getErrors('options'),
+            'errors' => $this->errors()->get('options'),
             'data' => ['error-key' => 'options'],
         ]);
 
@@ -514,7 +514,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     $value = $element->getFieldValue($this->handle);
                     $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
                     if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
-                        $element->addError($this->handle, t('{attribute} is invalid.', [
+                        $element->errors()->add($this->handle, t('{attribute} is invalid.', [
                             'attribute' => t($this->name, category: 'site'),
                         ]));
                     }

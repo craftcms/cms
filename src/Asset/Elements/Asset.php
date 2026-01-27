@@ -2997,7 +2997,7 @@ JS;
                 'id' => 'new-filename',
                 'name' => 'newFilename',
                 'value' => $this->_filename,
-                'errors' => $this->getErrors('newLocation'),
+                'errors' => $this->errors()->get('newLocation'),
                 'first' => true,
                 'required' => true,
                 'class' => ['text', 'filename'],
