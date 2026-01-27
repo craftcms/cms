@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Validation;
 
+use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\Rules\ElementUriRule;
-use CraftCms\Cms\Element\Validation\Rules\SlugRule;
 use CraftCms\Cms\Shared\Rules\DisallowMb4;
 use CraftCms\Cms\Shared\Rules\SiteIdRule;
 use CraftCms\Cms\Support\Str;
@@ -18,17 +20,13 @@ use Throwable;
 /**
  * @template T of Element
  *
+ * @property Element $component
+ *
  * @extends Ruleset<T>
  */
 abstract class ElementRules extends Ruleset
 {
-    public const string SCENARIO_DEFAULT = 'default';
-
-    public const string SCENARIO_ESSENTIALS = 'essentials';
-
-    public const string SCENARIO_LIVE = 'live';
-
-    public string $scenario = self::SCENARIO_DEFAULT;
+    public string $scenario = Element::SCENARIO_DEFAULT;
 
     /**
      * {@inheritdoc}
@@ -37,9 +35,9 @@ abstract class ElementRules extends Ruleset
     public function scenarios(): array
     {
         return [
-            self::SCENARIO_DEFAULT => null,
-            self::SCENARIO_LIVE => null,
-            self::SCENARIO_ESSENTIALS => null,
+            Element::SCENARIO_DEFAULT => null,
+            Element::SCENARIO_LIVE => null,
+            Element::SCENARIO_ESSENTIALS => null,
         ];
     }
 
@@ -103,15 +101,13 @@ abstract class ElementRules extends Ruleset
             return $rules;
         }
 
-        $language = $this->component->getSite()->language;
+        if ($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS)) {
+            $this->prepareSlug($this->component->getSite()->language);
+        }
 
         $rules['slug'] = [Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
             'string',
             'max:255',
-            new SlugRule(
-                element: $this->component,
-                language: $language,
-            ),
         ])];
 
         try {
@@ -120,9 +116,9 @@ abstract class ElementRules extends Ruleset
             if ($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)
                 && preg_match('/\bslug\b/', $uriFormat)
             ) {
-                array_unshift($rules['slug'], 'required');
+                $rules['slug'][] = 'required';
             } else {
-                array_unshift($rules['slug'], 'nullable');
+                $rules['slug'][] = 'nullable';
             }
         } catch (Throwable) {
             // Validation rules will catch this.
@@ -133,5 +129,46 @@ abstract class ElementRules extends Ruleset
         ]);
 
         return $rules;
+    }
+
+    private function prepareSlug(string $language): void
+    {
+        $slug = (string) $this->component->slug;
+        $isTemp = ElementHelper::isTempSlug($slug);
+
+        $element = $this->component;
+        $isDraft = $element instanceof ElementInterface && $element->getIsDraft();
+
+        if ($isDraft && ! in_array($element->getScenario(), [Element::SCENARIO_LIVE, 'default'], true)) {
+            if ($isTemp) {
+                return;
+            }
+
+            if ($slug === '') {
+                $this->setSlugOnElement($element, ElementHelper::tempSlug());
+
+                return;
+            }
+        }
+
+        $limitToAscii = $this->limitAutoSlugsToAscii ?? Cms::config()->limitAutoSlugsToAscii;
+
+        if (($slug === '' || $isTemp) && $element !== null) {
+            $sourceValue = $element->title ?? '';
+            $slug = ElementHelper::generateSlug($sourceValue, $limitToAscii, $language);
+        } else {
+            $slug = ElementHelper::normalizeSlug($slug);
+        }
+
+        if ($slug !== '') {
+            $this->setSlugOnElement($element, $slug);
+        }
+    }
+
+    private function setSlugOnElement(?ElementInterface $element, string $slug): void
+    {
+        if ($element !== null && property_exists($element, 'slug')) {
+            $element->slug = $slug;
+        }
     }
 }

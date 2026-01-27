@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
+use BadMethodCallException;
 use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
@@ -71,13 +72,13 @@ use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
+use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
 use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Validation\Concerns\ValidatesElement;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -126,6 +127,8 @@ use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
+use yii\validators\RequiredValidator;
+use yii\validators\Validator;
 use yii\web\Response;
 
 use function CraftCms\Cms\t;
@@ -182,9 +185,11 @@ abstract class Element extends Component implements ElementInterface, Validatabl
         canCreateDrafts as traitCanCreateDrafts;
     }
     use ElementTrait;
-    use Macroable;
+    use Macroable {
+        __call as macroCall;
+    }
     use Revisionable;
-    use ValidatesElement;
+    use ValidatesWithRuleset;
 
     /**
      * @since 3.3.6
@@ -205,6 +210,8 @@ abstract class Element extends Component implements ElementInterface, Validatabl
 
     // Validation scenarios
     // -------------------------------------------------------------------------
+
+    public const SCENARIO_DEFAULT = 'default';
 
     public const SCENARIO_ESSENTIALS = 'essentials';
 
@@ -2694,7 +2701,11 @@ abstract class Element extends Component implements ElementInterface, Validatabl
             return $this->isFieldEmpty(substr($name, 13));
         }
 
-        return parent::__call($name, $params);
+        try {
+            return $this->macroCall($name, $params);
+        } catch (BadMethodCallException) {
+            return parent::__call($name, $params);
+        }
     }
 
     /**
@@ -2954,6 +2965,121 @@ abstract class Element extends Component implements ElementInterface, Validatabl
     protected function shouldValidateTitle(): bool
     {
         return static::hasTitles();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function afterValidate(): void
+    {
+        if (
+            Cms::isInstalled() &&
+            $fieldLayout = $this->getFieldLayout()
+        ) {
+            $scenario = $this->getScenario();
+            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
+
+            foreach ($layoutElements as $layoutElement) {
+                $field = $layoutElement->getField();
+                $attribute = "field:$field->handle";
+
+                if (isset($this->_attributeNames) && ! isset($this->_attributeNames[$attribute])) {
+                    continue;
+                }
+
+                $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
+
+                if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
+                    new RequiredValidator(['isEmpty' => $isEmpty])
+                        ->validateAttribute($this, $attribute);
+                }
+
+                foreach ($field->getElementValidationRules() as $rule) {
+                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
+                    if (
+                        in_array($scenario, $validator->on) ||
+                        (empty($validator->on) && ! in_array($scenario, $validator->except))
+                    ) {
+                        $validator->validateAttributes($this);
+                    }
+                }
+            }
+        }
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $allErrors = $this->errors()->getMessages();
+            $this->clearErrors();
+            foreach ($allErrors as $attribute => &$errors) {
+                $label = $this->getAttributeLabel($attribute);
+                foreach ($errors as &$error) {
+                    $error = str_replace($label, "*$label*", $error);
+                }
+            }
+            $this->errors()->merge($allErrors);
+        }
+    }
+
+    /**
+     * Normalizes a field’s validation rule.
+     *
+     *
+     * @throws InvalidConfigException
+     */
+    private function _normalizeFieldValidator(
+        string $attribute,
+        mixed $rule,
+        FieldInterface $field,
+        callable $isEmpty,
+    ): Validator {
+        if ($rule instanceof Validator) {
+            return $rule;
+        }
+
+        if (is_string($rule)) {
+            // "Validator" syntax
+            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        }
+
+        if (! is_array($rule) || ! isset($rule[0])) {
+            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+        }
+
+        if (isset($rule[1])) {
+            // Make sure the attribute name starts with 'field:'
+            if ($rule[0] === $field->handle) {
+                $rule[0] = $attribute;
+            }
+        } else {
+            // ["Validator"] syntax
+            array_unshift($rule, $attribute);
+        }
+
+        if (
+            (! is_string($rule[1]) || ! isset(Validator::$builtInValidators[$rule[1]])) &&
+            (is_callable($rule[1]) || method_exists($field, $rule[1]))
+        ) {
+            // InlineValidator assumes that the closure is on the model being validated
+            // so it won’t pass a reference to the element
+            $rule['params'] = [
+                $field,
+                $rule[1],
+                $rule['params'] ?? null,
+            ];
+            $rule[1] = 'validateCustomFieldAttribute';
+        }
+
+        // Set 'isEmpty' to the field's isEmpty() method by default
+        if (! array_key_exists('isEmpty', $rule)) {
+            $rule['isEmpty'] = $isEmpty;
+        }
+
+        // Set 'on' to the main scenarios by default
+        if (! array_key_exists('on', $rule)) {
+            $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
+        }
+
+        return Validator::createValidator($rule[1], $this, (array) $rule[0], array_slice($rule, 2));
     }
 
     /**

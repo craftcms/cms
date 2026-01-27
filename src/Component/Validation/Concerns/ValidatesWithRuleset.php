@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Validation\Concerns;
 
+use BadMethodCallException;
 use CraftCms\Cms\Component\Validation\Attributes\Ruleset as RulesetAttribute;
 use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Component\Validation\Ruleset;
@@ -11,7 +12,6 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
-use LogicException;
 use ReflectionClass;
 
 /**
@@ -46,13 +46,15 @@ trait ValidatesWithRuleset
 
         $attributes = new ReflectionClass($this)->getAttributes(RulesetAttribute::class);
 
-        $class = match (true) {
-            ! empty($attributes) => $attributes[0]->getArguments()[0],
-            method_exists($this, 'rulesClass') => $this->rulesClass(),
-            default => throw new LogicException(
+        try {
+            $class = isset($attributes[0])
+                ? $attributes[0]->getArguments()[0]
+                : $this->rulesClass();
+        } catch (BadMethodCallException) {
+            throw new BadMethodCallException(
                 sprintf('Class %s must have the #[RulesClass] attribute or have a `rulesClass()` method when using %s', static::class, ValidatesWithRuleset::class)
-            ),
-        };
+            );
+        }
 
         return $this->ruleset = app()->make($class, ['component' => $this]);
     }
@@ -106,7 +108,7 @@ trait ValidatesWithRuleset
         return true;
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(/* Validator $validator */): void
     {
         // TODO: Event
         // if ($this instanceof Model) {

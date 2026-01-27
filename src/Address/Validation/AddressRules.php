@@ -12,6 +12,7 @@ use craft\fieldlayoutelements\FullNameField;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Rules\DisallowMb4;
 use CraftCms\Cms\Shared\Rules\Trim;
@@ -96,7 +97,7 @@ final class AddressRules extends ElementRules
 
     private function isRequiredByAddressFormat(string $attribute): bool
     {
-        if (! $this->inScenarios(self::SCENARIO_LIVE)) {
+        if (! $this->inScenarios(Element::SCENARIO_LIVE)) {
             return false;
         }
 
@@ -121,7 +122,7 @@ final class AddressRules extends ElementRules
 
             foreach ($this->resolveFieldAttributes($field) as $attribute) {
                 $rules[$attribute] ??= [];
-                $rules[$attribute][] = Rule::requiredIf($this->inScenarios(self::SCENARIO_LIVE));
+                $rules[$attribute][] = Rule::requiredIf($this->inScenarios(Element::SCENARIO_LIVE));
             }
         }
 
@@ -146,7 +147,7 @@ final class AddressRules extends ElementRules
 
     private function addCoordinateValidation(array $rules): array
     {
-        $coordinateScenarios = $this->inScenarios(self::SCENARIO_LIVE, self::SCENARIO_DEFAULT);
+        $coordinateScenarios = $this->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
 
         $rules['latitude'][] = Rule::when($coordinateScenarios, [
             'numeric',
