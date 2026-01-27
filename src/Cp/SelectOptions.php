@@ -32,11 +32,9 @@ class SelectOptions
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @return array[]
-     *
-     * @phpstan-return array{label:string,data:array}[]
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: array}, 1?: array{type: 'optgroup', label: string, options: array}}
      */
-    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
     {
         $suggestions = [];
 
@@ -57,6 +55,7 @@ class SelectOptions
                 ];
             }
         }
+
         $suggestions[] = [
             'type' => 'optgroup',
             'label' => t('Environment Variables'),

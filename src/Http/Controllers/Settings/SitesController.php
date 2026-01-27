@@ -193,12 +193,8 @@ final readonly class SitesController
         return back()->with('success', t('New order saved.'));
     }
 
-    public function destroy(Request $request, SiteModel $siteData): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
-        if (! $siteData) {
-            abort(404, t('Site not found.'));
-        }
-
         $data = $request->validate([
             'id' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
             'contentDestination' => ['required', 'in:transfer,delete'],
@@ -209,6 +205,8 @@ final readonly class SitesController
 
         $this->sites->deleteSiteById(
             siteId: (int) $data['id'],
+            // PHPStan doesn't seem to understand the `Rule::when()` rule above
+            // @phpstan-ignore nullCoalesce.expr
             transferContentTo: (int) $data['transferContentTo'] ?? null,
         );
 
