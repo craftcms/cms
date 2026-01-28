@@ -13,9 +13,11 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -35,20 +37,22 @@ it('requires authentication', function () {
     get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertRedirect();
     postJson(action([SitesController::class, 'store']))->assertUnauthorized();
     postJson(action([SitesController::class, 'reorder']))->assertUnauthorized();
-    postJson(action([SitesController::class, 'destroy']))->assertUnauthorized();
+    deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertUnauthorized();
 });
 
 it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
     // Read only
-    get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+    $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsSitesEdit')
+            ->where('readOnly', true));
 
     // Not allowed
     get(action([SitesController::class, 'create']))->assertForbidden();
     postJson(action([SitesController::class, 'store']))->assertForbidden();
     postJson(action([SitesController::class, 'reorder']))->assertForbidden();
-    postJson(action([SitesController::class, 'destroy']))->assertForbidden();
+    deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertForbidden();
 });
 
 test('index validates group id when passed', function () {
@@ -63,9 +67,10 @@ test('index shows all sites', function () {
         groupId: SiteGroup::first()->id,
     ));
 
-    get(action([SitesController::class, 'index']))
-        ->assertSee('New site')
-        ->assertSee(Site::first()->name);
+    $this->get(action([SitesController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsSitesIndex')
+            ->has('sites.0', fn (AssertableInertia $page) => $page->where('id', Site::first()->id)->etc())
+        );
 });
 
 test('index can filter by group', function () {
@@ -78,9 +83,15 @@ test('index can filter by group', function () {
         groupId: $group->id,
     ));
 
-    get(action([SitesController::class, 'index'], ['groupId' => Site::first()->groupId]))
-        ->assertDontSee('<td data-title="Handle"><code>new-site</code></td>', false)
-        ->assertSee('<td data-title="Handle"><code>'.Site::first()->handle.'</code></td>', false);
+    $this->get(action([SitesController::class, 'index'], ['groupId' => $group->id]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('SettingsSitesIndex')
+            ->has('group', fn (AssertableInertia $page) => $page
+                ->where('id', $group->id)
+                ->where('name', $group->name)
+                ->etc()
+            )
+        );
 });
 
 test('create can be loaded', function () {
@@ -105,10 +116,13 @@ test('it can edit a site', function () {
     $site = $this->sites->getSiteById(Site::first()->id);
 
     get(action([SitesController::class, 'edit'], [$site->id]))
-        ->assertOk()
-        ->assertSee($site->getName())
-        ->assertSee($site->getLanguage(false))
-        ->assertSee($site->getBaseUrl(false));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('SettingsSitesEdit')
+            ->where('site.name', $site->getName())
+            ->where('site.languageRaw', $site->getLanguage(false))
+            ->where('site.baseUrlRaw', $site->getBaseUrl(false))
+            ->etc()
+        );
 });
 
 it('404s when a site does not exist', function () {
@@ -124,7 +138,7 @@ it('can save a site', function () {
         'handle' => 'a_new_site',
         'language' => 'en-US',
         'group' => SiteGroup::first()->id,
-    ])->assertRedirectBack();
+    ])->assertRedirect(route('craft.cp.settings.sites.index'));
 
     expect(Site::count())->toBe(2);
 });
@@ -208,10 +222,26 @@ it('can reorder sites', function () {
             $newSite->id,
             Site::first()->id,
         ]),
-    ])->assertOk();
+    ])->assertRedirectBack();
 
     expect(Site::findOrFail($newSite->id)->sortOrder)->toBe(1);
     expect($defaultSite->fresh()->sortOrder)->toBe(2);
+});
+
+it('requires transferContentTo when contentDestination is transfer', function () {
+    $this->sites->saveSite($newSite = new SiteData(
+        name: 'New site',
+        handle: 'new-site',
+        language: 'nl',
+        groupId: SiteGroup::first()->id,
+    ));
+
+    expect(Site::count())->toBe(2);
+
+    deleteJson(action([SitesController::class, 'destroy'], [$newSite->id]), [
+        'id' => $newSite->id,
+        'contentDestination' => 'transfer',
+    ])->assertInvalid(['transferContentTo']);
 });
 
 it('can delete a site', function () {
@@ -224,9 +254,11 @@ it('can delete a site', function () {
 
     expect(Site::count())->toBe(2);
 
-    postJson(action([SitesController::class, 'destroy']), [
+    deleteJson(action([SitesController::class, 'destroy'], [$newSite->id]), [
         'id' => $newSite->id,
-    ])->assertOk();
+        'contentDestination' => 'transfer',
+        'transferContentTo' => Site::first()->id,
+    ])->assertRedirect(route('craft.cp.settings.sites.index'));
 
     expect(Site::count())->toBe(1);
 });
