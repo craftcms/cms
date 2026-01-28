@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when upgrading to Craft 5.
+- Fixed a bug where assets weren’t being rendered correctly immediately after being uploaded to an Assets field. ([#18318](https://github.com/craftcms/cms/issues/18318))
 
 ## 5.9.1 - 2026-01-27
 
