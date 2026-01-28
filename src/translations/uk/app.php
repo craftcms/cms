@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Зробити цей сайт основним',
     'Manage categories' => 'Управління категоріями',
     'Manage element thumbnails' => 'Керування ескізами елементів',
-    'Manage your Craft Console account' => 'Керування обліковим записом Craft Console',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Ненадійне растрування обробленого зображення SVG. \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Матриця',
     'Max Authors' => 'Макс. кількість авторів',
