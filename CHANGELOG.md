@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Reverted to the previous name format for session-based cookies. ([#18158](https://github.com/craftcms/cms/pull/18158))
 - Fixed an error that occurred when upgrading to Craft 5.
 - Fixed a bug where assets weren’t being rendered correctly immediately after being uploaded to an Assets field. ([#18318](https://github.com/craftcms/cms/issues/18318))
 - Fixed a bug where it was possible to rename existing entry index pages to a blank name. ([#18321](https://github.com/craftcms/cms/issues/18321))
