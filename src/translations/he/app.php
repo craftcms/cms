@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'להפוך את האתר הזה לראשי',
     'Manage categories' => 'נהל קטגוריות',
     'Manage element thumbnails' => 'נהל תמונות ממוזערות של אלמנטים',
-    'Manage your Craft Console account' => 'ניהול חשבון Craft Console שלך',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'המרת תמונת SVG שטופלה למפת סיביות אינה אמינה. ראה \\craft\\services\\Images::loadImage()',
     'Matrix' => 'מטריקס',
     'Max Authors' => 'מקסימום יוצרים',
