@@ -9,13 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\db\QueryBatcher;
-use craft\helpers\ElementHelper;
-use craft\queue\BaseBatchedElementJob;
-use CraftCms\Cms\Element\Element;
+use craft\queue\BaseJob;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**
@@ -26,7 +21,7 @@ use CraftCms\Cms\Support\Facades\I18N;
  * @since 3.0.13
  * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PropagateElements} instead.
  */
-class PropagateElements extends BaseBatchedElementJob
+class PropagateElements extends BaseJob
 {
     /**
      * @var class-string<ElementInterface> The element type that should be propagated
@@ -64,52 +59,14 @@ class PropagateElements extends BaseBatchedElementJob
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function loadData(): Batchable
+    public function execute($queue): void
     {
-        $query = $this->elementType::find()
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(['elements.id' => SORT_ASC]);
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return new QueryBatcher($query);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function processItem(mixed $item): void
-    {
-        /** @var ElementInterface $item */
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->newSiteIds = [];
-        $item->isNewSite = $this->isNewSite;
-        $supportedSiteIds = array_map(fn($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($item));
-        $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
-        $elementsService = Craft::$app->getElements();
-
-        foreach ($elementSiteIds as $siteId) {
-            if ($siteId !== $item->siteId) {
-                // Make sure the site element wasn't updated more recently than the main one
-                $siteElement = $elementsService->getElementById($item->id, get_class($item), $siteId);
-                if ($siteElement === null || $siteElement->dateUpdated < $item->dateUpdated) {
-                    $elementsService->propagateElement($item, $siteId, $siteElement ?? false);
-                }
-            }
-        }
-
-        // It's now fully duplicated and propagated
-        $item->markAsDirty();
-        $item->afterPropagate(false);
+        new \CraftCms\Cms\Element\Jobs\PropagateElements(
+            $this->elementType,
+            $this->criteria,
+            $this->siteId,
+            $this->isNewSite,
+        )->handle();
     }
 
     /**

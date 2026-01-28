@@ -9,12 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Facades\I18N;
-use Throwable;
 
 /**
  * GenerateImageTransform job
@@ -36,21 +32,7 @@ class GenerateImageTransform extends BaseJob
      */
     public function execute($queue): void
     {
-        $transformer = Craft::createObject(ImageTransformer::class);
-        $index = $transformer->getTransformIndexModelById($this->transformId);
-
-        if ($index && !$index->fileExists) {
-            // Don't let an exception stop us from processing the rest
-            try {
-                /** @var Asset|null $asset */
-                $asset = Asset::find()->id($index->assetId)->one();
-                if ($asset) {
-                    $transformer->getTransformUrl($asset, $index->getTransform(), true);
-                }
-            } catch (Throwable $e) {
-                Craft::warning('Image transform generation failed: ' . $e->getMessage(), __METHOD__);
-            }
-        }
+        new \CraftCms\Cms\Image\Jobs\GenerateImageTransform($this->transformId, $this->description)->handle();
     }
 
     /**

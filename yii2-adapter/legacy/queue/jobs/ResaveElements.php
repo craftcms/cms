@@ -9,16 +9,9 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\console\controllers\ResaveController;
-use craft\db\QueryBatcher;
-use craft\helpers\ElementHelper;
-use craft\queue\BaseBatchedElementJob;
-use CraftCms\Cms\Element\Element;
+use craft\queue\BaseJob;
 use CraftCms\Cms\Support\Facades\I18N;
-use Throwable;
 
 /**
  * ResaveElements job
@@ -28,7 +21,7 @@ use Throwable;
  * @since 3.0.0
  * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\ResaveElements} instead.
  */
-class ResaveElements extends BaseBatchedElementJob
+class ResaveElements extends BaseJob
 {
     /**
      * @var class-string<ElementInterface> The element type that should be resaved
@@ -82,57 +75,22 @@ class ResaveElements extends BaseBatchedElementJob
      */
     public bool $touch = false;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function loadData(): Batchable
+    public int $batchSize = 100;
+
+    public function execute($queue): void
     {
-        $query = $this->elementType::find()
-            ->orderBy(['elements.id' => SORT_ASC]);
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return new QueryBatcher($query);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function processItem(mixed $item): void
-    {
-        if (isset($this->set)) {
-            $set = true;
-            if ($this->ifEmpty) {
-                if (!ElementHelper::isAttributeEmpty($item, $this->set)) {
-                    $set = false;
-                }
-            } elseif ($this->ifInvalid) {
-                $item->setScenario(Element::SCENARIO_LIVE);
-                if ($item->validate($this->set) && $item->validate("field:$this->set")) {
-                    $set = false;
-                }
-            }
-
-            if ($set) {
-                $to = ResaveController::normalizeTo($this->to);
-                $item->{$this->set} = $to($item);
-            }
-        }
-
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->resaving = true;
-
-        try {
-            Craft::$app->getElements()->saveElement($item,
-                updateSearchIndex: $this->updateSearchIndex,
-                forceTouch: $this->touch,
-                saveContent: true,
-            );
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        new \CraftCms\Cms\Element\Jobs\ResaveElements(
+            $this->elementType,
+            $this->criteria,
+            $this->updateSearchIndex,
+            $this->set,
+            $this->to,
+            $this->ifEmpty,
+            $this->ifInvalid,
+            $this->touch,
+            $this->batchSize,
+            $this->description,
+        );
     }
 
     /**

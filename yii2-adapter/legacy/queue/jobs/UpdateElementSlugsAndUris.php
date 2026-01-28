@@ -9,18 +9,9 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\helpers\Db;
 use craft\queue\BaseJob;
-use craft\queue\LegacyQueueAdapter;
-use craft\queue\QueueInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\I18N;
-use Illuminate\Support\Facades\Log;
-use yii\queue\Queue;
 
 /**
  * UpdateElementSlugsAndUris job
@@ -58,27 +49,17 @@ class UpdateElementSlugsAndUris extends BaseJob
     public bool $updateDescendants = true;
 
     /**
-     * @var int The total number of elements we are dealing with.
-     */
-    private int $_totalToProcess;
-
-    /**
-     * @var int The number of elements we've dealt with so far
-     */
-    private int $_totalProcessed;
-
-    /**
      * {@inheritdoc}
      */
     public function execute($queue): void
     {
-        $this->_totalToProcess = 0;
-        $this->_totalProcessed = 0;
-
-        $query = $this->_createElementQuery()
-            ->id($this->elementId);
-
-        $this->_processElements($queue, $query);
+        new \CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris(
+            elementType: $this->elementType,
+            elementId: $this->elementId,
+            siteId: $this->siteId,
+            updateOtherSites: $this->updateOtherSites,
+            updateDescendants: $this->updateDescendants,
+        )->handle();
     }
 
     /**
@@ -87,51 +68,5 @@ class UpdateElementSlugsAndUris extends BaseJob
     protected function defaultDescription(): ?string
     {
         return I18N::prep('Updating element slugs and URIs');
-    }
-
-    /**
-     * Creates an element query for the configured element type.
-     */
-    private function _createElementQuery(): ElementQueryInterface
-    {
-        return $this->elementType::find()
-            ->siteId($this->siteId)
-            ->status(null);
-    }
-
-    /**
-     * Updates the given elements’ slugs and URIs
-     */
-    private function _processElements(Queue|QueueInterface|LegacyQueueAdapter $queue, ElementQueryInterface $query): void
-    {
-        /** @var ElementQueryInterface|ElementQuery $query */
-        $this->_totalToProcess += $query->count();
-        $elementsService = Craft::$app->getElements();
-
-        foreach (Db::each($query) as $element) {
-            /** @var ElementInterface $element */
-            // _totalToProcess can be 0 somehow (https://github.com/craftcms/cms/issues/16787)
-            $this->setProgress($queue, $this->_totalProcessed / max($this->_totalToProcess, $this->_totalProcessed + 1));
-            $this->_totalProcessed++;
-
-            $oldSlug = $element->slug;
-            $oldUri = $element->uri;
-
-            try {
-                $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
-            } catch (OperationAbortedException $e) {
-                Log::info("Couldn’t update slug and URI for element $element->id: {$e->getMessage()}");
-
-                continue;
-            }
-
-            // Only go deeper if something just changed
-            if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {
-                $childQuery = $this->_createElementQuery()
-                    ->descendantOf($element)
-                    ->descendantDist(1);
-                $this->_processElements($queue, $childQuery);
-            }
-        }
     }
 }
