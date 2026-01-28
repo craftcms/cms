@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'اجعل هذا الموقع الأساسي',
     'Manage categories' => 'إدارة الفئات',
     'Manage element thumbnails' => 'إدارة الصور المصغَّرة للعناصر',
-    'Manage your Craft Console account' => 'إدارة حساب Craft Console الخاص بك',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'تحويل الصور الخطية إلى نقطية الذي تمت معالجته لصورة SVG غير موثوق فيه. راجع \\craft\\services\\Images::loadImage()',
     'Matrix' => 'مصفوفة',
     'Max Authors' => 'أقصى عدد مؤلفين',
