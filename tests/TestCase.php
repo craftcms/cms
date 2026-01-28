@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -52,8 +53,13 @@ class TestCase extends Orchestra
 
         $this->withoutVite();
 
-        // Always start with an admin user
-        User::first()->update(['admin' => true]);
+        // Always start with a fresh default admin user
+        User::first()->update([
+            'username' => 'craftcms',
+            'password' => Hash::make('craftcms2018!!'),
+            'email' => 'support@craftcms.com',
+            'admin' => true,
+        ]);
     }
 
     protected function connectionsToTransact(): array
