@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use InvalidArgumentException;
@@ -158,11 +158,11 @@ interface PluginInterface
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
      *
-     * @return ?ValidatableComponentInterface The model that the plugin’s settings should be stored on, if the plugin has settings
+     * @return ?Validatable The model that the plugin’s settings should be stored on, if the plugin has settings
      *
      * @internal
      */
-    public function getSettings(): ?ValidatableComponentInterface;
+    public function getSettings(): ?Validatable;
 
     /**
      * Sets the plugin settings

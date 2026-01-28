@@ -14,7 +14,7 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Support\MessageBag;
@@ -27,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model implements ModelInterface, ValidatableComponentInterface
+abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
 {
     use ClonefixTrait;
 

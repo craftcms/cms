@@ -135,7 +135,7 @@ final class AddressRules extends ElementRules
 
     private function isRequiredByAddressFormat(string $attribute): bool
     {
-        if (! $this->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $this->component->inScenarios(Element::SCENARIO_LIVE)) {
             return false;
         }
 
@@ -160,7 +160,7 @@ final class AddressRules extends ElementRules
 
             foreach ($this->resolveFieldAttributes($field) as $attribute) {
                 $rules[$attribute] ??= [];
-                $rules[$attribute][] = Rule::requiredIf($this->inScenarios(Element::SCENARIO_LIVE));
+                $rules[$attribute][] = Rule::requiredIf($this->component->inScenarios(Element::SCENARIO_LIVE));
             }
         }
 
@@ -185,7 +185,7 @@ final class AddressRules extends ElementRules
 
     private function addCoordinateValidation(array $rules): array
     {
-        $coordinateScenarios = $this->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
+        $coordinateScenarios = $this->component->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
 
         $rules['latitude'][] = Rule::when($coordinateScenarios, [
             'numeric',

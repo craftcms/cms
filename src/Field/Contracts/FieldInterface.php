@@ -12,7 +12,7 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use DateTime;
@@ -24,7 +24,7 @@ use Illuminate\Contracts\Database\Query\Expression;
  * FieldInterface defines the common interface to be implemented by field classes.
  * A class implementing this interface should also use {@see \CraftCms\Cms\Component\Concerns\SavableComponent} and extend {@see \CraftCms\Cms\Field\Field}.
  */
-interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, ValidatableComponentInterface
+interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, Validatable
 {
     /** @var string|null The field’s name */
     public ?string $name { get; set; }

@@ -2,36 +2,30 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
 use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\MessageBag;
 
 function createTestRuleset(
-    ValidatableComponentInterface $component,
+    ValidatesWithScenarios $component,
     array $rules = [],
-    array $scenarios = [],
     array $messages = [],
 ): Ruleset {
-    return new class($component, $rules, $scenarios, $messages) extends Ruleset
+    return new class($component, $rules, $messages) extends Ruleset
     {
         public bool $prepareForValidationCalled = false;
 
         public ?array $prepareForValidationAttributes = null;
 
         public function __construct(
-            ValidatableComponentInterface $component,
+            ValidatesWithScenarios $component,
             private readonly array $testRules,
-            private readonly array $testScenarios,
             private readonly array $testMessages,
         ) {
             parent::__construct($component);
-        }
-
-        public function scenarios(): array
-        {
-            return $this->testScenarios;
         }
 
         public function messages(): array
@@ -52,10 +46,19 @@ function createTestRuleset(
     };
 }
 
-function createTestComponent(): ValidatableComponentInterface
+function createTestComponent(array $scenarios = []): ValidatesWithScenarios
 {
-    return new class implements ValidatableComponentInterface
+    return new class($scenarios) implements ValidatesWithScenarios
     {
+        use ValidatesWithRuleset;
+
+        public function __construct(private array $testScenarios) {}
+
+        public function scenarios(): array
+        {
+            return $this->testScenarios;
+        }
+
         public static function getRules(): array
         {
             return [];
@@ -95,26 +98,6 @@ function createTestComponent(): ValidatableComponentInterface
     };
 }
 
-describe('inScenarios', function () {
-    test('returns true when scenario matches', function () {
-        $component = createTestComponent();
-        $ruleset = createTestRuleset($component);
-        $ruleset->scenario = 'live';
-
-        expect($ruleset->inScenarios('live'))->toBeTrue();
-        expect($ruleset->inScenarios('default', 'live', 'essentials'))->toBeTrue();
-    });
-
-    test('returns false when scenario does not match', function () {
-        $component = createTestComponent();
-        $ruleset = createTestRuleset($component);
-        $ruleset->scenario = 'live';
-
-        expect($ruleset->inScenarios('default'))->toBeFalse();
-        expect($ruleset->inScenarios('default', 'essentials'))->toBeFalse();
-    });
-});
-
 describe('rules', function () {
     test('returns defined rules', function () {
         $component = createTestComponent();
@@ -140,7 +123,7 @@ describe('rules', function () {
 
         $ruleset->rules();
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Element\Validation\Events\DefineValidationRules $event) => $event->component === $component
+        Event::assertDispatched(fn (DefineValidationRules $event) => $event->component === $component
             && isset($event->rules['title']));
     });
 
@@ -163,7 +146,11 @@ describe('rules', function () {
     });
 
     test('filters rules by scenario attributes', function () {
-        $component = createTestComponent();
+        $component = createTestComponent(
+            scenarios: [
+                'essentials' => ['title', 'slug'],
+            ],
+        );
         $ruleset = createTestRuleset(
             $component,
             rules: [
@@ -171,11 +158,8 @@ describe('rules', function () {
                 'slug' => ['required'],
                 'body' => ['nullable'],
             ],
-            scenarios: [
-                'essentials' => ['title', 'slug'],
-            ],
         );
-        $ruleset->scenario = 'essentials';
+        $component->setScenario('essentials');
 
         $rules = $ruleset->rules();
 
@@ -185,7 +169,11 @@ describe('rules', function () {
     });
 
     test('returns all rules when scenario maps to null', function () {
-        $component = createTestComponent();
+        $component = createTestComponent(
+            scenarios: [
+                'default' => null,
+            ],
+        );
         $ruleset = createTestRuleset(
             $component,
             rules: [
@@ -193,11 +181,8 @@ describe('rules', function () {
                 'slug' => ['required'],
                 'body' => ['nullable'],
             ],
-            scenarios: [
-                'default' => null,
-            ],
         );
-        $ruleset->scenario = 'default';
+        $component->setScenario('default');
 
         $rules = $ruleset->rules();
 
@@ -267,7 +252,12 @@ describe('messages', function () {
 
 describe('scenarios', function () {
     test('scenarios method controls rule filtering', function () {
-        $component = createTestComponent();
+        $component = createTestComponent(
+            scenarios: [
+                'login' => ['email', 'password'],
+                'profile' => ['title', 'email'],
+            ],
+        );
         $ruleset = createTestRuleset(
             $component,
             rules: [
@@ -275,19 +265,15 @@ describe('scenarios', function () {
                 'email' => ['required', 'email'],
                 'password' => ['required', 'min:8'],
             ],
-            scenarios: [
-                'login' => ['email', 'password'],
-                'profile' => ['title', 'email'],
-            ],
         );
 
-        $ruleset->scenario = 'login';
+        $component->setScenario('login');
         $loginRules = $ruleset->rules();
 
         expect($loginRules)->toHaveKeys(['email', 'password']);
         expect($loginRules)->not->toHaveKey('title');
 
-        $ruleset->scenario = 'profile';
+        $component->setScenario('profile');
         $profileRules = $ruleset->rules();
 
         expect($profileRules)->toHaveKeys(['title', 'email']);
@@ -295,18 +281,19 @@ describe('scenarios', function () {
     });
 
     test('undefined scenario returns all rules', function () {
-        $component = createTestComponent();
+        $component = createTestComponent(
+            scenarios: [
+                'specific' => ['title'],
+            ],
+        );
         $ruleset = createTestRuleset(
             $component,
             rules: [
                 'title' => ['required'],
                 'email' => ['required'],
             ],
-            scenarios: [
-                'specific' => ['title'],
-            ],
         );
-        $ruleset->scenario = 'undefined-scenario';
+        $component->setScenario('undefined-scenario');
 
         $rules = $ruleset->rules();
 

@@ -73,7 +73,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
@@ -177,7 +177,7 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface, ValidatableComponentInterface
+abstract class Element extends Component implements ElementInterface, ValidatesWithScenarios
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -212,11 +212,26 @@ abstract class Element extends Component implements ElementInterface, Validatabl
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    public const SCENARIO_DEFAULT = 'default';
+    public const string SCENARIO_DEFAULT = 'default';
 
-    public const SCENARIO_ESSENTIALS = 'essentials';
+    public const string SCENARIO_ESSENTIALS = 'essentials';
 
-    public const SCENARIO_LIVE = 'live';
+    public const string SCENARIO_LIVE = 'live';
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array<string, array<string>|null>
+     */
+    #[Override]
+    public function scenarios(): array
+    {
+        return [
+            self::SCENARIO_DEFAULT => null,
+            self::SCENARIO_LIVE => null,
+            self::SCENARIO_ESSENTIALS => null,
+        ];
+    }
 
     // Events
     // -------------------------------------------------------------------------

@@ -34,16 +34,6 @@ final class UserRules extends ElementRules
     ];
 
     #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            User::SCENARIO_PASSWORD => ['newPassword'],
-            User::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
-            User::SCENARIO_ACTIVATION => ['username', 'email'],
-        ]);
-    }
-
-    #[Override]
     public function prepareForValidation(?array $attributeNames = null): void
     {
         parent::prepareForValidation($attributeNames);
@@ -66,7 +56,7 @@ final class UserRules extends ElementRules
     {
         $rules = parent::defineRules();
 
-        $treatAsActive = $this->component->getIsCredentialed() || $this->inScenarios(
+        $treatAsActive = $this->component->getIsCredentialed() || $this->component->inScenarios(
             User::SCENARIO_REGISTRATION,
             User::SCENARIO_ACTIVATION,
         );
@@ -140,7 +130,7 @@ final class UserRules extends ElementRules
         $rules['newPassword'] = [
             Rule::requiredIf(
                 ! Cms::config()->deferPublicRegistrationPassword
-                && $this->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+                && $this->component->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(
                 forceDifferent: $this->component->passwordResetRequired,

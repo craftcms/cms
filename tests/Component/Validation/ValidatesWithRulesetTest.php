@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
 use CraftCms\Cms\Component\Validation\Ruleset;
 
-function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatableComponentInterface
+function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatesWithScenarios
 {
-    return new class($attributes, $rulesetClass) implements ValidatableComponentInterface
+    return new class($attributes, $rulesetClass) implements ValidatesWithScenarios
     {
         use ValidatesWithRuleset;
 
@@ -66,16 +66,7 @@ class TestRuleset extends Ruleset
 
     public ?array $prepareForValidationAttributes = null;
 
-    #[\Override]
-    public function scenarios(): array
-    {
-        return [
-            'default' => null,
-            'limited' => ['title'],
-        ];
-    }
-
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return [
@@ -90,7 +81,7 @@ class TestRuleset extends Ruleset
         $this->prepareForValidationAttributes = $attributeNames;
     }
 
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         return [
@@ -102,7 +93,7 @@ class TestRuleset extends Ruleset
 
 class EmptyRuleset extends Ruleset
 {
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         return [];
@@ -128,7 +119,7 @@ describe('getRuleset', function () {
     });
 
     test('throws when no ruleset configured', function () {
-        $component = new class implements ValidatableComponentInterface
+        $component = new class implements ValidatesWithScenarios
         {
             use ValidatesWithRuleset;
 
@@ -161,31 +152,6 @@ describe('getRuleset', function () {
         };
 
         expect(fn () => $component->getRuleset())->toThrow(BadMethodCallException::class);
-    });
-});
-
-describe('scenario', function () {
-    test('setScenario updates ruleset scenario', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $component->setScenario('limited');
-
-        expect($component->getRuleset()->scenario)->toBe('limited');
-    });
-
-    test('getScenario returns ruleset scenario', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-        $component->getRuleset()->scenario = 'limited';
-
-        expect($component->getScenario())->toBe('limited');
-    });
-
-    test('scenarios returns ruleset scenarios', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $scenarios = $component->scenarios();
-
-        expect($scenarios)->toHaveKeys(['default', 'limited']);
     });
 });
 

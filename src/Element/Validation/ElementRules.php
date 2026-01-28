@@ -31,22 +31,7 @@ use function CraftCms\Cms\t;
  */
 abstract class ElementRules extends Ruleset
 {
-    public string $scenario = Element::SCENARIO_DEFAULT;
-
     private ?string $uriPreparationError = null;
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        return [
-            Element::SCENARIO_DEFAULT => null,
-            Element::SCENARIO_LIVE => null,
-            Element::SCENARIO_ESSENTIALS => null,
-        ];
-    }
 
     #[Override]
     public function prepareForValidation(?array $attributeNames = null): void
@@ -76,7 +61,7 @@ abstract class ElementRules extends Ruleset
     #[Override]
     protected function defineRules(): array
     {
-        $int = Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE), ['nullable', 'integer']);
+        $int = Rule::when($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE), ['nullable', 'integer']);
 
         $rules = [
             'id' => $int,
@@ -84,10 +69,10 @@ abstract class ElementRules extends Ruleset
             'root' => $int,
             'lft' => $int,
             'rgt' => $int,
-            'level' => Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), ['nullable', 'integer']),
+            'level' => Rule::when($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), ['nullable', 'integer']),
             'title' => ['string', 'max:255', new DisallowMb4],
             'siteId' => Rule::when(
-                $this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
+                $this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
                 [
                     'nullable',
                     new SiteIdRule(allowDisabled: true),
@@ -105,7 +90,7 @@ abstract class ElementRules extends Ruleset
 
     private function addTitleRules(array $rules): array
     {
-        if ($this->component->hasTitles() && $this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if ($this->component->hasTitles() && $this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
             array_unshift($rules['title'], 'required');
         } else {
             array_unshift($rules['title'], 'nullable');
@@ -120,7 +105,7 @@ abstract class ElementRules extends Ruleset
             return $rules;
         }
 
-        $rules['slug'] = [Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
+        $rules['slug'] = [Rule::when($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
             'string',
             'max:255',
         ])];
@@ -128,7 +113,7 @@ abstract class ElementRules extends Ruleset
         try {
             $uriFormat = $this->component->getUriFormat() ?? '';
 
-            if ($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)
+            if ($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)
                 && preg_match('/\bslug\b/', $uriFormat)
             ) {
                 $rules['slug'][] = 'required';
@@ -140,7 +125,7 @@ abstract class ElementRules extends Ruleset
         }
 
         $rules['uri'] = Rule::when(
-            $this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
+            $this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
             [
                 'bail',
                 // Fail if we have an uriPreparationError
@@ -217,7 +202,7 @@ abstract class ElementRules extends Ruleset
         }
 
         if ($this->component->getIsDraft() && ! $this->component->getIsUnpublishedDraft()) {
-            if (! $this->inScenarios(Element::SCENARIO_LIVE)) {
+            if (! $this->component->inScenarios(Element::SCENARIO_LIVE)) {
                 return;
             }
 
@@ -239,7 +224,7 @@ abstract class ElementRules extends Ruleset
             if (
                 $this->component->enabled &&
                 $this->component->getEnabledForSite() &&
-                (! $this->component->getIsUnpublishedDraft() || $this->inScenarios(Element::SCENARIO_LIVE))
+                (! $this->component->getIsUnpublishedDraft() || $this->component->inScenarios(Element::SCENARIO_LIVE))
             ) {
                 $this->uriPreparationError = t('Could not generate a unique URI based on the URI format.');
             }

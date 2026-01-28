@@ -187,6 +187,18 @@ final class Asset extends Element
 
     public const string SCENARIO_REPLACE = 'replace';
 
+    #[Override]
+    public function scenarios(): array
+    {
+        return array_merge(parent::scenarios(), [
+            self::SCENARIO_MOVE => null,
+            self::SCENARIO_FILEOPS => null,
+            self::SCENARIO_INDEX => [],
+            self::SCENARIO_CREATE => null,
+            self::SCENARIO_REPLACE => null,
+        ]);
+    }
+
     // File kinds
     // -------------------------------------------------------------------------
 

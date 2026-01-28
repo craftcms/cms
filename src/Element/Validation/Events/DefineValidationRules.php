@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Validation\Events;
 
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
@@ -17,11 +17,11 @@ final class DefineValidationRules
     use Dispatchable;
 
     /**
-     * @param  ValidatableComponentInterface  $component  The component being validated
+     * @param  Validatable  $component  The component being validated
      * @param  array<string, array<mixed>>  $rules  The current validation rules
      */
     public function __construct(
-        public readonly ValidatableComponentInterface $component,
+        public readonly Validatable $component,
         public array $rules,
     ) {}
 

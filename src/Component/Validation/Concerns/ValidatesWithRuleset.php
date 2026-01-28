@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Component\Validation\Concerns;
 
 use BadMethodCallException;
 use CraftCms\Cms\Component\Validation\Attributes\Ruleset as RulesetAttribute;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -15,28 +15,15 @@ use Illuminate\Validation\Validator;
 use ReflectionClass;
 
 /**
- * @mixin ValidatableComponentInterface
+ * @mixin Validatable
  */
 trait ValidatesWithRuleset
 {
+    use HasScenarios;
+
     private ?Ruleset $ruleset = null;
 
     private ?Validator $validator = null;
-
-    public function setScenario($scenario): void
-    {
-        $this->getRuleset()->scenario = $scenario;
-    }
-
-    public function getScenario(): string
-    {
-        return $this->getRuleset()->scenario;
-    }
-
-    public function scenarios(): array
-    {
-        return $this->getRuleset()->scenarios();
-    }
 
     public function getRuleset(): Ruleset
     {
@@ -110,13 +97,7 @@ trait ValidatesWithRuleset
         return true;
     }
 
-    public function afterValidate(/* Validator $validator */): void
-    {
-        // TODO: Event
-        // if ($this instanceof Model) {
-        //     $this->trigger(Model::EVENT_AFTER_VALIDATE);
-        // }
-    }
+    public function afterValidate(/* Validator $validator */): void {}
 
     /**
      * {@inheritDoc}

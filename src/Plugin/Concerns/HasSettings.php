@@ -8,7 +8,7 @@ use Craft;
 use craft\web\Controller;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Events\ComponentEvent;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Event;
@@ -46,14 +46,14 @@ trait HasSettings
     public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
-     * @var ValidatableComponentInterface|bool|null The model used to store the plugin’s settings
+     * @var Validatable|bool|null The model used to store the plugin’s settings
      *
      * @see getSettings()
      */
-    private bool|null|ValidatableComponentInterface $settings = null;
+    private bool|null|Validatable $settings = null;
 
     /** {@inheritdoc} */
-    public function getSettings(): ?ValidatableComponentInterface
+    public function getSettings(): ?Validatable
     {
         if (! isset($this->settings)) {
             $this->settings = $this->createSettingsModel() ?: false;
@@ -125,7 +125,7 @@ trait HasSettings
     /**
      * Creates and returns the model used to store the plugin’s settings.
      */
-    protected function createSettingsModel(): ?ValidatableComponentInterface
+    protected function createSettingsModel(): ?Validatable
     {
         return null;
     }

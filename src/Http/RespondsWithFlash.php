@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http;
 use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -71,7 +71,7 @@ trait RespondsWithFlash
             'modelName' => $modelName,
             'modelClass' => $model::class,
             $modelName => Arr::toArray($model),
-            'errors' => $model instanceof ValidatableComponentInterface
+            'errors' => $model instanceof Validatable
                 ? $model->errors()->getMessages()
                 : null,
         ]);

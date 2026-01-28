@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Component\Validation\Contracts;
 
 use Illuminate\Contracts\Support\MessageBag;
 
-interface ValidatableComponentInterface
+interface Validatable
 {
     public static function getRules(): array;
 

@@ -19,25 +19,13 @@ use Override;
 final class AssetRules extends ElementRules
 {
     #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            Asset::SCENARIO_MOVE => null,
-            Asset::SCENARIO_FILEOPS => null,
-            Asset::SCENARIO_INDEX => [],
-            Asset::SCENARIO_CREATE => null,
-            Asset::SCENARIO_REPLACE => null,
-        ]);
-    }
-
-    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
 
         $rules['title'] = [
             'nullable',
-            Rule::when($this->inScenarios(Asset::SCENARIO_CREATE), [
+            Rule::when($this->component->inScenarios(Asset::SCENARIO_CREATE), [
                 'string',
                 'max:255',
                 new DisallowMb4,
@@ -56,18 +44,18 @@ final class AssetRules extends ElementRules
 
         $rules['newLocation'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
-            Rule::when(! $this->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::requiredIf($this->component->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
+            Rule::when(! $this->component->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->component),
             ]),
-            Rule::when($this->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::when($this->component->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->component, allowedExtensions: '*'),
             ]),
         ];
 
         $rules['tempFilePath'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
+            Rule::requiredIf($this->component->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
         ];
 
         return $rules;

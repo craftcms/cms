@@ -35,7 +35,7 @@ final class EntryRules extends ElementRules
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
         $rules['sortOrder'] = ['nullable', 'integer'];
         $rules['placeInStructure'] = ['bool'];
-        $rules['postDate'] = ['nullable', 'date', Rule::when($this->inScenarios(Entry::SCENARIO_LIVE) && ! is_null($this->component->expiryDate), ['before:expiryDate'])];
+        $rules['postDate'] = ['nullable', 'date', Rule::when($this->component->inScenarios(Entry::SCENARIO_LIVE) && ! is_null($this->component->expiryDate), ['before:expiryDate'])];
         $rules['expiryDate'] = ['nullable', 'date'];
         $rules['typeId'] = [
             'required',
@@ -51,7 +51,7 @@ final class EntryRules extends ElementRules
                     'attribute' => $this->component->getAttributeLabel($attribute),
                 ]));
             },
-            Rule::when($this->inScenarios(Entry::SCENARIO_LIVE), [
+            Rule::when($this->component->inScenarios(Entry::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
                     if (! $this->component->getIsCanonical()) {
                         return;
@@ -102,7 +102,7 @@ final class EntryRules extends ElementRules
                 },
             ]),
             Rule::requiredIf(function () {
-                if (! $this->inScenarios(Entry::SCENARIO_LIVE)) {
+                if (! $this->component->inScenarios(Entry::SCENARIO_LIVE)) {
                     return false;
                 }
 

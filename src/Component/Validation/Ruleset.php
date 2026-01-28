@@ -4,33 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Validation;
 
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
 
 /**
- * @template T of ValidatableComponentInterface
+ * @template T of ValidatesWithScenarios
  */
 abstract class Ruleset
 {
-    public string $scenario = 'default';
-
     public function __construct(
         /** @var T */
-        protected readonly ValidatableComponentInterface $component,
+        protected readonly ValidatesWithScenarios $component,
     ) {}
-
-    final public function inScenarios(string ...$scenarios): bool
-    {
-        return in_array($this->scenario, $scenarios, true);
-    }
-
-    /**
-     * @return array<string, array<string>|null>
-     */
-    public function scenarios(): array
-    {
-        return [];
-    }
 
     /**
      * @return array<string, array>
@@ -41,7 +26,7 @@ abstract class Ruleset
 
         event($event = new DefineValidationRules($this->component, $rules));
 
-        $attributes = $this->scenarios()[$this->scenario] ?? null;
+        $attributes = $this->component->scenarios()[$this->component->getScenario()] ?? null;
 
         return collect($event->rules)
             ->unless(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\TestClasses;
 
 use Closure;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Plugin\Plugin;
 use Override;
 
@@ -29,7 +29,7 @@ final class TestPlugin extends Plugin
     }
 
     #[Override]
-    protected function createSettingsModel(): ?ValidatableComponentInterface
+    protected function createSettingsModel(): ?Validatable
     {
         if (! self::$useSettings) {
             return null;
