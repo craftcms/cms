@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Nastavit jako primární web',
     'Manage categories' => 'Správa kategorií',
     'Manage element thumbnails' => 'Správa náhledů prvků',
-    'Manage your Craft Console account' => 'Správa účtu Craft Console',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Rasterizace obrázků SVG, s nimiž se manipuluje, je nespolehlivá. Viz \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Matice',
     'Max Authors' => 'Max. počet autorů',
