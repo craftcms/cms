@@ -95,6 +95,14 @@ class ElementSources extends Component
         }
 
         if ($page && isset($sources[0]['page'])) {
+            // this safeguard is only needed because of https://github.com/craftcms/cms/issues/18321
+            // if the page for the first source has an empty name and there's just one enabled page for this element type
+            if ($sources[0]['page'] == '' && count($this->getPages($elementType, $context)) == 1) {
+                // return all the sources
+                return array_values($sources);
+            }
+            // end of safeguard
+
             $pageNameId = $this->pageNameId($page);
             $sources = array_filter($sources, fn(array $source) => (
                 isset($source['page']) &&
