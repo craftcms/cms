@@ -1010,7 +1010,6 @@ return [
     'Make this the primary site' => 'กำหนดให้เป็นเว็บไซต์หลัก',
     'Manage categories' => 'จัดการหมวดหมู่',
     'Manage element thumbnails' => 'จัดภาพขนาดย่อขององค์ประกอบ',
-    'Manage your Craft Console account' => 'จัดการบัญชี Craft Console ของคุณ',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'การแรสเตอร์ภาพ SVG ที่มีการดัดแปลงดูไม่น่าเชื่อถือ โปรดดู \\craft\\services\\Images::loadImage()',
     'Matrix' => 'เมตริก',
     'Max Authors' => 'ผู้สร้างสูงสุด',
