@@ -1672,7 +1672,6 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
-            $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeRecord->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
@@ -1680,11 +1679,15 @@ SQL)->execute();
             $entryTypeRecord->uid = $entryTypeUid;
 
             // todo: remove after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
+            $db = Craft::$app->getDb();
+            if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
                 $entryTypeRecord->description = $data['description'] ?? null;
             }
-            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+            if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
                 $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+            }
+            if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+                $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             }
 
             if (!empty($data['fieldLayouts'])) {
