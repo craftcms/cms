@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'تبدیل این به سایت اصلی',
     'Manage categories' => 'مدیریت دسته بندی ها',
     'Manage element thumbnails' => 'مدیریت تصاویر انگشتی عنصر',
-    'Manage your Craft Console account' => 'حساب Craft Console خود را مدیریت کنید',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'شطرنجی شده تصویر SVG دستکاری شده نامعتبر است. \\craft\\services\\Images::loadImage() را ببینید.',
     'Matrix' => 'ماتریس',
     'Max Authors' => 'حداکثر نویسندگان',
