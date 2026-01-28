@@ -11,7 +11,6 @@ namespace craft\queue\jobs;
 
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * PropagateElements job
@@ -67,17 +66,5 @@ class PropagateElements extends BaseJob
             $this->siteId,
             $this->isNewSite,
         )->handle();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function defaultDescription(): ?string
-    {
-        return I18N::prep('Propagating {type}', [
-            'type' => $this->totalItems() == 1
-                ? $this->elementType::lowerDisplayName()
-                : $this->elementType::pluralLowerDisplayName(),
-        ]);
     }
 }
