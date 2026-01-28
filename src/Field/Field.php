@@ -43,7 +43,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Validation\Concerns\ValidatableComponent;
+use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -69,7 +69,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     use HasComponentEvents;
     use Macroable;
     use SavableComponent;
-    use ValidatableComponent;
+    use Validates;
 
     // Translation methods
     // @TODO: Replace const with the enum everywhere

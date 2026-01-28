@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Concerns\ValidatableComponent;
+use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Route;
@@ -47,7 +47,7 @@ class TestFlashController extends Controller
     {
         $model = new class implements Validatable
         {
-            use ValidatableComponent;
+            use Validates;
 
             public string $name = 'Test Model';
 

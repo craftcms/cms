@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
-trait ValidatableComponent
+trait Validates
 {
     private ?Validator $validator = null;
 

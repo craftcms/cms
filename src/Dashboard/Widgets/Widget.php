@@ -14,7 +14,7 @@ use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Validation\Concerns\ValidatableComponent;
+use CraftCms\Cms\Validation\Concerns\Validates;
 use Override;
 use RuntimeException;
 
@@ -25,7 +25,7 @@ abstract class Widget implements WidgetInterface
 {
     use ConfigurableComponent;
     use SavableComponent;
-    use ValidatableComponent;
+    use Validates;
 
     public ?int $colspan = null;
 
