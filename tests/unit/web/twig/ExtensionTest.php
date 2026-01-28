@@ -1260,6 +1260,36 @@ class ExtensionTest extends TestCase
         ];
     }
 
+    public function testSwitchTag(): void
+    {
+        $vars = [
+            'foo' => 'foo',
+            'bar' => 'bar or baz',
+            'baz' => 'bar or baz',
+            'qux' => 'qux or quux',
+            'quux' => 'qux or quux',
+        ];
+
+        $template = <<<EOL
+{%- switch var -%}
+  {%- case 'foo' -%}
+    foo
+  {%- case 'bar' or 'baz' -%}
+    bar or baz
+  {%- case 'qux' or 'quux' -%}
+    qux or quux
+{%- endswitch -%}
+EOL;
+
+        foreach ($vars as $var => $expected) {
+            $this->testRenderResult(
+                $expected,
+                $template,
+                ['var' => $var],
+            );
+        }
+    }
+
     /**
      * @param string $expectedString
      * @param string $renderString

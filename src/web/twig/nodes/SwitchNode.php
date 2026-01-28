@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Twig\Compiler;
+use Twig\Node\Expression\Binary\OrBinary;
 use Twig\Node\Node;
 
 /**
@@ -40,6 +41,16 @@ class SwitchNode extends Node
             }
 
             foreach ($case->getNode('values') as $value) {
+                if ($value instanceof OrBinary) {
+                    foreach ($value as $v) {
+                        $compiler
+                            ->write('case ')
+                            ->subcompile($v)
+                            ->raw(":\n");
+                    }
+                    break;
+                }
+
                 $compiler
                     ->write('case ')
                     ->subcompile($value)
