@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Czy ustawić ją jako witrynę podstawową',
     'Manage categories' => 'Zarządzaj kategoriami',
     'Manage element thumbnails' => 'Zarządzaj miniaturami elementów',
-    'Manage your Craft Console account' => 'Zarządzaj swoim kontem Craft Console',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Zmodyfikowany obraz rastrowy SVG jest niewiarygodny. Patrz \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Matrix',
     'Max Authors' => 'Maks. liczba autorów',
