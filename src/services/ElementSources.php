@@ -248,11 +248,11 @@ class ElementSources extends Component
             }
         }
 
-        foreach ($pages as $key => $pageWithSources) {
-            if (count(array_filter($pageWithSources, fn(array $source) => !isset($source['disabled']) || $source['disabled'] === true)) == 0) {
-                unset($pages[$key]);
-            }
-        }
+        // Remove pages that only have disabled sources
+        $pages = array_filter(
+            $pages,
+            fn(array $sources) => ArrayHelper::contains($sources, fn(array $source) => !($source['disabled'] ?? false)),
+        );
 
         return array_keys($pages);
     }
