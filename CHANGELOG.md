@@ -4,6 +4,7 @@
 
 - Fixed an error that could occur when updating to Craft 5.9. ([#18309](https://github.com/craftcms/cms/issues/18309))
 - Fixed a bug where custom entry index pages that only contained native sources weren’t getting their own nav items. ([#18311](https://github.com/craftcms/cms/issues/18311))
+- Fixed a bug where image transforms with invalid `position` properties weren’t being handled properly. ([#18310](https://github.com/craftcms/cms/issues/18310))
 
 ## 5.9.0 - 2026-01-27
 
