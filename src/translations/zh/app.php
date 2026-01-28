@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => '将此设为主站点',
     'Manage categories' => '管理分类',
     'Manage element thumbnails' => '管理元素缩略图',
-    'Manage your Craft Console account' => '管理 Craft Console 帐户',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '不可靠的 SVG 图片栅格化操作。请参阅 \\craft\\services\\Images::loadImage()',
     'Matrix' => '矩阵',
     'Max Authors' => '最大作者数',
