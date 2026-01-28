@@ -913,6 +913,13 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
             {
               triggerElement: this.$actionBtn,
               validateName: (name) => {
+                if (
+                  Craft.CustomizeSourcesModal.Page.nameId(name ?? '') === ''
+                ) {
+                  return Craft.t('yii', '{attribute} cannot be blank.', {
+                    attribute: Craft.t('app', 'Page Name'),
+                  });
+                }
                 if (!this.modal.isPageNameUnique(name, this)) {
                   return Craft.t('app', 'Another page already has that name.');
                 }
