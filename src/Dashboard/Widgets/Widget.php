@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
+use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
 
@@ -24,6 +25,7 @@ use RuntimeException;
 abstract class Widget implements WidgetInterface
 {
     use ConfigurableComponent;
+    use Macroable;
     use SavableComponent;
     use Validates;
 

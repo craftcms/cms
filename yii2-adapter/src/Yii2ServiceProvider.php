@@ -76,6 +76,7 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Element\Element;
@@ -108,9 +109,9 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
-use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
+use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -221,9 +222,11 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->dispatchComponentEvent($name, $event);
         });
 
-        Element::mixin(new ElementMixin());
+        Element::mixin(new ValidateMixin());
+        Field::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
+        Widget::mixin(new ValidateMixin());
     }
 
     protected function registerLegacyApp(): void
