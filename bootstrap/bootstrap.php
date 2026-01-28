@@ -216,6 +216,7 @@ Craft::setAlias('@appicons/c-outline.svg', "$customIconsPath/c-outline.svg");
 Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
 Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
 Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
+Craft::setAlias('@appicons/craftid.svg', "$customIconsPath/craftid.svg");
 Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
 Craft::setAlias('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
 require $iconsPath . DIRECTORY_SEPARATOR . 'aliases.php';
