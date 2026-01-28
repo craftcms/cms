@@ -574,6 +574,7 @@ class ElementSources extends Component
                         'label' => Craft::t('site', $field['name']),
                         'attribute' => "generatedField:{$field['uid']}",
                         'orderBy' => $qb->jsonExtract('elements_sites.content', [$field['uid']]),
+                        'defaultDir' => 'asc',
                     ];
                 }
             }
