@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Concerns;
+namespace CraftCms\Cms\Validation\Concerns;
 
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;

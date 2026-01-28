@@ -8,13 +8,13 @@ use Craft;
 use craft\helpers\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Concerns\ValidatableComponent;
 use Override;
 use RuntimeException;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Concerns\ValidatableComponent;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Route;
