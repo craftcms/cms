@@ -426,4 +426,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     {
         return [];
     }
+
+    public function attributeLabels(): array
+    {
+        return parent::attributeLabels();
+    }
 }

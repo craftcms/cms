@@ -106,7 +106,6 @@ abstract class ElementRules extends Ruleset
         }
 
         $rules['slug'] = [Rule::when($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
-            'string',
             'max:255',
         ])];
 
@@ -116,9 +115,9 @@ abstract class ElementRules extends Ruleset
             if ($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)
                 && preg_match('/\bslug\b/', $uriFormat)
             ) {
-                $rules['slug'][] = 'required';
+                array_unshift($rules['slug'], 'required', 'string');
             } else {
-                $rules['slug'][] = 'nullable';
+                array_unshift($rules['slug'], 'nullable');
             }
         } catch (Throwable) {
             // Validation rules will catch this.

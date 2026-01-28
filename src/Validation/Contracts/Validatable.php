@@ -45,4 +45,15 @@ interface Validatable
      * @return string[] list of attribute names.
      */
     public function attributes(): array;
+
+    /**
+     * Returns the attribute labels.
+     *
+     * Attribute labels are mainly used for display purpose. For example, given an attribute
+     * `firstName`, we can declare a label `First Name` which is more user-friendly and can
+     * be displayed to end users.
+     *
+     * @return array<string, string>
+     */
+    public function attributeLabels(): array;
 }

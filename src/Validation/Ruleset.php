@@ -18,6 +18,13 @@ abstract class Ruleset
     ) {}
 
     /**
+     * Returns the validation rules for the current scenario.
+     *
+     * This method combines the rules defined in defineRules() with any rules
+     * added by event listeners, then filters them based on the active scenario.
+     * If a scenario is active, only rules for attributes defined in that scenario
+     * are returned.
+     *
      * @return array<string, array>
      */
     final public function rules(): array
@@ -40,11 +47,26 @@ abstract class Ruleset
     }
 
     /**
+     * Returns custom validation error messages.
+     *
+     * Override this method to provide custom error messages for specific
+     * validation rules.
+     *
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return $this->component->attributeLabels();
     }
 
     /**
@@ -57,6 +79,15 @@ abstract class Ruleset
      */
     public function prepareForValidation(?array $attributeNames = null): void {}
 
+    /**
+     * Define the validation rules for this ruleset.
+     *
+     * Override this method in subclasses to define the base validation rules
+     * for the component. Rules can be modified by event listeners before
+     * being returned by the rules() method.
+     *
+     * @return array<string, array>
+     */
     protected function defineRules(): array
     {
         return [];

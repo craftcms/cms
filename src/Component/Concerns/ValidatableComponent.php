@@ -29,7 +29,12 @@ trait ValidatableComponent
 
     protected function getValidator(): Validator
     {
-        return $this->validator ??= ValidatorFacade::make($this->getAttributes(), static::getRules(), static::getMessages());
+        return $this->validator ??= ValidatorFacade::make(
+            data: $this->getAttributes(),
+            rules: static::getRules(),
+            messages: static::getMessages(),
+            attributes: $this->attributeLabels(),
+        );
     }
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
@@ -81,5 +86,10 @@ trait ValidatableComponent
     public function attributes(): array
     {
         return Utils::getPublicAttributes($this);
+    }
+
+    public function attributeLabels(): array
+    {
+        return [];
     }
 }

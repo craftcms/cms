@@ -52,14 +52,15 @@ trait ValidatesWithRuleset
             $this->validator = ValidatorFacade::make([], []);
         }
 
-        $rules = $this->getRuleset()->rules();
+        $ruleset = $this->getRuleset();
 
         return $this->validator
             ->setData($this->getAttributes())
-            ->setCustomMessages($this->getRuleset()->messages())
+            ->setCustomMessages($ruleset->messages())
+            ->setAttributeNames($ruleset->attributes())
             ->setRules(is_null($attributeNames)
-                ? $rules
-                : Arr::only($rules, $attributeNames)
+                ? $ruleset->rules()
+                : Arr::only($ruleset->rules(), $attributeNames)
             );
     }
 
