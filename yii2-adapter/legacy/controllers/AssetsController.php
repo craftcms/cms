@@ -1310,7 +1310,9 @@ class AssetsController extends Controller
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-            throw new AssetDisallowedExtensionException(t('“{$extension}” is not an allowed file extension.'));
+            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                'extension' => $extension,
+            ]));
         }
 
         // Move the uploaded file to the temp folder

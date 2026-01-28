@@ -47,7 +47,8 @@ class GenerateImageTransform extends BaseJob
                 if ($asset) {
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }
-            } catch (Throwable) {
+            } catch (Throwable $e) {
+                Craft::warning('Image transform generation failed: ' . $e->getMessage(), __METHOD__);
             }
         }
     }

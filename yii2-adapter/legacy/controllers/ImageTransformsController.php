@@ -64,6 +64,7 @@ class ImageTransformsController extends Controller
         $variables = [];
 
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
+        usort($variables['transforms'], fn(ImageTransform $a, ImageTransform $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
         $variables['modes'] = ImageTransform::modes();
         $variables['readOnly'] = $this->readOnly;
 

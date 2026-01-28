@@ -92,7 +92,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use yii\validators\RequiredValidator;
 
 use function CraftCms\Cms\t;
 
@@ -1370,24 +1369,6 @@ final class Asset extends Element
      * {@inheritdoc}
      */
     #[Override]
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
-            if ($altElement && $altElement->required) {
-                (new RequiredValidator)->validateAttribute($this, 'alt');
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -1396,10 +1377,17 @@ final class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
+        $rules[] = [['newFilename'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
+
+        $rules[] = [
+            ['alt'],
+            'required',
+            'on' => [self::SCENARIO_LIVE],
+            'when' => fn () => $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this)->required ?? false,
+        ];
 
         // Validate the extension unless all we're doing is moving the file
         $rules[] = [

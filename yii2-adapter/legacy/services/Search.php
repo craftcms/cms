@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\MemoizableArray;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\IndexKeywordsEvent;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
@@ -208,6 +210,11 @@ class Search extends Component
 
         // Release the lock
         $mutex->release();
+
+        // Invalidate search query caches for this element type
+        TagDependency::invalidate([
+            sprintf('element-search-query:%s', get_class($element)),
+        ]);
 
         return true;
     }
@@ -422,6 +429,9 @@ class Search extends Component
             return [];
         }
 
+        /**
+         * TODO: Remove once $query is a Laravel Builder
+         */
         if ($elementQuery instanceof ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
@@ -434,7 +444,12 @@ class Search extends Component
 
         $results = $query
             ->andWhere(['elementId' => $ids])
-            ->cache()
+            ->cache(true, new ElementQueryTagDependency($elementQuery, [
+                'tags' => [
+                    'element-index-query',
+                    sprintf('element-index-query::%s', $elementQuery->elementType),
+                ],
+            ]))
             ->all();
 
         // Score the results

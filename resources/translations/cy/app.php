@@ -2280,7 +2280,6 @@ return [
     '{value} is not a valid site language.' => '{value} is not a valid site language.',
     '{volume} root' => '{volume} root',
     '“New” Button Label' => '“New” Button Label',
-    '“{$extension}” is not an allowed file extension.' => '“{$extension}” is not an allowed file extension.',
     '“{extension}” is not an allowed file extension.' => '“{extension}” is not an allowed file extension.',
     '“{filename}” is not allowed in this field.' => '“{filename}” is not allowed in this field.',
     '“{filename}” is too large.' => '“{filename}” is too large.',

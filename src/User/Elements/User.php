@@ -89,7 +89,6 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
-use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 
@@ -1037,28 +1036,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
-            if ($fullNameElement && $fullNameElement->required) {
-                if (Cms::config()->showFirstAndLastNameFields) {
-                    new RequiredValidator(['attributes' => ['firstName', 'lastName']])->validateAttributes($this, ['firstName', 'lastName']);
-                } else {
-                    (new RequiredValidator)->validateAttribute($this, 'fullName');
-                }
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -1080,6 +1057,13 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
             $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
+
+        $rules[] = [
+            Cms::config()->showFirstAndLastNameFields ? ['firstName', 'lastName'] : ['fullName'],
+            'required',
+            'on' => [self::SCENARIO_LIVE],
+            'when' => fn () => $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this)->required ?? false,
+        ];
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [
