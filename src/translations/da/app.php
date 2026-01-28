@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Gør dette til primært site',
     'Manage categories' => 'Administrer kategorier',
     'Manage element thumbnails' => 'Administrer miniaturebilleders element',
-    'Manage your Craft Console account' => 'Administrer din Craft Console-konto',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Manipuleret SVG-billederasterisering er usikkert. Se \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Matrix',
     'Max Authors' => 'Maks. forfattere',
