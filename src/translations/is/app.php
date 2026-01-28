@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Gerðu þetta að aðalsíðunni',
     'Manage categories' => 'Stjórna flokkum',
     'Manage element thumbnails' => 'Stjórna smámyndum þátta',
-    'Manage your Craft Console account' => 'Stjórnaðu Craft Console reikningnum þínum',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Meðhöndluð SVG myndröðun er óáreiðanleg. Sjá \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Fylki',
     'Max Authors' => 'Max Höfundar',
