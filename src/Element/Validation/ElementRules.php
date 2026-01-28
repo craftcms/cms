@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Validation;
 
+use Closure;
+use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\Rules\ElementUriRule;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\DisallowMb4;
 use CraftCms\Cms\Shared\Rules\SiteIdRule;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Validation\Rule;
 use Override;
 use Throwable;
+
+use function CraftCms\Cms\t;
 
 /**
  * @template T of Element
@@ -27,6 +32,8 @@ use Throwable;
 abstract class ElementRules extends Ruleset
 {
     public string $scenario = Element::SCENARIO_DEFAULT;
+
+    private ?string $uriPreparationError = null;
 
     /**
      * {@inheritdoc}
@@ -52,6 +59,10 @@ abstract class ElementRules extends Ruleset
 
         if ($shouldPrepare('slug') && $this->component->hasUris()) {
             $this->prepareSlug($this->component->getSite()->language);
+        }
+
+        if ($shouldPrepare('uri') && $this->component->hasUris()) {
+            $this->prepareUri();
         }
     }
 
@@ -128,9 +139,21 @@ abstract class ElementRules extends Ruleset
             // Validation rules will catch this.
         }
 
-        $rules['uri'] = Rule::when($this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS), [
-            new ElementUriRule($this->component),
-        ]);
+        $rules['uri'] = Rule::when(
+            $this->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE, Element::SCENARIO_ESSENTIALS),
+            [
+                'bail',
+                // Fail if we have an uriPreparationError
+                function (?string $attribute, mixed $value, Closure $fail) {
+                    if (is_null($this->uriPreparationError)) {
+                        return;
+                    }
+
+                    $fail($this->uriPreparationError);
+                },
+                new ElementUriRule,
+            ],
+        );
 
         return $rules;
     }
@@ -184,6 +207,42 @@ abstract class ElementRules extends Ruleset
     {
         if ($element !== null) {
             $element->slug = $slug;
+        }
+    }
+
+    private function prepareUri(): void
+    {
+        if ($this->component->getIsRevision()) {
+            return;
+        }
+
+        if ($this->component->getIsDraft() && ! $this->component->getIsUnpublishedDraft()) {
+            if (! $this->inScenarios(Element::SCENARIO_LIVE)) {
+                return;
+            }
+
+            $canonical = $this->component->getCanonical();
+
+            if (
+                $canonical !== $this->component &&
+                $this->component->uri === $canonical->uri &&
+                $canonical->enabled &&
+                $canonical->getEnabledForSite()
+            ) {
+                return;
+            }
+        }
+
+        try {
+            Craft::$app->getElements()->setElementUri($this->component);
+        } catch (OperationAbortedException) {
+            if (
+                $this->component->enabled &&
+                $this->component->getEnabledForSite() &&
+                (! $this->component->getIsUnpublishedDraft() || $this->inScenarios(Element::SCENARIO_LIVE))
+            ) {
+                $this->uriPreparationError = t('Could not generate a unique URI based on the URI format.');
+            }
         }
     }
 }
