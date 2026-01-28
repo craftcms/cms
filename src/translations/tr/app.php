@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Bu birincil site yapılsın mı',
     'Manage categories' => 'Kategorileri yönetin',
     'Manage element thumbnails' => 'Öğe küçük resimlerini yönet',
-    'Manage your Craft Console account' => 'Craft Console hesabınızı yönetin',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Değişiklik yapılmış SVG resmini pikselleştirme işlemi güvenilir değil. Bkz. \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Matris',
     'Max Authors' => 'Maks. Yazar',
