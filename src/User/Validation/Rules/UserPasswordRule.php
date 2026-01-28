@@ -28,10 +28,6 @@ final readonly class UserPasswordRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value === null) {
-            return;
-        }
-
         $value = (string) $value;
 
         if ($value === '') {

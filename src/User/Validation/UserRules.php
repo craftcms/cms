@@ -138,6 +138,10 @@ final class UserRules extends ElementRules
         }
 
         $rules['newPassword'] = [
+            Rule::requiredIf(
+                ! Cms::config()->deferPublicRegistrationPassword
+                && $this->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+            ),
             new UserPasswordRule(
                 forceDifferent: $this->component->passwordResetRequired,
                 currentPassword: $currentPassword,
