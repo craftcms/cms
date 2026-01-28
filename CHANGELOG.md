@@ -8,6 +8,7 @@
 - Fixed a bug where element save notifications weren’t hyperlinking the element label. ([#18326](https://github.com/craftcms/cms/issues/18326))
 - Fixed a bug where sidebar states weren’t being remembered across page loads. ([#18323](https://github.com/craftcms/cms/issues/18323))
 - Fixed an error that could occur when displaying an embedded element index that included field layouts with generated fields. ([#18320](https://github.com/craftcms/cms/pull/18320))
+- Fixed errors that occurred when performing user administration actions on Craft Team. ([#18331](https://github.com/craftcms/cms/issues/18331))
 
 ## 5.9.1 - 2026-01-27
 

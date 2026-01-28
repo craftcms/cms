@@ -3137,7 +3137,7 @@ JS);
      */
     private function userActionChecks(): void
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Team);
         $this->requirePostRequest();
         $this->requireCpRequest();
         $this->requirePermission('editUsers');
