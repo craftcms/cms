@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
+use CraftCms\Cms\Validation\Rules\UniqueCaseInsensitiveRule;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -61,7 +62,7 @@ final class UserRules extends ElementRules
             User::SCENARIO_ACTIVATION,
         );
 
-        $unique = fn (string $column) => Rule::unique(Table::USERS, $column)
+        $unique = fn (string $column) => new UniqueCaseInsensitiveRule(Table::USERS, $column)
             ->where(fn (Builder $query) => $query
                 ->where('active', true)
                 ->orWhere('pending', true)
