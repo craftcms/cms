@@ -1,40 +1,53 @@
 import type {PropertyValues} from 'lit';
 import {css, html, LitElement} from 'lit';
-import {property, query, state} from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
 
 /**
  * A circular progress indicator that displays progress as an arc.
  *
  * @summary Displays progress in radial form
  *
- * @csspart bg - The background arc canvas
- * @csspart static - The static progress arc canvas
- * @csspart hover - The hover state progress arc canvas
- * @csspart fail - The fail state arc canvas
+ * @fires complete - Fired when the completion animation finishes
+ *
+ * @csspart canvas - The canvas element
+ *
+ * @cssprop [--c-progress-size=18px] - The size of the progress indicator
+ * @cssprop [--c-progress-stroke-width=3px] - The width of the progress arc stroke
  */
 export default class CraftProgress extends LitElement {
   static override styles = css`
     :host {
+      --_size: var(--c-progress-size, 16px);
+      --_stroke-width: var(--c-progress-stroke-width, 3px);
+
       display: inline-block;
       position: relative;
-      width: 18px;
-      height: 18px;
+      width: var(--_size);
+      height: var(--_size);
     }
 
     canvas {
       position: absolute;
       top: 0;
       left: 0;
-      width: 18px;
-      height: 18px;
+      width: var(--_size);
+      height: var(--_size);
     }
 
-    .hidden {
-      display: none;
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
   `;
 
-  /** Progress of the indicator, a percentage between 0 and 100 */
+  /** Progress of the indicator, a percentage between 0 and 100. Set to -1 for indeterminate. */
   @property({type: Number}) progress: number = 0;
 
   /** Whether the indicator is in fail mode */
@@ -50,188 +63,275 @@ export default class CraftProgress extends LitElement {
   @property({type: String, attribute: 'fail-color'}) failColor: string =
     '#da5a47';
 
-  @query('#bg') private _bgCanvas!: HTMLCanvasElement;
-  @query('#static') private _staticCanvas!: HTMLCanvasElement;
-  @query('#hover') private _hoverCanvas!: HTMLCanvasElement;
-  @query('#fail') private _failCanvas!: HTMLCanvasElement;
+  /** Accessible label for the progress indicator */
+  @property({type: String}) label: string = 'Progress';
 
-  @state() private _showStatic: boolean = false;
-  @state() private _showHover: boolean = false;
+  /** Whether to automatically run the complete animation when progress reaches 100 */
+  @property({type: Boolean, attribute: 'auto-complete'}) autoComplete: boolean =
+    false;
 
-  private _canvasSize: number = 0;
-  private _arcPos: number = 0;
-  private _arcRadius: number = 0;
-  private _lineWidth: number = 0;
+  #canvas: HTMLCanvasElement | null = null;
+  #canvasSize: number = 0;
+  #arcPos: number = 0;
+  #arcRadius: number = 0;
+  #lineWidth: number = 0;
 
-  private _arcStartPos: number = 0;
-  private _arcEndPos: number = 0;
-  private _arcStartStepSize: number = 0;
-  private _arcEndStepSize: number = 0;
-  private _arcStep: number = 0;
-  private _arcStepTimeout: number | null = null;
-  private _arcAnimateCallback: (() => void) | null = null;
+  #arcEndPos: number = 0;
+  #animationId: number | null = null;
 
-  private _lastProgress: number = 0;
-  private _initialized: boolean = false;
+  #indeterminateRotation: number = 0;
+  #indeterminateAnimationId: number | null = null;
+
+  #lastProgress: number = 0;
+  #prefersReducedMotion: boolean = false;
 
   override connectedCallback(): void {
     super.connectedCallback();
-    const m = window.devicePixelRatio > 1 ? 2 : 1;
-    this._canvasSize = 18 * m;
-    this._arcPos = this._canvasSize / 2;
-    this._arcRadius = 7 * m;
-    this._lineWidth = 3 * m;
+    this.#prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._arcStepTimeout) {
-      clearTimeout(this._arcStepTimeout);
-      this._arcStepTimeout = null;
-    }
+    this.#cancelAnimations();
   }
 
   protected override firstUpdated(): void {
-    this._initCanvas(this._bgCanvas, this.bgColor);
-    this._initCanvas(this._staticCanvas, this.color);
-    this._initCanvas(this._hoverCanvas, this.color);
-    this._initCanvas(this._failCanvas, this.failColor);
-
-    // Draw full background arc
-    this._drawArc(this._bgCanvas.getContext('2d')!, 0, 1);
-    this._drawArc(this._failCanvas.getContext('2d')!, 0, 1);
-
-    this._initialized = true;
-    this._updateProgress();
+    this.#canvas = this.renderRoot.querySelector('canvas');
+    this.#updateCanvasSize();
+    this.#handleProgressChange();
   }
 
   protected override updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has('progress') && this._initialized) {
-      this._updateProgress();
+    if (changedProperties.has('progress')) {
+      this.#handleProgressChange();
+    } else if (
+      changedProperties.has('color') ||
+      changedProperties.has('bgColor') ||
+      changedProperties.has('failColor') ||
+      changedProperties.has('failed')
+    ) {
+      this.#draw();
     }
   }
 
-  private _initCanvas(canvas: HTMLCanvasElement, color: string): void {
-    canvas.width = this._canvasSize;
-    canvas.height = this._canvasSize;
-    const ctx = canvas.getContext('2d')!;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = this._lineWidth;
-    ctx.lineCap = 'round';
+  #updateCanvasSize(): void {
+    const computedStyle = getComputedStyle(this);
+    const size = parseFloat(computedStyle.getPropertyValue('--_size'));
+    const strokeWidth =
+      parseFloat(computedStyle.getPropertyValue('--_stroke-width'));
+
+    const m = window.devicePixelRatio > 1 ? 2 : 1;
+    this.#canvasSize = size * m;
+    this.#arcPos = this.#canvasSize / 2;
+    this.#lineWidth = strokeWidth * m;
+    this.#arcRadius = (size / 2 - strokeWidth / 2) * m;
+
+    if (this.#canvas) {
+      this.#canvas.width = this.#canvasSize;
+      this.#canvas.height = this.#canvasSize;
+    }
   }
 
-  private _updateProgress(): void {
-    if (this.progress === 0) {
-      this._showStatic = false;
-      this._showHover = false;
-    } else {
-      this._showStatic = true;
-      this._showHover = true;
-      if (this._lastProgress && this.progress > this._lastProgress) {
-        this._animateArc(0, this.progress / 100);
-      } else {
-        this._setArc(0, this.progress / 100);
+  #handleProgressChange(): void {
+    // Stop indeterminate animation if switching to determinate
+    if (this.progress >= 0 && this.#indeterminateAnimationId !== null) {
+      cancelAnimationFrame(this.#indeterminateAnimationId);
+      this.#indeterminateAnimationId = null;
+      this.#indeterminateRotation = 0;
+    }
+
+    // Start indeterminate animation
+    if (this.progress < 0) {
+      if (this.#indeterminateAnimationId === null) {
+        this.#startIndeterminateAnimation();
       }
+      return;
     }
-    this._lastProgress = this.progress;
+
+    const newEndPos = this.progress / 100;
+
+    // Auto-complete when reaching 100
+    if (this.autoComplete && this.progress >= 100 && this.#lastProgress < 100) {
+      this.#lastProgress = this.progress;
+      this.complete();
+      return;
+    }
+
+    if (
+      this.#lastProgress > 0 &&
+      this.progress > this.#lastProgress &&
+      !this.#prefersReducedMotion
+    ) {
+      this.#animateArc(newEndPos);
+    } else {
+      this.#arcEndPos = newEndPos;
+      this.#draw();
+    }
+
+    this.#lastProgress = this.progress;
   }
 
-  private _setArc(startPos: number, endPos: number): void {
-    this._arcStartPos = startPos;
-    this._arcEndPos = endPos;
+  #startIndeterminateAnimation(): void {
+    if (this.#prefersReducedMotion) {
+      this.#arcEndPos = 0.25;
+      this.#draw();
+      return;
+    }
 
-    this._drawArc(this._staticCanvas.getContext('2d')!, startPos, endPos);
-    this._drawArc(this._hoverCanvas.getContext('2d')!, startPos, endPos);
+    const animate = () => {
+      this.#indeterminateRotation += 0.05;
+      this.#arcEndPos = 0.15 + 0.1 * Math.sin(this.#indeterminateRotation * 3);
+      this.#draw();
+      this.#indeterminateAnimationId = requestAnimationFrame(animate);
+    };
+
+    this.#indeterminateAnimationId = requestAnimationFrame(animate);
   }
 
-  private _drawArc(
+  #draw(): void {
+    const ctx = this.#canvas?.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, this.#canvasSize, this.#canvasSize);
+
+    if (this.failed) {
+      this.#drawArc(ctx, this.failColor, 1, 0);
+      return;
+    }
+
+    // Background arc
+    this.#drawArc(ctx, this.bgColor, 1, 0);
+
+    // Progress arc
+    if (this.#arcEndPos > 0) {
+      const rotation =
+        this.progress < 0 ? this.#indeterminateRotation : -Math.PI / 2;
+      this.#drawArc(ctx, this.color, this.#arcEndPos, rotation);
+    }
+  }
+
+  #drawArc(
     ctx: CanvasRenderingContext2D,
-    startPos: number,
-    endPos: number
+    color: string,
+    endPos: number,
+    rotationOffset: number
   ): void {
-    ctx.clearRect(0, 0, this._canvasSize, this._canvasSize);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = this.#lineWidth;
+    ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.arc(
-      this._arcPos,
-      this._arcPos,
-      this._arcRadius,
-      (1.5 + startPos * 2) * Math.PI,
-      (1.5 + endPos * 2) * Math.PI
+      this.#arcPos,
+      this.#arcPos,
+      this.#arcRadius,
+      rotationOffset,
+      rotationOffset + endPos * 2 * Math.PI
     );
     ctx.stroke();
-    ctx.closePath();
   }
 
-  private _animateArc(
-    targetStartPos: number,
-    targetEndPos: number,
-    callback?: () => void
-  ): void {
-    if (this._arcStepTimeout) {
-      clearTimeout(this._arcStepTimeout);
+  #animateArc(targetEndPos: number, callback?: () => void): void {
+    this.#cancelAnimations();
+
+    const startTime = performance.now();
+    const duration = 500;
+    const initialEndPos = this.#arcEndPos;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+
+      this.#arcEndPos = initialEndPos + (targetEndPos - initialEndPos) * eased;
+      this.#draw();
+
+      if (t < 1) {
+        this.#animationId = requestAnimationFrame(animate);
+      } else {
+        this.#animationId = null;
+        callback?.();
+      }
+    };
+
+    this.#animationId = requestAnimationFrame(animate);
+  }
+
+  #cancelAnimations(): void {
+    if (this.#animationId !== null) {
+      cancelAnimationFrame(this.#animationId);
+      this.#animationId = null;
     }
-
-    this._arcStep = 0;
-    this._arcStartStepSize = (targetStartPos - this._arcStartPos) / 10;
-    this._arcEndStepSize = (targetEndPos - this._arcEndPos) / 10;
-    this._arcAnimateCallback = callback ?? null;
-    this._takeNextArcStep();
-  }
-
-  private _takeNextArcStep(): void {
-    this._setArc(
-      this._arcStartPos + this._arcStartStepSize,
-      this._arcEndPos + this._arcEndStepSize
-    );
-
-    this._arcStep++;
-
-    if (this._arcStep < 10) {
-      this._arcStepTimeout = window.setTimeout(
-        () => this._takeNextArcStep(),
-        50
-      );
-    } else if (this._arcAnimateCallback) {
-      this._arcAnimateCallback();
+    if (this.#indeterminateAnimationId !== null) {
+      cancelAnimationFrame(this.#indeterminateAnimationId);
+      this.#indeterminateAnimationId = null;
     }
   }
 
-  /** Animate progress to 100% and then fade out */
-  complete(): Promise<void> {
+  /** The canvas element, exposed for subclasses */
+  protected get canvas(): HTMLCanvasElement | null {
+    return this.#canvas;
+  }
+
+  /** Whether the user prefers reduced motion, exposed for subclasses */
+  protected get prefersReducedMotion(): boolean {
+    return this.#prefersReducedMotion;
+  }
+
+  /**
+   * Runs the complete animation. Override this method to customize the animation.
+   * The default animation fills to 100% and fades out.
+   */
+  protected runCompleteAnimation(): Promise<void> {
     return new Promise((resolve) => {
-      this._animateArc(0, 1, () => {
-        this._bgCanvas.style.opacity = '0';
-        this._bgCanvas.style.transition = 'opacity 0.4s';
+      if (this.#prefersReducedMotion) {
+        this.#arcEndPos = 1;
+        if (this.#canvas) {
+          this.#canvas.style.opacity = '0';
+        }
+        this.#draw();
+        resolve();
+        return;
+      }
 
-        this._animateArc(1, 1, () => {
-          resolve();
-        });
+      this.#animateArc(1, () => {
+        if (this.#canvas) {
+          this.#canvas.style.transition = 'opacity 0.4s';
+          this.#canvas.style.opacity = '0';
+        }
+        setTimeout(resolve, 400);
       });
     });
   }
 
+  /** Triggers the complete animation and dispatches the complete event */
+  async complete(): Promise<void> {
+    await this.runCompleteAnimation();
+    this.dispatchEvent(
+      new CustomEvent('complete', {bubbles: true, composed: true})
+    );
+  }
+
   protected override render() {
+    const ariaValueNow = this.progress >= 0 ? this.progress : undefined;
+
     return html`
       <canvas
-        id="bg"
-        class=${this.failed ? 'hidden' : ''}
-        part="bg"
+        part="canvas"
+        role="progressbar"
+        aria-valuenow=${ariaValueNow ?? ''}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-label=${this.label}
       ></canvas>
-      <canvas
-        id="static"
-        class=${!this._showStatic || this.failed ? 'hidden' : ''}
-        part="static"
-      ></canvas>
-      <canvas
-        id="hover"
-        class=${!this._showHover || this.failed ? 'hidden' : ''}
-        part="hover"
-      ></canvas>
-      <canvas
-        id="fail"
-        class=${this.failed ? '' : 'hidden'}
-        part="fail"
-      ></canvas>
+      <span class="visually-hidden">
+        ${this.failed
+          ? 'Failed'
+          : this.progress < 0
+            ? 'Loading'
+            : `${this.progress}%`}
+      </span>
     `;
   }
 }
