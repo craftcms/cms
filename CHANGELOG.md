@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.2 - 2026-01-28
 
 - Fixed an error that could occur when updating to Craft 4.17 on environments with `allowAdminChanges` disabled. ([#18332](https://github.com/craftcms/cms/issues/18332))
 
