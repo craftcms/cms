@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where image transforms with invalid `position` properties weren’t being handled properly. ([#18310](https://github.com/craftcms/cms/issues/18310))
+
 ## 4.17.0 - 2026-01-27
 
 ### Administration
