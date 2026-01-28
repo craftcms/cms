@@ -35,7 +35,6 @@ use craft\errors\VolumeException;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
-use craft\fieldlayoutelements\assets\AltField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -83,7 +82,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Validator;
 use Override;
 use Stringable;
 use Twig\Markup;
@@ -93,7 +91,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use yii\validators\RequiredValidator;
 
 use function CraftCms\Cms\t;
 
@@ -1378,24 +1375,6 @@ final class Asset extends Element
             $this->_volumeId = $id;
             $this->_volume = null;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(?Validator $validator = null): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
-            if ($altElement && $altElement->required) {
-                (new RequiredValidator)->validateAttribute($this, 'alt');
-            }
-        }
-
-        parent::afterValidate();
     }
 
     /**

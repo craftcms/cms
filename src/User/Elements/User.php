@@ -15,7 +15,6 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
 use craft\events\DefineValueEvent;
-use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
@@ -77,13 +76,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Validation\Validator;
 use Override;
 use Stringable;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\RequiredValidator;
 use yii\web\BadRequestHttpException;
 
 use function CraftCms\Cms\t;
@@ -1026,28 +1023,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         $labels['username'] = t('Username');
 
         return $labels;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(?Validator $validator = null): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
-            if ($fullNameElement && $fullNameElement->required) {
-                if (Cms::config()->showFirstAndLastNameFields) {
-                    new RequiredValidator(['attributes' => ['firstName', 'lastName']])->validateAttributes($this, ['firstName', 'lastName']);
-                } else {
-                    (new RequiredValidator)->validateAttribute($this, 'fullName');
-                }
-            }
-        }
-
-        parent::afterValidate();
     }
 
     /**

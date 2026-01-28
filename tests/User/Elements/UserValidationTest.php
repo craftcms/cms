@@ -2,11 +2,32 @@
 
 declare(strict_types=1);
 
+use craft\fieldlayoutelements\users\FullNameField;
+use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Validation\UserRules;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Hash;
+
+#[Ruleset(UserRules::class)]
+class TestUserWithFieldLayout extends User
+{
+    private $mockFieldLayout;
+
+    public function setMockFieldLayout($fieldLayout): void
+    {
+        $this->mockFieldLayout = $fieldLayout;
+    }
+
+    #[Override]
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return $this->mockFieldLayout;
+    }
+}
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -471,6 +492,149 @@ describe('Scenario validation', function () {
         'pending users return true' => [fn () => UserModel::factory()->pending()->createElement(), true],
         'inactive users return false' => [fn () => UserModel::factory()->createElement(['active' => false, 'pending' => false]), false],
     ]);
+});
+
+describe('Name field validation with field layout', function () {
+    test('firstName and lastName are required when showFirstAndLastNameFields is true and FullNameField is required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeFalse();
+        expect($user->errors()->has('firstName'))->toBeTrue();
+
+        expect($user->validate(['lastName']))->toBeFalse();
+        expect($user->errors()->has('lastName'))->toBeTrue();
+    });
+
+    test('firstName and lastName are not required when showFirstAndLastNameFields is true but FullNameField is not required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = false;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
+
+    test('fullName is required when showFirstAndLastNameFields is false and FullNameField is required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = false;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->fullName = '';
+
+        expect($user->validate(['fullName']))->toBeFalse();
+        expect($user->errors()->has('fullName'))->toBeTrue();
+    });
+
+    test('fullName is not required when showFirstAndLastNameFields is false but FullNameField is not required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = false;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = false;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->fullName = '';
+
+        expect($user->validate(['fullName']))->toBeTrue();
+    });
+
+    test('name field required validation does not apply outside SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_DEFAULT);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
+
+    test('handles missing FullNameField gracefully using null coalescing', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn(null);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
 });
 
 describe('Edge cases', function () {

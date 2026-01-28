@@ -9,15 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\base\Batchable;
-use craft\db\Query;
-use craft\db\QueryBatcher;
-use craft\db\Table;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseJob;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\DB;
 
 /**
  * FindAndReplace job
@@ -27,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  * @since 3.0.0
  * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\FindAndReplace} instead.
  */
-class FindAndReplace extends BaseBatchedJob
+class FindAndReplace extends BaseJob
 {
     /**
      * @var string|null The search text
@@ -39,76 +32,13 @@ class FindAndReplace extends BaseBatchedJob
      */
     public ?string $replace = null;
 
-    protected function loadData(): Batchable
-    {
-        $where = [
-            'or',
-            ['like', 'title', $this->find],
-        ];
-
-        if (Craft::$app->getDb()->getIsPgsql()) {
-            $where[] = ['like', 'CAST("content" AS TEXT)', $this->find];
-        } else {
-            $where[] = ['like', 'content', $this->find];
-        }
-
-        return new QueryBatcher(
-            (new Query())
-                ->select(['id', 'title', 'content'])
-                ->from(Table::ELEMENTS_SITES)
-                ->orderBy(['id' => SORT_ASC])
-                ->where($where),
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function execute($queue): void
     {
-        // for this job, we need to ensure the offset is zero for each batch;
-        // that's because the items from previous batch will no longer match the query when we start the second one,
-        // so setting offset at e.g. 100 after the first batch, would mean doing find and replace on the first 100 records,
-        // skipping next 100, running it on the 3rd set of records and so on
-        $this->itemOffset = 0;
-
-        parent::execute($queue);
-    }
-
-    protected function processItem(mixed $item): void
-    {
-        if (is_string($item['content'])) {
-            $item['content'] = Json::decode($item['content']);
-        }
-
-        $this->replaceRecursive($item['title']);
-        $this->replaceRecursive($item['content']);
-
-        DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES)
-            ->where('id', $item['id'])
-            ->update([
-                'title' => $item['title'],
-                'content' => $item['content'],
-            ]);
-    }
-
-    private function replaceRecursive(string|array|null &$value): void
-    {
-        if ($value === null) {
-            return;
-        }
-
-        if (is_string($value)) {
-            $value = str_replace($this->find, $this->replace, $value);
-
-            return;
-        }
-
-        foreach ($value as &$v) {
-            if (is_string($v) || is_array($v)) {
-                $this->replaceRecursive($v);
-            }
-        }
+        new \CraftCms\Cms\Search\Jobs\FindAndReplace(
+            $this->find,
+            $this->replace,
+            $this->description,
+        )->handle();
     }
 
     /**

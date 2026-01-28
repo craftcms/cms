@@ -9,22 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\base\Batchable;
 use craft\base\ElementInterface;
-use craft\db\QueryBatcher;
-use craft\errors\UnsupportedSiteException;
-use craft\helpers\ElementHelper;
-use craft\queue\BaseBatchedElementJob;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Structure\Enums\Mode;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Structures;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
+use craft\queue\BaseJob;
 
 /**
  * ApplyNewPropagationMethod loads all elements that match a given criteria,
@@ -36,7 +22,7 @@ use Throwable;
  * @since 3.4.8
  * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod} instead.
  */
-class ApplyNewPropagationMethod extends BaseBatchedElementJob
+class ApplyNewPropagationMethod extends BaseJob
 {
     /**
      * @var class-string<ElementInterface> The element type to use
@@ -49,182 +35,12 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
      */
     public ?array $criteria = null;
 
-    /** @internal */
-    public array $duplicatedElementIds = [];
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function loadData(): Batchable
+    public function execute($queue): void
     {
-        $query = $this->elementType::find()
-            ->site('*')
-            ->preferSites([Sites::getPrimarySite()->id])
-            ->unique()
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->orderBy(['elements.id' => SORT_ASC]);
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return new QueryBatcher($query);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function processItem(mixed $item): void
-    {
-        // Skip revisions
-        try {
-            if (ElementHelper::isRevision($item)) {
-                return;
-            }
-        } catch (Throwable) {
-            return;
-        }
-
-        $elementsService = Craft::$app->getElements();
-        $allSiteIds = Sites::getAllSiteIds()->all();
-
-        // See what sites the element should exist in going forward
-        /** @var ElementInterface $item */
-        $newSiteIds = array_map(
-            fn(array $siteInfo) => $siteInfo['siteId'],
-            ElementHelper::supportedSitesForElement($item),
-        );
-
-        // What other sites are there?
-        $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
-
-        if (empty($otherSiteIds)) {
-            $this->resaveItem($item);
-
-            return;
-        }
-
-        // Load the element in any sites that it's about to be deleted for
-        $query = $item::find()
-            ->id($item->id)
-            ->siteId($otherSiteIds)
-            ->structureId($item->structureId)
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->orderBy([])
-            ->indexBy('siteId');
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        $otherSiteElements = $query->all();
-
-        if (empty($otherSiteElements)) {
-            $this->resaveItem($item);
-
-            return;
-        }
-
-        // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
-        DB::table(Table::ELEMENTS_SITES)
-            ->whereIn('id', array_map(fn(ElementInterface $element) => $element->siteSettingsId, $otherSiteElements))
-            ->update(['uri' => null]);
-
-        // Duplicate those elements so their content can live on
-        while (!empty($otherSiteElements)) {
-            /** @var ElementInterface $otherSiteElement */
-            $otherSiteElement = array_pop($otherSiteElements);
-            try {
-                $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
-            } catch (UnsupportedSiteException $e) {
-                // Just log it and move along
-                Log::warning(sprintf(
-                    'Unable to duplicate “%s” to site %d: %s',
-                    get_class($otherSiteElement),
-                    $otherSiteElement->siteId,
-                    $e->getMessage()
-                ));
-                Craft::$app->getErrorHandler()->logException($e);
-
-                continue;
-            }
-
-            // Should we add the clone to the source element’s structure?
-            if (
-                $item->structureId &&
-                $item->root &&
-                !$newElement->root &&
-                $newElement->structureId == $item->structureId
-            ) {
-                // If this is a root level element, insert the duplicate after the source
-                if ($item->level == 1) {
-                    Structures::moveAfter($item->structureId, $newElement, $item, Mode::Insert);
-                } else {
-                    // Append the clone to the source's parent
-                    $parentId = $item::find()
-                        ->site('*')
-                        ->ancestorOf($item->id)
-                        ->ancestorDist(1)
-                        ->unique()
-                        ->status(null)
-                        ->drafts(null)
-                        ->provisionalDrafts(null)
-                        ->select(['elements.id'])
-                        ->value('id');
-
-                    if ($parentId !== null) {
-                        // If we've cloned the parent, use the clone's ID instead
-                        if (isset($this->duplicatedElementIds[$parentId][$newElement->siteId])) {
-                            $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];
-                        }
-
-                        Structures::append($item->structureId, $newElement, $parentId, Mode::Insert);
-                    } else {
-                        // Just append it to the root
-                        Structures::appendToRoot($item->structureId, $newElement, Mode::Insert);
-                    }
-                }
-            }
-
-            // This may support more than just the site it was saved in
-            $newElementSiteIds = array_map(
-                fn(array $siteInfo) => $siteInfo['siteId'],
-                ElementHelper::supportedSitesForElement($newElement),
-            );
-            foreach ($newElementSiteIds as $newElementSiteId) {
-                unset($otherSiteElements[$newElementSiteId]);
-                $this->duplicatedElementIds[$item->id][$newElementSiteId] = $newElement->id;
-            }
-        }
-
-        $this->resaveItem($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function defaultDescription(): ?string
-    {
-        return I18N::prep('Applying new propagation method to elements');
-    }
-
-    /**
-     * Resave item that's being processed.
-     */
-    private function resaveItem(mixed $item): void
-    {
-        // Now resave the original element
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->resaving = true;
-
-        try {
-            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        new \CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod(
+            $this->elementType,
+            $this->criteria,
+            $this->description,
+        )->handle();
     }
 }

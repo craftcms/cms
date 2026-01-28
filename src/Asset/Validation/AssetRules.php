@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Validation;
 
+use craft\fieldlayoutelements\assets\AltField;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -39,8 +40,18 @@ final class AssetRules extends ElementRules
         $rules['size'] = ['nullable', 'integer'];
         $rules['dateModified'] = ['nullable', 'date'];
         $rules['filename'] = ['required'];
+        $rules['newFilename'] = ['nullable'];
         $rules['kind'] = ['required', 'string', 'max:50'];
-        $rules['alt'] = ['nullable'];
+        $rules['alt'] = ['nullable', Rule::requiredIf(function () {
+            if (! $this->component->inScenarios(Asset::SCENARIO_LIVE)) {
+                return false;
+            }
+
+            return $this->component
+                ->getFieldLayout()
+                ?->getFirstVisibleElementByType(AltField::class, $this->component)
+                ->required ?? false;
+        })];
 
         $rules['newLocation'] = [
             'nullable',

@@ -561,6 +561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (queryParams.search) {
         this.startSearching();
         this.searchText = queryParams.search;
+        Craft.setQueryParam('search', queryParams.search);
       }
 
       // Respect the initial filters

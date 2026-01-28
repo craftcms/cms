@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Validation;
 
+use craft\fieldlayoutelements\users\FullNameField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -103,6 +104,18 @@ final class UserRules extends ElementRules
             'password' => ['nullable', 'string', 'max:255'],
             'lastLoginAttemptIp' => ['nullable', 'string', 'max:45'],
         ]);
+
+        $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
+            && ($this->component
+                ->getFieldLayout()
+                ->getFirstVisibleElementByType(FullNameField::class, $this->component)
+                ?->required ?? false));
+
+        if ($this->component->inScenarios(User::SCENARIO_LIVE)) {
+            $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
+            $rules['lastName'][] = Rule::requiredIf($requiredNameField(true));
+            $rules['fullName'][] = Rule::requiredIf($requiredNameField(false));
+        }
 
         if (Cms::isInstalled()) {
             if ($treatAsActive) {
