@@ -573,8 +573,8 @@ class ElementSources extends Component
                     $sortOptions[] = [
                         'label' => Craft::t('site', $field['name']),
                         'attribute' => "generatedField:{$field['uid']}",
-                        'defaultDir' => 'asc',
                         'orderBy' => $qb->jsonExtract('elements_sites.content', [$field['uid']]),
+                        'defaultDir' => 'asc',
                     ];
                 }
             }
