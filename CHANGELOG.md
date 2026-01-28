@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where image transforms with invalid `position` properties weren’t being handled properly. ([#18310](https://github.com/craftcms/cms/issues/18310))
+- Fixed a bug where image transforms weren’t being sorted by their translated names. ([#18315](https://github.com/craftcms/cms/issues/18315))
 
 ## 4.17.0 - 2026-01-27
 
