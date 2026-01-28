@@ -109,7 +109,7 @@ final class UserRules extends ElementRules
             && ($this->component
                 ->getFieldLayout()
                 ->getFirstVisibleElementByType(FullNameField::class, $this->component)
-                ?->required ?? false));
+                ->required ?? false));
 
         if ($this->component->inScenarios(User::SCENARIO_LIVE)) {
             $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
