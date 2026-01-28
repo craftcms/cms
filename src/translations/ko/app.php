@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => '이 사이트가 기본 사이트입니까',
     'Manage categories' => '카테고리 관리',
     'Manage element thumbnails' => '요소 썸네일 관리',
-    'Manage your Craft Console account' => '내 Craft Console 계정 관리',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '조작된 SVG 이미지 래스터화는 신뢰할 수 없습니다. \\craft\\services\\Images::loadImage() 참조',
     'Matrix' => '매트릭스',
     'Max Authors' => '최대 작성자',
