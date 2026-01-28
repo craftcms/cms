@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur when updating to Craft 4.17 on environments with `allowAdminChanges` disabled. ([#18332](https://github.com/craftcms/cms/issues/18332))
+
 ## 4.17.1 - 2026-01-27
 
 - Fixed a bug where image transforms with invalid `position` properties weren’t being handled properly. ([#18310](https://github.com/craftcms/cms/issues/18310))

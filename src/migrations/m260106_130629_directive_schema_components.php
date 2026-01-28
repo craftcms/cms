@@ -15,6 +15,12 @@ class m260106_130629_directive_schema_components extends Migration
      */
     public function safeUp(): bool
     {
+        // Don't make the same config changes twice
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion', true);
+        if (version_compare($schemaVersion, '4.17.0.2', '>=')) {
+            return true;
+        }
+
         $gql = Craft::$app->getGql();
         $schemas = $gql->getSchemas();
 
