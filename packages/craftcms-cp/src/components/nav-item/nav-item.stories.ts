@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import '../icon/icon.js';
-import '../navigation/navigation.js';
+import '../nav-list/nav-list.js';
 import '../button/button.js';
 import './nav-item.js';
 
