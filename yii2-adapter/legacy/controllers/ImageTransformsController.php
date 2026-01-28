@@ -13,7 +13,7 @@ use craft\models\ImageTransform;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Rules\ColorRule;
+use CraftCms\Cms\Validation\Rules\ColorRule;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Validation\Rules\LanguageRule;
 
 it('validates', function (?string $errorMessage, string $value, bool $onlySiteLangs = true) {
     I18N::shouldReceive('getSiteLocaleIds')

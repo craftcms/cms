@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Validation\Concerns;
+namespace CraftCms\Cms\Validation\Concerns;
 
 trait HasScenarios
 {

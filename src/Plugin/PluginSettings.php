@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Component\Concerns\ValidatableComponent;
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 
 abstract class PluginSettings implements Validatable
 {

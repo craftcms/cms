@@ -14,9 +14,9 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 

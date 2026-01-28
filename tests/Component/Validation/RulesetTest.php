@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
-use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
+use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
+use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\MessageBag;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Validation\Events;
 
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**

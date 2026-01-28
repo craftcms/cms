@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Shared\Rules;
+namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
 use CraftCms\Cms\Support\Facades\I18N;

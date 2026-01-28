@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
-use CraftCms\Cms\Component\Validation\Ruleset;
+use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
+use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Ruleset;
 
 function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatesWithScenarios
 {

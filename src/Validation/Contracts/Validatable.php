@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Validation\Contracts;
+namespace CraftCms\Cms\Validation\Contracts;
 
 use Illuminate\Contracts\Support\MessageBag;
 

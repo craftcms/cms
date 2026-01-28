@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Validation\Concerns;
+namespace CraftCms\Cms\Validation\Concerns;
 
 use BadMethodCallException;
-use CraftCms\Cms\Component\Validation\Attributes\Ruleset as RulesetAttribute;
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
-use CraftCms\Cms\Component\Validation\Ruleset;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Validation\Attributes\Ruleset as RulesetAttribute;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;

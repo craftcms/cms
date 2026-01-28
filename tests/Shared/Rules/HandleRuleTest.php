@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 
 beforeEach(function () {
     $this->reservedWords = ['bird', 'is', 'the', 'word'];

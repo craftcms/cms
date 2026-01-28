@@ -14,8 +14,8 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Shared\Rules\DisallowMb4;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Validation\Rules\DisallowMb4;
 use Illuminate\Validation\Rule;
 use Override;
 

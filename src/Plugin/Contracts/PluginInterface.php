@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use InvalidArgumentException;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Validation;
+namespace CraftCms\Cms\Validation;
 
-use CraftCms\Cms\Component\Validation\Contracts\ValidatesWithScenarios;
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
+use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
 
 /**
  * @template T of ValidatesWithScenarios

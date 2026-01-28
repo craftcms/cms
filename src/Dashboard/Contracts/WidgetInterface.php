@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Dashboard\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Validation\Contracts\Validatable;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.

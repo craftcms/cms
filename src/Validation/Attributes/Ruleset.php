@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Component\Validation\Attributes;
+namespace CraftCms\Cms\Validation\Attributes;
 
 use Attribute;
 
@@ -10,7 +10,7 @@ use Attribute;
 final class Ruleset
 {
     public function __construct(
-        /** @var class-string<\CraftCms\Cms\Component\Validation\Ruleset> */
+        /** @var class-string<\CraftCms\Cms\Validation\Ruleset> */
         public string $class,
     ) {}
 }
