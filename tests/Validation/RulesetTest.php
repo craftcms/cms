@@ -95,6 +95,11 @@ function createTestComponent(array $scenarios = []): ValidatesWithScenarios
         {
             return [];
         }
+
+        public function attributeLabels(): array
+        {
+            return [];
+        }
     };
 }
 

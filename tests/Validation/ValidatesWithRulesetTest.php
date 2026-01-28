@@ -57,6 +57,11 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
         {
             $this->afterValidateCalled = true;
         }
+
+        public function attributeLabels(): array
+        {
+            return [];
+        }
     };
 }
 
@@ -148,6 +153,11 @@ describe('getRuleset', function () {
             public function rulesClass(): string
             {
                 throw new BadMethodCallException('No ruleset configured');
+            }
+
+            public function attributeLabels(): array
+            {
+                return [];
             }
         };
 
