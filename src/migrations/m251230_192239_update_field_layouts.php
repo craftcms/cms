@@ -4,9 +4,8 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Json;
+use craft\records\FieldLayout as FieldLayoutRecord;
 
 /**
  * m251230_192239_update_field_layouts migration.
@@ -18,17 +17,17 @@ class m251230_192239_update_field_layouts extends Migration
      */
     public function safeUp(): bool
     {
-        $dbLayouts = (new Query())
-            ->select(['id', 'config'])
-            ->from(Table::FIELDLAYOUTS)
-            ->all();
+        /** @var FieldLayoutRecord[] $dbLayouts */
+        $dbLayouts = FieldLayoutRecord::find()->all();
 
         foreach ($dbLayouts as $layout) {
-            $config = is_string($layout['config']) ? Json::decode($layout['config']) : $layout['config'];
-            if ($config && $this->updateLayoutConfig($config)) {
-                $this->update(Table::FIELDLAYOUTS, [
-                    'config' => $config,
-                ], ['id' => $layout['id']]);
+            $config = $layout->config;
+            if (is_string($config)) {
+                $config = Json::decode($config);
+            }
+            if (!empty($config) && $this->updateLayoutConfig($config)) {
+                $layout->config = $config;
+                $layout->save(false, ['config']);
             }
         }
 
