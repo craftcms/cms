@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that occurred when upgrading to Craft 5.
+
 ## 5.9.1 - 2026-01-27
 
 - Fixed an error that could occur when updating to Craft 5.9. ([#18309](https://github.com/craftcms/cms/issues/18309))
