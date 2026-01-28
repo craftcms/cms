@@ -1009,7 +1009,6 @@ return [
     'Make this the primary site' => 'Legyen ez az elsődleges webhely',
     'Manage categories' => 'Kategóriák kezelése',
     'Manage element thumbnails' => 'Elem miniatűrjeinek a kezelése',
-    'Manage your Craft Console account' => 'A Craft Console-fiók kezelése',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'A módosított SVG-kép raszterezése megbízhatatlan. Lásd: \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Mátrix',
     'Max Authors' => 'Maximum szerzők',
