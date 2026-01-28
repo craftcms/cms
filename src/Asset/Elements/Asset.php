@@ -83,6 +83,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Validator;
 use Override;
 use Stringable;
 use Twig\Markup;
@@ -1383,7 +1384,7 @@ final class Asset extends Element
      * {@inheritdoc}
      */
     #[Override]
-    public function afterValidate(): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $scenario = $this->getScenario();
 

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use CraftCms\Cms\Validation\Ruleset;
 
-function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatesWithScenarios
+function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatableWithRuleset
 {
-    return new class($attributes, $rulesetClass) implements ValidatesWithScenarios
+    return new class($attributes, $rulesetClass) implements ValidatableWithRuleset
     {
         use ValidatesWithRuleset;
 
@@ -124,7 +124,7 @@ describe('getRuleset', function () {
     });
 
     test('throws when no ruleset configured', function () {
-        $component = new class implements ValidatesWithScenarios
+        $component = new class implements ValidatableWithRuleset
         {
             use ValidatesWithRuleset;
 

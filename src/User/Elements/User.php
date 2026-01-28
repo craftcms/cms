@@ -77,6 +77,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Validation\Validator;
 use Override;
 use Stringable;
 use Throwable;
@@ -1031,7 +1032,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * {@inheritdoc}
      */
     #[Override]
-    public function afterValidate(): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $scenario = $this->getScenario();
 

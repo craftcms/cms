@@ -8,14 +8,11 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
 trait Validates
 {
-    private ?Validator $validator = null;
-
-    private bool $validated = false;
+    use InteractsWithValidator;
 
     public static function getRules(): array
     {
@@ -27,46 +24,20 @@ trait Validates
         return [];
     }
 
-    protected function getValidator(): Validator
+    protected function getValidator(?array $attributeNames = null, bool $fresh = false): Validator
     {
-        return $this->validator ??= ValidatorFacade::make(
-            data: $this->getAttributes(),
-            rules: static::getRules(),
-            messages: static::getMessages(),
-            attributes: $this->attributeLabels(),
-        );
-    }
-
-    public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
-    {
-        if (! $this->beforeValidate()) {
-            return false;
+        if ($fresh || ! isset($this->validator)) {
+            $this->validator = ValidatorFacade::make([], []);
         }
 
-        $result = $this->getValidator()
-            ->after(fn ($validator) => $this->afterValidate($validator))
-            ->passes();
-
-        $this->validated = true;
-
-        return $result;
-    }
-
-    public function beforeValidate(): bool
-    {
-        return true;
-    }
-
-    public function afterValidate(Validator $validator): void {}
-
-    public function getFirstErrors(): array
-    {
-        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
-    }
-
-    public function errors(): MessageBag
-    {
-        return $this->getValidator()->errors();
+        return $this->validator
+            ->setData($this->getAttributes())
+            ->setCustomMessages(static::getMessages())
+            ->setAttributeNames($this->attributeLabels())
+            ->setRules(is_null($attributeNames)
+                ? static::getRules()
+                : Arr::only(static::getRules(), $attributeNames)
+            );
     }
 
     public function setAttributes(array $values, bool $safeOnly = true): void

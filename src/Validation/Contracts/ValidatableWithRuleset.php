@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Contracts;
 
-interface ValidatesWithScenarios extends Validatable
+use CraftCms\Cms\Validation\Ruleset;
+
+interface ValidatableWithRuleset extends Validatable
 {
+    /**
+     * Returns the validation ruleset.
+     */
+    public function getRuleset(): Ruleset;
+
     /**
      * Sets the current validation scenario.
      *

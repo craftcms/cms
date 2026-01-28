@@ -195,7 +195,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $labels = [];
         $values = [];

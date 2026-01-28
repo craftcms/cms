@@ -10,7 +10,6 @@ use CraftCms\Cms\Validation\Attributes\Ruleset as RulesetAttribute;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 use ReflectionClass;
 
@@ -20,10 +19,9 @@ use ReflectionClass;
 trait ValidatesWithRuleset
 {
     use HasScenarios;
+    use InteractsWithValidator;
 
     private ?Ruleset $ruleset = null;
-
-    private ?Validator $validator = null;
 
     public function getRuleset(): Ruleset
     {
@@ -62,49 +60,5 @@ trait ValidatesWithRuleset
                 ? $ruleset->rules()
                 : Arr::only($ruleset->rules(), $attributeNames)
             );
-    }
-
-    public function errors(): MessageBag
-    {
-        return $this->getValidator()->errors();
-    }
-
-    /**
-     * Validate the component.
-     *
-     * @param  array<string>|null  $attributeNames  Attributes to validate (null for all)
-     * @param  bool  $clearErrors  Whether to clear existing errors first
-     */
-    public function validate($attributeNames = null, $clearErrors = true): bool
-    {
-        $previousErrors = ! $clearErrors && isset($this->validator)
-            ? $this->errors()->getMessages()
-            : [];
-
-        $this->getRuleset()->prepareForValidation($attributeNames);
-
-        $result = $this->getValidator($attributeNames, fresh: $clearErrors)
-            /** @phpstan-ignore-next-line */
-            ->after(fn ($validator) => $this->afterValidate($validator))
-            ->passes();
-
-        $this->errors()->merge($previousErrors);
-
-        return $result && $this->errors()->isEmpty();
-    }
-
-    public function beforeValidate(): bool
-    {
-        return true;
-    }
-
-    public function afterValidate(/* Validator $validator */): void {}
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getFirstErrors(): array
-    {
-        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
     }
 }

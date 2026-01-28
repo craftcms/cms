@@ -368,7 +368,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         foreach ($this->siteSettings as $uid => &$siteSettings) {
             unset($siteSettings['errors']);
@@ -381,7 +381,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                     $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
 
-                    $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
+                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
                 }
             }
 

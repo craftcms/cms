@@ -136,13 +136,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $validator->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
+            $validator?->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
         }
     }
 

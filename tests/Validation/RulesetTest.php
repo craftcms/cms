@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\MessageBag;
 
 function createTestRuleset(
-    ValidatesWithScenarios $component,
+    ValidatableWithRuleset $component,
     array $rules = [],
     array $messages = [],
 ): Ruleset {
@@ -21,7 +21,7 @@ function createTestRuleset(
         public ?array $prepareForValidationAttributes = null;
 
         public function __construct(
-            ValidatesWithScenarios $component,
+            ValidatableWithRuleset $component,
             private readonly array $testRules,
             private readonly array $testMessages,
         ) {
@@ -46,9 +46,9 @@ function createTestRuleset(
     };
 }
 
-function createTestComponent(array $scenarios = []): ValidatesWithScenarios
+function createTestComponent(array $scenarios = []): ValidatableWithRuleset
 {
-    return new class($scenarios) implements ValidatesWithScenarios
+    return new class($scenarios) implements ValidatableWithRuleset
     {
         use ValidatesWithRuleset;
 

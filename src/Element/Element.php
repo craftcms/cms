@@ -101,7 +101,7 @@ use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use DateInterval;
 use DateTime;
 use Deprecated;
@@ -111,6 +111,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use ReflectionClass;
 use Stringable;
@@ -177,7 +178,7 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface, ValidatesWithScenarios
+abstract class Element extends Component implements ElementInterface, ValidatableWithRuleset
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -2992,7 +2993,7 @@ abstract class Element extends Component implements ElementInterface, ValidatesW
      * {@inheritdoc}
      */
     #[Override]
-    public function afterValidate(): void
+    public function afterValidate(?LaravelValidator $validator = null): void
     {
         if (
             Cms::isInstalled() &&

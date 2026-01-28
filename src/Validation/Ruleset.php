@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation;
 
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
-use CraftCms\Cms\Validation\Contracts\ValidatesWithScenarios;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 
 /**
- * @template T of ValidatesWithScenarios
+ * @template T of ValidatableWithRuleset
  */
 abstract class Ruleset
 {
     public function __construct(
         /** @var T */
-        protected readonly ValidatesWithScenarios $component,
+        protected readonly ValidatableWithRuleset $component,
     ) {}
 
     /**
