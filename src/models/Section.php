@@ -207,6 +207,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [
             ['maxLevels', 'maxAuthors'],
             'number',

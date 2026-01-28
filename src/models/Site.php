@@ -263,6 +263,7 @@ class Site extends Model implements Chippable
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
