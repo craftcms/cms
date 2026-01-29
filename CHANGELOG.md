@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.4 - 2026-01-29
 
 - Added `craft\models\FieldLayout::getEditableCustomFieldElements()`.
 - Fixed a bug where `{% case %}` tags with three or more values within `{% switch %}` tags weren’t working properly. ([#18334](https://github.com/craftcms/cms/issues/18334))
