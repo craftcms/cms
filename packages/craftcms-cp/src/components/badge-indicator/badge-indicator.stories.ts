@@ -18,24 +18,29 @@ export default meta;
 type Story = StoryObj<any>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const WithNumber: Story = {
-  name: 'With Number',
+export const DotBadge: Story = {
+  name: 'Dot Badge',
   args: {
-    number: 5,
-    itemType: 'updates'
+    srText: 'Has Notifications'
+  },
+  argTypes: {
+    number: {
+      control: { type: null }
+    },
   },
   render: (args) => html`
-    <craft-badge-indicator .number="${args.number}" .itemType="${args.itemType}"></craft-badge-indicator>
+    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
   `,
 }
 
-export const WithoutNumber: Story = {
-  name: 'Without Number',
+export const NumberedBadge: Story = {
+  name: 'Numbered Badge',
   args: {
     number: 5,
-    itemType: 'updates'
+    srText: 'updates'
   },
   render: (args) => html`
-    <craft-badge-indicator .itemType="${args.itemType}"></craft-badge-indicator>
+    <craft-badge-indicator .number="${args.number}" .srText="${args.srText}"></craft-badge-indicator>
   `,
 }
+

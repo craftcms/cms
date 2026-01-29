@@ -1,4 +1,4 @@
-import {html, css, LitElement} from 'lit';
+import {html, css, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './badge-indicator.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -16,8 +16,16 @@ export default class CraftBadgeIndicator extends LitElement {
   /** Number of notifications */
   @property() number: number | null = null;
 
-  /** Type of item being indicated (for screen reader users). Should take singular/plural into account. */
-  @property() itemType: string | null = null;
+  /** Accessible text for screen reader users */
+  @property() srText: string | null = null;
+
+  @property()
+  override id: string;
+
+  constructor() {
+    super();
+    this.id = this.id || Math.floor(Math.random() * 1000000000).toString();
+  }
 
   private truncatedNumber() {
     if (!this.number) {
@@ -31,13 +39,24 @@ export default class CraftBadgeIndicator extends LitElement {
     }
   }
   override render() {
+    const hasNumber = this.number !== null;
+    const badgeId = this.id ?? nothing;
+    const labelId = badgeId ? `${badgeId}-label` : nothing;
+
     return html`
-      <div class="${classMap({
-        'badge-indicator': true,
-        'badge-indicator--with-number': this.number !== null,
-      })}">
-        ${this.truncatedNumber()}
-        <sl-visually-hidden> ${this.itemType}</sl-visually-hidden>
+      <div 
+        id=${badgeId}
+        class="${classMap({
+          'badge-indicator': true,
+          'badge-indicator--with-number': this.number !== null,
+        })}"
+        role="${!hasNumber ? 'img' : nothing }"
+        aria-labelledby="${!hasNumber ? labelId : nothing }"
+      >
+        ${hasNumber
+          ? html`<span class="number">${this.truncatedNumber()}</span>`
+          : nothing}
+        <sl-visually-hidden id=${labelId}> ${this.srText}</sl-visually-hidden>
       </div>
     `;
   }

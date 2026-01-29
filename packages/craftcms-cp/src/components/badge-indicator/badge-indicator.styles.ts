@@ -13,10 +13,14 @@ export default css`
   }
   
   .badge-indicator--with-number {
+    padding: 8px;
+    
+  }
+  
+  .number {
     font-size: var(--c-text-xs);
     font-weight: 600;
     line-height: 1;
-    height: calc(28rem / 16);
-    width: calc(28rem / 16);
+    display: inline-block;
   }
 `;
