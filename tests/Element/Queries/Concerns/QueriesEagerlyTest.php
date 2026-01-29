@@ -3,7 +3,6 @@
 use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
@@ -11,7 +10,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -24,10 +22,7 @@ beforeEach(function () {
         'type' => Entries::class,
     ]);
 
-    $fieldLayout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => FieldElementRulesHelper::fieldLayoutConfig($field),
-    ]);
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
 
     $section = Section::factory()->create([
         'handle' => 'blog',

@@ -2,29 +2,23 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('link field validates max length', function () {
-    [$invalidEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'shortLink',
-        fieldType: Link::class,
-        fieldSettings: ['types' => ['url'], 'maxLength' => 5],
-        value: new LinkData('https://example.com', new UrlType),
-    );
-    $invalidEntry->validate();
+    $invalidResult = EntryModel::factory()
+        ->withField('shortLink', Link::class, ['types' => ['url'], 'maxLength' => 5], value: new LinkData('https://example.com', new UrlType))
+        ->createElementWithFields();
+    $invalidResult->element->validate();
 
-    expect($invalidEntry->errors()->has('shortLink'))->toBeTrue();
+    expect($invalidResult->element->errors()->has('shortLink'))->toBeTrue();
 
-    [$validEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'normalLink',
-        fieldType: Link::class,
-        fieldSettings: ['types' => ['url'], 'maxLength' => 255],
-        value: new LinkData('https://example.com', new UrlType),
-    );
-    $validEntry->validate();
+    $validResult = EntryModel::factory()
+        ->withField('normalLink', Link::class, ['types' => ['url'], 'maxLength' => 255], value: new LinkData('https://example.com', new UrlType))
+        ->createElementWithFields();
+    $validResult->element->validate();
 
-    expect($validEntry->errors()->has('normalLink'))->toBeFalse();
+    expect($validResult->element->errors()->has('normalLink'))->toBeFalse();
 });

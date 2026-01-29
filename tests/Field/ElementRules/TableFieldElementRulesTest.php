@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Table;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('table field validates column values', function () {
     $settings = [
@@ -16,23 +16,17 @@ test('table field validates column values', function () {
         ],
     ];
 
-    [$invalidEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'tableField',
-        fieldType: Table::class,
-        fieldSettings: $settings,
-        value: [['col1' => 'invalid']],
-    );
-    $invalidEntry->validate();
+    $invalidResult = EntryModel::factory()
+        ->withField('tableField', Table::class, $settings, value: [['col1' => 'invalid']])
+        ->createElementWithFields();
+    $invalidResult->element->validate();
 
-    expect($invalidEntry->errors()->has('tableField'))->toBeTrue();
+    expect($invalidResult->element->errors()->has('tableField'))->toBeTrue();
 
-    [$validEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'tableFieldValid',
-        fieldType: Table::class,
-        fieldSettings: $settings,
-        value: [['col1' => 'dev@example.com']],
-    );
-    $validEntry->validate();
+    $validResult = EntryModel::factory()
+        ->withField('tableFieldValid', Table::class, $settings, value: [['col1' => 'dev@example.com']])
+        ->createElementWithFields();
+    $validResult->element->validate();
 
-    expect($validEntry->errors()->has('tableFieldValid'))->toBeFalse();
+    expect($validResult->element->errors()->has('tableFieldValid'))->toBeFalse();
 });

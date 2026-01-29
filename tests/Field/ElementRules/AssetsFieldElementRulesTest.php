@@ -5,8 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('assets field validates allowed file kinds', function () {
     $image = AssetModel::factory()->createElement([
@@ -18,25 +18,19 @@ test('assets field validates allowed file kinds', function () {
         'kind' => 'pdf',
     ]);
 
-    [$validEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'allowedAssets',
-        fieldType: Assets::class,
-        fieldSettings: ['restrictFiles' => true, 'allowedKinds' => ['image']],
-        value: AssetElement::find()->id($image->id),
-        scenario: Element::SCENARIO_LIVE,
-    );
-    $validEntry->validate();
+    $validResult = EntryModel::factory()
+        ->withField('allowedAssets', Assets::class, ['restrictFiles' => true, 'allowedKinds' => ['image']], value: AssetElement::find()->id($image->id))
+        ->withScenario(Element::SCENARIO_LIVE)
+        ->createElementWithFields();
+    $validResult->element->validate();
 
-    expect($validEntry->errors()->has('allowedAssets'))->toBeFalse();
+    expect($validResult->element->errors()->has('allowedAssets'))->toBeFalse();
 
-    [$invalidEntry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'blockedAssets',
-        fieldType: Assets::class,
-        fieldSettings: ['restrictFiles' => true, 'allowedKinds' => ['image']],
-        value: AssetElement::find()->id($pdf->id),
-        scenario: Element::SCENARIO_LIVE,
-    );
-    $invalidEntry->validate();
+    $invalidResult = EntryModel::factory()
+        ->withField('blockedAssets', Assets::class, ['restrictFiles' => true, 'allowedKinds' => ['image']], value: AssetElement::find()->id($pdf->id))
+        ->withScenario(Element::SCENARIO_LIVE)
+        ->createElementWithFields();
+    $invalidResult->element->validate();
 
-    expect($invalidEntry->errors()->has('blockedAssets'))->toBeTrue();
+    expect($invalidResult->element->errors()->has('blockedAssets'))->toBeTrue();
 });

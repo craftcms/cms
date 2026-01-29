@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Field\Date;
@@ -12,19 +13,15 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Time;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('valid scalar field values pass element validation', function (string $handle, string $fieldType, array $settings, mixed $value) {
-    [$entry] = FieldElementRulesHelper::createEntryWithField(
-        handle: $handle,
-        fieldType: $fieldType,
-        fieldSettings: $settings,
-        value: $value,
-    );
+    $result = EntryModel::factory()
+        ->withField($handle, $fieldType, $settings, value: $value)
+        ->createElementWithFields();
 
-    $entry->validate();
+    $result->element->validate();
 
-    expect($entry->errors()->has($handle))->toBeFalse();
+    expect($result->element->errors()->has($handle))->toBeFalse();
 })->with([
     ['emailField', Email::class, [], 'dev@example.com'],
     ['numberField', Number::class, ['min' => 5, 'max' => 10], 7],
@@ -38,16 +35,13 @@ test('valid scalar field values pass element validation', function (string $hand
 ]);
 
 test('invalid scalar field values add element errors', function (string $handle, string $fieldType, array $settings, mixed $value) {
-    [$entry] = FieldElementRulesHelper::createEntryWithField(
-        handle: $handle,
-        fieldType: $fieldType,
-        fieldSettings: $settings,
-        value: $value,
-    );
+    $result = EntryModel::factory()
+        ->withField($handle, $fieldType, $settings, value: $value)
+        ->createElementWithFields();
 
-    $entry->validate();
+    $result->element->validate();
 
-    expect($entry->errors()->has($handle))->toBeTrue();
+    expect($result->element->errors()->has($handle))->toBeTrue();
 })->with([
     ['emailField', Email::class, [], 'not-an-email'],
     ['numberField', Number::class, ['min' => 5, 'max' => 10], 2],

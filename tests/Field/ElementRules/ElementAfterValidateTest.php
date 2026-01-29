@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use craft\behaviors\CustomFieldBehavior;
+use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 
 test('afterValidate merges field errors onto the element', function () {
@@ -23,7 +24,20 @@ test('afterValidate merges field errors onto the element', function () {
 
     $layout = Fields::createLayout([
         'type' => EntryElement::class,
-        ...FieldElementRulesHelper::fieldLayoutConfig($field),
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => CustomField::class,
+                        'fieldUid' => $field->uid,
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ],
     ]);
 
     $entry = new TestEntryWithAfterValidate;

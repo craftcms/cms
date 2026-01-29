@@ -1,13 +1,11 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -20,10 +18,7 @@ it('can query custom fields', function () {
         'type' => PlainText::class,
     ]);
 
-    $fieldLayout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => FieldElementRulesHelper::fieldLayoutConfig($field),
-    ]);
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
 
     $entryModel = EntryModel::factory()->create();
     $entryModel->element->update([

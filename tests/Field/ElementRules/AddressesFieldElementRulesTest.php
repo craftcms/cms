@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Addresses;
-use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('addresses field reports nested address validation errors', function () {
     $value = [
@@ -14,15 +14,12 @@ test('addresses field reports nested address validation errors', function () {
         ],
     ];
 
-    [$entry] = FieldElementRulesHelper::createEntryWithField(
-        handle: 'addressesField',
-        fieldType: Addresses::class,
-        fieldSettings: [],
-        value: $value,
-        scenario: Element::SCENARIO_LIVE,
-    );
+    $result = EntryModel::factory()
+        ->withField('addressesField', Addresses::class, [], value: $value)
+        ->withScenario(Element::SCENARIO_LIVE)
+        ->createElementWithFields();
 
-    $entry->validate();
+    $result->element->validate();
 
-    expect($entry->errors()->has('addressesField'))->toBeTrue();
+    expect($result->element->errors()->has('addressesField'))->toBeTrue();
 });
