@@ -1,7 +1,6 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -12,7 +11,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -27,21 +26,7 @@ beforeEach(function () {
 
     $fieldLayout = FieldLayout::create([
         'type' => Entry::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Tab 1',
-                    'elements' => [
-                        [
-                            'uid' => Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $field->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
+        'config' => FieldElementRulesHelper::fieldLayoutConfig($field),
     ]);
 
     $section = Section::factory()->create([

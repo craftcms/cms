@@ -31,7 +31,7 @@ final class EntryRules extends ElementRules
                 $fail(t('`sectionId` and `fieldId` cannot both be set on an entry.'));
             }
         }];
-        $rules['ownerId'] = ['nullable', 'integer', 'required_with:fieldId'];
+        $rules['ownerId'] = ['nullable', 'integer'];
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
         $rules['sortOrder'] = ['nullable', 'integer'];
         $rules['placeInStructure'] = ['bool'];

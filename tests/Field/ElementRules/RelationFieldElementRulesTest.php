@@ -7,7 +7,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('relation fields enforce min relations', function () {
     [$entry, $field] = FieldElementRulesHelper::createEntryWithField(

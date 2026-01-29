@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Support;
+namespace CraftCms\Cms\Tests\TestClasses;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\CustomField;
@@ -17,6 +17,9 @@ use CraftCms\Cms\Support\Str;
 
 final class FieldElementRulesHelper
 {
+    /**
+     * @return array{0: EntryElement, 1: Field}
+     */
     public static function createEntryWithField(
         string $handle,
         string $fieldType,

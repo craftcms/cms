@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 
 test('afterValidate merges field errors onto the element', function () {

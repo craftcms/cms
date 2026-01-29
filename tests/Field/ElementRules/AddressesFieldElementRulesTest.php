@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Addresses;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('addresses field reports nested address validation errors', function () {
     $value = [

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\Table;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('table field validates column values', function () {
     $settings = [

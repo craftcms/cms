@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('link field validates max length', function () {
     [$invalidEntry] = FieldElementRulesHelper::createEntryWithField(

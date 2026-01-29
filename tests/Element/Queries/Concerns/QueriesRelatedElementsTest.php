@@ -1,13 +1,13 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -22,21 +22,7 @@ test('related elements', function () {
 
     $fieldLayout = FieldLayout::create([
         'type' => Entry::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => \Illuminate\Support\Str::uuid()->toString(),
-                    'name' => 'Tab 1',
-                    'elements' => [
-                        [
-                            'uid' => \Illuminate\Support\Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $field->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
+        'config' => FieldElementRulesHelper::fieldLayoutConfig($field),
     ]);
 
     $entries = EntryModel::factory(3)->create();

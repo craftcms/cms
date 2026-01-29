@@ -6,7 +6,7 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('assets field validates allowed file kinds', function () {
     $image = AssetModel::factory()->createElement([

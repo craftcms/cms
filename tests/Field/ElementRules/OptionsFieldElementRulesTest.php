@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\RadioButtons;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('option fields accept valid options', function (string $handle, string $fieldType, mixed $value) {
     [$entry] = FieldElementRulesHelper::createEntryWithField(

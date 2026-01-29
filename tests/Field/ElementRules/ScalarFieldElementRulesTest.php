@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Time;
-use CraftCms\Cms\Tests\Support\FieldElementRulesHelper;
+use CraftCms\Cms\Tests\TestClasses\FieldElementRulesHelper;
 
 test('valid scalar field values pass element validation', function (string $handle, string $fieldType, array $settings, mixed $value) {
     [$entry] = FieldElementRulesHelper::createEntryWithField(
@@ -29,7 +29,7 @@ test('valid scalar field values pass element validation', function (string $hand
     ['emailField', Email::class, [], 'dev@example.com'],
     ['numberField', Number::class, ['min' => 5, 'max' => 10], 7],
     ['rangeField', Range::class, ['min' => 1, 'max' => 5], 3],
-    ['dateField', Date::class, ['min' => '2020-01-01'], new \DateTime('2020-01-02')],
+    ['dateField', Date::class, ['min' => '2020-01-01'], new DateTime('2020-01-02')],
     ['timeField', Time::class, ['min' => '09:00', 'max' => '17:00'], '10:00'],
     ['moneyField', Money::class, ['currency' => 'USD', 'min' => 10000, 'max' => 50000], ['currency' => 'USD', 'value' => 300]],
     ['jsonField', Json::class, [], new JsonData(['foo' => 'bar'])],
@@ -52,7 +52,7 @@ test('invalid scalar field values add element errors', function (string $handle,
     ['emailField', Email::class, [], 'not-an-email'],
     ['numberField', Number::class, ['min' => 5, 'max' => 10], 2],
     ['rangeField', Range::class, ['min' => 1, 'max' => 5], 7],
-    ['dateField', Date::class, ['min' => '2020-01-02'], new \DateTime('2020-01-01')],
+    ['dateField', Date::class, ['min' => '2020-01-02'], new DateTime('2020-01-01')],
     ['timeField', Time::class, ['min' => '09:00', 'max' => '17:00'], '08:00'],
     ['moneyField', Money::class, ['currency' => 'USD', 'min' => 10000, 'max' => 50000], ['currency' => 'USD', 'value' => 50]],
     ['jsonField', Json::class, [], new JsonData(['__ERROR__' => 'Invalid JSON'])],
