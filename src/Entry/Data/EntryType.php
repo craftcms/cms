@@ -54,7 +54,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
         public ?string $titleFormat = null,
-        public bool $allowLineBreaksInTitles = false,
+        public ?bool $allowLineBreaksInTitles = false,
         public ?bool $showSlugField = true,
         public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
         public ?string $slugTranslationKeyFormat = null,
