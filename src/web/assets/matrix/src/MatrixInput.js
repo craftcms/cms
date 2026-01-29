@@ -613,6 +613,7 @@
     actionDisclosure: null,
     formObserver: null,
     visibleLayoutElements: null,
+    staticLayoutElements: null,
     cancelToken: null,
     ignoreFailedRequest: false,
 
@@ -722,6 +723,9 @@
 
       this.visibleLayoutElements = this.$container.data(
         'visible-layout-elements'
+      );
+      this.staticLayoutElements = this.$container.data(
+        'static-layout-elements'
       );
       this.formObserver = new Craft.FormObserver(this.$container, (data) => {
         this.updateFieldLayout(data);
@@ -1149,6 +1153,7 @@
         const param = (n) => Craft.namespaceInputName(n, baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
+          [param('staticLayoutElements')]: this.staticLayoutElements,
           [param('elementType')]: 'craft\\elements\\Entry',
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
@@ -1213,6 +1218,7 @@
       // Update the visible elements
       let $allTabContainers = $();
       const visibleLayoutElements = {};
+      const staticLayoutElements = {};
       let changedElements = false;
 
       for (const tabInfo of response.data.missingElements) {
@@ -1241,6 +1247,13 @@
               visibleLayoutElements[tabInfo.uid] = [];
             }
             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (elementInfo.static) {
+              if (!staticLayoutElements[tabInfo.uid]) {
+                staticLayoutElements[tabInfo.uid] = [];
+              }
+              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+            }
 
             if (typeof elementInfo.html === 'string') {
               const $oldElement = $tabContainer.children(
@@ -1298,6 +1311,7 @@
       }
 
       this.visibleLayoutElements = visibleLayoutElements;
+      this.staticLayoutElements = staticLayoutElements;
 
       // Update the tabs
       if (this.tabManager) {

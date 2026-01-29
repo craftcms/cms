@@ -1266,8 +1266,10 @@ class ExtensionTest extends TestCase
             'foo' => 'foo',
             'bar' => 'bar or baz',
             'baz' => 'bar or baz',
-            'qux' => 'qux or quux',
-            'quux' => 'qux or quux',
+            'qux' => 'qux or quux or corge',
+            'quux' => 'qux or quux or corge',
+            'corge' => 'qux or quux or corge',
+            'xyz' => 'default',
         ];
 
         $template = <<<EOL
@@ -1276,8 +1278,10 @@ class ExtensionTest extends TestCase
     foo
   {%- case 'bar' or 'baz' -%}
     bar or baz
-  {%- case 'qux' or 'quux' -%}
-    qux or quux
+  {%- case 'qux' or 'quux' or 'corge' -%}
+    qux or quux or corge
+  {%- default -%}
+    default
 {%- endswitch -%}
 EOL;
 
