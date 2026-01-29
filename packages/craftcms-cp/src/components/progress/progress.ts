@@ -7,7 +7,7 @@ import {property} from 'lit/decorators.js';
  *
  * @summary Displays progress in radial form
  *
- * @fires complete - Fired when the completion animation finishes
+ * @event complete - Fired when the completion animation finishes
  *
  * @csspart canvas - The canvas element
  *
@@ -119,8 +119,9 @@ export default class CraftProgress extends LitElement {
   #updateCanvasSize(): void {
     const computedStyle = getComputedStyle(this);
     const size = parseFloat(computedStyle.getPropertyValue('--_size'));
-    const strokeWidth =
-      parseFloat(computedStyle.getPropertyValue('--_stroke-width'));
+    const strokeWidth = parseFloat(
+      computedStyle.getPropertyValue('--_stroke-width')
+    );
 
     const m = window.devicePixelRatio > 1 ? 2 : 1;
     this.#canvasSize = size * m;

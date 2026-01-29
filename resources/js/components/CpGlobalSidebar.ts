@@ -10,7 +10,8 @@ class CpGlobalSidebar extends LitElement {
   trigger!: HTMLElement | null;
 
   @property({reflect: true})
-  state: 'expanded' | 'collapsed' = Craft.getCookie('sidebar') ?? 'expanded';
+  state: 'expanded' | 'collapsed' | string =
+    Craft.getCookie('sidebar') ?? 'expanded';
 
   override connectedCallback() {
     super.connectedCallback();
