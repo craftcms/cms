@@ -625,6 +625,7 @@ JS, [
 
         $rules = [
             $attribute => array_filter([
+                'integer',
                 $this->minRelations ? 'min:'.$this->minRelations : null,
                 $this->maxRelations ? 'max:'.$this->maxRelations : null,
             ]),

@@ -659,7 +659,7 @@ JS, [
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
@@ -680,7 +680,13 @@ JS, [
         }
 
         if (! $value->validate()) {
-            $element->addModelErrors($value, $this->handle);
+            // Merge errors from the ContentBlockElement onto the parent element
+            // We need to use the Laravel MessageBag directly since Element uses Laravel validation
+            foreach ($value->errors()->getMessages() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $element->errors()->add("$this->handle.$attribute", $error);
+                }
+            }
 
             if ($value->id) {
                 $element->addInvalidNestedElementIds([$value->id]);
