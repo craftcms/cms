@@ -6,8 +6,11 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 

@@ -633,10 +633,10 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     }
 
     /**
-     * Returns whether the element’s `title` attribute should be validated
+     * Returns whether the element's `title` attribute should be validated
      */
     #[Override]
-    protected function shouldValidateTitle(): bool
+    public function shouldValidateTitle(): bool
     {
         $titleField = $this->getFieldLayout()->getField('title');
 

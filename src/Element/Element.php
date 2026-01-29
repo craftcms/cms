@@ -2979,11 +2979,11 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether the element’s `title` attribute should be validated
+     * Returns whether the element's `title` attribute should be validated
      *
      * @since 5.0.0
      */
-    protected function shouldValidateTitle(): bool
+    public function shouldValidateTitle(): bool
     {
         return static::hasTitles();
     }

@@ -1106,7 +1106,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
      * {@inheritdoc}
      */
     #[Override]
-    protected function shouldValidateTitle(): bool
+    public function shouldValidateTitle(): bool
     {
         $entryType = $this->getType();
         if (! $entryType->hasTitleField) {

@@ -20,6 +20,7 @@ use Illuminate\Validation\Rule;
 use Override;
 use Throwable;
 
+use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
 /**
@@ -90,10 +91,15 @@ abstract class ElementRules extends Ruleset
 
     private function addTitleRules(array $rules): array
     {
-        if ($this->component->hasTitles() && $this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
-            array_unshift($rules['title'], 'required');
-        } else {
-            array_unshift($rules['title'], 'nullable');
+        try {
+            if ($this->component->inScenarios(Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE) && $this->component->shouldValidateTitle()) {
+                array_unshift($rules['title'], 'required');
+            } else {
+                array_unshift($rules['title'], 'nullable');
+            }
+        } catch (InvalidConfigException) {
+            // Related to sectionId, fieldId and ownerId being missing
+            // Which will be caught by the other validation rules.
         }
 
         return $rules;
