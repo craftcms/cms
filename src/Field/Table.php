@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\gql\GqlEntityRegistry;
@@ -443,29 +444,39 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
-        return ['validateTableData'];
+        return [
+            fn (
+                string $attribute,
+                mixed $value,
+                Closure $fail,
+            ) => $this->validateTableData($value, $fail),
+        ];
     }
 
     /**
      * Validates the table data.
      */
-    public function validateTableData(ElementInterface $element): void
+    public function validateTableData(mixed $value, Closure $fail): void
     {
-        $value = $element->getFieldValue($this->handle);
+        if (empty($value)) {
+            return;
+        }
 
-        if (! empty($value) && ! empty($this->columns)) {
-            foreach ($value as &$row) {
-                foreach ($this->columns as $colId => $col) {
-                    if (is_string($row[$colId])) {
-                        // Trim the value before validating
-                        $row[$colId] = trim($row[$colId]);
-                    }
+        if (empty($this->columns)) {
+            return;
+        }
 
-                    if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
-                        $element->errors()->add($this->handle, $error);
-                    }
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if (is_string($row[$colId])) {
+                    // Trim the value before validating
+                    $row[$colId] = trim($row[$colId]);
+                }
+
+                if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                    $fail($error);
                 }
             }
         }

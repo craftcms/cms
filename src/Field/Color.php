@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use craft\validators\ColorValidator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Override;
 use yii\db\Schema;
 
@@ -295,27 +295,20 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            ColorValidator::class,
-            [
-                function (ElementInterface $element) {
-                    if (! $this->allowCustomColors) {
-                        /** @var ColorData $value */
-                        $value = $element->getFieldValue($this->handle);
-                        if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
-                            $element->errors()->add($this->handle, t('{attribute} is invalid.', [
-                                'attribute' => $this->getUiLabel(),
-                            ]));
-                        }
+            new ColorRule,
+            Rule::when(! $this->allowCustomColors, [
+                function ($attribute, ColorData $value, $fail) {
+                    if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
+                        $fail(t('{attribute} is invalid.', [
+                            'attribute' => $this->getUiLabel(),
+                        ]));
                     }
                 },
-            ],
+            ]),
         ];
     }
 

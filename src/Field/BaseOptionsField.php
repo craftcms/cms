@@ -502,25 +502,23 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return OptionsFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $this->customOptions) {
+            return [];
+        }
+
         return [
-            [
-                function (ElementInterface $element) {
-                    $value = $element->getFieldValue($this->handle);
-                    $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
-                    if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
-                        $element->errors()->add($this->handle, t('{attribute} is invalid.', [
-                            'attribute' => t($this->name, category: 'site'),
-                        ]));
-                    }
-                },
-                'when' => fn () => ! $this->customOptions,
-            ],
+            function ($attribute, $value, $fail) {
+                $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
+
+                if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
+                    $fail(t('{attribute} is invalid.', [
+                        'attribute' => t($this->name, category: 'site'),
+                    ]));
+                }
+            },
         ];
     }
 

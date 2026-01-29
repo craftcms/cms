@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
-use craft\elements\db\AssetQuery;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -31,6 +31,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
@@ -40,6 +41,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -297,15 +299,12 @@ final class Assets extends BaseRelationField
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        $rules = parent::getElementValidationRules();
-        $rules[] = 'validateFileType';
-        $rules[] = 'validateFileSize';
+        $rules = parent::getElementRules($element);
+        $rules[] = fn ($attribute, AssetQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, AssetQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
 
         return $rules;
     }
@@ -313,7 +312,7 @@ final class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
      */
-    public function validateFileType(ElementInterface $element): void
+    public function validateFileType(ElementInterface $element, AssetQuery $value, string $attribute, Validator $validator): void
     {
         // Make sure the field restricts file types
         if (! $this->restrictFiles) {
@@ -323,8 +322,6 @@ final class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /** @var AssetQuery $value */
-        $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
             /** @var Asset $asset */
             $filenames[] = $asset->getFilename();
@@ -340,7 +337,7 @@ final class Assets extends BaseRelationField
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                $element->errors()->add($this->handle, t('“{filename}” is not allowed in this field.', [
+                $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
             }
@@ -350,7 +347,7 @@ final class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are under the allowed max file size.
      */
-    public function validateFileSize(ElementInterface $element): void
+    public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
     {
         $maxSize = Cms::config()->maxUploadFileSize;
 
@@ -375,7 +372,7 @@ final class Assets extends BaseRelationField
         }
 
         foreach ($filenames as $filename) {
-            $element->errors()->add($this->handle, t('“{filename}” is too large.', [
+            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
                 'filename' => $filename,
             ]));
         }

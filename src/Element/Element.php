@@ -101,15 +101,16 @@ use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use DateInterval;
 use DateTime;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
@@ -129,8 +130,6 @@ use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
 use yii\web\Response;
 
 use function CraftCms\Cms\t;
@@ -178,7 +177,7 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface, ValidatableWithRuleset
+abstract class Element extends Component implements ElementInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -3012,117 +3011,67 @@ abstract class Element extends Component implements ElementInterface, Validatabl
 
                 $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
+                $rules = [];
                 if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
-                    new RequiredValidator(['isEmpty' => $isEmpty])
-                        ->validateAttribute($this, $attribute);
+                    $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
+                        if ($isEmpty()) {
+                            $fail(t('validation.required'));
+                        }
+                    };
+                } else {
+                    $rules[] = ['nullable'];
                 }
 
-                foreach ($field->getElementValidationRules() as $rule) {
-                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
-                    if (
-                        in_array($scenario, $validator->on) ||
-                        (empty($validator->on) && ! in_array($scenario, $validator->except))
-                    ) {
-                        // TODO: Port afterValidate to Laravel validations
-                        // $validator->validateAttributes($this);
-                    }
+                $rules = array_merge($rules, $field->getElementRules($this));
+
+                $value = $field->prepareForElementValidation(
+                    $this->getFieldValue($field->handle),
+                );
+
+                $this->setFieldValue($field->handle, $value);
+
+                $validator = ValidatorFacade::make(
+                    data: [$attribute => $value],
+                    rules: [$attribute => $rules],
+                    attributes: [$attribute => $field->getUiLabel()]
+                );
+
+                if ($validator->fails()) {
+                    /**
+                     * Map errors from `field:attribute` -> `attribute`
+                     */
+                    $errors = collect($validator->errors())
+                        ->mapWithKeys(fn (array $errors, string $attribute) => [
+                            Str::after($attribute, 'field:') => $errors,
+                        ])
+                        ->all();
+
+                    $this->errors()->merge($errors);
                 }
             }
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        if (request()->isCpRequest()) {
             $allErrors = $this->errors()->getMessages();
-            $this->clearErrors();
-            foreach ($allErrors as $attribute => &$errors) {
+
+            /**
+             * Clear our all errors as we're mapping them
+             * to bold the field attribute label.
+             */
+            foreach ($this->errors()->getMessages() as $attribute => $errors) {
+                $this->errors()->forget($attribute);
+            }
+
+            $this->errors()->merge(collect($allErrors)->map(function (array $errors, string $attribute) {
                 $label = $this->getAttributeLabel($attribute);
+
                 foreach ($errors as &$error) {
                     $error = str_replace($label, "*$label*", $error);
                 }
-            }
-            $this->errors()->merge($allErrors);
+
+                return $errors;
+            })->all());
         }
-    }
-
-    /**
-     * Normalizes a field’s validation rule.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    private function _normalizeFieldValidator(
-        string $attribute,
-        mixed $rule,
-        FieldInterface $field,
-        callable $isEmpty,
-    ): Validator {
-        if ($rule instanceof Validator) {
-            return $rule;
-        }
-
-        if (is_string($rule)) {
-            // "Validator" syntax
-            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-        }
-
-        if (! is_array($rule) || ! isset($rule[0])) {
-            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
-        }
-
-        if (isset($rule[1])) {
-            // Make sure the attribute name starts with 'field:'
-            if ($rule[0] === $field->handle) {
-                $rule[0] = $attribute;
-            }
-        } else {
-            // ["Validator"] syntax
-            array_unshift($rule, $attribute);
-        }
-
-        if (
-            (! is_string($rule[1]) || ! isset(Validator::$builtInValidators[$rule[1]])) &&
-            (is_callable($rule[1]) || method_exists($field, $rule[1]))
-        ) {
-            // InlineValidator assumes that the closure is on the model being validated
-            // so it won’t pass a reference to the element
-            $rule['params'] = [
-                $field,
-                $rule[1],
-                $rule['params'] ?? null,
-            ];
-            $rule[1] = 'validateCustomFieldAttribute';
-        }
-
-        // Set 'isEmpty' to the field's isEmpty() method by default
-        if (! array_key_exists('isEmpty', $rule)) {
-            $rule['isEmpty'] = $isEmpty;
-        }
-
-        // Set 'on' to the main scenarios by default
-        if (! array_key_exists('on', $rule)) {
-            $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-        }
-
-        return Validator::createValidator($rule[1], $this, (array) $rule[0], array_slice($rule, 2));
-    }
-
-    /**
-     * Calls a custom validation function on a custom field.
-     *
-     * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
-     * a closure or the name of a class-level method as the validation type.
-     *
-     * @param  string  $attribute  The field handle
-     */
-    public function validateCustomFieldAttribute(string $attribute, ?array $params = null): void
-    {
-        /** @var array|null $params */
-        [$field, $method, $fieldParams] = $params;
-
-        if (is_string($method) && ! is_callable($method)) {
-            $method = [$field, $method];
-        }
-
-        $method($this, $fieldParams);
     }
 
     /**
@@ -4997,7 +4946,7 @@ JS, [
                 ->when(
                     value: $this->dateLastMerged,
                     callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
                 )
                 ->pluck('attribute')
                 ->flip()
@@ -5290,7 +5239,7 @@ JS, [
                 ->when(
                     value: $this->dateLastMerged,
                     callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
                 )
                 ->pluck('layoutElementUid')
                 ->all();

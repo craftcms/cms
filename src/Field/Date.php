@@ -12,7 +12,6 @@ use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
-use craft\validators\DateTimeValidator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -313,19 +312,20 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            [
-                DateTimeValidator::class,
-                'min' => $this->min?->setTime(0, 0, 0),
-                'max' => $this->max?->setTime(23, 59, 59),
-            ],
-        ];
+        $rules = ['date'];
+
+        if ($this->min) {
+            $rules[] = 'after_or_equal:'.$this->min->setTime(0, 0)->format('Y-m-d H:i:s');
+        }
+
+        if ($this->max) {
+            $rules[] = 'before_or_equal:'.$this->max->setTime(23, 59, 59)->format('Y-m-d H:i:s');
+        }
+
+        return $rules;
     }
 
     /**

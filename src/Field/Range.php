@@ -221,10 +221,12 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            ['number', 'min' => $this->min, 'max' => $this->max],
+            'numeric',
+            "min:$this->min",
+            "max:$this->max",
         ];
     }
 

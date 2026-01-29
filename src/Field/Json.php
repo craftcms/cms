@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\assets\codemirror\CodeMirrorAsset;
@@ -167,21 +168,21 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [
-                function (ElementInterface $element) {
-                    /** @var JsonData|null $value */
-                    $value = $element->getFieldValue($this->handle);
-                    if (isset($value['__ERROR__'])) {
-                        $element->errors()->add($this->handle, t('{attribute} must be valid JSON.', [
-                            'attribute' => $this->getUiLabel(),
-                        ]));
-                    }
-                },
-            ],
+            function ($attribute, ?JsonData $value, Closure $fail) {
+                if (is_null($value)) {
+                    return;
+                }
+
+                if (isset($value['__ERROR__'])) {
+                    $fail(t('{attribute} must be valid JSON.', [
+                        'attribute' => $this->getUiLabel(),
+                    ]));
+                }
+            },
         ];
     }
 

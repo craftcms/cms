@@ -425,14 +425,16 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public static function phpType(): string
     {
         return 'mixed';
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public static function dbType(): array|string|null
     {
         return Query::TYPE_TEXT;
@@ -768,7 +770,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
@@ -776,14 +779,24 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
-    public function getElementValidationRules(): array
+     * {@inheritDoc}
+     */
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getElementRules(ElementInterface $element): array
     {
         return [];
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
@@ -791,7 +804,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
         $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
@@ -1148,7 +1162,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
@@ -1161,7 +1176,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(

@@ -659,32 +659,29 @@ JS, [
         ]);
     }
 
-    /** {@inheritdoc} */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateContentBlock(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (string $attribute, ContentBlockElement $value) => $this->validateContentBlock($element, $value),
         ];
     }
 
-    private function validateContentBlock(ElementInterface $element): void
+    private function validateContentBlock(ElementInterface $element, ContentBlockElement $value): void
     {
-        /** @var ContentBlockElement $value */
-        $value = $element->getFieldValue($this->handle);
-        $scenario = $element->getScenario();
         $value->setOwner($element);
 
-        if (in_array($scenario, [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE])) {
-            $value->setScenario($scenario);
+        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
+            $value->setScenario($element->getScenario());
         }
 
         if (! $value->validate()) {
             $element->addModelErrors($value, $this->handle);
+
             if ($value->id) {
                 $element->addInvalidNestedElementIds([$value->id]);
             }

@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
-use craft\validators\TimeValidator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -181,10 +180,10 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [TimeValidator::class, 'min' => $this->min, 'max' => $this->max],
+            new TimeRule($this->min, $this->max),
         ];
     }
 
