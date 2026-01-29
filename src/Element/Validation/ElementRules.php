@@ -19,8 +19,8 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Override;
 use Throwable;
-
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
