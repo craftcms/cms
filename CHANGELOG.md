@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur when executing a GraphQL query with a Link field.
+
 ## 5.9.3 - 2026-01-28
 
 - Fixed a bug where multi-value `{% case %}` tags within `{% switch %}` tags weren’t working properly. ([#18334](https://github.com/craftcms/cms/issues/18334))

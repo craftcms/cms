@@ -38,9 +38,9 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
     /**
      * Returns the generator name.
      */
-    public static function getName(): string
+    public static function getName($context = null): string
     {
-        return 'LinkData';
+        return $context->handle . '_LinkData';
     }
 
     /**
@@ -48,7 +48,7 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $typeName = self::getName();
+        $typeName = self::getName($context);
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new LinkData([
             'name' => $typeName,
             'fields' => function() use ($context, $typeName) {
