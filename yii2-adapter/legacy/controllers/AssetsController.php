@@ -702,7 +702,7 @@ class AssetsController extends Controller
             [, $filename] = Assets::parseFileLocation($asset->newLocation);
 
             return $this->asJson([
-                'conflict' => $asset->getFirstError('newLocation'),
+                'conflict' => $asset->errors()->first('newLocation'),
                 'suggestedFilename' => $asset->suggestedFilename,
                 'filename' => $filename,
                 'assetId' => $asset->id,

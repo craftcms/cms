@@ -719,7 +719,7 @@ JS, [
         $color = $element instanceof Colorable ? $element->getColor() : null;
 
         $classes = ['card'];
-        if ($element->hasErrors()) {
+        if ($element->errors()->isNotEmpty()) {
             $classes[] = 'error';
         }
 
@@ -1075,7 +1075,7 @@ JS, [
                 'class' => array_filter([
                     'element',
                     $config['context'] === 'field' ? 'removable' : null,
-                    ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
+                    ($config['context'] === 'field' && $element->errors()->isNotEmpty()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -1182,7 +1182,7 @@ JS, [
             }
         }
 
-        if ($config['context'] === 'field' && $element->hasErrors()) {
+        if ($config['context'] === 'field' && $element->errors()->isNotEmpty()) {
             $content .= Html::tag('span', '', [
                 'data' => ['icon' => 'triangle-exclamation'],
                 'aria' => ['label' => t('Error')],
@@ -2540,7 +2540,7 @@ JS, [
                 'value' => $address->addressLine1,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
-                'errors' => !$static ? $address->getErrors('addressLine1') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine1') : [],
                 'data' => [
                     'error-key' => 'addressLine1',
                 ],
@@ -2554,7 +2554,7 @@ JS, [
                 'value' => $address->addressLine2,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
-                'errors' => !$static ? $address->getErrors('addressLine2') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine2') : [],
                 'data' => [
                     'error-key' => 'addressLine2',
                 ],
@@ -2568,7 +2568,7 @@ JS, [
                 'value' => $address->addressLine3,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line3' : 'off',
                 'required' => isset($requiredFields['addressLine3']),
-                'errors' => !$static ? $address->getErrors('addressLine3') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine3') : [],
                 'data' => [
                     'error-key' => 'addressLine3',
                 ],
@@ -2616,7 +2616,7 @@ JS, [
                 'value' => $address->postalCode,
                 'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
-                'errors' => !$static ? $address->getErrors('postalCode') : [],
+                'errors' => !$static ? $address->errors()->get('postalCode') : [],
                 'data' => [
                     'error-key' => 'postalCode',
                 ],
@@ -2633,7 +2633,7 @@ JS, [
                 'name' => 'sortingCode',
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
-                'errors' => !$static ? $address->getErrors('sortingCode') : [],
+                'errors' => !$static ? $address->errors()->get('sortingCode') : [],
                 'data' => [
                     'error-key' => 'sortingCode',
                 ],
@@ -2704,7 +2704,7 @@ JS, [
             }
 
             if ($spinner) {
-                $errors = !$static ? $address->getErrors($name) : [];
+                $errors = !$static ? $address->errors()->get($name) : [];
                 $input =
                     Html::beginTag('div', [
                         'class' => ['flex', 'flex-nowrap'],
@@ -2746,7 +2746,7 @@ JS, [
                 'value' => $value,
                 'options' => $options,
                 'required' => $required,
-                'errors' => $address->getErrors($name),
+                'errors' => $address->errors()->get($name),
                 'autocomplete' => $autocomplete,
                 'data' => [
                     'error-key' => $name,
@@ -2765,7 +2765,7 @@ JS, [
             'name' => $name,
             'value' => $value,
             'required' => $required,
-            'errors' => !$static ? $address->getErrors($name) : [],
+            'errors' => !$static ? $address->errors()->get($name) : [],
             'data' => [
                 'error-key' => $name,
             ],

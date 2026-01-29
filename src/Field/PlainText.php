@@ -212,15 +212,24 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            [
-                'string',
-                'max' => $this->byteLimit ?? $this->charLimit ?? null,
-                'encoding' => $this->byteLimit ? '8bit' : 'UTF-8',
-            ],
-        ];
+        $rules = ['string'];
+
+        if ($this->byteLimit) {
+            $rules[] = function ($attribute, $value, $fail) {
+                if (mb_strlen($value, '8bit') > $this->byteLimit) {
+                    $fail(t('{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                        'attribute' => $this->getUiLabel(),
+                        'max' => $this->byteLimit,
+                    ]));
+                }
+            };
+        } elseif ($this->charLimit) {
+            $rules[] = ["max:$this->charLimit"];
+        }
+
+        return $rules;
     }
 
     /**

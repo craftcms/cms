@@ -110,7 +110,7 @@ abstract class BaseElementFixture extends DbFixture
             }
 
             if (!$this->saveElement($element)) {
-                throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
+                throw new InvalidElementException($element, implode(' ', $element->errors()->all()));
             }
 
             if ($dateDeleted) {

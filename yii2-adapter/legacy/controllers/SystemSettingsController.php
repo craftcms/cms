@@ -89,7 +89,7 @@ class SystemSettingsController extends Controller
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
             } catch (MissingComponentException) {
                 $adapter = new Sendmail();
-                $adapter->addError('type', t('The transport type “{type}” could not be found.', [
+                $adapter->errors()->add('type', t('The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType,
                 ]));
             }

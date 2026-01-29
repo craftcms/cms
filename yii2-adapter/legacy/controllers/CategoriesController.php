@@ -360,7 +360,7 @@ class CategoriesController extends Controller
                 }
 
                 // Send the original category back to the template, with any validation errors on the clone
-                $category->addErrors($clone->getErrors());
+                $category->errors()->merge($clone->errors());
 
                 return $this->asModelFailure(
                     $category,

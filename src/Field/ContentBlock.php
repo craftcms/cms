@@ -136,13 +136,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $validator->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
+            $validator?->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
         }
     }
 
@@ -659,32 +659,35 @@ JS, [
         ]);
     }
 
-    /** {@inheritdoc} */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateContentBlock(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (string $attribute, ContentBlockElement $value) => $this->validateContentBlock($element, $value),
         ];
     }
 
-    private function validateContentBlock(ElementInterface $element): void
+    private function validateContentBlock(ElementInterface $element, ContentBlockElement $value): void
     {
-        /** @var ContentBlockElement $value */
-        $value = $element->getFieldValue($this->handle);
-        $scenario = $element->getScenario();
         $value->setOwner($element);
 
-        if (in_array($scenario, [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE])) {
-            $value->setScenario($scenario);
+        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
+            $value->setScenario($element->getScenario());
         }
 
         if (! $value->validate()) {
-            $element->addModelErrors($value, $this->handle);
+            // Merge errors from the ContentBlockElement onto the parent element
+            // We need to use the Laravel MessageBag directly since Element uses Laravel validation
+            foreach ($value->errors()->getMessages() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $element->errors()->add("$this->handle.$attribute", $error);
+                }
+            }
+
             if ($value->id) {
                 $element->addInvalidNestedElementIds([$value->id]);
             }

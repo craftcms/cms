@@ -9,6 +9,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -70,8 +71,8 @@ trait RespondsWithFlash
             'modelName' => $modelName,
             'modelClass' => $model::class,
             $modelName => Arr::toArray($model),
-            'errors' => method_exists($model, 'getErrors')
-                ? $model->getErrors()
+            'errors' => $model instanceof Validatable
+                ? $model->errors()->getMessages()
                 : null,
         ]);
 

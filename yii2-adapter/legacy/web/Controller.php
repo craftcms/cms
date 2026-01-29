@@ -405,7 +405,7 @@ abstract class Controller extends \yii\web\Controller
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
-            'errors' => $model->getErrors(),
+            'errors' => $model->errors()->getMessages(),
         ];
 
         return $this->asFailure(

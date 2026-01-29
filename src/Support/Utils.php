@@ -37,4 +37,11 @@ final class Utils
             })
             ->all();
     }
+
+    public static function getPublicAttributes(object|string $target, ?Closure $filter = null): array
+    {
+        return self::getPublicReflectionProperties($target, $filter)
+            ->map(fn (ReflectionProperty $property) => $property->getName())
+            ->all();
+    }
 }

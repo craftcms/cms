@@ -14,9 +14,10 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 
 /**
@@ -26,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model implements ModelInterface, ValidatableComponentInterface
+abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
 {
     use ClonefixTrait;
 
@@ -113,6 +114,24 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
 
         return $behaviors;
+    }
+
+    /*
+     * @inheritdoc
+     */
+    public function getScenario(): string
+    {
+        return parent::getScenario();
+    }
+
+    public function setScenario($scenario): void
+    {
+        parent::setScenario($scenario);
+    }
+
+    public function scenarios(): array
+    {
+        return parent::scenarios();
     }
 
     /**
@@ -239,6 +258,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getAttributes($names, $except);
     }
 
+    public function attributes(): array
+    {
+        return parent::attributes();
+    }
+
+    public function errors(): MessageBag
+    {
+        return new \Illuminate\Support\MessageBag($this->getErrors());
+    }
+
     /**
      * @inheritdoc
      */
@@ -306,28 +335,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addError($attribute, $error = ''): void
+    public function activeAttributes(): array
     {
-        parent::addError($attribute, $error);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addErrors(array $items): void
-    {
-        parent::addErrors($items);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFirstError($attribute): ?string
-    {
-        return parent::getFirstError($attribute);
+        return parent::activeAttributes();
     }
 
     /**
@@ -354,12 +364,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getErrorSummary($showAllErrors);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearErrors($attribute = null): void
+    public function beforeValidate(): bool
     {
-        parent::clearErrors($attribute);
+        return true;
     }
 
     public function validate($attributeNames = null, $clearErrors = true): bool
@@ -418,5 +425,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function getValidationData(): array
     {
         return [];
+    }
+
+    public function attributeLabels(): array
+    {
+        return parent::attributeLabels();
     }
 }

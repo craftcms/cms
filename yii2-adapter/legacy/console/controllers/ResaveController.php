@@ -818,7 +818,7 @@ class ResaveController extends Controller
                 if ($e->exception) {
                     $this->stdout('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } elseif ($element->hasErrors()) {
+                } elseif ($element->errors()->isNotEmpty()) {
                     $this->stdout('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {

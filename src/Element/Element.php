@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
+use BadMethodCallException;
 use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
@@ -66,11 +67,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\validators\DateTimeValidator;
-use craft\validators\ElementUriValidator;
-use craft\validators\SiteIdValidator;
-use craft\validators\SlugValidator;
-use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
@@ -80,6 +76,7 @@ use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -99,19 +96,27 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
 use DateInterval;
 use DateTime;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use ReflectionClass;
 use Stringable;
+use Throwable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
@@ -125,9 +130,6 @@ use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
-use yii\validators\BooleanValidator;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
 use yii\web\Response;
 
 use function CraftCms\Cms\t;
@@ -174,6 +176,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
+#[Ruleset(ElementRules::class)]
 abstract class Element extends Component implements ElementInterface
 {
     use ArrayableTrait {
@@ -183,7 +186,11 @@ abstract class Element extends Component implements ElementInterface
         canCreateDrafts as traitCanCreateDrafts;
     }
     use ElementTrait;
+    use Macroable {
+        __call as macroCall;
+    }
     use Revisionable;
+    use ValidatesWithRuleset;
 
     /**
      * @since 3.3.6
@@ -205,9 +212,26 @@ abstract class Element extends Component implements ElementInterface
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    public const SCENARIO_ESSENTIALS = 'essentials';
+    public const string SCENARIO_DEFAULT = 'default';
 
-    public const SCENARIO_LIVE = 'live';
+    public const string SCENARIO_ESSENTIALS = 'essentials';
+
+    public const string SCENARIO_LIVE = 'live';
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array<string, array<string>|null>
+     */
+    #[Override]
+    public function scenarios(): array
+    {
+        return [
+            self::SCENARIO_DEFAULT => null,
+            self::SCENARIO_LIVE => null,
+            self::SCENARIO_ESSENTIALS => null,
+        ];
+    }
 
     // Events
     // -------------------------------------------------------------------------
@@ -2693,7 +2717,11 @@ abstract class Element extends Component implements ElementInterface
             return $this->isFieldEmpty(substr($name, 13));
         }
 
-        return parent::__call($name, $params);
+        try {
+            return $this->macroCall($name, $params);
+        } catch (BadMethodCallException) {
+            return parent::__call($name, $params);
+        }
     }
 
     /**
@@ -2734,12 +2762,33 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @TODO: Remove parameters once Element no longer extends Yii Model
+     */
+    #[Override]
+    public function getAttributes($names = null, $except = []): array
+    {
+        $attributes = $this->attributes();
+        $values = [];
+
+        try {
+            foreach ($attributes as $attribute) {
+                $values[$attribute] = $this->$attribute;
+            }
+        } catch (Throwable) {
+            // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
+            // This is expected for attributes that may not be accessible in all contexts
+        }
+
+        return $values;
+    }
+
+    /**
      * {@inheritdoc}
      */
     #[Override]
     public function attributes(): array
     {
-        $names = array_flip(parent::attributes());
+        $names = array_flip(Utils::getPublicAttributes($this));
 
         if ($this->structureId) {
             $names['parentId'] = true;
@@ -2930,92 +2979,11 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [
-            ['id', 'parentId', 'root', 'lft', 'rgt', 'level'],
-            'number',
-            'integerOnly' => true,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-        ];
-        $rules[] = [
-            ['siteId'],
-            SiteIdValidator::class,
-            'allowDisabled' => true,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-        ];
-        $rules[] = [
-            ['dateCreated', 'dateUpdated'],
-            DateTimeValidator::class,
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-        ];
-        $rules[] = [['isFresh'], BooleanValidator::class];
-
-        $rules[] = [['title'], 'trim'];
-        $rules[] = [
-            ['title'],
-            StringValidator::class,
-            'max' => 255,
-            'disallowMb4' => true,
-        ];
-        $rules[] = [
-            ['title'],
-            'required',
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => $this->shouldValidateTitle(...),
-        ];
-        $rules[] = [
-            ['title'],
-            function () {
-                $this->title = Str::convertLineBreaks($this->title);
-            },
-        ];
-
-        if (static::hasUris()) {
-            try {
-                $language = $this->getSite()->getLanguage();
-            } catch (InvalidConfigException) {
-                $language = null;
-            }
-
-            $rules[] = [
-                ['slug'],
-                SlugValidator::class,
-                'language' => $language,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-            $rules[] = [
-                ['slug'],
-                'string',
-                'max' => 255,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-            $rules[] = [
-                ['slug'],
-                'required',
-                'when' => fn () => (bool) preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            ];
-            $rules[] = [
-                ['uri'],
-                ElementUriValidator::class,
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
-            ];
-        }
-
-        return $rules;
-    }
-
-    /**
-     * Returns whether the element’s `title` attribute should be validated
+     * Returns whether the element's `title` attribute should be validated
      *
      * @since 5.0.0
      */
-    protected function shouldValidateTitle(): bool
+    public function shouldValidateTitle(): bool
     {
         return static::hasTitles();
     }
@@ -3024,21 +2992,7 @@ abstract class Element extends Component implements ElementInterface
      * {@inheritdoc}
      */
     #[Override]
-    public function validate($attributeNames = null, $clearErrors = true): bool
-    {
-        $this->_attributeNames = $attributeNames ? array_flip((array) $attributeNames) : null;
-        $this->_invalidNestedElementIds = [];
-        $result = parent::validate($attributeNames, $clearErrors);
-        $this->_attributeNames = null;
-
-        return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(): void
+    public function afterValidate(?LaravelValidator $validator = null): void
     {
         if (
             Cms::isInstalled() &&
@@ -3057,118 +3011,67 @@ abstract class Element extends Component implements ElementInterface
 
                 $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
+                $rules = [];
                 if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
-                    new RequiredValidator(['isEmpty' => $isEmpty])
-                        ->validateAttribute($this, $attribute);
+                    $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
+                        if ($isEmpty()) {
+                            $fail(t('validation.required'));
+                        }
+                    };
+                } else {
+                    $rules[] = ['nullable'];
                 }
 
-                foreach ($field->getElementValidationRules() as $rule) {
-                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
-                    if (
-                        in_array($scenario, $validator->on) ||
-                        (empty($validator->on) && ! in_array($scenario, $validator->except))
-                    ) {
-                        $validator->validateAttributes($this);
-                    }
+                $rules = array_merge($rules, $field->getElementRules($this));
+
+                $value = $field->prepareForElementValidation(
+                    $this->getFieldValue($field->handle),
+                );
+
+                $this->setFieldValue($field->handle, $value);
+
+                $validator = ValidatorFacade::make(
+                    data: [$attribute => $value],
+                    rules: [$attribute => $rules],
+                    attributes: [$attribute => $field->getUiLabel()]
+                );
+
+                if ($validator->fails()) {
+                    /**
+                     * Map errors from `field:attribute` -> `attribute`
+                     */
+                    $errors = collect($validator->errors())
+                        ->mapWithKeys(fn (array $errors, string $attribute) => [
+                            Str::after($attribute, 'field:') => $errors,
+                        ])
+                        ->all();
+
+                    $this->errors()->merge($errors);
                 }
             }
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $allErrors = $this->getErrors();
-            $this->clearErrors();
-            foreach ($allErrors as $attribute => &$errors) {
+        if (request()->isCpRequest()) {
+            $allErrors = $this->errors()->getMessages();
+
+            /**
+             * Clear our all errors as we're mapping them
+             * to bold the field attribute label.
+             */
+            foreach ($this->errors()->getMessages() as $attribute => $errors) {
+                $this->errors()->forget($attribute);
+            }
+
+            $this->errors()->merge(collect($allErrors)->map(function (array $errors, string $attribute) {
                 $label = $this->getAttributeLabel($attribute);
+
                 foreach ($errors as &$error) {
                     $error = str_replace($label, "*$label*", $error);
                 }
-            }
-            $this->addErrors($allErrors);
+
+                return $errors;
+            })->all());
         }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * Normalizes a field’s validation rule.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    private function _normalizeFieldValidator(
-        string $attribute,
-        mixed $rule,
-        FieldInterface $field,
-        callable $isEmpty,
-    ): Validator {
-        if ($rule instanceof Validator) {
-            return $rule;
-        }
-
-        if (is_string($rule)) {
-            // "Validator" syntax
-            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-        }
-
-        if (! is_array($rule) || ! isset($rule[0])) {
-            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
-        }
-
-        if (isset($rule[1])) {
-            // Make sure the attribute name starts with 'field:'
-            if ($rule[0] === $field->handle) {
-                $rule[0] = $attribute;
-            }
-        } else {
-            // ["Validator"] syntax
-            array_unshift($rule, $attribute);
-        }
-
-        if (
-            (! is_string($rule[1]) || ! isset(Validator::$builtInValidators[$rule[1]])) &&
-            (is_callable($rule[1]) || method_exists($field, $rule[1]))
-        ) {
-            // InlineValidator assumes that the closure is on the model being validated
-            // so it won’t pass a reference to the element
-            $rule['params'] = [
-                $field,
-                $rule[1],
-                $rule['params'] ?? null,
-            ];
-            $rule[1] = 'validateCustomFieldAttribute';
-        }
-
-        // Set 'isEmpty' to the field's isEmpty() method by default
-        if (! array_key_exists('isEmpty', $rule)) {
-            $rule['isEmpty'] = $isEmpty;
-        }
-
-        // Set 'on' to the main scenarios by default
-        if (! array_key_exists('on', $rule)) {
-            $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-        }
-
-        return Validator::createValidator($rule[1], $this, (array) $rule[0], array_slice($rule, 2));
-    }
-
-    /**
-     * Calls a custom validation function on a custom field.
-     *
-     * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
-     * a closure or the name of a class-level method as the validation type.
-     *
-     * @param  string  $attribute  The field handle
-     */
-    public function validateCustomFieldAttribute(string $attribute, ?array $params = null): void
-    {
-        /** @var array|null $params */
-        [$field, $method, $fieldParams] = $params;
-
-        if (is_string($method) && ! is_callable($method)) {
-            $method = [$field, $method];
-        }
-
-        $method($this, $fieldParams);
     }
 
     /**
@@ -3184,19 +3087,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $field->isValueEmpty($this->getFieldValue($handle), $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function addError($attribute, $error = ''): void
-    {
-        if (str_starts_with($attribute, 'field:')) {
-            $attribute = substr($attribute, 6);
-        }
-
-        parent::addError($attribute, $error);
     }
 
     /**
@@ -4980,6 +4870,12 @@ JS, [
         $this->setAttributes($values);
     }
 
+    #[Override]
+    public function safeAttributes(): array
+    {
+        return array_keys($this->getRuleset()->rules());
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -5050,7 +4946,7 @@ JS, [
                 ->when(
                     value: $this->dateLastMerged,
                     callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
                 )
                 ->pluck('attribute')
                 ->flip()
@@ -5343,7 +5239,7 @@ JS, [
                 ->when(
                     value: $this->dateLastMerged,
                     callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
                 )
                 ->pluck('layoutElementUid')
                 ->all();
@@ -5690,7 +5586,7 @@ JS, [
      */
     public function getIsFresh(): bool
     {
-        if ($this->hasErrors()) {
+        if ($this->errors()->isNotEmpty()) {
             return false;
         }
 
@@ -6210,7 +6106,7 @@ JS, [
             'autocapitalize' => false,
             'value' => $slug,
             'disabled' => $static,
-            'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
+            'errors' => array_merge($this->errors()->get('slug'), $this->errors()->get('uri')),
         ]);
     }
 

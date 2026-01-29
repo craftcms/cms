@@ -144,12 +144,13 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return string[]
      */
-    protected function errors(?ElementInterface $element = null): array
+    protected function fieldErrors(?ElementInterface $element = null): array
     {
         if (!$element) {
             return [];
         }
-        return $element->getErrors($this->attribute());
+
+        return $element->errors()->get($this->attribute());
     }
 
     /**
@@ -486,7 +487,7 @@ abstract class BaseField extends FieldLayoutElement
             'translationDescription' => $this->translationDescription($element, $static),
             'actionMenuItems' => $actionMenuItems,
             // show errors regardless of whether the field is static
-            'errors' => $this->errors($element),
+            'errors' => $this->fieldErrors($element),
         ]);
     }
 
@@ -627,7 +628,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function describedBy(ElementInterface $element = null, bool $static = false): ?string
     {
         $ids = array_filter([
-            (!$static && $this->errors($element)) ? $this->errorsId() : null,
+            (!$static && $this->fieldErrors($element)) ? $this->errorsId() : null,
             $this->statusClass($element, $static) ? $this->statusId() : null,
             $this->instructions($element, $static) ? $this->instructionsId() : null,
             $this->tip($element, $static) ? $this->tipId() : null,
@@ -930,7 +931,7 @@ abstract class BaseField extends FieldLayoutElement
     Craft.ui.createCopyTextPrompt({
       label: $promptLabel,
       value: $attribute,
-    });
+    })
   });
 })();
 JS, [

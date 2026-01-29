@@ -13,7 +13,6 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -102,7 +101,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
             'id' => 'placeholder',
             'name' => 'placeholder',
             'value' => $this->placeholder,
-            'errors' => $this->getErrors('placeholder'),
+            'errors' => $this->errors()->get('placeholder'),
             'disabled' => $readOnly,
         ]);
     }
@@ -142,15 +141,21 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            return trim($value);
+        }
+
+        return $value;
+    }
+
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            ['trim'],
-            ['email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()],
+            'email:rfc',
         ];
     }
 

@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Section\Data;
 
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Rules\SingleSectionUriRule;
-use CraftCms\Cms\Shared\Rules\SiteIdRule;
-use CraftCms\Cms\Shared\Rules\UriFormatRule;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Validation\Rules\SiteIdRule;
+use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use RuntimeException;
 use Spatie\LaravelData\Dto;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

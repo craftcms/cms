@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use GraphQL\Type\Definition\Type;
 use Override;
 
@@ -22,6 +23,7 @@ use function CraftCms\Cms\t;
 /**
  * @method ContentBlockField getField()
  */
+#[Ruleset(ContentBlockRules::class)]
 final class ContentBlock extends Element implements NestedElementInterface
 {
     use NestedElementTrait;
@@ -134,18 +136,6 @@ final class ContentBlock extends Element implements NestedElementInterface
     public static function baseGqlType(): Type
     {
         return ContentBlockInterface::getType();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        return [
-            ...parent::defineRules(),
-            [['fieldId', 'ownerId', 'primaryOwnerId', 'sortOrder'], 'number', 'integerOnly' => true],
-        ];
     }
 
     /**

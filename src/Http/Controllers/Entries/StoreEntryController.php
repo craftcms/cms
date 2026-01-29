@@ -77,7 +77,7 @@ final readonly class StoreEntryController
         try {
             $success = Craft::$app->getElements()->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
-            $entry->addError('siteId', $e->getMessage());
+            $entry->errors()->add('siteId', $e->getMessage());
             $success = false;
         } finally {
             if ($isNotNew) {
@@ -199,7 +199,7 @@ final readonly class StoreEntryController
             }
 
             // Send the original entry back to the template, with any validation errors on the clone
-            $entry->addErrors($clone->getErrors());
+            $entry->errors()->merge($clone->errors());
 
             return $this->asModelFailure(
                 model: $entry,
