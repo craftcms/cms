@@ -596,7 +596,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$saveBtn.addClass('loading');
 
     // double check that we don't have an empty page name
-    if (this.pages.filter((page) => page.name == '').length > 0) {
+    if (this.pages?.filter((page) => page.name == '').length > 0) {
       Craft.cp.displayError(
         Craft.t('yii', '{attribute} cannot be blank.', {
           attribute: Craft.t('app', 'Page Name'),
