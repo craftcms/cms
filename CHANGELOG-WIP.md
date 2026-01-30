@@ -186,6 +186,50 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Elements
 
+### Validation
+
+Craft 6 introduces a new validation system that uses Laravel's Validator instead of Yii2's model validation.
+
+#### Added
+
+- Added `CraftCms\Cms\Validation\Contracts\Validatable` interface for classes that support Laravel-style validation.
+- Added `CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset` interface for classes that use a `Ruleset` class to define validation rules.
+- Added `CraftCms\Cms\Validation\Ruleset` abstract class for defining validation rules, messages, and preparation logic.
+- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component's ruleset class.
+- Added `CraftCms\Cms\Validation\Concerns\Validates` trait for simple validation support.
+- Added `CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset` trait for ruleset-based validation.
+- Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
+- Added `CraftCms\Cms\Validation\Concerns\InteractsWithValidator` trait providing common validator interactions.
+- Added `CraftCms\Cms\Element\Validation\ElementRules` abstract class for defining element-specific validation rules.
+- Added `CraftCms\Cms\Element\Validation\Events\DefineValidationRules` event for plugins to modify element validation rules.
+- Added `CraftCms\Cms\Element\Validation\Rules\ElementUriRule` for validating element URIs.
+- Added element-specific ruleset classes:
+  - `CraftCms\Cms\Address\Validation\AddressRules`
+  - `CraftCms\Cms\Asset\Validation\AssetRules`
+  - `CraftCms\Cms\Entry\Validation\EntryRules`
+  - `CraftCms\Cms\User\Validation\UserRules`
+  - `CraftCms\Cms\Field\Elements\ContentBlockRules`
+- Added `CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule` for validating asset locations.
+- Added `CraftCms\Cms\User\Validation\Rules\UserPasswordRule` for validating user passwords.
+- Added `CraftCms\Cms\User\Validation\Rules\UsernameRule` for validating usernames.
+- Added `CraftCms\Cms\Validation\Rules\UniqueCaseInsensitiveRule` for case-insensitive unique validation.
+- Added `CraftCms\Cms\Validation\Rules\DisallowMb4` for disallowing 4-byte UTF-8 characters.
+- Added `CraftCms\Cms\Validation\Rules\MoneyRule` for validating money values.
+
+#### Changed
+
+- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel's validation format.
+- Added `FieldInterface::prepareForElementValidation()` for preparing field values before validation.
+- Validation rules are now defined as Laravel-style arrays (e.g., `['required', 'string', 'max:255']`).
+
+#### Deprecations
+
+- Deprecated `craft\base\Model::hasErrors()`. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.
+- Deprecated `craft\base\Model::getErrors()`. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.
+- Deprecated `craft\base\Model::addErrors()`. Use `->errors()->add($attribute, $message)` instead.
+- Deprecated `craft\base\Model::clearErrors()`. Use `->errors()->forget()` instead.
+- Deprecated `CraftCms\Cms\Component\Concerns\ValidatableComponent`. Use `CraftCms\Cms\Validation\Concerns\Validates` instead.
+- Deprecated `CraftCms\Cms\Component\Contracts\ValidatableComponentInterface`. Use `CraftCms\Cms\Validation\Contracts\Validatable` instead.
 - Deprecated `\craft\records\ContentBlock`. `\CraftCms\Cms\Element\Models\ContentBlock` should be used instead.
 - Deprecated `\craft\records\Draft`. `\CraftCms\Cms\Element\Models\Draft` should be used instead.
 - Deprecated `\craft\records\Element`. `\CraftCms\Cms\Element\Models\Element` should be used instead.

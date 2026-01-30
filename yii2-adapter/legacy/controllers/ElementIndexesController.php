@@ -589,7 +589,7 @@ class ElementIndexesController extends BaseElementsController
             );
 
             if (!$element->validate($names)) {
-                $errors[$element->getCanonicalId()] = $element->getErrors();
+                $errors[$element->getCanonicalId()] = $element->errors()->getMessages();
             }
         }
 

@@ -2,11 +2,32 @@
 
 declare(strict_types=1);
 
+use craft\fieldlayoutelements\users\FullNameField;
+use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Validation\UserRules;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Hash;
+
+#[Ruleset(UserRules::class)]
+class TestUserWithFieldLayout extends User
+{
+    private $mockFieldLayout;
+
+    public function setMockFieldLayout($fieldLayout): void
+    {
+        $this->mockFieldLayout = $fieldLayout;
+    }
+
+    #[Override]
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return $this->mockFieldLayout;
+    }
+}
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -46,7 +67,7 @@ describe('Email format validation', function () {
 
         $user->validate(['email']);
 
-        expect($user->hasErrors('email'))->toBe($expectError);
+        expect($user->errors()->has('email'))->toBe($expectError);
     })->with([
         'valid email is accepted' => ['valid@example.com', false],
         'invalid email is rejected' => ['not-an-email', true],
@@ -61,7 +82,7 @@ describe('Email format validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBe($expectError);
+        expect($user->errors()->has('unverifiedEmail'))->toBe($expectError);
     })->with([
         'valid email is accepted' => ['newemail@example.com', false],
         'invalid email is rejected' => ['invalid-email', true],
@@ -79,7 +100,7 @@ describe('String max length validation (255 chars)', function () {
 
         $user->validate([$field]);
 
-        expect($user->hasErrors($field))->toBe($expectError);
+        expect($user->errors()->has($field))->toBe($expectError);
     })->with([
         'email rejects 256+ chars' => ['email', 256, true],
         'username accepts 255 chars' => ['username', 255, false],
@@ -104,7 +125,7 @@ describe('Email required validation', function () {
 
         $user->validate(['email']);
 
-        expect($user->hasErrors('email'))->toBe($expectError);
+        expect($user->errors()->has('email'))->toBe($expectError);
     })->with([
         'null email is required when not draft' => [null, null, true],
         'empty string email is required when not draft' => ['', null, true],
@@ -119,7 +140,7 @@ describe('IP address validation', function () {
 
         $user->validate(['lastLoginAttemptIp']);
 
-        expect($user->hasErrors('lastLoginAttemptIp'))->toBe($expectError);
+        expect($user->errors()->has('lastLoginAttemptIp'))->toBe($expectError);
     })->with([
         'valid IPv4 is accepted' => ['192.168.1.1', false],
         'valid IPv6 is accepted' => ['2001:0db8:85a3:0000:0000:8a2e:0370:7334', false],
@@ -140,10 +161,10 @@ describe('Username validation', function () {
 
         $user->validate(['username']);
 
-        expect($user->hasErrors('username'))->toBe($expectError);
+        expect($user->errors()->has('username'))->toBe($expectError);
 
         if ($errorContains !== null) {
-            expect($user->getFirstError('username'))->toContain($errorContains);
+            expect($user->errors()->first('username'))->toContain($errorContains);
         }
     })->with([
         'spaces are rejected' => ['user name', true, 'cannot contain spaces'],
@@ -160,7 +181,7 @@ describe('Username validation', function () {
 
         $user->validate(['username']);
 
-        expect($user->hasErrors('username'))->toBe($expectError);
+        expect($user->errors()->has('username'))->toBe($expectError);
     })->with([
         'active users require username' => [fn () => UserModel::factory()->active(), true],
         'pending users require username' => [fn () => UserModel::factory()->pending(), true],
@@ -176,8 +197,8 @@ describe('Email uniqueness validation', function () {
 
         $newUser->validate(['email']);
 
-        expect($newUser->hasErrors('email'))->toBeTrue();
-        expect($newUser->getFirstError('email'))->toContain('has already been taken');
+        expect($newUser->errors()->has('email'))->toBeTrue();
+        expect($newUser->errors()->first('email'))->toContain('has already been taken');
     });
 
     test('email must be unique among pending users', function () {
@@ -188,7 +209,7 @@ describe('Email uniqueness validation', function () {
 
         $newUser->validate(['email']);
 
-        expect($newUser->hasErrors('email'))->toBeTrue();
+        expect($newUser->errors()->has('email'))->toBeTrue();
     });
 
     test('email uniqueness is case-insensitive', function () {
@@ -199,7 +220,7 @@ describe('Email uniqueness validation', function () {
 
         $newUser->validate(['email']);
 
-        expect($newUser->hasErrors('email'))->toBeTrue();
+        expect($newUser->errors()->has('email'))->toBeTrue();
     });
 
     test('email can duplicate inactive user email', function () {
@@ -213,7 +234,7 @@ describe('Email uniqueness validation', function () {
 
         $newUser->validate(['email']);
 
-        expect($newUser->hasErrors('email'))->toBeFalse();
+        expect($newUser->errors()->has('email'))->toBeFalse();
     });
 
     test('same user can keep their email on update', function () {
@@ -221,7 +242,7 @@ describe('Email uniqueness validation', function () {
 
         $user->validate(['email']);
 
-        expect($user->hasErrors('email'))->toBeFalse();
+        expect($user->errors()->has('email'))->toBeFalse();
     });
 
     test('email uniqueness not enforced for inactive users', function () {
@@ -236,7 +257,7 @@ describe('Email uniqueness validation', function () {
 
         $inactiveUser->validate(['email']);
 
-        expect($inactiveUser->hasErrors('email'))->toBeFalse();
+        expect($inactiveUser->errors()->has('email'))->toBeFalse();
     });
 });
 
@@ -253,7 +274,7 @@ describe('Username uniqueness validation', function () {
 
         $newUser->validate(['username']);
 
-        expect($newUser->hasErrors('username'))->toBeTrue();
+        expect($newUser->errors()->has('username'))->toBeTrue();
     });
 
     test('username must be unique among pending users', function () {
@@ -264,7 +285,7 @@ describe('Username uniqueness validation', function () {
 
         $newUser->validate(['username']);
 
-        expect($newUser->hasErrors('username'))->toBeTrue();
+        expect($newUser->errors()->has('username'))->toBeTrue();
     });
 
     test('username uniqueness is case-insensitive', function () {
@@ -275,7 +296,7 @@ describe('Username uniqueness validation', function () {
 
         $newUser->validate(['username']);
 
-        expect($newUser->hasErrors('username'))->toBeTrue();
+        expect($newUser->errors()->has('username'))->toBeTrue();
     });
 
     test('username can duplicate inactive user username', function () {
@@ -289,7 +310,7 @@ describe('Username uniqueness validation', function () {
 
         $newUser->validate(['username']);
 
-        expect($newUser->hasErrors('username'))->toBeFalse();
+        expect($newUser->errors()->has('username'))->toBeFalse();
     });
 
     test('same user can keep their username on update', function () {
@@ -297,7 +318,7 @@ describe('Username uniqueness validation', function () {
 
         $user->validate(['username']);
 
-        expect($user->hasErrors('username'))->toBeFalse();
+        expect($user->errors()->has('username'))->toBeFalse();
     });
 });
 
@@ -310,7 +331,7 @@ describe('Unverified email uniqueness validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBeTrue();
+        expect($user->errors()->has('unverifiedEmail'))->toBeTrue();
     });
 
     test('unverifiedEmail must be unique among pending users emails', function () {
@@ -321,7 +342,7 @@ describe('Unverified email uniqueness validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBeTrue();
+        expect($user->errors()->has('unverifiedEmail'))->toBeTrue();
     });
 
     test('unverifiedEmail uniqueness is case-insensitive', function () {
@@ -332,7 +353,7 @@ describe('Unverified email uniqueness validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBeTrue();
+        expect($user->errors()->has('unverifiedEmail'))->toBeTrue();
     });
 
     test('unverifiedEmail can duplicate inactive user email', function () {
@@ -347,7 +368,7 @@ describe('Unverified email uniqueness validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBeFalse();
+        expect($user->errors()->has('unverifiedEmail'))->toBeFalse();
     });
 
     test('unverifiedEmail can be the same as own current email', function () {
@@ -356,7 +377,7 @@ describe('Unverified email uniqueness validation', function () {
 
         $user->validate(['unverifiedEmail']);
 
-        expect($user->hasErrors('unverifiedEmail'))->toBeFalse();
+        expect($user->errors()->has('unverifiedEmail'))->toBeFalse();
     });
 });
 
@@ -367,14 +388,13 @@ describe('Password validation', function () {
 
         $user->validate(['newPassword']);
 
-        expect($user->hasErrors('newPassword'))->toBe($expectError);
+        expect($user->errors()->has('newPassword'))->toBe($expectError);
     })->with([
         '5 chars is too short' => ['12345', true],
         '6 chars is valid' => ['123456', false],
         '160 chars is valid' => [str_repeat('a', 160), false],
         '161 chars is too long' => [str_repeat('a', 161), true],
         'null is valid' => [null, false],
-        'empty string is invalid' => ['', true],
     ]);
 
     test('newPassword must be different when passwordResetRequired is true', function () {
@@ -391,8 +411,8 @@ describe('Password validation', function () {
 
         $user->validate(['newPassword']);
 
-        expect($user->hasErrors('newPassword'))->toBeTrue();
-        expect($user->getFirstError('newPassword'))->toContain('must be set to a new password');
+        expect($user->errors()->has('newPassword'))->toBeTrue();
+        expect($user->errors()->first('newPassword'))->toContain('must be set to a new password');
     });
 });
 
@@ -403,7 +423,7 @@ describe('URL injection prevention', function () {
 
         $user->validate([$field]);
 
-        expect($user->hasErrors($field))->toBe($expectError);
+        expect($user->errors()->has($field))->toBe($expectError);
     })->with([
         'fullName rejects http://' => ['fullName', 'http://malicious.com', true],
         'fullName rejects https://' => ['fullName', 'https://malicious.com', true],
@@ -421,30 +441,46 @@ describe('Scenario validation', function () {
     test('SCENARIO_PASSWORD only validates newPassword', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->newPassword = 'p'; // too short
 
-        expect($user->activeAttributes())->toBe(['newPassword']);
+        $user->validate(['username', 'newPassword']);
+
+        expect($user->errors()->has('username'))->toBeFalse();
+        expect($user->errors()->has('newPassword'))->toBeTrue();
     });
 
     test('SCENARIO_REGISTRATION validates username email and newPassword', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_REGISTRATION);
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->email = 'invalid-email'; // Invalid
+        $user->newPassword = 'p'; // too short
+        $user->firstName = str_repeat('a', 256); // Invalid
 
-        $activeAttributes = $user->activeAttributes();
+        $user->validate();
 
-        expect($activeAttributes)->toContain('username');
-        expect($activeAttributes)->toContain('email');
-        expect($activeAttributes)->toContain('newPassword');
+        expect($user->errors()->has('username'))->toBeTrue();
+        expect($user->errors()->has('email'))->toBeTrue();
+        expect($user->errors()->has('newPassword'))->toBeTrue();
+        expect($user->errors()->has('firstName'))->toBeFalse();
     });
 
     test('SCENARIO_ACTIVATION validates username and email', function () {
         $user = UserModel::factory()->createElement();
         $user->setScenario(User::SCENARIO_ACTIVATION);
 
-        $activeAttributes = $user->activeAttributes();
+        $user->username = str_repeat('a', 256); // Invalid
+        $user->email = 'invalid-email'; // Invalid
+        $user->newPassword = 'p'; // too short
+        $user->firstName = str_repeat('a', 256); // Invalid
 
-        expect($activeAttributes)->toContain('username');
-        expect($activeAttributes)->toContain('email');
-        expect($activeAttributes)->not()->toContain('newPassword');
+        $user->validate();
+
+        expect($user->errors()->has('username'))->toBeTrue();
+        expect($user->errors()->has('email'))->toBeTrue();
+        expect($user->errors()->has('newPassword'))->toBeFalse();
+        expect($user->errors()->has('firstName'))->toBeFalse();
     });
 
     test('treatAsActive returns correct value based on user status', function (callable $factoryMethod, bool $expected) {
@@ -458,6 +494,149 @@ describe('Scenario validation', function () {
     ]);
 });
 
+describe('Name field validation with field layout', function () {
+    test('firstName and lastName are required when showFirstAndLastNameFields is true and FullNameField is required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeFalse();
+        expect($user->errors()->has('firstName'))->toBeTrue();
+
+        expect($user->validate(['lastName']))->toBeFalse();
+        expect($user->errors()->has('lastName'))->toBeTrue();
+    });
+
+    test('firstName and lastName are not required when showFirstAndLastNameFields is true but FullNameField is not required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = false;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
+
+    test('fullName is required when showFirstAndLastNameFields is false and FullNameField is required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = false;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->fullName = '';
+
+        expect($user->validate(['fullName']))->toBeFalse();
+        expect($user->errors()->has('fullName'))->toBeTrue();
+    });
+
+    test('fullName is not required when showFirstAndLastNameFields is false but FullNameField is not required in SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = false;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = false;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->fullName = '';
+
+        expect($user->validate(['fullName']))->toBeTrue();
+    });
+
+    test('name field required validation does not apply outside SCENARIO_LIVE', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField->required = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn($fullNameField);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_DEFAULT);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
+
+    test('handles missing FullNameField gracefully using null coalescing', function () {
+        Cms::config()->showFirstAndLastNameFields = true;
+
+        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
+            ->with(FullNameField::class, Mockery::any())
+            ->andReturn(null);
+        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+
+        $user = new TestUserWithFieldLayout;
+        $user->setMockFieldLayout($fieldLayout);
+        $user->setScenario(User::SCENARIO_LIVE);
+        $user->email = 'test@example.com';
+        $user->firstName = '';
+        $user->lastName = '';
+
+        expect($user->validate(['firstName']))->toBeTrue();
+        expect($user->validate(['lastName']))->toBeTrue();
+    });
+});
+
 describe('Edge cases', function () {
     test('unicode characters are handled in name fields', function () {
         $user = UserModel::factory()->createElement();
@@ -467,9 +646,9 @@ describe('Edge cases', function () {
 
         $user->validate(['fullName', 'firstName', 'lastName']);
 
-        expect($user->hasErrors('fullName'))->toBeFalse();
-        expect($user->hasErrors('firstName'))->toBeFalse();
-        expect($user->hasErrors('lastName'))->toBeFalse();
+        expect($user->errors()->has('fullName'))->toBeFalse();
+        expect($user->errors()->has('firstName'))->toBeFalse();
+        expect($user->errors()->has('lastName'))->toBeFalse();
     });
 
     test('special characters in username are allowed except whitespace', function () {
@@ -480,7 +659,7 @@ describe('Edge cases', function () {
 
         $user->validate(['username']);
 
-        expect($user->hasErrors('username'))->toBeFalse();
+        expect($user->errors()->has('username'))->toBeFalse();
     });
 
     test('validation runs for new unsaved users', function () {
@@ -490,8 +669,8 @@ describe('Edge cases', function () {
 
         $user->validate(['email', 'username']);
 
-        expect($user->hasErrors('email'))->toBeFalse();
-        expect($user->hasErrors('username'))->toBeFalse();
+        expect($user->errors()->has('email'))->toBeFalse();
+        expect($user->errors()->has('username'))->toBeFalse();
     });
 
     test('multiple validation errors can be collected', function () {
@@ -502,8 +681,27 @@ describe('Edge cases', function () {
 
         $user->validate(['email', 'username', 'fullName']);
 
-        expect($user->hasErrors('email'))->toBeTrue();
-        expect($user->hasErrors('username'))->toBeTrue();
-        expect($user->hasErrors('fullName'))->toBeTrue();
+        expect($user->errors()->has('email'))->toBeTrue();
+        expect($user->errors()->has('username'))->toBeTrue();
+        expect($user->errors()->has('fullName'))->toBeTrue();
+    });
+
+    test('errors reset between validate calls unless specified', function () {
+        $user = UserModel::factory()->createElement();
+        $user->email = 'invalid-email';
+
+        $user->validate(['email']);
+
+        expect($user->errors()->has('email'))->toBeTrue();
+
+        $user->email = 'john@example.com';
+
+        $user->validate(['email'], clearErrors: false);
+
+        expect($user->errors()->has('email'))->toBeTrue();
+
+        $user->validate(['email']);
+
+        expect($user->errors()->has('email'))->toBeFalse();
     });
 });

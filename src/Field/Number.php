@@ -324,11 +324,13 @@ JS;
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            ['number', 'min' => $this->min, 'max' => $this->max],
-        ];
+        return array_filter([
+            'numeric',
+            $this->min !== null ? "min:{$this->min}" : null,
+            $this->max !== null ? "max:{$this->max}" : null,
+        ]);
     }
 
     /**

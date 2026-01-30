@@ -161,12 +161,12 @@ class LatLongField extends BaseNativeField
     /**
      * @inheritdoc
      */
-    protected function errors(?ElementInterface $element = null): array
+    protected function fieldErrors(?ElementInterface $element = null): array
     {
         if (!$element) {
             return [];
         }
-        return array_merge($element->getErrors('latitude'), $element->getErrors('longitude'));
+        return array_merge($element->errors()->get('latitude'), $element->errors()->get('longitude'));
     }
 
     /**

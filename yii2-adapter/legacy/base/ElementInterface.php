@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use GraphQL\Type\Definition\Type;
 use Stringable;
 use Twig\Markup;
@@ -49,7 +50,8 @@ interface ElementInterface extends
     \CraftCms\Cms\Component\Contracts\CpEditable,
     \CraftCms\Cms\Component\Contracts\Thumbable,
     \CraftCms\Cms\Component\Contracts\Statusable,
-    \CraftCms\Cms\Component\Contracts\Actionable
+    \CraftCms\Cms\Component\Contracts\Actionable,
+    ValidatableWithRuleset
 {
     /**
      * Returns the lowercase version of [[displayName()]].

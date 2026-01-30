@@ -10,14 +10,8 @@
 namespace craft\queue\jobs;
 
 use craft\queue\BaseJob;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Announcement\Jobs\SendAnnouncement;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use yii\base\Exception;
 
 /**
@@ -59,50 +53,7 @@ class Announcement extends BaseJob
      */
     public function execute($queue): void
     {
-        if (isset($this->pluginHandle)) {
-            $pluginInfo = app(Plugins::class)->getStoredPluginInfo($this->pluginHandle);
-            if ($pluginInfo === null) {
-                Log::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", [__METHOD__]);
-
-                return;
-            }
-            $pluginId = $pluginInfo['id'];
-        } else {
-            $pluginId = null;
-        }
-
-        // Fetch all of the control panel users
-        $userQuery = User::find();
-
-        if (Edition::get()->value >= Edition::Pro->value) {
-            $userQuery->can('accessCp');
-        }
-
-        if ($this->adminsOnly) {
-            $userQuery->admin();
-        }
-
-        $totalUsers = $userQuery->count();
-        $batchSize = 100;
-        $dateCreated = now();
-
-        $userQuery->chunk($batchSize, function(Collection $users, int $batchIndex) use ($dateCreated, $pluginId, $totalUsers, $batchSize, $queue) {
-            $this->setProgress($queue, ($batchIndex * $batchSize) / $totalUsers);
-
-            $rows = [];
-
-            foreach ($users as $user) {
-                $rows[] = [
-                    'userId' => $user->id,
-                    'pluginId' => $pluginId,
-                    'heading' => $this->heading,
-                    'body' => $this->body,
-                    'dateCreated' => $dateCreated,
-                ];
-            }
-
-            DB::table(Table::ANNOUNCEMENTS)->insert($rows);
-        });
+        new SendAnnouncement($this->heading, $this->body, $this->pluginHandle, $this->adminsOnly)->handle();
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
@@ -19,7 +20,6 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
-use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
@@ -57,6 +57,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
@@ -368,7 +369,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         foreach ($this->siteSettings as $uid => &$siteSettings) {
             unset($siteSettings['errors']);
@@ -381,7 +382,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                     $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
 
-                    $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
+                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
                 }
             }
 
@@ -644,7 +645,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             'allowOverrides' => true,
             'create' => true,
             'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
-            'errors' => $this->getErrors('entryTypes'),
+            'errors' => $this->errors()->get('entryTypes'),
             'data' => [
                 'error-key' => 'entryTypes',
                 'disabled' => $readOnly,
@@ -1207,7 +1208,7 @@ JS, [
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
-            ! $element->hasErrors($this->handle)
+            ! $element->errors()->has($this->handle)
         );
         $staticEntries = (
             $static ||
@@ -1326,7 +1327,7 @@ JS,
                 'maxElements' => $this->maxEntries,
             ];
 
-            if ($owner->hasErrors($this->handle)) {
+            if ($owner->errors()->has($this->handle)) {
                 $config['prevalidate'] = true;
             }
         }
@@ -1379,14 +1380,18 @@ JS,
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateEntries(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (
+                string $attribute,
+                EntryQuery|ElementCollection $value,
+                Closure $fail,
+            ) => $this->validateEntries($element, $attribute, $value, $fail),
         ];
     }
 
@@ -1400,10 +1405,8 @@ JS,
         return $value->count() === 0;
     }
 
-    private function validateEntries(ElementInterface $element): void
+    private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
-        /** @var EntryQuery|ElementCollection $value */
-        $value = $element->getFieldValue($this->handle);
         $new = 0;
 
         if ($value instanceof EntryQuery) {
@@ -1416,17 +1419,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
-            $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
-                /** @var Entry $entry */
                 if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
+                    $element->inScenarios(Element::SCENARIO_ESSENTIALS) ||
+                    ($entry->enabled && $element->inScenarios(Element::SCENARIO_LIVE))
                 ) {
-                    $entry->setScenario($scenario);
+                    $entry->setScenario($element->getScenario());
                 }
 
                 if (! $entry->validate()) {
@@ -1447,7 +1448,7 @@ JS,
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
                     // in card/index modes, we want to show a top level error to let users know
                     // that there are validation errors in the nested entries
-                    $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                    $fail(t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
                         'count' => count($invalidEntryIds),
                         'fieldName' => $this->getUiLabel(),
                     ]));
@@ -1458,25 +1459,33 @@ JS,
         }
 
         if (
-            $element->getScenario() === Element::SCENARIO_LIVE &&
+            $element->inScenarios(Element::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
-            $arrayValidator = new ArrayValidator([
-                'min' => $this->minEntries ?: null,
-                'max' => $this->maxEntries ?: null,
-                'tooFew' => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
+            $rules = array_filter([
+                $this->minEntries ? "min:$this->minEntries" : null,
+                $this->maxEntries ? "max:$this->maxEntries" : null,
+            ]);
+
+            $messages = array_filter([
+                "$attribute.min" => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
                     'attribute' => t($this->name, category: 'site'),
                     'min' => $this->minEntries, // Need to pass this in now
                 ]) : null,
-                'tooMany' => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
+                "$attribute.max" => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
                     'attribute' => t($this->name, category: 'site'),
                     'max' => $this->maxEntries, // Need to pass this in now
                 ]) : null,
-                'skipOnEmpty' => false,
             ]);
 
-            if (! $arrayValidator->validate($entries, $error)) {
-                $element->addError($this->handle, $error);
+            $v = ValidatorFacade::make(
+                data: [$attribute => $entries],
+                rules: [$attribute => $rules],
+                messages: $messages
+            );
+
+            foreach ($v->errors()->get($attribute) as $error) {
+                $fail($error);
             }
         }
     }

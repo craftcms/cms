@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fields\conditions\LinkFieldConditionRule;
@@ -12,7 +13,6 @@ use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
-use craft\validators\StringValidator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -39,6 +39,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\Validator;
 use Override;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
@@ -426,7 +427,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'min' => '10',
                 'step' => '10',
                 'value' => $this->maxLength,
-                'errors' => $this->getErrors('maxLength'),
+                'errors' => $this->errors()->get('maxLength'),
                 'data' => ['error-key' => 'maxLength'],
                 'disabled' => $readOnly,
             ]);
@@ -776,41 +777,41 @@ JS;
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [
-                function (ElementInterface $element) {
-                    /** @var LinkData $value */
-                    $value = $element->getFieldValue($this->handle);
-                    $linkTypes = $this->getLinkTypes();
-                    if (! isset($linkTypes[$value->getType()])) {
-                        $type = self::types()[$value->getType()] ?? null;
-                        $element->addError("field:$this->handle", t('{attribute} no longer allows {type} links.', [
-                            'attribute' => $this->getUiLabel(),
-                            'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
-                        ]));
+            function (string $attribute, LinkData $value, Closure $fail, Validator $validator) {
+                $linkTypes = $this->getLinkTypes();
 
-                        return;
-                    }
-                    $linkType = $linkTypes[$value->getType()];
-                    $value = $value->serialize()['value'];
-                    $error = null;
-                    if (! $linkType->validateValue($value, $error)) {
-                        /** @var string|null $error */
-                        $element->addError("field:$this->handle", $error ?? t('{attribute} is invalid.', [
-                            'attribute' => $this->getUiLabel(),
-                        ]));
+                if (! isset($linkTypes[$value->getType()])) {
+                    $type = self::types()[$value->getType()] ?? null;
+                    $fail(t('{attribute} no longer allows {type} links.', [
+                        'attribute' => $this->getUiLabel(),
+                        'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
+                    ]));
 
-                        return;
-                    }
+                    return;
+                }
 
-                    $stringValidator = new StringValidator(['max' => $this->maxLength]);
-                    if (! $stringValidator->validate($value, $error)) {
-                        $element->addError("field:$this->handle", $error);
-                    }
-                },
-            ],
+                $linkType = $linkTypes[$value->getType()];
+                $value = $value->serialize()['value'];
+                $error = null;
+                if (! $linkType->validateValue($value, $error)) {
+                    /** @var string|null $error */
+                    $fail($error ?? t('{attribute} is invalid.', [
+                        'attribute' => $this->getUiLabel(),
+                    ]));
+
+                    return;
+                }
+
+                if (! $validator->validateMax($attribute, $value, [$this->maxLength])) {
+                    $fail(t('{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                        'attribute' => $this->getUiLabel(),
+                        'max' => $this->maxLength,
+                    ]));
+                }
+            },
         ];
     }
 

@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
-use craft\validators\MoneyValidator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Money\Currencies\ISOCurrencies;
@@ -366,14 +366,25 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->_isoCurrencies->subunitFor($currency);
     }
 
+    #[\Override]
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        if (! $value instanceof MoneyLibrary) {
+            $currency = ! $value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
+            $value = new MoneyLibrary($value['value'], $currency);
+        }
+
+        return $value;
+    }
+
     /**
      * {@inheritdoc}
      */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [MoneyValidator::class, 'min' => $this->min, 'max' => $this->max],
+            new MoneyRule($element, $this->min, $this->max),
         ];
     }
 

@@ -1,8 +1,6 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\fieldlayoutelements\CustomField;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
@@ -20,24 +18,7 @@ test('related elements', function () {
         'type' => Entries::class,
     ]);
 
-    $fieldLayout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => \Illuminate\Support\Str::uuid()->toString(),
-                    'name' => 'Tab 1',
-                    'elements' => [
-                        [
-                            'uid' => \Illuminate\Support\Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $field->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
 
     $entries = EntryModel::factory(3)->create();
     foreach ($entries as $entryModel) {

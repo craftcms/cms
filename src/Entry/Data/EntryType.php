@@ -23,10 +23,10 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCastable;
@@ -54,7 +54,7 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         public ?string $titleTranslationKeyFormat = null,
         public ?string $titleFormat = null,
-        public bool $allowLineBreaksInTitles = false,
+        public ?bool $allowLineBreaksInTitles = false,
         public ?bool $showSlugField = true,
         public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
         public ?string $slugTranslationKeyFormat = null,

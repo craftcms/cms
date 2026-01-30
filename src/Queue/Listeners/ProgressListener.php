@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue\Listeners;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Queue\Contracts\DescribableJob;
 use CraftCms\Cms\Queue\JobProgress;
+use Illuminate\Support\Facades\Queue;
 
 abstract readonly class ProgressListener
 {
@@ -17,7 +18,9 @@ abstract readonly class ProgressListener
 
     protected function shouldTrackQueue(?string $queueName): bool
     {
-        return in_array($queueName, $this->generalConfig->trackedQueueNames, true);
+        $defaultQueueName = Queue::getConfig()['queue'] ?? $this->generalConfig->queueName;
+
+        return in_array($queueName ?? $defaultQueueName, $this->generalConfig->trackedQueueNames, true);
     }
 
     protected function jobUuid(array $payload): ?string

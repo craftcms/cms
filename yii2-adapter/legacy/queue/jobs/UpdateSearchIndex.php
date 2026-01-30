@@ -9,11 +9,9 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Support\Facades\I18N;
-use yii\base\InvalidConfigException;
 
 /**
  * UpdateSearchIndex job
@@ -59,30 +57,13 @@ class UpdateSearchIndex extends BaseJob
      */
     public function execute($queue): void
     {
-        $searchService = Craft::$app->getSearch();
-
-        if ($this->queued) {
-            if (!is_int($this->elementId) || !is_int($this->siteId)) {
-                throw new InvalidConfigException('`elementId` and `siteId` must be an integer when `queued` is true.');
-            }
-            $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
-
-            return;
-        }
-
-        $elements = $this->elementType::find()
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->id($this->elementId)
-            ->siteId($this->siteId)
-            ->status(null)
-            ->all();
-        $total = count($elements);
-
-        foreach ($elements as $i => $element) {
-            $this->setProgress($queue, ($i + 1) / $total);
-            $searchService->indexElementAttributes($element, $this->fieldHandles);
-        }
+        new \CraftCms\Cms\Search\Jobs\UpdateSearchIndex(
+            elementType: $this->elementType,
+            elementId: $this->elementId,
+            siteId: $this->siteId,
+            fieldHandles: $this->fieldHandles,
+            queued: $this->queued,
+        )->handle();
     }
 
     /**

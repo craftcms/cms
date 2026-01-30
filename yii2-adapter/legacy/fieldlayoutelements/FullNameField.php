@@ -97,7 +97,7 @@ class FullNameField extends TextField
                 'autocomplete' => false,
                 'name' => 'firstName',
                 'value' => $element->firstName ?? null,
-                'errors' => !$static ? $element->getErrors('firstName') : [],
+                'errors' => !$static ? $element->errors()->get('firstName') : [],
                 'disabled' => $static,
                 'data' => [
                     'error-key' => 'firstName',
@@ -117,7 +117,7 @@ class FullNameField extends TextField
                 'autocomplete' => false,
                 'name' => 'lastName',
                 'value' => $element->lastName ?? null,
-                'errors' => !$static ? $element->getErrors('lastName') : [],
+                'errors' => !$static ? $element->errors()->get('lastName') : [],
                 'disabled' => $static,
                 'data' => [
                     'error-key' => 'lastName',

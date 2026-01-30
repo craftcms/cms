@@ -338,12 +338,12 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function elementHasErrors(ElementInterface $element): bool
     {
-        if (!$element->hasErrors()) {
+        if ($element->errors()->isEmpty()) {
             return false;
         }
 
         foreach ($this->getElements() as $layoutElement) {
-            if ($layoutElement instanceof BaseField && $element->hasErrors($layoutElement->attribute() . '.*')) {
+            if ($layoutElement instanceof BaseField && $element->errors()->has($layoutElement->attribute() . '.*')) {
                 return true;
             }
         }

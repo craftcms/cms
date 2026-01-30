@@ -154,12 +154,12 @@ JS, [
     /**
      * @inheritdoc
      */
-    protected function errors(?ElementInterface $element = null): array
+    protected function fieldErrors(?ElementInterface $element = null): array
     {
         if (!$element) {
             return [];
         }
 
-        return array_merge($element->getErrors('email'), $element->getErrors('unverifiedEmail'));
+        return array_merge($element->errors()->get('email'), $element->errors()->get('unverifiedEmail'));
     }
 }

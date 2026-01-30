@@ -12,7 +12,7 @@ describe('Required field validation', function () {
 
         $asset->validate(['filename']);
 
-        expect($asset->hasErrors('filename'))->toBe($expectError);
+        expect($asset->errors()->has('filename'))->toBe($expectError);
     })->with([
         'empty string is invalid' => ['', true],
         'valid filename is valid' => ['valid-file.jpg', false],
@@ -24,7 +24,7 @@ describe('Required field validation', function () {
 
         $asset->validate(['kind']);
 
-        expect($asset->hasErrors('kind'))->toBe($expectError);
+        expect($asset->errors()->has('kind'))->toBe($expectError);
     })->with([
         'null is invalid' => [null, true],
         'empty string is invalid' => ['', true],
@@ -39,7 +39,7 @@ describe('String length validation', function () {
 
         $asset->validate(['kind']);
 
-        expect($asset->hasErrors('kind'))->toBe($expectError);
+        expect($asset->errors()->has('kind'))->toBe($expectError);
     })->with([
         '50 chars is valid' => [50, false],
         '51 chars is invalid' => [51, true],
@@ -54,7 +54,7 @@ describe('Title validation on SCENARIO_CREATE', function () {
 
         $asset->validate(['title']);
 
-        expect($asset->hasErrors('title'))->toBe($expectError);
+        expect($asset->errors()->has('title'))->toBe($expectError);
     })->with([
         '255 chars is valid' => [255, false],
         '256 chars is invalid' => [256, true],
@@ -68,7 +68,7 @@ describe('Safe attribute validation', function () {
 
         $asset->validate(['alt']);
 
-        expect($asset->hasErrors('alt'))->toBeFalse();
+        expect($asset->errors()->has('alt'))->toBeFalse();
     });
 });
 
@@ -80,7 +80,7 @@ describe('Scenario-specific required validation', function () {
 
         $asset->validate(['newLocation']);
 
-        expect($asset->hasErrors('newLocation'))->toBe($expectError);
+        expect($asset->errors()->has('newLocation'))->toBe($expectError);
     })->with([
         'SCENARIO_CREATE requires newLocation' => [Asset::SCENARIO_CREATE, true],
         'SCENARIO_MOVE requires newLocation' => [Asset::SCENARIO_MOVE, true],
@@ -95,7 +95,7 @@ describe('Scenario-specific required validation', function () {
 
         $asset->validate(['tempFilePath']);
 
-        expect($asset->hasErrors('tempFilePath'))->toBe($expectError);
+        expect($asset->errors()->has('tempFilePath'))->toBe($expectError);
     })->with([
         'SCENARIO_CREATE requires tempFilePath' => [Asset::SCENARIO_CREATE, true],
         'SCENARIO_REPLACE requires tempFilePath' => [Asset::SCENARIO_REPLACE, true],
@@ -122,7 +122,7 @@ describe('SCENARIO_INDEX validation', function () {
 
         $asset->validate();
 
-        expect($asset->hasErrors())->toBeFalse();
+        expect($asset->errors()->isEmpty())->toBeTrue();
     });
 });
 
@@ -133,7 +133,7 @@ describe('Edge cases', function () {
 
         $asset->validate(['alt']);
 
-        expect($asset->hasErrors('alt'))->toBeFalse();
+        expect($asset->errors()->has('alt'))->toBeFalse();
     });
 
     test('special characters in filenames', function () {
@@ -142,7 +142,7 @@ describe('Edge cases', function () {
 
         $asset->validate(['filename']);
 
-        expect($asset->hasErrors('filename'))->toBeFalse();
+        expect($asset->errors()->has('filename'))->toBeFalse();
     });
 
     test('multiple validation errors can be collected', function () {
@@ -152,8 +152,8 @@ describe('Edge cases', function () {
 
         $asset->validate(['filename', 'kind']);
 
-        expect($asset->hasErrors('filename'))->toBeTrue();
-        expect($asset->hasErrors('kind'))->toBeTrue();
+        expect($asset->errors()->has('filename'))->toBeTrue();
+        expect($asset->errors()->has('kind'))->toBeTrue();
     });
 
     test('all valid asset kinds are accepted', function (string $kind) {
@@ -162,7 +162,7 @@ describe('Edge cases', function () {
 
         $asset->validate(['kind']);
 
-        expect($asset->hasErrors('kind'))->toBeFalse();
+        expect($asset->errors()->has('kind'))->toBeFalse();
     })->with([
         'KIND_ACCESS' => [Asset::KIND_ACCESS],
         'KIND_AUDIO' => [Asset::KIND_AUDIO],

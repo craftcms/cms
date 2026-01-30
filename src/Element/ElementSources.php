@@ -258,7 +258,7 @@ final class ElementSources
         return collect($this->sourceConfigs($elementType) ?? [])
             ->filter(fn (array $source) => isset($source['page']))
             ->groupBy('page')
-            ->filter(fn (Collection $pageWithSources) => $pageWithSources->contains(fn (array $source) => ! isset($source['disabled']) || $source['disabled'] === true))
+            ->filter(fn (Collection $sources) => $sources->contains(fn (array $source) => ! ($source['disabled'] ?? false)))
             ->keys();
     }
 

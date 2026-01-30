@@ -165,11 +165,11 @@ class SsoController extends Controller
         }
 
         // Log some context around the error
-        $user?->hasErrors() ? Log::error(
+        $user?->errors()->isNotEmpty() ? Log::error(
             sprintf(
                 "%s. Errors: %s.",
                 $message,
-                Json::encode($user->getErrors())
+                Json::encode($user->errors()->getMessages())
             ),
             ["auth"]
         ) : Log::error(

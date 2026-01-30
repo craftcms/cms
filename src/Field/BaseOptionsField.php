@@ -17,11 +17,11 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
-use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -195,7 +195,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $labels = [];
         $values = [];
@@ -333,7 +333,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
-            'errors' => $this->getErrors('options'),
+            'errors' => $this->errors()->get('options'),
             'data' => ['error-key' => 'options'],
         ]);
 
@@ -502,25 +502,23 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return OptionsFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $this->customOptions) {
+            return [];
+        }
+
         return [
-            [
-                function (ElementInterface $element) {
-                    $value = $element->getFieldValue($this->handle);
-                    $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
-                    if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
-                        $element->addError($this->handle, t('{attribute} is invalid.', [
-                            'attribute' => t($this->name, category: 'site'),
-                        ]));
-                    }
-                },
-                'when' => fn () => ! $this->customOptions,
-            ],
+            function ($attribute, $value, $fail) {
+                $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
+
+                if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
+                    $fail(t('{attribute} is invalid.', [
+                        'attribute' => t($this->name, category: 'site'),
+                    ]));
+                }
+            },
         ];
     }
 

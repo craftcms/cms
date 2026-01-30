@@ -1,14 +1,11 @@
 <?php
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\fieldlayoutelements\CustomField;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -21,24 +18,7 @@ it('can query custom fields', function () {
         'type' => PlainText::class,
     ]);
 
-    $fieldLayout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Tab 1',
-                    'elements' => [
-                        [
-                            'uid' => Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $field->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
 
     $entryModel = EntryModel::factory()->create();
     $entryModel->element->update([

@@ -7,7 +7,7 @@
 
 namespace craft\cache;
 
-use craft\elements\db\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\caching\TagDependency;
 
 /**
@@ -19,17 +19,17 @@ use yii\caching\TagDependency;
 class ElementQueryTagDependency extends TagDependency
 {
     /**
-     * @var ElementQuery|null
+     * @var ElementQueryInterface|null
      */
-    public ?ElementQuery $elementQuery = null;
+    public ?ElementQueryInterface $elementQuery = null;
 
     /**
      * Constructor
      *
-     * @param ElementQuery $elementQuery
+     * @param ElementQueryInterface $elementQuery
      * @param array $config
      */
-    public function __construct(ElementQuery $elementQuery, array $config = [])
+    public function __construct(ElementQueryInterface $elementQuery, array $config = [])
     {
         $this->elementQuery = $elementQuery;
         parent::__construct($config);

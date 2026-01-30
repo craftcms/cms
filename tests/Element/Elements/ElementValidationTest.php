@@ -20,18 +20,7 @@ describe('Site ID validation', function () {
 
         $entry->validate(['siteId']);
 
-        expect($entry->hasErrors('siteId'))->toBeFalse();
-    });
-
-    test('siteId is validated on SCENARIO_DEFAULT', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
-        $site = Sites::getPrimarySite();
-        $entry->siteId = $site->id;
-
-        $entry->validate(['siteId']);
-
-        expect($entry->hasErrors('siteId'))->toBeFalse();
+        expect($entry->errors()->has('siteId'))->toBeFalse();
     });
 
     test('siteId is validated on SCENARIO_LIVE', function () {
@@ -42,7 +31,7 @@ describe('Site ID validation', function () {
 
         $entry->validate(['siteId']);
 
-        expect($entry->hasErrors('siteId'))->toBeFalse();
+        expect($entry->errors()->has('siteId'))->toBeFalse();
     });
 
     test('siteId is validated on SCENARIO_ESSENTIALS', function () {
@@ -53,7 +42,7 @@ describe('Site ID validation', function () {
 
         $entry->validate(['siteId']);
 
-        expect($entry->hasErrors('siteId'))->toBeFalse();
+        expect($entry->errors()->has('siteId'))->toBeFalse();
     });
 });
 
@@ -73,7 +62,7 @@ describe('Title validation', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeFalse();
+        expect($entry->errors()->has('title'))->toBeFalse();
     });
 
     test('title rejects 256+ characters', function () {
@@ -82,7 +71,7 @@ describe('Title validation', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
+        expect($entry->errors()->has('title'))->toBeTrue();
     });
 
     test('title rejects 4-byte unicode (mb4) characters', function () {
@@ -93,17 +82,7 @@ describe('Title validation', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
-    });
-
-    test('title is required on SCENARIO_DEFAULT for elements with titles', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
-        $entry->title = '';
-
-        $entry->validate(['title']);
-
-        expect($entry->hasErrors('title'))->toBeTrue();
+        expect($entry->errors()->has('title'))->toBeTrue();
     });
 
     test('title is required on SCENARIO_LIVE for elements with titles', function () {
@@ -113,7 +92,7 @@ describe('Title validation', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
+        expect($entry->errors()->has('title'))->toBeTrue();
     });
 });
 
@@ -124,7 +103,7 @@ describe('Slug validation', function () {
 
         $entry->validate(['slug']);
 
-        expect($entry->hasErrors('slug'))->toBeFalse();
+        expect($entry->errors()->has('slug'))->toBeFalse();
     });
 
     test('slug normalizes special characters', function () {
@@ -134,7 +113,7 @@ describe('Slug validation', function () {
         $entry->validate(['slug']);
 
         // Slug normalization happens but may not be lowercase depending on language
-        expect($entry->hasErrors('slug'))->toBeFalse();
+        expect($entry->errors()->has('slug'))->toBeFalse();
     });
 
     test('slug accepts 255 characters', function () {
@@ -143,7 +122,7 @@ describe('Slug validation', function () {
 
         $entry->validate(['slug']);
 
-        expect($entry->hasErrors('slug'))->toBeFalse();
+        expect($entry->errors()->has('slug'))->toBeFalse();
     });
 
     test('slug rejects 256+ characters', function () {
@@ -152,7 +131,7 @@ describe('Slug validation', function () {
 
         $entry->validate(['slug']);
 
-        expect($entry->hasErrors('slug'))->toBeTrue();
+        expect($entry->errors()->has('slug'))->toBeTrue();
     });
 
     test('slug is validated on SCENARIO_ESSENTIALS', function () {
@@ -162,7 +141,7 @@ describe('Slug validation', function () {
 
         $entry->validate(['slug']);
 
-        expect($entry->hasErrors('slug'))->toBeTrue();
+        expect($entry->errors()->has('slug'))->toBeTrue();
     });
 });
 
@@ -172,7 +151,7 @@ describe('URI validation', function () {
 
         $entry->validate(['uri']);
 
-        expect($entry->hasErrors('uri'))->toBeFalse();
+        expect($entry->errors()->has('uri'))->toBeFalse();
     });
 
     test('uri is validated on SCENARIO_ESSENTIALS', function () {
@@ -181,7 +160,7 @@ describe('URI validation', function () {
 
         $entry->validate(['uri']);
 
-        expect($entry->hasErrors('uri'))->toBeFalse();
+        expect($entry->errors()->has('uri'))->toBeFalse();
     });
 });
 
@@ -193,17 +172,7 @@ describe('Scenario validation', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
-    });
-
-    test('SCENARIO_DEFAULT validates title when required', function () {
-        $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_DEFAULT);
-        $entry->title = '';
-
-        $entry->validate(['title']);
-
-        expect($entry->hasErrors('title'))->toBeTrue();
+        expect($entry->errors()->has('title'))->toBeTrue();
     });
 });
 
@@ -214,7 +183,7 @@ describe('Edge cases', function () {
 
         $entry->validate(['title']);
 
-        expect($entry->hasErrors('title'))->toBeFalse();
+        expect($entry->errors()->has('title'))->toBeFalse();
     });
 
     test('multiple validation errors can be collected', function () {
@@ -224,8 +193,8 @@ describe('Edge cases', function () {
 
         $entry->validate(['title', 'slug']);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
-        expect($entry->hasErrors('slug'))->toBeTrue();
+        expect($entry->errors()->has('title'))->toBeTrue();
+        expect($entry->errors()->has('slug'))->toBeTrue();
     });
 
     test('validation with specific attribute names only validates those attributes', function () {
@@ -235,18 +204,18 @@ describe('Edge cases', function () {
 
         $entry->validate(['slug']);
 
-        expect($entry->hasErrors('slug'))->toBeFalse();
-        expect($entry->hasErrors('title'))->toBeFalse(); // Not validated
+        expect($entry->errors()->has('slug'))->toBeFalse();
+        expect($entry->errors()->has('title'))->toBeFalse(); // Not validated
     });
 
     test('validation with clearErrors=false preserves existing errors', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->addError('title', 'Custom error');
+        $entry->errors()->add('title', 'Custom error');
         $entry->slug = 'valid-slug';
 
         $entry->validate(['slug'], false);
 
-        expect($entry->hasErrors('title'))->toBeTrue();
-        expect($entry->getErrors('title'))->toBe(['Custom error']);
+        expect($entry->errors()->has('title'))->toBeTrue();
+        expect($entry->errors()->get('title'))->toBe(['Custom error']);
     });
 });
