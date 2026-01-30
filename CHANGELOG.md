@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where nested elements could appear to be editable when their field was read-only.
+
 ## 5.9.4 - 2026-01-29
 
 - Added `craft\models\FieldLayout::getEditableCustomFieldElements()`.
