@@ -2,7 +2,6 @@ import {css, html, LitElement, nothing} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {JobStatus} from '@craftcms/cp/src/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
-import {Craft} from '@/legacy';
 
 import '@craftcms/cp/components/progress/progress.ts';
 
@@ -27,7 +26,7 @@ class CpQueueIndicator extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    Craft.$queue.addEventListener(
+    window.Craft?.$queue?.addEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
@@ -38,13 +37,14 @@ class CpQueueIndicator extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    Craft.$queue.removeEventListener(
+    window.Craft?.$queue?.removeEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
   }
 
   #handleJobUpdate = (event: CustomEvent<JobUpdateDetail>) => {
+    console.log('handling update');
     this.displayedJob = event.detail.displayedJob;
     this.#updateVisibility();
   };
@@ -68,12 +68,9 @@ class CpQueueIndicator extends LitElement {
   }
 
   get #queueManagerUrl(): string | null {
-    if (!Craft.$queue?.canAccessQueueManager) return null;
-    // Use Craft global if available for proper URL generation
-    // @ts-ignore
-    if (typeof Craft !== 'undefined' && Craft.getUrl) {
-      // @ts-ignore
-      return Craft.getUrl('utilities/queue-manager');
+    if (!window.Craft?.$queue?.canAccessQueueManager) return null;
+    if (window.Craft?.getUrl) {
+      return window.Craft.getUrl('utilities/queue-manager');
     }
     return '/admin/utilities/queue-manager';
   }
