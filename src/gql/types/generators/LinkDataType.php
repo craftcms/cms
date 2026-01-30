@@ -48,6 +48,7 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType(mixed $context): ObjectType
     {
+        // @TODO at next breaking change name space the types per field as they can have different settings
         $typeName = self::getName();
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new LinkData([
             'name' => $typeName,
@@ -77,6 +78,7 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
                 if ($context instanceof Link) {
                     $hasElementType = false;
 
+                    // Loop through all types available in the system
                     foreach (Link::types() as $linkType) {
                         if (is_subclass_of($linkType, BaseElementLinkType::class)) {
                             $hasElementType = true;
