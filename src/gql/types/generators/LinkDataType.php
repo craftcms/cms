@@ -40,7 +40,10 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function getName($context = null): string
     {
-        return $context->handle . '_LinkData';
+        if ($context instanceof Link) {
+            return "{$context->handle}_LinkData";
+        }
+        return 'LinkData';
     }
 
     /**

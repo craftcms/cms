@@ -1,8 +1,13 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.4 - 2026-01-29
 
-- Fixed an error that could occur when executing a GraphQL query with a Link field.
+- Added `craft\models\FieldLayout::getEditableCustomFieldElements()`.
+- Fixed a bug where `{% case %}` tags with three or more values within `{% switch %}` tags weren’t working properly. ([#18334](https://github.com/craftcms/cms/issues/18334))
+- Fixed a bug where Matrix fields in Blocks view could lose their existing values when they became editable.
+- Fixed a bug where Content Block fields and Matrix fields in Blocks view weren’t updating their nested fields’ editability states.
+- Fixed an error that could occur when executing a GraphQL query with a Link field. ([#18339](https://github.com/craftcms/cms/pull/18339))
+- Fixed a bug where read-only custom fields could be treated as required. ([#18342](https://github.com/craftcms/cms/issues/18342))
 
 ## 5.9.3 - 2026-01-28
 

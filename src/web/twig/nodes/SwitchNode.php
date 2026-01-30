@@ -41,20 +41,7 @@ class SwitchNode extends Node
             }
 
             foreach ($case->getNode('values') as $value) {
-                if ($value instanceof OrBinary) {
-                    foreach ($value as $v) {
-                        $compiler
-                            ->write('case ')
-                            ->subcompile($v)
-                            ->raw(":\n");
-                    }
-                    break;
-                }
-
-                $compiler
-                    ->write('case ')
-                    ->subcompile($value)
-                    ->raw(":\n");
+                $this->compileCaseValues($value, $compiler);
             }
 
             $compiler
@@ -79,5 +66,20 @@ class SwitchNode extends Node
         $compiler
             ->outdent()
             ->write("}\n");
+    }
+
+    private function compileCaseValues(Node $node, Compiler $compiler): void
+    {
+        if ($node instanceof OrBinary) {
+            foreach ($node as $n) {
+                $this->compileCaseValues($n, $compiler);
+            }
+            return;
+        }
+
+        $compiler
+            ->write('case ')
+            ->subcompile($node)
+            ->raw(":\n");
     }
 }

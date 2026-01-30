@@ -3001,7 +3001,7 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
+            $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
