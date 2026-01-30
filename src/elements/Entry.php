@@ -1355,11 +1355,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $page = $section->getPage();
+        $pageUrl = sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries');
 
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
-                'url' => sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'),
+                'url' => $pageUrl,
             ],
         ];
 
@@ -1388,7 +1389,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
                 ->map(fn(Section $s) => [
                     'label' => Craft::t('site', $s->name),
-                    'url' => "entries/$s->handle",
+                    'url' => "$pageUrl/$s->handle",
                     //'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
