@@ -165,7 +165,7 @@ final class Fields
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): Collection
     {
         // If the field has any validation errors and has an ID, swap it with the saved field
-        if (! $field->getIsNew() && $field->hasErrors()) {
+        if (! $field->getIsNew() && $field->errors()->isNotEmpty()) {
             $field = $this->getFieldById($field->id);
         }
 

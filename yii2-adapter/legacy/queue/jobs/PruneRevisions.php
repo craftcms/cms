@@ -9,10 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**
@@ -52,33 +50,12 @@ class PruneRevisions extends BaseJob
      */
     public function execute($queue): void
     {
-        if (!$this->maxRevisions) {
-            // Make sure maxRevisions is still set
-            if (!Cms::config()->maxRevisions) {
-                return;
-            }
-            $this->maxRevisions = Cms::config()->maxRevisions;
-        }
-
-        $extraRevisions = $this->elementType::find()
-            ->revisionOf($this->canonicalId)
-            ->siteId($this->siteId)
-            ->status(null)
-            ->orderBy(['num' => SORT_DESC])
-            ->offset($this->maxRevisions)
-            ->all();
-
-        if (empty($extraRevisions)) {
-            return;
-        }
-
-        $total = count($extraRevisions);
-        $elementsService = Craft::$app->getElements();
-
-        foreach ($extraRevisions as $i => $extraRevision) {
-            $this->setProgress($queue, ($i + 1) / $total);
-            $elementsService->deleteElement($extraRevision, true);
-        }
+        new \CraftCms\Cms\Element\Jobs\PruneRevisions(
+            $this->elementType,
+            $this->canonicalId,
+            $this->siteId,
+            $this->maxRevisions,
+        )->handle();
     }
 
     /**

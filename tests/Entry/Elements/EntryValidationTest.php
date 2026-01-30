@@ -22,7 +22,7 @@ describe('Safe attribute validation', function () {
 
         $entry->validate(['placeInStructure']);
 
-        expect($entry->hasErrors('placeInStructure'))->toBeFalse();
+        expect($entry->errors()->has('placeInStructure'))->toBeFalse();
     })->with([
         'true' => [true],
         'false' => [false],
@@ -37,7 +37,7 @@ describe('Required field validation', function () {
 
         $entry->validate(['sectionId']);
 
-        expect($entry->hasErrors('sectionId'))->toBeTrue();
+        expect($entry->errors()->has('sectionId'))->toBeTrue();
     });
 
     test('sectionId is not required when fieldId is set', function () {
@@ -47,7 +47,7 @@ describe('Required field validation', function () {
 
         $entry->validate(['sectionId']);
 
-        expect($entry->hasErrors('sectionId'))->toBeFalse();
+        expect($entry->errors()->has('sectionId'))->toBeFalse();
     });
 
     test('fieldId and sectionId cannot both be set', function () {
@@ -56,9 +56,9 @@ describe('Required field validation', function () {
 
         $entry->validate(['fieldId']);
 
-        expect($entry->hasErrors('fieldId'))->toBeTrue();
-        expect($entry->getFirstError('fieldId'))->toContain('sectionId');
-        expect($entry->getFirstError('fieldId'))->toContain('fieldId');
+        expect($entry->errors()->has('fieldId'))->toBeTrue();
+        expect($entry->errors()->first('fieldId'))->toContain('sectionId');
+        expect($entry->errors()->first('fieldId'))->toContain('fieldId');
     });
 
     test('typeId is required and cannot be empty', function () {
@@ -66,7 +66,7 @@ describe('Required field validation', function () {
 
         $entry->validate(['typeId']);
 
-        expect($entry->hasErrors('typeId'))->toBeFalse();
+        expect($entry->errors()->has('typeId'))->toBeFalse();
     });
 });
 
@@ -76,7 +76,7 @@ describe('Entry type validation', function () {
 
         $entry->validate(['typeId']);
 
-        expect($entry->hasErrors('typeId'))->toBeFalse();
+        expect($entry->errors()->has('typeId'))->toBeFalse();
     });
 
     test('typeId rejects entry type not in section', function () {
@@ -86,7 +86,7 @@ describe('Entry type validation', function () {
         $entry->typeId = $otherEntryType->id;
         $entry->validate(['typeId']);
 
-        expect($entry->hasErrors('typeId'))->toBeTrue();
+        expect($entry->errors()->has('typeId'))->toBeTrue();
     });
 });
 
@@ -97,7 +97,7 @@ describe('DateTime validation', function () {
 
         $entry->validate([$field]);
 
-        expect($entry->hasErrors($field))->toBeFalse();
+        expect($entry->errors()->has($field))->toBeFalse();
     })->with([
         'postDate accepts null' => ['postDate', null],
         'expiryDate accepts null' => ['expiryDate', null],
@@ -117,7 +117,7 @@ describe('Date comparison validation', function () {
 
         $entry->validate(['postDate']);
 
-        expect($entry->hasErrors('postDate'))->toBe($expectError);
+        expect($entry->errors()->has('postDate'))->toBe($expectError);
     })->with([
         'postDate after expiryDate is invalid' => [new DateTime('2025-01-01'), new DateTime('2024-01-01'), true],
         'postDate before expiryDate is valid' => [new DateTime('2024-01-01'), new DateTime('2025-01-01'), false],
@@ -132,7 +132,7 @@ describe('Date comparison validation', function () {
 
         $entry->validate(['postDate']);
 
-        expect($entry->hasErrors('postDate'))->toBeFalse();
+        expect($entry->errors()->has('postDate'))->toBeFalse();
     });
 });
 
@@ -162,7 +162,7 @@ describe('Author required validation', function () {
         $entry->setAuthorIds([]);
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBe($expectError);
+        expect($entry->errors()->has('authorIds'))->toBe($expectError);
     })->with([
         'Channel with SCENARIO_LIVE requires authors' => [SectionType::Channel, true, 1, true],
         'Structure with SCENARIO_LIVE requires authors' => [SectionType::Structure, true, 1, true],
@@ -199,10 +199,10 @@ describe('Author max count validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBe($expectError);
+        expect($entry->errors()->has('authorIds'))->toBe($expectError);
 
         if ($errorContains !== null) {
-            expect($entry->getFirstError('authorIds'))->toContain($errorContains);
+            expect($entry->errors()->first('authorIds'))->toContain($errorContains);
         }
     })->with([
         'rejects more authors than maxAuthors allows (singular)' => [1, 2, true, 'Only one author'],
@@ -230,8 +230,8 @@ describe('Author permission validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBeTrue();
-        expect($entry->getFirstError('authorIds'))->toContain('permission');
+        expect($entry->errors()->has('authorIds'))->toBeTrue();
+        expect($entry->errors()->first('authorIds'))->toContain('permission');
     });
 
     test('author with viewEntries permission is valid', function () {
@@ -260,7 +260,7 @@ describe('Author permission validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBeFalse();
+        expect($entry->errors()->has('authorIds'))->toBeFalse();
     });
 
     test('admin user can be author without explicit permission', function () {
@@ -281,7 +281,7 @@ describe('Author permission validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBeFalse();
+        expect($entry->errors()->has('authorIds'))->toBeFalse();
     });
 });
 
@@ -294,7 +294,7 @@ describe('Scenario-specific validation', function () {
 
         $entry->validate(['postDate']);
 
-        expect($entry->hasErrors('postDate'))->toBeTrue();
+        expect($entry->errors()->has('postDate'))->toBeTrue();
     });
 
     test('default scenario skips date comparison validation', function () {
@@ -304,7 +304,7 @@ describe('Scenario-specific validation', function () {
 
         $entry->validate(['postDate']);
 
-        expect($entry->hasErrors('postDate'))->toBeFalse();
+        expect($entry->errors()->has('postDate'))->toBeFalse();
     });
 
     test('SCENARIO_LIVE validates author requirement', function () {
@@ -324,7 +324,7 @@ describe('Scenario-specific validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBeTrue();
+        expect($entry->errors()->has('authorIds'))->toBeTrue();
     });
 
     test('default scenario skips author requirement validation', function () {
@@ -343,7 +343,7 @@ describe('Scenario-specific validation', function () {
 
         $entry->validate(['authorIds']);
 
-        expect($entry->hasErrors('authorIds'))->toBeFalse();
+        expect($entry->errors()->has('authorIds'))->toBeFalse();
     });
 });
 
@@ -355,7 +355,7 @@ describe('Edge cases', function () {
 
         $entry->validate(['sectionId']);
 
-        expect($entry->hasErrors('sectionId'))->toBeTrue();
+        expect($entry->errors()->has('sectionId'))->toBeTrue();
     });
 
     test('factory creates valid entry by default', function () {
@@ -363,6 +363,6 @@ describe('Edge cases', function () {
 
         $entry->validate();
 
-        expect($entry->hasErrors())->toBeFalse();
+        expect($entry->errors()->isEmpty())->toBeTrue();
     });
 });

@@ -155,7 +155,7 @@ it('returns 400 for active users on sendActivationEmail', function () {
         'active' => true,
     ]);
 
-    actingAs(UserElement::findOne());
+    actingAs(User::factory()->admin()->createElement());
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $activeUser->id,

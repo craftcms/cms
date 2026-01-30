@@ -35,7 +35,6 @@ use craft\errors\VolumeException;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
-use craft\fieldlayoutelements\assets\AltField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -55,11 +54,10 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
-use craft\validators\DateTimeValidator;
-use craft\validators\StringValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -75,6 +73,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -92,7 +91,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use yii\validators\RequiredValidator;
 
 use function CraftCms\Cms\t;
 
@@ -129,6 +127,7 @@ use function CraftCms\Cms\t;
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  */
+#[Ruleset(AssetRules::class)]
 final class Asset extends Element
 {
     // Events
@@ -185,6 +184,18 @@ final class Asset extends Element
     public const string SCENARIO_CREATE = 'create';
 
     public const string SCENARIO_REPLACE = 'replace';
+
+    #[Override]
+    public function scenarios(): array
+    {
+        return array_merge(parent::scenarios(), [
+            self::SCENARIO_MOVE => null,
+            self::SCENARIO_FILEOPS => null,
+            self::SCENARIO_INDEX => [],
+            self::SCENARIO_CREATE => null,
+            self::SCENARIO_REPLACE => null,
+        ]);
+    }
 
     // File kinds
     // -------------------------------------------------------------------------
@@ -1364,71 +1375,6 @@ final class Asset extends Element
             $this->_volumeId = $id;
             $this->_volume = null;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
-            if ($altElement && $altElement->required) {
-                (new RequiredValidator)->validateAttribute($this, 'alt');
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
-        $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
-        $rules[] = [['dateModified'], DateTimeValidator::class];
-        $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
-        $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
-        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
-
-        // Validate the extension unless all we're doing is moving the file
-        $rules[] = [
-            ['newLocation'],
-            AssetLocationValidator::class,
-            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
-            'except' => [self::SCENARIO_MOVE],
-        ];
-        $rules[] = [
-            ['newLocation'],
-            AssetLocationValidator::class,
-            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
-            'allowedExtensions' => '*',
-            'on' => [self::SCENARIO_MOVE],
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_INDEX] = [];
-
-        return $scenarios;
     }
 
     /**
@@ -3043,7 +2989,7 @@ JS;
                 'id' => 'new-filename',
                 'name' => 'newFilename',
                 'value' => $this->_filename,
-                'errors' => $this->getErrors('newLocation'),
+                'errors' => $this->errors()->get('newLocation'),
                 'first' => true,
                 'required' => true,
                 'class' => ['text', 'filename'],

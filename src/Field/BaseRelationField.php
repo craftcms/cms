@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
@@ -46,12 +47,13 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Validation\Validator;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
-use yii\validators\NumberValidator;
 
 use function CraftCms\Cms\t;
 
@@ -576,18 +578,29 @@ JS, [
         return $view->renderTemplate($this->settingsTemplate, $variables);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         $rules = [
-            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE], 'skipOnEmpty' => false],
+            fn (
+                string $attribute,
+                ElementQueryInterface|ElementCollection $value,
+                Closure $fail,
+                Validator $validator,
+            ) => $this->validateRelationCount($element, $attribute, $value, $validator),
         ];
 
         if ($this->validateRelatedElements) {
-            $rules[] = ['validateRelatedElements', 'on' => [Element::SCENARIO_LIVE]];
+            $rules[] = fn (
+                string $attribute,
+                ElementQueryInterface|ElementCollection $value,
+                Closure $fail,
+                Validator $validator,
+            ) => $this->validateRelatedElements($element, $value, $fail);
         }
 
         return $rules;
@@ -596,52 +609,59 @@ JS, [
     /**
      * Validates that the number of related elements are within the min/max relation bounds.
      */
-    public function validateRelationCount(ElementInterface $element): void
+    public function validateRelationCount(ElementInterface $element, string $attribute, ElementQueryInterface|ElementCollection $value, Validator $validator): void
     {
-        if ($this->allowLimit && ($this->minRelations || $this->maxRelations)) {
-            /** @var ElementQueryInterface|ElementCollection $value */
-            $value = $element->getFieldValue($this->handle);
+        if (! $this->allowLimit) {
+            return;
+        }
 
-            if ($value instanceof ElementQueryInterface) {
-                $value = $this->_all($value, $element)->eagerly();
-            }
+        if (! $this->minRelations && ! $this->maxRelations) {
+            return;
+        }
 
-            $arrayValidator = new NumberValidator([
-                'min' => $this->minRelations,
-                'max' => $this->maxRelations,
-                'tooSmall' => $this->minRelations ? t(
-                    '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.',
-                    [
-                        'attribute' => t($this->name, category: 'site'),
-                        'min' => $this->minRelations, // Need to pass this in now
-                    ]) : null,
-                'tooBig' => $this->maxRelations ? t(
-                    '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
-                    [
-                        'attribute' => t($this->name, category: 'site'),
-                        'max' => $this->maxRelations, // Need to pass this in now
-                    ]) : null,
-                'skipOnEmpty' => false,
-            ]);
+        if ($value instanceof ElementQueryInterface) {
+            $value = $this->_all($value, $element)->eagerly();
+        }
 
-            if (! $arrayValidator->validate($value->count(), $error)) {
-                $element->addError($this->handle, $error);
-            }
+        $rules = [
+            $attribute => array_filter([
+                'integer',
+                $this->minRelations ? 'min:'.$this->minRelations : null,
+                $this->maxRelations ? 'max:'.$this->maxRelations : null,
+            ]),
+        ];
+
+        $messages = array_filter([
+            $attribute.'.min' => $this->minRelations
+                ? t('{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.', [
+                    'attribute' => t($this->name, category: 'site'),
+                    'min' => $this->minRelations, // Need to pass this in now
+                ])
+                : null,
+            $attribute.'.max' => $this->maxRelations
+                ? t('{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
+                    'attribute' => t($this->name, category: 'site'),
+                    'max' => $this->maxRelations, // Need to pass this in now
+                ])
+                : null,
+        ]);
+
+        $v = ValidatorFacade::make([$attribute => $value->count()], $rules, $messages);
+
+        if ($v->fails()) {
+            $validator->errors()->merge($v->errors());
         }
     }
 
     /**
      * Validates the related elements.
      */
-    public function validateRelatedElements(ElementInterface $element): void
+    public function validateRelatedElements(ElementInterface $element, ElementQueryInterface|ElementCollection $value, Closure $fail): void
     {
         // No recursive related element validation
         if (self::$validatingRelatedElements) {
             return;
         }
-
-        /** @var ElementQueryInterface|ElementCollection $value */
-        $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
             $value
@@ -662,16 +682,14 @@ JS, [
         }
 
         if ($errorCount) {
-            $selectedCount = (int) $value->count();
-            $element->addError($this->handle, t(
-                'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.',
-                [
-                    'relatedType' => $selectedCount === 1
-                        ? static::elementType()::lowerDisplayName()
-                        : static::elementType()::pluralLowerDisplayName(),
-                    'count' => $selectedCount,
-                    'type' => $element::lowerDisplayName(),
-                ]));
+            $selectedCount = $value->count();
+            $fail(t('The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
+                'relatedType' => $selectedCount === 1
+                    ? static::elementType()::lowerDisplayName()
+                    : static::elementType()::pluralLowerDisplayName(),
+                'count' => $selectedCount,
+                'type' => $element::lowerDisplayName(),
+            ]));
         }
     }
 

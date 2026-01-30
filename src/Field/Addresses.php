@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -15,7 +16,6 @@ use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Gql;
-use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
@@ -37,6 +37,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -689,18 +690,15 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function getElementValidationRules(): array
+    #[\Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateAddresses(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn ($attribute, AddressQuery|ElementCollection $value, $fail) => $this->validateAddresses($element, $value, $fail),
         ];
     }
 
@@ -714,11 +712,8 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         return $value->count() === 0;
     }
 
-    private function validateAddresses(ElementInterface $element): void
+    private function validateAddresses(ElementInterface $element, AddressQuery|ElementCollection $value, Closure $fail): void
     {
-        /** @var AddressQuery|ElementCollection $value */
-        $value = $element->getFieldValue($this->handle);
-
         if ($value instanceof AddressQuery) {
             $addresses = $value->getResultOverride() ?? (clone $value)
                 ->drafts(null)
@@ -750,7 +745,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 $element->addInvalidNestedElementIds($invalidAddressIds);
 
                 // show a top level error to let users know that there are validation errors in the nested entries
-                $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
+                $fail(t('Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
                     'count' => count($invalidAddressIds),
                     'fieldName' => $this->getUiLabel(),
                 ]));
@@ -760,25 +755,31 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
 
         if (
-            $element->getScenario() === Element::SCENARIO_LIVE &&
+            $element->inScenarios(Element::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
-            $arrayValidator = new ArrayValidator([
-                'min' => $this->minAddresses ?: null,
-                'max' => $this->maxAddresses ?: null,
-                'tooFew' => $this->minAddresses ? t('{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.', [
+            $rules = [
+                $this->handle => array_filter([
+                    $this->minAddresses ? "min:{$this->minAddresses}" : null,
+                    $this->maxAddresses ? "max:{$this->maxAddresses}" : null,
+                ]),
+            ];
+
+            $messages = array_filter([
+                $this->handle.'.min' => $this->minAddresses ? t('{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.', [
                     'attribute' => t($this->name, category: 'site'),
-                    'min' => $this->minAddresses, // Need to pass this in now
+                    'min' => $this->minAddresses,
                 ]) : null,
-                'tooMany' => $this->maxAddresses ? t('{attribute} should contain at most {max, number} {max, plural, one{address} other{addresses}}.', [
+                $this->handle.'.max' => $this->maxAddresses ? t('{attribute} should contain at most {max, number} {max, plural, one{address} other{addresses}}.', [
                     'attribute' => t($this->name, category: 'site'),
                     'max' => $this->maxAddresses, // Need to pass this in now
                 ]) : null,
-                'skipOnEmpty' => false,
             ]);
 
-            if (! $arrayValidator->validate($addresses, $error)) {
-                $element->addError($this->handle, $error);
+            $validator = Validator::make([$this->handle => $addresses], $rules, $messages);
+
+            if ($validator->fails()) {
+                $fail($validator->errors()->first());
             }
         }
     }

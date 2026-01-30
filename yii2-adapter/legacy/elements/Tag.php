@@ -212,7 +212,7 @@ class Tag extends Element
         $rules[] = [
             ['title'],
             'validateTitle',
-            'when' => fn(): bool => !$this->hasErrors('groupId') && !$this->hasErrors('title'),
+            'when' => fn(): bool => !$this->errors()->has('groupId') && !$this->errors()->has('title'),
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         return $rules;

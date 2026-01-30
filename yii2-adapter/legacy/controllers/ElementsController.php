@@ -1188,8 +1188,8 @@ JS, [
     {
         $html = '';
 
-        if ($element->hasErrors()) {
-            $allErrors = $element->getErrors();
+        if ($element->errors()->isNotEmpty()) {
+            $allErrors = $element->errors()->getMessages();
             $allKeys = array_keys($allErrors);
 
             // only show "top-level" errors
@@ -1460,7 +1460,7 @@ JS, [
                 crossSiteValidate: ($namespace === null && Sites::isMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
         } catch (UnsupportedSiteException $e) {
-            $element->addError('siteId', $e->getMessage());
+            $element->errors()->add('siteId', $e->getMessage());
             $success = false;
         } finally {
             if ($isNotNew) {
@@ -1603,7 +1603,7 @@ JS, [
             try {
                 $success = $elementsService->saveElement($element);
             } catch (UnsupportedSiteException $e) {
-                $element->addError('siteId', $e->getMessage());
+                $element->errors()->add('siteId', $e->getMessage());
                 $success = false;
             }
 
@@ -2988,7 +2988,7 @@ JS, [
         $data = [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
-            'errors' => $element->getErrors(),
+            'errors' => $element->errors()->getMessages(),
             'errorSummary' => $this->_errorSummary($element),
             'invalidNestedElementIds' => $element->getInvalidNestedElementIds(),
         ];

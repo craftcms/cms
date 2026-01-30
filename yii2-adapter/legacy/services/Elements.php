@@ -57,7 +57,6 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
@@ -69,6 +68,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
@@ -1931,12 +1931,12 @@ class Elements extends Component
         $mainClone->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($mainClone->hasErrors('uri') && $mainClone->enabled) {
+        if ($mainClone->errors()->has('uri') && $mainClone->enabled) {
             $mainClone->enabled = false;
             $mainClone->validate();
         }
 
-        if ($mainClone->hasErrors()) {
+        if ($mainClone->errors()->isNotEmpty()) {
             throw new InvalidElementException($mainClone,
                 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
         }
@@ -2039,9 +2039,9 @@ class Elements extends Component
                         if ($element::hasUris()) {
                             // Make sure it has a valid slug
                             (new SlugValidator())->validateAttribute($siteClone, 'slug');
-                            if ($siteClone->hasErrors('slug')) {
+                            if ($siteClone->errors()->has('slug')) {
                                 throw new InvalidElementException($siteClone,
-                                    "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->getFirstError('slug'));
+                                    "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->errors()->first('slug'));
                             }
 
                             // Set a unique URI on the site clone
@@ -3908,7 +3908,7 @@ class Elements extends Component
             foreach ($element->getActiveValidators('title') as $validator) {
                 $validator->validateAttributes($element, ['title']);
             }
-            if ($element->hasErrors('title')) {
+            if ($element->errors()->has('title')) {
                 // Set a default title
                 if ($isNewElement) {
                     $element->title = t('New {type}', ['type' => $element::displayName()]);
@@ -4600,12 +4600,12 @@ class Elements extends Component
 
         if (!$success) {
             // if the element we're trying to save has validation errors, notify original element about them
-            if ($siteElement->hasErrors()) {
+            if ($siteElement->errors()->isNotEmpty()) {
                 return $this->_crossSiteValidationErrors($siteElement, $element);
             } else {
                 // Log the errors
                 $error = 'Couldn’t propagate element to other site due to validation errors:';
-                foreach ($siteElement->getFirstErrors() as $attributeError) {
+                foreach ($siteElement->errors()->all() as $attributeError) {
                     $error .= "\n- " . $attributeError;
                 }
                 Log::error($error);
@@ -4656,7 +4656,7 @@ class Elements extends Component
                 Html::endTag('a');
         }
 
-        $element->addError('global', $message);
+        $element->errors()->add('global', $message);
 
         return false;
     }

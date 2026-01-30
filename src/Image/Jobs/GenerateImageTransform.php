@@ -9,6 +9,7 @@ use craft\imagetransforms\ImageTransformer;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
+use Illuminate\Support\Facades\Log;
 use Override;
 use Throwable;
 
@@ -39,7 +40,7 @@ final class GenerateImageTransform extends Job
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }
             } catch (Throwable $e) {
-                report($e);
+                Log::warning('Image transform generation failed: '.$e->getMessage(), [__METHOD__]);
             }
         }
     }

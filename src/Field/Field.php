@@ -18,7 +18,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
@@ -37,7 +36,6 @@ use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -45,8 +43,11 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -68,7 +69,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     use HasComponentEvents;
     use Macroable;
     use SavableComponent;
-    use ValidatableComponent;
+    use Validates;
 
     // Translation methods
     // @TODO: Replace const with the enum everywhere
@@ -424,20 +425,22 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public static function phpType(): string
     {
         return 'mixed';
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public static function dbType(): array|string|null
     {
         return Query::TYPE_TEXT;
     }
 
-    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = static::valueSql($instances);
 
@@ -767,7 +770,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
@@ -775,14 +779,24 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
-    public function getElementValidationRules(): array
+     * {@inheritDoc}
+     */
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getElementRules(ElementInterface $element): array
     {
         return [];
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
@@ -790,7 +804,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
         $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
@@ -1147,7 +1162,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
@@ -1160,7 +1176,8 @@ JS, [
     }
 
     /**
-     * {@inheritdoc} */
+     * {@inheritdoc}
+     */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(

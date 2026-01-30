@@ -91,12 +91,12 @@ final readonly class SetPasswordController extends AuthenticationController
             if ($request->wantsJson()) {
                 return $this->asFailure(
                     t('Couldn’t update password.'),
-                    $user->getErrors('newPassword'),
+                    $user->errors()->get('newPassword'),
                 );
             }
 
             return $this->renderViewWithFallback('set-password', [
-                'errors' => $user->getErrors('newPassword'),
+                'errors' => $user->errors()->get('newPassword'),
                 'code' => $request->input('code'),
                 'id' => $request->input('id'),
                 'newUser' => ! $user->password,
