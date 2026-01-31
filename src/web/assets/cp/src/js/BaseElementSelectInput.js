@@ -320,28 +320,33 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
-    focusNextLogicalElement: function () {
+    getNextLogicalFocusElement: function () {
       let $focusTarget;
-      if (this.canAddMoreElements()) {
-        // If can add more elements, focus on search input or add button
-        // Focus on the container if neither of those are available
-        if (
-          this.$searchContainer.length &&
-          !this.$searchContainer.hasClass('hidden')
-        ) {
-          $focusTarget = this.$searchInput;
-        } else if (
-          this.$addElementBtn.length &&
-          !this.$addElementBtn.hasClass('hidden')
-        ) {
-          $focusTarget = this.$addElementBtn;
-        } else {
-          $focusTarget = this.$container;
-          this.$container.attr('tabindex', '-1');
-        }
-      } else {
-        this.focusLastRemoveBtn();
+      if (!this.canAddMoreElements()) {
+        return this.getLastActionBtn();
       }
+
+      // If can add more elements, focus on search input or add button
+      if (
+        this.$searchContainer.length &&
+        !this.$searchContainer.hasClass('hidden')
+      ) {
+        return this.$searchInput;
+      }
+
+      if (
+        this.$addElementBtn.length &&
+        !this.$addElementBtn.hasClass('hidden')
+      ) {
+        return this.$addElementBtn;
+      }
+
+      // Focus on the container if neither of those are available
+      return this.$container.attr('tabindex', '-1');
+    },
+
+    focusNextLogicalElement: function () {
+      const $focusTarget = this.getNextLogicalFocusElement();
 
       if ($focusTarget?.length) {
         $focusTarget.focus();
@@ -355,8 +360,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.focusLastActionBtn();
     },
 
+    getLastActionBtn: function () {
+      return this.$container.find('.action-btn').last();
+    },
+
     focusLastActionBtn: function () {
-      this.$container.find('.action-btn').last().focus();
+      this.getLastActionBtn().focus();
     },
 
     resetElements: function () {
@@ -823,7 +832,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           disabledElementIds: this.getDisabledElementIds(),
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
-          triggerElement: this.$addElementBtn,
+          triggerElement: () => this.getNextLogicalFocusElement(),
           modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
@@ -962,13 +971,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       this._$replaceElement = null;
-
-      // If we can't add any more elements, don't focus on the “Add” button
-      if (!this.canAddMoreElements()) {
-        setTimeout(() => {
-          this.focusNextLogicalElement();
-        }, 200);
-      }
     },
 
     selectElements: async function (elements) {
