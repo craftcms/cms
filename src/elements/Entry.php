@@ -1364,9 +1364,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ],
         ];
 
-        // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey, withDisabled: true)) {
+
+        // Is the section’s source enabled?
+        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
             $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
 
             $requestedSite = Cp::requestedSite();
@@ -1390,7 +1391,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ->map(fn(Section $s) => [
                     'label' => Craft::t('site', $s->name),
                     'url' => "$pageUrl/$s->handle",
-                    //'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1410,7 +1410,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     'items' => $sectionOptions->all(),
                 ],
             ];
-        } else {
+        } elseif ($section->type !== Section::TYPE_SINGLE) {
+            // Just show its name w/o a link
             $crumbs[] = [
                 'label' => Craft::t('site', $section->name),
             ];
