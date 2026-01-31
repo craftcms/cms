@@ -5,6 +5,7 @@
 - Fixed a bug where nested elements could appear to be editable when their field was read-only.
 - Fixed a bug where nested element changes weren’t being shown in cross-domain preview requests, if no changes had been made to the root entry yet. ([#18337](https://github.com/craftcms/cms/issues/18337))
 - Fixed a bug where Live Preview wasn’t upadting when making changes to nested elements via a Matrix field in Index view.
+- Fixed a bug where Table fields with “Static Rows” enabled were losing their values when edited, if the field hadn’t been resaved since updating to Craft 5.9. ([#18350](https://github.com/craftcms/cms/issues/18350))
 
 ## 5.9.4 - 2026-01-29
 
