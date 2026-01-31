@@ -395,7 +395,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $columns,
-            'rows' => $this->defaults,
+            'rows' => array_map(function(array $row) {
+                // make sure the row has a UUID
+                $row['rowId'] ??= StringHelper::uuid();
+                return $row;
+            }, $this->defaults),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,

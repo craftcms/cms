@@ -596,51 +596,50 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$saveBtn.addClass('loading');
 
     // double check that we don't have an empty page name
-    if (this.pages.filter((page) => page.name == '').length > 0) {
+    if (this.multiPage && this.pages.some((page) => page.name === '')) {
       Craft.cp.displayError(
         Craft.t('yii', '{attribute} cannot be blank.', {
           attribute: Craft.t('app', 'Page Name'),
         })
       );
       this.$saveBtn.removeClass('loading');
-    } else {
-      Craft.sendActionRequest(
-        'POST',
-        'element-index-settings/save-customize-sources-modal-settings',
-        {
-          data:
-            this.$container.serialize() +
-            `&elementType=${this.elementIndex.elementType}`,
-        }
-      )
-        .then(async ({data}) => {
-          // Figure out which source to select
-          let sourceKey = null;
-          if (
-            this.selectedSource &&
-            this.selectedSource.sourceData.key &&
-            !data.disabledSourceKeys.includes(
-              this.selectedSource.sourceData.key
-            )
-          ) {
-            sourceKey = this.selectedSource.sourceData.key;
-          } else if (!this.elementIndex.sourceKey) {
-            sourceKey = this.elementIndex.$visibleSources.first().data('key');
-          }
-
-          if (sourceKey) {
-            await this.elementIndex.asyncSelectSourceByKey(sourceKey);
-          }
-
-          window.location.reload();
-        })
-        .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
-        })
-        .finally(() => {
-          this.$saveBtn.removeClass('loading');
-        });
+      return;
     }
+
+    Craft.sendActionRequest(
+      'POST',
+      'element-index-settings/save-customize-sources-modal-settings',
+      {
+        data:
+          this.$container.serialize() +
+          `&elementType=${this.elementIndex.elementType}`,
+      }
+    )
+      .then(async ({data}) => {
+        // Figure out which source to select
+        let sourceKey = null;
+        if (
+          this.selectedSource &&
+          this.selectedSource.sourceData.key &&
+          !data.disabledSourceKeys.includes(this.selectedSource.sourceData.key)
+        ) {
+          sourceKey = this.selectedSource.sourceData.key;
+        } else if (!this.elementIndex.sourceKey) {
+          sourceKey = this.elementIndex.$visibleSources.first().data('key');
+        }
+
+        if (sourceKey) {
+          await this.elementIndex.asyncSelectSourceByKey(sourceKey);
+        }
+
+        window.location.reload();
+      })
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
+      })
+      .finally(() => {
+        this.$saveBtn.removeClass('loading');
+      });
   },
 
   destroy: function () {
