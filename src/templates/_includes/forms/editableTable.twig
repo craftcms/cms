@@ -292,8 +292,8 @@
                 {% for inputName, value in row.hiddenInputs ?? [] %}
                     {{ hiddenInput("#{name}[#{rowId}][#{inputName}]", value) }}
                 {% endfor %}
-                {% if includeRowId %}
-                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId ?? uuid()) }}
+                {% if includeRowId and (row.rowId ?? false) %}
+                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId) }}
                 {% endif %}
             </tr>
         {% endfor %}

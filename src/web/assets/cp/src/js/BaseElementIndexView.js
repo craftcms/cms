@@ -120,7 +120,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             Garnish.hasAttr($element, 'data-editable') &&
             !$element.closest('.elementselect').length
           ) {
-            Craft.createElementEditor($element.data('type'), $element);
+            const slideout = Craft.createElementEditor(
+              $element.data('type'),
+              $element,
+              {
+                onLoad:
+                  this.elementIndex.settings.context === 'embedded-index'
+                    ? () => {
+                        slideout.elementEditor.on('update', () => {
+                          Craft.Preview.refresh();
+                        });
+                      }
+                    : null,
+              }
+            );
           }
         };
 
