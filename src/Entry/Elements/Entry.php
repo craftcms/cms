@@ -1332,9 +1332,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             ],
         ];
 
-        // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey, withDisabled: true)) {
+
+        // Is the section’s source enabled?
+        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
 
             $requestedSite = Cp::requestedSite();
@@ -1344,8 +1345,8 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
 
             if ($page) {
                 // Filter out any sections that don’t belong in this page
-                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
-                $pageSourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $pageSources)));
+                $pageSources = app(ElementSources::class)->getSources(Entry::class, withDisabled: true, page: $page);
+                $pageSourceKeys = $pageSources->pluck('key')->filter()->flip()->all();
                 $sections = $sections->filter(function (Section $s) use ($pageSourceKeys) {
                     $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
 
@@ -1359,7 +1360,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 ->map(fn (Section $s) => [
                     'label' => t($s->name, category: 'site'),
                     'url' => "$pageUrl/$s->handle",
-                    // 'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1379,7 +1379,8 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                     'items' => $sectionOptions->all(),
                 ],
             ];
-        } else {
+        } elseif ($section->type !== SectionType::Single) {
+            // Just show its name w/o a link
             $crumbs[] = [
                 'label' => t($section->name, category: 'site'),
             ];

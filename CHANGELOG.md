@@ -1,14 +1,16 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.5 - 2026-01-31
 
 - Fixed a bug where nested elements could appear to be editable when their field was read-only.
 - Fixed a bug where nested element changes weren’t being shown in cross-domain preview requests, if no changes had been made to the root entry yet. ([#18337](https://github.com/craftcms/cms/issues/18337))
 - Fixed a bug where Live Preview wasn’t upadting when making changes to nested elements via a Matrix field in Index view.
 - Fixed a bug where Table fields with “Static Rows” enabled were losing their values when edited, if the field hadn’t been resaved since updating to Craft 5.9. ([#18350](https://github.com/craftcms/cms/issues/18350))
-- Fixed an unintentional breaking change when querying Link field data via GraphQL. ([#18356](https://github.com/craftcms/cms/pull/18356))
+- Fixed an unintentional breaking change when querying Link field data via GraphQL. ([#18355](https://github.com/craftcms/cms/issues/18355))
 - Fixed an error that occurred when saving the Customize Sources modal for non-entry element types. ([#18347](https://github.com/craftcms/cms/issues/18347))
 - Fixed a bug where links in section breadcrumb menus didn’t include the page slug. ([#18352](https://github.com/craftcms/cms/issues/18352))
+- Fixed a JavaScript warning that occurred after selecting an element in a relation field, if the Max Relations setting was reached. ([#18358](https://github.com/craftcms/cms/issues/18358))
+- Fixed a bug where a “Singles” breadcrumb was included on entry edit pages when the “Singles” source had been disabled within the Customize Sources modal. ([#18359](https://github.com/craftcms/cms/issues/18359))
 
 ## 5.9.4 - 2026-01-29
 
