@@ -7,6 +7,7 @@
 - Fixed a bug where Live Preview wasn’t upadting when making changes to nested elements via a Matrix field in Index view.
 - Fixed a bug where Table fields with “Static Rows” enabled were losing their values when edited, if the field hadn’t been resaved since updating to Craft 5.9. ([#18350](https://github.com/craftcms/cms/issues/18350))
 - Fixed an unintentional breaking change when querying Link field data via GraphQL. ([#18356](https://github.com/craftcms/cms/pull/18356))
+- Fixed an error that occurred when saving the Customize Sources modal for non-entry element types. ([#18347](https://github.com/craftcms/cms/issues/18347))
 
 ## 5.9.4 - 2026-01-29
 
