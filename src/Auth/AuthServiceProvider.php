@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Policies\AddressPolicy;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Policies\ElementPolicy;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\User\Users;
 use Illuminate\Auth\Events\Failed;
@@ -41,6 +50,7 @@ final class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->bootRedirects();
+        $this->registerElementPolicies();
     }
 
     private function bootRedirects(): void
@@ -152,5 +162,14 @@ final class AuthServiceProvider extends ServiceProvider
         Event::listen(Logout::class, function () {
             app(Impersonation::class)->setImpersonatorId(null);
         });
+    }
+
+    private function registerElementPolicies(): void
+    {
+        Gate::policy(Element::class, ElementPolicy::class);
+        Gate::policy(Address::class, AddressPolicy::class);
+        Gate::policy(Asset::class, AssetPolicy::class);
+        Gate::policy(Entry::class, EntryPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 }
