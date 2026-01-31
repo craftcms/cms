@@ -595,6 +595,17 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.$saveBtn.addClass('loading');
 
+    // double check that we don't have an empty page name
+    if (this.multiPage && this.pages.some((page) => page.name === '')) {
+      Craft.cp.displayError(
+        Craft.t('yii', '{attribute} cannot be blank.', {
+          attribute: Craft.t('app', 'Page Name'),
+        })
+      );
+      this.$saveBtn.removeClass('loading');
+      return;
+    }
+
     Craft.sendActionRequest(
       'POST',
       'element-index-settings/save-customize-sources-modal-settings',
@@ -913,6 +924,13 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
             {
               triggerElement: this.$actionBtn,
               validateName: (name) => {
+                if (
+                  Craft.CustomizeSourcesModal.Page.nameId(name ?? '') === ''
+                ) {
+                  return Craft.t('yii', '{attribute} cannot be blank.', {
+                    attribute: Craft.t('app', 'Page Name'),
+                  });
+                }
                 if (!this.modal.isPageNameUnique(name, this)) {
                   return Craft.t('app', 'Another page already has that name.');
                 }

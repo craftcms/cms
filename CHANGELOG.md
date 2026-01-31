@@ -1,5 +1,40 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where nested elements could appear to be editable when their field was read-only.
+- Fixed a bug where nested element changes weren’t being shown in cross-domain preview requests, if no changes had been made to the root entry yet. ([#18337](https://github.com/craftcms/cms/issues/18337))
+- Fixed a bug where Live Preview wasn’t upadting when making changes to nested elements via a Matrix field in Index view.
+- Fixed a bug where Table fields with “Static Rows” enabled were losing their values when edited, if the field hadn’t been resaved since updating to Craft 5.9. ([#18350](https://github.com/craftcms/cms/issues/18350))
+- Fixed an unintentional breaking change when querying Link field data via GraphQL. ([#18356](https://github.com/craftcms/cms/pull/18356))
+- Fixed an error that occurred when saving the Customize Sources modal for non-entry element types. ([#18347](https://github.com/craftcms/cms/issues/18347))
+- Fixed a bug where links in section breadcrumb menus didn’t include the page slug. ([#18352](https://github.com/craftcms/cms/issues/18352))
+
+## 5.9.4 - 2026-01-29
+
+- Added `craft\models\FieldLayout::getEditableCustomFieldElements()`.
+- Fixed a bug where `{% case %}` tags with three or more values within `{% switch %}` tags weren’t working properly. ([#18334](https://github.com/craftcms/cms/issues/18334))
+- Fixed a bug where Matrix fields in Blocks view could lose their existing values when they became editable.
+- Fixed a bug where Content Block fields and Matrix fields in Blocks view weren’t updating their nested fields’ editability states.
+- Fixed an error that could occur when executing a GraphQL query with a Link field. ([#18339](https://github.com/craftcms/cms/pull/18339))
+- Fixed a bug where read-only custom fields could be treated as required. ([#18342](https://github.com/craftcms/cms/issues/18342))
+
+## 5.9.3 - 2026-01-28
+
+- Fixed a bug where multi-value `{% case %}` tags within `{% switch %}` tags weren’t working properly. ([#18334](https://github.com/craftcms/cms/issues/18334))
+
+## 5.9.2 - 2026-01-28
+
+- Fixed an error that occurred when upgrading to Craft 5.
+- Fixed a bug where assets weren’t being rendered correctly immediately after being uploaded to an Assets field. ([#18318](https://github.com/craftcms/cms/issues/18318))
+- Fixed a bug where it was possible to rename existing entry index pages to a blank name. ([#18321](https://github.com/craftcms/cms/issues/18321))
+- Fixed a bug where element save notifications weren’t hyperlinking the element label. ([#18326](https://github.com/craftcms/cms/issues/18326))
+- Fixed a bug where sidebar states weren’t being remembered across page loads. ([#18323](https://github.com/craftcms/cms/issues/18323))
+- Fixed an error that could occur when displaying an embedded element index that included field layouts with generated fields. ([#18320](https://github.com/craftcms/cms/pull/18320))
+- Fixed errors that occurred when performing user administration actions on Craft Team. ([#18331](https://github.com/craftcms/cms/issues/18331))
+- Fixed a warning that was getting logged when accessing the Plugin Store. ([#18324](https://github.com/craftcms/cms/issues/18324))
+- Fixed a bug where component names weren’t getting trimmed of leading/trailing whitespace on save. ([#18315](https://github.com/craftcms/cms/issues/18315))
+
 ## 5.9.1 - 2026-01-27
 
 - Fixed an error that could occur when updating to Craft 5.9. ([#18309](https://github.com/craftcms/cms/issues/18309))

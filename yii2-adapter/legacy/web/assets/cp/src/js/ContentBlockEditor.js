@@ -8,7 +8,6 @@
     {
       $container: null,
       formObserver: null,
-      visibleLayoutElements: null,
       cancelToken: null,
       ignoreFailedRequest: false,
 
@@ -40,6 +39,7 @@
           Craft.namespaceInputName(n, this.settings.baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.settings.visibleLayoutElements,
+          [param('staticLayoutElements')]: this.settings.staticLayoutElements,
           [param('elementType')]:
             'CraftCms\\Cms\\Field\\Elements\\ContentBlock',
           [param('ownerId')]:
@@ -83,6 +83,7 @@
 
         // Update the visible elements
         const visibleLayoutElements = {};
+        const staticLayoutElements = {};
         let changedElements = false;
 
         const $tabContainer = this.$container.find('.flex-fields:first');
@@ -94,6 +95,13 @@
                 visibleLayoutElements[tabInfo.uid] = [];
               }
               visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+              if (elementInfo.static) {
+                if (!staticLayoutElements[tabInfo.uid]) {
+                  staticLayoutElements[tabInfo.uid] = [];
+                }
+                staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+              }
 
               if (typeof elementInfo.html === 'string') {
                 const $oldElement = $tabContainer.children(
@@ -135,6 +143,7 @@
         }
 
         this.settings.visibleLayoutElements = visibleLayoutElements;
+        this.settings.staticLayoutElements = staticLayoutElements;
 
         await Craft.appendHeadHtml(response.data.headHtml);
         await Craft.appendBodyHtml(response.data.bodyHtml);
@@ -152,6 +161,7 @@
         siteId: null,
         elementId: null,
         visibleLayoutElements: {},
+        staticLayoutElements: {},
       },
     }
   );

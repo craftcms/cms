@@ -1323,11 +1323,12 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         }
 
         $page = $section->getPage();
+        $pageUrl = sprintf('content/%s', $page ? Str::slug($page) : 'entries');
 
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
+                'url' => $pageUrl,
             ],
         ];
 
@@ -1357,7 +1358,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
                     'label' => t($s->name, category: 'site'),
-                    'url' => "entries/$s->handle",
+                    'url' => "$pageUrl/$s->handle",
                     // 'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);

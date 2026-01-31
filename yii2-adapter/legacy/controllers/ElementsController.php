@@ -2944,7 +2944,9 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => !$element->dateDeleted ? Cp::elementChipHtml($element) : null,
+            'details' => !$element->dateDeleted
+                ? Cp::elementChipHtml($element, ['hyperlink' => true])
+                : null,
         ]);
 
         if ($supportsAddAnother && $this->_addAnother) {

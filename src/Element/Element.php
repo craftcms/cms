@@ -2999,7 +2999,7 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
+            $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
@@ -3619,11 +3619,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canSaveElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
+        $authorized = $this->canSaveNestedElement($user);
+        if ($authorized !== null) {
+            return $authorized;
         }
 
         // Fire an 'authorizeSave' event
@@ -3635,6 +3633,31 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return false;
+    }
+
+    private function canSaveNestedElement(User $user): ?bool
+    {
+        if (! $this instanceof NestedElementInterface) {
+            return null;
+        }
+
+        $field = $this->getField();
+        if (! $field) {
+            return null;
+        }
+
+        $authorized = $field->canSaveElement($this, $user);
+        if (! $authorized) {
+            return $authorized; // could be false or null
+        }
+
+        if (! isset($field->layoutElement)) {
+            return true;
+        }
+
+        $owner = $this->getOwner();
+
+        return $owner ? $field->layoutElement->editable($owner) : true;
     }
 
     /**
