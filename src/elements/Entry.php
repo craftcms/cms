@@ -1355,42 +1355,39 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $page = $section->getPage();
-        $pageUrl = sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries');
-
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
-                'url' => $pageUrl,
+                'url' => sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'),
             ],
         ];
 
-        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
-
         // Is the section’s source enabled?
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
+        $elementSourcesService = Craft::$app->getElementSources();
+        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
+        if ($elementSourcesService->sourceExists(Entry::class, $sourceKey)) {
             $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
 
+            // Filter out any sections that aren’t enabled for this site
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
                 $sections = $sections->filter(fn(Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
 
-            if ($page) {
-                // Filter out any sections that don’t belong in this page
-                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
-                $pageSourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $pageSources)));
-                $sections = $sections->filter(function(Section $s) use ($pageSourceKeys) {
-                    $key = $s->type === Section::TYPE_SINGLE ? 'singles' : "section:$s->uid";
-                    return isset($pageSourceKeys[$key]);
-                });
-            }
+            // Filter out any sections that don’t have an enabled source / don’t belong in this page
+            $sources = $elementSourcesService->getSources(Entry::class, page: $page);
+            $sourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $sources)));
+            $sections = $sections->filter(function(Section $s) use ($sourceKeys) {
+                $key = $s->type === Section::TYPE_SINGLE ? 'singles' : "section:$s->uid";
+                return isset($sourceKeys[$key]);
+            });
 
             /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
                 ->map(fn(Section $s) => [
-                    'label' => Craft::t('site', $s->name),
-                    'url' => "$pageUrl/$s->handle",
+                    'label' => $s->getUiLabel(),
+                    'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1404,16 +1401,20 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ]);
             }
 
-            $crumbs[] = [
-                'menu' => [
-                    'label' => Craft::t('app', 'Select section'),
-                    'items' => $sectionOptions->all(),
-                ],
-            ];
+            if ($sectionOptions->count() > 1) {
+                $crumbs[] = [
+                    'menu' => [
+                        'label' => Craft::t('app', 'Select section'),
+                        'items' => $sectionOptions->all(),
+                    ],
+                ];
+            } else {
+                $crumbs[] = $sectionOptions->first();
+            }
         } elseif ($section->type !== Section::TYPE_SINGLE) {
             // Just show its name w/o a link
             $crumbs[] = [
-                'label' => Craft::t('site', $section->name),
+                'label' => $section->getUiLabel(),
             ];
         }
 

@@ -5,6 +5,7 @@
 - Elements within embedded element indexes are now hyperlinked by default. ([#17080](https://github.com/craftcms/cms/discussions/17080))
 - Fixed a bug where nested entries within Matrix fields weren’t showing their UI labels if they didn’t have titles.
 - Fixed a bug where assets weren’t getting hyperlinked on the Assets index page in thumbnail view.
+- Fixed a bug where sections and volumes were getting included in entry/asset breadcrumb menus, even if their sources were disabled. ([#18359](https://github.com/craftcms/cms/issues/18359))
 
 ## 5.9.5 - 2026-01-31
 

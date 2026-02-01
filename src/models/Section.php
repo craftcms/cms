@@ -428,7 +428,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         return sprintf(
             'content/%s/%s',
             $page ? StringHelper::toKebabCase($page) : 'entries',
-            $this->handle,
+            $this->type === self::TYPE_SINGLE ? 'singles' : $this->handle,
         );
     }
 
