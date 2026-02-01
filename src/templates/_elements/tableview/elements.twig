@@ -7,6 +7,7 @@
 {% set hasStatusCol = attributes|contains(0, 'status') %}
 {% set showHeaderColumn = showHeaderColumn ?? false %}
 {% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
@@ -88,7 +89,7 @@
                             attributes: {
                                 class: ['chromeless'],
                             },
-                            hyperlink: hyperlink ?? (context == 'index'),
+                            hyperlink,
                         }) %}
                         {% if not showHeaderColumn %}
                             {% set chip = chip|attr({class: 'hide-label'}) %}
