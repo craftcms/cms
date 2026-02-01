@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\EagerLoadInfo;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Element\Concerns\Structurable;
 use DateTime;
 
 /**
@@ -20,6 +21,7 @@ use DateTime;
  */
 trait ElementTrait
 {
+    use Structurable;
     /**
      * @var ElementInterface[]|null All elements that the element was queried with.
      * @since 5.0.0
@@ -65,11 +67,6 @@ trait ElementTrait
      * @var int|null The element’s field layout ID
      */
     public ?int $fieldLayoutId = null;
-
-    /**
-     * @var int|null The element’s structure ID
-     */
-    public ?int $structureId = null;
 
     /**
      * @var bool Whether the element is enabled
@@ -137,27 +134,6 @@ trait ElementTrait
      * @since 5.0.0
      */
     public ?bool $deletedWithOwner = null;
-
-    /**
-     * @var int|null The element’s structure’s root ID
-     */
-    public ?int $root = null;
-
-    /**
-     * @var int|null The element’s left position within its structure
-     */
-    public ?int $lft = null;
-
-    /**
-     * @var int|null The element’s right position within its structure
-     */
-    public ?int $rgt = null;
-
-    /**
-     * @var int|null The element’s level within its structure
-     */
-    public ?int $level = null;
-
     /**
      * @var int|null The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
