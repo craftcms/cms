@@ -76,7 +76,6 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
-use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -5096,7 +5095,7 @@ JS, [
     public function afterSave(bool $isNew): void
     {
         // Update the element’s relation data
-        $this->updateRelations($isNew);
+        app(ElementRelations::class)->updateRelations($this, $isNew);
 
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
@@ -5109,162 +5108,6 @@ JS, [
                 'isNew' => $isNew,
             ]));
         }
-    }
-
-    private function updateRelations(bool $isNew): void
-    {
-        if (! $this->hasFieldLayout()) {
-            return;
-        }
-
-        $fields = $this->relationalFields();
-
-        /** @var int[] $skipFieldIds */
-        $skipFieldIds = [];
-        /** @var array<int,int|null> $sourceSiteIds */
-        $sourceSiteIds = [];
-        /** @var array<int,array<int,int>> $relationData */
-        $relationData = [];
-
-        foreach ($fields as $fieldId => $instances) {
-            $localizeRelations = $instances[0]->localizeRelations();
-            $include = false;
-
-            foreach ($instances as $field) {
-                // Skip if nothing changed, or the element is just propagating and we're not localizing relations
-                if (
-                    $isNew || (
-                        ($this->duplicateOf || $this->isFieldDirty($field->handle) || $field->forceUpdateRelations($this)) &&
-                        (! $this->propagating || $localizeRelations)
-                    )
-                ) {
-                    $include = true;
-                    break;
-                }
-            }
-
-            if ($include) {
-                // Create target ID => sort order mappings for the field
-                foreach ($instances as $field) {
-                    $sourceSiteIds[$field->id] = $localizeRelations ? $this->siteId : null;
-                    $relationData[$field->id] ??= [];
-                    foreach ($field->getRelationTargetIds($this) as $targetId) {
-                        if (! isset($relationData[$field->id][$targetId])) {
-                            $relationData[$field->id][$targetId] = count($relationData[$field->id]) + 1;
-                        }
-                    }
-                }
-            } else {
-                $skipFieldIds[] = $fieldId;
-            }
-        }
-
-        // Get the old relations
-        $oldRelations = DB::table(Table::RELATIONS)
-            ->where('sourceId', $this->id)
-            ->where(function (Builder $query) {
-                $query->whereNull('sourceSiteId')
-                    ->orWhere('sourceSiteId', $this->siteId);
-            })
-            // Exclude the skipped fields rather than listing included fields,
-            // so we also get any relations for fields that aren't part of the layout
-            // (https://github.com/craftcms/cms/issues/13956)
-            ->unless(empty($skipFieldIds), fn (Builder $query) => $query->whereNotIn('fieldId', $skipFieldIds))
-            ->select(['id', 'fieldId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->get()
-            ->map(fn (object $data) => (array) $data);
-
-        $updateCommands = [];
-        $deleteIds = [];
-
-        foreach ($oldRelations as $relation) {
-            [$relationId, $fieldId, $oldSourceSiteId, $targetId, $oldSortOrder] = [
-                $relation['id'],
-                $relation['fieldId'],
-                $relation['sourceSiteId'],
-                $relation['targetId'],
-                $relation['sortOrder'],
-            ];
-
-            // Does this relation still exist?
-            if (isset($relationData[$fieldId][$targetId])) {
-                // Anything to update?
-                if ($oldSourceSiteId != $sourceSiteIds[$fieldId] || $oldSortOrder != $relationData[$fieldId][$targetId]) {
-                    $updateCommands[] = [
-                        'id' => $relationId,
-                        'sourceSiteId' => $sourceSiteIds[$fieldId],
-                        'sortOrder' => $relationData[$fieldId][$targetId],
-                    ];
-                }
-
-                // Avoid re-inserting it
-                unset($relationData[$fieldId][$targetId]);
-                if (empty($relationData[$fieldId])) {
-                    unset($relationData[$fieldId]);
-                }
-            } else {
-                $deleteIds[] = $relationId;
-            }
-        }
-
-        if (empty($updateCommands) && empty($deleteIds) && empty($relationData)) {
-            // Nothing to do here
-            return;
-        }
-
-        DB::beginTransaction();
-
-        foreach ($updateCommands as $command) {
-            DB::table(Table::RELATIONS)
-                ->where('id', Arr::pull($command, 'id'))
-                ->update($command);
-        }
-
-        // Add the new ones
-        if (! empty($relationData)) {
-            $now = now();
-            $values = [];
-            foreach ($relationData as $fieldId => $targetIds) {
-                foreach ($targetIds as $targetId => $sortOrder) {
-                    $values[] = [
-                        'fieldId' => $fieldId,
-                        'sourceId' => $this->id,
-                        'sourceSiteId' => $sourceSiteIds[$fieldId],
-                        'targetId' => $targetId,
-                        'sortOrder' => $sortOrder,
-                        'dateCreated' => $now,
-                        'dateUpdated' => $now,
-                        'uid' => Str::uuid(),
-                    ];
-                }
-            }
-
-            DB::table(Table::RELATIONS)
-                ->insert($values);
-        }
-
-        if (! empty($deleteIds)) {
-            DB::table(Table::RELATIONS)
-                ->whereIn('id', $deleteIds)
-                ->delete();
-        }
-
-        DB::commit();
-    }
-
-    /**
-     * @return array<int,RelationalFieldInterface[]>
-     */
-    private function relationalFields(): array
-    {
-        $fields = [];
-        foreach ($this->fieldLayoutFields() as $field) {
-            if ($field instanceof RelationalFieldInterface) {
-                $fields[$field->id][] = $field;
-            }
-        }
-
-        return $fields;
     }
 
     /**
@@ -5343,21 +5186,11 @@ JS, [
     public function afterDeleteForSite(): void
     {
         // Delete any site-specific relation data
-        $this->deleteSiteRelations();
+        app(ElementRelations::class)->deleteSiteRelations($this);
 
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementDeleteForSite($this);
-        }
-    }
-
-    private function deleteSiteRelations(): void
-    {
-        if ($this->hasFieldLayout()) {
-            DB::table(Table::RELATIONS)
-                ->where('sourceId', $this->id)
-                ->where('sourceSiteId', $this->siteId)
-                ->delete();
         }
     }
 
