@@ -14,6 +14,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
+use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
@@ -169,6 +171,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Element::class, ElementPolicy::class);
         Gate::policy(Address::class, AddressPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
+        Gate::policy(ContentBlock::class, ContentBlockPolicy::class);
         Gate::policy(Entry::class, EntryPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
     }

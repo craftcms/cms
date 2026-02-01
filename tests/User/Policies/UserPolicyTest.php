@@ -142,18 +142,104 @@ it('prevents users from being copied', function () {
     expect($result)->toBeFalse();
 });
 
+// Impersonate tests
+it('allows admin to impersonate any user', function () {
+    $admin = createUserTestUser(id: 1, isAdmin: true);
+    $targetUser = createUserTestUser(id: 2);
+
+    $result = $this->policy->impersonate($admin, $targetUser);
+
+    expect($result)->toBeTrue();
+});
+
+it('allows admin to impersonate another admin', function () {
+    $admin = createUserTestUser(id: 1, isAdmin: true);
+    $targetAdmin = createUserTestUser(id: 2, isAdmin: true);
+
+    $result = $this->policy->impersonate($admin, $targetAdmin);
+
+    expect($result)->toBeTrue();
+});
+
+it('denies non-admin from impersonating an admin', function () {
+    $user = createUserTestUser(id: 1, permissions: ['impersonateUsers']);
+    $admin = createUserTestUser(id: 2, isAdmin: true);
+
+    $result = $this->policy->impersonate($user, $admin);
+
+    expect($result)->toBeFalse();
+});
+
+it('denies impersonate without permission', function () {
+    $user = createUserTestUser(id: 1);
+    $targetUser = createUserTestUser(id: 2);
+
+    $result = $this->policy->impersonate($user, $targetUser);
+
+    expect($result)->toBeFalse();
+});
+
+// Suspend tests
+it('allows user with moderateUsers to suspend non-admin', function () {
+    $moderator = createUserTestUser(id: 1, permissions: ['moderateUsers']);
+    $targetUser = createUserTestUser(id: 2);
+
+    $result = $this->policy->suspend($moderator, $targetUser);
+
+    expect($result)->toBeTrue();
+});
+
+it('denies suspend without moderateUsers permission', function () {
+    $user = createUserTestUser(id: 1);
+    $targetUser = createUserTestUser(id: 2);
+
+    $result = $this->policy->suspend($user, $targetUser);
+
+    expect($result)->toBeFalse();
+});
+
+it('denies non-admin from suspending an admin', function () {
+    $moderator = createUserTestUser(id: 1, permissions: ['moderateUsers']);
+    $admin = createUserTestUser(id: 2, isAdmin: true);
+
+    $result = $this->policy->suspend($moderator, $admin);
+
+    expect($result)->toBeFalse();
+});
+
+it('allows admin to suspend another admin', function () {
+    $admin = createUserTestUser(id: 1, isAdmin: true, permissions: ['moderateUsers']);
+    $targetAdmin = createUserTestUser(id: 2, isAdmin: true);
+
+    $result = $this->policy->suspend($admin, $targetAdmin);
+
+    expect($result)->toBeTrue();
+});
+
+it('denies suspend when target has SSO identity', function () {
+    $moderator = createUserTestUser(id: 1, permissions: ['moderateUsers']);
+    $ssoUser = createUserTestUser(id: 2, hasSsoIdentity: true);
+
+    $result = $this->policy->suspend($moderator, $ssoUser);
+
+    expect($result)->toBeFalse();
+});
+
 // Helper function
 function createUserTestUser(
     ?int $id = null,
     array $permissions = [],
     bool $isAdmin = false,
     bool $canRegister = false,
+    bool $hasSsoIdentity = false,
 ): User {
     $user = new class extends User
     {
         public array $grantedPermissions = [];
 
         public bool $canRegister = false;
+
+        public bool $hasSso = false;
 
         public function can($abilities, $arguments = []): bool
         {
@@ -168,6 +254,11 @@ function createUserTestUser(
         {
             return $this->canRegister;
         }
+
+        public function getHasSsoIdentity(): bool
+        {
+            return $this->hasSso;
+        }
     };
 
     $user->id = $id;
@@ -175,6 +266,7 @@ function createUserTestUser(
     $user->admin = $isAdmin;
     $user->grantedPermissions = $permissions;
     $user->canRegister = $canRegister;
+    $user->hasSso = $hasSsoIdentity;
 
     return $user;
 }
