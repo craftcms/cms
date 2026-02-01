@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use craft\elements\db\EagerLoadInfo;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Element\Concerns\Eagerloadable;
 use CraftCms\Cms\Element\Concerns\Structurable;
 use DateTime;
 
@@ -21,18 +21,8 @@ use DateTime;
  */
 trait ElementTrait
 {
+    use Eagerloadable;
     use Structurable;
-    /**
-     * @var ElementInterface[]|null All elements that the element was queried with.
-     * @since 5.0.0
-     */
-    public ?array $elementQueryResult = null;
-
-    /**
-     * @var EagerLoadInfo|null Info about the eager loading setup used to query this element.
-     * @since 5.0.0
-     */
-    public ?EagerLoadInfo $eagerLoadInfo = null;
 
     /**
      * @var int|null The element’s ID
