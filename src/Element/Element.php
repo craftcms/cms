@@ -24,8 +24,6 @@ use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\elements\exporters\Expanded;
-use craft\elements\exporters\Raw;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -43,7 +41,6 @@ use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementCardAttributesEvent;
 use craft\events\RegisterElementDefaultCardAttributesEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
-use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
@@ -69,6 +66,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Eagerloadable;
+use CraftCms\Cms\Element\Concerns\Exportable;
 use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
@@ -180,6 +178,7 @@ abstract class Element extends Component implements ElementInterface
     }
     use Eagerloadable;
     use ElementTrait;
+    use Exportable;
     use Macroable {
         __call as macroCall;
     }
@@ -249,13 +248,6 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
-
-    /**
-     * @event RegisterElementExportersEvent The event that is triggered when registering the available exporters for the element type.
-     *
-     * @since 3.4.0
-     */
-    public const EVENT_REGISTER_EXPORTERS = 'registerExporters';
 
     /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
@@ -1164,44 +1156,6 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineActions(string $source): array
     {
         return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function exporters(string $source): array
-    {
-        $exporters = static::defineExporters($source);
-
-        // Fire a 'registerExporters' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_EXPORTERS)) {
-            $event = new RegisterElementExportersEvent([
-                'source' => $source,
-                'exporters' => $exporters,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
-
-            return $event->exporters;
-        }
-
-        return $exporters;
-    }
-
-    /**
-     * Defines the available element exporters for a given source.
-     *
-     * @param  string  $source  The selected source’s key
-     * @return array The available element exporters
-     *
-     * @see exporters()
-     * @since 3.4.0
-     */
-    protected static function defineExporters(string $source): array
-    {
-        return [
-            Raw::class,
-            Expanded::class,
-        ];
     }
 
     /**
