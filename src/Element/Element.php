@@ -24,7 +24,6 @@ use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAltActionsEvent;
@@ -51,8 +50,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -72,10 +69,7 @@ use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
-use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -4492,243 +4486,7 @@ JS, [
      */
     protected function attributeHtml(string $attribute): string|Stringable
     {
-        if (str_starts_with($attribute, 'contentBlock:')) {
-            return $this->contentBlockAttributeHtml($attribute);
-        }
-
-        if (str_starts_with($attribute, 'generatedField:')) {
-            return $this->generatedFieldAttributeHtml($attribute);
-        }
-
-        switch ($attribute) {
-            case 'id':
-                return (string) $this->getCanonicalId();
-            case 'uid':
-                return $this->getCanonicalUid();
-            case 'ancestors':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                $ancestors = $element->getAncestors();
-                if (! $ancestors instanceof ElementCollection || $ancestors->isEmpty()) {
-                    return '';
-                }
-                $html = Html::beginTag('ul', ['class' => 'path']);
-                foreach ($ancestors as $ancestor) {
-                    $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
-                }
-
-                return $html.Html::endTag('ul');
-
-            case 'parent':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                $parent = $element->getParent();
-
-                return $parent ? Cp::elementChipHtml($parent) : '';
-
-            case 'status':
-                return Cp::componentStatusLabelHtml($this);
-
-            case 'link':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                if (ElementHelper::isDraftOrRevision($element)) {
-                    return '';
-                }
-
-                $url = $element->getUrl();
-
-                if ($url !== null) {
-                    return ElementHelper::linkAttributeHtml($url);
-                }
-
-                return '';
-
-            case 'uri':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                if ($element->getIsDraft() && ElementHelper::isTempSlug($element->slug)) {
-                    return '';
-                }
-
-                $url = $element->getUrl();
-
-                if ($url !== null) {
-                    if ($element->getIsHomepage()) {
-                        $value = Html::tag('span', '', [
-                            'data-icon' => 'home',
-                            'title' => t('Homepage'),
-                        ]);
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Cms::config()->slugWordSeparator;
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $element->uri);
-                    }
-
-                    return ElementHelper::uriAttributeHtml($value, $url);
-                }
-
-                return '';
-
-            case 'slug':
-                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
-                    return '';
-                }
-
-                return Html::encode($this->slug);
-
-            case 'revisionNotes':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                $revision = $element->getCurrentRevision();
-                if (! $revision) {
-                    return '';
-                }
-
-                return Html::encode($revision->revisionNotes);
-
-            case 'revisionCreator':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                $revision = $element->getCurrentRevision();
-                if (! $revision) {
-                    return '';
-                }
-                $creator = $revision->getRevisionCreator();
-
-                return $creator ? Cp::elementChipHtml($creator) : '';
-
-            case 'drafts':
-                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                if (! $element->hasEagerLoadedElements('drafts')) {
-                    return '';
-                }
-
-                $drafts = $element->getEagerLoadedElements('drafts')->all();
-
-                foreach ($drafts as $draft) {
-                    /** @var ElementInterface $draft */
-                    $draft->setUiLabel($draft->draftName);
-                }
-
-                return Cp::elementPreviewHtml(
-                    $drafts,
-                    showThumb: false,
-                    showDraftName: false,
-                );
-
-            default:
-                // Is this a custom field?
-                if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
-                    $uid = $matches[2];
-                    if ($matches[1] === 'field') {
-                        $field = app(Fields::class)->getFieldByUid($uid);
-                    } else {
-                        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
-                        if ($layoutElement instanceof CustomField) {
-                            try {
-                                $field = $layoutElement->getField();
-                            } catch (FieldNotFoundException) {
-                            }
-                        }
-                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
-                    }
-
-                    if ($field instanceof PreviewableFieldInterface) {
-                        // Was this field value eager-loaded?
-                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                            $value = $this->getEagerLoadedElements($field->handle);
-                        } else {
-                            // The field might not actually belong to this element
-                            try {
-                                $value = $this->getFieldValue($field->handle);
-                            } catch (InvalidFieldException) {
-                                return '';
-                            }
-                        }
-
-                        return $field->getPreviewHtml($value, $this);
-                    }
-
-                    return '';
-                }
-
-                return ElementHelper::attributeHtml($this->$attribute);
-        }
-    }
-
-    private function contentBlockAttributeHtml(string $attribute): string|Stringable
-    {
-        $parts = explode('.', $attribute);
-        $uid = Str::after(array_shift($parts), 'contentBlock:');
-        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
-
-        if (! $layoutElement instanceof CustomField) {
-            return '';
-        }
-
-        try {
-            $field = $layoutElement->getField();
-        } catch (FieldNotFoundException) {
-            return '';
-        }
-
-        if (! $field instanceof ContentBlockField) {
-            return '';
-        }
-
-        $block = $this->getFieldValue($field->handle);
-
-        return $block->getAttributeHtml(implode('.', $parts));
-    }
-
-    private function generatedFieldAttributeHtml(string $attribute): string
-    {
-        $uid = Str::after($attribute, 'generatedField:');
-
-        return $this->getGeneratedFieldValues()[$uid] ?? '';
-    }
-
-    /**
-     * Find field instance that matches the instance UID from another layout.
-     */
-    private function _getFieldFromAlternativeLayouts($layoutElementUid): ?FieldInterface
-    {
-        $currentLayout = $this->getFieldLayout();
-
-        // get all field layouts for this element type sans the layout used by this element
-        $fieldLayouts = Collection::make(Craft::$app->getFields()->getLayoutsByType(static::class))
-            ->filter(fn ($fieldLayout) => $fieldLayout->uid !== $currentLayout?->uid);
-
-        if ($fieldLayouts->isEmpty()) {
-            return null;
-        }
-
-        // find the layout that has this element UID and get its handle
-        $handle = null;
-        foreach ($fieldLayouts as $fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
-                if ($field->layoutElement->uid === $layoutElementUid) {
-                    // get its handle
-                    $handle = $field->layoutElement->handle;
-                    break 2;
-                }
-            }
-        }
-
-        // and now find the layout element by handle in this element's layout
-        if ($handle) {
-            foreach ($currentLayout->getCustomFields() as $field) {
-                if ($field->layoutElement->handle === $handle) {
-                    return $field;
-                }
-            }
-        }
-
-        return null;
+        return app(ElementAttributeRenderer::class)->render($this, $attribute);
     }
 
     /**
@@ -4742,52 +4500,7 @@ JS, [
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        // Is this a custom field?
-        $field = null;
-        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-            $fieldUid = $matches[1];
-            $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
-        } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
-            $instanceUid = $matches[1];
-            $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
-            if ($layoutElement instanceof CustomField) {
-                try {
-                    $field = $layoutElement->getField();
-                } catch (FieldNotFoundException) {
-                }
-            }
-
-            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
-        }
-
-        if ($field !== null) {
-            if ($field instanceof InlineEditableFieldInterface) {
-                $layoutElement = $field->layoutElement;
-                // if the layout element should be visible and editable in the "normal" edit form
-                // proceed with showing the input html, otherwise show the standard attribute html
-                /** @var CustomField $layoutElement */
-                if ($layoutElement && $layoutElement->showInForm($this) && $layoutElement->editable($this)) {
-                    // Was this field value eager-loaded?
-                    if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                        $value = $this->getEagerLoadedElements($field->handle);
-                    } else {
-                        // The field might not actually belong to this element
-                        try {
-                            $value = $this->getFieldValue($field->handle);
-                        } catch (InvalidFieldException) {
-                            return '';
-                        }
-                    }
-
-                    return $field->getInlineInputHtml($value, $this);
-                }
-            }
-
-            return $this->getAttributeHtml($attribute);
-        }
-
-        // just go with the static output by default
-        return $this->attributeHtml($attribute);
+        return app(ElementAttributeRenderer::class)->renderInlineInput($this, $attribute);
     }
 
     /**
