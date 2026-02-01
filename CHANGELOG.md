@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where nested entries within Matrix fields weren’t showing their UI labels if they didn’t have titles.
+
 ## 5.9.5 - 2026-01-31
 
 - Fixed a bug where nested elements could appear to be editable when their field was read-only.

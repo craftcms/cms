@@ -1071,7 +1071,7 @@ JS, [
                     'site-id' => $element->siteId,
                     'is-unpublished-draft' => $element->getIsUnpublishedDraft(),
                     'status' => $element->getStatus(),
-                    'label' => (string)$element,
+                    'label' => $element->getUiLabel(),
                     'url' => $element->getUrl(),
                     'cp-url' => $editable ? $element->getCpEditUrl() : null,
                     'level' => $element->level,

@@ -1375,7 +1375,8 @@ JS,
             ]),
             'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
                 $entryType->hasTitleField ||
-                $entryType->titleFormat
+                $entryType->titleFormat ||
+                $entryType->uiLabelFormat !== '{title}'
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),

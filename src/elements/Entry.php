@@ -1445,7 +1445,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (!$entryType->hasTitleField && !$entryType->titleFormat) {
+            if (!$entryType->hasTitleField && !$entryType->titleFormat && $entryType->uiLabelFormat === '{title}') {
                 return '';
             }
         }
