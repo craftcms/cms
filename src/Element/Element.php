@@ -106,11 +106,9 @@ use DateTime;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -3595,7 +3593,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
-        return Gate::forUser($user)->allows('view', $this);
+        return $user->can('view', $this);
     }
 
     /**
@@ -3603,7 +3601,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
-        return Gate::forUser($user)->allows('save', $this);
+        return $user->can('save', $this);
     }
 
     /**
@@ -3611,7 +3609,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
-        return Gate::forUser($user)->allows('duplicate', $this);
+        return $user->can('duplicate', $this);
     }
 
     /**
@@ -3619,7 +3617,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCopy(User $user): bool
     {
-        return Gate::forUser($user)->allows('copy', $this);
+        return $user->can('copy', $this);
     }
 
     /**
@@ -3627,7 +3625,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return Gate::forUser($user)->allows('delete', $this);
+        return $user->can('delete', $this);
     }
 
     /**
@@ -3635,7 +3633,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
-        return Gate::forUser($user)->allows('deleteForSite', $this);
+        return $user->can('deleteForSite', $this);
     }
 
     /**
@@ -3643,7 +3641,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
-        return Gate::forUser($user)->allows('createDrafts', $this);
+        return $user->can('createDrafts', $this);
     }
 
     /**
