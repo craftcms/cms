@@ -27,6 +27,15 @@ use yii\base\InvalidConfigException;
  */
 trait HasCustomFields
 {
+    /**
+     * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
+     * associated with elements from a given source.
+     *
+     * @see fieldLayouts()
+     * @since 3.5.0
+     */
+    public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
+
     private ?array $_outdatedFields = null;
 
     private ?array $_modifiedFields = null;

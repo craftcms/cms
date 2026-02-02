@@ -13,16 +13,12 @@ use craft\base\ElementTrait;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\events\DefineAttributeKeywordsEvent;
-use craft\events\DefineUrlEvent;
-use craft\events\DefineValueEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
-use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\web\View;
@@ -121,6 +117,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
     use Concerns\HasGqlType;
+    use Concerns\HasRoutesAndUrls;
     use Concerns\HasSources;
     use Concerns\Queryable;
     use Concerns\Revisionable;
@@ -136,7 +133,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @since 3.3.6
      */
-    public const HOMEPAGE_URI = '__home__';
+    public const string HOMEPAGE_URI = '__home__';
 
     // Statuses
     // -------------------------------------------------------------------------
@@ -178,116 +175,9 @@ abstract class Element extends Component implements ElementInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
-     */
-    public const EVENT_REGISTER_SOURCES = 'registerSources';
-
-    /**
-     * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
-     * associated with elements from a given source.
-     *
-     * @see fieldLayouts()
-     * @since 3.5.0
-     */
-    public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
-
-    /**
-     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
-     */
-    public const EVENT_REGISTER_ACTIONS = 'registerActions';
-
-    /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
     public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
-
-    /**
-     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
-     */
-    public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
-
-    /**
-     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
-     */
-    public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
-
-    /**
-     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
-     */
-    public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
-
-    /**
-     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
-     * attribute present in the table.
-     *
-     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\DefineAttributeHtmlEvent;
-     * use craft\events\ElementIndexTableAttributeEvent;
-     * use craft\events\RegisterElementTableAttributesEvent;
-     * use craft\helpers\Cp;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-     *     function(RegisterElementTableAttributesEvent $e) {
-     *         $e->tableAttributes['authorExpertise'] = ['label' => 'Author Expertise'];
-     *     }
-     * );
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
-     *     function(ElementIndexTableAttributeEvent $e) {
-     *         $query = $e->query;
-     *         $attr = $e->attribute;
-     *
-     *         if ($attr === 'authorExpertise') {
-     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
-     *         }
-     *     }
-     * );
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
-     *     function(DefineAttributeHtmlEvent $e) {
-     *         $attribute = $e->attribute;
-     *
-     *         if ($attribute !== 'authorExpertise') {
-     *             return;
-     *         }
-     *
-     *         // The field data is eager-loaded!
-     *         $author = $e->sender->getAuthor();
-     *         $categories = $author->areasOfExpertiseCategoryField;
-     *
-     *         $e->html = Cp::elementPreviewHtml($categories);
-     *     }
-     * );
-     * ```
-     *
-     * @since 3.7.14
-     */
-    public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
-
-    /**
-     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
-     *
-     * @since 5.5.0
-     */
-    public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
-
-    /**
-     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
-     *
-     * @since 5.5.0
-     */
-    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
     /**
      * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
@@ -423,38 +313,6 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
     /**
-     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested.
-     *
-     * Set [[Event::$handled]] to `true` to explicitly tell the element that a route has been set (even if you’re
-     * setting it to `null`).
-     *
-     * ```php
-     * Event::on(craft\elements\Entry::class, craft\base\Element::EVENT_SET_ROUTE, function(craft\events\SetElementRouteEvent $e) {
-     *     // @var craft\elements\Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     if ($entry->uri === 'pricing') {
-     *         $e->route = 'module/pricing/index';
-     *
-     *         // Explicitly tell the element that a route has been set,
-     *         // and prevent other event handlers from running, and tell
-     *         $e->handled = true;
-     *     }
-     * });
-     * ```
-     */
-    public const EVENT_SET_ROUTE = 'setRoute';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the cache tags that should be cleared when
-     * this element is saved.
-     *
-     * @see getCacheTags()
-     * @since 4.1.0
-     */
-    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
-
-    /**
      * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
      * element attribute.
      *
@@ -481,75 +339,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.5.0
      */
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
-
-    /**
-     * @event DefineUrlEvent The event that is triggered before defining the element’s URL.
-     *
-     * It can be used to provide a custom URL, completely bypassing the default URL generation.
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\DefineUrlEvent;
-     * use craft\helpers\UrlHelper;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_BEFORE_DEFINE_URL,
-     *     function(DefineUrlEvent $e
-     * ) {
-     *     // @var Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     $event->url = '...';
-     * });
-     * ```
-     *
-     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
-     * and set `$event->handled` to `true`.
-     *
-     * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
-     *
-     * @see getUrl()
-     * @since 4.4.6
-     */
-    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
-
-    /**
-     * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\DefineUrlEvent;
-     * use craft\helpers\UrlHelper;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_DEFINE_URL,
-     *     function(DefineUrlEvent $e
-     * ) {
-     *     // @var Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     // Add a custom query string param to the URL
-     *     if ($event->value !== null) {
-     *         $event->url = UrlHelper::urlWithParams($event->url, [
-     *             'foo' => 'bar',
-     *         ]);
-     *     }
-     * });
-     * ```
-     *
-     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
-     * and set `$event->handled` to `true`.
-     *
-     * @see getUrl()
-     * @since 4.3.0
-     */
-    public const EVENT_DEFINE_URL = 'defineUrl';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved.
@@ -1388,14 +1177,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function getUriFormat(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSearchKeywords(string $attribute): string
     {
         // Fire a 'defineKeywords' event
@@ -1419,97 +1200,6 @@ abstract class Element extends Component implements ElementInterface
     protected function searchKeywords(string $attribute): string
     {
         return Str::toString($this->$attribute);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getRoute(): mixed
-    {
-        // Fire a 'setRoute' event
-        if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {
-            $event = new SetElementRouteEvent;
-            $this->trigger(self::EVENT_SET_ROUTE, $event);
-            if ($event->handled || $event->route !== null) {
-                return $event->route ?: null;
-            }
-        }
-
-        if ($this instanceof NestedElementInterface) {
-            $field = $this->getField();
-            if ($field) {
-                return $field->getRouteForElement($this);
-            }
-        }
-
-        return $this->route();
-    }
-
-    /**
-     * Returns the route that should be used when the element’s URI is requested.
-     *
-     * @return string|array|null The route that the request should use, or null if no special action should be taken
-     *
-     * @see getRoute()
-     */
-    protected function route(): array|string|null
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsHomepage(): bool
-    {
-        return $this->uri === self::HOMEPAGE_URI;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUrl(): ?string
-    {
-        // Fire a 'beforeDefineUrl' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
-            $event = new DefineUrlEvent;
-            $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
-            $url = $event->url;
-        } else {
-            $url = null;
-        }
-
-        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && ! ($event->handled ?? false) && isset($this->uri)) {
-            $path = $this->getIsHomepage() ? '' : $this->uri;
-            $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
-        }
-
-        // Fire a 'defineUrl' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
-            $event = new DefineUrlEvent(['url' => $url]);
-            $this->trigger(self::EVENT_DEFINE_URL, $event);
-            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-            if ($event->url !== null || $event->handled) {
-                $url = $event->url;
-            }
-        }
-
-        return $url !== null ? Html::encodeSpaces($url) : $url;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLink(): ?Markup
-    {
-        if (($url = $this->getUrl()) === null) {
-            return null;
-        }
-
-        $a = Html::a(Html::encode($this->getUiLabel()), $url);
-
-        return Template::raw($a);
     }
 
     /**

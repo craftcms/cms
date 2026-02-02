@@ -12,6 +12,15 @@ use craft\events\DefineValueEvent;
 trait Cacheable
 {
     /**
+     * @event DefineValueEvent The event that is triggered when defining the cache tags that should be cleared when
+     * this element is saved.
+     *
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
+
+    /**
      * Returns the cache tags that should be cleared when this element is saved.
      *
      * @return string[]

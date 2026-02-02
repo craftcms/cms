@@ -27,6 +27,11 @@ use function CraftCms\Cms\t;
 trait HasActions
 {
     /**
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
+     */
+    public const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
      * {@inheritdoc}
      */
     public static function actions(string $source): array

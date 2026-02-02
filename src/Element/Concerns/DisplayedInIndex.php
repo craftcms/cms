@@ -49,6 +49,94 @@ use function CraftCms\Cms\t;
 trait DisplayedInIndex
 {
     /**
+     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
+     */
+    public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
+     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
+     * attribute present in the table.
+     *
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
+     *
+     * ```php
+     * use CraftCms\Cms\Element\Element;
+     * use CraftCms\Cms\Entry\Elements\Entry;
+     * use craft\events\DefineAttributeHtmlEvent;
+     * use craft\events\ElementIndexTableAttributeEvent;
+     * use craft\events\RegisterElementTableAttributesEvent;
+     * use craft\helpers\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+     *     function(RegisterElementTableAttributesEvent $e) {
+     *         $e->tableAttributes['authorExpertise'] = ['label' => 'Author Expertise'];
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     function(ElementIndexTableAttributeEvent $e) {
+     *         $query = $e->query;
+     *         $attr = $e->attribute;
+     *
+     *         if ($attr === 'authorExpertise') {
+     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
+     *         }
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
+     *     function(DefineAttributeHtmlEvent $e) {
+     *         $attribute = $e->attribute;
+     *
+     *         if ($attribute !== 'authorExpertise') {
+     *             return;
+     *         }
+     *
+     *         // The field data is eager-loaded!
+     *         $author = $e->sender->getAuthor();
+     *         $categories = $author->areasOfExpertiseCategoryField;
+     *
+     *         $e->html = Cp::elementPreviewHtml($categories);
+     *     }
+     * );
+     * ```
+     *
+     * @since 3.7.14
+     */
+    public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+
+    /**
+     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     *
+     * @since 5.5.0
+     */
+    public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
+
+    /**
+     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     *
+     * @since 5.5.0
+     */
+    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
+
+    /**
      * Returns the attributes that should be searchable for this element type.
      *
      * @return string[] The searchable attributes
@@ -118,7 +206,7 @@ trait DisplayedInIndex
      * @param  bool  $includeContainer  Whether to include the container
      * @param  bool  $selectable  Whether the elements are selectable
      * @param  bool  $sortable  Whether the elements are sortable
-     * @return string|\Stringable The HTML
+     * @return string|Stringable The HTML
      */
     public static function indexHtml(
         ElementQueryInterface $elementQuery,
@@ -256,25 +344,27 @@ trait DisplayedInIndex
     {
         $wheres = $elementQuery->getSubQuery()->wheres;
 
-        // Handle array of conditions
-        if (is_array($wheres)) {
-            foreach ($wheres as $key => $condition) {
-                if ($condition instanceof ExcludeDescendantIdsExpression) {
-                    $elementQuery = clone $elementQuery;
-                    unset($wheres[$key]);
-                    $elementQuery->getSubQuery()->wheres = $wheres;
-
-                    return $elementQuery;
-                }
-            }
+        if ($wheres instanceof ExcludeDescendantIdsExpression) {
+            $elementQuery = clone $elementQuery;
+            $elementQuery->getSubQuery()->wheres = [];
 
             return $elementQuery;
         }
 
-        // Handle single ExcludeDescendantIdsExpression
-        if ($wheres instanceof ExcludeDescendantIdsExpression) {
+        if (! is_array($wheres)) {
+            return $elementQuery;
+        }
+
+        foreach ($wheres as $key => $condition) {
+            if (! $condition instanceof ExcludeDescendantIdsExpression) {
+                continue;
+            }
+
             $elementQuery = clone $elementQuery;
-            $elementQuery->getSubQuery()->wheres = [];
+            unset($wheres[$key]);
+            $elementQuery->getSubQuery()->wheres = $wheres;
+
+            return $elementQuery;
         }
 
         return $elementQuery;
@@ -721,7 +811,7 @@ trait DisplayedInIndex
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction (SORT_ASC or SORT_DESC)
      * @param  Connection  $db  The database connection
-     * @return \Illuminate\Contracts\Database\Query\Expression|bool|array|string The columns
+     * @return ExpressionInterface|bool|array|string The columns
      */
     private static function _indexOrderByColumns(
         string $sourceKey,
@@ -752,7 +842,7 @@ trait DisplayedInIndex
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction
      * @param  Connection  $db  The database connection
-     * @return \Illuminate\Contracts\Database\Query\Expression|array|string|false The orderBy value
+     * @return ExpressionInterface|array|string|false The orderBy value
      */
     private static function resolveSortOption(string $attribute, int $dir, Connection $db): ExpressionInterface|array|string|false
     {

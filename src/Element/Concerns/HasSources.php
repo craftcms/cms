@@ -21,6 +21,11 @@ use yii\base\Event;
 trait HasSources
 {
     /**
+     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
+     */
+    public const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
      * @see sources()
      */
     private static array $sources = [];
