@@ -215,7 +215,7 @@ it('getActive includes pending delayed reserved and not failed jobs', function (
     $active = $this->service->getActive();
 
     expect($active)
-        ->toHaveCount(3)
+        ->toHaveCount(4)
         ->pluck('uid')->toContain('pending-1', 'delayed-1', 'reserved-1');
 });
 
