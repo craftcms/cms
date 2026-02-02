@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\ElementTrait;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\db\NestedElementQueryInterface;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
@@ -38,7 +37,6 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -61,7 +59,6 @@ use yii\base\ArrayableTrait;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 
 use function CraftCms\Cms\t;
@@ -119,6 +116,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Eagerloadable;
     use Concerns\Exportable;
     use Concerns\HasActions;
+    use Concerns\HasCanonical;
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
     use Concerns\HasGqlType;
@@ -794,29 +792,6 @@ abstract class Element extends Component implements ElementInterface
     private ?array $_attributeNames = null;
 
     /**
-     * @see getCanonicalId()
-     * @see setCanonicalId()
-     * @see getIsCanonical()
-     * @see getIsDerivative()
-     */
-    private ?int $_canonicalId = null;
-
-    /**
-     * @see getCanonical()
-     */
-    private ElementInterface|false|null $_canonical = null;
-
-    /**
-     * @see getCanonical()
-     */
-    private ElementInterface|false|null $_canonicalAnySite = null;
-
-    /**
-     * @see getCanonicalUid()
-     */
-    private ?string $_canonicalUid = null;
-
-    /**
      * @see _outdatedAttributes()
      */
     private ?array $_outdatedAttributes = null;
@@ -1382,188 +1357,6 @@ abstract class Element extends Component implements ElementInterface
 
                 return $errors;
             })->all());
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsCanonical(): bool
-    {
-        return ! isset($this->_canonicalId);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsDerivative(): bool
-    {
-        return ! $this->getIsCanonical();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCanonical(bool $anySite = false): ElementInterface
-    {
-        if ($this->getIsCanonical()) {
-            return $this;
-        }
-
-        $prop = $anySite ? '_canonicalAnySite' : '_canonical';
-
-        if (! isset($this->$prop)) {
-            $query = static::find()
-                ->id($this->_canonicalId)
-                ->siteId($anySite ? '*' : $this->siteId)
-                ->preferSites([$this->siteId])
-                ->structureId($this->structureId)
-                ->unique()
-                ->status(null)
-                ->trashed(null)
-                ->ignorePlaceholders();
-
-            if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
-                $query
-                    ->fieldId($this->getField()?->id);
-            }
-
-            $this->$prop = $query->one();
-        }
-
-        return $this->$prop ?: $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setCanonical(ElementInterface $element): void
-    {
-        if ($this->getIsCanonical()) {
-            throw new NotSupportedException('setCanonical() can only be called on a derivative element.');
-        }
-
-        $this->_canonical = $element;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCanonicalId(): ?int
-    {
-        return $this->_canonicalId ?? $this->id;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setCanonicalId(?int $canonicalId): void
-    {
-        if ($canonicalId != $this->id) {
-            $this->_canonicalId = $canonicalId;
-        } else {
-            $this->_canonicalId = null;
-        }
-
-        $this->_canonical = null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCanonicalUid(): ?string
-    {
-        // If this is the canonical element, return its UUID
-        if ($this->getIsCanonical()) {
-            return $this->uid;
-        }
-
-        // If the canonical element is already memoized via getCanonical(), go with its UUID
-        if (isset($this->_canonical) && $this->_canonical) {
-            return $this->_canonical->uid;
-        }
-
-        // Just fetch that one value ourselves
-        if (! isset($this->_canonicalUid)) {
-            $this->_canonicalUid = static::find()
-                ->id($this->_canonicalId)
-                ->site('*')
-                ->status(null)
-                ->ignorePlaceholders()
-                ->select(['elements.uid'])
-                ->one()?->uid;
-        }
-
-        return $this->_canonicalUid;
-    }
-
-    /**
-     * Returns the element’s canonical ID.
-     *
-     * @since 3.2.0
-     */
-    #[Deprecated(message: 'in 3.7.0. Use [[getCanonicalId()]] instead.')]
-    public function getSourceId(): ?int
-    {
-        Deprecator::log(__METHOD__,
-            'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
-
-        return $this->getCanonicalId();
-    }
-
-    /**
-     * Returns the element’s canonical UID.
-     *
-     * @since 3.2.0
-     */
-    #[Deprecated(message: 'in 3.7.0. Use [[getCanonicalUid()]] instead.')]
-    public function getSourceUid(): string
-    {
-        Deprecator::log(__METHOD__,
-            'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
-
-        return $this->getCanonicalUid();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsUnpublishedDraft(): bool
-    {
-        return $this->getIsDraft() && $this->getIsCanonical();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function mergeCanonicalChanges(): void
-    {
-        if (($canonical = $this->getCanonical()) === $this) {
-            return;
-        }
-
-        // Update any attributes that were modified upstream
-        foreach ($this->getOutdatedAttributes() as $attribute) {
-            if (! $this->isAttributeModified($attribute)) {
-                $this->$attribute = $canonical->$attribute;
-            }
-        }
-
-        foreach ($this->getOutdatedFields() as $fieldHandle) {
-            if (
-                ! $this->isFieldModified($fieldHandle) &&
-                ($field = $this->fieldByHandle($fieldHandle)) !== null
-            ) {
-                $field->copyValue($canonical, $this);
-            }
         }
     }
 
