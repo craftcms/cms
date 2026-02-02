@@ -11,6 +11,7 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\Field\Fields;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use UnitEnum;
@@ -26,36 +27,22 @@ use yii\base\InvalidConfigException;
  */
 trait HasCustomFields
 {
-    /**
-     * @see _outdatedFields()
-     */
     private ?array $_outdatedFields = null;
 
-    /**
-     * @see _modifiedFields()
-     */
     private ?array $_modifiedFields = null;
 
     private ?string $_fieldParamNamePrefix = null;
 
-    /**
-     * @var array|null Record of the fields whose values have already been normalized
-     */
     private ?array $_normalizedFieldValues = null;
 
-    /**
-     * @see getGeneratedFieldValues()
-     * @see setGeneratedFieldValues()
-     */
+    /** @var array<string, mixed> */
     private array $_generatedFieldValues;
 
-    /**
-     * @var array Record of dirty fields.
-     *
-     * @see getDirtyFields()
-     * @see isFieldDirty()
-     */
+    /** @var array<string, true> */
     private array $_dirtyFields = [];
+
+    /** @var int[] */
+    private array $_invalidNestedElementIds = [];
 
     public function getFieldValues(?array $fieldHandles = null): array
     {
@@ -111,12 +98,10 @@ trait HasCustomFields
 
     public function getFieldValue(string $fieldHandle): mixed
     {
-        // Was this field's value eager-loaded?
         if ($this->hasEagerLoadedElements($fieldHandle) && ! ($this->_lazyEagerLoadedElements[$fieldHandle] ?? false)) {
             return $this->getEagerLoadedElements($fieldHandle);
         }
 
-        // Make sure the value has been normalized
         $this->normalizeFieldValue($fieldHandle);
 
         return $this->getBehavior('customFields')->$fieldHandle;
@@ -127,17 +112,13 @@ trait HasCustomFields
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $value;
 
-        // Don't assume that $value has been normalized
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
-        // If the element is fully initialized, mark the value as dirty
         if ($this->_initialized) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
-        // If the field value was previously eager-loaded, undo that
-        unset($this->_eagerLoadedElements[$fieldHandle]);
-        unset($this->_eagerLoadedElementCounts[$fieldHandle]);
+        unset($this->_eagerLoadedElements[$fieldHandle], $this->_eagerLoadedElementCounts[$fieldHandle]);
     }
 
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
@@ -148,7 +129,6 @@ trait HasCustomFields
             throw new InvalidFieldException($fieldHandle);
         }
 
-        // Normalize it now in case the system language changes later
         $value = $field->normalizeValueFromRequest($value, $this);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
@@ -174,9 +154,7 @@ trait HasCustomFields
         return isset($this->_modifiedFields($anySite)[$fieldHandle]);
     }
 
-    /**
-     * @return array The field handles that have been modified for this element
-     */
+    /** @return array<string, true> */
     private function _outdatedFields(): array
     {
         if (! static::trackChanges() || $this->getIsCanonical() || $this->getIsRevision()) {
@@ -195,15 +173,13 @@ trait HasCustomFields
                 ->pluck('layoutElementUid')
                 ->all();
 
-            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($fields);
+            $this->_outdatedFields = $this->_layoutElementUidsToFieldHandles($fields);
         }
 
         return $this->_outdatedFields;
     }
 
-    /**
-     * @return array The field handles that have been modified for this element
-     */
+    /** @return array<string, true> */
     private function _modifiedFields(bool $anySite): array
     {
         if (! static::trackChanges() || $this->getIsCanonical()) {
@@ -219,7 +195,7 @@ trait HasCustomFields
                 ->pluck('layoutElementUid')
                 ->all();
 
-            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($fields);
+            $this->_modifiedFields[$key] = $this->_layoutElementUidsToFieldHandles($fields);
         }
 
         return $this->_modifiedFields[$key];
@@ -245,30 +221,30 @@ trait HasCustomFields
 
     public function setDirtyFields(array $fieldHandles, bool $merge = true): void
     {
-        $this->_dirtyFields = $merge && ! empty($this->_dirtyFields)
-            ? array_merge($this->_dirtyFields, array_flip($fieldHandles))
-            : array_flip($fieldHandles);
+        $newDirtyFields = array_flip($fieldHandles);
+
+        $this->_dirtyFields = $merge && $this->_dirtyFields
+            ? array_merge($this->_dirtyFields, $newDirtyFields)
+            : $newDirtyFields;
 
         $this->_allDirty = false;
     }
 
     /**
-     * Returns field handles based on a list of field layout element UUIDs.
-     *
-     * @param  string[]  $uids
+     * @param  string[]  $layoutElementUids
      * @return array<string, true>
      */
-    private function _layoutElementUids2fieldHandles(array $uids): array
+    private function _layoutElementUidsToFieldHandles(array $layoutElementUids): array
     {
-        if (empty($uids)) {
+        if (! $layoutElementUids) {
             return [];
         }
 
-        $uids = array_flip($uids);
+        $uidLookup = array_flip($layoutElementUids);
         $handles = [];
 
         foreach ($this->getFieldLayout()->getCustomFieldElements() as $layoutElement) {
-            if (isset($uids[$layoutElement->uid])) {
+            if (isset($uidLookup[$layoutElement->uid])) {
                 $handles[$layoutElement->attribute()] = true;
             }
         }
@@ -280,18 +256,16 @@ trait HasCustomFields
     {
         $this->setFieldParamNamespace($paramNamespace);
 
-        $values = isset($this->_fieldParamNamePrefix)
+        $values = $this->_fieldParamNamePrefix
             ? Craft::$app->getRequest()->getBodyParam($paramNamespace, [])
             : Craft::$app->getRequest()->getBodyParams();
 
-        // Run through this multiple times, in case any fields become visible as a result of other field value changes
         $processedFields = [];
 
         do {
             $processedAnyFields = false;
 
             foreach ($this->fieldLayoutFields(editableOnly: true) as $field) {
-                // Have we already processed this field?
                 if (isset($processedFields[$field->handle])) {
                     continue;
                 }
@@ -308,17 +282,13 @@ trait HasCustomFields
         } while ($processedAnyFields);
     }
 
-    /**
-     * Checks if a field has a value submitted in the request.
-     */
     private function hasFieldValueFromRequest(FieldInterface $field, array $values): bool
     {
         if (isset($values[$field->handle])) {
             return true;
         }
 
-        // A file was uploaded for this field
-        return isset($this->_fieldParamNamePrefix)
+        return $this->_fieldParamNamePrefix
             && UploadedFile::getInstancesByName("{$this->_fieldParamNamePrefix}.{$field->handle}");
     }
 
@@ -342,16 +312,8 @@ trait HasCustomFields
         $this->_generatedFieldValues = $values;
     }
 
-    /**
-     * Normalizes a field's value.
-     *
-     * @param  string  $fieldHandle  The field handle
-     *
-     * @throws InvalidFieldException if the element doesn't have a field with the handle specified by `$fieldHandle`
-     */
     protected function normalizeFieldValue(string $fieldHandle): void
     {
-        // Have we already normalized this value?
         if (isset($this->_normalizedFieldValues[$fieldHandle])) {
             return;
         }
@@ -367,20 +329,14 @@ trait HasCustomFields
         $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
-    /**
-     * Returns the field with a given handle.
-     */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
-        // ignore if it's not a custom field handle
         if (! isset(CustomFieldBehavior::$fieldHandles[$handle])) {
             return null;
         }
 
         $field = $this->getFieldLayout()?->getFieldByHandle($handle);
 
-        // nullify values for custom fields that are not part of this layout
-        // https://github.com/craftcms/cms/issues/12539
         if (! $field) {
             $behavior = $this->getBehavior('customFields');
             if (isset($behavior->$handle)) {
@@ -391,13 +347,7 @@ trait HasCustomFields
         return $field;
     }
 
-    /**
-     * Returns each of this element's fields.
-     *
-     * @param  bool  $visibleOnly  Whether to only return fields that are visible for this element
-     * @param  bool  $editableOnly  Whether to only return fields that the current user can edit
-     * @return FieldInterface[] This element's fields
-     */
+    /** @return FieldInterface[] */
     protected function fieldLayoutFields(bool $visibleOnly = false, bool $editableOnly = false): array
     {
         try {
@@ -419,5 +369,32 @@ trait HasCustomFields
         }
 
         return $fieldLayout->getCustomFields();
+    }
+
+    public function isFieldEmpty(string $handle): bool
+    {
+        if (
+            ($fieldLayout = $this->getFieldLayout()) === null ||
+            ($field = $fieldLayout->getFieldByHandle($handle)) === null
+        ) {
+            return true;
+        }
+
+        return $field->isValueEmpty($this->getFieldValue($handle), $this);
+    }
+
+    public function getFieldContext(): string
+    {
+        return app(Fields::class)->fieldContext;
+    }
+
+    public function getInvalidNestedElementIds(): array
+    {
+        return $this->_invalidNestedElementIds;
+    }
+
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        array_push($this->_invalidNestedElementIds, ...$ids);
     }
 }

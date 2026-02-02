@@ -856,14 +856,6 @@ abstract class Element extends Component implements ElementInterface
     private ?string $_savedTitle = null;
 
     /**
-     * @var int[]
-     *
-     * @see getInvalidNestedElementIds()
-     * @see addInvalidNestedElementIds()
-     */
-    private array $_invalidNestedElementIds = [];
-
-    /**
      * @var bool|bool[]
      *
      * @see getEnabledForSite()
@@ -1394,21 +1386,6 @@ abstract class Element extends Component implements ElementInterface
                 return $errors;
             })->all());
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isFieldEmpty(string $handle): bool
-    {
-        if (
-            ($fieldLayout = $this->getFieldLayout()) === null ||
-            ($field = $fieldLayout->getFieldByHandle($handle)) === null
-        ) {
-            return true;
-        }
-
-        return $field->isValueEmpty($this->getFieldValue($handle), $this);
     }
 
     /**
@@ -2480,30 +2457,6 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasTitles()) {
             $this->_savedTitle = $this->title;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFieldContext(): string
-    {
-        return app(Fields::class)->fieldContext;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getInvalidNestedElementIds(): array
-    {
-        return $this->_invalidNestedElementIds;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addInvalidNestedElementIds(array $ids): void
-    {
-        array_push($this->_invalidNestedElementIds, ...$ids);
     }
 
     /**
