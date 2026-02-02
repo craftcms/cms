@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\RunQueue;
@@ -90,6 +91,7 @@ final class RouteServiceProvider extends ServiceProvider
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
+            HandleInertiaRequests::class,
             EnforceLicenses::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 

@@ -16,6 +16,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
 use DateTimeInterface;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rules\Unique;
 use RuntimeException;
@@ -29,7 +30,7 @@ use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class Site extends Dto implements Chippable, Stringable
+final class Site extends Dto implements Arrayable, Chippable, Stringable
 {
     /**
      * @var string|null Base URL
@@ -87,7 +88,7 @@ final class Site extends Dto implements Chippable, Stringable
         return [
             'language' => [
                 'required',
-                new LanguageRule(false),
+                new LanguageRule(false, parseValue: true),
             ],
             'handle' => array_filter([
                 'required',
@@ -100,6 +101,23 @@ final class Site extends Dto implements Chippable, Stringable
                 'string',
                 Cms::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
             ]),
+            'enabled' => [
+                function (string $attribute, mixed $value, \Closure $fail) use ($context) {
+                    $primary = $context?->payload['primary'] ?? false;
+
+                    // Only validate if primary is truthy
+                    if (! filter_var($primary, FILTER_VALIDATE_BOOLEAN)) {
+                        return;
+                    }
+
+                    // Parse the enabled value (handles env vars)
+                    $parsed = Env::parseBoolean($value);
+
+                    if (! $parsed) {
+                        $fail('The site must be enabled when it is the primary site.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -245,6 +263,28 @@ final class Site extends Dto implements Chippable, Stringable
             'sortOrder' => $this->sortOrder,
             'primary' => $this->primary,
             'enabled' => $this->getEnabled(false),
+        ];
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->getName(),
+            'nameRaw' => $this->getName(false),
+            'uiLabel' => $this->getUiLabel(),
+            'handle' => $this->handle,
+            'primary' => $this->primary,
+            'language' => $this->getLanguage(),
+            'languageRaw' => $this->getLanguage(false),
+            'locale' => $this->getLocale(),
+            'hasUrls' => $this->hasUrls,
+            'baseUrl' => $this->getBaseUrl(),
+            'baseUrlRaw' => $this->getBaseUrl(false),
+            'enabled' => $this->getEnabled(),
+            'enabledRaw' => $this->getEnabled(false),
+            'group' => $this->groupId ? $this->getGroup() : null,
+            'sortOrder' => $this->sortOrder,
         ];
     }
 }

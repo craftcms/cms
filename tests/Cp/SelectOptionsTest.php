@@ -9,8 +9,8 @@ describe('getEnvSuggestions', function () {
 
         expect($suggestions)->toHaveCount(1)
             ->and($suggestions[0])->toHaveKey('label')
-            ->and($suggestions[0])->toHaveKey('data')
-            ->and($suggestions[0]['data'])->toBeArray();
+            ->and($suggestions[0])->toHaveKey('options')
+            ->and($suggestions[0]['options'])->toBeArray();
     });
 
     it('returns suggestions with aliases when includeAliases is true', function () {
@@ -19,19 +19,19 @@ describe('getEnvSuggestions', function () {
         expect($suggestions)->toHaveCount(2)
             ->and($suggestions[0])->toHaveKey('label')
             ->and($suggestions[1])->toHaveKey('label')
-            ->and($suggestions[0]['data'])->toBeArray()
-            ->and($suggestions[1]['data'])->toBeArray();
+            ->and($suggestions[0]['options'])->toBeArray()
+            ->and($suggestions[1]['options'])->toBeArray();
     });
 
     it('filters suggestions based on filter callback', function () {
         $filter = fn ($value) => is_string($value) && strlen($value) > 5;
         $suggestions = SelectOptions::getEnvSuggestions(filter: $filter);
 
-        expect($suggestions[0]['data'])->toBeArray();
+        expect($suggestions[0]['options'])->toBeArray();
 
-        foreach ($suggestions[0]['data'] as $suggestion) {
-            expect($suggestion)->toHaveKey('name')
-                ->and($suggestion)->toHaveKey('hint');
+        foreach ($suggestions[0]['options'] as $suggestion) {
+            expect($suggestion)->toHaveKey('label')
+                ->and($suggestion)->toHaveKey('data.hint');
         }
     });
 
@@ -40,8 +40,8 @@ describe('getEnvSuggestions', function () {
 
         $suggestions = SelectOptions::getEnvSuggestions();
 
-        foreach ($suggestions[0]['data'] as $suggestion) {
-            expect($suggestion['name'])->not->toStartWith('$HTTP_');
+        foreach ($suggestions[0]['options'] as $suggestion) {
+            expect($suggestion['label'])->not->toStartWith('$HTTP_');
         }
 
         unset($_SERVER['HTTP_TEST_VAR']);
@@ -50,10 +50,10 @@ describe('getEnvSuggestions', function () {
     it('excludes @web aliases when includeAliases is true', function () {
         $suggestions = SelectOptions::getEnvSuggestions(includeAliases: true);
 
-        if (isset($suggestions[1]['data'])) {
-            foreach ($suggestions[1]['data'] as $suggestion) {
-                expect($suggestion['name'])->not->toBe('@web')
-                    ->and($suggestion['name'])->not->toStartWith('@web/');
+        if (isset($suggestions[1]['options'])) {
+            foreach ($suggestions[1]['options'] as $suggestion) {
+                expect($suggestion['label'])->not->toBe('@web')
+                    ->and($suggestion['label'])->not->toStartWith('@web/');
             }
         }
     });
@@ -61,8 +61,8 @@ describe('getEnvSuggestions', function () {
     it('formats env var names with $ prefix', function () {
         $suggestions = SelectOptions::getEnvSuggestions();
 
-        foreach ($suggestions[0]['data'] as $suggestion) {
-            expect($suggestion['name'])->toStartWith('$');
+        foreach ($suggestions[0]['options'] as $suggestion) {
+            expect($suggestion['label'])->toStartWith('$');
         }
     });
 });
@@ -74,7 +74,7 @@ describe('getEnvOptions', function () {
         expect($options)->toBeArray();
 
         foreach ($options as $option) {
-            if (isset($option['optgroup'])) {
+            if (isset($option['options'])) {
                 continue;
             }
             expect($option)->toHaveKey('label')
@@ -107,7 +107,7 @@ describe('getEnvOptions', function () {
         $options = SelectOptions::getEnvOptions();
 
         foreach ($options as $option) {
-            if (! isset($option['optgroup'])) {
+            if (! isset($option['options'])) {
                 expect($option['value'])->not->toStartWith('$HTTP_');
             }
         }
@@ -148,27 +148,25 @@ describe('getBooleanEnvOptions', function () {
         $_SERVER['TEST_BOOL_TRUE'] = 'true';
         $_SERVER['TEST_BOOL_FALSE'] = 'false';
 
-        $options = SelectOptions::getBooleanEnvOptions();
+        $groups = SelectOptions::getBooleanEnvOptions();
         $foundTrue = $foundFalse = false;
 
-        foreach ($options as $option) {
-            if (isset($option['optgroup'])) {
-                continue;
-            }
+        foreach ($groups as $options) {
+            foreach ($options['options'] as $option) {
+                expect($option)->toHaveKey('label')
+                    ->and($option)->toHaveKey('value')
+                    ->and($option)->toHaveKey('data')
+                    ->and($option['data'])->toHaveKey('boolean');
 
-            expect($option)->toHaveKey('label')
-                ->and($option)->toHaveKey('value')
-                ->and($option)->toHaveKey('data')
-                ->and($option['data'])->toHaveKey('boolean');
+                if ($option['value'] === '$TEST_BOOL_TRUE') {
+                    expect($option['data']['boolean'])->toBe('1');
+                    $foundTrue = true;
+                }
 
-            if ($option['value'] === '$TEST_BOOL_TRUE') {
-                expect($option['data']['boolean'])->toBe('1');
-                $foundTrue = true;
-            }
-
-            if ($option['value'] === '$TEST_BOOL_FALSE') {
-                expect($option['data']['boolean'])->toBe('0');
-                $foundFalse = true;
+                if ($option['value'] === '$TEST_BOOL_FALSE') {
+                    expect($option['data']['boolean'])->toBe('0');
+                    $foundFalse = true;
+                }
             }
         }
 
@@ -204,13 +202,15 @@ describe('getBooleanEnvOptions', function () {
         $_SERVER['TEST_NUM_TRUE'] = '1';
         $_SERVER['TEST_NUM_FALSE'] = '0';
 
-        $options = SelectOptions::getBooleanEnvOptions();
+        $groups = SelectOptions::getBooleanEnvOptions();
 
         $found = 0;
-        foreach ($options as $option) {
-            if (isset($option['value']) && in_array($option['value'], ['$TEST_NUM_TRUE', '$TEST_NUM_FALSE'])) {
-                expect($option['data']['boolean'])->toBeIn(['0', '1']);
-                $found++;
+        foreach ($groups as $options) {
+            foreach ($options['options'] as $option) {
+                if (isset($option['value']) && in_array($option['value'], ['$TEST_NUM_TRUE', '$TEST_NUM_FALSE'])) {
+                    expect($option['data']['boolean'])->toBeIn(['0', '1']);
+                    $found++;
+                }
             }
         }
 
@@ -235,14 +235,14 @@ describe('getLanguageOptions', function () {
 
     it('includes locale IDs when showLocaleIds is true', function () {
         $options = SelectOptions::getLanguageOptions(showLocaleIds: true);
-        $hasHint = array_any($options, fn ($option) => isset($option['data']['data']['hint']));
+        $hasHint = array_any($options, fn ($option) => isset($option['data']['hint']));
 
         expect($hasHint)->toBeTrue();
     });
 
     it('includes localized names when showLocalizedNames is true', function () {
         $options = SelectOptions::getLanguageOptions(showLocalizedNames: true);
-        $hasHintLang = array_any($options, fn ($option) => isset($option['data']['data']['hintLang']));
+        $hasHintLang = array_any($options, fn ($option) => isset($option['data']['hint']));
 
         expect($hasHintLang)->toBeTrue();
     });
@@ -346,7 +346,8 @@ describe('formatEnvOptions', function () {
 
         $formatted = SelectOptions::formatEnvOptions($options);
 
-        expect($formatted[0])->toHaveKey('optgroup');
+        expect($formatted[0])->toHaveKey('options')
+            ->and($formatted[0]['label'])->toBe('Environment Variables');
     });
 
     it('sorts options by value', function () {
@@ -375,6 +376,6 @@ describe('formatEnvOptions', function () {
 
         $formatted = SelectOptions::formatEnvOptions($options);
 
-        expect($formatted[1]['data']['hint'])->toBe('test hint');
+        expect($formatted[0]['options'][0]['data']['hint'])->toBe('test hint');
     });
 });

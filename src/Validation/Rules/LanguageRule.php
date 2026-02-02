@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
@@ -14,12 +16,17 @@ final readonly class LanguageRule implements ValidationRule
 {
     public function __construct(
         private bool $onlySiteLanguages = true,
-        private ?string $message = null
+        private ?string $message = null,
+        private ?bool $parseValue = false,
     ) {}
 
     #[\Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if ($this->parseValue && Str::startsWith($value, '$')) {
+            $value = Env::parse($value);
+        }
+
         if (! $value) {
             return;
         }

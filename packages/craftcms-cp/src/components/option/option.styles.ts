@@ -32,10 +32,17 @@ export default css`
   }
 
   .hint {
-    color: var(--c-color-neutral-on-subtle);
+    color: color-mix(in srgb, currentColor, transparent 25%);
+    align-self: end;
   }
 
   :host([active]) .hint {
     color: var(--c-color-neutral-on-emphasis);
+  }
+
+  .choice-field__label {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
   }
 `;

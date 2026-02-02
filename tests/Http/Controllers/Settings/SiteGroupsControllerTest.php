@@ -11,6 +11,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -23,36 +24,26 @@ beforeEach(function () {
 it('requires authentication', function () {
     Auth::logout();
 
-    postJson(action([SiteGroupsController::class, 'showGroupRenameField']))->assertUnauthorized();
     postJson(action([SiteGroupsController::class, 'store']))->assertUnauthorized();
-    postJson(action([SiteGroupsController::class, 'destroy']))->assertUnauthorized();
+    deleteJson(action([SiteGroupsController::class, 'destroy'], ['groupId' => 1]))->assertUnauthorized();
 });
 
 it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([SiteGroupsController::class, 'showGroupRenameField']))->assertForbidden();
     postJson(action([SiteGroupsController::class, 'store']))->assertForbidden();
-    postJson(action([SiteGroupsController::class, 'destroy']))->assertForbidden();
-});
-
-it('can show the group rename field', function () {
-    postJson(action([SiteGroupsController::class, 'showGroupRenameField']))
-        ->assertOk()
-        ->assertJsonStructure([
-            'html',
-            'js',
-        ])
-        ->assertSee('autosuggest');
+    deleteJson(action([SiteGroupsController::class, 'destroy'], ['groupId' => 1]))->assertForbidden();
 });
 
 it('can save a site group', function () {
-    postJson(action([SiteGroupsController::class, 'store']), [
+    $response = postJson(action([SiteGroupsController::class, 'store']), [
         'name' => 'A new group',
-    ])->assertOk();
+    ]);
 
+    $created = SiteGroup::latest('id')->first();
     expect(SiteGroup::count())->toBe(2);
-    expect(SiteGroup::latest('id')->first()->name)->toBe('A new group');
+    expect($created->name)->toBe('A new group');
+    $response->assertRedirect(route('craft.cp.settings.sites.index', ['groupId' => $created->id]));
 });
 
 it('can save an existing group', function () {
@@ -62,22 +53,25 @@ it('can save an existing group', function () {
         'id' => $siteGroup->id,
         'uid' => $siteGroup->uid,
         'name' => 'Updated group',
-    ])->assertOk();
+    ])->assertRedirect(route('craft.cp.settings.sites.index', ['groupId' => $siteGroup->id]));
 
     expect(SiteGroup::count())->toBe(1);
     expect(SiteGroup::first()->name)->toBe('Updated group');
 });
 
 it('can delete a site group', function () {
-    postJson(action([SiteGroupsController::class, 'store']), [
+    $response = postJson(action([SiteGroupsController::class, 'store']), [
         'name' => 'A new group',
-    ])->assertOk();
+    ]);
+
+    $created = SiteGroup::latest('id')->first();
+    $response->assertRedirect(route('craft.cp.settings.sites.index', ['groupId' => $created->id]));
 
     expect(SiteGroup::count())->toBe(2);
 
-    postJson(action([SiteGroupsController::class, 'destroy']), [
+    deleteJson(action([SiteGroupsController::class, 'destroy'], ['groupId' => $created->id]), [
         'id' => SiteGroup::latest('id')->first()->id,
-    ])->assertOk();
+    ])->assertRedirect(route('craft.cp.settings.sites.index'));
 
     expect(SiteGroup::count())->toBe(1);
 });

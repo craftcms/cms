@@ -12,7 +12,7 @@ export default class CraftActionItem extends LitElement {
   @property() icon: string | null = null;
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
-  @property() variant: VariantKey = Variant.Default;
+  @property({reflect: true}) variant: VariantKey = Variant.Default;
 
   renderBody() {
     return html`

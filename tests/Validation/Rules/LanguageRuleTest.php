@@ -31,6 +31,21 @@ it('validates', function (?string $errorMessage, string $value, bool $onlySiteLa
     ['{value} is not a valid site language.', 'nolang', false],
 ]);
 
+it('can allow parsing environment variables', function (?string $errorMessage, string $value) {
+    putenv("APP_LANGUAGE=$value");
+    $rule = new LanguageRule(parseValue: true);
+    $error = null;
+
+    $rule->validate('language', '$APP_LANGUAGE', function ($message) use (&$error) {
+        $error = $message;
+    });
+
+    expect($error)->toBe($errorMessage);
+})->with([
+    ['nolang is not a valid site language.', 'nolang'],
+    [null, 'en-US'],
+]);
+
 it('can pass a custom message', function () {
     $rule = new LanguageRule(message: 'This is a custom message');
 

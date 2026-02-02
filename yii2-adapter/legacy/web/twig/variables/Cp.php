@@ -503,7 +503,7 @@ class Cp extends Component
      */
     public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
-        return SelectOptions::getEnvSuggestions($includeAliases, $filter);
+        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
     }
 
     /**
@@ -516,7 +516,7 @@ class Cp extends Component
      */
     public function getEnvOptions(?array $allowedValues = null): array
     {
-        return SelectOptions::getEnvOptions($allowedValues);
+        return $this->formatLegacyOptions(SelectOptions::getEnvOptions($allowedValues));
     }
 
     /**
@@ -528,7 +528,7 @@ class Cp extends Component
      */
     public function getBooleanEnvOptions(): array
     {
-        return SelectOptions::getBooleanEnvOptions();
+        return $this->formatLegacyOptions(SelectOptions::getBooleanEnvOptions());
     }
 
     /**
@@ -541,7 +541,7 @@ class Cp extends Component
      */
     public function getLanguageEnvOptions(bool $appOnly = false): array
     {
-        return SelectOptions::getLanguageEnvOptions($appOnly);
+        return $this->formatLegacyOptions(SelectOptions::getLanguageEnvOptions($appOnly));
     }
 
     /**
@@ -554,7 +554,7 @@ class Cp extends Component
      */
     public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
-        return SelectOptions::getTimeZoneOptions($offsetDate);
+        return $this->formatLegacyOptions(SelectOptions::getTimeZoneOptions($offsetDate));
     }
 
     /**
@@ -572,7 +572,19 @@ class Cp extends Component
         bool $showLocalizedNames = false,
         bool $appLocales = false,
     ): array {
-        return SelectOptions::getLanguageOptions($showLocaleIds, $showLocalizedNames, $appLocales);
+        return array_map(function($locale) {
+            return [
+                'label' => $locale['label'],
+                'value' => $locale['value'],
+                'data' => [
+                    'data' => array_filter([
+                        'keywords' => $locale['data']['keywords'] ?? null,
+                        'hintLang' => $locale['data']['lang'] ?? null,
+                        'hint' => $locale['data']['hint'] ?? null,
+                    ]),
+                ],
+            ];
+        }, SelectOptions::getLanguageOptions($showLocaleIds, $showLocalizedNames, $appLocales));
     }
 
     /**
@@ -777,5 +789,40 @@ class Cp extends Component
                 \yii\base\Event::trigger(Cp::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
             }
         });
+    }
+
+    private function formatLegacySuggestions(array $options): array
+    {
+        return array_map(function($group) {
+            return [
+                'label' => $group['label'],
+                'data' => array_map(function(array $option) {
+                    return [
+                        'name' => $option['label'],
+                        'hint' => $option['data']['hint'] ?? null,
+                    ];
+                }, $group['options']),
+            ];
+        }, $options);
+    }
+
+    private function formatLegacyOptions(array $originalOptions): array
+    {
+        $options = [];
+
+        foreach ($originalOptions as $value) {
+            if ($value['type'] === 'optgroup') {
+                $options[] = ['optgroup' => $value['label']];
+                array_push($options, ...($value['options'] ?? []));
+            } else {
+                $options[] = [
+                    'label' => $value['label'],
+                    'value' => $value['value'],
+                    'data' => $value['data'],
+                ];
+            }
+        }
+
+        return $options;
     }
 }

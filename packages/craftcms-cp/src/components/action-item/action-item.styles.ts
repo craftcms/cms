@@ -23,7 +23,7 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover) .action-item {
+    :host(:hover) .action-item:not(:disabled) {
       background-color: var(--c-color-accent-bg-subtle);
       color: var(--c-color-accent-on-subtle);
     }
@@ -32,6 +32,10 @@ export default css`
   :host([active]) .action-item {
     background-color: var(--c-color-accent-bg-emphasis);
     color: var(--c-color-accent-on-emphasis);
+  }
+
+  .action-item:disabled {
+    opacity: 0.5;
   }
 
   .action-item:not(:disabled) {
@@ -52,7 +56,7 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover[variant='danger']) .action-item {
+    :host(:hover[variant='danger']) .action-item:not(:disabled) {
       background-color: var(--c-color-bg-subtle);
       color: var(--c-color-on-subtle);
     }

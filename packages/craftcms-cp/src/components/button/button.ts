@@ -3,6 +3,7 @@ import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './button.styles.js';
 import '../spinner/spinner.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 /**
  * @summary Interactive element that triggers an action or event.
@@ -39,9 +40,19 @@ export default class CraftButton extends LionButtonSubmit {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
+  /** Set align-items for the content */
+  @property() align: 'start' | 'end' | 'center' = 'center';
+
   override render() {
     return html`
-      <div class="button-content" part="content">
+      <div
+        class="${classMap({
+          'button-content': true,
+          'button-content--start': this.align === 'start',
+          'button-content--end': this.align === 'end',
+        })}"
+        part="content"
+      >
         <slot name="prefix" class="prefix" part="prefix"></slot>
         <slot class="label" part="label"></slot>
         <slot name="suffix" class="suffix" part="suffix"></slot>

@@ -69,7 +69,7 @@ samp,
 pre {
   font-family:
     ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; /* 1 */
-  font-size: 1em; /* 2 */
+  font-size: 0.9em; /* 2 */
 }
 
 /**

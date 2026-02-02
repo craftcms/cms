@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
   import {
@@ -50,6 +50,7 @@
     }
   }
 
+  // Handle cmd + s events
   useEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
       event.preventDefault();
@@ -108,7 +109,7 @@
           <template v-if="form.hasErrors">
             <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
               <craft-icon
-                name="exclamation-triangle"
+                name="triangle-exclamation"
                 style="color: var(--c-color-danger-bg-emphasis)"
               ></craft-icon>
               {{ t('Could not save settings') }}
@@ -145,7 +146,7 @@
         </template>
         <div class="grid gap-3 p-5">
           <template v-if="form.hasErrors">
-            <craft-callout variant="danger" icon="exclamation-triangle">
+            <craft-callout variant="danger" icon="triangle-exclamation">
               <div slot="title" class="tw:font-bold">
                 {{ t('Could not save settings') }}
               </div>

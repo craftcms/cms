@@ -1,7 +1,8 @@
-import {html, LitElement, css, nothing} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import styles from './nav-item.styles';
+import {classMap} from 'lit/directives/class-map.js';
 
 /**
  *
@@ -65,44 +66,7 @@ export default class CraftNavItem extends LitElement {
         href="${this.url}"
         aria-current="${this.active ? 'page' : false}"
       >
-        <span class="nav-item__prefix">
-          <slot name="prefix">
-            <slot name="icon">
-              ${this.icon
-                ? html` <craft-icon
-                    name="${this.icon}"
-                    class="nav-icon"
-                  ></craft-icon>`
-                : html` <span class="active-indicator"></span> `}
-            </slot>
-            ${this.indicator ? html`<span class="indicator"></span>` : nothing}
-          </slot>
-        </span>
-
-        <div class="nav-item__suffix">
-          <slot name="suffix">
-            ${hasSubnav
-              ? html`
-                  <craft-button
-                    @click="${this.toggleSubnav}"
-                    icon
-                    size="small"
-                    aria-controls="${this.id}-subnav"
-                    aria-expanded="${this.subnavState === 'open'
-                      ? 'true'
-                      : 'false'}"
-                  >
-                    <craft-icon
-                      name="${this.subnavState === 'closed'
-                        ? 'chevron-down'
-                        : 'chevron-up'}"
-                      style="font-size: calc(10rem / 16)"
-                    ></craft-icon>
-                  </craft-button>
-                `
-              : nothing}
-          </slot>
-        </div>
+        ${this.renderPrefix()} ${this.renderSuffix(hasSubnav)}
       </a>
       <c-tooltip for="${itemId}" placement="right-start"
         ><slot></slot
@@ -110,63 +74,82 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderItem(hasSubnav: boolean) {
+  renderPrefix() {
+    return html`
+      <span class="nav-item__prefix">
+        <slot name="prefix">
+          <slot name="icon">
+            ${this.icon
+              ? html` <craft-icon
+                  name="${this.icon}"
+                  class="nav-icon"
+                ></craft-icon>`
+              : nothing}
+          </slot>
+          ${this.indicator ? html`<span class="indicator"></span>` : nothing}
+        </slot>
+      </span>
+    `;
+  }
+
+  renderSuffix(hasSubnav: boolean = false) {
+    return html`
+      <div class="nav-item__suffix">
+        <slot name="suffix">
+          ${hasSubnav
+            ? html`
+                <craft-button
+                  @click="${this.toggleSubnav}"
+                  icon
+                  size="small"
+                  aria-controls="${this.id}-subnav"
+                  aria-expanded="${this.subnavState === 'open'
+                    ? 'true'
+                    : 'false'}"
+                >
+                  <craft-icon
+                    name="${this.subnavState === 'closed'
+                      ? 'chevron-down'
+                      : 'chevron-up'}"
+                    style="font-size: calc(10rem / 16)"
+                  ></craft-icon>
+                </craft-button>
+              `
+            : nothing}
+        </slot>
+      </div>
+    `;
+  }
+
+  renderItem(hasSubnav: boolean, hasPrefix: boolean = false) {
     return html`
       <a
-        class="nav-item"
+        class="${classMap({
+          'nav-item': true,
+          'nav-item--prefixed': hasPrefix,
+        })}"
         href="${this.url}"
         aria-current="${this.active ? 'page' : false}"
       >
-        <span class="nav-item__prefix">
-          <slot name="prefix">
-            <slot name="icon">
-              ${this.icon
-                ? html` <craft-icon
-                    name="${this.icon}"
-                    class="nav-icon"
-                  ></craft-icon>`
-                : html` <span class="active-indicator"></span> `}
-            </slot>
-            ${this.indicator ? html`<span class="indicator"></span>` : nothing}
-          </slot>
-        </span>
+        ${hasPrefix ? this.renderPrefix() : nothing}
         <slot></slot>
-
-        <div class="nav-item__suffix">
-          <slot name="suffix">
-            ${hasSubnav
-              ? html`
-                  <craft-button
-                    @click="${this.toggleSubnav}"
-                    icon
-                    size="small"
-                    aria-controls="${this.id}-subnav"
-                    aria-expanded="${this.subnavState === 'open'
-                      ? 'true'
-                      : 'false'}"
-                  >
-                    <craft-icon
-                      name="${this.subnavState === 'closed'
-                        ? 'chevron-down'
-                        : 'chevron-up'}"
-                      style="font-size: calc(10rem / 16)"
-                    ></craft-icon>
-                  </craft-button>
-                `
-              : nothing}
-          </slot>
-        </div>
+        ${this.renderSuffix(hasSubnav)}
       </a>
     `;
   }
 
   override render() {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
+    const hasPrefix =
+      !!this.icon ||
+      !!this.querySelector('[slot="prefix"]') ||
+      !!this.querySelector('[slot="icon"]');
+
     return html`
       <li>
         ${this.iconOnly
           ? this.renderIconItem(hasSubnav)
-          : this.renderItem(hasSubnav)}
+          : this.renderItem(hasSubnav, hasPrefix)}
         ${hasSubnav
           ? html`
               <div

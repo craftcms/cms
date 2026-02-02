@@ -32,11 +32,9 @@ class SelectOptions
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @return array[]
-     *
-     * @phpstan-return array{label:string,data:array}[]
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: array}, 1?: array{type: 'optgroup', label: string, options: array}}
      */
-    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
     {
         $suggestions = [];
 
@@ -49,14 +47,19 @@ class SelectOptions
                 (! $filter || $filter($env))
             ) {
                 $envSuggestions[] = [
-                    'name' => '$'.$var,
-                    'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
+                    'label' => '$'.$var,
+                    'value' => '$'.$var,
+                    'data' => [
+                        'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
+                    ],
                 ];
             }
         }
+
         $suggestions[] = [
+            'type' => 'optgroup',
             'label' => t('Environment Variables'),
-            'data' => array_values(Arr::sort($envSuggestions, 'name')),
+            'options' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
 
         if ($includeAliases) {
@@ -75,20 +78,27 @@ class SelectOptions
                         (! $filter || $filter($path[$alias]))
                     ) {
                         $aliasSuggestions[] = [
-                            'name' => $alias,
-                            'hint' => $path[$alias],
+                            'label' => $alias,
+                            'value' => $alias,
+                            'data' => [
+                                'hint' => $path[$alias],
+                            ],
                         ];
                     }
                 } elseif (! $filter || $filter($path)) {
                     $aliasSuggestions[] = [
-                        'name' => $alias,
-                        'hint' => $path,
+                        'label' => $alias,
+                        'value' => $alias,
+                        'data' => [
+                            'hint' => $path,
+                        ],
                     ];
                 }
             }
             $suggestions[] = [
+                'type' => 'optgroup',
                 'label' => t('Aliases'),
-                'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
+                'options' => array_values(Arr::sort($aliasSuggestions, 'name')),
             ];
         }
 
@@ -163,7 +173,13 @@ class SelectOptions
             }
         }
 
-        return self::formatEnvOptions($options);
+        return [
+            [
+                'type' => 'optgroup',
+                'label' => t('Environment Variables'),
+                'options' => collect($options)->sortBy('value')->values(),
+            ],
+        ];
     }
 
     /**
@@ -193,7 +209,7 @@ class SelectOptions
             }
 
             $languageValue = null;
-            if ($allLanguages->contains($value)) {
+            if ($allLanguages->containsStrict($value)) {
                 $languageValue = $value;
             }
 
@@ -241,9 +257,7 @@ class SelectOptions
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'value' => $locale->id,
                 'data' => [
-                    'data' => [
-                        'keywords' => $name,
-                    ],
+                    'keywords' => $name,
                 ],
             ];
 
@@ -253,10 +267,10 @@ class SelectOptions
             }
             if ($showLocalizedNames) {
                 $hints[] = $name;
-                $option['data']['data']['hintLang'] = $locale->id;
+                $option['data']['hintLang'] = $locale->id;
             }
             if (! empty($hints)) {
-                $option['data']['data']['hint'] = implode(', ', $hints);
+                $option['data']['hint'] = implode(', ', $hints);
             }
 
             $options[] = $option;
@@ -348,11 +362,12 @@ class SelectOptions
 
     public static function formatEnvOptions(array $options): array
     {
-        return Collection::make($options)
-            ->sortBy('value')
-            ->prepend([
-                'optgroup' => t('Environment Variables'),
-            ])
-            ->all();
+        return [
+            [
+                'type' => 'optgroup',
+                'label' => t('Environment Variables'),
+                'options' => Collection::make($options)->sortBy('value')->values()->all(),
+            ],
+        ];
     }
 }
