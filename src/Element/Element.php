@@ -106,7 +106,6 @@ use DateTime;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -182,9 +181,7 @@ abstract class Element extends Component implements ElementInterface
     use ArrayableTrait {
         toArray as traitToArray;
     }
-    use Draftable {
-        canCreateDrafts as traitCanCreateDrafts;
-    }
+    use Draftable;
     use ElementTrait;
     use Macroable {
         __call as macroCall;
@@ -2999,7 +2996,7 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
+            $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
@@ -3596,22 +3593,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canViewElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
-        }
-
-        // Fire an 'authorizeView' event
-        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
-
-            return $event->authorized;
-        }
-
-        return false;
+        return $user->can('view', $this);
     }
 
     /**
@@ -3619,22 +3601,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canSaveElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
-        }
-
-        // Fire an 'authorizeSave' event
-        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
-
-            return $event->authorized;
-        }
-
-        return false;
+        return $user->can('save', $this);
     }
 
     /**
@@ -3642,22 +3609,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canDuplicateElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
-        }
-
-        // Fire an 'authorizeDuplicate' event
-        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
-
-            return $event->authorized;
-        }
-
-        return false;
+        return $user->can('duplicate', $this);
     }
 
     /**
@@ -3665,7 +3617,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCopy(User $user): bool
     {
-        return false;
+        return $user->can('copy', $this);
     }
 
     /**
@@ -3673,22 +3625,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canDeleteElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
-        }
-
-        // Fire an 'authorizeDelete' event
-        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
-
-            return $event->authorized;
-        }
-
-        return false;
+        return $user->can('delete', $this);
     }
 
     /**
@@ -3696,22 +3633,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canDeleteElementForSite($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
-        }
-
-        // Fire an 'authorizeDeleteForSite' event
-        if (! $this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
-
-            return $event->authorized;
-        }
-
-        return false;
+        return $user->can('deleteForSite', $this);
     }
 
     /**
@@ -3719,15 +3641,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
-        // Fire an 'authorizeCreateDrafts' event
-        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
-            $event = new AuthorizationCheckEvent($user);
-            $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
-
-            return $event->authorized;
-        }
-
-        return $this->traitCanCreateDrafts($user);
+        return $user->can('createDrafts', $this);
     }
 
     /**

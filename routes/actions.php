@@ -339,7 +339,7 @@ Route::prefix(implode('/', [
             Route::post('users/save-password', [PasswordController::class, 'store']);
         });
 
-        Route::middleware([RequireEdition::class.':'.Edition::Pro->value, 'can:editUsers'])->group(function () {
+        Route::middleware([RequireEdition::class.':'.Edition::Team->value, 'can:editUsers'])->group(function () {
             Route::middleware('password.confirm')->group(function () {
                 Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
                 Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);

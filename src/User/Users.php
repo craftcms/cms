@@ -26,7 +26,6 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -56,7 +55,6 @@ use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use InvalidArgumentException;
@@ -1154,32 +1152,7 @@ final class Users
      */
     public function canImpersonate(User $impersonator, User $impersonatee): bool
     {
-        // Admins can do whatever they want
-        if ($impersonator->admin) {
-            return true;
-        }
-
-        // Only admins are allowed to impersonate another admin
-        if ($impersonatee->admin) {
-            return false;
-        }
-
-        // impersonateUsers permission is obviously required
-        if (! $impersonator->can('impersonateUsers')) {
-            return false;
-        }
-
-        // Make sure the impersonator has at least all the same permissions as the impersonatee
-        $impersonatorPermissions = UserPermissions::getPermissionsByUserId($impersonator->id)->flip();
-        $impersonateePermissions = UserPermissions::getPermissionsByUserId($impersonatee->id);
-
-        foreach ($impersonateePermissions as $permission) {
-            if (! isset($impersonatorPermissions[$permission]) && UserPermissions::validatePermission($permission)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $impersonator->can('impersonate', $impersonatee);
     }
 
     /**
@@ -1187,20 +1160,7 @@ final class Users
      */
     public function canSuspend(User $suspender, User $suspendee): bool
     {
-        if (! $suspender->can('moderateUsers')) {
-            return false;
-        }
-
-        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
-        if (! $suspender->admin && $suspendee->admin) {
-            return false;
-        }
-
-        if ($suspendee->getHasSsoIdentity()) {
-            return false;
-        }
-
-        return true;
+        return $suspender->can('suspend', $suspendee);
     }
 
     /**

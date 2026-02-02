@@ -1502,63 +1502,6 @@ XML;
     }
 
     /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canView(AuthorizableContract $user): bool
-    {
-        if (parent::canView($user)) {
-            return true;
-        }
-
-        return
-            $user->id === $this->id ||
-            $user->can('viewUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canSave(AuthorizableContract $user): bool
-    {
-        if (! $this->id) {
-            return $user->canRegisterUsers();
-        }
-
-        if ($user->id === $this->id) {
-            return true;
-        }
-
-        return $user->can('editUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDuplicate(AuthorizableContract $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDelete(AuthorizableContract $user): bool
-    {
-        if (parent::canDelete($user)) {
-            return true;
-        }
-
-        return
-            $user->id !== $this->id &&
-            $user->can('deleteUsers') &&
-            (! $this->admin || $user->admin);
-    }
-
-    /**
      * Returns whether this is the current logged-in user.
      */
     public function getIsCurrent(): bool

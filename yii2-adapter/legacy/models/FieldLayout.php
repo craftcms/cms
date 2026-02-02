@@ -999,6 +999,34 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns the editable layout elements representing custom fields, taking conditions into account.
+     *
+     * @param ElementInterface $element
+     * @return CustomField[]
+     * @since 5.9.4
+     */
+    public function getEditableCustomFieldElements(ElementInterface $element): array
+    {
+        return iterator_to_array($this->_elements(function(FieldLayoutElement $layoutElement) use ($element) {
+            if (!$layoutElement instanceof CustomField) {
+                return false;
+            }
+
+            if (!$layoutElement->editable($element)) {
+                return false;
+            }
+
+            try {
+                $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                return false;
+            }
+
+            return true;
+        }, $element));
+    }
+
+    /**
      * Prepends elements to the first tab.
      *
      * @param FieldLayoutElement[] $elements

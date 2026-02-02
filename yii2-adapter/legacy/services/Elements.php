@@ -76,6 +76,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -4745,10 +4746,14 @@ class Elements extends Component
             }
         }
 
-        return (
-            $this->_siteAuthCheck($element, $user) &&
-            ($this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW) ?? $element->canView($user))
-        );
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('view', $element);
     }
 
     /**
@@ -4769,10 +4774,14 @@ class Elements extends Component
             }
         }
 
-        return (
-            $this->_siteAuthCheck($element, $user) &&
-            ($this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE) ?? $element->canSave($user))
-        );
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('save', $element);
     }
 
     /**
@@ -4815,7 +4824,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('duplicate', $element);
     }
 
     /**
@@ -4836,8 +4852,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT)
-            ?? $element->canDuplicateAsDraft($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('duplicateAsDraft', $element);
     }
 
     /**
@@ -4860,7 +4882,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY) ?? $element->canCopy($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('copy', $element);
     }
 
     /**
@@ -4883,7 +4912,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE) ?? $element->canDelete($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('delete', $element);
     }
 
     /**
@@ -4906,8 +4942,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user,
-            self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('deleteForSite', $element);
     }
 
     /**
@@ -4930,8 +4972,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user,
-            self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('createDrafts', $element);
     }
 
     private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
@@ -4947,14 +4995,5 @@ class Elements extends Component
 
         $this->trigger($eventName, $event);
         return $event->authorized;
-    }
-
-    private function _siteAuthCheck(ElementInterface $element, User $user): bool
-    {
-        return (
-            !$element::isLocalized() ||
-            !Sites::isMultiSite() ||
-            $user->can(sprintf('editSite:%s', $element->getSite()->uid))
-        );
     }
 }

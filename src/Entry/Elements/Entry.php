@@ -1323,17 +1323,19 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         }
 
         $page = $section->getPage();
+        $pageUrl = sprintf('content/%s', $page ? Str::slug($page) : 'entries');
 
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
+                'url' => $pageUrl,
             ],
         ];
 
-        // If the section’s source is disabled, just show its name w/o a link
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey, withDisabled: true)) {
+
+        // Is the section’s source enabled?
+        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
 
             $requestedSite = Cp::requestedSite();
@@ -1343,8 +1345,8 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
 
             if ($page) {
                 // Filter out any sections that don’t belong in this page
-                $pageSources = Craft::$app->getElementSources()->getSources(Entry::class, withDisabled: true, page: $page);
-                $pageSourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $pageSources)));
+                $pageSources = app(ElementSources::class)->getSources(Entry::class, withDisabled: true, page: $page);
+                $pageSourceKeys = $pageSources->pluck('key')->filter()->flip()->all();
                 $sections = $sections->filter(function (Section $s) use ($pageSourceKeys) {
                     $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
 
@@ -1357,8 +1359,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
                     'label' => t($s->name, category: 'site'),
-                    'url' => "entries/$s->handle",
-                    // 'url' => $s->getCpIndexUri(),
+                    'url' => "$pageUrl/$s->handle",
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1378,7 +1379,8 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                     'items' => $sectionOptions->all(),
                 ],
             ];
-        } else {
+        } elseif ($section->type !== SectionType::Single) {
+            // Just show its name w/o a link
             $crumbs[] = [
                 'label' => t($section->name, category: 'site'),
             ];
@@ -1977,207 +1979,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         }
 
         return $entry;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canView(User $user): bool
-    {
-        if (parent::canView($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        if (! $user->can("viewEntries:$section->uid")) {
-            return false;
-        }
-
-        if ($this->getIsDraft()) {
-            return
-                $this->draftCreatorId === $user->id ||
-                $user->can("viewPeerEntryDrafts:$section->uid");
-        }
-
-        return
-            $section->type === SectionType::Single ||
-            in_array($user->id, $this->getAuthorIds(), true) ||
-            $user->can("viewPeerEntries:$section->uid");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canSave(User $user): bool
-    {
-        if (parent::canSave($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        if (! $this->id) {
-            return
-                $section->type !== SectionType::Single &&
-                $user->can("createEntries:$section->uid");
-        }
-
-        if ($this->getIsDraft()) {
-            return
-                $this->draftCreatorId === $user->id ||
-                $user->can("savePeerEntryDrafts:$section->uid");
-        }
-
-        if (! $user->can("saveEntries:$section->uid")) {
-            return false;
-        }
-
-        return
-            $section->type === SectionType::Single ||
-            in_array($user->id, $this->getAuthorIds(), true) ||
-            $user->can("savePeerEntries:$section->uid");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDuplicate(User $user): bool
-    {
-        if (parent::canDuplicate($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        return
-            $section->type !== SectionType::Single &&
-            $user->can("createEntries:$section->uid") &&
-            $user->can("saveEntries:$section->uid");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDuplicateAsDraft(User $user): bool
-    {
-        if (parent::canDuplicate($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        return
-            $section->type !== SectionType::Single &&
-            $user->can("createEntries:$section->uid");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canCopy(User $user): bool
-    {
-        return Craft::$app->getElements()->canView($this, $user);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDelete(User $user): bool
-    {
-        if (parent::canDelete($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        if ($section->type === SectionType::Single && ! $this->getIsDraft()) {
-            return false;
-        }
-
-        if ($this->getIsDraft()) {
-            return
-                $this->draftCreatorId === $user->id ||
-                $user->can("deletePeerEntryDrafts:$section->uid");
-        }
-
-        if (! $user->can("deleteEntries:$section->uid")) {
-            return false;
-        }
-
-        return
-            in_array($user->id, $this->getAuthorIds(), true) ||
-            $user->can("deletePeerEntries:$section->uid");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDeleteForSite(User $user): bool
-    {
-        if (parent::canDeleteForSite($user)) {
-            return true;
-        }
-
-        $section = $this->getSection();
-
-        if (! $section) {
-            return false;
-        }
-
-        if ($section->propagationMethod === PropagationMethod::Custom) {
-            if ($this->getIsDraft()) {
-                return
-                    $this->draftCreatorId === $user->id ||
-                    $user->can("deletePeerEntryDrafts:$section->uid");
-            }
-
-            if (! $user->can("deleteEntriesForSite:$section->uid")) {
-                return false;
-            }
-
-            return
-                in_array($user->id, $this->getAuthorIds(), true) ||
-                $user->can("deletePeerEntriesForSite:$section->uid");
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canCreateDrafts(User $user): bool
-    {
-        // Everyone with view permissions can create drafts
-        return true;
     }
 
     /**

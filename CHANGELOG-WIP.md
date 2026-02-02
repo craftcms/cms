@@ -142,7 +142,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Auth
 
-- Refactored the authentication system to use Laravel’s authentication system.
+- Refactored the authentication system to use Laravel's authentication system.
 - Added `CraftCms\Cms\Auth\Events\SettingPassword`.
 - Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
 - Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
@@ -163,6 +163,21 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
     - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
     - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
+
+### Authorization
+
+Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
+
+#### Added
+
+- Added `CraftCms\Cms\Auth\Events\AuthorizingElement` event for customizing element authorization.
+- Added `CraftCms\Cms\Element\Policies\ElementPolicy` base policy for element authorization.
+- Added element-specific authorization policies:
+  - `CraftCms\Cms\Address\Policies\AddressPolicy`
+  - `CraftCms\Cms\Asset\Policies\AssetPolicy`
+  - `CraftCms\Cms\Entry\Policies\EntryPolicy`
+  - `CraftCms\Cms\User\Policies\UserPolicy`
+  - `CraftCms\Cms\Field\Policies\ContentBlockPolicy`
 
 ### Passkeys
 

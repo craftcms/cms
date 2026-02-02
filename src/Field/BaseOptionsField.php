@@ -502,7 +502,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return OptionsFieldConditionRule::class;
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         if (! $this->customOptions) {
