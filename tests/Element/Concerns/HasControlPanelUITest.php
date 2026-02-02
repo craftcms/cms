@@ -8,6 +8,7 @@ use craft\events\DefineHtmlEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -36,7 +37,7 @@ describe('getCpEditUrl', function () {
     test('returns url when element has id and cpEditUrl is available', function () {
         $url = $this->entry->getCpEditUrl();
 
-        expect($url)->toBeString()->toContain('/admin/');
+        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
     });
 });
 
@@ -44,7 +45,7 @@ describe('getPostEditUrl', function () {
     test('returns url for entry elements', function () {
         $url = $this->entry->getPostEditUrl();
 
-        expect($url)->toBeString()->toContain('/admin/');
+        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
     });
 });
 

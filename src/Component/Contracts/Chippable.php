@@ -13,7 +13,7 @@ interface Chippable extends Identifiable
     /**
      * Returns a component by its ID.
      */
-    public static function get(string|int $id): ?self;
+    public static function get(string|int $id): ?static;
 
     /**
      * Returns what the component should be called within the control panel.
