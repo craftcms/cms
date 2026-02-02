@@ -16,7 +16,7 @@ export default class CraftNavItem extends LitElement {
 
   /** The URL of the navigation item. */
   @property()
-  url: string;
+  href: string;
 
   /** Displays the item as active. */
   @property({type: Boolean, reflect: true})

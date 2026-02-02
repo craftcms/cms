@@ -10,7 +10,7 @@
       v-for="item in nav"
       :key="item.url"
       :icon="item.icon"
-      :url="item.url"
+      :href="item.url"
       :active="item.sel"
       :indicator="!!item.badgeCount"
     >
@@ -22,7 +22,7 @@
             v-for="subnavItem in item.subnav"
             :key="subnavItem.url"
             :active="subnavItem.sel"
-            :url="subnavItem.url"
+            :href="subnavItem.url"
             :indicator="!!subnavItem.badgeCount"
           >
             <craft-icon

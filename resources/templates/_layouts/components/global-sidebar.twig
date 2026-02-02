@@ -15,7 +15,7 @@
     'aria-label': item.ariaLabel ?? false
   }|merge(item.linkAttributes ?? {}, recursive=true) | filter %}
 
-  <craft-nav-item {{ attr(linkAttributes) }}>
+  <craft-nav-item {{ attr(linkAttributes) | merge({href: linkAttributes.url}) }}>
 
     <span class="nav-icon" slot="icon">
       {%- if item.icon ?? false -%}

@@ -257,7 +257,7 @@
     <template #interior-nav="{state}">
       <nav>
         <craft-nav-list class="-mx-2">
-          <craft-nav-item :url="index.url()" :active="!group">
+          <craft-nav-item :href="index.url()" :active="!group">
             {{ t('All Sites') }}
           </craft-nav-item>
           <CpLink
