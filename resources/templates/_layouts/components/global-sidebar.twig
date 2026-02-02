@@ -50,6 +50,8 @@
       {% for item in craft.cp.nav() %}
         {{ _self.action(item, false) }}
       {% endfor %}
+
+      <cp-queue-indicator></cp-queue-indicator>
     </craft-nav-list>
 
     <div class="global-sidebar__footer">

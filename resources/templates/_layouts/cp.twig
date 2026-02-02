@@ -45,12 +45,16 @@
 {% set queue = craft.app.queue %}
 {% js %}
 {% if queue is instance of("craft\\queue\\QueueInterface") %}
-    Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
-    {% if queue.getHasReservedJobs() %}
-        Craft.cp.trackJobProgress(true);
-    {% elseif queue.getHasWaitingJobs() %}
-        Craft.cp.runQueue();
-    {% endif %}
+    window.bootedCallbacks.push(({$queue}) => {
+      Craft.cp.QueueService = $queue;
+
+      Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
+      {% if queue.getHasReservedJobs() %}
+          Craft.cp.trackJobProgress(true);
+      {% elseif queue.getHasWaitingJobs() %}
+          Craft.cp.runQueue();
+      {% endif %}
+    });
 {% else %}
     Craft.cp.enableQueue = false;
 {% endif %}

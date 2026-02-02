@@ -41,6 +41,7 @@ export {default as CraftActionMenu} from './components/action-menu/action-menu.j
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
+export {default as CraftProgress} from './components/progress/progress.js';
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
 /* plop:component */
@@ -51,5 +52,12 @@ export {formatNumber} from './utilities/format.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
+
+// Services
+export {QueueService} from './services/Queue.js';
+export {ConfigService} from './services/Config.js';
+
+// Types
+export * from './types/index.js';
 
 configureIcons();

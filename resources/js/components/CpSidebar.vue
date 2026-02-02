@@ -92,12 +92,12 @@
       /* Shadow Cover TOP */
       linear-gradient(white 30%, rgba(255, 255, 255, 0)) center top,
       /* Shadow Cover BOTTOM */
-      linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
+        linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
       /* Shadow TOP */
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
         top,
       /* Shadow BOTTOM */
-      linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+        linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
         bottom;
     background-repeat: no-repeat;
     background-size:

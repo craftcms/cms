@@ -33,6 +33,7 @@ async function generateBundle(config = {}) {
         )),
         ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
         ...(await resolveFrom('./src/utilities/**/!(*.(styles|test)).ts')),
+        ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
       },
       minify: !isDeveloping,
       external: ['lit', '@lion/ui', '@awesome.me/webawesome'],

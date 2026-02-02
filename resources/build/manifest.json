@@ -9,7 +9,10 @@
     "imports": [
       "resources/js/cp.ts",
       "__plugin-vue_export-helper.js",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "_Modal.js",
       "_index.js"
     ],
@@ -26,11 +29,24 @@
     "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/cp.ts",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js"
     ],
     "css": [
       "assets/CalloutReadOnly.css"
+    ]
+  },
+  "_CpGlobalSidebar.js": {
+    "file": "CpGlobalSidebar.js",
+    "name": "CpGlobalSidebar",
+    "isDynamicEntry": true,
+    "imports": [
+      "_lit-element.js",
+      "_custom-element.js",
+      "_property.js"
     ]
   },
   "_Modal.css": {
@@ -70,9 +86,54 @@
       "resources/js/cp.ts"
     ]
   },
+  "_custom-element.js": {
+    "file": "custom-element.js",
+    "name": "custom-element"
+  },
   "_index.js": {
     "file": "index.js",
     "name": "index"
+  },
+  "_index2.js": {
+    "file": "index2.js",
+    "name": "index"
+  },
+  "_lit-element.js": {
+    "file": "lit-element.js",
+    "name": "lit-element"
+  },
+  "_nav-item.ts.js": {
+    "file": "nav-item.ts.js",
+    "name": "nav-item.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_state.js",
+      "_lit-element.js",
+      "_property.js"
+    ]
+  },
+  "_progress-CM21Jrvu.js": {
+    "file": "progress-CM21Jrvu.js",
+    "name": "progress-CM21Jrvu",
+    "imports": [
+      "_state.js",
+      "_lit-element.js",
+      "_property.js"
+    ]
+  },
+  "_property.js": {
+    "file": "property.js",
+    "name": "property",
+    "imports": [
+      "_lit-element.js"
+    ]
+  },
+  "_state.js": {
+    "file": "state.js",
+    "name": "state",
+    "imports": [
+      "_property.js"
+    ]
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -689,6 +750,15 @@
     "src": "node_modules/@popperjs/core/dist/esm/popper.js",
     "isDynamicEntry": true
   },
+  "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs": {
+    "file": "nav-list.ts.js",
+    "name": "nav-list.ts",
+    "src": "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "_lit-element.js"
+    ]
+  },
   "resources/css/cp.css": {
     "file": "assets/cp.css",
     "src": "resources/css/cp.css",
@@ -714,27 +784,37 @@
     "file": "assets/site.png",
     "src": "resources/images/install/site.png"
   },
+  "resources/js/components/CpQueueIndicator.ts": {
+    "file": "CpQueueIndicator.js",
+    "name": "CpQueueIndicator",
+    "src": "resources/js/components/CpQueueIndicator.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_lit-element.js",
+      "_custom-element.js",
+      "_state.js",
+      "resources/js/legacy.ts",
+      "_progress-CM21Jrvu.js",
+      "_property.js",
+      "_index2.js"
+    ]
+  },
   "resources/js/cp.ts": {
     "file": "cp2.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
-      "resources/js/legacy.ts"
+      "_index2.js",
+      "_state.js",
+      "_lit-element.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_nav-item.ts.js",
+      "_custom-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_progress-CM21Jrvu.js"
     ],
-    "dynamicImports": [
-      "resources/js/pages/Install.vue",
-      "resources/js/pages/SettingsGeneralPage.vue",
-      "resources/js/pages/SettingsIndexPage.vue",
-      "resources/js/pages/SettingsSitesEdit.vue",
-      "resources/js/pages/SettingsSitesIndex.vue"
-    ]
-  },
-  "resources/js/legacy.ts": {
-    "file": "legacy.js",
-    "name": "legacy",
-    "src": "resources/js/legacy.ts",
-    "isEntry": true,
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
       "node_modules/@lion/ui/components/form-core/translations/bg.js",
@@ -822,7 +902,27 @@
       "node_modules/@lion/ui/components/combobox/translations/sk.js",
       "node_modules/@lion/ui/components/combobox/translations/uk.js",
       "node_modules/@lion/ui/components/combobox/translations/zh.js",
-      "node_modules/@lion/ui/components/combobox/translations/en.js"
+      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "resources/js/pages/Install.vue",
+      "resources/js/pages/SettingsGeneralPage.vue",
+      "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSitesEdit.vue",
+      "resources/js/pages/SettingsSitesIndex.vue"
+    ]
+  },
+  "resources/js/legacy.ts": {
+    "file": "legacy.js",
+    "name": "legacy",
+    "src": "resources/js/legacy.ts",
+    "isEntry": true,
+    "imports": [
+      "_index2.js"
+    ],
+    "dynamicImports": [
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_CpGlobalSidebar.js",
+      "resources/js/components/CpQueueIndicator.ts"
     ]
   },
   "resources/js/pages/Install.vue": {
@@ -832,9 +932,17 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js",
-      "_Modal.js"
+      "_index2.js",
+      "_Modal.js",
+      "_state.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_custom-element.js"
     ],
     "css": [
       "assets/Install.css"
@@ -853,11 +961,19 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_index.js",
-      "_TransitionFade.js"
+      "_TransitionFade.js",
+      "_index2.js",
+      "_state.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_custom-element.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -870,9 +986,17 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_index2.js",
+      "_state.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_custom-element.js"
     ],
     "css": [
       "assets/SettingsIndexPage.css"
@@ -886,10 +1010,18 @@
     "imports": [
       "resources/js/cp.ts",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js",
       "_TransitionFade.js",
       "_Badge.vue_vue_type_script_setup_true_lang.js",
+      "_index2.js",
+      "_state.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_custom-element.js",
       "_Modal.js",
       "_index.js"
     ]
@@ -901,11 +1033,19 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/cp.ts",
-      "resources/js/legacy.ts",
+      "_lit-element.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "_nav-item.ts.js",
+      "_progress-CM21Jrvu.js",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_Badge.vue_vue_type_script_setup_true_lang.js",
       "_index.js",
+      "_index2.js",
+      "_state.js",
+      "_property.js",
+      "_CpGlobalSidebar.js",
+      "_custom-element.js",
       "_Modal.js"
     ],
     "css": [
