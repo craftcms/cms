@@ -39,7 +39,7 @@ final readonly class JobProgress
         $this->delete($uid);
     }
 
-    public function failed(string $uid, string $description, ?string $error = null): void
+    public function failed(string $uid, ?string $description = null, ?string $error = null): void
     {
         $this->upsertJob($uid, JobStatus::Failed, 0, $description, null, $error);
     }
@@ -94,6 +94,7 @@ final readonly class JobProgress
                 JobStatus::Pending,
                 JobStatus::Delayed,
                 JobStatus::Reserved,
+                JobStatus::Failed,
             ])
             ->orderBy('dateCreated')
             ->get()

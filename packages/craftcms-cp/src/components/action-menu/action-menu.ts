@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import {queryAssignedElements} from 'lit/decorators.js';
-import type CraftActionItem from '@/components/action-item/action-item';
+import type CraftActionItem from '@src/components/action-item/action-item';
 import {uuid} from '@lion/ui/core.js';
 
 /**

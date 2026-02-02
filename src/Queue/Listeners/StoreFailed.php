@@ -22,7 +22,6 @@ final readonly class StoreFailed extends ProgressListener
 
         $this->progress->failed(
             uid: $uuid,
-            description: $this->jobDescription($event->job),
             error: $event->exception->getMessage(),
         );
     }

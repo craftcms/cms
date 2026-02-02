@@ -4,13 +4,14 @@ import {customElement, property, query, queryAll} from 'lit/decorators.js';
 @customElement('cp-global-sidebar')
 class CpGlobalSidebar extends LitElement {
   @queryAll('craft-nav-item')
-  items: any[];
+  items!: any[];
 
   @query('#sidebar-trigger')
-  trigger: HTMLElement | null;
+  trigger!: HTMLElement | null;
 
   @property({reflect: true})
-  state: 'expanded' | 'collapsed' = Craft.getCookie('sidebar') ?? 'expanded';
+  state: 'expanded' | 'collapsed' | string =
+    Craft.getCookie('sidebar') ?? 'expanded';
 
   override connectedCallback() {
     super.connectedCallback();

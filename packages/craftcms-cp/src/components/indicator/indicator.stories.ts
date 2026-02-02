@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import './indicator.js';
-import {Variant} from '@/types';
+import {Variant} from '@src/types';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
