@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\ElementTrait;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
@@ -121,6 +120,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasSources;
     use Concerns\Queryable;
     use Concerns\Revisionable;
+    use Concerns\Searchable;
     use Concerns\Structurable;
     use ElementTrait {
         ElementTrait::canCreateDrafts as _;
@@ -311,34 +311,6 @@ abstract class Element extends Component implements ElementInterface
      */
     #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
-
-    /**
-     * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
-     * element attribute.
-     *
-     * Note that you _must_ set [[Event::$handled]] to `true` if you want the element to accept your custom
-     * [[DefineAttributeKeywordsEvent::$keywords|$keywords]] value.
-     *
-     * ```php
-     * Event::on(
-     *     craft\elements\Entry::class,
-     *     craft\base\Element::EVENT_DEFINE_KEYWORDS,
-     *     function(craft\events\DefineAttributeKeywordsEvent $e
-     * ) {
-     *     // @var craft\elements\Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     // Prevent entry titles in the Parts section from getting search keywords
-     *     if ($entry->section->handle === 'parts' && $e->attribute === 'title') {
-     *         $e->keywords = '';
-     *         $e->handled = true;
-     *     }
-     * });
-     * ```
-     *
-     * @since 3.5.0
-     */
-    public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved.
@@ -1172,34 +1144,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return [Sites::getPrimarySite()->id];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSearchKeywords(string $attribute): string
-    {
-        // Fire a 'defineKeywords' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
-            $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
-            $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
-            if ($event->handled) {
-                return $event->keywords ?? '';
-            }
-        }
-
-        return $this->searchKeywords($attribute);
-    }
-
-    /**
-     * Returns the search keywords for a given search attribute.
-     *
-     *
-     * @since 3.5.0
-     */
-    protected function searchKeywords(string $attribute): string
-    {
-        return Str::toString($this->$attribute);
     }
 
     /**
