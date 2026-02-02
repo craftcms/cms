@@ -9,7 +9,9 @@ use craft\elements\exporters\Raw;
 use craft\events\RegisterElementExportersEvent;
 use yii\base\Event;
 
-/** @phpstan-ignore trait.unused */
+/**
+ * @internal
+ */
 trait Exportable
 {
     /**

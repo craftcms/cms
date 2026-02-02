@@ -10,13 +10,22 @@ use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
 
-/** @phpstan-ignore trait.unused */
+/**
+ * @internal
+ */
 trait Draftable
 {
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      */
     public ?int $draftId = null;
+
+    /**
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     *
+     * @since 5.9.0
+     */
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether this is a provisional draft.

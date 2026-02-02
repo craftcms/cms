@@ -28,6 +28,8 @@ use yii\base\InvalidConfigException;
  * @property-read ElementInterface[]|null $elementQueryResult All elements that the element was queried with
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
+ *
+ * @internal
  */
 trait Eagerloadable
 {

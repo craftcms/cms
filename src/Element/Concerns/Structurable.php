@@ -17,6 +17,8 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
  *
  * This trait handles hierarchical relationships including parent/child,
  * ancestor/descendant, and sibling relationships within element structures.
+ *
+ * @internal
  */
 trait Structurable
 {

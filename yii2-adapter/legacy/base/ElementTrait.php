@@ -8,7 +8,11 @@
 namespace craft\base;
 
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Concerns\Eagerloadable;
+use CraftCms\Cms\Element\Concerns\Exportable;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
+use CraftCms\Cms\Element\Concerns\Revisionable;
 use CraftCms\Cms\Element\Concerns\Structurable;
 use DateTime;
 
@@ -21,7 +25,11 @@ use DateTime;
  */
 trait ElementTrait
 {
+    use Draftable;
     use Eagerloadable;
+    use Exportable;
+    use HasControlPanelUI;
+    use Revisionable;
     use Structurable;
 
     /**
@@ -34,12 +42,6 @@ trait ElementTrait
      * @var string|null The element’s temporary ID (only used if the element’s URI format contains {id})
      */
     public ?string $tempId = null;
-
-    /**
-     * @var int|null The ID of the revision’s row in the `revisions` table
-     * @since 3.2.0
-     */
-    public ?int $revisionId = null;
 
     /**
      * @var string|null The element’s UID
@@ -199,12 +201,6 @@ trait ElementTrait
      * @since 3.7.5
      */
     public bool $firstSave = false;
-
-    /**
-     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
-     * @since 5.9.0
-     */
-    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
