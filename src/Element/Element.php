@@ -109,6 +109,7 @@ abstract class Element extends Component implements ElementInterface
     use ArrayableTrait {
         toArray as traitToArray;
     }
+    use Concerns\Cacheable;
     use Concerns\DisplayedInIndex;
     use Concerns\Draftable {
         Draftable::canCreateDrafts as traitCanCreateDrafts;
@@ -1382,38 +1383,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return [Sites::getPrimarySite()->id];
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.5.0
-     */
-    public function getCacheTags(): array
-    {
-        $cacheTags = static::cacheTags();
-
-        // Fire a 'defineCacheTags' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-            $event = new DefineValueEvent(['value' => $cacheTags]);
-            $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
-
-            return $event->value;
-        }
-
-        return $cacheTags;
-    }
-
-    /**
-     * Returns the cache tags that should be cleared when this element is saved.
-     *
-     * @return string[]
-     *
-     * @since 4.1.0
-     */
-    protected function cacheTags(): array
-    {
-        return [];
     }
 
     /**
