@@ -13,6 +13,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -105,7 +106,13 @@ final class ElementSources
                 fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
             );
 
-        if ($page && isset($sources[0]['page'])) {
+        if (
+            $page &&
+            isset($sources[0]['page']) &&
+            // ignore if there's only one page and it has a blank name; otherwise there's no way to fix
+            // (https://github.com/craftcms/cms/issues/18321)
+            ($sources[0]['page'] !== '' || count($this->getPages($elementType)) !== 1)
+        ) {
             $pageNameId = $this->pageNameId($page);
             $sources = $sources->filter(fn (array $source) => (
                 isset($source['page']) &&
@@ -538,6 +545,19 @@ final class ElementSources
                 $sortOption['attribute'] ??= $sortOption['orderBy'];
                 $sortOption['defaultDir'] ??= 'asc';
                 $sortOptions[] = $sortOption;
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') === '') {
+                    continue;
+                }
+
+                $sortOptions[] = [
+                    'label' => t($field['name'], category: 'site'),
+                    'attribute' => "generatedField:{$field['uid']}",
+                    'orderBy' => new JsonExtract('elements_sites.content', [$field['uid']]),
+                    'defaultDir' => 'asc',
+                ];
             }
         }
 

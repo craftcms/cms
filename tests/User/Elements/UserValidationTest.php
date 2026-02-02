@@ -506,6 +506,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;
@@ -533,6 +534,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;
@@ -557,6 +559,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;
@@ -580,6 +583,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;
@@ -602,6 +606,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;
@@ -623,6 +628,7 @@ describe('Name field validation with field layout', function () {
             ->with(FullNameField::class, Mockery::any())
             ->andReturn(null);
         $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
+        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
         $fieldLayout->shouldReceive('getTabs')->andReturn([]);
 
         $user = new TestUserWithFieldLayout;

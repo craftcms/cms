@@ -52,10 +52,8 @@ export default Base.extend(
         }
       }
 
-      if (this.settings.triggerElement) {
-        this.$triggerElement = $(this.settings.triggerElement);
-      } else {
-        this.$triggerElement = Garnish.getFocusedElement();
+      if (!this.settings.triggerElement) {
+        this.settings.triggerElement = Garnish.getFocusedElement();
       }
 
       Garnish.Modal.instances.push(this);
@@ -215,33 +213,41 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      let $focusTarget = this.$triggerElement;
-
-      // Check for visibility of trigger
-      if ($focusTarget?.is(':hidden')) {
-        const $disclosure = $focusTarget.closest('.menu--disclosure');
-        if ($disclosure.length) {
-          const menuId = $disclosure.attr('id');
-          $focusTarget = $(`[aria-controls="${menuId}"]`);
-        } else {
-          $focusTarget = null;
-        }
-      }
-
-      if ($focusTarget?.length) {
-        $focusTarget.focus();
-      } else {
-        console.error(
-          'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
-        );
-      }
-
       this.visible = false;
       Garnish.$bod.removeClass('no-scroll');
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
       Garnish.resetModalBackgroundLayerVisibility();
       this.onHide();
+
+      setTimeout(() => {
+        let $focusTarget = this.$triggerElement ?? this.settings.triggerElement;
+        if (typeof $focusTarget === 'function') {
+          $focusTarget = $focusTarget();
+        }
+        if (!($focusTarget instanceof jQuery)) {
+          $focusTarget = $($focusTarget);
+        }
+
+        // Check for visibility of trigger
+        if ($focusTarget?.is(':hidden')) {
+          const $disclosure = $focusTarget.closest('.menu--disclosure');
+          if ($disclosure.length) {
+            const menuId = $disclosure.attr('id');
+            $focusTarget = $(`[aria-controls="${menuId}"]`);
+          } else {
+            $focusTarget = null;
+          }
+        }
+
+        if ($focusTarget?.length) {
+          $focusTarget.focus();
+        } else {
+          console.error(
+            'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+          );
+        }
+      }, 200);
     },
 
     onHide: function () {
