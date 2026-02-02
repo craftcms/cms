@@ -23,6 +23,7 @@ trait Queryable
 {
     /**
      * {@inheritdoc}
+     *
      * @return ElementQuery<static>
      */
     public static function find(): ElementQueryInterface
