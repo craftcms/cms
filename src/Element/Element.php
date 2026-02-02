@@ -23,7 +23,6 @@ use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineUrlEvent;
@@ -49,7 +48,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
@@ -58,8 +56,6 @@ use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
@@ -92,7 +88,6 @@ use Throwable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Traversable;
 use Twig\Markup;
-use UnitEnum;
 use yii\base\ArrayableTrait;
 use yii\base\Event;
 use yii\base\InvalidCallException;
@@ -156,6 +151,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Eagerloadable;
     use Concerns\Exportable;
     use Concerns\HasControlPanelUI;
+    use Concerns\HasCustomFields;
     use Concerns\Revisionable;
     use Concerns\Structurable;
     use ElementTrait {
@@ -1776,30 +1772,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private ?array $_modifiedAttributes = null;
 
-    /**
-     * @see _outdatedFields()
-     */
-    private ?array $_outdatedFields = null;
-
-    /**
-     * @see _modifiedFields()
-     */
-    private ?array $_modifiedFields = null;
-
     private bool $_initialized = false;
-
-    private ?string $_fieldParamNamePrefix = null;
-
-    /**
-     * @var array|null Record of the fields whose values have already been normalized
-     */
-    private ?array $_normalizedFieldValues = null;
-
-    /**
-     * @see getGeneratedFieldValues()
-     * @see setGeneratedFieldValues()
-     */
-    private array $_generatedFieldValues;
 
     /**
      * @var bool Whether all attributes and field values should be considered dirty.
@@ -1824,14 +1797,6 @@ abstract class Element extends Component implements ElementInterface
      * @see getDirtyAttributes()
      */
     private ?string $_savedTitle = null;
-
-    /**
-     * @var array Record of dirty fields.
-     *
-     * @see getDirtyFields()
-     * @see isFieldDirty()
-     */
-    private array $_dirtyFields = [];
 
     /**
      * @var int[]
@@ -3431,276 +3396,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getFieldValues(?array $fieldHandles = null): array
-    {
-        $values = [];
-
-        foreach ($this->fieldLayoutFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
-                $values[$field->handle] = $this->getFieldValue($field->handle);
-            }
-        }
-
-        return $values;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSerializedFieldValues(?array $fieldHandles = null): array
-    {
-        $serializedValues = [];
-
-        foreach ($this->fieldLayoutFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
-                $value = $this->getFieldValue($field->handle);
-                $serializedValues[$field->handle] = $field->serializeValue($value, $this);
-            }
-        }
-
-        return $serializedValues;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array
-    {
-        $serializedValues = [];
-
-        foreach ($this->fieldLayoutFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
-                $value = $this->getFieldValue($field->handle);
-                $serializedValues[$field->handle] = $field->serializeValueForDb($value, $this);
-            }
-        }
-
-        return $serializedValues;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setFieldValues(array $values): void
-    {
-        foreach ($values as $fieldHandle => $value) {
-            $this->setFieldValue($fieldHandle, $value);
-        }
-    }
-
-    private function clonedFieldValue(string $fieldHandle): mixed
-    {
-        $value = $this->getFieldValue($fieldHandle);
-        if (is_object($value) && ! $value instanceof UnitEnum && ! $value instanceof ContentBlock) {
-            return clone $value;
-        }
-
-        return $value;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFieldValue(string $fieldHandle): mixed
-    {
-        // Was this field’s value eager-loaded?
-        if ($this->hasEagerLoadedElements($fieldHandle) && ! ($this->_lazyEagerLoadedElements[$fieldHandle] ?? false)) {
-            return $this->getEagerLoadedElements($fieldHandle);
-        }
-
-        // Make sure the value has been normalized
-        $this->normalizeFieldValue($fieldHandle);
-
-        return $this->getBehavior('customFields')->$fieldHandle;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setFieldValue(string $fieldHandle, mixed $value): void
-    {
-        $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $value;
-
-        // Don't assume that $value has been normalized
-        unset($this->_normalizedFieldValues[$fieldHandle]);
-
-        // If the element is fully initialized, mark the value as dirty
-        if ($this->_initialized) {
-            $this->_dirtyFields[$fieldHandle] = true;
-        }
-
-        // If the field value was previously eager-loaded, undo that
-        unset($this->_eagerLoadedElements[$fieldHandle]);
-        unset($this->_eagerLoadedElementCounts[$fieldHandle]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
-    {
-        $field = $this->fieldByHandle($fieldHandle);
-
-        if (! $field) {
-            throw new InvalidFieldException($fieldHandle);
-        }
-
-        // Normalize it now in case the system language changes later
-        // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-        // because it's slightly more efficient, and to workaround an infinite loop bug caused by Matrix
-        // needing to render an object template on the owner element during normalization, which would in turn
-        // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-        $value = $field->normalizeValueFromRequest($value, $this);
-        $this->setFieldValue($field->handle, $value);
-        $this->_normalizedFieldValues[$field->handle] = true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getOutdatedFields(): array
-    {
-        return array_keys($this->_outdatedFields());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isFieldOutdated(string $fieldHandle): bool
-    {
-        return isset($this->_outdatedFields()[$fieldHandle]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getModifiedFields(bool $anySite = false): array
-    {
-        return array_keys($this->_modifiedFields($anySite));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool
-    {
-        return isset($this->_modifiedFields($anySite)[$fieldHandle]);
-    }
-
-    /**
-     * @return array The field handles that have been modified for this element
-     */
-    private function _outdatedFields(): array
-    {
-        if (! static::trackChanges() || $this->getIsCanonical() || $this->getIsRevision()) {
-            return [];
-        }
-
-        if (! isset($this->_outdatedFields)) {
-            $fields = DB::table(Table::CHANGEDFIELDS)
-                ->where('elementId', $this->id)
-                ->where('siteId', $this->siteId)
-                ->when(
-                    value: $this->dateLastMerged,
-                    callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
-                )
-                ->pluck('layoutElementUid')
-                ->all();
-
-            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($fields);
-        }
-
-        return $this->_outdatedFields;
-    }
-
-    /**
-     * @return array The field handles that have been modified for this element
-     */
-    private function _modifiedFields(bool $anySite): array
-    {
-        if (! static::trackChanges() || $this->getIsCanonical()) {
-            return [];
-        }
-
-        $key = $anySite ? 'any' : 'this';
-
-        if (! isset($this->_modifiedFields[$key])) {
-            $fields = DB::table(Table::CHANGEDFIELDS)
-                ->where('elementId', $this->id)
-                ->unless($anySite, fn (Builder $query) => $query->where('siteId', $this->siteId))
-                ->pluck('layoutElementUid')
-                ->all();
-
-            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($fields);
-        }
-
-        return $this->_modifiedFields[$key];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isFieldDirty(string $fieldHandle): bool
-    {
-        if ($this->_allDirty()) {
-            return true;
-        }
-
-        return isset($this->_dirtyFields[$fieldHandle]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirtyFields(): array
-    {
-        if ($this->_allDirty()) {
-            return array_map(fn (FieldInterface $field) => $field->handle, $this->fieldLayoutFields());
-        }
-
-        return array_keys($this->_dirtyFields);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
-    {
-        if ($merge && ! empty($this->_dirtyFields)) {
-            $this->_dirtyFields = array_merge($this->_dirtyFields, array_flip($fieldHandles));
-        } else {
-            $this->_dirtyFields = array_flip($fieldHandles);
-        }
-
-        $this->_allDirty = false;
-    }
-
-    /**
-     * Returns field handles based on a list of field layout element UUIDs.
-     *
-     * @param  string[]  $uids
-     */
-    private function _layoutElementUids2fieldHandles(array $uids): array
-    {
-        $uids = array_flip($uids);
-        $handles = [];
-
-        if (! empty($uids)) {
-            foreach ($this->getFieldLayout()->getCustomFieldElements() as $layoutElement) {
-                if (isset($uids[$layoutElement->uid])) {
-                    $handles[$layoutElement->attribute()] = true;
-                }
-            }
-        }
-
-        return $handles;
-    }
-
-    /**
      * Returns whether all fields and attributes should be considered dirty.
      */
     private function _allDirty(): bool
@@ -3723,7 +3418,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $this->_allDirty = false;
         $this->_dirtyAttributes = [];
-        $this->_dirtyFields = [];
+        $this->setDirtyFields([], false);
 
         if (static::hasTitles()) {
             $this->_savedTitle = $this->title;
@@ -3733,86 +3428,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function setFieldValuesFromRequest(string $paramNamespace = ''): void
-    {
-        $this->setFieldParamNamespace($paramNamespace);
-
-        if (isset($this->_fieldParamNamePrefix)) {
-            $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
-        } else {
-            $values = Craft::$app->getRequest()->getBodyParams();
-        }
-
-        // Run through this multiple times, in case any fields become visible as a result of other field value changes
-        $processedFields = [];
-        do {
-            $processedAnyFields = false;
-
-            foreach ($this->fieldLayoutFields(editableOnly: true) as $field) {
-                // Have we already processed this field?
-                if (isset($processedFields[$field->handle])) {
-                    continue;
-                }
-
-                $processedFields[$field->handle] = true;
-                $processedAnyFields = true;
-
-                // Do we have any post data for this field?
-                if (isset($values[$field->handle])) {
-                    $value = $values[$field->handle];
-                } elseif (
-                    isset($this->_fieldParamNamePrefix) &&
-                    UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
-                ) {
-                    // A file was uploaded for this field
-                    $value = null;
-                } else {
-                    continue;
-                }
-
-                $this->setFieldValueFromRequest($field->handle, $value);
-            }
-        } while ($processedAnyFields);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFieldParamNamespace(): ?string
-    {
-        return $this->_fieldParamNamePrefix;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setFieldParamNamespace(string $namespace): void
-    {
-        $this->_fieldParamNamePrefix = $namespace !== '' ? $namespace : null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldContext(): string
     {
         return app(Fields::class)->fieldContext;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getGeneratedFieldValues(): array
-    {
-        return $this->_generatedFieldValues ?? [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setGeneratedFieldValues(array $values): void
-    {
-        $this->_generatedFieldValues = $values;
     }
 
     /**
@@ -4058,31 +3676,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Normalizes a field’s value.
-     *
-     * @param  string  $fieldHandle  The field handle
-     *
-     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
-     */
-    protected function normalizeFieldValue(string $fieldHandle): void
-    {
-        // Have we already normalized this value?
-        if (isset($this->_normalizedFieldValues[$fieldHandle])) {
-            return;
-        }
-
-        $field = $this->fieldByHandle($fieldHandle);
-
-        if (! $field) {
-            throw new InvalidFieldException($fieldHandle);
-        }
-
-        $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
-        $this->_normalizedFieldValues[$fieldHandle] = true;
-    }
-
-    /**
      * Finds Element instance(s) by the given condition.
      *
      * This method is internally called by [[findOne()]] and [[findAll()]].
@@ -4108,59 +3701,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $query->all();
-    }
-
-    /**
-     * Returns the field with a given handle.
-     */
-    protected function fieldByHandle(string $handle): ?FieldInterface
-    {
-        // ignore if it's not a custom field handle
-        if (! isset(CustomFieldBehavior::$fieldHandles[$handle])) {
-            return null;
-        }
-
-        $field = $this->getFieldLayout()?->getFieldByHandle($handle);
-
-        // nullify values for custom fields that are not part of this layout
-        // https://github.com/craftcms/cms/issues/12539
-        if (! $field) {
-            $behavior = $this->getBehavior('customFields');
-            if (isset($behavior->$handle)) {
-                $behavior->$handle = null;
-            }
-        }
-
-        return $field;
-    }
-
-    /**
-     * Returns each of this element’s fields.
-     *
-     * @param  bool  $visibleOnly  Whether to only return fields that are visible for this element
-     * @param  bool  $editableOnly  Whether to only return fields that the current user can edit
-     * @return FieldInterface[] This element’s fields
-     */
-    protected function fieldLayoutFields(bool $visibleOnly = false, bool $editableOnly = false): array
-    {
-        try {
-            $fieldLayout = $this->getFieldLayout();
-        } catch (InvalidConfigException) {
-            return [];
-        }
-
-        if ($fieldLayout) {
-            if ($editableOnly) {
-                return $fieldLayout->getEditableCustomFields($this);
-            }
-            if ($visibleOnly) {
-                return $fieldLayout->getVisibleCustomFields($this);
-            }
-
-            return $fieldLayout->getCustomFields();
-        }
-
-        return [];
     }
 
     /**
