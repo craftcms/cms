@@ -893,6 +893,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           case 'large':
             return ['chip', 'large'];
           case 'cards':
+          case 'cards-grid':
             return ['card', null];
           default:
             return ['chip', 'small'];
