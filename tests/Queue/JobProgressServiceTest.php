@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use Illuminate\Contracts\Queue\ClearableQueue;
+use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+
+use function Pest\Laravel\freezeTime;
 
 beforeEach(function () {
     $this->service = app(JobProgress::class);
@@ -93,6 +99,30 @@ it('can clear all job progress entries', function () {
     expect($this->service->getActive())->toBeEmpty();
 });
 
+it('clears the Laravel queue when clearing all job progress', function () {
+    Cms::config()->queueName = 'test-queue';
+    Cms::config()->lowPriorityQueueName = 'test-low-prio-queue';
+
+    // Create a mock queue connection that implements ClearableQueue
+    $queueConnection = Mockery::mock(QueueContract::class, ClearableQueue::class);
+
+    $queueConnection->shouldReceive('clear')->once()->with('test-queue');
+    $queueConnection->shouldReceive('clear')->once()->with('test-low-prio-queue');
+
+    Queue::shouldReceive('connection')->once()->andReturn($queueConnection);
+
+    // Add some job progress entries
+    $this->service->setProgress('job-a', 'Job A', 10);
+    $this->service->setProgress('job-b', 'Job B', 20);
+
+    expect($this->service->getActive())->toHaveCount(2);
+
+    // Clear should remove job progress entries and call clear on the queue
+    $this->service->clear();
+
+    expect($this->service->getActive())->toBeEmpty();
+});
+
 it('handles progress labels with null value', function () {
     $uid = 'no-label-job';
 
@@ -133,7 +163,7 @@ it('can track a queued job with pending status', function () {
 it('can track a delayed job with delayed status', function () {
     $uid = 'delayed-job-123';
 
-    $this->service->queued($uid, 'Delayed Job', delayed: true);
+    $this->service->queued($uid, 'Delayed Job', delay: 10);
 
     $progress = $this->service->getProgress($uid);
 
@@ -208,7 +238,7 @@ it('can get all failed jobs', function () {
 
 it('getActive includes pending delayed reserved and not failed jobs', function () {
     $this->service->queued('pending-1', 'Pending Job');
-    $this->service->queued('delayed-1', 'Delayed Job', delayed: true);
+    $this->service->queued('delayed-1', 'Delayed Job', delay: 10);
     $this->service->processing('reserved-1');
     $this->service->failed('failed-1', 'Failed Job', 'Error');
 
@@ -293,4 +323,35 @@ it('returns false for exists when job was cancelled', function () {
 
     $this->service->cancel($uid);
     expect($this->service->exists($uid))->toBeFalse();
+});
+
+test('getJobInfo returns sorted job info', function () {
+    freezeTime();
+
+    // Failed jobs go last
+    $this->service->queued('failed', 'Failed job');
+    $this->service->failed('failed');
+
+    // Delayed jobs are third and sorted by their delay
+    $this->service->queued('delayed-1', 'Delayed job 1', delay: 10);
+    $this->service->queued('delayed-2', 'Delayed job 2', delay: 5);
+
+    // Pending jobs are second
+    $this->service->queued('pending', 'Pending job');
+
+    // Reserved jobs are first
+    $this->service->queued('processing', 'Processing job');
+    $this->service->processing('processing');
+
+    // Completed jobs are removed
+    $this->service->queued('completed', 'Completed job');
+    $this->service->completed('completed');
+
+    expect($this->service->getJobInfo()->pluck('uid')->toArray())->toBe([
+        'processing',
+        'pending',
+        'delayed-1',
+        'delayed-2',
+        'failed',
+    ]);
 });

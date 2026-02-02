@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
-use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+use Tpetry\QueryExpressions\Function\Time\Now;
 
 /**
  * Service for tracking job progress and status.
@@ -22,11 +26,11 @@ final readonly class JobProgress
         private DatabaseManager $db,
     ) {}
 
-    public function queued(string $uid, string $description, bool $delayed = false): void
+    public function queued(string $uid, string $description, ?int $delay = null): void
     {
-        $status = $delayed ? JobStatus::Delayed : JobStatus::Pending;
+        $status = $delay && $delay > 0 ? JobStatus::Delayed : JobStatus::Pending;
 
-        $this->upsertJob($uid, $status, 0, $description);
+        $this->upsertJob($uid, $status, 0, $description, delay: $delay);
     }
 
     public function processing(string $uid): void
@@ -59,14 +63,38 @@ final readonly class JobProgress
             return null;
         }
 
-        return ProgressData::from([
-            'uid' => $row->uid,
-            'description' => $row->description,
-            'status' => (int) $row->status,
-            'progress' => (int) $row->progress,
-            'label' => $row->progressLabel,
-            'error' => $row->error,
-        ]);
+        return ProgressData::from($row);
+    }
+
+    public function getTotalJobs(): int
+    {
+        return $this->db->table(Table::JOBPROGRESS)->count();
+    }
+
+    /**
+     * @return Collection<ProgressData>
+     */
+    public function getJobInfo(?int $limit = null): Collection
+    {
+        $delay = match (DB::connection()->getDriverName()) {
+            'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
+            'pgsql' => 'GREATEST(?, EXTRACT(EPOCH FROM "dateCreated") + delay)',
+        };
+
+        return $this->db->table(Table::JOBPROGRESS)
+            // Failed jobs go last
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
+            // Reserved jobs go first
+            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved])
+            // Pending jobs go second
+            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending])
+            // Then by now or dateCreated + delay
+            ->orderByRaw($delay, [now()->getTimestamp()])
+            // Lastly by dateCreated
+            ->orderBy('dateCreated')
+            ->limit($limit)
+            ->get()
+            ->map(fn (object $row) => ProgressData::from($row));
     }
 
     /**
@@ -133,6 +161,13 @@ final readonly class JobProgress
     public function clear(): void
     {
         $this->db->table(Table::JOBPROGRESS)->delete();
+
+        $queue = Queue::connection();
+
+        if ($queue instanceof ClearableQueue) {
+            $queue->clear(Cms::config()->queueName);
+            $queue->clear(Cms::config()->lowPriorityQueueName);
+        }
     }
 
     public function clearCompleted(): void
@@ -183,16 +218,34 @@ final readonly class JobProgress
         ?string $description = null,
         ?string $label = null,
         ?string $error = null,
+        ?int $delay = null,
     ): void {
+        DB::beginTransaction();
+
         $now = now();
+        $exists = $this->db->table(Table::JOBPROGRESS)->where('uid', $uid)->exists();
+
+        if (! $exists) {
+            $this->db->table(Table::JOBPROGRESS)->insert([
+                'uid' => $uid,
+                'status' => $status->value,
+                'description' => $description,
+                'progress' => $progress,
+                'progressLabel' => $label,
+                'delay' => $delay,
+                'error' => $error,
+                'dateCreated' => $now,
+                'dateUpdated' => $now,
+            ]);
+
+            return;
+        }
 
         $data = [
-            'uid' => $uid,
             'status' => $status->value,
             'progress' => $progress,
             'progressLabel' => $label,
             'error' => $error,
-            'dateCreated' => $now,
             'dateUpdated' => $now,
         ];
 
@@ -200,10 +253,6 @@ final readonly class JobProgress
             $data['description'] = $description;
         }
 
-        $this->db->table(Table::JOBPROGRESS)->upsert(
-            values: $data,
-            uniqueBy: ['uid'],
-            update: Arr::only($data, ['description', 'status', 'progress', 'progressLabel', 'error', 'dateUpdated']),
-        );
+        $this->db->table(Table::JOBPROGRESS)->where('uid', $uid)->update($data);
     }
 }

@@ -31,4 +31,6 @@ final class ProgressData extends Dto
     }
 
     public ?string $error = null;
+
+    public ?int $delay = null;
 }

@@ -20,8 +20,6 @@ final readonly class StoreJob extends ProgressListener
             return;
         }
 
-        $delayed = $event->delay !== null && $event->delay > 0;
-
-        $this->progress->queued($uuid, $this->jobDescription($event->job), $delayed);
+        $this->progress->queued($uuid, $this->jobDescription($event->job), $event->delay);
     }
 }

@@ -513,6 +513,7 @@ class Install extends Migration
             $table->string('description')->nullable();
             $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
             $table->unsignedTinyInteger('progress')->default(0);
+            $table->unsignedInteger('delay')->nullable();
             $table->string('progressLabel')->nullable();
             $table->text('error')->nullable();
             $table->dateTime('dateCreated');

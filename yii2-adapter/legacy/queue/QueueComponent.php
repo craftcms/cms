@@ -140,7 +140,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getTotalJobs(): int
     {
-        return app(JobProgress::class)->getActive()->count();
+        return app(JobProgress::class)->getTotalJobs();
     }
 
     /**
@@ -157,13 +157,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getJobInfo(?int $limit = null): array
     {
-        $activeJobs = app(JobProgress::class)->getAll();
-
-        if ($limit !== null) {
-            $activeJobs = $activeJobs->take($limit);
-        }
-
-        return $activeJobs->map(fn(ProgressData $job) => [
+        return app(JobProgress::class)->getJobInfo($limit)->map(fn(ProgressData $job) => [
             'id' => $job->uid,
             'status' => $job->status->value,
             'progress' => $job->progress,

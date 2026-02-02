@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
@@ -38,7 +39,12 @@ class TestCase extends Orchestra
         parent::setUp();
 
         app()->setLocale('en-US');
+
+        // Reset timezone to a consistent value for tests
+        // This is needed because AppServiceProvider::setTimezone() runs during boot,
+        // before RefreshDatabase has prepared the database, potentially reading stale data
         Config::set('app.timezone', 'America/Los_Angeles');
+        date_default_timezone_set('America/Los_Angeles');
 
         Edition::set(Edition::Pro);
 
@@ -92,6 +98,11 @@ class TestCase extends Orchestra
 
     protected function migrateDatabases(): void
     {
+        // Clear any stale cached info from previous test runs
+        // This must happen before db:wipe to ensure fresh state
+        Context::forgetHidden('craft.info');
+        Context::forgetHidden('craft.isInstalled');
+
         $this->artisan('db:wipe');
 
         $site = new Site(
