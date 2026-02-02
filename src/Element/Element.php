@@ -23,7 +23,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
@@ -57,7 +56,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
-use ReflectionClass;
 use Stringable;
 use Throwable;
 use Traversable;
@@ -126,6 +124,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasActions;
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
+    use Concerns\HasGqlType;
     use Concerns\HasSources;
     use Concerns\Queryable;
     use Concerns\Revisionable;
@@ -788,25 +787,6 @@ abstract class Element extends Component implements ElementInterface
             self::STATUS_ENABLED => t('Enabled'),
             self::STATUS_DISABLED => t('Disabled'),
         ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function baseGqlType(): Type
-    {
-        return ElementGqlType::getType();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.3.0
-     */
-    public static function gqlScopesByContext(mixed $context): array
-    {
-        // Default to no scopes required
-        return [];
     }
 
     /**
@@ -2570,17 +2550,6 @@ abstract class Element extends Component implements ElementInterface
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.3.0
-     */
-    public function getGqlTypeName(): string
-    {
-        // Default to the short class name
-        return new ReflectionClass($this)->getShortName();
-    }
 
     // Events
     // -------------------------------------------------------------------------
