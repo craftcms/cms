@@ -276,7 +276,7 @@ final class Section extends Dto implements Chippable, CpEditable, Iconic, String
         return sprintf(
             'content/%s/%s',
             $page ? Str::slug($page) : 'entries',
-            $this->handle,
+            $this->type === SectionType::Single ? 'singles' : $this->handle,
         );
     }
 

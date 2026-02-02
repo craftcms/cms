@@ -1,4 +1,6 @@
 {% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+
 {% apply spaceless %}
   {% for element in elements %}
     {% tag 'li' with {
@@ -11,7 +13,7 @@
         context,
         selectable,
         sortable,
-        hyperlink: context == 'index',
+        hyperlink,
       }) }}
     {% endtag %}
   {% endfor %}

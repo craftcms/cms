@@ -1343,7 +1343,8 @@ JS,
             ]),
             'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
                 $entryType->hasTitleField ||
-                $entryType->titleFormat
+                $entryType->titleFormat ||
+                $entryType->uiLabelFormat !== '{title}'
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),

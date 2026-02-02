@@ -1408,19 +1408,40 @@ final class Asset extends Element
                 'label' => t('Assets'),
                 'url' => UrlHelper::cpUrl('assets'),
             ],
-            [
-                'menu' => [
-                    'label' => t('Select volume'),
-                    'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
-                        ->map(fn (Volume $v) => [
-                            'label' => t($v->name, category: 'site'),
-                            'url' => "assets/$v->handle",
-                            'selected' => $v->id === $volume->id,
-                        ])
-                        ->all(),
-                ],
-            ],
         ];
+
+        // Is the volume’s source enabled?
+        $elementSourcesService = app(\CraftCms\Cms\Element\ElementSources::class);
+        if ($elementSourcesService->sourceExists(Asset::class, "volume:$volume->uid")) {
+            $volumes = Collection::make(Craft::$app->getVolumes()->getViewableVolumes());
+
+            // Filter out any volumes that don’t have an enabled source
+            $sources = $elementSourcesService->getSources(Asset::class);
+            $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources->all())));
+            $volumes = $volumes->filter(fn (Volume $v) => isset($sourceKeys["volume:$v->uid"]));
+
+            $volumeOptions = $volumes->map(fn (Volume $v) => [
+                'label' => $v->getUiLabel(),
+                'url' => "assets/$v->handle",
+                'selected' => $v->id === $volume->id,
+            ]);
+
+            if ($volumeOptions->count() > 1) {
+                $crumbs[] = [
+                    'menu' => [
+                        'label' => t('Select volume'),
+                        'items' => $volumeOptions->all(),
+                    ],
+                ];
+            } else {
+                $crumbs[] = $volumeOptions->first();
+            }
+        } else {
+            // Just show its name w/o a link
+            $crumbs[] = [
+                'label' => $volume->getUiLabel(),
+            ];
+        }
 
         $uri = "assets/$volume->handle";
 
