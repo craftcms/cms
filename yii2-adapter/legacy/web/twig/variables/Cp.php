@@ -16,6 +16,8 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Events\RegisterCpSettings;
+use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
@@ -35,6 +37,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
@@ -404,104 +407,6 @@ class Cp extends Component
     }
 
     /**
-     * Returns the list of settings.
-     *
-     * @return array
-     */
-    public function settings(): array
-    {
-        $readOnly = !Cms::config()->allowAdminChanges;
-        $settings = [];
-
-        $label = t('System');
-
-        $settings[$label]['general'] = [
-            'iconMask' => '@craftcms/resources/icons/light/sliders.svg',
-            'label' => t('General'),
-        ];
-        $settings[$label]['sites'] = [
-            'iconMask' => sprintf('@craftcms/resources/icons/light/%s.svg', CpHelper::earthIcon()),
-            'label' => t('Sites'),
-        ];
-
-        if (!Cms::config()->headlessMode) {
-            $settings[$label]['routes'] = [
-                'iconMask' => '@craftcms/resources/icons/light/signs-post.svg',
-                'label' => t('Routes'),
-            ];
-        }
-
-        $settings[$label]['users'] = [
-            'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
-            'label' => t('Users'),
-        ];
-        if (Cms::config()->allowAdminChanges) {
-            $settings[$label]['addresses'] = [
-                'iconMask' => '@craftcms/resources/icons/light/map-location.svg',
-                'label' => t('Addresses'),
-            ];
-        }
-        $settings[$label]['email'] = [
-            'iconMask' => '@craftcms/resources/icons/light/envelope.svg',
-            'label' => t('Email'),
-        ];
-        $settings[$label]['plugins'] = [
-            'iconMask' => '@craftcms/resources/icons/light/plug.svg',
-            'label' => t('Plugins'),
-        ];
-
-        $label = t('Content');
-
-        $settings[$label]['sections'] = [
-            'iconMask' => '@craftcms/resources/icons/light/newspaper.svg',
-            'label' => t('Sections'),
-        ];
-        $settings[$label]['entry-types'] = [
-            'iconMask' => '@craftcms/resources/icons/light/files.svg',
-            'label' => t('Entry Types'),
-        ];
-        $settings[$label]['fields'] = [
-            'iconMask' => '@craftcms/resources/icons/light/pen-to-square.svg',
-            'label' => t('Fields'),
-        ];
-
-        $label = t('Media');
-
-        $settings[$label]['assets'] = [
-            'iconMask' => '@craftcms/resources/icons/light/image.svg',
-            'label' => t('Assets'),
-        ];
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@craftcms/resources/icons/light/folder-open.svg',
-            'label' => t('Filesystems'),
-        ];
-
-        $label = t('Plugins');
-
-        $pluginsService = app(Plugins::class);
-
-        foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {
-                $settings[$label][$plugin->handle] = [
-                    'url' => 'settings/plugins/' . $plugin->handle,
-                    'icon' => $pluginsService->getPluginIconSvg($plugin->handle),
-                    'label' => $plugin->name,
-                ];
-            }
-        }
-
-        // Fire a 'registerCpSettings' event
-        $eventName = $readOnly ? self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS : self::EVENT_REGISTER_CP_SETTINGS;
-        if ($this->hasEventHandlers($eventName)) {
-            $event = new RegisterCpSettingsEvent(['settings' => $settings]);
-            $this->trigger($eventName, $event);
-            return $event->settings;
-        }
-
-        return $settings;
-    }
-
-    /**
      * Returns whether the control panel alerts are cached.
      *
      * @return bool
@@ -853,5 +758,24 @@ class Cp extends Component
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
         return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterCpSettings::class, function(RegisterCpSettings $event) {
+            if (\yii\base\Event::hasHandlers(Cp::class, self::EVENT_REGISTER_CP_SETTINGS)) {
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+
+                \yii\base\Event::trigger(Cp::class, self::EVENT_REGISTER_CP_SETTINGS, $yiiEvent);
+            }
+        });
+
+        Event::listen(RegisterReadonlyCpSettings::class, function(RegisterReadonlyCpSettings $event) {
+            if (\yii\base\Event::hasHandlers(Cp::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS)) {
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+
+                \yii\base\Event::trigger(Cp::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
+            }
+        });
     }
 }

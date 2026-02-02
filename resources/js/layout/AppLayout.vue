@@ -4,9 +4,11 @@
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head} from '@inertiajs/vue3';
+  import VarDump from '@/components/VarDump.vue';
 
   defineProps<{
     title: string;
+    debug?: any;
   }>();
 
   const state = reactive<{
@@ -92,26 +94,43 @@
       <slot name="main">
         <main>
           <slot name="header">
-            <div class="pb-2 pt-4 px-4 flex justify-between items-center">
-              <slot name="title">
-                <h1 class="text-xl">{{ title }}</h1>
-              </slot>
+            <div class="container">
+              <div class="flex justify-between items-center pt-4 pb-2">
+                <slot name="title">
+                  <h1 class="text-xl">{{ title }}</h1>
+                </slot>
 
-              <div class="flex gap-2 items-center">
-                <slot name="actions"></slot>
+                <div class="flex gap-2 items-center">
+                  <slot name="actions"></slot>
+                </div>
               </div>
             </div>
           </slot>
-          <slot></slot>
+          <div class="container">
+            <slot></slot>
+          </div>
         </main>
       </slot>
     </div>
     <div class="cp__footer">
       <footer>
-        <slot name="footer"></slot>
+        <div class="container">
+          <slot name="footer"></slot>
+        </div>
       </footer>
     </div>
   </div>
+
+  <template v-if="debug">
+    <div class="fixed bottom-2 right-2 max-w-[600px]">
+      <div class="flex justify-end">
+        <craft-button icon size="small">
+          <craft-icon label="t('Close Debug panel')" name="x"></craft-icon>
+        </craft-button>
+      </div>
+      <VarDump :data="debug" class="max-h-[50vh] overflow-scroll" />
+    </div>
+  </template>
 </template>
 
 <style scoped lang="css">
@@ -122,6 +141,12 @@
   .cp__header {
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
+  }
+
+  .container {
+    max-width: var(--global-content-width);
+    margin: 0 auto;
+    padding-inline: var(--c-spacing-lg);
   }
 
   @media screen and (min-width: 1024px) {

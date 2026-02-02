@@ -20,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
@@ -104,6 +105,11 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::middleware([
         RequireAdmin::class,
     ])->group(function () {
+        // Index page
+        Route::get('settings', SettingsIndexController::class)
+            ->middleware([HandleInertiaRequests::class])
+            ->name('settings.index');
+
         // Entry types
         Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);

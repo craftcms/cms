@@ -66,7 +66,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft'): string
+    public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft/build'): string
     {
         try {
             return Vite::useHotFile(Aliases::get('@resources/hot'))
