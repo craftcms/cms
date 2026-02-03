@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-use craft\events\RenderElementEvent;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
 use Twig\Markup;
-use yii\base\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -29,58 +28,35 @@ describe('render', function () {
         expect($markup)->toBeInstanceOf(Markup::class);
     });
 
-    test('triggers render event', function () {
-        $eventTriggered = false;
+    test('Render event allows setting custom output', function () {
         $customOutput = 'Custom Output';
 
-        Event::on(
-            Element::class,
-            Element::EVENT_RENDER,
-            function (RenderElementEvent $event) use (&$eventTriggered, $customOutput) {
-                $eventTriggered = true;
-                $event->output = $customOutput;
-            }
-        );
+        Event::listen(function (Render $event) use ($customOutput) {
+            $event->output = $customOutput;
+        });
 
         $markup = $this->entry->render();
 
-        expect($eventTriggered)->toBeTrue();
         expect((string) $markup)->toBe($customOutput);
-
-        Event::off(Element::class, Element::EVENT_RENDER);
     });
 
-    test('event can modify variables and templates', function () {
-        $eventTriggered = false;
-        $customVariables = ['foo' => 'bar'];
+    test('Render event can modify variables and templates', function () {
+        $capturedVariables = null;
 
-        Event::on(
-            Element::class,
-            Element::EVENT_RENDER,
-            function (RenderElementEvent $event) use (&$eventTriggered, $customVariables) {
-                $eventTriggered = true;
-                $event->variables = array_merge($event->variables, $customVariables);
-            }
-        );
+        Event::listen(function (Render $event) use (&$capturedVariables) {
+            $event->variables = array_merge($event->variables, ['foo' => 'bar']);
+            $capturedVariables = $event->variables;
+        });
 
-        // We can't easily verify templates logic without setting up view paths,
-        // but we can verify the event was triggered and properties were accessible.
         $this->entry->render();
 
-        expect($eventTriggered)->toBeTrue();
-
-        Event::off(Element::class, Element::EVENT_RENDER);
+        expect($capturedVariables)->toHaveKey('foo');
+        expect($capturedVariables['foo'])->toBe('bar');
     });
 });
 
 describe('partialTemplatePathCandidates', function () {
     test('returns correct candidates', function () {
-        // partialTemplatePathCandidates is protected, so we access it via reflection or if we can infer it from render behavior.
-        // Or we can assume it works if render works.
-        // However, we can use reflection to test protected methods if needed, or check if public API exposes it.
-        // Element::render uses it.
-
-        // We'll test it via reflection to be sure.
         $reflection = new ReflectionClass($this->entry);
         $method = $reflection->getMethod('partialTemplatePathCandidates');
 

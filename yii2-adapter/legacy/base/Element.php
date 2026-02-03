@@ -12,11 +12,13 @@ namespace craft\base;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineValueEvent;
 use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Events\RegisterExporters;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Element\Events\RegisterSources;
@@ -82,6 +84,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see RegisterExporters} instead.
      */
     public const EVENT_REGISTER_EXPORTERS = 'registerExporters';
+
+    /**
+     * @event RenderElementEvent The event that is triggered before an element is rendered.
+     *
+     * @see render()
+     * @since 5.7.5
+     * @deprecated 6.0.0 Use {@see Render} instead.
+     */
+    public const EVENT_RENDER = 'render';
 
     public static function registerEvents(): void
     {
@@ -213,6 +224,32 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 YiiEvent::trigger($class, self::EVENT_REGISTER_EXPORTERS, $yiiEvent);
 
                 $event->exporters = $yiiEvent->exporters;
+            }
+        });
+
+        Event::listen(function(Render $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_RENDER)) {
+                    continue;
+                }
+
+                $yiiEvent = new RenderElementEvent([
+                    'sender' => $event->element,
+                    'templates' => $event->templates,
+                    'variables' => $event->variables,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_RENDER, $yiiEvent);
+
+                if (isset($yiiEvent->output)) {
+                    $event->output = $yiiEvent->output;
+                }
+                $event->templates = $yiiEvent->templates;
+                $event->variables = $yiiEvent->variables;
             }
         });
     }
