@@ -13,11 +13,9 @@ use craft\base\ElementTrait;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\events\ModelEvent;
-use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\web\View;
 use CraftCms\Cms\Cms;
@@ -30,7 +28,6 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -115,6 +112,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
     use Concerns\HasGqlType;
+    use Concerns\HasPreviewTargets;
     use Concerns\HasRoutesAndUrls;
     use Concerns\HasSources;
     use Concerns\Queryable;
@@ -177,13 +175,6 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
     public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
-
-    /**
-     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
-     *
-     * @since 3.2.0
-     */
-    public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
@@ -1137,71 +1128,6 @@ abstract class Element extends Component implements ElementInterface
     public function createAnother(): ?ElementInterface
     {
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPreviewTargets(): array
-    {
-        $previewTargets = $this->previewTargets();
-
-        // Fire a 'registerPreviewTargets' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
-            $event = new RegisterPreviewTargetsEvent(['previewTargets' => $previewTargets]);
-            $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
-            $previewTargets = $event->previewTargets;
-        }
-
-        // Normalize the targets
-        $normalized = [];
-        $view = Craft::$app->getView();
-
-        foreach ($previewTargets as $previewTarget) {
-            if (isset($previewTarget['urlFormat'])) {
-                $url = trim((string) $view->renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));
-                if ($url !== '') {
-                    $previewTarget['url'] = $url;
-                    unset($previewTarget['urlFormat']);
-                }
-            }
-            if (! isset($previewTarget['url'])) {
-                // No URL, no preview target
-                continue;
-            }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], siteId: $this->siteId);
-            if (! isset($previewTarget['refresh'])) {
-                $previewTarget['refresh'] = true;
-            }
-            $normalized[] = $previewTarget;
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
-     *
-     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
-     *
-     * @see getPreviewTargets()
-     * @since 3.2.0
-     */
-    protected function previewTargets(): array
-    {
-        $previewTargets = [];
-
-        $url = $this->getUrl();
-        if ($url) {
-            $previewTargets[] = [
-                'label' => t('Primary {type} page', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-                'url' => $url,
-            ];
-        }
-
-        return $previewTargets;
     }
 
     /**
