@@ -1370,8 +1370,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
           });
         }
-
-        cvd.updatePreview();
       }
     }
 
@@ -1887,6 +1885,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
   sortableCheckboxSelect: null,
   $thumbManagementContainer: null,
   alwaysShowThumbAlignmentBtns: false,
+  cancelToken: null,
 
   init: function (designer, container) {
     this.designer = designer;
@@ -1941,9 +1940,11 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
 
   listenToCheckboxEvents: function () {
     // trigger preview update when items are checked/unchecked
-    this.$libraryContainer.on('checked unchecked', () => {
-      this.updateCardViewConfig();
-      this.updatePreview();
+    this.$libraryContainer.on('change', (ev) => {
+      if ($(ev.target).is('input[type=checkbox]')) {
+        this.updateCardViewConfig();
+        this.updatePreview();
+      }
     });
     this.sortableCheckboxSelect.on('sortChange', () => {
       this.updateCardViewConfig();
@@ -1963,27 +1964,45 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     });
   },
 
-  updatePreview: function () {
+  updatePreview: async function () {
     this.$previewContainer.addClass('loading');
     Craft.cp.announce(Craft.t('app', 'Loading'));
 
-    Craft.sendActionRequest('POST', 'fields/render-card-preview', {
-      data: {
-        fieldLayoutConfig: this.designer.config,
-      },
-    })
-      .then(({data}) => {
-        this.$previewContainer.html(data.previewHtml);
-        this.disablePreviewLinks();
-      })
-      .catch((e) => {
+    if (this.cancelToken) {
+      this.cancelToken.cancel();
+    }
+
+    this.cancelToken = axios.CancelToken.source();
+
+    let response;
+    try {
+      response = await Craft.sendActionRequest(
+        'POST',
+        'fields/render-card-preview',
+        {
+          cancelToken: this.cancelToken.token,
+          data: {
+            fieldLayoutConfig: this.designer.config,
+          },
+        }
+      );
+    } catch (e) {
+      if (!axios.isCancel(e)) {
         Craft.cp.displayError(e?.response?.data?.message);
         throw e;
-      })
-      .finally(() => {
-        this.$previewContainer.removeClass('loading');
-        Craft.cp.announce(Craft.t('app', 'Loading complete'));
-      });
+      } else {
+        console.log('cancelled');
+      }
+    } finally {
+      this.$previewContainer.removeClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      this.cancelToken = null;
+    }
+
+    if (response) {
+      this.$previewContainer.html(response.data.previewHtml);
+      this.disablePreviewLinks();
+    }
   },
 
   disablePreviewLinks: function () {
@@ -2034,13 +2053,19 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
   },
 
   removeCheckbox: function (value) {
-    let $draggable = this.findCheckboxByValue(value);
+    const $draggable = this.findCheckboxByValue(value);
+
     if ($draggable?.length) {
-      $draggable.find('input[type="checkbox"]').prop('checked', false);
+      const updateConfig = $draggable
+        .find('input[type="checkbox"]')
+        .prop('checked');
       $draggable.remove();
 
       // and now make a call to update the card preview
-      this.updatePreview();
+      if (updateConfig) {
+        this.updateCardViewConfig();
+        this.updatePreview();
+      }
     }
   },
 
