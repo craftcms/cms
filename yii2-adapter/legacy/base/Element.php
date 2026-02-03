@@ -10,6 +10,7 @@
 namespace craft\base;
 
 use craft\base\Event as YiiEvent;
+use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\RegisterElementActionsEvent;
@@ -24,6 +25,7 @@ use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
+use craft\events\SetElementRouteEvent;
 use CraftCms\Cms\Element\Events\AfterDelete;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\AfterRestore;
@@ -350,6 +352,33 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see DefineInlineAttributeInputHtml} instead.
      */
     public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
+
+    /**
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element's URL is requested.
+     *
+     * @see getRoute()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see SetRoute} instead.
+     */
+    public const EVENT_SET_ROUTE = 'setRoute';
+
+    /**
+     * @event DefineUrlEvent The event that is triggered before defining the element's URL.
+     *
+     * @see getUrl()
+     * @since 4.4.6
+     * @deprecated 6.0.0 Use {@see BeforeDefineUrl} instead.
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
+     * @event DefineUrlEvent The event that is triggered when defining the element's URL.
+     *
+     * @see getUrl()
+     * @since 4.3.0
+     * @deprecated 6.0.0 Use {@see DefineUrl} instead.
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     public static function registerEvents(): void
     {
@@ -1061,6 +1090,78 @@ abstract class Element extends \CraftCms\Cms\Element\Element
 
                 if (isset($yiiEvent->html)) {
                     $event->html = $yiiEvent->html;
+                }
+            }
+        });
+
+        Event::listen(function(SetRoute $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_SET_ROUTE)) {
+                    continue;
+                }
+
+                $yiiEvent = new SetElementRouteEvent([
+                    'sender' => $event->element,
+                    'route' => $event->route,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_SET_ROUTE, $yiiEvent);
+
+                $event->route = $yiiEvent->route;
+                if ($yiiEvent->handled) {
+                    $event->handled = true;
+                }
+            }
+        });
+
+        Event::listen(function(BeforeDefineUrl $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_DEFINE_URL)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineUrlEvent([
+                    'sender' => $event->element,
+                    'url' => $event->url,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
+
+                $event->url = $yiiEvent->url;
+                if ($yiiEvent->handled) {
+                    $event->handled = true;
+                }
+            }
+        });
+
+        Event::listen(function(DefineUrl $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_URL)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineUrlEvent([
+                    'sender' => $event->element,
+                    'url' => $event->url,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_URL, $yiiEvent);
+
+                $event->url = $yiiEvent->url;
+                if ($yiiEvent->handled) {
+                    $event->handled = true;
                 }
             }
         });
