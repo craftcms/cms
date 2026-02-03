@@ -4231,7 +4231,7 @@ class Elements extends Component
                     $siteElements[$element->siteId] = $element;
                     $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                    Event::listen(function (AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
+                    Event::listen(function(AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
                         if ($event->element->id !== $element->id) {
                             return;
                         }
