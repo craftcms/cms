@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementRelations;
+use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeSave;
 
 /**
@@ -18,33 +19,6 @@ use CraftCms\Cms\Element\Events\BeforeSave;
  */
 trait HasLifecycleHooks
 {
-    /**
-     * @event ModelEvent The event that is triggered after the element is saved.
-     *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
-     * from your event handler:
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\ModelEvent;
-     * use craft\helpers\ElementHelper;
-     * use yii\base\Event;
-     *
-     * Event::on(Entry::class, Element::EVENT_AFTER_SAVE, function(ModelEvent $e) {
-     *     // @var Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     if (ElementHelper::isDraftOrRevision($entry)) {
-     *         return;
-     *     }
-     *
-     *     // ...
-     * });
-     * ```
-     */
-    public const EVENT_AFTER_SAVE = 'afterSave';
-
     /**
      * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
      *
@@ -126,7 +100,7 @@ trait HasLifecycleHooks
      */
     public function afterSave(bool $isNew): void
     {
-        // Update the element’s relation data
+        // Update the element's relation data
         app(ElementRelations::class)->updateRelations($this, $isNew);
 
         // Tell the fields about it
@@ -134,12 +108,7 @@ trait HasLifecycleHooks
             $field->afterElementSave($this, $isNew);
         }
 
-        // Fire an 'afterSave' event
-        if ($this->hasEventHandlers(Element::EVENT_AFTER_SAVE)) {
-            $this->trigger(Element::EVENT_AFTER_SAVE, new ModelEvent([
-                'isNew' => $isNew,
-            ]));
-        }
+        event(new AfterSave($this, $isNew));
     }
 
     /**

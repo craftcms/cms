@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -51,7 +52,25 @@ test('beforeSave event receives isNew parameter', function () {
 });
 
 test('afterSave triggers event', function () {
-    expectYiiEvent(Entry::class, Element::EVENT_AFTER_SAVE, fn () => $this->entry->afterSave(false));
+    $triggered = false;
+    Event::listen(function (AfterSave $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterSave event receives isNew parameter', function () {
+    $receivedIsNew = null;
+    Event::listen(function (AfterSave $event) use (&$receivedIsNew) {
+        $receivedIsNew = $event->isNew;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($receivedIsNew)->toBeFalse();
 });
 
 test('afterPropagate triggers event', function () {
