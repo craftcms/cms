@@ -6,12 +6,10 @@ namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
 use BadMethodCallException;
-use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
 use craft\base\ElementTrait;
 use craft\behaviors\CustomFieldBehavior;
-use craft\events\RenderElementEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\web\View;
@@ -20,7 +18,6 @@ use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -109,6 +106,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasThumbnails;
     use Concerns\Localizable;
     use Concerns\Queryable;
+    use Concerns\Renderable;
     use Concerns\Revisionable;
     use Concerns\Searchable;
     use Concerns\Structurable;
@@ -276,27 +274,6 @@ abstract class Element extends Component implements ElementInterface
      */
     #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
-
-    /**
-     * @event RenderElementEvent The event that is triggered before an element is rendered.
-     *
-     * @since 5.7.5
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use craft\events\RenderElementEvent;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Element::class,
-     *     Element::EVENT_RENDER,
-     *     function(RenderElementEvent $event) {
-     *         $event->output = '…';
-     *     }
-     * );
-     * ```
-     */
-    public const EVENT_RENDER = 'render';
 
     /**
      * {@inheritdoc}
@@ -776,84 +753,93 @@ abstract class Element extends Component implements ElementInterface
     #[Override]
     public function afterValidate(?LaravelValidator $validator = null): void
     {
-        if (
-            Cms::isInstalled() &&
-            $fieldLayout = $this->getFieldLayout()
-        ) {
-            $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
-
-            foreach ($layoutElements as $layoutElement) {
-                $field = $layoutElement->getField();
-                $attribute = "field:$field->handle";
-
-                if (isset($this->_attributeNames) && ! isset($this->_attributeNames[$attribute])) {
-                    continue;
-                }
-
-                $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
-
-                $rules = [];
-                if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
-                    $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
-                        if ($isEmpty()) {
-                            $fail(t('validation.required'));
-                        }
-                    };
-                } else {
-                    $rules[] = ['nullable'];
-                }
-
-                $rules = array_merge($rules, $field->getElementRules($this));
-
-                $value = $field->prepareForElementValidation(
-                    $this->getFieldValue($field->handle),
-                );
-
-                $this->setFieldValue($field->handle, $value);
-
-                $validator = ValidatorFacade::make(
-                    data: [$attribute => $value],
-                    rules: [$attribute => $rules],
-                    attributes: [$attribute => $field->getUiLabel()]
-                );
-
-                if ($validator->fails()) {
-                    /**
-                     * Map errors from `field:attribute` -> `attribute`
-                     */
-                    $errors = collect($validator->errors())
-                        ->mapWithKeys(fn (array $errors, string $attribute) => [
-                            Str::after($attribute, 'field:') => $errors,
-                        ])
-                        ->all();
-
-                    $this->errors()->merge($errors);
-                }
-            }
-        }
+        $this->validateCustomFields();
 
         if (request()->isCpRequest()) {
-            $allErrors = $this->errors()->getMessages();
+            $this->formatControlPanelErrors();
+        }
+    }
 
-            /**
-             * Clear our all errors as we're mapping them
-             * to bold the field attribute label.
-             */
-            foreach ($this->errors()->getMessages() as $attribute => $errors) {
-                $this->errors()->forget($attribute);
+    protected function validateCustomFields(): void
+    {
+        if (! Cms::isInstalled() || ! ($fieldLayout = $this->getFieldLayout())) {
+            return;
+        }
+
+        $scenario = $this->getScenario();
+        $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
+
+        foreach ($layoutElements as $layoutElement) {
+            $field = $layoutElement->getField();
+            $attribute = "field:$field->handle";
+
+            if (isset($this->_attributeNames) && ! isset($this->_attributeNames[$attribute])) {
+                continue;
             }
 
-            $this->errors()->merge(collect($allErrors)->map(function (array $errors, string $attribute) {
-                $label = $this->getAttributeLabel($attribute);
+            $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
-                foreach ($errors as &$error) {
-                    $error = str_replace($label, "*$label*", $error);
-                }
+            $rules = [];
+            if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
+                $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
+                    if ($isEmpty()) {
+                        $fail(t('validation.required'));
+                    }
+                };
+            } else {
+                $rules[] = ['nullable'];
+            }
 
-                return $errors;
-            })->all());
+            $rules = array_merge($rules, $field->getElementRules($this));
+
+            $value = $field->prepareForElementValidation(
+                $this->getFieldValue($field->handle),
+            );
+
+            $this->setFieldValue($field->handle, $value);
+
+            $validator = ValidatorFacade::make(
+                data: [$attribute => $value],
+                rules: [$attribute => $rules],
+                attributes: [$attribute => $field->getUiLabel()]
+            );
+
+            if ($validator->fails()) {
+                /**
+                 * Map errors from `field:attribute` -> `attribute`
+                 */
+                $errors = collect($validator->errors())
+                    ->mapWithKeys(fn (array $errors, string $attribute) => [
+                        Str::after($attribute, 'field:') => $errors,
+                    ])
+                    ->all();
+
+                $this->errors()->merge($errors);
+            }
         }
+    }
+
+    protected function formatControlPanelErrors(): void
+    {
+        $allErrors = $this->errors()->getMessages();
+
+        /**
+         * Clear our all errors as we're mapping them
+         * to bold the field attribute label.
+         */
+        foreach ($this->errors()->getMessages() as $attribute => $errors) {
+            $this->errors()->forget($attribute);
+        }
+
+        $this->errors()->merge(collect($allErrors)->map(function (array $errors, string $attribute) {
+            $label = $this->getAttributeLabel($attribute);
+
+            foreach ($errors as &$error) {
+                $error = str_replace($label, "*$label*", $error);
+            }
+
+            return $errors;
+        })->all());
     }
 
     /**
@@ -896,76 +882,4 @@ abstract class Element extends Component implements ElementInterface
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
-    public function render(array $variables = []): Markup
-    {
-        $templates = $this->partialTemplatePathCandidates();
-
-        $refHandle = static::refHandle();
-        if ($refHandle !== null) {
-            $variables[$refHandle] = $this;
-        }
-
-        if ($this->hasEventHandlers(self::EVENT_RENDER)) {
-            $event = new RenderElementEvent([
-                'templates' => $templates,
-                'variables' => $variables,
-            ]);
-            $this->trigger(self::EVENT_RENDER, $event);
-            if (isset($event->output)) {
-                return new Markup($event->output, Craft::$app->charset);
-            }
-            $templates = $event->templates;
-            $variables = $event->variables;
-        }
-
-        if (! empty($templates)) {
-            $view = Craft::$app->getView();
-            foreach (Arr::sort($templates, 'priority') as $template) {
-                if ($view->doesTemplateExist($template['template'], View::TEMPLATE_MODE_SITE)) {
-                    $output = $view->renderTemplate($template['template'], $variables, View::TEMPLATE_MODE_SITE);
-
-                    return new Markup($output, Craft::$app->charset);
-                }
-            }
-        }
-
-        // fallback to the string representation of the element
-        $output = Html::tag('p', Html::encode((string) $this));
-
-        return new Markup($output, Craft::$app->charset);
-    }
-
-    /**
-     * Returns the template paths to check when rendering the element’s partial template.
-     *
-     * @return array{template:string,priority:int}[]
-     *
-     * @since 5.8.0
-     */
-    protected function partialTemplatePathCandidates(): array
-    {
-        $refHandle = static::refHandle();
-        if ($refHandle === null) {
-            return [];
-        }
-
-        $templates = [];
-        $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
-        if ($providerHandle !== null) {
-            $templates[] = [
-                'template' => sprintf('%s/%s/%s', Cms::config()->partialTemplatesPath, $refHandle, $providerHandle),
-                'priority' => 1,
-            ];
-        }
-
-        $templates[] = [
-            'template' => sprintf('%s/%s', Cms::config()->partialTemplatesPath, $refHandle),
-            'priority' => 10,
-        ];
-
-        return $templates;
-    }
 }
