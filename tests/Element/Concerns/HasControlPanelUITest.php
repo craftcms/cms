@@ -2,18 +2,20 @@
 
 declare(strict_types=1);
 
-use craft\events\DefineAltActionsEvent;
-use craft\events\DefineAttributeHtmlEvent;
-use craft\events\DefineHtmlEvent;
-use craft\events\DefineMenuItemsEvent;
-use craft\events\DefineMetadataEvent;
-use craft\events\RegisterElementHtmlAttributesEvent;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\DefineActionMenuItems;
+use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
+use CraftCms\Cms\Element\Events\DefineAltActions;
+use CraftCms\Cms\Element\Events\DefineAttributeHtml;
+use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
+use CraftCms\Cms\Element\Events\DefineMetadata;
+use CraftCms\Cms\Element\Events\DefineSidebarHtml;
+use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -54,25 +56,19 @@ describe('getAdditionalButtons', function () {
         expect((string) $this->entry->getAdditionalButtons())->toBe('');
     });
 
-    test('triggers defineAdditionalButtons event', function () {
+    test('triggers DefineAdditionalButtons event', function () {
         $eventTriggered = false;
         $customHtml = '<button>Custom Button</button>';
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ADDITIONAL_BUTTONS,
-            function (DefineHtmlEvent $event) use (&$eventTriggered, $customHtml) {
-                $eventTriggered = true;
-                $event->html = $customHtml;
-            }
-        );
+        Event::listen(function (DefineAdditionalButtons $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            $event->html = $customHtml;
+        });
 
         $buttons = $this->entry->getAdditionalButtons();
 
         expect($eventTriggered)->toBeTrue();
         expect((string) $buttons)->toBe($customHtml);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ADDITIONAL_BUTTONS);
     });
 });
 
@@ -97,50 +93,38 @@ describe('getAltActions', function () {
         expect($continueEditingAction)->toHaveKey('redirect');
     });
 
-    test('triggers defineAltActions event', function () {
+    test('triggers DefineAltActions event', function () {
         $eventTriggered = false;
         $customAction = [
             'label' => 'Custom Action',
             'action' => 'custom/action',
         ];
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ALT_ACTIONS,
-            function (DefineAltActionsEvent $event) use (&$eventTriggered, $customAction) {
-                $eventTriggered = true;
-                $event->altActions[] = $customAction;
-            }
-        );
+        Event::listen(function (DefineAltActions $event) use (&$eventTriggered, $customAction) {
+            $eventTriggered = true;
+            $event->altActions[] = $customAction;
+        });
 
         $altActions = $this->entry->getAltActions();
 
         expect($eventTriggered)->toBeTrue();
         expect($altActions)->toContain($customAction);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ALT_ACTIONS);
     });
 
     test('event can modify alt actions', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ALT_ACTIONS,
-            function (DefineAltActionsEvent $event) {
-                $event->altActions = [
-                    [
-                        'label' => 'Only Action',
-                        'action' => 'test/action',
-                    ],
-                ];
-            }
-        );
+        Event::listen(function (DefineAltActions $event) {
+            $event->altActions = [
+                [
+                    'label' => 'Only Action',
+                    'action' => 'test/action',
+                ],
+            ];
+        });
 
         $altActions = $this->entry->getAltActions();
 
         expect($altActions)->toHaveCount(1);
         expect($altActions[0]['label'])->toBe('Only Action');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ALT_ACTIONS);
     });
 });
 
@@ -161,7 +145,7 @@ describe('getActionMenuItems', function () {
         expect($hasDestructiveItems)->toBeTrue();
     });
 
-    test('triggers defineActionMenuItems event', function () {
+    test('triggers DefineActionMenuItems event', function () {
         $eventTriggered = false;
         $customItem = [
             'id' => 'custom-action',
@@ -169,43 +153,31 @@ describe('getActionMenuItems', function () {
             'icon' => 'wand',
         ];
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ACTION_MENU_ITEMS,
-            function (DefineMenuItemsEvent $event) use (&$eventTriggered, $customItem) {
-                $eventTriggered = true;
-                $event->items[] = $customItem;
-            }
-        );
+        Event::listen(function (DefineActionMenuItems $event) use (&$eventTriggered, $customItem) {
+            $eventTriggered = true;
+            $event->items[] = $customItem;
+        });
 
         $items = $this->entry->getActionMenuItems();
 
         expect($eventTriggered)->toBeTrue();
         expect($items)->toContain($customItem);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ACTION_MENU_ITEMS);
     });
 
     test('event can modify menu items', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ACTION_MENU_ITEMS,
-            function (DefineMenuItemsEvent $event) {
-                $event->items = [
-                    [
-                        'id' => 'only-item',
-                        'label' => 'Only Item',
-                    ],
-                ];
-            }
-        );
+        Event::listen(function (DefineActionMenuItems $event) {
+            $event->items = [
+                [
+                    'id' => 'only-item',
+                    'label' => 'Only Item',
+                ],
+            ];
+        });
 
         $items = $this->entry->getActionMenuItems();
 
         expect($items)->toHaveCount(1);
         expect($items[0]['label'])->toBe('Only Item');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ACTION_MENU_ITEMS);
     });
 });
 
@@ -222,47 +194,35 @@ describe('getHtmlAttributes', function () {
         expect($attributes['data'])->toHaveKey('disallow-status');
     });
 
-    test('triggers registerHtmlAttributes event', function () {
+    test('triggers RegisterHtmlAttributes event', function () {
         $eventTriggered = false;
         $customAttribute = 'custom-value';
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_HTML_ATTRIBUTES,
-            function (RegisterElementHtmlAttributesEvent $event) use (&$eventTriggered, $customAttribute) {
-                $eventTriggered = true;
-                $event->htmlAttributes['data']['custom'] = $customAttribute;
-            }
-        );
+        Event::listen(function (RegisterHtmlAttributes $event) use (&$eventTriggered, $customAttribute) {
+            $eventTriggered = true;
+            $event->htmlAttributes['data']['custom'] = $customAttribute;
+        });
 
         $attributes = $this->entry->getHtmlAttributes('index');
 
         expect($eventTriggered)->toBeTrue();
         expect($attributes['data']['custom'])->toBe($customAttribute);
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_HTML_ATTRIBUTES);
     });
 
     test('event can modify html attributes', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_HTML_ATTRIBUTES,
-            function (RegisterElementHtmlAttributesEvent $event) {
-                $event->htmlAttributes = [
-                    'class' => 'custom-class',
-                    'data' => [
-                        'test' => 'value',
-                    ],
-                ];
-            }
-        );
+        Event::listen(function (RegisterHtmlAttributes $event) {
+            $event->htmlAttributes = [
+                'class' => 'custom-class',
+                'data' => [
+                    'test' => 'value',
+                ],
+            ];
+        });
 
         $attributes = $this->entry->getHtmlAttributes('index');
 
         expect($attributes)->toHaveKey('class', 'custom-class');
         expect($attributes['data'])->toHaveKey('test', 'value');
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_HTML_ATTRIBUTES);
     });
 });
 
@@ -273,45 +233,33 @@ describe('getAttributeHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers defineAttributeHtml event', function () {
+    test('triggers DefineAttributeHtml event', function () {
         $eventTriggered = false;
         $customHtml = '<span class="custom">Custom HTML</span>';
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ATTRIBUTE_HTML,
-            function (DefineAttributeHtmlEvent $event) use (&$eventTriggered, $customHtml) {
-                $eventTriggered = true;
-                if ($event->attribute === 'title') {
-                    $event->html = $customHtml;
-                }
+        Event::listen(function (DefineAttributeHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            if ($event->attribute === 'title') {
+                $event->html = $customHtml;
             }
-        );
+        });
 
         $html = $this->entry->getAttributeHtml('title');
 
         expect($eventTriggered)->toBeTrue();
         expect((string) $html)->toBe($customHtml);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ATTRIBUTE_HTML);
     });
 
     test('event receives correct attribute name', function () {
         $capturedAttribute = null;
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_ATTRIBUTE_HTML,
-            function (DefineAttributeHtmlEvent $event) use (&$capturedAttribute) {
-                $capturedAttribute = $event->attribute;
-            }
-        );
+        Event::listen(function (DefineAttributeHtml $event) use (&$capturedAttribute) {
+            $capturedAttribute = $event->attribute;
+        });
 
         $this->entry->getAttributeHtml('slug');
 
         expect($capturedAttribute)->toBe('slug');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_ATTRIBUTE_HTML);
     });
 });
 
@@ -322,45 +270,33 @@ describe('getInlineAttributeInputHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers defineInlineAttributeInputHtml event', function () {
+    test('triggers DefineInlineAttributeInputHtml event', function () {
         $eventTriggered = false;
         $customHtml = '<input type="text" value="Custom">';
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
-            function (DefineAttributeHtmlEvent $event) use (&$eventTriggered, $customHtml) {
-                $eventTriggered = true;
-                if ($event->attribute === 'title') {
-                    $event->html = $customHtml;
-                }
+        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            if ($event->attribute === 'title') {
+                $event->html = $customHtml;
             }
-        );
+        });
 
         $html = $this->entry->getInlineAttributeInputHtml('title');
 
         expect($eventTriggered)->toBeTrue();
         expect((string) $html)->toBe($customHtml);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML);
     });
 
     test('event receives correct attribute name', function () {
         $capturedAttribute = null;
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
-            function (DefineAttributeHtmlEvent $event) use (&$capturedAttribute) {
-                $capturedAttribute = $event->attribute;
-            }
-        );
+        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$capturedAttribute) {
+            $capturedAttribute = $event->attribute;
+        });
 
         $this->entry->getInlineAttributeInputHtml('slug');
 
         expect($capturedAttribute)->toBe('slug');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML);
     });
 });
 
@@ -377,41 +313,29 @@ describe('getSidebarHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers defineSidebarHtml event', function () {
+    test('triggers DefineSidebarHtml event', function () {
         $eventTriggered = false;
         $customHtml = '<div class="custom-sidebar">Custom</div>';
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_SIDEBAR_HTML,
-            function (DefineHtmlEvent $event) use (&$eventTriggered, $customHtml) {
-                $eventTriggered = true;
-                $event->html = $customHtml;
-            }
-        );
+        Event::listen(function (DefineSidebarHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            $event->html = $customHtml;
+        });
 
         $html = $this->entry->getSidebarHtml(false);
 
         expect($eventTriggered)->toBeTrue();
         expect((string) $html)->toBe($customHtml);
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_SIDEBAR_HTML);
     });
 
     test('event can append to existing html', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_SIDEBAR_HTML,
-            function (DefineHtmlEvent $event) {
-                $event->html .= '<div class="appended">Appended</div>';
-            }
-        );
+        Event::listen(function (DefineSidebarHtml $event) {
+            $event->html .= '<div class="appended">Appended</div>';
+        });
 
         $html = $this->entry->getSidebarHtml(false);
 
         expect((string) $html)->toContain('Appended');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_SIDEBAR_HTML);
     });
 });
 
@@ -446,45 +370,33 @@ describe('getMetadata', function () {
         expect($metadata)->toHaveKey('Updated at');
     });
 
-    test('triggers defineMetadata event', function () {
+    test('triggers DefineMetadata event', function () {
         $eventTriggered = false;
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_METADATA,
-            function (DefineMetadataEvent $event) use (&$eventTriggered) {
-                $eventTriggered = true;
-                $event->metadata['Custom'] = 'Custom Value';
-            }
-        );
+        Event::listen(function (DefineMetadata $event) use (&$eventTriggered) {
+            $eventTriggered = true;
+            $event->metadata['Custom'] = 'Custom Value';
+        });
 
         $metadata = $this->entry->getMetadata();
 
         expect($eventTriggered)->toBeTrue();
         expect($metadata)->toHaveKey('Custom');
         expect($metadata['Custom'])->toBe('Custom Value');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_METADATA);
     });
 
     test('event can modify existing metadata', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_METADATA,
-            function (DefineMetadataEvent $event) {
-                $event->metadata = [
-                    'Only Key' => 'Only Value',
-                ];
-            }
-        );
+        Event::listen(function (DefineMetadata $event) {
+            $event->metadata = [
+                'Only Key' => 'Only Value',
+            ];
+        });
 
         $metadata = $this->entry->getMetadata();
 
         expect($metadata)->toHaveKey('Only Key');
         expect($metadata)->toHaveKey('ID'); // Should still have merged defaults
         expect($metadata)->toHaveKey('Status');
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_METADATA);
     });
 
     test('metadata values can be callables', function () {
@@ -499,13 +411,9 @@ describe('getMetadata', function () {
     });
 
     test('callable metadata can return false to omit', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_METADATA,
-            function (DefineMetadataEvent $event) {
-                $event->metadata['Hidden'] = fn () => false;
-            }
-        );
+        Event::listen(function (DefineMetadata $event) {
+            $event->metadata['Hidden'] = fn () => false;
+        });
 
         $metadata = $this->entry->getMetadata();
 
@@ -514,8 +422,6 @@ describe('getMetadata', function () {
         // The callable returns false, which indicates it should be omitted when rendered
         $hiddenValue = call_user_func($metadata['Hidden']);
         expect($hiddenValue)->toBeFalse();
-
-        Event::off(Entry::class, Entry::EVENT_DEFINE_METADATA);
     });
 });
 

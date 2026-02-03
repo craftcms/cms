@@ -272,6 +272,85 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      */
     public const EVENT_AFTER_RESTORE = 'afterRestore';
 
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element's edit page.
+     *
+     * @see getAdditionalButtons()
+     * @since 4.0.0
+     * @deprecated 6.0.0 Use {@see DefineAdditionalButtons} instead.
+     */
+    public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
+
+    /**
+     * @event DefineAltActionsEvent The event that is triggered when defining alternative form actions for the element.
+     *
+     * @see getAltActions()
+     * @since 5.6.0
+     * @deprecated 6.0.0 Use {@see DefineAltActions} instead.
+     */
+    public const EVENT_DEFINE_ALT_ACTIONS = 'defineAltActions';
+
+    /**
+     * @event DefineMenuItemsEvent The event that is triggered when defining action menu items.
+     *
+     * @see getActionMenuItems()
+     * @since 5.0.0
+     * @deprecated 6.0.0 Use {@see DefineActionMenuItems} instead.
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
+     *
+     * @see getSidebarHtml()
+     * @since 3.7.0
+     * @deprecated 6.0.0 Use {@see DefineSidebarHtml} instead.
+     */
+    public const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
+
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the editor sidebar.
+     *
+     * @see metaFieldsHtml()
+     * @since 3.7.0
+     * @deprecated 6.0.0 Use {@see DefineMetaFieldsHtml} instead.
+     */
+    public const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
+
+    /**
+     * @event DefineMetadataEvent The event that is triggered when defining the element's metadata info.
+     *
+     * @see getMetadata()
+     * @since 3.7.0
+     * @deprecated 6.0.0 Use {@see DefineMetadata} instead.
+     */
+    public const EVENT_DEFINE_METADATA = 'defineMetadata';
+
+    /**
+     * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element's DOM representation in the control panel.
+     *
+     * @deprecated 6.0.0 Use {@see RegisterHtmlAttributes} instead.
+     */
+    public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+
+    /**
+     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute's HTML for table and card views.
+     *
+     * @see getAttributeHtml()
+     * @since 5.0.0
+     * @deprecated 6.0.0 Use {@see DefineAttributeHtml} instead.
+     */
+    public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
+
+    /**
+     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute's inline input HTML.
+     *
+     * @see getInlineAttributeInputHtml()
+     * @since 5.0.0
+     * @deprecated 6.0.0 Use {@see DefineInlineAttributeInputHtml} instead.
+     */
+    public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
+
     public static function registerEvents(): void
     {
         // Find all classes that extend Element
@@ -789,6 +868,200 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 ]);
 
                 YiiEvent::trigger($class, self::EVENT_AFTER_RESTORE, $yiiEvent);
+            }
+        });
+
+        Event::listen(function(DefineAdditionalButtons $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineHtmlEvent([
+                    'sender' => $event->element,
+                    'html' => $event->html,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $yiiEvent);
+
+                $event->html = $yiiEvent->html;
+            }
+        });
+
+        Event::listen(function(DefineAltActions $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ALT_ACTIONS)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineAltActionsEvent([
+                    'sender' => $event->element,
+                    'altActions' => $event->altActions,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_ALT_ACTIONS, $yiiEvent);
+
+                $event->altActions = $yiiEvent->altActions;
+            }
+        });
+
+        Event::listen(function(DefineActionMenuItems $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineMenuItemsEvent([
+                    'sender' => $event->element,
+                    'items' => $event->items,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
+
+                $event->items = $yiiEvent->items;
+            }
+        });
+
+        Event::listen(function(DefineSidebarHtml $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_SIDEBAR_HTML)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineHtmlEvent([
+                    'sender' => $event->element,
+                    'html' => $event->html,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_SIDEBAR_HTML, $yiiEvent);
+
+                $event->html = $yiiEvent->html;
+            }
+        });
+
+        Event::listen(function(DefineMetaFieldsHtml $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_META_FIELDS_HTML)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineHtmlEvent([
+                    'sender' => $event->element,
+                    'static' => $event->static,
+                    'html' => $event->html,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_META_FIELDS_HTML, $yiiEvent);
+
+                $event->html = $yiiEvent->html;
+            }
+        });
+
+        Event::listen(function(DefineMetadata $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_METADATA)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineMetadataEvent([
+                    'sender' => $event->element,
+                    'metadata' => $event->metadata,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_METADATA, $yiiEvent);
+
+                $event->metadata = $yiiEvent->metadata;
+            }
+        });
+
+        Event::listen(function(RegisterHtmlAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_HTML_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementHtmlAttributesEvent([
+                    'sender' => $event->element,
+                    'htmlAttributes' => $event->htmlAttributes,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_HTML_ATTRIBUTES, $yiiEvent);
+
+                $event->htmlAttributes = $yiiEvent->htmlAttributes;
+            }
+        });
+
+        Event::listen(function(DefineAttributeHtml $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineAttributeHtmlEvent([
+                    'sender' => $event->element,
+                    'attribute' => $event->attribute,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_ATTRIBUTE_HTML, $yiiEvent);
+
+                if (isset($yiiEvent->html)) {
+                    $event->html = $yiiEvent->html;
+                }
+            }
+        });
+
+        Event::listen(function(DefineInlineAttributeInputHtml $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineAttributeHtmlEvent([
+                    'sender' => $event->element,
+                    'attribute' => $event->attribute,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $yiiEvent);
+
+                if (isset($yiiEvent->html)) {
+                    $event->html = $yiiEvent->html;
+                }
             }
         });
     }
