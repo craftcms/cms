@@ -112,6 +112,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Eagerloadable;
     use Concerns\Exportable;
     use Concerns\HasActions;
+    use Concerns\HasAuthorization;
     use Concerns\HasCanonical;
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
@@ -1281,62 +1282,6 @@ abstract class Element extends Component implements ElementInterface
     public function createAnother(): ?ElementInterface
     {
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canView(User $user): bool
-    {
-        return $user->can('view', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canSave(User $user): bool
-    {
-        return $user->can('save', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDuplicate(User $user): bool
-    {
-        return $user->can('duplicate', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canCopy(User $user): bool
-    {
-        return $user->can('copy', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDelete(User $user): bool
-    {
-        return $user->can('delete', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canDeleteForSite(User $user): bool
-    {
-        return $user->can('deleteForSite', $this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canCreateDrafts(User $user): bool
-    {
-        return $user->can('createDrafts', $this);
     }
 
     /**
