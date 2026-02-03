@@ -20,11 +20,6 @@ use CraftCms\Cms\Support\Str;
 trait Searchable
 {
     /**
-     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
-     */
-    public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
-
-    /**
      * @var int|null The element's search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
     public ?int $searchScore = null;

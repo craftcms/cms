@@ -105,6 +105,69 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      */
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
+    /**
+     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
+     *
+     * @see sortOptions()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see RegisterSortOptions} instead.
+     */
+    public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     *
+     * @see tableAttributes()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see RegisterTableAttributes} instead.
+     */
+    public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event RegisterElementDefaultTableAttributesEvent The event that is triggered when registering the default table attributes for the element type.
+     *
+     * @see defaultTableAttributes()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see RegisterDefaultTableAttributes} instead.
+     */
+    public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
+     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     *
+     * @see cardAttributes()
+     * @since 5.5.0
+     * @deprecated 6.0.0 Use {@see RegisterCardAttributes} instead.
+     */
+    public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
+
+    /**
+     * @event RegisterElementDefaultCardAttributesEvent The event that is triggered when registering the default card attributes for the element type.
+     *
+     * @see defaultCardAttributes()
+     * @since 5.5.0
+     * @deprecated 6.0.0 Use {@see RegisterDefaultCardAttributes} instead.
+     */
+    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
+
+    /**
+     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
+     *
+     * @see searchableAttributes()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see RegisterSearchableAttributes} instead.
+     */
+    public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+
+    /**
+     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for a table attribute.
+     *
+     * @see indexHtml()
+     * @since 3.7.14
+     * @deprecated 6.0.0 Use {@see PrepQueryForTableAttribute} instead.
+     */
+    public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+
     public static function registerEvents(): void
     {
         // Find all classes that extend Element
@@ -284,6 +347,151 @@ abstract class Element extends \CraftCms\Cms\Element\Element
 
                 if ($yiiEvent->handled) {
                     $event->keywords = $yiiEvent->keywords;
+                    $event->handled = true;
+                }
+            }
+        });
+
+        Event::listen(function(RegisterSortOptions $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_SORT_OPTIONS)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementSortOptionsEvent([
+                    'sortOptions' => $event->sortOptions,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_SORT_OPTIONS, $yiiEvent);
+
+                $event->sortOptions = $yiiEvent->sortOptions;
+            }
+        });
+
+        Event::listen(function(RegisterTableAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementTableAttributesEvent([
+                    'tableAttributes' => $event->tableAttributes,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $yiiEvent);
+
+                $event->tableAttributes = $yiiEvent->tableAttributes;
+            }
+        });
+
+        Event::listen(function(RegisterDefaultTableAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementDefaultTableAttributesEvent([
+                    'source' => $event->source,
+                    'tableAttributes' => $event->tableAttributes,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $yiiEvent);
+
+                $event->tableAttributes = $yiiEvent->tableAttributes;
+            }
+        });
+
+        Event::listen(function(RegisterCardAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_CARD_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementCardAttributesEvent([
+                    'cardAttributes' => $event->cardAttributes,
+                    'fieldLayout' => $event->fieldLayout,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_CARD_ATTRIBUTES, $yiiEvent);
+
+                $event->cardAttributes = $yiiEvent->cardAttributes;
+            }
+        });
+
+        Event::listen(function(RegisterDefaultCardAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementDefaultCardAttributesEvent([
+                    'cardAttributes' => $event->cardAttributes,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $yiiEvent);
+
+                $event->cardAttributes = $yiiEvent->cardAttributes;
+            }
+        });
+
+        Event::listen(function(RegisterSearchableAttributes $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementSearchableAttributesEvent([
+                    'attributes' => $event->attributes,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $yiiEvent);
+
+                $event->attributes = $yiiEvent->attributes;
+            }
+        });
+
+        Event::listen(function(PrepQueryForTableAttribute $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ElementIndexTableAttributeEvent([
+                    'query' => $event->query,
+                    'attribute' => $event->attribute,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
+
+                if ($yiiEvent->handled) {
                     $event->handled = true;
                 }
             }
