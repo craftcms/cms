@@ -1,15 +1,18 @@
 <script setup lang="ts">
-  import type {JobInfo} from '@craftcms/cp/src/types';
+  import {type JobInfo, JobStatus} from '@craftcms/cp/src/types/index.js';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {inject, ref, watch} from 'vue';
+  import {computed, inject, ref, watch} from 'vue';
   import {Axios, Queue} from '@/types/keys';
   import {useFlashMessages} from '@/composables/useFlashMessages';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {useActionClient} from '@/composables/useFetch';
   import {router} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
+  import CpLink from '@/components/CpLink.vue';
+  import RetryJobButton from '@/components/utilities/QueueManager/RetryJobButton.vue';
+  import ReleaseJobButton from '@/components/utilities/QueueManager/ReleaseJobButton.vue';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       activeJob?: JobInfo | null;
       jobs?: Array<JobInfo>;
@@ -21,12 +24,12 @@
   const axios = inject(Axios);
   const {
     execute: executeRetryAll,
-    status: retryAllStatus,
+    state: retryAllStatus,
     error: retryAllError,
   } = useActionClient('queue/retry-all');
   const {
     execute: executeReleaseAll,
-    status: releaseAllStatus,
+    state: releaseAllStatus,
     error: releaseAllError,
   } = useActionClient('queue/release-all');
   const {flash, messages} = useFlashMessages();
@@ -37,9 +40,12 @@
   });
   const loading = ref(false);
 
-  function isRetryable(job: JobInfo) {
-    return true;
-  }
+  const isRetryable = computed(() => {
+    return (
+      props.activeJob.status.value == JobStatus.Reserved ||
+      props.activeJob.status.value == JobStatus.Failed
+    );
+  });
 
   function clearActiveJob(value: boolean) {}
 
@@ -80,38 +86,21 @@
 
 <template>
   <template v-if="activeJob">
-    <craft-button
-      type="button"
-      class="btn"
-      @click="clearActiveJob(true)"
-      data-icon="larr"
-      title="{{ 'Back to the queue index'|t('app') }}"
-    >
+    <CpLink as="craft-button" :href="show.url({id: 'queue-manager'})">
+      <craft-icon name="arrow-left" slot="prefix"></craft-icon>
       {{ t('Back') }}
-    </craft-button>
-    <div class="flex-grow"></div>
+    </CpLink>
+    <div class="grow"></div>
     <craft-spinner v-if="loading" class="spinner"></craft-spinner>
-    <craft-button
-      type="button"
-      v-if="isRetryable(activeJob)"
-      class="btn"
-      data-icon="play"
-      @click="retryActiveJob"
-    >
-      <template v-if="activeJob.status == 2">{{ t('Restart job') }}</template>
-      <template v-else>{{ t('Retry') }}</template>
-    </craft-button>
-    <craft-button
-      v-if="activeJob.status != 3"
-      class="btn"
-      data-icon="remove"
-      @click="releaseActiveJob"
-    >
-      {{ t('Release job') }}
-    </craft-button>
+    <RetryJobButton v-if="isRetryable" :job="activeJob" size="default" />
+    <ReleaseJobButton
+      :job="activeJob"
+      size="default"
+      v-if="activeJob.status.value !== JobStatus.Done"
+    />
   </template>
   <template v-else-if="jobs.length">
-    <div class="flex-grow"></div>
+    <div class="grow"></div>
 
     <TransitionFade>
       <template v-if="messages.error">

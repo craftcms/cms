@@ -42,7 +42,7 @@
       <slot :name="name" v-bind="slotData || {}"></slot>
     </template>
 
-    <div class="interior">
+    <div class="index-grid">
       <div class="">
         <craft-button
           v-if="!isLarge"
@@ -78,18 +78,6 @@
 </template>
 
 <style scoped lang="scss">
-  .interior {
-    display: grid;
-    gap: var(--c-spacing-md);
-
-    @container (width >= 768px) {
-      grid-template-columns:
-        clamp(calc(120rem / 16), 20%, calc(180rem / 16))
-        6fr;
-      align-items: start;
-    }
-  }
-
   #nav-container {
     background-color: color-mix(var(--color-slate-900), trans);
   }

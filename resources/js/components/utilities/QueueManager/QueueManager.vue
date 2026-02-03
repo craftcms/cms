@@ -1,29 +1,42 @@
 <script setup lang="ts">
   import QueueManagerIndex from '@/components/utilities/QueueManager/QueueManagerIndex.vue';
   import QueueManagerShow from '@/components/utilities/QueueManager/QueueManagerShow.vue';
+  import {inject, onMounted, ref} from 'vue';
+  import type {JobInfo} from '@craftcms/cp/src/types/index.js';
+  import {Queue} from '@/types/keys';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
-      view?: 'index' | 'show';
-      initialData: Record<string, unknown>;
+      initialData: Array<JobInfo>;
       totalJobs?: number;
-      activeJob?: null;
+      activeJob?: JobInfo | null;
       hasReservedJobs?: boolean;
       hasWaitingJobs?: boolean;
     }>(),
-    {view: 'index', activeJob: null, totalJobs: 0}
+    {activeJob: null, totalJobs: 0}
   );
+
+  const queue = inject(Queue);
+
+  const jobs = ref<Array<JobInfo>>(props.initialData ?? []);
+  const totalJobs = ref(props.totalJobs);
+
+  onMounted(async () => {
+    queue?.addEventListener('job-update', ({detail}) => {
+      jobs.value = detail.jobInfo;
+      totalJobs.value = detail.totalJobs;
+    });
+    if (props.hasReservedJobs) {
+      queue?.startTracking(true);
+    } else if (props.hasWaitingJobs) {
+      await queue?.runQueue();
+    }
+  });
 </script>
 
 <template>
-  <QueueManagerShow v-if="view === 'show'" :job="activeJob" />
-  <QueueManagerIndex
-    v-else
-    :initialData="initialData"
-    :totalJobs="totalJobs"
-    :hasReservedJobs="hasReservedJobs"
-    :hasWaitingJobs="hasWaitingJobs"
-  />
+  <QueueManagerShow v-if="activeJob" :job="activeJob" />
+  <QueueManagerIndex v-else :jobs="jobs" :totalJobs="totalJobs" />
 </template>
 
 <style scoped lang="scss"></style>

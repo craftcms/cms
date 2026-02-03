@@ -55,3 +55,15 @@ hr {
   border: 0;
   border-top: 1px solid var(--c-color-neutral-border-subtle);
 }
+
+.index-grid {
+  display: grid;
+  gap: var(--c-spacing-md);
+
+  @container (width >= 768px) {
+    grid-template-columns:
+      clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+      6fr;
+    align-items: start;
+  }
+}

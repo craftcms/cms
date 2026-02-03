@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import Pane from '@/components/Pane.vue';
-  import {h, inject, onMounted, ref} from 'vue';
+  import {h, ref} from 'vue';
   import {
     createColumnHelper,
     getCoreRowModel,
@@ -10,25 +10,19 @@
   } from '@tanstack/vue-table';
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
-  import {Queue} from '@/types/keys';
   import {type JobInfo, JobStatus} from '@craftcms/cp/src/types/index.js';
   import RetryJobButton from '@/components/utilities/QueueManager/RetryJobButton.vue';
   import ReleaseJobButton from '@/components/utilities/QueueManager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';
 
-  const queue = inject(Queue);
   const props = withDefaults(
     defineProps<{
-      initialData: Array<JobInfo>;
+      jobs: Array<JobInfo>;
       totalJobs?: number;
-      hasReservedJobs?: boolean;
-      hasWaitingJobs?: boolean;
     }>(),
     {totalJobs: 0}
   );
 
-  const jobs = ref<Array<JobInfo>>(props.initialData ?? []);
-  const totalJobs = ref(props.totalJobs);
   const columnHelper = createColumnHelper<JobInfo>();
 
   function getStatusVariant(value: number) {
@@ -45,6 +39,13 @@
     }
 
     return 'default';
+  }
+
+  function isRetryable(job: JobInfo) {
+    return (
+      job.status.value == JobStatus.Reserved ||
+      job.status.value == JobStatus.Failed
+    );
   }
 
   const columns = ref([
@@ -81,12 +82,12 @@
       id: 'actions',
       cell: ({row}) => {
         return h('div', {class: 'flex justify-end gap-2'}, [
-          ...(row.original.status.value === JobStatus.Failed
-            ? [
-                h(RetryJobButton, {job: row.original}),
-                h(ReleaseJobButton, {job: row.original}),
-              ]
-            : []),
+          isRetryable(row.original)
+            ? h(RetryJobButton, {job: row.original})
+            : null,
+          row.original.status.value !== JobStatus.Done
+            ? h(ReleaseJobButton, {job: row.original})
+            : null,
         ]);
       },
     }),
@@ -94,24 +95,12 @@
 
   const jobsTable = useVueTable({
     get data() {
-      return jobs.value;
+      return props.jobs;
     },
     get columns() {
       return columns.value;
     },
     getCoreRowModel: getCoreRowModel<JobInfo>(),
-  });
-
-  onMounted(async () => {
-    queue?.addEventListener('job-update', ({detail}) => {
-      jobs.value = detail.jobInfo;
-      totalJobs.value = detail.totalJobs;
-    });
-    if (props.hasReservedJobs) {
-      queue?.startTracking(true);
-    } else if (props.hasWaitingJobs) {
-      await queue?.runQueue();
-    }
   });
 </script>
 
