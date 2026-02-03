@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\Sites;
-use ReflectionClass;
 use yii\base\InvalidConfigException;
 
 class TestLocalizableElement extends Element
