@@ -16,7 +16,6 @@ use craft\events\ModelEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -46,7 +45,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
-use Stringable;
 use Throwable;
 use Traversable;
 use Twig\Markup;
@@ -599,20 +597,6 @@ abstract class Element extends Component implements ElementInterface
     private array|bool $_enabledForSite = true;
 
     /**
-     * @see getUiLabel()
-     * @see setUiLabel()
-     */
-    private ?string $_uiLabel = null;
-
-    /**
-     * @var string[]
-     *
-     * @see getUiLabelPath()
-     * @see setUiLabelPath()
-     */
-    private array $_uiLabelPath = [];
-
-    /**
      * @see getIsFresh()
      * @see setIsFresh()
      */
@@ -1145,135 +1129,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return [Sites::getPrimarySite()->id];
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @see crumbs()
-     */
-    public function getCrumbs(): array
-    {
-        if ($this instanceof NestedElementInterface) {
-            $owner = $this->getOwner();
-            if ($owner) {
-                return [
-                    ...$owner->getCrumbs(),
-                    [
-                        'html' => Cp::elementChipHtml($owner, [
-                            'showDraftName' => false,
-                            'class' => 'chromeless',
-                            'hyperlink' => true,
-                        ]),
-                    ],
-                ];
-            }
-        }
-
-        return $this->crumbs();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUiLabel(): string
-    {
-        return $this->_uiLabel ?? $this->uiLabel() ?? (string) $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setUiLabel(?string $label): void
-    {
-        $this->_uiLabel = $label;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUiLabelPath(): array
-    {
-        return $this->_uiLabelPath;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setUiLabelPath(array $path): void
-    {
-        $this->_uiLabelPath = $path;
-    }
-
-    /**
-     * Returns the breadcrumbs that lead up to the element.
-     *
-     * @since 5.0.0
-     * @see getCrumbs()
-     */
-    protected function crumbs(): array
-    {
-        return [];
-    }
-
-    /**
-     * Returns what the element should be called within the control panel.
-     *
-     * @since 3.6.4
-     */
-    protected function uiLabel(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getChipLabelHtml(): string|Stringable
-    {
-        return Html::encode($this->getUiLabel());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function showStatusIndicator(): bool
-    {
-        return static::hasStatuses();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCardTitle(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCardBodyHtml(): ?string
-    {
-        $this->viewMode = 'cards';
-        $html = '';
-        $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
-
-        foreach ($cardElements as $item) {
-            $html .= Html::tag('div', $item['html'], [
-                'class' => 'card-attribute-preview',
-            ]);
-        }
-
-        return $html;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getRef(): ?string
-    {
-        return null;
     }
 
     /**

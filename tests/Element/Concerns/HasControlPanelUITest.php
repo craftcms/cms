@@ -528,3 +528,92 @@ describe('prepareEditScreen', function () {
             ->not->toThrow(Exception::class);
     });
 });
+
+describe('getCrumbs', function () {
+    test('returns array', function () {
+        expect($this->entry->getCrumbs())->toBeArray();
+    });
+});
+
+describe('getUiLabel and setUiLabel', function () {
+    test('returns string representation by default', function () {
+        expect($this->entry->getUiLabel())->toBeString();
+    });
+
+    test('returns custom label when set', function () {
+        $customLabel = 'Custom UI Label';
+        $this->entry->setUiLabel($customLabel);
+
+        expect($this->entry->getUiLabel())->toBe($customLabel);
+    });
+
+    test('setting null reverts to default', function () {
+        $this->entry->setUiLabel('Custom');
+        $this->entry->setUiLabel(null);
+
+        expect($this->entry->getUiLabel())->toBe($this->entry->title);
+    });
+});
+
+describe('getUiLabelPath and setUiLabelPath', function () {
+    test('returns empty array by default', function () {
+        expect($this->entry->getUiLabelPath())->toBe([]);
+    });
+
+    test('returns custom path when set', function () {
+        $path = ['Section', 'Category'];
+        $this->entry->setUiLabelPath($path);
+
+        expect($this->entry->getUiLabelPath())->toBe($path);
+    });
+});
+
+describe('getChipLabelHtml', function () {
+    test('returns encoded UI label', function () {
+        $html = $this->entry->getChipLabelHtml();
+
+        expect((string) $html)->toBeString()->not->toBeEmpty();
+    });
+
+    test('encodes HTML entities', function () {
+        $this->entry->setUiLabel('<script>alert("xss")</script>');
+
+        $html = $this->entry->getChipLabelHtml();
+
+        expect((string) $html)->not->toContain('<script>');
+        expect((string) $html)->toContain('&lt;script&gt;');
+    });
+});
+
+describe('showStatusIndicator', function () {
+    test('returns true for elements with statuses', function () {
+        expect($this->entry->showStatusIndicator())->toBeTrue();
+    });
+});
+
+describe('getCardTitle', function () {
+    test('returns string for entries', function () {
+        expect($this->entry->getCardTitle())->toBeString();
+    });
+});
+
+describe('getCardBodyHtml', function () {
+    test('returns string', function () {
+        expect($this->entry->getCardBodyHtml())->toBeString();
+    });
+});
+
+describe('getRef', function () {
+    test('returns reference string', function () {
+        expect($this->entry->getRef())->toBeString();
+    });
+});
+
+describe('createAnother', function () {
+    test('returns new element instance for entries', function () {
+        $newElement = $this->entry->createAnother();
+
+        expect($newElement)->toBeInstanceOf(Entry::class);
+        expect($newElement->id)->toBeNull();
+    });
+});

@@ -110,6 +110,20 @@ trait HasControlPanelUI
     public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
 
     /**
+     * @see getUiLabel()
+     * @see setUiLabel()
+     */
+    private ?string $_uiLabel = null;
+
+    /**
+     * @var string[]
+     *
+     * @see getUiLabelPath()
+     * @see setUiLabelPath()
+     */
+    private array $_uiLabelPath = [];
+
+    /**
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
@@ -222,17 +236,16 @@ trait HasControlPanelUI
             }
         }
 
-        // Fire a 'defineAltActions' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ALT_ACTIONS)) {
-            $event = new DefineAltActionsEvent([
-                'altActions' => $altActions,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ALT_ACTIONS, $event);
-
-            return $event->altActions;
+        if (! $this->hasEventHandlers(self::EVENT_DEFINE_ALT_ACTIONS)) {
+            return $altActions;
         }
 
-        return $altActions;
+        $event = new DefineAltActionsEvent([
+            'altActions' => $altActions,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_ALT_ACTIONS, $event);
+
+        return $event->altActions;
     }
 
     /**
@@ -245,15 +258,14 @@ trait HasControlPanelUI
             ...array_map(fn (array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        // Fire a 'defineActionMenuItems' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineMenuItemsEvent(['items' => $items]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-
-            return $event->items;
+        if (! $this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            return $items;
         }
 
-        return $items;
+        $event = new DefineMenuItemsEvent(['items' => $items]);
+        $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+
+        return $event->items;
     }
 
     /**
@@ -313,8 +325,7 @@ JS, [
         }
 
         // View
-        $url = $this->getUrl();
-        if ($url) {
+        if ($url = $this->getUrl()) {
             $viewId = sprintf('action-view-%s', mt_rand());
             $items[] = [
                 'id' => $viewId,
@@ -369,7 +380,6 @@ JS, [
                     ])),
                 ];
 
-                $view = Craft::$app->getView();
                 $view->registerJsWithVars(fn ($id, $elementInfo) => <<<JS
 (() => {
   $('#' + $id).on('activate', () => {
@@ -896,5 +906,135 @@ JS, [
     protected function metadata(): array
     {
         return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see crumbs()
+     */
+    public function getCrumbs(): array
+    {
+        if (! $this instanceof NestedElementInterface) {
+            return $this->crumbs();
+        }
+
+        if ($owner = $this->getOwner()) {
+            return [
+                ...$owner->getCrumbs(),
+                [
+                    'html' => Cp::elementChipHtml($owner, [
+                        'showDraftName' => false,
+                        'class' => 'chromeless',
+                        'hyperlink' => true,
+                    ]),
+                ],
+            ];
+        }
+
+        return $this->crumbs();
+    }
+
+    /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @since 5.0.0
+     * @see getCrumbs()
+     */
+    protected function crumbs(): array
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUiLabel(): string
+    {
+        return $this->_uiLabel ?? $this->uiLabel() ?? (string) $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setUiLabel(?string $label): void
+    {
+        $this->_uiLabel = $label;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUiLabelPath(): array
+    {
+        return $this->_uiLabelPath;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setUiLabelPath(array $path): void
+    {
+        $this->_uiLabelPath = $path;
+    }
+
+    /**
+     * Returns what the element should be called within the control panel.
+     *
+     * @since 3.6.4
+     */
+    protected function uiLabel(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChipLabelHtml(): string|Stringable
+    {
+        return Html::encode($this->getUiLabel());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function showStatusIndicator(): bool
+    {
+        return static::hasStatuses();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCardTitle(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCardBodyHtml(): ?string
+    {
+        $this->viewMode = 'cards';
+        $html = '';
+        $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
+
+        foreach ($cardElements as $item) {
+            $html .= Html::tag('div', $item['html'], [
+                'class' => 'card-attribute-preview',
+            ]);
+        }
+
+        return $html;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRef(): ?string
+    {
+        return null;
     }
 }
