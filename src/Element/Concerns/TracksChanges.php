@@ -14,8 +14,10 @@ use function CraftCms\Cms\t;
 /**
  * Provides change tracking functionality for elements.
  *
- * This trait handles methods related to tracking modified and outdated attributes,
+ * This trait contains methods related to tracking modified and outdated attributes,
  * dirty state management, and translatability of core attributes like title and slug.
+ *
+ * @mixin \CraftCms\Cms\Element\Element
  *
  * @internal
  */

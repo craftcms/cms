@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\DB;
 use function CraftCms\Cms\t;
 
 /**
+ * Revisionable provides revision functionality for elements.
+ *
+ * This trait contains methods for managing element revisions, including tracking revision metadata
+ * (creator, number, notes), determining if an element is a revision, and fetching the current revision.
+ *
  * @internal
  */
 trait Revisionable

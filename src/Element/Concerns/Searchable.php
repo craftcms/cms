@@ -8,6 +8,11 @@ use craft\events\DefineAttributeKeywordsEvent;
 use CraftCms\Cms\Support\Str;
 
 /**
+ * Searchable provides search keyword functionality for elements.
+ *
+ * This trait contains methods for generating and retrieving search keywords from element attributes,
+ * as well as events for customizing search keyword behavior and registering searchable attributes.
+ *
  * @mixin \CraftCms\Cms\Element\Element
  *
  * @internal
@@ -46,6 +51,20 @@ trait Searchable
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
     public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+
+    /**
+     * @var int|null The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     */
+    public ?int $searchScore = null;
+
+    /**
+     * @var bool Whether the element’s search keywords should be indexed immediately.
+     *
+     * If `null`, the search index will only be updated immediately for console requests.
+     *
+     * @since 5.8.0
+     */
+    public ?bool $updateSearchIndexImmediately = null;
 
     /**
      * Returns the search keywords for a given search attribute.

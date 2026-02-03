@@ -8,22 +8,17 @@ use ArrayIterator;
 use BadMethodCallException;
 use craft\base\Component;
 use craft\base\ElementInterface;
-use craft\base\ElementTrait;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\BaseField;
-use craft\models\FieldLayout;
-use craft\web\View;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Concerns\Draftable;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
+use DateTime;
 use Deprecated;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
@@ -31,7 +26,6 @@ use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
 use Traversable;
-use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Event;
 use yii\base\InvalidCallException;
@@ -43,41 +37,6 @@ use function CraftCms\Cms\t;
  * Element is the base class for classes representing elements in terms of objects.
  *
  * @mixin CustomFieldBehavior
- *
- * @property int|null $canonicalId The element’s canonical ID
- * @property-read string $canonicalUid The element’s canonical UID
- * @property-read bool $isCanonical Whether this is the canonical element
- * @property-read bool $isDerivative Whether this is a derivative element, such as a draft or revision
- * @property ElementQueryInterface $ancestors The element’s ancestors
- * @property ElementQueryInterface $children The element’s children
- * @property string|null $cpEditUrl The element’s edit URL in the control panel
- * @property ElementQueryInterface $descendants The element’s descendants
- * @property string $editorHtml The HTML for the element’s editor HUD
- * @property bool $enabledForSite Whether the element is enabled for this site
- * @property string $fieldContext The field context this element’s content uses
- * @property FieldLayout|null $fieldLayout The field layout used by this element
- * @property array $fieldParamNamespace The namespace used by custom field params on the request
- * @property array $fieldValues The element’s normalized custom field values, indexed by their handles
- * @property bool $hasDescendants Whether the element has descendants
- * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
- * @property Markup|null $link An anchor pre-filled with this element’s URL and title
- * @property ElementInterface|null $canonical The canonical element, if one exists for the current site
- * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
- * @property ElementInterface|null $nextSibling The element’s next sibling
- * @property ElementInterface|null $parent The element’s parent
- * @property int|null $parentId The element’s parent’s ID
- * @property ElementInterface|null $prev The previous element relative to this one, from a given set of criteria
- * @property ElementInterface|null $prevSibling The element’s previous sibling
- * @property string|null $ref The reference string to this element
- * @property mixed $route The route that should be used when the element’s URI is requested
- * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
- * @property ElementQueryInterface $siblings All of the element’s siblings
- * @property Site $site Site the element is associated with
- * @property string|null $status The element’s status
- * @property int[]|array $supportedSites The sites this element is associated with
- * @property int $totalDescendants The total number of descendants that the element has
- * @property string|null $uriFormat The URI format used to generate this element’s URL
- * @property string|null $url The element’s full URL
  */
 #[Ruleset(ElementRules::class)]
 abstract class Element extends Component implements ElementInterface
@@ -87,9 +46,7 @@ abstract class Element extends Component implements ElementInterface
     }
     use Concerns\Cacheable;
     use Concerns\DisplayedInIndex;
-    use Concerns\Draftable {
-        Draftable::canCreateDrafts as traitCanCreateDrafts;
-    }
+    use Concerns\Draftable;
     use Concerns\Eagerloadable;
     use Concerns\Exportable;
     use Concerns\HasActions;
@@ -111,7 +68,6 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
-    use ElementTrait;
     use Macroable {
         __call as macroCall;
     }
@@ -130,21 +86,6 @@ abstract class Element extends Component implements ElementInterface
     public const string SCENARIO_ESSENTIALS = 'essentials';
 
     public const string SCENARIO_LIVE = 'live';
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return array<string, array<string>|null>
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        return [
-            self::SCENARIO_DEFAULT => null,
-            self::SCENARIO_LIVE => null,
-            self::SCENARIO_ESSENTIALS => null,
-        ];
-    }
 
     // Events
     // -------------------------------------------------------------------------
@@ -274,6 +215,124 @@ abstract class Element extends Component implements ElementInterface
      */
     #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
+
+    /**
+     * @var int|null The element’s ID
+     */
+    #[AllowedInSandbox]
+    public ?int $id = null;
+
+    /**
+     * @var string|null The element’s temporary ID (only used if the element’s URI format contains {id})
+     */
+    public ?string $tempId = null;
+
+    /**
+     * @var string|null The element’s UID
+     */
+    #[AllowedInSandbox]
+    public ?string $uid = null;
+
+    /**
+     * @var int|null The ID of the element’s record in the `elements_sites` table
+     *
+     * @since 3.5.2
+     */
+    public ?int $siteSettingsId = null;
+
+    /**
+     * @var string|null The element’s title
+     */
+    #[AllowedInSandbox]
+    public ?string $title = null;
+
+    /**
+     * @var string|null The element’s slug
+     */
+    #[AllowedInSandbox]
+    public ?string $slug = null;
+
+    /**
+     * @var DateTime|null The date that the element was created
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $dateCreated = null;
+
+    /**
+     * @var DateTime|null The date that the element was last updated
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $dateUpdated = null;
+
+    /**
+     * @var DateTime|null The date that the element was trashed
+     *
+     * @since 3.2.0
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $dateDeleted = null;
+
+    /**
+     * @var bool|null Whether the element was deleted along with its owner
+     *
+     * @since 5.0.0
+     */
+    public ?bool $deletedWithOwner = null;
+
+    /**
+     * @var bool Whether the element has been soft-deleted.
+     */
+    #[AllowedInSandbox]
+    public bool $trashed = false;
+
+    /**
+     * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
+     *
+     * @since 3.1.22
+     */
+    public bool $resaving = false;
+
+    /**
+     * @var ElementInterface|null The element that this element is duplicating.
+     */
+    public ?ElementInterface $duplicateOf = null;
+
+    /**
+     * @var bool Whether the element is being saved for the first time in a normal state (not as a draft or revision).
+     *
+     * @since 3.7.5
+     */
+    public bool $firstSave = false;
+
+    /**
+     * @var bool Whether the element should definitely be saved, if it’s a nested element being considered
+     *           for saving by [[NestedElementManager]].
+     *
+     * @since 5.0.0
+     */
+    public bool $forceSave = false;
+
+    /**
+     * @var bool Whether the element is being hard-deleted.
+     *
+     * @since 3.2.0
+     */
+    public bool $hardDelete = false;
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array<string, array<string>|null>
+     */
+    #[Override]
+    public function scenarios(): array
+    {
+        return [
+            self::SCENARIO_DEFAULT => null,
+            self::SCENARIO_LIVE => null,
+            self::SCENARIO_ESSENTIALS => null,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -878,8 +937,4 @@ abstract class Element extends Component implements ElementInterface
     {
         return array_keys($this->getRuleset()->rules());
     }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
 }

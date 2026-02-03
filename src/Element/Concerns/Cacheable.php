@@ -7,6 +7,11 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\events\DefineValueEvent;
 
 /**
+ * Cacheable provides cache tag management for elements.
+ *
+ * This trait contains methods for defining and retrieving cache tags that should be
+ * invalidated when an element is saved, with support for customization via events.
+ *
  * @internal
  */
 trait Cacheable

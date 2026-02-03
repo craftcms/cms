@@ -10,6 +10,11 @@ use craft\events\RegisterElementExportersEvent;
 use yii\base\Event;
 
 /**
+ * Exportable provides element export functionality.
+ *
+ * This trait contains methods for registering and retrieving element exporters,
+ * allowing elements to be exported in different formats (Raw, Expanded, or custom exporters).
+ *
  * @internal
  */
 trait Exportable

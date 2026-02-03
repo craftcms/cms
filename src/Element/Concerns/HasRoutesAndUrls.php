@@ -7,14 +7,26 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\NestedElementInterface;
 use craft\events\DefineUrlEvent;
 use craft\events\SetElementRouteEvent;
+use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Html;
 use Twig\Markup;
 
 /**
- * @mixin Element
+ * HasRoutesAndUrls provides URL generation and routing capabilities for elements.
+ *
+ * This trait contains methods for determining an element's URI format, generating URLs,
+ * resolving routes when an element's URL is requested, and creating HTML links. It also
+ * defines events that allow customization of URL generation and route resolution.
+ *
+ * @property string|null $cpEditUrl The element’s edit URL in the control panel
+ * @property string|null $uriFormat The URI format used to generate this element’s URL
+ * @property string|null $url The element’s full URL
+ * @property mixed $route The route that should be used when the element’s URI is requested
+ * @property Markup|null $link An anchor pre-filled with this element’s URL and title
  *
  * @internal
  */
@@ -113,6 +125,12 @@ trait HasRoutesAndUrls
     public const string EVENT_DEFINE_URL = 'defineUrl';
 
     /**
+     * @var string|null The element’s URI
+     */
+    #[AllowedInSandbox]
+    public ?string $uri = null;
+
+    /**
      * {@inheritdoc}
      */
     public static function hasUris(): bool
@@ -209,6 +227,38 @@ trait HasRoutesAndUrls
         }
 
         return Html::encodeSpaces($url);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCpEditUrl(): ?string
+    {
+        if (! $this->id) {
+            return null;
+        }
+
+        $url = $this->cpEditUrl();
+
+        return $url ? ElementHelper::addElementEditorUrlParams($url, $this) : null;
+    }
+
+    /**
+     * Returns the element's edit URL in the control panel.
+     *
+     * @since 3.7.0
+     */
+    protected function cpEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPostEditUrl(): ?string
+    {
+        return null;
     }
 
     /**

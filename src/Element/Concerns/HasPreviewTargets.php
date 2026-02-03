@@ -30,6 +30,13 @@ trait HasPreviewTargets
     public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
+     * @var bool Whether the element is currently being previewed.
+     *
+     * @since 3.2.0
+     */
+    public bool $previewing = false;
+
+    /**
      * Returns the element's preview targets.
      *
      * @return array The preview targets, each containing at minimum a `label` and `url` key.

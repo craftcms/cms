@@ -11,6 +11,12 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * Draftable provides draft functionality for elements.
+ *
+ * This trait contains properties and methods for managing element drafts, including
+ * draft metadata (name, notes, creator), provisional draft handling, and lifecycle
+ * methods for saving and deleting drafts.
+ *
  * @internal
  */
 trait Draftable

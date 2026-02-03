@@ -35,6 +35,8 @@ use function CraftCms\Cms\t;
  * This trait handles methods related to rendering elements in the Control Panel,
  * including edit URLs, sidebar HTML, metadata, action menus, and attribute rendering.
  *
+ * @property string|null $ref The reference string to this element
+ * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
  *
  * @internal
  */
@@ -127,38 +129,6 @@ trait HasControlPanelUI
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCpEditUrl(): ?string
-    {
-        if (! $this->id) {
-            return null;
-        }
-
-        $url = $this->cpEditUrl();
-
-        return $url ? ElementHelper::addElementEditorUrlParams($url, $this) : null;
-    }
-
-    /**
-     * Returns the element's edit URL in the control panel.
-     *
-     * @since 3.7.0
-     */
-    protected function cpEditUrl(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPostEditUrl(): ?string
-    {
-        return null;
-    }
 
     /**
      * {@inheritdoc}

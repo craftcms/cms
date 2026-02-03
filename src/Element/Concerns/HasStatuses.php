@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use craft\web\twig\AllowedInSandbox;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -11,6 +13,9 @@ use function CraftCms\Cms\t;
  *
  * This trait handles methods related to element status, including
  * enabled/disabled state per site and overall status determination.
+ *
+ * @property bool $enabledForSite Whether the element is enabled for this site
+ * @property string|null $status The element’s status
  *
  * @internal
  */
@@ -24,6 +29,18 @@ trait HasStatuses
 
     /** @since 5.0.0 */
     public const STATUS_DRAFT = 'draft';
+
+    /**
+     * @var bool Whether the element is enabled
+     */
+    #[AllowedInSandbox]
+    public bool $enabled = true;
+
+    /**
+     * @var bool Whether the element is archived
+     */
+    #[AllowedInSandbox]
+    public bool $archived = false;
 
     /**
      * @var bool|bool[]

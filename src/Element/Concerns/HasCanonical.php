@@ -7,13 +7,49 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use DateTime;
 use yii\base\NotSupportedException;
 
 /**
+ * HasCanonical provides support for canonical elements and their derivatives.
+ *
+ * This trait contains methods for tracking and managing the relationship between
+ * canonical (source) elements and their derivatives such as drafts and revisions,
+ * including merging upstream changes from the canonical element into derivatives.
+ *
+ * @property int|null $canonicalId The element's canonical ID
+ * @property-read string $canonicalUid The element's canonical UID
+ * @property-read bool $isCanonical Whether this is the canonical element
+ * @property-read bool $isDerivative Whether this is a derivative element, such as a draft or revision
+ * @property ElementInterface|null $canonical The canonical element, if one exists for the current site
+ *
  * @internal
  */
 trait HasCanonical
 {
+    /**
+     * @var DateTime|null The date that the canonical element was last merged into this one
+     *
+     * @since 3.7.0
+     */
+    public ?DateTime $dateLastMerged = null;
+
+    /**
+     * @var bool Whether recent changes to the canonical element are being merged into this element.
+     *
+     * @since 3.7.0
+     */
+    public bool $mergingCanonicalChanges = false;
+
+    /**
+     * @var bool Whether the element is being updated from a derivative element, such as a draft or revision.
+     *
+     * If this is true, the derivative element can be accessed via [[duplicateOf]].
+     *
+     * @since 3.7.0
+     */
+    public bool $updatingFromDerivative = false;
+
     /**
      * @see getCanonicalId()
      * @see setCanonicalId()

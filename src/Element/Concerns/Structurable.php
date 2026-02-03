@@ -18,6 +18,19 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
  * This trait handles hierarchical relationships including parent/child,
  * ancestor/descendant, and sibling relationships within element structures.
  *
+ * @property ElementQueryInterface $ancestors The element’s ancestors
+ * @property ElementQueryInterface $children The element’s children
+ * @property ElementQueryInterface $descendants The element’s descendants
+ * @property bool $hasDescendants Whether the element has descendants
+ * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
+ * @property ElementInterface|null $nextSibling The element’s next sibling
+ * @property ElementInterface|null $parent The element’s parent
+ * @property int|null $parentId The element’s parent’s ID
+ * @property ElementInterface|null $prev The previous element relative to this one, from a given set of criteria
+ * @property ElementInterface|null $prevSibling The element’s previous sibling
+ * @property ElementQueryInterface $siblings All of the element’s siblings
+ * @property int $totalDescendants The total number of descendants that the element has
+ *
  * @internal
  */
 trait Structurable

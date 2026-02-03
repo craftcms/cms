@@ -137,6 +137,13 @@ trait DisplayedInIndex
     public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
     /**
+     * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
+     *
+     * @since 5.6.0
+     */
+    public ?string $viewMode = null;
+
+    /**
      * Returns the attributes that should be searchable for this element type.
      *
      * @return string[] The searchable attributes
