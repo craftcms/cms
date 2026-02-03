@@ -88,32 +88,33 @@
                 {% if requirement.error %}
                   <craft-callout
                     class="p-0"
-                    icon="triangle-exclamation"
                     appearance="plain"
                     variant="danger"
-                    aria-label="{{ 'Failed'|t('app') }}"
                   >
+                    <craft-icon name="triangle-exclamation" slot="icon" label="{{ 'Failed'|t('app') }}"></craft-icon>
                     {{ requirement.name }}
                   </craft-callout>
                 {% elseif requirement.warning %}
                   <craft-callout
                     class="p-0"
-                    icon="circle-exclamation"
                     appearance="plain"
                     variant="warning"
-                    aria-label="{{ 'Passed with warning'|t('app') }}"
                   >
+                    <craft-icon
+                      name="circle-exclamation"
+                      slot="icon"
+                      label="{{ 'Passed with warning'|t('app') }}"
+                    ></craft-icon>
                     {{ requirement.name }}
                   </craft-callout>
                   <craft-icon name="alert" label="{{ 'Passed with warning'|t('app') }}"></craft-icon>
                 {% else %}
                   <craft-callout
                     class="p-0"
-                    icon="circle-check"
                     appearance="plain"
                     variant="success"
-                    aria-label="{{ 'Passed'|t('app') }}"
                   >
+                    <craft-icon name="circle-check" slot="icon" label="{{ 'Passed'|t('app') }}"></craft-icon>
                     {{ requirement.name }}
                   </craft-callout>
                 {% endif %}
