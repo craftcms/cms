@@ -9,11 +9,12 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\Sites;
+use ReflectionClass;
 use yii\base\InvalidConfigException;
 
 class TestLocalizableElement extends Element
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'Test Element';
@@ -177,5 +178,23 @@ describe('getIsCrossSiteCopyable', function () {
     test('returns boolean', function () {
         $element = new TestLocalizableElement;
         expect($element->getIsCrossSiteCopyable())->toBeBool();
+    });
+});
+
+describe('Translation Support', function () {
+    test('getIsTitleTranslatable defaults to true', function () {
+        $element = new TestLocalizableElement;
+        expect($element->getIsTitleTranslatable())->toBeTrue();
+    });
+
+    test('getIsSlugTranslatable defaults to true', function () {
+        $element = new TestLocalizableElement;
+        expect($element->getIsSlugTranslatable())->toBeTrue();
+    });
+
+    test('translation descriptions are strings', function () {
+        $element = new TestLocalizableElement;
+        expect($element->getTitleTranslationDescription())->toBeString()
+            ->and($element->getSlugTranslationDescription())->toBeString();
     });
 });

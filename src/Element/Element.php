@@ -17,9 +17,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\web\View;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Concerns\Draftable;
-use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Site\Data\Site;
@@ -31,8 +29,6 @@ use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
 use Deprecated;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -116,6 +112,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Revisionable;
     use Concerns\Searchable;
     use Concerns\Structurable;
+    use Concerns\TracksChanges;
     use ElementTrait;
     use Macroable {
         __call as macroCall;
@@ -458,14 +455,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public static function trackChanges(): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public static function hasTitles(): bool
     {
         return false;
@@ -478,47 +467,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private ?array $_attributeNames = null;
 
-    /**
-     * @see _outdatedAttributes()
-     */
-    private ?array $_outdatedAttributes = null;
-
-    /**
-     * @see _modifiedAttributes()
-     */
-    private ?array $_modifiedAttributes = null;
-
     private bool $_initialized = false;
-
-    /**
-     * @var bool Whether all attributes and field values should be considered dirty.
-     *
-     * @see getDirtyAttributes()
-     * @see getDirtyFields()
-     * @see isFieldDirty()
-     */
-    private bool $_allDirty = false;
-
-    /**
-     * @var array<string, int|string|bool> Record of dirty attributes.
-     *
-     * @see getDirtyAttributes()
-     * @see isAttributeDirty()
-     */
-    private array $_dirtyAttributes = [];
-
-    /**
-     * @var string|null The initial title value, if there was one.
-     *
-     * @see getDirtyAttributes()
-     */
-    private ?string $_savedTitle = null;
-
-    /**
-     * @see getIsFresh()
-     * @see setIsFresh()
-     */
-    private ?bool $_isFresh = null;
 
     /**
      * @see toArray()
@@ -1055,199 +1004,6 @@ abstract class Element extends Component implements ElementInterface
     public function safeAttributes(): array
     {
         return array_keys($this->getRuleset()->rules());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAttributeStatus(string $attribute): ?array
-    {
-        if ($this->isAttributeModified($attribute)) {
-            return [
-                AttributeStatus::Modified,
-                t('This field has been modified.'),
-            ];
-        }
-
-        if ($this->isAttributeOutdated($attribute)) {
-            return [
-                AttributeStatus::Outdated,
-                t('This field was updated in the Current revision.'),
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getOutdatedAttributes(): array
-    {
-        return array_keys($this->_outdatedAttributes());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isAttributeOutdated(string $name): bool
-    {
-        return isset($this->_outdatedAttributes()[$name]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getModifiedAttributes(): array
-    {
-        return array_keys($this->_modifiedAttributes());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isAttributeModified(string $name): bool
-    {
-        return isset($this->_modifiedAttributes()[$name]);
-    }
-
-    /**
-     * @return array The attribute names that have been modified for this element
-     */
-    private function _outdatedAttributes(): array
-    {
-        if (! static::trackChanges() || $this->getIsCanonical() || $this->getIsRevision()) {
-            return [];
-        }
-
-        if (! isset($this->_outdatedAttributes)) {
-            $attributes = DB::table(Table::CHANGEDATTRIBUTES)
-                ->where('elementId', $this->id)
-                ->where('siteId', $this->siteId)
-                ->when(
-                    value: $this->dateLastMerged,
-                    callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
-                )
-                ->pluck('attribute')
-                ->flip()
-                ->all();
-
-            $this->_outdatedAttributes = $attributes;
-        }
-
-        return $this->_outdatedAttributes;
-    }
-
-    /**
-     * @return array The attribute names that have been modified for this element
-     */
-    private function _modifiedAttributes(): array
-    {
-        if (! static::trackChanges() || $this->getIsCanonical()) {
-            return [];
-        }
-
-        if (! isset($this->_modifiedAttributes)) {
-            $this->_modifiedAttributes = DB::table(Table::CHANGEDATTRIBUTES)
-                ->where('elementId', $this->id)
-                ->where('siteId', $this->siteId)
-                ->pluck('attribute')
-                ->flip()
-                ->all();
-        }
-
-        return $this->_modifiedAttributes;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isAttributeDirty(string $name): bool
-    {
-        if ($this->_allDirty()) {
-            return true;
-        }
-
-        return isset($this->_dirtyAttributes[$name]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirtyAttributes(): array
-    {
-        if (static::hasTitles() && $this->title !== $this->_savedTitle) {
-            $this->_dirtyAttributes['title'] = true;
-        }
-
-        return array_keys($this->_dirtyAttributes);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setDirtyAttributes(array $names, bool $merge = true): void
-    {
-        if ($merge && ! empty($this->_dirtyAttributes)) {
-            $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
-        } else {
-            $this->_dirtyAttributes = array_flip($names);
-        }
-    }
-
-    /**
-     * Returns whether all fields and attributes should be considered dirty.
-     */
-    private function _allDirty(): bool
-    {
-        return $this->_allDirty || $this->resaving;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function markAsDirty(): void
-    {
-        $this->_allDirty = true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function markAsClean(): void
-    {
-        $this->_allDirty = false;
-        $this->_dirtyAttributes = [];
-        $this->setDirtyFields([], false);
-
-        if (static::hasTitles()) {
-            $this->_savedTitle = $this->title;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsFresh(): bool
-    {
-        if ($this->errors()->isNotEmpty()) {
-            return false;
-        }
-
-        if (! isset($this->siteSettingsId)) {
-            return true;
-        }
-
-        return $this->_isFresh ?? false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setIsFresh(bool $isFresh = true): void
-    {
-        $this->_isFresh = $isFresh;
     }
 
     // Indexes, etc.
