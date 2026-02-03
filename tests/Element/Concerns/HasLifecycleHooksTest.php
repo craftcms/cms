@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -74,7 +75,25 @@ test('afterSave event receives isNew parameter', function () {
 });
 
 test('afterPropagate triggers event', function () {
-    expectYiiEvent(Entry::class, Element::EVENT_AFTER_PROPAGATE, fn () => $this->entry->afterPropagate(false));
+    $triggered = false;
+    Event::listen(function (AfterPropagate $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterPropagate event receives isNew parameter', function () {
+    $receivedIsNew = null;
+    Event::listen(function (AfterPropagate $event) use (&$receivedIsNew) {
+        $receivedIsNew = $event->isNew;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect($receivedIsNew)->toBeFalse();
 });
 
 test('beforeDelete triggers event', function () {

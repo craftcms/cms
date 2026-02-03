@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementRelations;
+use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeSave;
 
@@ -19,35 +20,6 @@ use CraftCms\Cms\Element\Events\BeforeSave;
  */
 trait HasLifecycleHooks
 {
-    /**
-     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
-     *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
-     * from your event handler:
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\ModelEvent;
-     * use craft\helpers\ElementHelper;
-     * use yii\base\Event;
-     *
-     * Event::on(Entry::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $e) {
-     *     // @var Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     if (ElementHelper::isDraftOrRevision($entry) {
-     *         return;
-     *     }
-     *
-     *     // ...
-     * });
-     * ```
-     *
-     * @since 3.2.0
-     */
-    public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
-
     /**
      * @event ModelEvent The event that is triggered before the element is deleted.
      *
@@ -123,12 +95,7 @@ trait HasLifecycleHooks
             $field->afterElementPropagate($this, $isNew);
         }
 
-        // Fire an 'afterPropagate' event
-        if ($this->hasEventHandlers(Element::EVENT_AFTER_PROPAGATE)) {
-            $this->trigger(Element::EVENT_AFTER_PROPAGATE, new ModelEvent([
-                'isNew' => $isNew,
-            ]));
-        }
+        event(new AfterPropagate($this, $isNew));
 
         $this->handleDraftSave();
     }

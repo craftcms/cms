@@ -24,6 +24,7 @@ use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
+use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
@@ -218,6 +219,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see AfterSave} instead.
      */
     public const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
+     *
+     * @see afterPropagate()
+     * @since 3.2.0
+     * @deprecated 6.0.0 Use {@see AfterPropagate} instead.
+     */
+    public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     public static function registerEvents(): void
     {
@@ -637,6 +647,25 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 ]);
 
                 YiiEvent::trigger($class, self::EVENT_AFTER_SAVE, $yiiEvent);
+            }
+        });
+
+        Event::listen(function(AfterPropagate $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_PROPAGATE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                    'isNew' => $event->isNew,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_AFTER_PROPAGATE, $yiiEvent);
             }
         });
     }
