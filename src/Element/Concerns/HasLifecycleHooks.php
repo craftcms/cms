@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementRelations;
+use CraftCms\Cms\Element\Events\BeforeSave;
 
 /**
  * HasLifecycleHooks provides the lifecycle hooks for the element.
@@ -17,35 +18,6 @@ use CraftCms\Cms\Element\ElementRelations;
  */
 trait HasLifecycleHooks
 {
-    /**
-     * @event ModelEvent The event that is triggered before the element is saved.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
-     *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
-     * from your event handler:
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\ModelEvent;
-     * use craft\helpers\ElementHelper;
-     * use yii\base\Event;
-     *
-     * Event::on(Entry::class, Element::EVENT_BEFORE_SAVE, function(ModelEvent $e) {
-     *     // @var Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     if (ElementHelper::isDraftOrRevision($entry)) {
-     *         return;
-     *     }
-     *
-     *     // ...
-     * });
-     * ```
-     */
-    public const EVENT_BEFORE_SAVE = 'beforeSave';
-
     /**
      * @event ModelEvent The event that is triggered after the element is saved.
      *
@@ -142,15 +114,9 @@ trait HasLifecycleHooks
             return false;
         }
 
-        // Fire a 'beforeSave' event
-        if ($this->hasEventHandlers(Element::EVENT_BEFORE_SAVE)) {
-            $event = new ModelEvent(['isNew' => $isNew]);
-            $this->trigger(Element::EVENT_BEFORE_SAVE, $event);
+        event($event = new BeforeSave($this, $isNew));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /**

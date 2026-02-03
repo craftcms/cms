@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
+use yii\base\Event as YiiEvent;
 
 use function Pest\Laravel\actingAs;
 
@@ -17,37 +19,65 @@ beforeEach(function () {
 });
 
 test('beforeSave triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_SAVE, fn () => $this->entry->beforeSave(false));
+    $triggered = false;
+    Event::listen(function (BeforeSave $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeSave(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeSave event can prevent save', function () {
+    Event::listen(function (BeforeSave $event) {
+        $event->isValid = false;
+    });
+
+    $result = $this->entry->beforeSave(false);
+
+    expect($result)->toBeFalse();
+});
+
+test('beforeSave event receives isNew parameter', function () {
+    $receivedIsNew = null;
+    Event::listen(function (BeforeSave $event) use (&$receivedIsNew) {
+        $receivedIsNew = $event->isNew;
+    });
+
+    $this->entry->beforeSave(true);
+
+    expect($receivedIsNew)->toBeTrue();
 });
 
 test('afterSave triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_SAVE, fn () => $this->entry->afterSave(false));
+    expectYiiEvent(Entry::class, Element::EVENT_AFTER_SAVE, fn () => $this->entry->afterSave(false));
 });
 
 test('afterPropagate triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_PROPAGATE, fn () => $this->entry->afterPropagate(false));
+    expectYiiEvent(Entry::class, Element::EVENT_AFTER_PROPAGATE, fn () => $this->entry->afterPropagate(false));
 });
 
 test('beforeDelete triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_DELETE, fn () => $this->entry->beforeDelete());
+    expectYiiEvent(Entry::class, Element::EVENT_BEFORE_DELETE, fn () => $this->entry->beforeDelete());
 });
 
 test('afterDelete triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_DELETE, fn () => $this->entry->afterDelete());
+    expectYiiEvent(Entry::class, Element::EVENT_AFTER_DELETE, fn () => $this->entry->afterDelete());
 });
 
 test('beforeRestore triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_RESTORE, fn () => $this->entry->beforeRestore());
+    expectYiiEvent(Entry::class, Element::EVENT_BEFORE_RESTORE, fn () => $this->entry->beforeRestore());
 });
 
 test('afterRestore triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_RESTORE, fn () => $this->entry->afterRestore());
+    expectYiiEvent(Entry::class, Element::EVENT_AFTER_RESTORE, fn () => $this->entry->afterRestore());
 });
 
-function expectEvent(string $class, string $eventName, callable $action): void
+function expectYiiEvent(string $class, string $eventName, callable $action): void
 {
     $triggered = false;
-    Event::on($class, $eventName, function () use (&$triggered) {
+    YiiEvent::on($class, $eventName, function () use (&$triggered) {
         $triggered = true;
     });
 

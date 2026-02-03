@@ -200,6 +200,16 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      */
     public const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
 
+    /**
+     * @event ModelEvent The event that is triggered before the element is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
+     *
+     * @see beforeSave()
+     * @deprecated 6.0.0 Use {@see BeforeSave} instead.
+     */
+    public const EVENT_BEFORE_SAVE = 'beforeSave';
+
     public static function registerEvents(): void
     {
         // Find all classes that extend Element
@@ -575,6 +585,29 @@ abstract class Element extends \CraftCms\Cms\Element\Element
 
                 if ($yiiEvent->handled) {
                     $event->handled = true;
+                }
+            }
+        });
+
+        Event::listen(function(BeforeSave $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_SAVE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                    'isNew' => $event->isNew,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_BEFORE_SAVE, $yiiEvent);
+
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
                 }
             }
         });
