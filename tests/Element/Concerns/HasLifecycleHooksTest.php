@@ -49,7 +49,9 @@ test('beforeSave event can prevent save', function () {
 test('beforeSave event receives isNew parameter', function () {
     $receivedIsNew = null;
     Event::listen(function (BeforeSave $event) use (&$receivedIsNew) {
-        $receivedIsNew = $event->isNew;
+        if ($event->element->id === $this->entry->id) {
+            $receivedIsNew = $event->isNew;
+        }
     });
 
     $this->entry->beforeSave(true);

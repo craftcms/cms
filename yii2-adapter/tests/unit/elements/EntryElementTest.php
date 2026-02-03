@@ -7,6 +7,8 @@
 
 namespace crafttests\unit\elements;
 
+use craft\base\Element;
+use craft\base\Event;
 use craft\events\DefineUrlEvent;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
@@ -40,11 +42,11 @@ class EntryElementTest extends TestCase
         $entry->uri = $uri;
 
         if ($beforeEvent) {
-            $entry->on(\craft\base\Element::EVENT_BEFORE_DEFINE_URL, $beforeEvent);
+            Event::on(\craft\elements\Entry::class, Element::EVENT_BEFORE_DEFINE_URL, $beforeEvent);
         }
 
         if ($afterEvent) {
-            $entry->on(\craft\base\Element::EVENT_DEFINE_URL, $afterEvent);
+            Event::on(\craft\elements\Entry::class, Element::EVENT_DEFINE_URL, $afterEvent);
         }
 
         if (is_callable($expected)) {
