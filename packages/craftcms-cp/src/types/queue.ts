@@ -10,13 +10,19 @@ export type JobStatusKey = (typeof JobStatus)[keyof typeof JobStatus];
 
 /** Individual job information from server */
 export interface JobInfo {
+  uid: string;
   id: number;
   description: string;
+  dateCreated: string;
   progress: number;
   progressLabel: string | null;
-  status: JobStatusKey;
+  status: {
+    label: JobStatusKey;
+    value: number;
+  };
   delay: number;
   error?: string;
+  label: string;
 }
 
 /** Response from queue/get-job-info endpoint */

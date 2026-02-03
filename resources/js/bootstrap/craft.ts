@@ -1,0 +1,86 @@
+import {ConfigService} from '@craftcms/cp/src/services/Config.js';
+import {QueueService} from '@craftcms/cp/src/services/Queue.js';
+import {createInertiaApp} from '@inertiajs/vue3';
+import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
+import {createApp, type DefineComponent, h} from 'vue';
+import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
+import {Axios, Config, Queue} from '@/types/keys';
+import axios from 'axios';
+import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManagerToolbar.vue';
+
+let bootedCallbacks: Array<(instance: any) => void> =
+  window.bootedCallbacks || [];
+let bootingCallbacks: Array<(instance: any) => void> =
+  window.bootingCallbacks || [];
+
+// Instantiate services
+const config = ConfigService.getInstance();
+const queue = QueueService.getInstance();
+
+// Create our object
+const Craft = {
+  get $config() {
+    return config;
+  },
+
+  get $queue() {
+    return queue;
+  },
+
+  get $axios() {
+    return axios;
+  },
+
+  booted(callback: (instance: any) => void) {
+    bootedCallbacks.push(callback);
+  },
+
+  booting(callback: (instance: any) => void) {
+    bootingCallbacks.push(callback);
+  },
+
+  async start() {
+    config.initialize(window.CpConfig);
+    queue.initialize({
+      enabled: true,
+      appId: config.get('systemUid', ''),
+      canAccessQueueManager: config.get('canAccessQueueManager', false),
+    });
+
+    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    axios.defaults.headers.common['X-CSRF-TOKEN'] =
+      Craft.$config.get('csrfToken');
+
+    console.groupCollapsed('Craft configuration');
+    console.log(config.all().entries());
+    console.groupEnd();
+
+    bootingCallbacks.forEach((callback) => callback(this));
+    bootedCallbacks = [];
+
+    await createInertiaApp({
+      resolve: (name) =>
+        resolvePageComponent(
+          `../pages/${name}.vue`,
+          import.meta.glob<DefineComponent>('../pages/**/*.vue')
+        ),
+      setup({el, App, props, plugin}) {
+        const app = createApp({render: () => h(App, props)}).use(plugin);
+
+        app.provide(Queue, queue);
+        app.provide(Axios, axios);
+        app.provide(Config, config);
+
+        app.component('QueueManager', QueueManager);
+        app.component('QueueManagerToolbar', QueueManagerToolbar);
+
+        app.mount(el);
+      },
+    });
+
+    bootedCallbacks.forEach((callback) => callback(this));
+    bootedCallbacks = [];
+  },
+};
+
+export default Craft;

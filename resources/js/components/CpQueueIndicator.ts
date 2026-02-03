@@ -59,12 +59,12 @@ class CpQueueIndicator extends LitElement {
 
   get #progress(): number {
     if (!this.displayedJob) return 0;
-    if (this.displayedJob.status === JobStatus.Failed) return 100;
+    if (this.displayedJob.status.value === JobStatus.Failed) return 100;
     return this.displayedJob.progress ?? 0;
   }
 
   get #isFailed(): boolean {
-    return this.displayedJob?.status === JobStatus.Failed;
+    return this.displayedJob?.status.value === JobStatus.Failed;
   }
 
   get #queueManagerUrl(): string | null {

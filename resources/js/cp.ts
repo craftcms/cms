@@ -1,24 +1,13 @@
-import type {DefineComponent} from 'vue';
-import {createApp, h} from 'vue';
-import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
-import {createInertiaApp} from '@inertiajs/vue3';
 import '@craftcms/cp';
-
-/**
- * Components
- */
 import './components/CpGlobalSidebar.js';
+import './components/CpQueueIndicator.js';
+import Craft from './bootstrap/craft';
 
-// noinspection JSIgnoredPromiseFromCall
-createInertiaApp({
-  resolve: (name) =>
-    resolvePageComponent(
-      `./pages/${name}.vue`,
-      import.meta.glob<DefineComponent>('./pages/**/*.vue')
-    ),
-  setup({el, App, props, plugin}) {
-    createApp({render: () => h(App, props)})
-      .use(plugin)
-      .mount(el);
-  },
+// @ts-ignore
+window.Craft = Craft;
+
+// @TODO ideally we wouldn't have to wait until load for this
+document.addEventListener('DOMContentLoaded', () => {
+  // noinspection JSIgnoredPromiseFromCall
+  Craft.start();
 });

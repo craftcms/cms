@@ -2,7 +2,7 @@
   import {computed} from 'vue';
 
   const props = defineProps<{
-    variant: 'success' | 'danger' | 'default';
+    variant: 'success' | 'danger' | 'warning' | 'default';
   }>();
 
   const indicatorVariant = computed(() => {

@@ -73,6 +73,8 @@ declare var Craft: CraftGlobal;
 declare global {
   interface Window {
     bootedCallbacks: Array<(craft: any) => void>;
+    bootingCallbacks: Array<(craft: any) => void>;
+    CpConfig: Record<string, any>;
     Craft?: CraftGlobal;
   }
 }

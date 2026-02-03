@@ -11,11 +11,11 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use RuntimeException;
-use Tpetry\QueryExpressions\Function\Time\Now;
 
 /**
  * Service for tracking job progress and status.
@@ -77,6 +77,14 @@ final readonly class JobProgress
      */
     public function getJobInfo(?int $limit = null): Collection
     {
+        return $this->jobsQuery()
+            ->limit($limit)
+            ->get()
+            ->map(fn (object $row) => ProgressData::from($row));
+    }
+
+    public function jobsQuery(): Builder
+    {
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
             'pgsql' => 'GREATEST(?, EXTRACT(EPOCH FROM "dateCreated") + delay)',
@@ -87,16 +95,13 @@ final readonly class JobProgress
             // Failed jobs go last
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
             // Reserved jobs go first
-            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved])
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved->value])
             // Pending jobs go second
-            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending])
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
             // Then by now or dateCreated + delay
             ->orderByRaw($delay, [now()->getTimestamp()])
             // Lastly by dateCreated
-            ->orderBy('dateCreated')
-            ->limit($limit)
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+            ->orderBy('dateCreated');
     }
 
     /**
@@ -106,10 +111,7 @@ final readonly class JobProgress
      */
     public function getAll(): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
-            ->orderBy('dateCreated')
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+        return $this->jobsQuery()->get()->map(fn (object $job) => ProgressData::from($job));
     }
 
     /**
@@ -119,14 +121,13 @@ final readonly class JobProgress
      */
     public function getActive(): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
+        return $this->jobsQuery()
             ->whereIn('status', [
                 JobStatus::Pending,
                 JobStatus::Delayed,
                 JobStatus::Reserved,
                 JobStatus::Failed,
             ])
-            ->orderBy('dateCreated')
             ->get()
             ->map(fn (object $row) => ProgressData::from($row));
     }
@@ -138,9 +139,8 @@ final readonly class JobProgress
      */
     public function getByStatus(JobStatus $status): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
+        return $this->jobsQuery()
             ->where('status', $status->value)
-            ->orderBy('dateCreated')
             ->get()
             ->map(fn (object $row) => ProgressData::from($row));
     }

@@ -9,13 +9,20 @@
       hideHeader?: boolean;
       hideFooter?: boolean;
       title?: string;
+      padding?: string | number;
     }>(),
     {
+      padding: 'lg',
       as: 'div',
       hideHeader: false,
       hideFooter: false,
     }
   );
+
+  // Check if string is a valid number
+  function isNumeric(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
+  }
 
   const showHeader = computed(() => {
     return (
@@ -30,6 +37,23 @@
       slots['primary-action'] ||
       slots['secondary-action']
     );
+  });
+
+  const computedPadding = computed(() => {
+    if (props.padding === 0) {
+      return 0;
+    }
+
+    if (isNumeric(props.padding)) {
+      return `calc(${props.padding}rem / 16)`;
+    }
+
+    if (['sm', 'md', 'lg', 'xl'].includes(props.padding)) {
+      return `var(--c-spacing-${props.padding})`;
+    }
+
+    // If it's a string, just return it
+    return props.padding;
   });
 </script>
 
@@ -66,7 +90,7 @@
 
 <style scoped lang="scss">
   .pane {
-    --_pane-spacing: var(--c-spacing-lg);
+    --_pane-spacing: v-bind(computedPadding);
 
     background-color: var(--c-pane-bg);
     overflow-y: scroll;

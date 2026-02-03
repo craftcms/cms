@@ -10,6 +10,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,25 @@ final readonly class Cms
     public static function config(): GeneralConfig
     {
         return app(GeneralConfig::class) ?? GeneralConfig::create();
+    }
+
+    /**
+     * @TODO Could/should all this data just be handled in an inertia middleware?
+     * We'll need to render all legacy pages with inertia in that case.
+     */
+    public static function cpConfig(): Collection
+    {
+        $config = self::config();
+
+        return collect($config)
+            ->only([
+                'cpTrigger',
+                'actionTrigger',
+                'csrfTokenName',
+            ])
+            ->merge([
+                'csrfTokenValue' => csrf_token(),
+            ]);
     }
 
     public static function systemName(): string

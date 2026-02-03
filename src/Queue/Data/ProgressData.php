@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue\Data;
 
+use Carbon\Carbon;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Dto;
 
 use function CraftCms\Cms\t;
@@ -31,6 +34,9 @@ final class ProgressData extends Dto
     }
 
     public ?string $error = null;
+
+    #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s', timeZone: 'UTC')]
+    public ?Carbon $dateCreated = null;
 
     public ?int $delay = null;
 }

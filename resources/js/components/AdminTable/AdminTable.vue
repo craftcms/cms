@@ -11,8 +11,10 @@
       reorderable?: boolean;
       selectable?: boolean;
       readOnly?: boolean;
+      layout?: 'auto' | 'fixed';
     }>(),
-    {reorderable: true, selectable: true}
+
+    {reorderable: true, selectable: true, layout: 'auto'}
   );
 
   const emit = defineEmits<{
@@ -160,6 +162,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: v-bind(layout);
   }
 
   .cell {

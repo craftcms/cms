@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use craft\web\assets\queuemanager\QueueManagerAsset;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -13,7 +14,7 @@ use function CraftCms\Cms\t;
 /**
  * Queue manager is a utility used for managing jobs in the Queue.
  *
-  @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  */
 final class QueueManager extends Utility
 {
@@ -50,7 +51,12 @@ final class QueueManager extends Utility
     #[\Override]
     public static function toolbarHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar.twig');
+        $progressService = app(JobProgress::class);
+
+        return view('c::utilities.queue-manager.toolbar', [
+            'activeJob' => null,
+            'jobs' => $progressService->getJobInfo(),
+        ])->toHtml();
     }
 
     /**
@@ -59,6 +65,7 @@ final class QueueManager extends Utility
     #[\Override]
     public static function footerHtml(): string
     {
+        // @TODO
         return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer.twig');
     }
 
@@ -68,9 +75,14 @@ final class QueueManager extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(QueueManagerAsset::class);
+        $progressService = app(JobProgress::class);
+        $jobsData = app(JobProgress::class)->getJobInfo();
 
-        return $view->renderTemplate('_components/utilities/QueueManager/content.twig');
+        return view('c::utilities.queue-manager.content', [
+            'initialData' => $jobsData,
+            'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+            'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            'totalJobs' => $progressService->getTotalJobs(),
+        ])->render();
     }
 }

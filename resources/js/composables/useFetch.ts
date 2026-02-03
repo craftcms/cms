@@ -13,6 +13,7 @@ import axios, {
   type AxiosResponse,
   type CancelTokenSource,
 } from 'axios';
+import {useHelpers} from '@/composables/useCraftData';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
@@ -122,12 +123,12 @@ export function useFetch<T = any>(
       if (axios.isCancel(err)) {
         state.value = 'aborted';
       } else if (axios.isAxiosError(err)) {
-        console.log('Axios error:', err.response?.data);
+        console.error('Axios error:', err.response?.data);
         state.value = 'error';
         error.value = err.response?.data || err.message || 'Unknown error';
         onError?.(err);
       } else {
-        console.log('Unkown error:', err.message);
+        console.error('Unkown error:', err.message);
         state.value = 'error';
         error.value = err.message || 'Unknown error';
       }
@@ -206,5 +207,21 @@ export function usePost<T = any>(
     immediate: false,
     ...options,
     method: 'post',
+  });
+}
+
+export function useActionClient<T = any>(
+  url: MaybeRef<string>,
+  options: UseAxiosOptions<T> = {}
+) {
+  const method = options.method ?? 'POST';
+
+  const {getActionUrl} = useHelpers();
+  const actionUrl = computed(() => getActionUrl(unref(url)));
+
+  return useFetch(actionUrl, {
+    immediate: false,
+    ...options,
+    method,
   });
 }

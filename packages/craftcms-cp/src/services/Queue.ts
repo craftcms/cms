@@ -1,4 +1,3 @@
-import {actionClient} from '../utilities/api/actionClient.js';
 import type {
   JobFailedDetail,
   JobInfo,
@@ -8,6 +7,7 @@ import type {
   QueueServiceOptions,
 } from '@src/types';
 import {JobStatus} from '@src/types';
+import axios from 'axios';
 
 /**
  * Service for managing queue job tracking.
@@ -82,9 +82,10 @@ export class QueueService extends EventTarget {
     if (!this.enabled) return;
 
     try {
-      await actionClient.post('queue/run');
-    } catch {
+      const response = await axios.post('/admin/actions/queue/run');
+    } catch (e: unknown) {
       // Ignore errors - queue might already be running
+      console.error(e);
     }
 
     this.startTracking(false, true);
@@ -146,9 +147,9 @@ export class QueueService extends EventTarget {
    * Set job data from server response.
    * Used for initial data and cross-tab sync.
    */
-  setJobData(data: QueueJobData): void {
-    this.totalJobs = data.total;
-    this.#setJobInfo(data.jobs);
+  setJobData(data: Array<JobInfo>): void {
+    this.totalJobs = data.length;
+    this.#setJobInfo(data);
   }
 
   // ─── Private Methods ─────────────────────────────────────────────────────────
@@ -217,15 +218,15 @@ export class QueueService extends EventTarget {
     this.#abortController = new AbortController();
 
     try {
-      const response = await actionClient.get<QueueJobData>(
-        'queue/get-job-info',
+      const response = await axios.get<QueueJobData>(
+        '/admin/actions/queue/get-job-info',
         {
-          params: {limit: 50, dontExtendSession: 1},
+          params: {dontExtendSession: 1},
           signal: this.#abortController.signal,
         }
       );
 
-      this.setJobData(response.data);
+      this.setJobData(response.data.jobs);
 
       // Broadcast to other tabs
       this.#broadcast('trackJobProgress', {jobData: response.data});
@@ -282,7 +283,7 @@ export class QueueService extends EventTarget {
     this.#emitJobUpdate();
 
     // Check for failed jobs
-    if (this.displayedJob?.status === JobStatus.Failed) {
+    if (this.displayedJob?.status.value === JobStatus.Failed) {
       this.#emitJobFailed(this.displayedJob);
     }
 
@@ -306,12 +307,17 @@ export class QueueService extends EventTarget {
 
     for (const status of priorities) {
       const job = this.jobInfo.find((j) => {
-        if (j.status !== status) return false;
+        if (j.status.value !== status) {
+          return false;
+        }
+
         // Skip delayed waiting jobs
-        if (status === JobStatus.Waiting && j.delay > 0) return false;
-        return true;
+        return !(status === JobStatus.Waiting && j.delay > 0);
       });
-      if (job) return job;
+
+      if (job) {
+        return job;
+      }
     }
 
     return null;

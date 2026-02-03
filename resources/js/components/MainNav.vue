@@ -36,6 +36,7 @@
         </craft-nav-list>
       </template>
     </craft-nav-item>
+    <cp-queue-indicator></cp-queue-indicator>
   </craft-nav-list>
 </template>
 

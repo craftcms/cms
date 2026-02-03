@@ -159,9 +159,12 @@ class QueueComponent extends Component implements QueueInterface
     {
         return app(JobProgress::class)->getJobInfo($limit)->map(fn(ProgressData $job) => [
             'id' => $job->uid,
-            'status' => $job->status->value,
+            'dateCreated' => $job->dateCreated,
+            'uid' => $job->uid,
+            'status' => $job->status,
             'progress' => $job->progress,
             'progressLabel' => $job->label,
+            'label' => $job->label,
             'description' => $job->description,
             'error' => $job->error,
         ])->values()->toArray();
