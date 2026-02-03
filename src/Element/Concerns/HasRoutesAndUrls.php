@@ -15,6 +15,8 @@ use Twig\Markup;
 
 /**
  * @mixin Element
+ *
+ * @internal
  */
 trait HasRoutesAndUrls
 {

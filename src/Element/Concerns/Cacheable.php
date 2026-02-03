@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\events\DefineValueEvent;
 
 /**
- * @mixin \CraftCms\Cms\Element\Element
+ * @internal
  */
 trait Cacheable
 {

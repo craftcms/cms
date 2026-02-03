@@ -9,6 +9,8 @@ use CraftCms\Cms\Support\Str;
 
 /**
  * @mixin \CraftCms\Cms\Element\Element
+ *
+ * @internal
  */
 trait Searchable
 {

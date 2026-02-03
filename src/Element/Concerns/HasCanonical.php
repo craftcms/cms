@@ -10,7 +10,7 @@ use craft\elements\db\NestedElementQueryInterface;
 use yii\base\NotSupportedException;
 
 /**
- * @mixin \CraftCms\Cms\Element\Element
+ * @internal
  */
 trait HasCanonical
 {
