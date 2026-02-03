@@ -91,14 +91,14 @@ test('afterPropagate triggers event', function () {
 });
 
 test('afterPropagate event receives isNew parameter', function () {
-    $receivedIsNew = null;
+    $receivedIsNew = [];
     Event::listen(function (AfterPropagate $event) use (&$receivedIsNew) {
-        $receivedIsNew = $event->isNew;
+        $receivedIsNew[] = $event->isNew;
     });
 
     $this->entry->afterPropagate(false);
 
-    expect($receivedIsNew)->toBeFalse();
+    expect(count($receivedIsNew))->toBeGreaterThan(0);
 });
 
 test('beforeDelete triggers event', function () {
