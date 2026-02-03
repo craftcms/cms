@@ -511,23 +511,35 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             $value instanceof LinkData &&
             $element?->propagating &&
             ($element->propagateAll || ($element->isNewForSite && !isset($element->duplicateOf))) &&
-            isset($element->propagatingFrom) &&
-            $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
+            isset($element->propagatingFrom)
         ) {
-            $linkedElement = $value->getElement();
-            if ($linkedElement && $linkedElement::isLocalized()) {
-                $localizedQuery = $linkedElement->getLocalized();
-                if (
-                    $localizedQuery instanceof ElementQueryInterface &&
-                    $localizedQuery->siteId($element->siteId)->exists()
-                ) {
-                    $type = $value->getType();
-                    $value = [
-                        'type' => $type,
-                        'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
-                    ];
+            // in order to avoid infinite loop when using custom translation format with a translation key containing `include()`
+            // we need to prevent `View::renderObjectTemplate()` from trying to normalize this value again and again
+            // to do that, we can e.g. set `propagating` to false before getting the translation key
+            // see https://github.com/craftcms/cms/issues/18363 for more details
+            if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+                $element->propagating = false;
+            }
+
+            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)) {
+                $linkedElement = $value->getElement();
+                if ($linkedElement && $linkedElement::isLocalized()) {
+                    $localizedQuery = $linkedElement->getLocalized();
+                    if (
+                        $localizedQuery instanceof ElementQueryInterface &&
+                        $localizedQuery->siteId($element->siteId)->exists()
+                    ) {
+                        $type = $value->getType();
+                        $value = [
+                            'type' => $type,
+                            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
+                        ];
+                    }
                 }
             }
+
+            // set $propagating back to true
+            $element->propagating = true;
         }
 
         if ($value instanceof LinkData) {
