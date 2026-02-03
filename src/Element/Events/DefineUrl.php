@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
  * @event DefineUrl The event that is triggered when defining the element's URL.
@@ -13,19 +14,17 @@ use craft\base\ElementInterface;
  * and set `$handled` to `true`.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getUrl()}
- *
- * @since 6.0.0
  */
 final class DefineUrl
 {
+    use HandleableEvent;
+
     /**
      * @param  ElementInterface  $element  The element
      * @param  string|null  $url  The URL
-     * @param  bool  $handled  Whether the event has been handled
      */
     public function __construct(
         public ElementInterface $element,
         public ?string $url = null,
-        public bool $handled = false,
     ) {}
 }

@@ -38,6 +38,9 @@ test('beforeSave event can prevent save', function () {
         $event->isValid = false;
     });
 
+    // Prevent revision
+    $this->entry->id = null;
+
     $result = $this->entry->beforeSave(false);
 
     expect($result)->toBeFalse();

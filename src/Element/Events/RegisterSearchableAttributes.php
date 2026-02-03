@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
+use craft\base\ElementInterface;
+
 /**
- * RegisterSearchableAttributes event is triggered when registering the searchable attributes for an element type.
- *
- * @since 6.0.0
+ * @event RegisterSearchableAttributes event is triggered when registering the searchable attributes for an element type.
  */
 final class RegisterSearchableAttributes
 {
     /**
-     * @param  class-string<\CraftCms\Cms\Element\ElementInterface>  $elementType  The element type class
+     * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  array  $attributes  The searchable attributes
      */
     public function __construct(

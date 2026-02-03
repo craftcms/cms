@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
+use craft\base\ElementInterface;
 use craft\models\FieldLayout;
 
 /**
@@ -15,7 +16,7 @@ use craft\models\FieldLayout;
 final class RegisterFieldLayouts
 {
     /**
-     * @param  class-string  $elementType  The element type class
+     * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string|null  $source  The selected source's key, or null if all known field layouts should be returned
      * @param  FieldLayout[]  $fieldLayouts  The registered field layouts
      */

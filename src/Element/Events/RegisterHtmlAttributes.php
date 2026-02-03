@@ -11,8 +11,6 @@ use craft\base\ElementInterface;
  * that should be included in the element's DOM representation in the control panel.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getHtmlAttributes()}
- *
- * @since 6.0.0
  */
 final class RegisterHtmlAttributes
 {

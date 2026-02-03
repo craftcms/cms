@@ -14,16 +14,9 @@ use Stringable;
  * If `html` is set, it will be used instead of the default attribute HTML.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getAttributeHtml()}
- *
- * @since 6.0.0
  */
 final class DefineAttributeHtml
 {
-    /**
-     * @param  ElementInterface  $element  The element
-     * @param  string  $attribute  The attribute name
-     * @param  string|Stringable|null  $html  The HTML to use (if set, short-circuits default rendering)
-     */
     public function __construct(
         public ElementInterface $element,
         public string $attribute,

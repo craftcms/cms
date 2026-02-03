@@ -7,11 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use craft\base\ElementInterface;
 
 /**
- * Render event is triggered before an element is rendered.
+ * @event Render event is triggered before an element is rendered.
  *
  * If `output` is set, it will be used as the rendered output instead of looking for templates.
- *
- * @since 6.0.0
  */
 final class Render
 {

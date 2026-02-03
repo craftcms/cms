@@ -10,8 +10,6 @@ use craft\base\ElementInterface;
  * @event DefineMetadata The event that is triggered when defining the element's metadata info.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getMetadata()}
- *
- * @since 6.0.0
  */
 final class DefineMetadata
 {

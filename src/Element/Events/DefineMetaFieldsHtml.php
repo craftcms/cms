@@ -11,8 +11,6 @@ use craft\base\ElementInterface;
  * within the editor sidebar.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::metaFieldsHtml()}
- *
- * @since 6.0.0
  */
 final class DefineMetaFieldsHtml
 {

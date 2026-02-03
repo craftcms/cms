@@ -11,15 +11,9 @@ use craft\base\ElementInterface;
  * that should be shown at the top of the element's edit page.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getAdditionalButtons()}
- *
- * @since 6.0.0
  */
 final class DefineAdditionalButtons
 {
-    /**
-     * @param  ElementInterface  $element  The element
-     * @param  string  $html  The HTML for additional buttons
-     */
     public function __construct(
         public ElementInterface $element,
         public string $html = '',

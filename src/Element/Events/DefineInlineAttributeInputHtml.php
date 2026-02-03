@@ -14,8 +14,6 @@ use Stringable;
  * If `html` is set, it will be used instead of the default inline input HTML.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getInlineAttributeInputHtml()}
- *
- * @since 6.0.0
  */
 final class DefineInlineAttributeInputHtml
 {

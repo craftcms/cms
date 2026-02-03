@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event BeforeSave The event that is triggered before the element is saved.
@@ -15,11 +16,11 @@ use craft\base\ElementInterface;
  */
 final class BeforeSave
 {
+    use ValidatableEvent;
+
     public function __construct(
         public ElementInterface $element,
         /** @var bool Whether the element is brand new */
         public bool $isNew,
-        /** @var bool Whether the save should proceed */
-        public bool $isValid = true,
     ) {}
 }

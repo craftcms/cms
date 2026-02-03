@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event BeforeDelete The event that is triggered before the element is deleted.
@@ -15,9 +16,9 @@ use craft\base\ElementInterface;
  */
 final class BeforeDelete
 {
+    use ValidatableEvent;
+
     public function __construct(
         public ElementInterface $element,
-        /** @var bool Whether the delete should proceed */
-        public bool $isValid = true,
     ) {}
 }

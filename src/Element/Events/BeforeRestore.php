@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event BeforeRestore The event that is triggered before the element is restored.
@@ -15,9 +16,9 @@ use craft\base\ElementInterface;
  */
 final class BeforeRestore
 {
+    use ValidatableEvent;
+
     public function __construct(
         public ElementInterface $element,
-        /** @var bool Whether the restore should proceed */
-        public bool $isValid = true,
     ) {}
 }

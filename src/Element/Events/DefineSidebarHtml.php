@@ -10,8 +10,6 @@ use craft\base\ElementInterface;
  * @event DefineSidebarHtml The event that is triggered when defining the HTML for the editor sidebar.
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getSidebarHtml()}
- *
- * @since 6.0.0
  */
 final class DefineSidebarHtml
 {
