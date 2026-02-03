@@ -472,6 +472,11 @@ class Yii2ServiceProvider extends ServiceProvider
     private function bootEvents(): void
     {
         /**
+         * Elements
+         */
+        \craft\base\Element::registerEvents();
+
+        /**
          * Services
          */
         Addresses::registerEvents();
