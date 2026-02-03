@@ -18,6 +18,14 @@ use CraftCms\Cms\Support\Html;
 trait HasThumbnails
 {
     /**
+     * {@inheritdoc}
+     */
+    public static function hasThumbs(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns the element's thumbnail HTML.
      *
      * @param  int  $size  The maximum width and height the thumbnail should have.

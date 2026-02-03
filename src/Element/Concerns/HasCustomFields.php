@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\errors\InvalidFieldException;
+use craft\models\FieldLayout;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -266,8 +266,8 @@ trait HasCustomFields
         $this->setFieldParamNamespace($paramNamespace);
 
         $values = $this->_fieldParamNamePrefix
-            ? Craft::$app->getRequest()->getBodyParam($paramNamespace, [])
-            : Craft::$app->getRequest()->getBodyParams();
+            ? request()->input($paramNamespace, [])
+            : request()->all();
 
         $processedFields = [];
 
@@ -405,5 +405,17 @@ trait HasCustomFields
     public function addInvalidNestedElementIds(array $ids): void
     {
         array_push($this->_invalidNestedElementIds, ...$ids);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldLayout(): ?FieldLayout
+    {
+        if ($this->fieldLayoutId) {
+            return app(Fields::class)->getLayoutById($this->fieldLayoutId);
+        }
+
+        return null;
     }
 }

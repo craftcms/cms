@@ -43,6 +43,11 @@ trait Searchable
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
+     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
+     */
+    public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+
+    /**
      * Returns the search keywords for a given search attribute.
      */
     public function getSearchKeywords(string $attribute): string

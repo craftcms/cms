@@ -115,6 +115,14 @@ trait HasRoutesAndUrls
     /**
      * {@inheritdoc}
      */
+    public static function hasUris(): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getUriFormat(): ?string
     {
         return null;
@@ -169,18 +177,19 @@ trait HasRoutesAndUrls
      */
     public function getUrl(): ?string
     {
-        $event = null;
         $url = null;
+        $handled = false;
 
         // Fire a 'beforeDefineUrl' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
             $event = new DefineUrlEvent;
             $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
             $url = $event->url;
+            $handled = $event->handled;
         }
 
         // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && ! $event->handled && isset($this->uri)) {
+        if ($url === null && ! $handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
         }

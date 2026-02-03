@@ -115,6 +115,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasPreviewTargets;
     use Concerns\HasRoutesAndUrls;
     use Concerns\HasSources;
+    use Concerns\HasStatuses;
     use Concerns\HasThumbnails;
     use Concerns\Queryable;
     use Concerns\Revisionable;
@@ -130,18 +131,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.3.6
      */
     public const string HOMEPAGE_URI = '__home__';
-
-    // Statuses
-    // -------------------------------------------------------------------------
-
-    public const STATUS_ENABLED = 'enabled';
-
-    public const STATUS_DISABLED = 'disabled';
-
-    public const STATUS_ARCHIVED = 'archived';
-
-    /** @since 5.0.0 */
-    public const STATUS_DRAFT = 'draft';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -169,11 +158,6 @@ abstract class Element extends Component implements ElementInterface
 
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
-     */
-    public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
     /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
@@ -495,44 +479,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public static function hasThumbs(): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function hasUris(): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public static function isLocalized(): bool
     {
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function hasStatuses(): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function statuses(): array
-    {
-        return [
-            self::STATUS_ENABLED => t('Enabled'),
-            self::STATUS_DISABLED => t('Disabled'),
-        ];
     }
 
     /**
@@ -577,14 +526,6 @@ abstract class Element extends Component implements ElementInterface
      * @see getDirtyAttributes()
      */
     private ?string $_savedTitle = null;
-
-    /**
-     * @var bool|bool[]
-     *
-     * @see getEnabledForSite()
-     * @see setEnabledForSite()
-     */
-    private array|bool $_enabledForSite = true;
 
     /**
      * @see getIsFresh()
@@ -1100,18 +1041,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function getFieldLayout(): ?FieldLayout
-    {
-        if ($this->fieldLayoutId) {
-            return app(Fields::class)->getLayoutById($this->fieldLayoutId);
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
@@ -1127,56 +1056,6 @@ abstract class Element extends Component implements ElementInterface
     public function createAnother(): ?ElementInterface
     {
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getEnabledForSite(?int $siteId = null): ?bool
-    {
-        if ($siteId === null) {
-            $siteId = $this->siteId;
-        }
-        if (is_array($this->_enabledForSite)) {
-            return $this->_enabledForSite[$siteId] ?? ($siteId == $this->siteId ? true : null);
-        }
-        if ($siteId == $this->siteId) {
-            return $this->_enabledForSite;
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setEnabledForSite(array|bool $enabledForSite): void
-    {
-        if (is_array($enabledForSite)) {
-            $this->_enabledForSite = array_map(fn (bool $value) => $value, $enabledForSite);
-        } else {
-            $this->_enabledForSite = $enabledForSite;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getStatus(): ?string
-    {
-        if ($this->getIsDraft() && ! $this->isProvisionalDraft) {
-            return self::STATUS_DRAFT;
-        }
-
-        if ($this->archived) {
-            return self::STATUS_ARCHIVED;
-        }
-
-        if (! $this->enabled || ! $this->getEnabledForSite()) {
-            return self::STATUS_DISABLED;
-        }
-
-        return self::STATUS_ENABLED;
     }
 
     /**
