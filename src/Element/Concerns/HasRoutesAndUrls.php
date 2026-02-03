@@ -178,7 +178,7 @@ trait HasRoutesAndUrls
         }
 
         // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && ! ($event?->handled ?? false) && isset($this->uri)) {
+        if ($url === null && ! $event->handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
         }
