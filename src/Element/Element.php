@@ -115,13 +115,12 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasPreviewTargets;
     use Concerns\HasRoutesAndUrls;
     use Concerns\HasSources;
+    use Concerns\HasThumbnails;
     use Concerns\Queryable;
     use Concerns\Revisionable;
     use Concerns\Searchable;
     use Concerns\Structurable;
-    use ElementTrait {
-        ElementTrait::canCreateDrafts as _;
-    }
+    use ElementTrait;
     use Macroable {
         __call as macroCall;
     }
@@ -1128,120 +1127,6 @@ abstract class Element extends Component implements ElementInterface
     public function createAnother(): ?ElementInterface
     {
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getThumbHtml(int $size): ?string
-    {
-        $thumbField = $this->getFieldLayout()?->getThumbField();
-        if ($thumbField) {
-            $thumbHtml = $thumbField->thumbHtml($this, $size);
-            if ($thumbHtml) {
-                return $thumbHtml;
-            }
-        }
-
-        $thumbUrl = $this->thumbUrl($size);
-
-        if ($thumbUrl !== null) {
-            return Html::tag('div', '', [
-                'class' => array_filter([
-                    'thumb',
-                    $this->hasCheckeredThumb() ? 'checkered' : null,
-                    $this->hasRoundedThumb() ? 'rounded' : null,
-                ]),
-                'data' => [
-                    'sizes' => sprintf('calc(%srem/16)', $size),
-                    'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
-                    'alt' => $this->thumbAlt(),
-                    'animated' => $this->couldHaveAnimatedThumb(),
-                ],
-            ]);
-        }
-
-        $thumbSvg = $this->thumbSvg();
-        if ($thumbSvg !== null) {
-            $thumbSvg = Html::svg($thumbSvg, false, true);
-            $alt = $this->thumbAlt();
-            if ($alt !== null) {
-                $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
-            }
-            $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
-
-            return Html::tag('div', $thumbSvg, [
-                'class' => array_filter([
-                    'thumb',
-                    $this->hasRoundedThumb() ? 'rounded' : null,
-                ]),
-            ]);
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the URL to the element’s thumbnail, if it has one.
-     *
-     * @param  int  $size  The maximum width and height the thumbnail should have.
-     *
-     * @since 5.0.0
-     */
-    protected function thumbUrl(int $size): ?string
-    {
-        return null;
-    }
-
-    /**
-     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
-     * returns `null`.
-     *
-     * @since 4.5.0
-     */
-    protected function thumbSvg(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * Returns alt text for the element’s thumbnail.
-     *
-     * @since 5.0.0
-     */
-    protected function thumbAlt(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * Returns whether the element’s thumbnail should have a checkered background.
-     *
-     * @since 5.0.0
-     */
-    protected function hasCheckeredThumb(): bool
-    {
-        return false;
-    }
-
-    /**
-     * Returns whether the element’s thumbnail should be rounded.
-     *
-     * @since 5.0.0
-     */
-    protected function hasRoundedThumb(): bool
-    {
-        return false;
-    }
-
-    /**
-     * Returns whether the element’s thumbnail is potentially animated.
-     *
-     * @since 5.7.0
-     */
-    protected function couldHaveAnimatedThumb(): bool
-    {
-        return false;
     }
 
     /**
