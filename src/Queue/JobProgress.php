@@ -14,6 +14,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use RuntimeException;
 use Tpetry\QueryExpressions\Function\Time\Now;
 
 /**
@@ -79,6 +80,7 @@ final readonly class JobProgress
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
             'pgsql' => 'GREATEST(?, EXTRACT(EPOCH FROM "dateCreated") + delay)',
+            default => throw new RuntimeException('Unsupported database driver: '.DB::connection()->getDriverName()),
         };
 
         return $this->db->table(Table::JOBPROGRESS)

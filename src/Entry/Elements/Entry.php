@@ -1323,43 +1323,40 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         }
 
         $page = $section->getPage();
-        $pageUrl = sprintf('content/%s', $page ? Str::slug($page) : 'entries');
-
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => $pageUrl,
+                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
             ],
         ];
 
-        $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-
         // Is the section’s source enabled?
-        if (app(ElementSources::class)->sourceExists(Entry::class, $sourceKey)) {
+        $elementSourcesService = app(ElementSources::class);
+        $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
+        if ($elementSourcesService->sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
 
+            // Filter out any sections that aren’t enabled for this site
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {
                 $sections = $sections->filter(fn (Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
 
-            if ($page) {
-                // Filter out any sections that don’t belong in this page
-                $pageSources = app(ElementSources::class)->getSources(Entry::class, withDisabled: true, page: $page);
-                $pageSourceKeys = $pageSources->pluck('key')->filter()->flip()->all();
-                $sections = $sections->filter(function (Section $s) use ($pageSourceKeys) {
-                    $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
+            // Filter out any sections that don’t have an enabled source / don’t belong in this page
+            $sources = $elementSourcesService->getSources(Entry::class, page: $page)->all();
+            $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources)));
+            $sections = $sections->filter(function (Section $s) use ($sourceKeys) {
+                $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
 
-                    return isset($pageSourceKeys[$key]);
-                });
-            }
+                return isset($sourceKeys[$key]);
+            });
 
             /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
-                    'label' => t($s->name, category: 'site'),
-                    'url' => "$pageUrl/$s->handle",
+                    'label' => $s->getUiLabel(),
+                    'url' => $s->getCpIndexUri(),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1373,16 +1370,20 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 ]);
             }
 
-            $crumbs[] = [
-                'menu' => [
-                    'label' => t('Select section'),
-                    'items' => $sectionOptions->all(),
-                ],
-            ];
+            if ($sectionOptions->count() > 1) {
+                $crumbs[] = [
+                    'menu' => [
+                        'label' => t('Select section'),
+                        'items' => $sectionOptions->all(),
+                    ],
+                ];
+            } else {
+                $crumbs[] = $sectionOptions->first();
+            }
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
             $crumbs[] = [
-                'label' => t($section->name, category: 'site'),
+                'label' => $section->getUiLabel(),
             ];
         }
 
@@ -1415,7 +1416,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (! $entryType->hasTitleField && ! $entryType->titleFormat) {
+            if (! $entryType->hasTitleField && ! $entryType->titleFormat && $entryType->uiLabelFormat === '{title}') {
                 return '';
             }
         }
