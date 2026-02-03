@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use craft\events\DefineAttributeKeywordsEvent;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\DefineKeywords;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -54,66 +54,48 @@ describe('getSearchKeywords', function () {
         expect($element->getSearchKeywords('customField'))->toBe('custom-keywords-for-value');
     });
 
-    test('EVENT_DEFINE_KEYWORDS event can override keywords when handled', function () {
+    test('DefineKeywords event can override keywords when handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::on(
-            TestSearchableElement::class,
-            Element::EVENT_DEFINE_KEYWORDS,
-            function (DefineAttributeKeywordsEvent $event) {
-                if ($event->attribute === 'title') {
-                    $event->keywords = 'overridden-keywords';
-                    $event->handled = true;
-                }
+        Event::listen(function (DefineKeywords $event) {
+            if ($event->attribute === 'title') {
+                $event->keywords = 'overridden-keywords';
+                $event->handled = true;
             }
-        );
+        });
 
         $keywords = $element->getSearchKeywords('title');
 
         expect($keywords)->toBe('overridden-keywords');
-
-        Event::off(TestSearchableElement::class, Element::EVENT_DEFINE_KEYWORDS);
     });
 
-    test('EVENT_DEFINE_KEYWORDS returns empty string when keywords is null and handled', function () {
+    test('DefineKeywords returns empty string when keywords is empty and handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::on(
-            TestSearchableElement::class,
-            Element::EVENT_DEFINE_KEYWORDS,
-            function (DefineAttributeKeywordsEvent $event) {
-                unset($event->keywords);
-                $event->handled = true;
-            }
-        );
+        Event::listen(function (DefineKeywords $event) {
+            $event->keywords = '';
+            $event->handled = true;
+        });
 
         $keywords = $element->getSearchKeywords('title');
 
         expect($keywords)->toBe('');
-
-        Event::off(TestSearchableElement::class, Element::EVENT_DEFINE_KEYWORDS);
     });
 
-    test('EVENT_DEFINE_KEYWORDS is ignored when not handled', function () {
+    test('DefineKeywords is ignored when not handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::on(
-            TestSearchableElement::class,
-            Element::EVENT_DEFINE_KEYWORDS,
-            function (DefineAttributeKeywordsEvent $event) {
-                $event->keywords = 'this-should-be-ignored';
-                // Note: not setting $event->handled = true
-            }
-        );
+        Event::listen(function (DefineKeywords $event) {
+            $event->keywords = 'this-should-be-ignored';
+            // Note: not setting $event->handled = true
+        });
 
         $keywords = $element->getSearchKeywords('title');
 
         expect($keywords)->toBe('Original Title');
-
-        Event::off(TestSearchableElement::class, Element::EVENT_DEFINE_KEYWORDS);
     });
 
     test('works with real Entry element', function () {

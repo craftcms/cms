@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\events\DefineAttributeKeywordsEvent;
+use CraftCms\Cms\Element\Events\DefineKeywords;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -20,45 +20,17 @@ use CraftCms\Cms\Support\Str;
 trait Searchable
 {
     /**
-     * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
-     * element attribute.
-     *
-     * Note that you _must_ set [[Event::$handled]] to `true` if you want the element to accept your custom
-     * [[DefineAttributeKeywordsEvent::$keywords|$keywords]] value.
-     *
-     * ```php
-     * Event::on(
-     *     craft\elements\Entry::class,
-     *     craft\base\Element::EVENT_DEFINE_KEYWORDS,
-     *     function(craft\events\DefineAttributeKeywordsEvent $e
-     * ) {
-     *     // @var craft\elements\Entry $entry
-     *     $entry = $e->sender;
-     *
-     *     // Prevent entry titles in the Parts section from getting search keywords
-     *     if ($entry->section->handle === 'parts' && $e->attribute === 'title') {
-     *         $e->keywords = '';
-     *         $e->handled = true;
-     *     }
-     * });
-     * ```
-     *
-     * @since 3.5.0
-     */
-    public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
-
-    /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
     public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
     /**
-     * @var int|null The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     * @var int|null The element's search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
     public ?int $searchScore = null;
 
     /**
-     * @var bool Whether the element’s search keywords should be indexed immediately.
+     * @var bool Whether the element's search keywords should be indexed immediately.
      *
      * If `null`, the search index will only be updated immediately for console requests.
      *
@@ -71,13 +43,13 @@ trait Searchable
      */
     public function getSearchKeywords(string $attribute): string
     {
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
-            $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
-            $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
+        event($event = new DefineKeywords(
+            element: $this,
+            attribute: $attribute,
+        ));
 
-            if ($event->handled) {
-                return $event->keywords ?? '';
-            }
+        if ($event->handled) {
+            return $event->keywords;
         }
 
         return $this->searchKeywords($attribute);

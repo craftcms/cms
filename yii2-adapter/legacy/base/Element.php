@@ -16,12 +16,14 @@ use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
+use craft\events\RenderElementEvent;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Element\Events\RegisterExporters;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Element\Events\RegisterSources;
+use CraftCms\Cms\Element\Events\Render;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -93,6 +95,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see Render} instead.
      */
     public const EVENT_RENDER = 'render';
+
+    /**
+     * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an element attribute.
+     *
+     * @see getSearchKeywords()
+     * @since 3.5.0
+     * @deprecated 6.0.0 Use {@see DefineKeywords} instead.
+     */
+    public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     public static function registerEvents(): void
     {
@@ -250,6 +261,31 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 }
                 $event->templates = $yiiEvent->templates;
                 $event->variables = $yiiEvent->variables;
+            }
+        });
+
+        Event::listen(function(DefineKeywords $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_KEYWORDS)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineAttributeKeywordsEvent([
+                    'sender' => $event->element,
+                    'attribute' => $event->attribute,
+                    'keywords' => $event->keywords,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_KEYWORDS, $yiiEvent);
+
+                if ($yiiEvent->handled) {
+                    $event->keywords = $yiiEvent->keywords;
+                    $event->handled = true;
+                }
             }
         });
     }
