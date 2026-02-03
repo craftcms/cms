@@ -30,8 +30,6 @@
         v-if="toolbarHtml"
         :html="toolbarHtml"
       ></DynamicHtmlRenderer>
-      <!--      <craft-button type="button"></craft-button>-->
-      <!--      Hello-->
     </template>
     <template #interior-nav>
       <craft-nav-list>

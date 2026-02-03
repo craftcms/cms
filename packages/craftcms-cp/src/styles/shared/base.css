@@ -67,3 +67,20 @@ hr {
     align-items: start;
   }
 }
+
+.cp-table {
+  text-align: left;
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding-block: var(--c-spacing-md);
+    padding-inline: 0;
+  }
+
+  tr {
+    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+}

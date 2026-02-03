@@ -68,7 +68,7 @@
 
 <template>
   <div class="p-4">
-    <h2 class="mb-4">{{ job.description }}</h2>
+    <h2 class="mb-3">{{ job.description }}</h2>
 
     <table class="table-fixed border-collapse w-full">
       <tbody>
