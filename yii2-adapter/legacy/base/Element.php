@@ -13,8 +13,10 @@ use craft\base\Event as YiiEvent;
 use craft\events\DefineValueEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementSourcesEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
+use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Element\Events\RegisterSources;
 use Illuminate\Support\Facades\Event;
 
@@ -60,6 +62,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see RegisterPreviewTargets} instead.
      */
     public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+
+    /**
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
+     *
+     * @see actions()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see RegisterActions} instead.
+     */
+    public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
     public static function registerEvents(): void
     {
@@ -149,6 +160,27 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 YiiEvent::trigger($class, self::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
 
                 $event->previewTargets = $yiiEvent->previewTargets;
+            }
+        });
+
+        Event::listen(function(RegisterActions $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_ACTIONS)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementActionsEvent([
+                    'source' => $event->source,
+                    'actions' => $event->actions,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_ACTIONS, $yiiEvent);
+
+                $event->actions = $yiiEvent->actions;
             }
         });
     }

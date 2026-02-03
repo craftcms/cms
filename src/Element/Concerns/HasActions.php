@@ -10,9 +10,8 @@ use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View as ViewAction;
-use craft\events\RegisterElementActionsEvent;
+use CraftCms\Cms\Element\Events\RegisterActions;
 use Illuminate\Support\Collection;
-use yii\base\Event;
 
 use function CraftCms\Cms\t;
 
@@ -26,11 +25,6 @@ use function CraftCms\Cms\t;
  */
 trait HasActions
 {
-    /**
-     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
-     */
-    public const EVENT_REGISTER_ACTIONS = 'registerActions';
-
     /**
      * {@inheritdoc}
      */
@@ -86,20 +80,13 @@ trait HasActions
             $actions->push(Delete::class);
         }
 
-        $actions = $actions->all();
+        event($event = new RegisterActions(
+            elementType: static::class,
+            source: $source,
+            actions: $actions->all(),
+        ));
 
-        // Fire a 'registerActions' event
-        if (Event::hasHandlers(static::class, static::EVENT_REGISTER_ACTIONS)) {
-            $event = new RegisterElementActionsEvent([
-                'source' => $source,
-                'actions' => $actions,
-            ]);
-            Event::trigger(static::class, static::EVENT_REGISTER_ACTIONS, $event);
-
-            return $event->actions;
-        }
-
-        return $actions;
+        return $event->actions;
     }
 
     /**
