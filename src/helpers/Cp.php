@@ -2795,7 +2795,8 @@ JS, [
         ]);
 
         // js is initiated via Craft.FieldLayoutDesigner
-        $previewHtml = self::cardPreviewHtml($fieldLayout, showThumb: $fieldLayout->getThumbField() !== null);
+        $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
+        $previewHtml = self::cardPreviewHtml($fieldLayout, showThumb: $showThumb);
 
         return
             Html::beginTag('div', [
@@ -2895,6 +2896,58 @@ JS, [
     }
 
     /**
+     * Returns an array of available card thumbnail options for the given field layout.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return array{label:string,value:string}[]
+     * @since 5.9.6
+     */
+    public static function cardThumbOptions(FieldLayout $fieldLayout): array
+    {
+        return self::cardThumbOptionsInternal($fieldLayout, '', '');
+    }
+
+    private static function cardThumbOptionsInternal(
+        FieldLayout $fieldLayout,
+        string $keyPrefix,
+        string $labelPrefix,
+    ): array {
+        $allOptions = [];
+
+        foreach ($fieldLayout->getAllElements() as $layoutElement) {
+            if ($layoutElement instanceof CustomField) {
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+                if ($field instanceof ContentBlock) {
+                    $allOptions += self::cardThumbOptionsInternal(
+                        $field->getFieldLayout(),
+                        "{$keyPrefix}contentBlock:$layoutElement->uid.",
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
+                    );
+                    continue;
+                }
+            }
+
+            if ($layoutElement instanceof BaseField && $layoutElement->thumbable()) {
+                $allOptions[$keyPrefix . $layoutElement->key()] = [
+                    'label' => sprintf('%s%s', $labelPrefix, $layoutElement->label()),
+                ];
+            }
+        }
+
+        foreach ($allOptions as $key => &$option) {
+            if (!isset($option['value'])) {
+                $option['value'] = $key;
+            }
+        }
+
+        return $allOptions;
+    }
+
+    /**
      * Return HTML for managing thumbnail provider and position.
      *
      * @param FieldLayout $fieldLayout
@@ -2918,20 +2971,11 @@ JS, [
             ];
         }
 
+        $thumbOptions = array_values(self::cardThumbOptions($fieldLayout));
+        usort($thumbOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
+        array_push($options, ...$thumbOptions);
+
         $thumbnailAlignment = $fieldLayout->getCardThumbAlignment();
-
-        /** @var BaseField[] $thumbableElements */
-        $thumbableElements = array_filter(
-            $fieldLayout->getAllElements(),
-            fn($element) => $element instanceof BaseField && $element->thumbable()
-        );
-
-        foreach ($thumbableElements as $thumbableElement) {
-            $options[] = [
-                'label' => $thumbableElement->label(),
-                'value' => $thumbableElement->key(),
-            ];
-        }
 
         $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']) .
             Html::tag('h2', Craft::t('app', 'Manage element thumbnails'), ['class' => 'visually-hidden']) .
@@ -2948,10 +2992,11 @@ JS, [
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = Craft::$app->getLocale()->getOrientation();
+        $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbHtml .= self::buttonGroupFieldHtml([
             'label' => Craft::t('app', 'Thumbnail Alignment'),
             'id' => 'thumb-alignment',
-            'fieldClass' => $fieldLayout->getThumbField() === null ? 'hidden' : false,
+            'fieldClass' => $showThumb ? false : 'hidden',
             'options' => [
                 [
                     'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
@@ -2996,7 +3041,7 @@ JS, [
      */
     public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], ?bool $showThumb = null): string
     {
-        $showThumb ??= $fieldLayout->getThumbField() !== null || $fieldLayout->type::hasThumbs();
+        $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading

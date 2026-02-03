@@ -269,6 +269,42 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    public function getThumbOptions(): ?array
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if ($field instanceof ContentBlock) {
+            $options = [];
+            $label = $this->selectorLabel();
+            $nestedOptions = Cp::cardThumbOptions($field->getFieldLayout());
+            foreach ($nestedOptions as $key => $option) {
+                $options[] = [
+                    'label' => "$label → {$option['label']}",
+                    'value' => "contentBlock:{uid}.$key",
+                ];
+            }
+            return $options;
+        }
+
+        if (!$this->thumbable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function thumbHtml(ElementInterface $element, int $size): ?string
     {
         try {

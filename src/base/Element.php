@@ -4368,9 +4368,9 @@ JS, [
      */
     public function getThumbHtml(int $size): ?string
     {
-        $thumbField = $this->getFieldLayout()?->getThumbField();
-        if ($thumbField) {
-            $thumbHtml = $thumbField->thumbHtml($this, $size);
+        $fieldLayout = $this->getFieldLayout();
+        if ($fieldLayout?->thumbFieldKey) {
+            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size);
             if ($thumbHtml) {
                 return $thumbHtml;
             }

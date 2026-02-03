@@ -212,6 +212,26 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the card thumbnail options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.6
+     */
+    public function getThumbOptions(): ?array
+    {
+        if (!$this->thumbable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -290,6 +310,7 @@ abstract class BaseField extends FieldLayoutElement
                 'requirable' => $this->requirable(),
                 'thumbable' => $this->thumbable(),
                 'preview-options' => $this->getPreviewOptions(),
+                'thumb-options' => $this->getThumbOptions(),
             ],
         ];
     }

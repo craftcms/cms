@@ -1091,6 +1091,7 @@ class FieldLayout extends Model
      *
      * @return BaseField|null
      * @since 5.0.0
+     * @deprecated in 5.9.6. [[hasThumbField()]] or [[getThumbHtmlForElement()]] should be used instead.
      */
     public function getThumbField(): ?BaseField
     {
@@ -1109,6 +1110,82 @@ class FieldLayout extends Model
         }
 
         return $this->thumbField ?: null;
+    }
+
+    /**
+     * Returns whether the field layout has a thumbnail field.
+     *
+     * @return bool
+     * @since 5.9.6
+     */
+    public function hasThumbField(): bool
+    {
+        if (!isset($this->thumbFieldKey)) {
+            return false;
+        }
+
+        $field = $this->getElementByKey($this->thumbFieldKey);
+        return $field instanceof BaseField && $field->thumbable();
+    }
+
+    /**
+     * Returns the card body HTML for a given card element key.
+     *
+     * @param string $key
+     * @param ElementInterface $element
+     * @param int $size The maximum width and height the thumbnail should have.
+     * @return string|null
+     * @since 5.9.6
+     */
+    public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size): ?string
+    {
+        return match (true) {
+            str_starts_with($key, 'layoutElement:') => $this->thumbHtmlForLayoutElement($key, $element, $size),
+            str_starts_with($key, 'contentBlock:') => $this->thumbHtmlForContentBlock($key, $element, $size),
+            default => null,
+        };
+    }
+
+    private function thumbHtmlForLayoutElement(string $key, ElementInterface $element, int $size): ?string
+    {
+        $layoutElement = $this->getElementByKey($key);
+
+        if (!$layoutElement instanceof BaseField) {
+            return null;
+        }
+
+        return $layoutElement->thumbHtml($element, $size);
+    }
+
+    private function thumbHtmlForContentBlock(string $key, ElementInterface $element, int $size): ?string
+    {
+        // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
+        $keyParts = explode('.', $key);
+        $key = array_shift($keyParts);
+
+        // get the Content Block field
+        $uid = StringHelper::removeLeft($key, 'contentBlock:');
+        $layoutElement = $this->getElementByUid($uid);
+
+        if (!$layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (!$field instanceof ContentBlock) {
+            return null;
+        }
+
+        return $field->getFieldLayout()->getThumbHtmlForElement(
+            implode('.', $keyParts),
+            $element->getFieldValue($field->handle),
+            $size,
+        );
     }
 
     /**

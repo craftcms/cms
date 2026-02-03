@@ -1358,13 +1358,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.tab.designer.settings.withCardViewDesigner) {
       const cvd = this.tab.designer.cvd;
       if (cvd) {
+        // this needs to be called before removeCheckbox()
+        cvd.updateThumbnailsDropdown(this, 'remove');
+
         const previewOptions = this.$container.data('preview-options');
-
-        if (this.config.providesThumbs) {
-          // this needs to be called before removeCheckbox()
-          cvd.updateThumbnailsDropdown(this, 'remove');
-        }
-
         if (previewOptions?.length) {
           previewOptions.forEach((option) => {
             cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
@@ -2121,50 +2118,39 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
   },
 
   updateThumbnailsDropdown: function (element, action) {
-    let $select = this.$thumbManagementContainer.find(
+    const $select = this.$thumbManagementContainer.find(
       'select[id$="thumb-source"]'
     );
-
-    if (action == 'add') {
-      if (!Garnish.hasAttr(element.$container, 'data-thumbable')) {
-        return null;
-      }
-
-      // add option to the dropdown
-      // figure out the label - it's okay to rely on the first label as only top-level fields can be used as thumbs
-      let label =
-        element.$container.data('preview-options')[0]?.label ??
-        element.attribute;
-      // it's okay to prepend with "layoutElement" as only top-level fields can be used as thumbs
-      $(
-        '<option value="layoutElement:' +
-          element.uid +
-          '">' +
-          label +
-          '</option>'
-      ).appendTo($select);
-    } else if (action == 'remove') {
-      if (!Garnish.hasAttr(element.$container, 'data-thumbable')) {
-        return null;
-      }
-
-      let $option = $select?.find('option[value="' + element.uid + '"]');
-
-      if ($option) {
-        // if the option we're removing was selected
-        if ($option.attr('selected')) {
-          // select the "none" option
-          $select?.find('option[value="__none__"').attr('selected');
-          if (!this.designer.settings.alwaysShowThumbAlignmentBtns) {
-            // hide the alignment buttons
-            this.hideThumbAlignment();
-          }
-        }
-
-        // remove
-        $option.remove();
-      }
+    if (!$select.length) {
+      return;
     }
+
+    const thumbOptions = element.$container.data('thumb-options');
+    if (!thumbOptions?.length) {
+      return;
+    }
+
+    thumbOptions.forEach((option) => {
+      const value = option.value.replace(/\{uid}/g, element.uid);
+      switch (action) {
+        case 'add':
+          $('<option/>', {
+            value,
+            text: option.label,
+          }).appendTo($select);
+          break;
+        case 'remove':
+          const $option = $select.find(`option[value="${value}"]`);
+          if ($option.length) {
+            const selected = $option.prop('selected');
+            $option.remove();
+            if (selected) {
+              this.manageThumbnails($select);
+            }
+          }
+          break;
+      }
+    });
   },
 
   updateThumbnailsDropdownOptionLabel: function ($container) {
