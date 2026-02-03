@@ -7,7 +7,7 @@
 
   {% set linkAttributes = {
     id: (item.id ?? null) ? "#{item.id}-link" : null,
-    url: (item.url ?? false) ? url(item.url) : null,
+    href: (item.url ?? false) ? url(item.url) : null,
     external: external,
     target: external ? '_blank',
     indicator: badgeCount > 0,
@@ -15,7 +15,7 @@
     'aria-label': item.ariaLabel ?? false
   }|merge(item.linkAttributes ?? {}, recursive=true) | filter %}
 
-  <craft-nav-item {{ attr(linkAttributes) | merge({href: linkAttributes.url}) }}>
+  <craft-nav-item {{ attr(linkAttributes) }}>
 
     <span class="nav-icon" slot="icon">
       {%- if item.icon ?? false -%}

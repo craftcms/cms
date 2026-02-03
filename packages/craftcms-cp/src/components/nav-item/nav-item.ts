@@ -63,7 +63,7 @@ export default class CraftNavItem extends LitElement {
       <a
         class="nav-item"
         id="${itemId}"
-        href="${this.url}"
+        href="${this.href}"
         aria-current="${this.active ? 'page' : false}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(hasSubnav)}
@@ -128,7 +128,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
         })}"
-        href="${this.url}"
+        href="${this.href}"
         aria-current="${this.active ? 'page' : false}"
       >
         ${hasPrefix ? this.renderPrefix() : nothing}
