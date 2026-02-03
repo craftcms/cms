@@ -56,6 +56,60 @@ use Illuminate\Support\Facades\Event;
 abstract class Element extends \CraftCms\Cms\Element\Element
 {
     /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element's edit page.
+     *
+     * @see canView()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
+     *
+     * @see canSave()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
+     *
+     * @see canCreateDrafts()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
+     *
+     * @see canDuplicate()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element.
+     *
+     * @see canDelete()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
+     *
+     * @see canDeleteForSite()
+     * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.
+     */
+    public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
+
+    /**
      * @event DefineValueEvent The event that is triggered when defining the cache tags that should be cleared when
      * this element is saved.
      *

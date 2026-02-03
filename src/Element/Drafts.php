@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
+use craft\base\Element as YiiElement;
 use craft\base\ElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\events\ModelEvent;
@@ -123,7 +124,7 @@ final readonly class Drafts
 
             /** @TODO: Remove behavior */
             $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
-                Element::EVENT_AFTER_PROPAGATE => function (ModelEvent $event) use ($canonical) {
+                YiiElement::EVENT_AFTER_PROPAGATE => function (ModelEvent $event) use ($canonical) {
                     /** @var ElementInterface $draft */
                     $draft = $event->sender;
 

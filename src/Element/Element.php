@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
 use DateTime;
-use Deprecated;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -27,7 +26,6 @@ use Override;
 use Throwable;
 use Traversable;
 use yii\base\ArrayableTrait;
-use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
@@ -87,137 +85,8 @@ abstract class Element extends Component implements ElementInterface
 
     public const string SCENARIO_LIVE = 'live';
 
-    // Events
-    // -------------------------------------------------------------------------
-
     /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_VIEW,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canView()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.')]
-    public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
-
-    /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_SAVE,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canSave()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.')]
-    public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
-
-    /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_CREATE_DRAFTS,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canCreateDrafts()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.')]
-    public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
-
-    /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_DUPLICATE,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canDuplicate()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.')]
-    public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
-
-    /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_DELETE,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canDelete()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.')]
-    public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
-
-    /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_AUTHORIZE_DELETE_FOR_SITE,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canDeleteForSite()
-     * @since 4.0.0
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.')]
-    public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
-
-    /**
-     * @var int|null The element’s ID
+     * @var int|null The element's ID
      */
     #[AllowedInSandbox]
     public ?int $id = null;
