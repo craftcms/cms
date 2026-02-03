@@ -7,19 +7,18 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\ElementInterface;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
-use craft\events\DefineEagerLoadingMapEvent;
-use craft\events\SetEagerLoadedElementsEvent;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\DefineEagerLoadingMap;
+use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 
 /**
@@ -33,50 +32,6 @@ use yii\base\InvalidConfigException;
  */
 trait Eagerloadable
 {
-    /**
-     * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use craft\base\ElementInterface;
-     * use craft\db\Query;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\DefineEagerLoadingMapEvent;
-     * use yii\base\Event;
-     *
-     * // Add support for `with(['bookClub'])` to entries
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
-     *     function(DefineEagerLoadingMapEvent $event) {
-     *         if ($event->handle === 'bookClub') {
-     *             $bookEntryIds = array_map(fn(ElementInterface $element) => $element->id, $event->elements);
-     *             $event->elementType = \my\plugin\BookClub::class,
-     *             $event->map = (new Query)
-     *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
-     *                 ->from('{{%bookclub_books}}')
-     *                 ->where(['bookId' => $bookEntryIds])
-     *                 ->all();
-     *             $event->handled = true;
-     *         }
-     *     }
-     * );
-     * ```
-     *
-     * @since 3.1.0
-     */
-    public const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
-
-    /**
-     * @event SetEagerLoadedElementsEvent The event that is triggered when setting eager-loaded elements.
-     *
-     * Set [[Event::$handled]] to `true` to prevent the elements from getting stored to the private
-     * `$_eagerLoadedElements` array.
-     *
-     * @since 3.5.0
-     */
-    public const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
-
     /**
      * @var ElementInterface[]|null All elements that the element was queried with.
      *
@@ -205,19 +160,18 @@ trait Eagerloadable
         }
 
         // Fire a 'defineEagerLoadingMap' event
-        if (Event::hasHandlers(static::class, Element::EVENT_DEFINE_EAGER_LOADING_MAP)) {
-            $event = new DefineEagerLoadingMapEvent([
-                'sourceElements' => $sourceElements,
-                'handle' => $handle,
-            ]);
-            Event::trigger(static::class, Element::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
-            if ($event->elementType !== null) {
-                return [
-                    'elementType' => $event->elementType,
-                    'map' => $event->map,
-                    'criteria' => $event->criteria,
-                ];
-            }
+        event($event = new DefineEagerLoadingMap(
+            elementType: static::class,
+            sourceElements: $sourceElements,
+            handle: $handle,
+        ));
+
+        if ($event->targetElementType !== null) {
+            return [
+                'elementType' => $event->targetElementType,
+                'map' => $event->map,
+                'criteria' => $event->criteria,
+            ];
         }
 
         // return null so eager-loading is ignored for this handle
@@ -651,16 +605,15 @@ trait Eagerloadable
                 break;
             default:
                 // Fire a 'setEagerLoadedElements' event
-                if ($this->hasEventHandlers(Element::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
-                    $event = new SetEagerLoadedElementsEvent([
-                        'handle' => $handle,
-                        'elements' => $elements,
-                        'plan' => $plan,
-                    ]);
-                    $this->trigger(Element::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
-                    if ($event->handled) {
-                        break;
-                    }
+                event($event = new SetEagerLoadedElements(
+                    element: $this,
+                    handle: $handle,
+                    elements: $elements,
+                    plan: $plan,
+                ));
+
+                if ($event->handled) {
+                    break;
                 }
 
                 // No takers. Just store it in the internal array then.

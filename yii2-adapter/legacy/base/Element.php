@@ -11,18 +11,32 @@ namespace craft\base;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineValueEvent;
+use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementCardAttributesEvent;
+use craft\events\RegisterElementDefaultCardAttributesEvent;
+use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
+use craft\events\RegisterElementSearchableAttributesEvent;
+use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
+use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
 use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Events\RegisterCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterExporters;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
+use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterSources;
+use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Events\Render;
 use Illuminate\Support\Facades\Event;
 
@@ -167,6 +181,24 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see PrepQueryForTableAttribute} instead.
      */
     public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+
+    /**
+     * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
+     *
+     * @see eagerLoadingMap()
+     * @since 3.1.0
+     * @deprecated 6.0.0 Use {@see DefineEagerLoadingMap} instead.
+     */
+    public const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
+
+    /**
+     * @event SetEagerLoadedElementsEvent The event that is triggered when setting eager-loaded elements.
+     *
+     * @see setEagerLoadedElements()
+     * @since 3.5.0
+     * @deprecated 6.0.0 Use {@see SetEagerLoadedElements} instead.
+     */
+    public const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
 
     public static function registerEvents(): void
     {
@@ -490,6 +522,56 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 ]);
 
                 YiiEvent::trigger($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
+
+                if ($yiiEvent->handled) {
+                    $event->handled = true;
+                }
+            }
+        });
+
+        Event::listen(function(DefineEagerLoadingMap $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineEagerLoadingMapEvent([
+                    'sourceElements' => $event->sourceElements,
+                    'handle' => $event->handle,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $yiiEvent);
+
+                if ($yiiEvent->elementType !== null) {
+                    $event->targetElementType = $yiiEvent->elementType;
+                    $event->map = $yiiEvent->map;
+                    $event->criteria = $yiiEvent->criteria;
+                }
+            }
+        });
+
+        Event::listen(function(SetEagerLoadedElements $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
+                    continue;
+                }
+
+                $yiiEvent = new SetEagerLoadedElementsEvent([
+                    'sender' => $event->element,
+                    'handle' => $event->handle,
+                    'elements' => $event->elements,
+                    'plan' => $event->plan,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $yiiEvent);
 
                 if ($yiiEvent->handled) {
                     $event->handled = true;
