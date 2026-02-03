@@ -8,12 +8,6 @@
 namespace craft\base;
 
 use craft\web\twig\AllowedInSandbox;
-use CraftCms\Cms\Element\Concerns\Draftable;
-use CraftCms\Cms\Element\Concerns\Eagerloadable;
-use CraftCms\Cms\Element\Concerns\Exportable;
-use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
-use CraftCms\Cms\Element\Concerns\Revisionable;
-use CraftCms\Cms\Element\Concerns\Structurable;
 use DateTime;
 
 /**
@@ -25,13 +19,6 @@ use DateTime;
  */
 trait ElementTrait
 {
-    use Draftable;
-    use Eagerloadable;
-    use Exportable;
-    use HasControlPanelUI;
-    use Revisionable;
-    use Structurable;
-
     /**
      * @var int|null The element’s ID
      */

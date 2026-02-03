@@ -8,6 +8,7 @@ use Craft;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
