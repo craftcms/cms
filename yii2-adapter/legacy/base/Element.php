@@ -11,10 +11,12 @@ namespace craft\base;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineValueEvent;
+use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Element\Events\RegisterSources;
@@ -71,6 +73,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see RegisterActions} instead.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementExportersEvent The event that is triggered when registering the available exporters for the element type.
+     *
+     * @see exporters()
+     * @since 3.4.0
+     * @deprecated 6.0.0 Use {@see RegisterExporters} instead.
+     */
+    public const EVENT_REGISTER_EXPORTERS = 'registerExporters';
 
     public static function registerEvents(): void
     {
@@ -181,6 +192,27 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 YiiEvent::trigger($class, self::EVENT_REGISTER_ACTIONS, $yiiEvent);
 
                 $event->actions = $yiiEvent->actions;
+            }
+        });
+
+        Event::listen(function(RegisterExporters $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if ($class !== $event->elementType && !is_subclass_of($event->elementType, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_EXPORTERS)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterElementExportersEvent([
+                    'source' => $event->source,
+                    'exporters' => $event->exporters,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_EXPORTERS, $yiiEvent);
+
+                $event->exporters = $yiiEvent->exporters;
             }
         });
     }
