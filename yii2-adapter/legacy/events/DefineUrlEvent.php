@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\BeforeDefineUrl} or {@see \CraftCms\Cms\Element\Events\DefineUrl} instead.
  */
 class DefineUrlEvent extends Event
 {

@@ -15,6 +15,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\RegisterCardAttributes} instead.
  */
 class RegisterElementCardAttributesEvent extends Event
 {
