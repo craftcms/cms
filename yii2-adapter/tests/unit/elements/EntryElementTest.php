@@ -10,7 +10,6 @@ namespace crafttests\unit\elements;
 use craft\events\DefineUrlEvent;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
 use UnitTester;
 
@@ -41,11 +40,11 @@ class EntryElementTest extends TestCase
         $entry->uri = $uri;
 
         if ($beforeEvent) {
-            $entry->on(Element::EVENT_BEFORE_DEFINE_URL, $beforeEvent);
+            $entry->on(\craft\base\Element::EVENT_BEFORE_DEFINE_URL, $beforeEvent);
         }
 
         if ($afterEvent) {
-            $entry->on(Element::EVENT_DEFINE_URL, $afterEvent);
+            $entry->on(\craft\base\Element::EVENT_DEFINE_URL, $afterEvent);
         }
 
         if (is_callable($expected)) {
