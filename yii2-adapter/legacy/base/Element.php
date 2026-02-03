@@ -24,7 +24,12 @@ use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
+use CraftCms\Cms\Element\Events\AfterDelete;
+use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\AfterRestore;
 use CraftCms\Cms\Element\Events\AfterSave;
+use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
@@ -228,6 +233,44 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see AfterPropagate} instead.
      */
     public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
+     *
+     * @see beforeDelete()
+     * @deprecated 6.0.0 Use {@see BeforeDelete} instead.
+     */
+    public const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is deleted.
+     *
+     * @see afterDelete()
+     * @deprecated 6.0.0 Use {@see AfterDelete} instead.
+     */
+    public const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is restored.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
+     *
+     * @see beforeRestore()
+     * @since 3.1.0
+     * @deprecated 6.0.0 Use {@see BeforeRestore} instead.
+     */
+    public const EVENT_BEFORE_RESTORE = 'beforeRestore';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is restored.
+     *
+     * @see afterRestore()
+     * @since 3.1.0
+     * @deprecated 6.0.0 Use {@see AfterRestore} instead.
+     */
+    public const EVENT_AFTER_RESTORE = 'afterRestore';
 
     public static function registerEvents(): void
     {
@@ -666,6 +709,86 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 ]);
 
                 YiiEvent::trigger($class, self::EVENT_AFTER_PROPAGATE, $yiiEvent);
+            }
+        });
+
+        Event::listen(function(BeforeDelete $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_DELETE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_BEFORE_DELETE, $yiiEvent);
+
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
+                }
+            }
+        });
+
+        Event::listen(function(AfterDelete $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_DELETE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_AFTER_DELETE, $yiiEvent);
+            }
+        });
+
+        Event::listen(function(BeforeRestore $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_RESTORE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_BEFORE_RESTORE, $yiiEvent);
+
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
+                }
+            }
+        });
+
+        Event::listen(function(AfterRestore $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_RESTORE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ModelEvent([
+                    'sender' => $event->element,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_AFTER_RESTORE, $yiiEvent);
             }
         });
     }

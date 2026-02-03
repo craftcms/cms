@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\events\ModelEvent;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementRelations;
+use CraftCms\Cms\Element\Events\AfterDelete;
 use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\AfterRestore;
 use CraftCms\Cms\Element\Events\AfterSave;
+use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 
 /**
@@ -20,34 +22,6 @@ use CraftCms\Cms\Element\Events\BeforeSave;
  */
 trait HasLifecycleHooks
 {
-    /**
-     * @event ModelEvent The event that is triggered before the element is deleted.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
-     */
-    public const EVENT_BEFORE_DELETE = 'beforeDelete';
-
-    /**
-     * @event \yii\base\Event The event that is triggered after the element is deleted.
-     */
-    public const EVENT_AFTER_DELETE = 'afterDelete';
-
-    /**
-     * @event ModelEvent The event that is triggered before the element is restored.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
-     *
-     * @since 3.1.0
-     */
-    public const EVENT_BEFORE_RESTORE = 'beforeRestore';
-
-    /**
-     * @event \yii\base\Event The event that is triggered after the element is restored.
-     *
-     * @since 3.1.0
-     */
-    public const EVENT_AFTER_RESTORE = 'afterRestore';
-
     /**
      * {@inheritdoc}
      *
@@ -112,15 +86,9 @@ trait HasLifecycleHooks
             return false;
         }
 
-        // Fire a 'beforeDelete' event
-        if ($this->hasEventHandlers(Element::EVENT_BEFORE_DELETE)) {
-            $event = new ModelEvent;
-            $this->trigger(Element::EVENT_BEFORE_DELETE, $event);
+        event($event = new BeforeDelete($this));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /**
@@ -135,10 +103,7 @@ trait HasLifecycleHooks
             $field->afterElementDelete($this);
         }
 
-        // Fire an 'afterDelete' event
-        if ($this->hasEventHandlers(Element::EVENT_AFTER_DELETE)) {
-            $this->trigger(Element::EVENT_AFTER_DELETE);
-        }
+        event(new AfterDelete($this));
 
         $this->handleRevisionDelete();
         $this->handleDraftDelete();
@@ -182,15 +147,9 @@ trait HasLifecycleHooks
             return false;
         }
 
-        // Fire a 'beforeRestore' event
-        if ($this->hasEventHandlers(Element::EVENT_BEFORE_RESTORE)) {
-            $event = new ModelEvent;
-            $this->trigger(Element::EVENT_BEFORE_RESTORE, $event);
+        event($event = new BeforeRestore($this));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /**
@@ -205,9 +164,6 @@ trait HasLifecycleHooks
             $field->afterElementRestore($this);
         }
 
-        // Fire an 'afterRestore' event
-        if ($this->hasEventHandlers(Element::EVENT_AFTER_RESTORE)) {
-            $this->trigger(Element::EVENT_AFTER_RESTORE);
-        }
+        event(new AfterRestore($this));
     }
 }
