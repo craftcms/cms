@@ -517,10 +517,10 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             // we need to prevent `View::renderObjectTemplate()` from trying to normalize this value again and again
             // to do that, we can e.g. set `propagating` to false before getting the translation key
             // see https://github.com/craftcms/cms/issues/18363 for more details
-            $originalPropagating = $element->propagating;
             if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
                 $element->propagating = false;
             }
+
             if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)) {
                 $linkedElement = $value->getElement();
                 if ($linkedElement && $linkedElement::isLocalized()) {
@@ -537,8 +537,9 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                     }
                 }
             }
-            // and we need to set `propagating` back to what it was at the beginning
-            $element->propagating = $originalPropagating;
+
+            // set $propagating back to true
+            $element->propagating = true;
         }
 
         if ($value instanceof LinkData) {
