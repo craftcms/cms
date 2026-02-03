@@ -380,6 +380,24 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
+    /**
+     * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
+     *
+     * @see beforeMoveInStructure()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see BeforeMoveInStructure} instead.
+     */
+    public const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     *
+     * @see afterMoveInStructure()
+     * @since 3.0.0
+     * @deprecated 6.0.0 Use {@see AfterMoveInStructure} instead.
+     */
+    public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
+
     public static function registerEvents(): void
     {
         // Find all classes that extend Element
@@ -1163,6 +1181,48 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 if ($yiiEvent->handled) {
                     $event->handled = true;
                 }
+            }
+        });
+
+        Event::listen(function(BeforeMoveInStructure $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ElementStructureEvent([
+                    'sender' => $event->element,
+                    'structureId' => $event->structureId,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $yiiEvent);
+
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
+                }
+            }
+        });
+
+        Event::listen(function(AfterMoveInStructure $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+                    continue;
+                }
+
+                $yiiEvent = new ElementStructureEvent([
+                    'sender' => $event->element,
+                    'structureId' => $event->structureId,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
             }
         });
     }

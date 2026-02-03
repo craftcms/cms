@@ -6,9 +6,10 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\events\ElementStructureEvent;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\AfterMoveInStructure;
+use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 
@@ -35,18 +36,6 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
  */
 trait Structurable
 {
-    /**
-     * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
-     */
-    public const string EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
-
-    /**
-     * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
-     */
-    public const string EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
-
     public ?int $structureId = null;
 
     public ?int $root = null;
@@ -372,14 +361,9 @@ trait Structurable
     public function beforeMoveInStructure(int $structureId): bool
     {
         // Fire a 'beforeMoveInStructure' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
-            $event = new ElementStructureEvent(['structureId' => $structureId]);
-            $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+        event($event = new BeforeMoveInStructure($this, $structureId));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     /**
@@ -388,11 +372,7 @@ trait Structurable
     public function afterMoveInStructure(int $structureId): void
     {
         // Fire an 'afterMoveInStructure' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
-            $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
-                'structureId' => $structureId,
-            ]));
-        }
+        event(new AfterMoveInStructure($this, $structureId));
 
         // Invalidate caches for this element
         Craft::$app->getElements()->invalidateCachesForElement($this);
