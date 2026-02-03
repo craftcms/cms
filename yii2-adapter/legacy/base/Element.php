@@ -52,6 +52,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      */
     public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
+    /**
+     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element's preview targets.
+     *
+     * @see getPreviewTargets()
+     * @since 3.2.0
+     * @deprecated 6.0.0 Use {@see RegisterPreviewTargets} instead.
+     */
+    public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+
     public static function registerEvents(): void
     {
         // Find all classes that extend Element
@@ -119,6 +128,27 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 YiiEvent::trigger($class, self::EVENT_REGISTER_FIELD_LAYOUTS, $yiiEvent);
 
                 $event->fieldLayouts = $yiiEvent->fieldLayouts;
+            }
+        });
+
+        Event::listen(function(RegisterPreviewTargets $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!is_a($event->element, $class)) {
+                    continue;
+                }
+
+                if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                    continue;
+                }
+
+                $yiiEvent = new RegisterPreviewTargetsEvent([
+                    'sender' => $event->element,
+                    'previewTargets' => $event->previewTargets,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
+
+                $event->previewTargets = $yiiEvent->previewTargets;
             }
         });
     }
