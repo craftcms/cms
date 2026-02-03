@@ -10,12 +10,10 @@ use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
 use craft\base\ElementTrait;
-use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\events\ModelEvent;
 use craft\events\RenderElementEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use craft\web\View;
 use CraftCms\Cms\Cms;
@@ -24,15 +22,12 @@ use CraftCms\Cms\Element\Concerns\Draftable;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
 use Deprecated;
@@ -48,7 +43,6 @@ use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Event;
 use yii\base\InvalidCallException;
-use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 use function CraftCms\Cms\t;
@@ -117,6 +111,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasSources;
     use Concerns\HasStatuses;
     use Concerns\HasThumbnails;
+    use Concerns\Localizable;
     use Concerns\Queryable;
     use Concerns\Revisionable;
     use Concerns\Searchable;
@@ -477,14 +472,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public static function isLocalized(): bool
-    {
-        return false;
-    }
-
-    /**
      * @var array<string,int>|null
      *
      * @see validate()
@@ -537,11 +524,6 @@ abstract class Element extends Component implements ElementInterface
      * @see toArray()
      */
     private $_serializeFields = false;
-
-    /**
-     * @see getIsCrossSiteCopyable()
-     */
-    private bool $_isCrossSiteCopyable;
 
     /**
      * {@inheritdoc}
@@ -1041,59 +1023,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * {@inheritdoc}
      */
-    public function getSupportedSites(): array
-    {
-        if (static::isLocalized()) {
-            return Sites::getAllSiteIds()->all();
-        }
-
-        return [Sites::getPrimarySite()->id];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function createAnother(): ?ElementInterface
     {
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getRootOwner(): ElementInterface
-    {
-        if ($this instanceof NestedElementInterface) {
-            $owner = $this->getOwner();
-            if ($owner) {
-                return $owner->getRootOwner();
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.5.0
-     */
-    public function getLocalized(): ElementQueryInterface|Queries\ElementQuery|ElementCollection
-    {
-        // Eager-loaded?
-        if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
-            return $localized;
-        }
-
-        return static::find()
-            ->id($this->id ?: false)
-            ->structureId($this->structureId)
-            ->siteId(['not', $this->siteId])
-            ->drafts(null)
-            // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
-            // so don't filter based on one or the other
-            ->provisionalDrafts(null)
-            ->revisions(null);
     }
 
     /**
@@ -1265,54 +1197,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getIsTitleTranslatable(): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTitleTranslationDescription(): ?string
-    {
-        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTitleTranslationKey(): string
-    {
-        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsSlugTranslatable(): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSlugTranslationDescription(): ?string
-    {
-        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSlugTranslationKey(): string
-    {
-        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
-    }
-
-    /**
      * Returns whether all fields and attributes should be considered dirty.
      */
     private function _allDirty(): bool
@@ -1364,24 +1248,6 @@ abstract class Element extends Component implements ElementInterface
     public function setIsFresh(bool $isFresh = true): void
     {
         $this->_isFresh = $isFresh;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIsCrossSiteCopyable(): bool
-    {
-        if (! isset($this->_isCrossSiteCopyable)) {
-            $this->_isCrossSiteCopyable = (
-                Sites::isMultiSite() &&
-                // check if user can edit this element in other sites
-                count(ElementHelper::editableSiteIdsForElement($this)) > 1 &&
-                // also check if the element exists in other sites
-                ! empty(array_diff(array_keys(ElementHelper::siteStatusesForElement($this, true)), [$this->siteId]))
-            );
-        }
-
-        return $this->_isCrossSiteCopyable;
     }
 
     // Indexes, etc.
@@ -1555,34 +1421,6 @@ abstract class Element extends Component implements ElementInterface
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
             $this->trigger(self::EVENT_AFTER_RESTORE);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InvalidConfigException if [[siteId]] is invalid
-     */
-    public function getSite(): Site
-    {
-        if (isset($this->siteId)) {
-            $site = Sites::getSiteById($this->siteId, true);
-        }
-
-        if (! isset($site)) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
-        }
-
-        return $site;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.5.0
-     */
-    public function getLanguage(): string
-    {
-        return $this->getSite()->getLanguage();
     }
 
     /**
