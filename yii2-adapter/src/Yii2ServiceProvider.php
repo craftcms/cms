@@ -475,6 +475,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Elements
          */
         \craft\base\Element::registerEvents();
+        \craft\elements\User::registerEvents();
 
         /**
          * Services

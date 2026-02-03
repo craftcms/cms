@@ -14,7 +14,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\events\DefineValueEvent;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
@@ -51,6 +50,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Events\DefineFriendlyName;
+use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
@@ -116,28 +117,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
      * @since 5.0.0
      */
     public const string GQL_TYPE_NAME = 'User';
-
-    /**
-     * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
-     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
-     * something if there is an authentication error.
-     */
-    public const string EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
-     *
-     * @since 3.7.0
-     */
-    public const string EVENT_DEFINE_NAME = 'defineName';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
-     *
-     * @since 3.7.0
-     */
-    public const string EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     private static array $photoColors = [
         'red',
@@ -1316,16 +1295,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
     private function _defineName(): string
     {
-        // Fire a 'defineName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
-            $event = new DefineValueEvent;
-            $this->trigger(self::EVENT_DEFINE_NAME, $event);
-            if ($event->value !== null) {
-                return $event->value;
-            }
-        }
+        event($event = new DefineName($this));
 
-        return $this->fullName ?? (string) $this->username;
+        return $event->name ?? $this->fullName ?? (string) $this->username;
     }
 
     /**
@@ -1353,16 +1325,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
     private function _defineFriendlyName(): ?string
     {
-        // Fire a 'defineFriendlyName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
-            $event = new DefineValueEvent;
-            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event);
-            if ($event->handled || $event->value !== null) {
-                return $event->value;
-            }
-        }
+        event($event = new DefineFriendlyName($this));
 
-        return $this->firstName ?? $this->username;
+        return $event->name ?? $this->firstName ?? $this->username;
     }
 
     /**
