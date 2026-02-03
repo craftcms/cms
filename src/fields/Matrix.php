@@ -949,7 +949,7 @@ class Matrix extends Field implements
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
       let expandLabel, collapseLabel;
       if (blocks.is('.sel')) {
@@ -1030,7 +1030,7 @@ JS);
 
   if (!field.length) {
     setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(btn[0]);
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
     }, 1);
     return;
   }
@@ -1057,7 +1057,7 @@ JS);
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       const entries = getEntries();
       let copyLabel;
       if ($(entries).is('.sel')) {
@@ -1134,7 +1134,7 @@ JS;
 
   if (!field.length) {
     setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(btn[0]);
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
     }, 1);
     return;
   }
@@ -1147,7 +1147,7 @@ JS;
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       disclosureMenu.toggleItem(btn[0], !!getEntries().length);
     });
   }, 1);

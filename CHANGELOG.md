@@ -18,6 +18,7 @@
 - Fixed a bug where newly-selected elements weren’t being rendered correctly for relational fields set to the “Card grid” view mode. ([#18362](https://github.com/craftcms/cms/issues/18362))
 - Fixed a bug where card previews weren’t getting updated when a selected field was removed from the field layout.
 - Fixed potential JavaScript errors that could occur if a disclosure menu’s trigger or target elements were missing. ([#18358](https://github.com/craftcms/cms/issues/18358))
+- Fixed a JavaScript error that occurred if a Matrix field’s label was hidden. ([#18366](https://github.com/craftcms/cms/issues/18366))
 - Fixed an infinite recursion bug. ([#18363](https://github.com/craftcms/cms/issues/18363))
 
 ## 5.9.5 - 2026-01-31
