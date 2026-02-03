@@ -15,6 +15,8 @@ use yii\base\Component;
 beforeEach(function() {
     $this->mock(JobProgress::class)
         ->shouldReceive('clear')
+        ->shouldReceive('getJobInfo')->andReturn(new Collection())
+        ->shouldReceive('getTotalJobs')->andReturn(0)
         ->shouldReceive('getActive')->andReturn(new Collection())
         ->shouldReceive('getAll')->andReturn(new Collection())
         ->shouldReceive('getProgress')->andReturn(null)
