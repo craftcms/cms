@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-use craft\events\RegisterElementFieldLayoutsEvent;
-use craft\events\RegisterElementSourcesEvent;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
+use CraftCms\Cms\Element\Events\RegisterSources;
 use CraftCms\Cms\Entry\Elements\Entry;
-use yii\base\Event;
 
 class TestHasSourcesElement extends Element
 {
@@ -35,16 +34,17 @@ describe('sources', function () {
         expect($sources1)->toBe($sources2);
     });
 
-    test('triggers registerSources event', function () {
+    test('triggers RegisterSources event', function () {
         $eventTriggered = false;
-        $handler = function (RegisterElementSourcesEvent $event) use (&$eventTriggered) {
-            $eventTriggered = true;
-            $event->sources = [];
-        };
 
-        Event::on(TestHasSourcesElement::class, TestHasSourcesElement::EVENT_REGISTER_SOURCES, $handler);
-        TestHasSourcesElement::sources('index');
-        Event::off(TestHasSourcesElement::class, TestHasSourcesElement::EVENT_REGISTER_SOURCES, $handler);
+        \Illuminate\Support\Facades\Event::listen(function (RegisterSources $event) use (&$eventTriggered) {
+            if ($event->elementType === TestHasSourcesElement::class) {
+                $eventTriggered = true;
+                $event->sources = [];
+            }
+        });
+
+        TestHasSourcesElement::sources('modal');
 
         expect($eventTriggered)->toBeTrue();
     });
@@ -82,16 +82,17 @@ describe('fieldLayouts', function () {
         expect($layouts)->toBeArray();
     });
 
-    test('triggers registerFieldLayouts event', function () {
+    test('triggers RegisterFieldLayouts event', function () {
         $eventTriggered = false;
-        $handler = function (RegisterElementFieldLayoutsEvent $event) use (&$eventTriggered) {
-            $eventTriggered = true;
-            $event->fieldLayouts = [];
-        };
 
-        Event::on(Entry::class, Entry::EVENT_REGISTER_FIELD_LAYOUTS, $handler);
+        \Illuminate\Support\Facades\Event::listen(function (RegisterFieldLayouts $event) use (&$eventTriggered) {
+            if ($event->elementType === Entry::class) {
+                $eventTriggered = true;
+                $event->fieldLayouts = [];
+            }
+        });
+
         Entry::fieldLayouts(null);
-        Event::off(Entry::class, Entry::EVENT_REGISTER_FIELD_LAYOUTS, $handler);
 
         expect($eventTriggered)->toBeTrue();
     });

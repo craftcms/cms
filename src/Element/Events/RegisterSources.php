@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Events;
+
+/**
+ * @event RegisterSources The event that is triggered when registering the available sources for the element type.
+ *
+ * {@see \CraftCms\Cms\Element\Concerns\HasSources::sources()}
+ */
+final class RegisterSources
+{
+    /**
+     * @param  class-string  $elementType  The element type class
+     * @param  string  $context  The context ('index', 'modal', 'field', or 'settings')
+     * @param  array  $sources  The registered sources
+     */
+    public function __construct(
+        public string $elementType,
+        public string $context,
+        public array $sources = [],
+    ) {}
+}
