@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -135,6 +136,12 @@ final readonly class Drafts
                     query: DB::table(Table::ELEMENTS_OWNERS, 'o')
                         ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
                         ->where('o.ownerId', $canonical->id)
+                        ->whereNotExists(function (Builder $q) use ($draft) {
+                            $q->selectRaw(1)
+                                ->from(Table::ELEMENTS_OWNERS)
+                                ->whereColumn('elementId', 'o.elementId')
+                                ->where('ownerId', $draft->id);
+                        }),
                 );
             });
 
