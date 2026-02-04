@@ -5,7 +5,9 @@ namespace CraftCms\Yii2Adapter;
 use Craft;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
+use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\events\DefineFieldLayoutFieldsEvent;
@@ -475,6 +477,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * Elements
          */
         \craft\base\Element::registerEvents();
+        Asset::registerEvents();
+        Entry::registerEvents();
         \craft\elements\User::registerEvents();
 
         /**

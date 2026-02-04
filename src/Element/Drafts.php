@@ -137,7 +137,7 @@ final readonly class Drafts
                         ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
                         ->where('o.ownerId', $canonical->id)
                         ->whereNotExists(function (Builder $q) use ($draft) {
-                            $q->selectRaw(1)
+                            $q->selectRaw('1')
                                 ->from(Table::ELEMENTS_OWNERS)
                                 ->whereColumn('elementId', 'o.elementId')
                                 ->where('ownerId', $draft->id);
