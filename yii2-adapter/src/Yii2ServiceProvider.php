@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\base\Event as YiiEvent;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
 use craft\elements\Asset;
@@ -79,6 +80,7 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
+use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
@@ -130,7 +132,6 @@ use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
-use yii\base\Event as YiiEvent;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
@@ -519,7 +520,17 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         Cp::registerEvents();
 
-        Event::listen(EditionChanged::class, function(EditionChanged $event) {
+        Event::listen(function(RegisterCpNavItems $event) {
+            if (YiiEvent::hasHandlers(CpVariable::class, 'registerCpNavItems')) {
+                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $event->navItems]);
+
+                YiiEvent::trigger(CpVariable::class, 'registerCpNavItems', $yiiEvent);
+
+                $event->navItems = $yiiEvent->navItems;
+            }
+        });
+
+        Event::listen(function(EditionChanged $event) {
             /** @var \craft\web\Application $craft */
             $craft = app('Craft');
 

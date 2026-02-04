@@ -16,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -357,12 +358,9 @@ class Cp extends Component
             ];
         }
 
-        // Fire a 'registerCpNavItems' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
-            $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
-            $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-            $navItems = $event->navItems;
-        }
+        event($event = new RegisterCpNavItems($navItems));
+
+        $navItems = $event->navItems;
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
