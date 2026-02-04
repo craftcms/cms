@@ -2,7 +2,7 @@
   <div id="application-info">
     <h2 class="mb-3">{{ "Application Info"|t('app') }}</h2>
 
-    <table class="cp-table" dir="ltr">
+    <table class="cp-table cp-table--borderless" dir="ltr">
       <tbody>
         {% for label, value in appInfo %}
           <tr>
@@ -19,7 +19,7 @@
     <h2 class="mb-3">{{ "Plugins"|t('app') }}</h2>
 
     {% if plugins|length %}
-      <table class="cp-table" dir="ltr">
+      <table class="cp-table cp-table--borderless" dir="ltr">
         <tbody>
           {% for plugin in plugins %}
             <tr>
@@ -39,7 +39,7 @@
     <h2 class="mb-3">{{ 'Modules'|t('app') }}</h2>
 
     {% if modules|length %}
-      <table class="cp-table" dir="ltr">
+      <table class="cp-table cp-table--borderless" dir="ltr">
         <tbody>
           {% for id, class in modules %}
             <tr>
@@ -63,7 +63,7 @@
       })|raw }}
     </p>
 
-    <table class="cp-table" dir="ltr">
+    <table class="cp-table cp-table--borderless" dir="ltr">
       <tbody>
         {% for alias, value in aliases %}
           <tr>
@@ -79,7 +79,7 @@
 
     <h2 class="mb-3">{{ "Requirements"|t('app') }}</h2>
 
-    <table class="cp-table" dir="ltr">
+    <table class="cp-table cp-table--borderless" dir="ltr">
       <tbody>
         {% for requirement in requirements %}
           <tr>
