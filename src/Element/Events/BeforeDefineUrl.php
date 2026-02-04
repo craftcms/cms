@@ -19,7 +19,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getUrl()}
  */
-final class BeforeDefineUrl
+class BeforeDefineUrl
 {
     use HandleableEvent;
 

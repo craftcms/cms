@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getUrl()}
  */
-final class DefineUrl
+class DefineUrl
 {
     use HandleableEvent;
 

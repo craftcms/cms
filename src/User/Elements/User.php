@@ -103,7 +103,7 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
 #[Ruleset(UserRules::class)]
-final class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
 {
     use Authenticatable;
     use Authorizable;
