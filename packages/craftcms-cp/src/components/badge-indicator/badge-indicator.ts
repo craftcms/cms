@@ -19,6 +19,9 @@ export default class CraftBadgeIndicator extends LitElement {
   /** Accessible text for screen reader users */
   @property() srText: string | null = null;
 
+  /** Theme variant of the badge indicator. Defaults to "primary" */
+  @property() variant: 'primary' | 'secondary' = 'primary';
+
   @property()
   override id: string;
 
@@ -47,6 +50,7 @@ export default class CraftBadgeIndicator extends LitElement {
       <div 
         id=${badgeId}
         class="${classMap({
+          'secondary': this.variant === 'secondary',
           'badge-indicator': true,
           'badge-indicator--with-number': this.number !== null,
         })}"

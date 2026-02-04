@@ -18,8 +18,9 @@ export default meta;
 type Story = StoryObj<any>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const DotBadge: Story = {
-  name: 'Dot Badge',
+
+export const Dot: Story = {
+  name: 'Dot',
   args: {
     srText: 'Has Notifications'
   },
@@ -33,8 +34,8 @@ export const DotBadge: Story = {
   `,
 }
 
-export const NumberedBadge: Story = {
-  name: 'Numbered Badge',
+export const Numbered: Story = {
+  name: 'Numbered',
   args: {
     number: 5,
     srText: 'updates'
@@ -44,3 +45,48 @@ export const NumberedBadge: Story = {
   `,
 }
 
+export const Primary: Story = {
+  name: 'Primary',
+  args: {
+    srText: 'Has Notifications'
+  },
+  argTypes: {
+    number: {
+      control: { type: null }
+    },
+  },
+  render: (args) => html`
+    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
+  `,
+}
+
+export const Secondary: Story = {
+  name: 'Secondary',
+  args: {
+    srText: 'Has Notifications',
+    variant: 'secondary',
+  },
+  argTypes: {
+    number: {
+      control: { type: null }
+    },
+  },
+  render: (args) => html`
+    <craft-badge-indicator .srText="${args.srText}" .variant="${args.variant}"></craft-badge-indicator>
+  `,
+}
+
+export const Inverse: Story = {
+  name: 'Inverse',
+  args: {
+    srText: 'Has Notifications'
+  },
+  argTypes: {
+    number: {
+      control: { type: null }
+    },
+  },
+  render: (args) => html`
+    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
+  `,
+}
