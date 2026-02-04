@@ -12,9 +12,10 @@
       selectable?: boolean;
       readOnly?: boolean;
       layout?: 'auto' | 'fixed';
+      spacing?: 'compact' | 'relaxed';
     }>(),
 
-    {reorderable: true, selectable: true, layout: 'auto'}
+    {reorderable: true, selectable: true, layout: 'auto', spacing: 'compact'}
   );
 
   const emit = defineEmits<{
@@ -81,7 +82,14 @@
 <template>
   <div class="admin-table-wrapper">
     <div>
-      <table>
+      <table
+        :class="{
+          'cp-table': true,
+          'cp-table--compact': spacing === 'compact',
+          'cp-table--relaxed': spacing === 'relaxed',
+          'cp-table--auto': layout === 'auto',
+        }"
+      >
         <thead>
           <tr
             v-for="headerGroup in table.getHeaderGroups()"
@@ -159,15 +167,7 @@
     overflow: hidden;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: v-bind(layout);
-  }
-
   .cell {
-    padding-block: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-md);
     white-space: nowrap;
   }
 
@@ -180,19 +180,6 @@
     padding-inline: var(--c-spacing-sm);
     position: relative;
     overflow: visible; // Allow drop indicator to extend beyond cell
-  }
-
-  thead tr {
-    background-color: var(--c-color-neutral-bg-normal);
-  }
-
-  th {
-    background-color: var(--c-color-neutral-bg-normal);
-    text-align: left;
-  }
-
-  tr:not(:last-child) {
-    border-bottom: 1px solid var(--color-slate-200);
   }
 
   // Drag handle styles

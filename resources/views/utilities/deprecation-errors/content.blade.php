@@ -1,0 +1,3 @@
+<DeprecationErrors
+    :logs='@json($logs)'
+/>

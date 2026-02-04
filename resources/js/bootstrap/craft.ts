@@ -7,6 +7,7 @@ import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
 import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManagerToolbar.vue';
+import DeprecationErrors from '@/components/utilities/DeprecationErrors/DeprecationErrors.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> =
   window.bootedCallbacks || [];
@@ -73,6 +74,7 @@ const Craft = {
 
         app.component('QueueManager', QueueManager);
         app.component('QueueManagerToolbar', QueueManagerToolbar);
+        app.component('DeprecationErrors', DeprecationErrors);
 
         app.mount(el);
       },

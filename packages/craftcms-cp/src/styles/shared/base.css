@@ -68,19 +68,51 @@ hr {
   }
 }
 
+/**
+CP Table
+
+Applies some basic styling to table elements.
+
+Modify with `cp-table--compact` to reduce the vertical cell padding
+Modify with `cp-table--borderless` to remove the inline cell padding
+Modify with `cp-table--auto` to apply table-layout: auto
+ */
 .cp-table {
   text-align: left;
   table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
 
-  th,
-  td {
-    padding-block: var(--c-spacing-md);
-    padding-inline: 0;
+  thead {
+    background-color: var(--c-color-neutral-bg-normal);
   }
 
-  tr {
+  th,
+  td {
+    vertical-align: top;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-md);
+  }
+
+  tr:not(:last-child) {
     border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+}
+
+.cp-table--auto {
+  table-layout: auto;
+}
+
+.cp-table--borderless {
+  th,
+  td {
+    padding-inline: 0;
+  }
+}
+
+.cp-table--compact {
+  th,
+  td {
+    padding-block: var(--c-spacing-sm);
   }
 }

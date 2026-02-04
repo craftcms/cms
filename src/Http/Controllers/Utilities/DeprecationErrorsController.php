@@ -14,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use function CraftCms\Cms\t;
+
 final readonly class DeprecationErrorsController
 {
     public function __construct(
@@ -49,13 +51,21 @@ final readonly class DeprecationErrorsController
 
         $this->deprecator->deleteLogById($request->integer('logId'));
 
-        return new JsonResponse;
+        if (! $request->inertia() && $request->ajax()) {
+            return new JsonResponse;
+        }
+
+        return back()->with('success', t('Deprecation error removed.'));
     }
 
-    public function deleteAllDeprecationErrors(): JsonResponse
+    public function deleteAllDeprecationErrors(Request $request)
     {
         $this->deprecator->deleteAllLogs();
 
-        return new JsonResponse;
+        if (! $request->inertia() && $request->ajax()) {
+            return new JsonResponse;
+        }
+
+        return back()->with('success', t('Deprecation errors removed.'));
     }
 }
