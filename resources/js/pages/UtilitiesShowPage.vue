@@ -49,6 +49,7 @@
     </template>
 
     <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
+    <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
   </IndexLayout>
 </template>
 
