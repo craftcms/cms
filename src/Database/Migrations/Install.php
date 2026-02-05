@@ -488,6 +488,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        Schema::dropIfExists(Table::MIGRATIONS);
         app(Migrator::class)
             ->getRepository()
             ->createRepository();
