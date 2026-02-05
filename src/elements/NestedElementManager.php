@@ -1312,6 +1312,8 @@ JS, [
                 ->indexBy('canonicalId')
                 ->all();
 
+            $newOwnershipData = [];
+
             foreach ($canonicalElements as $canonicalElement) {
                 if (isset($derivativeElements[$canonicalElement->id])) {
                     $derivativeElement = $derivativeElements[$canonicalElement->id];
@@ -1327,15 +1329,17 @@ JS, [
                         $elementsService->mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
-                    // This is a new element, so duplicate it into the derivative owner
-                    $elementsService->duplicateElement($canonicalElement, [
-                        'canonicalId' => $canonicalElement->id,
-                        'primaryOwner' => $owner,
-                        'owner' => $localizedOwners[$canonicalElement->siteId],
-                        'siteId' => $canonicalElement->siteId,
-                        'propagating' => false,
-                    ]);
+                    // This is a new nested element, so duplicate its ownership into the derivative
+                    $newOwnershipData[] = [
+                        $canonicalElement->id,
+                        $owner->id,
+                        $canonicalElement->getSortOrder(),
+                    ];
                 }
+            }
+
+            if (!empty($newOwnershipData)) {
+                Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $newOwnershipData);
             }
 
             // Keep track of the sites we've already covered

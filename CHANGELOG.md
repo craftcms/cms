@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
+- Fixed a bug where newly-created nested elements were being fully duplicated to other drafts, rather than just their ownership data.
 
 ## 5.9.6 - 2026-02-03
 
