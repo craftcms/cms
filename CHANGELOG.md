@@ -5,6 +5,7 @@
 - Legacy entry index URLs now redirect `content/<page-name>`.
 - Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
 - Fixed a bug where newly-created nested elements were being fully duplicated to other drafts, rather than just their ownership data.
+- Fixed a bug where ancestor elements’ breadcrumbs weren’t getting hyperlinked. ([#18375](https://github.com/craftcms/cms/issues/18375))
 
 ## 5.9.6 - 2026-02-03
 
