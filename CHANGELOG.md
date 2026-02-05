@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
+
 ## 5.9.6 - 2026-02-03
 
 - It’s now possible to set elements’ Thumbnail Source to a field nested within a Content Block field. ([#18365](https://github.com/craftcms/cms/issues/18365))
