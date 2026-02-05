@@ -690,7 +690,7 @@ JS, [
         $resetValue = false;
 
         if ($owner->duplicateOf !== null) {
-            // If this is a draft, its nested element ownership should have already been duplicated by Drafts::createDraft()
+            // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
             // getIsUnpublishedDraft is needed for "save as new" duplication
