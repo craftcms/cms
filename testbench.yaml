@@ -7,3 +7,14 @@ providers:
   - CraftCms\Cms\Providers\CraftServiceProvider
   - CraftCms\Yii2Adapter\Yii2ServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+
+workbench:
+  start: /
+  install: true
+  sync:
+    - from: resources
+      to: public/vendor/craft
+  discovers:
+    web: true
+    commands: true
+    config: true

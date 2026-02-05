@@ -16,6 +16,7 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
+use Override;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -33,7 +34,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @see https://inertiajs.com/asset-versioning
      */
-    #[\Override]
+    #[Override]
     public function version(Request $request): ?string
     {
         return parent::version($request);
@@ -46,15 +47,20 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
-    #[\Override]
+    #[Override]
     public function share(Request $request): array
     {
-        $currentSite = Sites::getCurrentSite();
         $isInstalled = Cms::isInstalled();
+
+        if (! $isInstalled) {
+            return parent::share($request);
+        }
+
+        $currentSite = Sites::getCurrentSite();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
 
-        if ($isInstalled && ! $updates->isCraftUpdatePending()) {
+        if (! $updates->isCraftUpdatePending()) {
             $currentUser = Craft::$app->getUser()->getIdentity();
 
             if (! $currentUser) {

@@ -62,7 +62,7 @@ class Request extends \yii\web\Request
     public function getIlluminateRequest(): IlluminateRequest
     {
         /** @var IlluminateRequest $request */
-        $request = $this->_illuminateRequest ??= app('request');
+        $request = $this->_illuminateRequest ??= IlluminateRequest::capture();
 
         $request->setLaravelSession(session()->driver());
 
