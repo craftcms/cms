@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -26,7 +28,6 @@ use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -50,11 +51,14 @@ use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
 use yii\base\NotSupportedException;
+use yii\helpers\Html as YiiHtml;
 use yii\web\AssetBundle as YiiAssetBundle;
+
 use function CraftCms\Cms\t;
 
 /**
- * @inheritdoc
+ * {@inheritdoc}
+ *
  * @property string $templateMode the current template mode (either `site` or `cp`)
  * @property string $templatesPath the base path that templates should be found in
  * @property string|null $namespace the active namespace
@@ -67,13 +71,16 @@ use function CraftCms\Cms\t;
  * @property-read string $headHtml the content to be inserted in the head section
  * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
  * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class View extends \yii\web\View
 {
     /**
      * @event CreateTwigEvent The event that is triggered when a Twig environment is created.
+     *
      * @see createTwig()
      * @since 4.3.0
      */
@@ -111,6 +118,7 @@ class View extends \yii\web\View
 
     /**
      * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     *
      * @since 4.5.0
      */
     public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
@@ -126,7 +134,16 @@ class View extends \yii\web\View
     public const TEMPLATE_MODE_SITE = 'site';
 
     /**
+     * The location of JS code block to be registered: enclosed within `Craft.booted()`.
+     *
+     * This ensures the code runs after the Craft JS object is initialized and
+     * Inertia/Vue has mounted the page.
+     */
+    public const POS_BOOTED = 6;
+
+    /**
      * @var bool Whether to minify CSS registered with [[registerCss()]]
+     *
      * @since 3.4.0
      * @deprecated in 3.6.0.
      */
@@ -134,6 +151,7 @@ class View extends \yii\web\View
 
     /**
      * @var bool Whether to minify JS registered with [[registerJs()]]
+     *
      * @since 3.4.0
      * @deprecated in 3.6.0
      */
@@ -160,19 +178,18 @@ class View extends \yii\web\View
      */
     private ?Environment $_siteTwig = null;
 
-    /**
-     * @var array
-     */
     private array $_twigOptions;
 
     /**
      * @var array<class-string<ExtensionInterface>,ExtensionInterface>
+     *
      * @see registerCpTwigExtension()
      */
     private array $_cpTwigExtensions = [];
 
     /**
      * @var array<class-string<ExtensionInterface>,ExtensionInterface>
+     *
      * @see registerSiteTwigExtension()
      */
     private array $_siteTwigExtensions = [];
@@ -187,14 +204,8 @@ class View extends \yii\web\View
      */
     private array $_objectTemplates = [];
 
-    /**
-     * @var string|null
-     */
     private ?string $_templateMode = null;
 
-    /**
-     * @var array|null
-     */
     private ?array $_templateRoots = null;
 
     /**
@@ -212,18 +223,13 @@ class View extends \yii\web\View
      */
     private array $_indexTemplateFilenames;
 
-    /**
-     * @var string
-     */
     private string $_privateTemplateTrigger;
 
-    /**
-     * @var string|null
-     */
     private ?string $_namespace = null;
 
     /**
      * @var bool Whether delta input name registration is open.
+     *
      * @see getIsDeltaRegistrationActive()
      * @see setIsDeltaRegistrationActive()
      * @see registerDeltaName()
@@ -232,66 +238,62 @@ class View extends \yii\web\View
 
     /**
      * @var string[] The registered delta input names.
+     *
      * @see registerDeltaName()
      */
     private array $_deltaNames = [];
 
     /**
      * @var string[] The registered modified delta input names.
+     *
      * @see registerDeltaName()
      */
     private array $_modifiedDeltaNames = [];
 
     /**
      * @var array The initial delta input values.
+     *
      * @see setInitialDeltaValue()
      */
     private array $_initialDeltaValues = [];
 
     /**
-     * @var array
      * @see startJsBuffer()
      * @see clearJsBuffer()
      */
     private array $_jsBuffers = [];
 
     /**
-     * @var array
      * @see startScriptBuffer()
      * @see clearScriptBuffer()
      */
     private array $_scriptBuffers = [];
 
     /**
-     * @var array
      * @see startCssBuffer()
      * @see clearCssBuffer()
      */
     private array $_cssBuffers = [];
 
     /**
-     * @var array
      * @see startCssFileBuffer()
      * @see clearCssFileBuffer()
      */
     private array $_cssFileBuffers = [];
 
     /**
-     * @var array
      * @see startJsFileBuffer()
      * @see clearJsFileBuffer()
      */
     private array $_jsFileBuffers = [];
 
     /**
-     * @var array
      * @see startHtmlBuffer()
      * @see clearHtmlBuffer()
      */
     private array $_htmlBuffers = [];
 
     /**
-     * @var array
      * @see startMetaTagBuffer()
      * @see clearMetaTagBuffer()
      * @since 4.5.8
@@ -299,14 +301,12 @@ class View extends \yii\web\View
     private array $_metaTagBuffers = [];
 
     /**
-     * @var array
      * @see startAssetBundleBuffer()
      * @see clearAssetBundleBuffer()
      */
     private array $_assetBundleBuffers = [];
 
     /**
-     * @var array
      * @see startJsImportBuffer()
      * @see clearJsImportBuffer()
      */
@@ -314,24 +314,28 @@ class View extends \yii\web\View
 
     /**
      * @var array|null the registered generic `<script>` code blocks
+     *
      * @see registerScript()
      */
     private ?array $_scripts = null;
 
     /**
      * @var array the registered generic HTML code blocks
+     *
      * @see registerHtml()
      */
     private array $_html = [];
 
     /**
      * @var array the registered imports for JavaScript as modules
+     *
      * @see registerJsImport()
      */
     private array $_jsImports = [];
 
     /**
      * @var string[] The icons that should be registered to the page.
+     *
      * @see registerIcons()
      */
     private array $_icons = [];
@@ -341,18 +345,13 @@ class View extends \yii\web\View
      */
     private array $_hooks = [];
 
-    /**
-     * @var string|null
-     */
     private ?string $_renderingTemplate = null;
 
-    /**
-     * @var bool
-     */
     private bool $_isRenderingPageTemplate = false;
 
     /**
      * @var string[]
+     *
      * @see registerAssetFiles()
      * @see setRegisteredAssetBundles()
      */
@@ -360,13 +359,14 @@ class View extends \yii\web\View
 
     /**
      * @var string[]
+     *
      * @see registerJsFile()
      * @see setRegisteredJsfiles()
      */
     private array $_registeredJsFiles = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -389,8 +389,6 @@ class View extends \yii\web\View
 
     /**
      * Returns the Twig environment.
-     *
-     * @return Environment
      */
     public function getTwig(): Environment
     {
@@ -402,7 +400,6 @@ class View extends \yii\web\View
     /**
      * Sets the Twig environment for the current template mode.
      *
-     * @param Environment $twig
      * @since 5.6.0
      */
     public function setTwig(Environment $twig): void
@@ -416,8 +413,6 @@ class View extends \yii\web\View
 
     /**
      * Creates a new Twig environment.
-     *
-     * @return Environment
      */
     public function createTwig(): Environment
     {
@@ -485,8 +480,6 @@ class View extends \yii\web\View
 
     /**
      * Registers a new Twig extension both CP and site templates.
-     *
-     * @param ExtensionInterface $extension
      */
     public function registerTwigExtension(ExtensionInterface $extension): void
     {
@@ -497,7 +490,6 @@ class View extends \yii\web\View
     /**
      * Registers a new Twig extension for CP templates.
      *
-     * @param ExtensionInterface $extension
      * @since 5.5.0
      */
     public function registerCpTwigExtension(ExtensionInterface $extension): void
@@ -522,7 +514,6 @@ class View extends \yii\web\View
     /**
      * Registers a new Twig extension for site templates.
      *
-     * @param ExtensionInterface $extension
      * @since 5.5.0
      */
     public function registerSiteTwigExtension(ExtensionInterface $extension): void
@@ -557,10 +548,11 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
@@ -593,20 +585,23 @@ class View extends \yii\web\View
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
+
         return $output;
     }
 
     /**
      * Renders a Twig template in a sandboxed environment.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
+     *
      * @see renderTemplate()
      * @since 4.17.0
      */
@@ -628,10 +623,11 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template that represents an entire web page.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
@@ -667,17 +663,19 @@ class View extends \yii\web\View
         }
 
         $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
+
         return $output;
     }
 
     /**
      * Renders a template defined by a string.
      *
-     * @param string $template The source template string.
-     * @param array $variables Any variables that should be available to the template.
-     * @param string $templateMode The template mode to use.
-     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @param  string  $template  The source template string.
+     * @param  array  $variables  Any variables that should be available to the template.
+     * @param  string  $templateMode  The template mode to use.
+     * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
      * @return string The rendered template.
+     *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
@@ -712,13 +710,15 @@ class View extends \yii\web\View
     /**
      * Renders a template defined by a string in a sandboxed environment.
      *
-     * @param string $template The source template string.
-     * @param array $variables Any variables that should be available to the template.
-     * @param string $templateMode The template mode to use.
-     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @param  string  $template  The source template string.
+     * @param  array  $variables  Any variables that should be available to the template.
+     * @param  string  $templateMode  The template mode to use.
+     * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
      * @return string The rendered template.
+     *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
+     *
      * @see renderString()
      * @since 4.17.0
      */
@@ -738,11 +738,12 @@ class View extends \yii\web\View
      * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
      * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
      *
-     * @param string $template the source template string
-     * @param mixed $object the object that should be passed into the template
-     * @param array $variables any additional variables that should be available to the template
-     * @param string $templateMode The template mode to use.
+     * @param  string  $template  the source template string
+     * @param  mixed  $object  the object that should be passed into the template
+     * @param  array  $variables  any additional variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use.
      * @return string The rendered template.
+     *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
@@ -811,6 +812,7 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
+
             return trim($templateObj->render($variables));
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
@@ -843,13 +845,15 @@ class View extends \yii\web\View
     /**
      * Renders an object template in a sandboxed environment.
      *
-     * @param string $template the source template string
-     * @param mixed $object the object that should be passed into the template
-     * @param array $variables any additional variables that should be available to the template
-     * @param string $templateMode The template mode to use.
+     * @param  string  $template  the source template string
+     * @param  mixed  $object  the object that should be passed into the template
+     * @param  array  $variables  any additional variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use.
      * @return string The rendered template.
+     *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
+     *
      * @see renderObjectTemplate()
      * @since 4.17.0
      */
@@ -864,9 +868,6 @@ class View extends \yii\web\View
 
     /**
      * Normalizes an object template for [[renderObjectTemplate()]].
-     *
-     * @param string $template
-     * @return string
      */
     public function normalizeObjectTemplate(string $template): string
     {
@@ -877,6 +878,7 @@ class View extends \yii\web\View
             function(array $matches) use (&$tokens) {
                 $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
+
                 return $token;
             },
             $template
@@ -887,6 +889,7 @@ class View extends \yii\web\View
             function(array $matches) use (&$tokens) {
                 $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
+
                 return $token;
             },
             $template
@@ -896,6 +899,7 @@ class View extends \yii\web\View
         $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
             $token = 'tok_' . Str::random(10);
             $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
+
             return $token;
         }, $template);
 
@@ -904,6 +908,7 @@ class View extends \yii\web\View
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
                 $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
+
                 return $token;
             }, $template, -1, $count);
             if ($count === 0) {
@@ -919,6 +924,7 @@ class View extends \yii\web\View
             } else {
                 $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
             }
+
             return "{{ $replace|raw }}";
         }, $template);
 
@@ -936,15 +942,15 @@ class View extends \yii\web\View
      * Internally, this will just call [[resolveTemplate()]] with the given template name, and return whether that
      * method found anything.
      *
-     * @param string $name The name of the template.
-     * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $name  The name of the template.
+     * @param  string|null  $templateMode  The template mode to use.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
         try {
-            return ($this->resolveTemplate($name, $templateMode, $publicOnly) !== false);
+            return $this->resolveTemplate($name, $templateMode, $publicOnly) !== false;
         } catch (TwigLoaderError) {
             // _validateTemplateName() had an issue with it
             return false;
@@ -1018,10 +1024,11 @@ class View extends \yii\web\View
      *     - path/to/fooplugin/templates/bar/index.html
      *     - path/to/fooplugin/templates/bar/index.twig
      *
-     * @param string $name The name of the template.
-     * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $name  The name of the template.
+     * @param  string|null  $templateMode  The template mode to use.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
+     *
      * @throws TwigLoaderError
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
@@ -1043,9 +1050,10 @@ class View extends \yii\web\View
     /**
      * Finds a template on the file system and returns its path.
      *
-     * @param string $name The name of the template.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $name  The name of the template.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
+     *
      * @throws TwigLoaderError
      */
     private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
@@ -1112,8 +1120,6 @@ class View extends \yii\web\View
 
     /**
      * Returns any registered control panel template roots.
-     *
-     * @return array
      */
     public function getCpTemplateRoots(): array
     {
@@ -1122,8 +1128,6 @@ class View extends \yii\web\View
 
     /**
      * Returns any registered site template roots.
-     *
-     * @return array
      */
     public function getSiteTemplateRoots(): array
     {
@@ -1131,7 +1135,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
@@ -1144,10 +1148,10 @@ class View extends \yii\web\View
     /**
      * Registers JavaScript code with the given variables, pre-JSON-encoded.
      *
-     * @param callable $jsFn callback function that returns the JS code to be registered.
-     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
-     * @param int $position the position at which the JS script tag should be inserted
-     * in a page. The possible values are:
+     * @param  callable  $jsFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @param  int  $position  the position at which the JS script tag should be inserted
+     *                         in a page. The possible values are:
      *
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
@@ -1156,10 +1160,10 @@ class View extends \yii\web\View
      *   Note that by using this position, the method will automatically register the jQuery js file.
      * - [[POS_READY]]: enclosed within jQuery(document).ready(). This is the default value.
      *   Note that by using this position, the method will automatically register the jQuery js file.
+     * @param  string|null  $key  the key that identifies the JS code block. If null, it will use
+     *                            $js as the key. If two JS code blocks are registered with the same key, the latter
+     *                            will overwrite the former.
      *
-     * @param string|null $key the key that identifies the JS code block. If null, it will use
-     * $js as the key. If two JS code blocks are registered with the same key, the latter
-     * will overwrite the former.
      * @since 3.7.31
      */
     public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
@@ -1186,9 +1190,10 @@ class View extends \yii\web\View
      * Clears and ends a buffer started via [[startJsBuffer()]], returning any JavaScript code that was registered while
      * the buffer was active.
      *
-     * @param bool $scriptTag Whether the returned JavaScript code should be wrapped in a `<script>` tag.
-     * @param bool $combine Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
+     * @param  bool  $scriptTag  Whether the returned JavaScript code should be wrapped in a `<script>` tag.
+     * @param  bool  $combine  Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
      * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startJsBuffer()
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
@@ -1205,7 +1210,7 @@ class View extends \yii\web\View
         if ($combine) {
             $js = '';
 
-            foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
+            foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY, self::POS_BOOTED] as $pos) {
                 if (!empty($bufferedJs[$pos])) {
                     $js .= implode("\n", $bufferedJs[$pos]) . "\n";
                 }
@@ -1246,6 +1251,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startScriptBuffer()
      * @since 3.7.0
      */
@@ -1257,6 +1263,7 @@ class View extends \yii\web\View
 
         $bufferedScripts = $this->_scripts;
         $this->_scripts = array_pop($this->_scriptBuffers);
+
         return $bufferedScripts;
     }
 
@@ -1279,6 +1286,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startCssBuffer()
      * @since 3.7.0
      */
@@ -1290,6 +1298,7 @@ class View extends \yii\web\View
 
         $bufferedCss = $this->css;
         $this->css = array_pop($this->_cssBuffers);
+
         return $bufferedCss;
     }
 
@@ -1312,6 +1321,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startCssFileBuffer()
      * @since 4.0.0
      */
@@ -1323,6 +1333,7 @@ class View extends \yii\web\View
 
         $bufferedCssFiles = $this->cssFiles;
         $this->cssFiles = array_pop($this->_cssFileBuffers);
+
         return $bufferedCssFiles;
     }
 
@@ -1345,6 +1356,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     *
      * @see startJsFileBuffer()
      * @since 4.0.0
      */
@@ -1383,6 +1395,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
+     *
      * @since 4.3.0
      */
     public function clearHtmlBuffer(): array|false
@@ -1393,6 +1406,7 @@ class View extends \yii\web\View
 
         $bufferedHtml = $this->_html;
         $this->_html = array_pop($this->_htmlBuffers);
+
         return $bufferedHtml;
     }
 
@@ -1415,6 +1429,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     *
      * @see startMetaTagBuffer()
      * @since 4.5.8
      */
@@ -1426,6 +1441,7 @@ class View extends \yii\web\View
 
         $bufferedMetaTags = $this->metaTags;
         $this->metaTags = array_pop($this->_metaTagBuffers);
+
         return $bufferedMetaTags;
     }
 
@@ -1448,6 +1464,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startAssetBundleBuffer()
      * @since 5.3.0
      */
@@ -1459,6 +1476,7 @@ class View extends \yii\web\View
 
         $bufferedAssetBundles = $this->assetBundles;
         $this->assetBundles = array_pop($this->_assetBundleBuffers);
+
         return $bufferedAssetBundles;
     }
 
@@ -1481,6 +1499,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The JavaScript imports that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startAssetBundleBuffer()
      * @since 5.6.0
      */
@@ -1492,11 +1511,12 @@ class View extends \yii\web\View
 
         $bufferedJsImports = $this->_jsImports;
         $this->_jsImports = array_pop($this->_jsImportBuffers);
+
         return $bufferedJsImports;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
@@ -1515,16 +1535,16 @@ class View extends \yii\web\View
     /**
      * Registers a generic `<script>` code block.
      *
-     * @param string $script the generic `<script>` code block to be registered
-     * @param int $position the position at which the generic `<script>` code block should be inserted
-     * in a page. The possible values are:
-     * - [[POS_HEAD]]: in the head section
-     * - [[POS_BEGIN]]: at the beginning of the body section
-     * - [[POS_END]]: at the end of the body section
-     * @param array $options the HTML attributes for the `<script>` tag.
-     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
-     * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
-     * will overwrite the former.
+     * @param  string  $script  the generic `<script>` code block to be registered
+     * @param  int  $position  the position at which the generic `<script>` code block should be inserted
+     *                         in a page. The possible values are:
+     *                         - [[POS_HEAD]]: in the head section
+     *                         - [[POS_BEGIN]]: at the beginning of the body section
+     *                         - [[POS_END]]: at the end of the body section
+     * @param  array  $options  the HTML attributes for the `<script>` tag.
+     * @param  string|null  $key  the key that identifies the generic `<script>` code block. If null, it will use
+     *                            $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
+     *                            will overwrite the former.
      */
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1535,17 +1555,18 @@ class View extends \yii\web\View
     /**
      * Registers a generic `<script>` tag with the given variables, pre-JSON-encoded.
      *
-     * @param callable $scriptFn callback function that returns the JS code to be registered.
-     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$scriptFn`
-     * @param int $position the position at which the JS script tag should be inserted
-     *  in a page. The possible values are:
-     *  - [[POS_HEAD]]: in the head section
-     *  - [[POS_BEGIN]]: at the beginning of the body section
-     *  - [[POS_END]]: at the end of the body section
-     * @param array $options the HTML attributes for the `<script>` tag.
-     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
-     * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
-     * will overwrite the former.
+     * @param  callable  $scriptFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$scriptFn`
+     * @param  int  $position  the position at which the JS script tag should be inserted
+     *                         in a page. The possible values are:
+     *                         - [[POS_HEAD]]: in the head section
+     *                         - [[POS_BEGIN]]: at the beginning of the body section
+     *                         - [[POS_END]]: at the end of the body section
+     * @param  array  $options  the HTML attributes for the `<script>` tag.
+     * @param  string|null  $key  the key that identifies the generic `<script>` code block. If null, it will use
+     *                            $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
+     *                            will overwrite the former.
+     *
      * @since 5.6.0
      */
     public function registerScriptWithVars(callable $scriptFn, array $vars, int $position = self::POS_END, array $options = [], ?string $key = null): void
@@ -1559,13 +1580,14 @@ class View extends \yii\web\View
     /**
      * Registers arbitrary HTML to be injected into the final page response.
      *
-     * @param string $html the HTML code to be registered
-     * @param int $position the position at which the HTML code should be inserted in the page. Possible values are:
-     * - [[POS_HEAD]]: in the head section
-     * - [[POS_BEGIN]]: at the beginning of the body section
-     * - [[POS_END]]: at the end of the body section
-     * @param string|null $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
-     * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
+     * @param  string  $html  the HTML code to be registered
+     * @param  int  $position  the position at which the HTML code should be inserted in the page. Possible values are:
+     *                         - [[POS_HEAD]]: in the head section
+     *                         - [[POS_BEGIN]]: at the beginning of the body section
+     *                         - [[POS_END]]: at the end of the body section
+     * @param  string|null  $key  the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
+     *                            If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
+     *
      * @since 3.5.0
      */
     public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
@@ -1579,17 +1601,18 @@ class View extends \yii\web\View
     /**
      * Registers a JavaScript import map entry to be injected into the final page response.
      *
-     * @param string $key The module specifier.
-     * @param string $value  The URL or path to the resource the key will resolve to.
+     * @param  string  $key  The module specifier.
+     * @param  string  $value  The URL or path to the resource the key will resolve to.
+     *
      * @since 5.6.0
-    */
+     */
     public function registerJsImport(string $key, string $value): void
     {
         $this->_jsImports[$key] = $value;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function endBody(): void
     {
@@ -1608,7 +1631,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_HEAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_HEAD]]
      *
-     * @param bool $clear Whether the content should be cleared from the queue (default is true)
+     * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
      */
     public function getHeadHtml(bool $clear = true): string
@@ -1633,10 +1656,10 @@ class View extends \yii\web\View
      * Returns the content to be inserted at the end of the body section.
      *
      * This includes:
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
+     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], [[POS_LOAD]], or [[POS_BOOTED]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param bool $clear Whether the content should be cleared from the queue (default is true)
+     * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
      */
     public function getBodyHtml(bool $clear = true): string
@@ -1656,7 +1679,8 @@ class View extends \yii\web\View
                 $this->js[self::POS_BEGIN],
                 $this->js[self::POS_END],
                 $this->js[self::POS_READY],
-                $this->js[self::POS_LOAD]
+                $this->js[self::POS_LOAD],
+                $this->js[self::POS_BOOTED]
             );
         }
 
@@ -1670,8 +1694,8 @@ class View extends \yii\web\View
      * that will need to use the translations, unless the JavaScript is
      * registered at [[\yii\web\View::POS_READY]].
      *
-     * @param string $category The category the messages are in
-     * @param string[] $messages The messages to be translated
+     * @param  string  $category  The category the messages are in
+     * @param  string[]  $messages  The messages to be translated
      */
     public function registerTranslations(string $category, array $messages): void
     {
@@ -1704,7 +1728,8 @@ JS;
     /**
      * Registers icons for `Craft.ui.icon()`.
      *
-     * @param string[] $icons The icons to be registered
+     * @param  string[]  $icons  The icons to be registered
+     *
      * @since 5.7.0
      */
     public function registerIcons(array $icons): void
@@ -1734,7 +1759,7 @@ JS;
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
-     * @param string|null $namespace The new namespace. Set to null to remove the namespace.
+     * @param  string|null  $namespace  The new namespace. Set to null to remove the namespace.
      */
     public function setNamespace(?string $namespace): void
     {
@@ -1754,8 +1779,8 @@ JS;
      * Note that delta input names will only be registered if delta registration is active
      * (see [[getIsDeltaRegistrationActive()]]).
      *
-     * @param string $inputName
-     * @param bool $forceModified Whether the name should be considered modified regardless of the initial form value
+     * @param  bool  $forceModified  Whether the name should be considered modified regardless of the initial form value
+     *
      * @since 3.4.0
      */
     public function registerDeltaName(string $inputName, bool $forceModified = false): void
@@ -1773,7 +1798,6 @@ JS;
     /**
      * Returns the initial values of delta inputs.
      *
-     * @return array
      * @see setInitialDeltaValue()
      * @since 3.7.0
      */
@@ -1785,8 +1809,6 @@ JS;
     /**
      * Sets the initial value of a delta input name.
      *
-     * @param string $inputName
-     * @param mixed $value
      * @see getInitialDeltaValues()
      * @since 3.4.6
      */
@@ -1800,7 +1822,6 @@ JS;
     /**
      * Returns whether delta input name registration is currently active
      *
-     * @return bool
      * @see registerDeltaName()
      * @since 3.4.0
      */
@@ -1812,7 +1833,6 @@ JS;
     /**
      * Sets whether delta input name registration is active.
      *
-     * @param bool $active
      * @see registerDeltaName()
      * @since 3.4.0
      */
@@ -1825,6 +1845,7 @@ JS;
      * Returns all the registered delta input names.
      *
      * @return string[]
+     *
      * @see registerDeltaName()
      * @since 3.4.0
      */
@@ -1837,6 +1858,7 @@ JS;
      * Returns all the registered delta input names that should be considered modified.
      *
      * @return string[]
+     *
      * @see registerDeltaName()
      * @since 5.2.1
      */
@@ -1863,7 +1885,8 @@ JS;
      * - the default template file extensions that should be automatically added when looking for templates
      * - the "index" template filenames that should be checked when looking for templates
      *
-     * @param string $templateMode Either 'site' or 'cp'
+     * @param  string  $templateMode  Either 'site' or 'cp'
+     *
      * @throws Exception if $templateMode is invalid
      */
     public function setTemplateMode(string $templateMode): void
@@ -1902,8 +1925,6 @@ JS;
 
     /**
      * Returns the base path that templates should be found in.
-     *
-     * @return string
      */
     public function getTemplatesPath(): string
     {
@@ -1912,8 +1933,6 @@ JS;
 
     /**
      * Sets the base path that templates should be found in.
-     *
-     * @param string $templatesPath
      */
     public function setTemplatesPath(string $templatesPath): void
     {
@@ -1965,11 +1984,11 @@ JS;
      * }, 'widget-settings');
      * ```
      *
-     * @param callable|string $html The HTML code, or a callable that returns the HTML code
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
-     * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
-     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
-     * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
+     * @param  callable|string  $html  The HTML code, or a callable that returns the HTML code
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
+     * @param  bool  $otherAttributes  Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
+     * @param  bool  $withClasses  Whether class names should be namespaced as well (affects both `class` attributes and
+     *                             class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
     public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
@@ -1978,16 +1997,17 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return (string)$html();
+                return (string) $html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
             try {
-                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
+                $response = $this->namespaceInputs((string) $html(), $namespace, $otherAttributes, $withClasses);
             } finally {
                 $this->setNamespace($oldNamespace);
             }
+
             return $response;
         }
 
@@ -2014,8 +2034,8 @@ JS;
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputName The input name that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     * @param  string  $inputName  The input name that should be namespaced.
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input name.
      */
     public function namespaceInputName(string $inputName, ?string $namespace = null): string
@@ -2040,8 +2060,8 @@ JS;
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputId The input ID that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     * @param  string  $inputId  The input ID that should be namespaced.
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input ID.
      */
     public function namespaceInputId(string $inputId, ?string $namespace = null): string
@@ -2069,8 +2089,9 @@ JS;
      * the following ID would be returned:
      *     foo-bar-title
      *
-     * @param string $inputName The input name.
+     * @param  string  $inputName  The input name.
      * @return string The input ID.
+     *
      * @deprecated in 3.5.0. Use [[Html::id()]] instead.
      */
     public function formatInputId(string $inputName): string
@@ -2116,10 +2137,10 @@ JS;
      * });
      * ```
      *
-     * @param string $hook The hook name.
-     * @param callable $method The callback function.
-     * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
-     * inserted at the beginning of the existing method list.
+     * @param  string  $hook  The hook name.
+     * @param  callable  $method  The callback function.
+     * @param  bool  $append  whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
+     *                        inserted at the beginning of the existing method list.
      */
     public function hook(string $hook, callable $method, bool $append = true): void
     {
@@ -2135,8 +2156,8 @@ JS;
      *
      * This is called by [[HookNode|`{% hook %}` tags]].
      *
-     * @param string $hook The hook name.
-     * @param array $context The current template context.
+     * @param  string  $hook  The hook name.
+     * @param  array  $context  The current template context.
      * @return string Whatever the hooks returned.
      */
     public function invokeHook(string $hook, array &$context): string
@@ -2161,7 +2182,8 @@ JS;
     /**
      * Sets the JS files that should be marked as already registered.
      *
-     * @param string[] $keys
+     * @param  string[]  $keys
+     *
      * @since 3.0.10
      */
     public function setRegisteredJsFiles(array $keys): void
@@ -2172,7 +2194,8 @@ JS;
     /**
      * Sets the asset bundle names that should be marked as already registered.
      *
-     * @param string[] $names Asset bundle names
+     * @param  string[]  $names  Asset bundle names
+     *
      * @since 3.0.10
      */
     public function setRegisteredAssetBundles(array $names): void
@@ -2181,7 +2204,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function endPage($ajaxMode = false): void
     {
@@ -2194,7 +2217,8 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws NotSupportedException unless [[allowEval]] has been set to `true`.
      */
     public function evaluateDynamicContent($statements)
@@ -2212,9 +2236,9 @@ JS;
     /**
      * Performs actions before a template is rendered.
      *
-     * @param string $template The name of the template to render
-     * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use when rendering the template
+     * @param  string  $template  The name of the template to render
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
     public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
@@ -2230,6 +2254,7 @@ JS;
             $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
+
             return $event->isValid;
         }
 
@@ -2239,10 +2264,10 @@ JS;
     /**
      * Performs actions after a template is rendered.
      *
-     * @param string $template The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $templateMode The template mode that was used when rendering the template
-     * @param string $output The template’s rendering result
+     * @param  string  $template  The name of the template that was rendered
+     * @param  array  $variables  The variables that were available to the template
+     * @param  string  $templateMode  The template mode that was used when rendering the template
+     * @param  string  $output  The template’s rendering result
      */
     public function afterRenderTemplate(string $template, array $variables, string $templateMode, string &$output): void
     {
@@ -2262,9 +2287,9 @@ JS;
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param string $template The name of the template to render
-     * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use when rendering the template
+     * @param  string  $template  The name of the template to render
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
     public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
@@ -2280,6 +2305,7 @@ JS;
             $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
+
             return $event->isValid;
         }
 
@@ -2289,10 +2315,10 @@ JS;
     /**
      * Performs actions after a page template is rendered.
      *
-     * @param string $template The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $templateMode The template mode that was used when rendering the template
-     * @param string $output The template’s rendering result
+     * @param  string  $template  The name of the template that was rendered
+     * @param  array  $variables  The variables that were available to the template
+     * @param  string  $templateMode  The template mode that was used when rendering the template
+     * @param  string  $output  The template’s rendering result
      */
     public function afterRenderPageTemplate(string $template, array $variables, string $templateMode, string &$output): void
     {
@@ -2330,7 +2356,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderHeadHtml(): string
     {
@@ -2355,7 +2381,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderBodyBeginHtml(): string
     {
@@ -2373,7 +2399,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderBodyEndHtml($ajaxMode): string
     {
@@ -2398,6 +2424,12 @@ JS;
         }
 
         $html = parent::renderBodyEndHtml($ajaxMode);
+
+        // Handle POS_BOOTED scripts (wrapped in Craft.booted())
+        if (!empty($this->js[self::POS_BOOTED])) {
+            $js = "Craft.booted(function() {\n" . implode("\n", $this->js[self::POS_BOOTED]) . "\n});";
+            $html .= YiiHtml::script($js, ['type' => 'module']);
+        }
 
         return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
@@ -2434,7 +2466,6 @@ JS;
      * Registers all files provided by all registered asset bundles, including depending bundles files.
      *
      * Removes a bundle from [[assetBundles]] once files are registered.
-     *
      */
     protected function registerAllAssetFiles(): void
     {
@@ -2444,7 +2475,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function registerAssetFiles($name): void
     {
@@ -2458,7 +2489,7 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function registerAssetBundle($name, $position = null)
     {
@@ -2479,7 +2510,6 @@ JS;
      * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from
      * [[\Twig\Loader\FilesystemLoader]].
      *
-     * @param string $name
      * @throws TwigLoaderError
      */
     private function _validateTemplateName(string $name): void
@@ -2497,9 +2527,9 @@ JS;
     /**
      * Searches for a template files, and returns the first match if there is one.
      *
-     * @param string $basePath The base path to be looking in.
-     * @param string $name The name of the template to be looking for.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $basePath  The base path to be looking in.
+     * @param  string  $name  The name of the template to be looking for.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|null The matching file path, or `null`.
      */
     private function _resolveTemplate(string $basePath, string $name, bool $publicOnly): ?string
@@ -2545,8 +2575,6 @@ JS;
 
     /**
      * Returns the Twig environment options
-     *
-     * @return array
      */
     private function _getTwigOptions(): array
     {
@@ -2578,8 +2606,7 @@ JS;
     /**
      * Returns any registered template roots.
      *
-     * @param string $which 'cp' or 'site'
-     * @return array
+     * @param  string  $which  'cp' or 'site'
      */
     private function _getTemplateRoots(string $which): array
     {
@@ -2604,7 +2631,7 @@ JS;
                 if (!isset($this->_templateRoots[$which][$templatePath])) {
                     $this->_templateRoots[$which][$templatePath] = [];
                 }
-                array_push($this->_templateRoots[$which][$templatePath], ...(array)$dir);
+                array_push($this->_templateRoots[$which][$templatePath], ...(array) $dir);
             }
 
             // Longest (most specific) first
@@ -2620,8 +2647,7 @@ JS;
     }
 
     /**
-     * @param string $property
-     * @param string[] $names
+     * @param  string[]  $names
      */
     private function _setJsProperty(string $property, array $names): void
     {
@@ -2733,9 +2759,6 @@ JS;
 
     /**
      * Renders an element’s chip HTML.
-     *
-     * @param array $context
-     * @return string|null
      */
     private function _elementChipHtml(array $context): ?string
     {

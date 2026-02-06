@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,12 +19,13 @@ use yii\base\NotSupportedException;
  * Class RegisterResourceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function compile(Compiler $compiler): void
     {
@@ -61,6 +64,7 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 'endBody', 'POS_END' => View::POS_END,
                 'ready', 'POS_READY' => View::POS_READY,
                 'load', 'POS_LOAD' => View::POS_LOAD,
+                'booted', 'POS_BOOTED' => View::POS_BOOTED,
                 default => throw new NotSupportedException($position . ' is not a valid position'),
             };
         }
