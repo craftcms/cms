@@ -357,6 +357,10 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function setReturnUrl($url): void
     {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if ($scheme && !in_array($scheme, ['http', 'https'])) {
+            $url = '/';
+        }
         parent::setReturnUrl(strip_tags($url));
     }
 
