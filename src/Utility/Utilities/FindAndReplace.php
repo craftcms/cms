@@ -48,11 +48,11 @@ final class FindAndReplace extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
+        // $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(FindReplaceAsset::class);
-        $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
+        // $view->registerAssetBundle(FindReplaceAsset::class);
+        // $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
 
-        return $view->renderTemplate('_components/utilities/FindAndReplace.twig');
+        return view('c::utilities.find-replace.content')->toHtml();
     }
 }
