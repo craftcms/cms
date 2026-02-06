@@ -8,9 +8,35 @@ import './badge-indicator.js';
 const meta = {
   title: 'Components/Badge Indicator',
   component: 'craft-badge-indicator',
-  argTypes: {},
+  args: {
+    variant: 'primary',
+    altText: 'Has Notifications',
+    badgeCount: null,
+  },
+  argTypes: {
+    badgeCount: {
+      control: {
+        type: 'number'
+      }
+    },
+    variant: {
+      options: ['primary', 'secondary', 'inverse'],
+      control: {
+        type: 'radio'
+      },
+    },
+    altText: {
+      control: {
+        type: 'text'
+      }
+    },
+  },
   render: (args) => html`
-    <craft-badge-indicator></craft-badge-indicator>
+    <craft-badge-indicator
+      .badgeCount="${args.badgeCount}"
+      .badgeCountSuffix="${args.badgeCountSuffix}"
+      .altText="${args.altText}"
+      .variant="${args.variant}"></craft-badge-indicator>
   `,
 } satisfies Meta<any>;
 
@@ -21,72 +47,46 @@ type Story = StoryObj<any>;
 
 export const Dot: Story = {
   name: 'Dot',
-  args: {
-    srText: 'Has Notifications'
+  parameters: {
+    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
   },
-  argTypes: {
-    number: {
-      control: { type: null }
-    },
-  },
-  render: (args) => html`
-    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
-  `,
 }
 
 export const Numbered: Story = {
   name: 'Numbered',
   args: {
-    number: 5,
-    srText: 'updates'
+    altText: null,
+    badgeCount: 5,
+    badgeCountSuffix: 'updates'
   },
-  render: (args) => html`
-    <craft-badge-indicator .number="${args.number}" .srText="${args.srText}"></craft-badge-indicator>
-  `,
+  parameters: {
+    controls: { exclude: ['altText'] },
+  },
 }
 
 export const Primary: Story = {
   name: 'Primary',
-  args: {
-    srText: 'Has Notifications'
+  parameters: {
+    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
   },
-  argTypes: {
-    number: {
-      control: { type: null }
-    },
-  },
-  render: (args) => html`
-    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
-  `,
 }
 
 export const Secondary: Story = {
   name: 'Secondary',
   args: {
-    srText: 'Has Notifications',
     variant: 'secondary',
   },
-  argTypes: {
-    number: {
-      control: { type: null }
-    },
+  parameters: {
+    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
   },
-  render: (args) => html`
-    <craft-badge-indicator .srText="${args.srText}" .variant="${args.variant}"></craft-badge-indicator>
-  `,
 }
 
 export const Inverse: Story = {
   name: 'Inverse',
   args: {
-    srText: 'Has Notifications'
+    variant: 'inverse',
   },
-  argTypes: {
-    number: {
-      control: { type: null }
-    },
+  parameters: {
+    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
   },
-  render: (args) => html`
-    <craft-badge-indicator .srText="${args.srText}"></craft-badge-indicator>
-  `,
 }

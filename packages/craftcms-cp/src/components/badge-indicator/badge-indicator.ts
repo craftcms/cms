@@ -13,14 +13,17 @@ import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden
 export default class CraftBadgeIndicator extends LitElement {
   static override styles = [styles];
 
-  /** Number of notifications */
-  @property() number: number | null = null;
+  /** Alternative text if the badge is not decorative */
+  @property() altText: string | null = null;
 
-  /** Accessible text for screen reader users */
-  @property() srText: string | null = null;
+  /** Displays a number on the badge. If using `badgeCount`, the `badgeCountSuffix` should also be used to describe what the number represents. */
+  @property() badgeCount: number | null = null;
+
+  /** Visually hidden text that comes after the count to provide additional context. */
+  @property() badgeCountSuffix: string | null = null;
 
   /** Theme variant of the badge indicator. Defaults to "primary" */
-  @property() variant: 'primary' | 'secondary' = 'primary';
+  @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
 
   @property()
   override id: string;
@@ -30,37 +33,57 @@ export default class CraftBadgeIndicator extends LitElement {
     this.id = this.id || Math.floor(Math.random() * 1000000000).toString();
   }
 
-  private truncatedNumber() {
-    if (!this.number) {
-      return null;
-    }
+  private showCount() {
+    return this.badgeCount !== null && this.badgeCount > 0;
+  }
 
-    if (this.number > 99) {
+  private truncatedNumber() {
+    if (!this.showCount) return;
+
+    // @ts-ignore we're already checking that badgeCount is not null in showCount
+    if (this.badgeCount > 99) {
       return '99+';
     } else {
-      return this.number.toString();
+      return this.badgeCount.toString();
     }
   }
-  override render() {
-    const hasNumber = this.number !== null;
-    const badgeId = this.id ?? nothing;
-    const labelId = badgeId ? `${badgeId}-label` : nothing;
 
+  private getBadgeRole() {
+    return this.altText ? 'img' : nothing;
+  }
+
+  private getLabelId() {
+    return `${this.id}-label`;
+  }
+
+  private getBadgeContents() {
+    return html`
+      ${this.showCount()
+        ? html`
+          <span class="number">${this.truncatedNumber()}</span>
+          <sl-visually-hidden> ${this.badgeCountSuffix}</sl-visually-hidden>
+        ` : nothing}
+      ${this.altText
+        ? html`
+          <sl-visually-hidden id=${this.getLabelId()}>${this.altText}</sl-visually-hidden>
+        ` : nothing}
+    `;
+  }
+
+  override render() {
     return html`
       <div 
-        id=${badgeId}
+        id=${this.id}
         class="${classMap({
           'secondary': this.variant === 'secondary',
+          'inverse': this.variant === 'inverse',
           'badge-indicator': true,
-          'badge-indicator--with-number': this.number !== null,
+          'badge-indicator--with-number': this.showCount(),
         })}"
-        role="${!hasNumber ? 'img' : nothing }"
-        aria-labelledby="${!hasNumber ? labelId : nothing }"
+        role="${this.getBadgeRole()}"
+        aria-labelledby="${this.altText ? this.getLabelId() : nothing }"
       >
-        ${hasNumber
-          ? html`<span class="number">${this.truncatedNumber()}</span>`
-          : nothing}
-        <sl-visually-hidden id=${labelId}> ${this.srText}</sl-visually-hidden>
+        ${this.getBadgeContents()}
       </div>
     `;
   }
