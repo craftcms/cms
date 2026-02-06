@@ -1359,15 +1359,15 @@ JS, [
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
                     // This is a new nested element, so duplicate its ownership into the derivative
                     $newOwnershipData[] = [
-                        $canonicalElement->id,
-                        $owner->id,
-                        $canonicalElement->getSortOrder(),
+                        'elementId' => $canonicalElement->id,
+                        'ownerId' => $owner->id,
+                        'sortOrder' => $canonicalElement->getSortOrder(),
                     ];
                 }
             }
 
             if (!empty($newOwnershipData)) {
-                Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $newOwnershipData);
+                DB::table(Table::ELEMENTS_OWNERS)->insert($newOwnershipData);
             }
 
             // Keep track of the sites we've already covered

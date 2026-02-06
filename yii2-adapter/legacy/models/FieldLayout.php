@@ -1167,7 +1167,7 @@ class FieldLayout extends Model
         $key = array_shift($keyParts);
 
         // get the Content Block field
-        $uid = StringHelper::removeLeft($key, 'contentBlock:');
+        $uid = Str::after($key, 'contentBlock:');
         $layoutElement = $this->getElementByUid($uid);
 
         if (!$layoutElement instanceof CustomField) {
