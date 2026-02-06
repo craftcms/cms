@@ -452,19 +452,22 @@ class View extends \yii\web\View
         }
 
         // Only register the SandboxExtension if something else hasn't already
-        if (!$twig->hasExtension(SandboxExtension::class)) {
-            $sandboxConfig = ArrayHelper::merge(
-                require Craft::getAlias('@app/config/twig-sandbox.php'),
-                Craft::$app->getConfig()->getConfigFromFile('twig-sandbox'),
-            );
-            $twig->addExtension(new SandboxExtension(new SecurityPolicy(
-                $sandboxConfig['allowedTags'],
-                $sandboxConfig['allowedFilters'],
-                $sandboxConfig['allowedFunctions'],
-                $sandboxConfig['allowedMethods'],
-                $sandboxConfig['allowedProperties'],
-                $sandboxConfig['allowedClasses'],
-            )));
+        // and the enableTwigSandbox is set to true
+        if (Craft::$app->getConfig()->getGeneral()->enableTwigSandbox) {
+            if (!$twig->hasExtension(SandboxExtension::class)) {
+                $sandboxConfig = ArrayHelper::merge(
+                    require Craft::getAlias('@app/config/twig-sandbox.php'),
+                    Craft::$app->getConfig()->getConfigFromFile('twig-sandbox'),
+                );
+                $twig->addExtension(new SandboxExtension(new SecurityPolicy(
+                    $sandboxConfig['allowedTags'],
+                    $sandboxConfig['allowedFilters'],
+                    $sandboxConfig['allowedFunctions'],
+                    $sandboxConfig['allowedMethods'],
+                    $sandboxConfig['allowedProperties'],
+                    $sandboxConfig['allowedClasses'],
+                )));
+            }
         }
 
         // Set our timezone
