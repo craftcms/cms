@@ -337,6 +337,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.elementDrag.addItems($elements);
 
       this.addListener($elements, 'activate', (ev) => {
+        // ignore if is on a dragged element
+        if (ev.currentTarget.style.visibility === 'hidden') {
+          return;
+        }
         ev.stopPropagation();
         ev.originalEvent.preventDefault();
         this.addLibraryElementToActiveTab(ev.currentTarget);

@@ -9,6 +9,7 @@
 - Fixed a bug where ancestor elements’ breadcrumbs weren’t getting hyperlinked. ([#18375](https://github.com/craftcms/cms/issues/18375))
 - Fixed a bug where `craft\models\Volume::getSubpath()` could return `/` instead of an empty string, if the subpath was set to an environment variable set to an empty string. ([#18379](https://github.com/craftcms/cms/issues/18379))
 - Fixed a bug where it wasn’t possible to set assets’ `alt` text via GraphQL mutations. ([#18381](https://github.com/craftcms/cms/issues/18381))
+- Fixed a bug where dragging a field from a field layout designer’s “Add” HUD, and then dropping it back on itself, would result in the field getting selected in a hidden state. ([#18382](https://github.com/craftcms/cms/issues/18382))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
 
 ## 5.9.6 - 2026-02-03
