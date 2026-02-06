@@ -8,12 +8,17 @@ export default class CraftCheckbox extends LionCheckbox {
       css`
         /* same as radio, potentially consolidate */
         :host {
-          display: flex;
-          gap: var(--c-spacing-sm);
+          display: grid;
+          align-items: center;
+          gap: 0 var(--c-spacing-md);
+          grid-template-areas: 'input label' '. help-text';
+          grid-template-columns: auto 1fr;
+          grid-template-rows: repeat(2, auto);
         }
 
         ::slotted(label) {
           font: inherit;
+          grid-area: label;
         }
 
         ::slotted([slot='input']) {
@@ -25,6 +30,7 @@ export default class CraftCheckbox extends LionCheckbox {
         .choice-field__help-text {
           font-size: 1em;
           color: var(--c-fg-muted);
+          grid-area: help-text;
         }
       `,
     ];

@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script>window.Craft = {};</script>
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
         @inertiaHead
     </head>

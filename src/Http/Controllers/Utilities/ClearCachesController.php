@@ -12,6 +12,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use yii\base\InvalidArgumentException;
 
@@ -24,7 +25,7 @@ final readonly class ClearCachesController
         }
     }
 
-    public function clearCaches(Request $request, Application $app): JsonResponse
+    public function clearCaches(Request $request, Application $app): Response
     {
         $caches = $request->validate([
             'caches' => ['required'],
@@ -52,10 +53,14 @@ final readonly class ClearCachesController
             }
         }
 
+        if ($request->inertia()) {
+            return back();
+        }
+
         return new JsonResponse;
     }
 
-    public function invalidateTags(Request $request): JsonResponse
+    public function invalidateTags(Request $request): Response
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
@@ -64,6 +69,10 @@ final readonly class ClearCachesController
 
         foreach ($tags as $tag) {
             TagDependency::invalidate($tag);
+        }
+
+        if ($request->inertia()) {
+            return back();
         }
 
         return new JsonResponse;

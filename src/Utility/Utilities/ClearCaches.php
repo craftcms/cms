@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\web\assets\clearcaches\ClearCachesAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -18,6 +17,7 @@ use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -67,7 +67,7 @@ final class ClearCaches extends Utility
             $cacheOptions[] = [
                 'label' => $cacheOption['label'],
                 'value' => $cacheOption['key'],
-                'info' => $cacheOption['info'] ?? null,
+                'info' => isset($cacheOption['info']) ? Str::markdown($cacheOption['info']) : null,
             ];
         }
 
@@ -79,15 +79,11 @@ final class ClearCaches extends Utility
         }
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(ClearCachesAsset::class);
-        $view->registerJs('new Craft.ClearCachesUtility(\'clear-caches\');');
-
-        return $view->renderTemplate('_components/utilities/ClearCaches.twig', [
+        return view('c::utilities.clear-caches.content', [
             'cacheOptions' => $cacheOptions,
             'tagOptions' => $tagOptions,
-        ]);
+        ])->toHtml();
     }
 
     /**
