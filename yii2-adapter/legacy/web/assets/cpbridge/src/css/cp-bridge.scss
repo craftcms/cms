@@ -1,0 +1,93 @@
+@use 'sass:meta';
+
+.cp-bridged {
+  /**
+  Map old variables to their new versions
+   */
+
+  /* General */
+  --body-bg: var(--c-bg-body);
+  --font-size: var(--c-text-base);
+  --text-color: var(--c-color-text-normal);
+  --light-text-color: var(--c-color-text-subtle);
+  --link-color: var(--c-color-text-link);
+  --focus-ring-color: #0284c7;
+
+  /* Panes */
+  --pane-border: none;
+  --pane-border-radius: var(--c-pane-radius);
+  --pane-padding: var(--c-pane-padding);
+  --pane-bg: var(--c-pane-bg);
+  --pane-shadow: var(--c-pane-shadow);
+
+  /* Secondary panes */
+  --secondary-pane-border: var(--c-pane-border);
+  --secondary-pane-border-radius: var(--c-pane-radius);
+  --secondary-pane-bg: var(--c-bg-sunken);
+  --secondary-pane-shadow: var(--c-pane-shadow);
+
+  /* Modals */
+  --modal-border: var(--c-modal-bg);
+  --modal-border-radius: var(--c-modal-radius);
+  --modal-padding: var(--c-modal-padding);
+  --modal-bg: var(--c-modal-bg);
+  --modal-shadow: var(--c-modal-shadow);
+  --login-modal-bg: var(--c-bg-overlay);
+  --shade-bg: hsl(from var(--gray-900) h s l / 50%);
+
+  /* Slideout footer */
+  --slideout-footer-border: none;
+  --slideout-footer-bg: var(--gray-050);
+  --slideout-footer-shadow: var(--pane-shadow);
+
+  /* Inputs */
+  --input-border-color: hsl(212deg 25% 50% / 40%);
+  --input-border: 1px solid var(--input-border-color);
+  --input-border-radius: var(--small-border-radius);
+  --input-height: var(--c-form-control-height);
+  --input-bg: hsl(212deg 50% 99%);
+  --checkbox-size: var(--c-size-control-xs);
+  --radio-size: var(--c-size-control-xs);
+
+  /* Buttons */
+  --button-border: 1px solid
+    var(--c-button-border, var(--c-button-default-border));
+  --button-border--hover: 1px solid
+    var(--c-button-border-hover, var(--c-button-default-border-hover));
+  --button-bg: var(--c-button-bg, var(--c-button-default-bg));
+  --button-bg--hover: var(
+    --c-button-bg-hover,
+    var(--c-button-default-bg-hover)
+  );
+  --button-border-radius: var(--c-button-radius, var(--c-radius-sm));
+  --button-padding: var(--c-button-spacing-inline, var(--c-spacing-md));
+
+  /* Primary buttons */
+  --primary-button-border: var(--button-border);
+  --primary-button-text-color: var(--white);
+  --primary-button-bg: var(--red-600);
+  --primary-button-border--hover: var(--button-border--hover);
+  --primary-button-bg--hover: var(--red-700);
+  --primary-button-border--active: var(--button-border--active);
+  --primary-button-bg--active: var(--red-800);
+
+  /* Secondary buttons */
+  --secondary-button-border: var(--button-border);
+  --secondary-button-text-color: var(--white);
+  --secondary-button-bg: var(--gray-500);
+  --secondary-button-border--hover: var(--button-border--hover);
+  --secondary-button-bg--hover: var(--gray-550);
+  --secondary-button-border--active: var(--button-border--active);
+  --secondary-button-bg--active: var(--gray-600);
+
+  /* Horizontal rules */
+  --hr-margin: var(--c-spacing-md);
+  --hr-border: 1px solid var(--c-color-neutral-border-subtle);
+
+  @include meta.load-css('btn');
+  @include meta.load-css('project-config');
+
+  .content-pane {
+    padding: var(--c-spacing-lg);
+  }
+}

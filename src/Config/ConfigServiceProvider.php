@@ -42,6 +42,7 @@ final class ConfigServiceProvider extends ServiceProvider
     {
         $this->bootPublishables();
         $this->loadGeneralConfig();
+        Config::set('inertia.use_script_element_for_initial_page', true);
     }
 
     private function bootPublishables(): void

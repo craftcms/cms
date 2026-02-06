@@ -38,6 +38,11 @@
     },
     "./src/*": "./src/*",
     "./dist/*": "./dist/*",
+    "./bridge": {
+      "types": "./dist/bridge.d.mts",
+      "import": "./dist/bridge.mjs",
+      "require": "./dist/cp.cjs"
+    },
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",

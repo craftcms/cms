@@ -1,0 +1,95 @@
+.btn {
+  align-items: center;
+  appearance: none;
+  appearance: none;
+  appearance: none;
+  border: var(--button-border);
+  border-radius: var(--button-border-radius);
+  box-sizing: border-box;
+  color: var(--text-color);
+  display: inline-flex;
+  font-size: inherit;
+  isolation: isolate;
+  justify-content: center;
+  padding-inline: var(--button-padding);
+  position: relative;
+  text-align: center;
+  user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
+  text-wrap: nowrap;
+  background-color: var(--button-bg);
+  height: var(--input-height);
+  min-height: var(--input-height);
+}
+
+.btn:hover {
+  background: var(--button-bg--hover);
+  border: var(--button-border--hover);
+}
+
+.btn.active,
+.btn:active {
+  background: var(--button-bg--active);
+  border: var(--button-border--active);
+}
+
+.btn:not([aria-current]) {
+  cursor: pointer;
+}
+
+.btn:hover:not(.chromeless) {
+  text-decoration: none;
+}
+
+.btn:not(.disabled, .loading, .dashed, [aria-disabled], [aria-current]).focus,
+.btn:not(.disabled, .loading, .dashed, [aria-disabled], [aria-current]):focus,
+.btn:not(.disabled, .loading, .dashed, [aria-disabled], [aria-current]):hover {
+  --ui-control-bg-color: var(--ui-control-hover-bg-color);
+}
+
+.btn:not(.disabled, .loading, .dashed, [aria-disabled], [aria-current]).active,
+.btn:not(.disabled, .loading, .dashed, [aria-disabled], [aria-current]):active,
+.btn:not(
+    .disabled,
+    .loading,
+    .dashed,
+    [aria-disabled],
+    [aria-current]
+  )[aria-expanded='true'] {
+  --ui-control-bg-color: var(--ui-control-active-bg-color);
+}
+
+.btn:not(.loading) .spinner {
+  display: none;
+}
+
+.btn div.checkbox {
+  margin-block-start: 2px;
+}
+
+.btn [data-icon] {
+  margin-block-start: -3px;
+  margin-inline-end: 5px;
+}
+
+.btn [data-icon].light::before {
+  color: var(--gray-300);
+}
+
+.btn .cp-icon svg circle,
+.btn .cp-icon svg ellipse,
+.btn .cp-icon svg line,
+.btn .cp-icon svg path,
+.btn .cp-icon svg polygon,
+.btn .cp-icon svg polyline,
+.btn .cp-icon svg rect,
+.btn .cp-icon svg text {
+  fill: currentcolor;
+  stroke-width: 0;
+}
+
+.btn + .spinner {
+  margin-inline-start: 7px;
+}

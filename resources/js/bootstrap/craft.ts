@@ -9,10 +9,8 @@ import axios from 'axios';
 import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManagerToolbar.vue';
 import DeprecationErrors from '@/components/utilities/DeprecationErrors/DeprecationErrors.vue';
 
-let bootedCallbacks: Array<(instance: any) => void> =
-  window.bootedCallbacks || [];
-let bootingCallbacks: Array<(instance: any) => void> =
-  window.bootingCallbacks || [];
+let bootedCallbacks: Array<(instance: any) => void> = [];
+let bootingCallbacks: Array<(instance: any) => void> = [];
 
 // Instantiate services
 const config = ConfigService.getInstance();
@@ -20,6 +18,8 @@ const queue = QueueService.getInstance();
 
 // Create our object
 const Craft = {
+  initialConfig: {},
+
   get $config() {
     return config;
   },
@@ -40,8 +40,12 @@ const Craft = {
     bootingCallbacks.push(callback);
   },
 
+  config(config: Record<any, any>) {
+    this.initialConfig = config;
+  },
+
   async start() {
-    config.initialize(window.CpConfig);
+    config.initialize(this.initialConfig);
     queue.initialize({
       enabled: true,
       appId: config.get('systemUid', ''),
@@ -56,8 +60,9 @@ const Craft = {
     console.log(config.all().entries());
     console.groupEnd();
 
+    console.log('Calling booting callbacks', bootingCallbacks);
     bootingCallbacks.forEach((callback) => callback(this));
-    bootedCallbacks = [];
+    bootingCallbacks = [];
 
     await createInertiaApp({
       resolve: (name) =>
@@ -78,8 +83,14 @@ const Craft = {
 
         app.mount(el);
       },
+      defaults: {
+        future: {
+          useScriptElementForInitialPage: true,
+        },
+      },
     });
 
+    console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },

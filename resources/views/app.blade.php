@@ -5,12 +5,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
         @inertiaHead
-
-        <script type="module">
-          window.CpConfig = {!! json_encode(\CraftCms\Cms\Cms::cpConfig()) !!};
-        </script>
     </head>
     <body>
         @inertia
+        <script>
+          let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
+        </script>
+        <script
+            src="data:text/javascript;base64,{{ base64_encode('Craft.config(CpConfig); Craft.start()') }}"
+            defer
+        ></script>
     </body>
 </html>

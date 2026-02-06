@@ -2,6 +2,7 @@
   import IndexLayout from '@/layout/IndexLayout.vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import CpLink from '@/components/CpLink.vue';
+  import {useBridgedAssets} from '@/composables/useBridgedAssets';
 
   interface UtilityItem {
     id: string;
@@ -12,7 +13,7 @@
     badgeCount: number;
   }
 
-  defineProps<{
+  const props = defineProps<{
     id: string;
     title: string;
     contentHtml?: string;
@@ -20,7 +21,14 @@
     footerHtml?: string;
     viewData?: unknown;
     utilities: Array<UtilityItem>;
+    bridgedHeadHtml?: string;
+    bridgedBodyHtml?: string;
   }>();
+
+  useBridgedAssets(
+    () => props.bridgedHeadHtml,
+    () => props.bridgedBodyHtml
+  );
 </script>
 
 <template>
@@ -48,8 +56,10 @@
       </craft-nav-list>
     </template>
 
-    <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
-    <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
+    <div class="content-pane">
+      <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
+      <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
+    </div>
   </IndexLayout>
 </template>
 
