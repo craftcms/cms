@@ -203,6 +203,20 @@ final class ClearCaches extends Utility
                     DB::table(Table::ASSETINDEXDATA)->truncate();
                 },
             ],
+            [
+                'key' => 'ide-helper',
+                'label' => t('IDE helper'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', Cms::config()->ideHelperPath),
+                ]),
+                'action' => function () {
+                    $configPath = Cms::config()->ideHelperPath;
+                    $path = str_starts_with($configPath, '/') ? $configPath : base_path($configPath);
+                    if (File::isDirectory($path)) {
+                        File::cleanDirectory($path);
+                    }
+                },
+            ],
         ];
 
         event($event = new RegisterCacheOptions($options));

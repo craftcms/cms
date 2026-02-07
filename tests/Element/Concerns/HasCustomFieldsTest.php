@@ -311,3 +311,29 @@ describe('modified fields (_modifiedFields)', function () {
         expect($draft->isFieldModified('testField'))->toBeTrue();
     });
 });
+
+describe('customFields behavior runtime', function () {
+    test('reads and writes field values via the customFields behavior', function () {
+        $behavior = $this->entry->getBehavior('customFields');
+
+        expect($behavior)->toBeInstanceOf(CustomFieldBehavior::class);
+
+        $behavior->testField = 'behavior direct value';
+
+        expect($behavior->testField)->toBe('behavior direct value');
+    });
+
+    test('stores custom field values in the behavior', function () {
+        $this->entry->setFieldValue('testField', 'stored value');
+
+        $behavior = $this->entry->getBehavior('customFields');
+
+        expect($behavior->testField)->toBe('stored value');
+    });
+
+    test('behavior supports unknown field handles gracefully', function () {
+        $behavior = $this->entry->getBehavior('customFields');
+
+        expect($behavior->nonExistentField ?? null)->toBeNull();
+    });
+});

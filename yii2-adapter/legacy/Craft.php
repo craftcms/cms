@@ -6,8 +6,6 @@
  */
 use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -15,11 +13,9 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
-use yii\base\ErrorException;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
@@ -208,188 +204,24 @@ class Craft extends Yii
     }
 
     /**
-     * Class autoloader.
+     * Populates CustomFieldBehavior with field handles.
      *
-     * @param class-string $className
+     * Called during application boot after the class is autoloaded by Composer.
      */
-    public static function autoload($className): void
+    public static function populateCustomFieldBehavior(): void
     {
-        if ($className === CustomFieldBehavior::class) {
-            self::_autoloadCustomFieldBehavior();
-        }
-    }
-
-    /**
-     * Autoloads (and possibly generates) `CustomFieldBehavior.php`
-     */
-    private static function _autoloadCustomFieldBehavior(): void
-    {
-        if (!isset(static::$app)) {
-            // Nothing we can do about it yet
-            return;
-        }
-
-        if (!Cms::isInstalled()) {
-            // Just load an empty CustomFieldBehavior into memory
-            self::_generateCustomFieldBehavior([], [], [], null, false, true);
-            return;
-        }
-
-        $fieldsService = app(Fields::class);
-        $storedFieldVersion = $fieldsService->getFieldVersion();
-        $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
-        $fieldVersionExists = $storedFieldVersion !== null;
-
-        if (!$fieldVersionExists) {
-            // Just make up a temporary one
-            $storedFieldVersion = Str::random(12);
-        }
-
-        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . "CustomFieldBehavior_$storedFieldVersion.php";
-
-        if ($fieldVersionExists && file_exists($filePath)) {
-            include $filePath;
+        if (!isset(static::$app) || !Cms::isInstalled()) {
             return;
         }
 
         [$fields, $generatedFieldHandles] = self::_fields();
 
-        // First generate a basic version without real field value types, and load it into memory
-        $fieldHandles = [];
-        $fieldTypes = [];
         foreach ($fields as $field) {
-            $fieldHandles[] = $field->handle;
-            $fieldTypes[$field->handle]['mixed'] = true;
-        }
-        foreach ($generatedFieldHandles as $handle) {
-            $fieldTypes[$handle]['mixed'] = true;
-        }
-        self::_generateCustomFieldBehavior($fieldHandles, $generatedFieldHandles, $fieldTypes, $filePath, false, true);
-
-        // Now generate it again, this time with the correct field value types
-        $fieldTypes = [];
-        foreach ($fields as $field) {
-            $types = explode('|', $field::phpType());
-            foreach ($types as $type) {
-                $type = trim($type, ' \\');
-                // Add a leading `\` if it’s not a variable, self-reference, or primitive type
-                if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
-                    $type = '\\' . $type;
-                }
-                $fieldTypes[$field->handle][$type] = true;
-            }
-        }
-        foreach ($generatedFieldHandles as $handle) {
-            $fieldTypes[$handle]['string'] = true;
-            $fieldTypes[$handle]['null'] = true;
-        }
-        self::_generateCustomFieldBehavior($fieldHandles, $generatedFieldHandles, $fieldTypes, $filePath, true, false);
-
-        // Generate a new field version if we need one
-        if (!$fieldVersionExists) {
-            try {
-                $fieldsService->updateFieldVersion();
-            } catch (Throwable) {
-                // Craft probably isn't installed yet.
-            }
-        }
-    }
-
-    /**
-     * @param array $fieldHandles
-     * @param array $generatedFieldHandles
-     * @param array $fieldTypes
-     * @param string|null $filePath
-     * @param bool $write
-     * @param bool $load
-     * @throws ErrorException
-     */
-    private static function _generateCustomFieldBehavior(
-        array $fieldHandles,
-        array $generatedFieldHandles,
-        array $fieldTypes,
-        ?string $filePath,
-        bool $write,
-        bool $load,
-    ): void {
-        $methods = [];
-        $fieldHandlesPhp = [];
-        $generatedFieldHandlesPhp = [];
-        $properties = [];
-
-        foreach ($fieldHandles as $handle) {
-            $fieldHandlesPhp[] = <<<EOD
-        '$handle' => true,
-EOD;
+            CustomFieldBehavior::$fieldHandles[$field->handle] = true;
         }
 
         foreach ($generatedFieldHandles as $handle) {
-            $generatedFieldHandlesPhp[] = <<<EOD
-        '$handle' => true,
-EOD;
-        }
-
-        foreach ($fieldTypes as $handle => $types) {
-            $methods[] = <<<EOD
- * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
-EOD;
-
-            $phpDocTypes = implode('|', array_keys($types));
-            $properties[] = <<<EOD
-    /**
-     * @var $phpDocTypes Value for field with the handle “{$handle}”.
-     */
-    public \$$handle;
-EOD;
-        }
-
-        // Load the template
-        $templatePath = static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template';
-        FileHelper::invalidate($templatePath);
-        $fileContents = file_get_contents($templatePath);
-
-        // Replace placeholders with generated code
-        $fileContents = str_replace(
-            [
-                '{METHOD_DOCS}',
-                '/* HANDLES */',
-                '/* GENERATED HANDLES */',
-                '/* PROPERTIES */',
-            ],
-            [
-                implode("\n", $methods),
-                implode("\n", $fieldHandlesPhp),
-                implode("\n", $generatedFieldHandlesPhp),
-                implode("\n\n", $properties),
-            ],
-            $fileContents);
-
-        if ($write) {
-            $dir = dirname($filePath);
-            $tmpFile = $dir . DIRECTORY_SEPARATOR . uniqid(pathinfo($filePath, PATHINFO_FILENAME), true) . '.php';
-            FileHelper::writeToFile($tmpFile, $fileContents);
-            rename($tmpFile, $filePath);
-            FileHelper::invalidate($filePath);
-            if ($load) {
-                include $filePath;
-            }
-
-            // Delete any CustomFieldBehavior files that are over 10 seconds old
-            $basename = basename($filePath);
-            $time = DateTimeHelper::currentTimeStamp() - 10;
-            FileHelper::clearDirectory($dir, [
-                'filter' => function(string $path) use ($basename, $time): bool {
-                    $b = basename($path);
-                    return (
-                        $b !== $basename &&
-                        str_starts_with($b, 'CustomFieldBehavior') &&
-                        filemtime($path) < $time
-                    );
-                },
-            ]);
-        } elseif ($load) {
-            // Just evaluate the code
-            eval(preg_replace('/^<\?php\s*/', '', $fileContents));
+            CustomFieldBehavior::$generatedFieldHandles[$handle] = true;
         }
     }
 
@@ -454,5 +286,3 @@ EOD;
         return new Client($guzzleConfig);
     }
 }
-
-spl_autoload_register([Craft::class, 'autoload'], true, true);

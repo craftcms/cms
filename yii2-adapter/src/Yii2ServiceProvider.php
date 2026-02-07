@@ -273,6 +273,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $app->language = app()->getLocale();
 
             Craft::$app = $app;
+            Craft::populateCustomFieldBehavior();
 
             $this->bootEvents();
             self::bootYiiEvents();
