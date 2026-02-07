@@ -63,6 +63,13 @@ class PreviewController extends Controller
         $token = $this->request->getParam('previewToken');
         $redirect = $this->request->getParam('redirect');
 
+        if ($token) {
+            $token = Craft::$app->getSecurity()->validateData($token);
+            if ($token === false) {
+                throw new BadRequestHttpException('Request contained an invalid preview token');
+            }
+        }
+
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
         } elseif ($revisionId) {

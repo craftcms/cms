@@ -384,6 +384,8 @@ class ElementsController extends Controller
         }
 
         $security = Craft::$app->getSecurity();
+        $previewToken = $previewTargets ? $security->generateRandomString() : null;
+
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
@@ -446,7 +448,8 @@ class ElementsController extends Controller
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
-                        'previewToken' => $previewTargets ? $security->generateRandomString() : null,
+                        'previewToken' => $previewToken,
+                        'hashedPreviewToken' => $previewToken ? $security->hashData($previewToken) : null,
                         'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
                         'revisionId' => $element->revisionId,
                         'siteId' => $element->siteId,
