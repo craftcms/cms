@@ -130,10 +130,14 @@ final readonly class CustomFieldIdeHelperGenerator
                     $lines[] = '';
                 }
 
-                $hasAnnotations = $class['fields'] !== [] || isset($class['see']);
+                $hasAnnotations = $class['fields'] !== [] || isset($class['see']) || isset($class['mixin']);
 
                 if ($hasAnnotations) {
                     $lines[] = '    /**';
+
+                    if (isset($class['mixin'])) {
+                        $lines[] = "     * @mixin {$class['mixin']}";
+                    }
 
                     foreach ($class['fields'] as $handle => $type) {
                         $lines[] = "     * @property {$type} \${$handle}";
@@ -170,7 +174,7 @@ final readonly class CustomFieldIdeHelperGenerator
             $namespaces[$namespace][] = [
                 'className' => $className,
                 'fields' => $fields,
-                'extends' => $parentClass,
+                'mixin' => "\\{$namespace}\\{$parentClass}",
             ];
         }
     }

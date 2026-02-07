@@ -57,11 +57,10 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $content = File::get($helperFile);
         expect($content)
             ->toContain('@property')
-            ->toContain('$blogContent')
-            ->toContain('extends Entry');
+            ->toContain('$blogContent');
     });
 
-    it('regenerates IDE helper when a field layout is saved', function () {
+    it('regenerates IDE helper when a field is saved via project config', function () {
         $field = Field::factory()->create([
             'handle' => 'testRegenField',
             'type' => PlainText::class,
@@ -73,12 +72,18 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
         CustomFieldBehavior::$fieldHandles[$field->handle] = true;
-        app(Fields::class)->refreshFields();
+        $fieldsService = app(Fields::class);
+        $fieldsService->refreshFields();
 
-        $layout = app(Fields::class)->getLayoutById($fieldLayout->id);
-        app(Fields::class)->saveLayout($layout);
-
+        // Verify the helper file doesn't exist yet
         $helperFile = $this->ideHelperPath.'/custom-fields.php';
+        expect(File::exists($helperFile))->toBeFalse();
+
+        // Save the field through the real code path, which triggers project config events
+        $fieldType = $fieldsService->getFieldById($field->id);
+        $fieldType->name = $fieldType->name.' Updated';
+        $fieldsService->saveField($fieldType);
+
         expect(File::exists($helperFile))->toBeTrue();
 
         $content = File::get($helperFile);
@@ -118,7 +123,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
 
         expect($content)
             ->toContain("class {$sectionHandle}_{$entryTypeHandle}")
-            ->toContain('$articleBody');
+            ->toContain('$articleBody')
+            ->toContain('@mixin \CraftCms\Cms\Entry\Elements\Entry')
+            ->not->toContain('extends Entry');
     });
 
     it('generates volume-specific asset classes', function () {
@@ -146,9 +153,8 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $content = File::get($helperFile);
 
         expect($content)
-            ->toContain('class Asset_Images extends Asset')
-            ->toContain('$altText')
-            ->not->toContain('class Asset {}');
+            ->toContain('class Asset_Images')
+            ->toContain('$altText');
     });
 
     it('generates multiple volume-specific asset classes', function () {
@@ -191,9 +197,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $content = File::get($helperFile);
 
         expect($content)
-            ->toContain('class Asset_Images extends Asset')
+            ->toContain('class Asset_Images')
             ->toContain('$altText')
-            ->toContain('class Asset_Documents extends Asset')
+            ->toContain('class Asset_Documents')
             ->toContain('$caption');
     });
 
