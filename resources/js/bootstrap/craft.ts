@@ -10,6 +10,7 @@ import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManage
 import DeprecationErrors from '@/components/utilities/DeprecationErrors/DeprecationErrors.vue';
 import ClearCaches from '@/components/utilities/ClearCaches/ClearCaches.vue';
 import FindReplace from '@/components/utilities/FindReplace/FindReplace.vue';
+import DatabaseBackup from '@/components/utilities/DatabaseBackup.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -84,6 +85,7 @@ const Craft = {
         app.component('DeprecationErrors', DeprecationErrors);
         app.component('ClearCaches', ClearCaches);
         app.component('FindReplace', FindReplace);
+        app.component('DatabaseBackup', DatabaseBackup);
 
         app.mount(el);
       },

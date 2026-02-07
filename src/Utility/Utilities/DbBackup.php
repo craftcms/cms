@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\dbbackup\DbBackupAsset;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -48,11 +46,6 @@ final class DbBackup extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(DbBackupAsset::class);
-        $view->registerJs('new Craft.DbBackupUtility(\'db-backup\');');
-
-        return $view->renderTemplate('_components/utilities/DbBackup.twig');
+        return view('c::utilities.db-backup.content')->toHtml();
     }
 }
