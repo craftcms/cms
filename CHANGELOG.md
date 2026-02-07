@@ -4,6 +4,7 @@
 
 - Legacy entry index URLs now redirect `content/<page-name>`.
 - The `create()` Twig function now allows `craft\helpers\` classes to be created. ([#18376](https://github.com/craftcms/cms/discussions/18376))
+- Fixed a bug where Dashboard columns weren’t getting refreshed when the window was resized. ([#18389](https://github.com/craftcms/cms/issues/18389))
 - Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
 - Fixed a bug where newly-created nested elements were being fully duplicated to other drafts, rather than just their ownership data.
 - Fixed a bug where ancestor elements’ breadcrumbs weren’t getting hyperlinked. ([#18375](https://github.com/craftcms/cms/issues/18375))
