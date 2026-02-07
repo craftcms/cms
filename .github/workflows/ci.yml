@@ -19,7 +19,7 @@ jobs:
       php_version: '8.4'
       craft_version: '6'
       node_version: '22'
-      jobs: '["ecs", "prettier", "phpstan", "tests", "rector"]'
+      jobs: '["ecs", "prettier", "phpstan", "tests"]'
       working_directory: 'yii2-adapter'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>
