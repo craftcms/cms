@@ -22,7 +22,6 @@ final class GenerateCustomFieldsCommand extends Command
             fn () => $generator->generate(),
         );
 
-        $this->newLine();
         $this->components->info(t('IDE helper generated successfully.'));
 
         return self::SUCCESS;
