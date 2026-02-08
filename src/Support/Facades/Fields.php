@@ -51,6 +51,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static string|null getFieldVersion()
  * @method static void updateFieldVersion()
  * @method static void applyFieldSave(string $fieldUid, array $data, string $context)
+ * @method static array allFieldHandles()
+ * @method static array allGeneratedFieldHandles()
+ * @method static bool isFieldHandle(string $handle)
+ * @method static bool isGeneratedFieldHandle(string $handle)
+ * @method static bool isKnownFieldHandle(string $handle)
+ * @method static void invalidateCaches()
  *
  * @see \CraftCms\Cms\Field\Fields
  */

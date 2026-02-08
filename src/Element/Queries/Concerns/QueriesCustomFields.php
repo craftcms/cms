@@ -52,11 +52,10 @@ trait QueriesCustomFields
 
     protected function initQueriesCustomFields(): void
     {
-        foreach (array_keys(Fields::allFieldHandles()) as $handle) {
-            $this->customFieldValues[$handle] = null;
-        }
-
-        foreach (array_keys(Fields::allGeneratedFieldHandles()) as $handle) {
+        foreach ([
+            ...array_keys(Fields::allFieldHandles()),
+            ...array_keys(Fields::allGeneratedFieldHandles()),
+        ] as $handle) {
             $this->customFieldValues[$handle] = null;
         }
 

@@ -118,7 +118,7 @@ final class ProjectConfigHelper
 
         // Now that all fields are processed, invalidate the field handle caches
         // so they are rebuilt with any overridden field handles in field layouts.
-        app(\CraftCms\Cms\Field\Fields::class)->invalidateCaches();
+        Fields::invalidateCaches();
     }
 
     /**
