@@ -143,7 +143,7 @@ final class Fields
 
         foreach ($this->getAllLayouts() as $layout) {
             foreach ($layout->getGeneratedFields() as $generatedField) {
-                if (isset($generatedField['handle'])) {
+                if (! empty($generatedField['handle'])) {
                     $handles[$generatedField['handle']] = true;
                 }
             }
