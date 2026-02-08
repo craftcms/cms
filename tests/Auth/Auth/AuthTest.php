@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->auth = app(Auth::class);
+    Cms::config()->isSystemLive = true;
 });
 
 test('authenticate with valid password', function () {
