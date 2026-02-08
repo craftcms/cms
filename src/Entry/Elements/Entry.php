@@ -1374,7 +1374,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             foreach ($ancestors->all() as $ancestor) {
                 if ($elementsService->canView($ancestor, $user)) {
                     $crumbs[] = [
-                        'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                        'html' => Cp::elementChipHtml($ancestor, [
+                            'class' => 'chromeless',
+                            'hyperlink' => true,
+                        ]),
                     ];
                 }
             }

@@ -534,7 +534,7 @@ class Volume extends Model implements
      */
     public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        $subpath = $parse ? Env::parse($this->_subpath) : $this->_subpath;
+        $subpath = $parse ? (Env::parse($this->_subpath) ?? '') : $this->_subpath;
 
         if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
             $subpath .= '/';

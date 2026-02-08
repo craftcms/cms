@@ -2,14 +2,36 @@
 
 ## Unreleased
 
+- Legacy entry index URLs now redirect `content/<page-name>`.
+- The `create()` Twig function now allows `craft\helpers\` classes to be created. ([#18376](https://github.com/craftcms/cms/discussions/18376))
+- Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
+- Fixed a bug where newly-created nested elements were being fully duplicated to other drafts, rather than just their ownership data.
+- Fixed a bug where ancestor elements’ breadcrumbs weren’t getting hyperlinked. ([#18375](https://github.com/craftcms/cms/issues/18375))
+- Fixed a bug where `craft\models\Volume::getSubpath()` could return `/` instead of an empty string, if the subpath was set to an environment variable set to an empty string. ([#18379](https://github.com/craftcms/cms/issues/18379))
+- Fixed a bug where it wasn’t possible to set assets’ `alt` text via GraphQL mutations. ([#18381](https://github.com/craftcms/cms/issues/18381))
+- Fixed a bug where dragging a field from a field layout designer’s “Add” HUD, and then dropping it back on itself, would result in the field getting selected in a hidden state. ([#18382](https://github.com/craftcms/cms/issues/18382))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
+
+## 5.9.6 - 2026-02-03
+
+- It’s now possible to set elements’ Thumbnail Source to a field nested within a Content Block field. ([#18365](https://github.com/craftcms/cms/issues/18365))
 - Elements within embedded element indexes are now hyperlinked by default. ([#17080](https://github.com/craftcms/cms/discussions/17080))
 - Added `craft\db\mysql\Schema::getRowFormat()`.
 - Added `craft\db\mysql\Schema::setRowFormat()`.
+- Added `craft\fieldlayoutelements\BaseField::getThumbOptions()`.
+- Added `craft\helpers\Cp::cardThumbOptions()`.
+- Added `craft\models\FieldLayout::getThumbHtmlForElement()`.
+- Added `craft\models\FieldLayout::hasThumbField()`.
+- Deprecated `craft\models\FieldLayout::getThumbField()`. `hasThumbField()` or `getThumbHtmlForElement()` should be used instead.
 - Fixed a bug where nested entries within Matrix fields weren’t showing their UI labels if they didn’t have titles.
 - Fixed a bug where assets weren’t getting hyperlinked on the Assets index page in thumbnail view.
 - Fixed a bug where sections and volumes were getting included in entry/asset breadcrumb menus, even if their sources were disabled. ([#18359](https://github.com/craftcms/cms/issues/18359))
 - Fixed an error that could occur when updating to Craft 5.9, if the `entrytypes` table’s row format was set to `COMPACT`. ([#18349](https://github.com/craftcms/cms/issues/18349))
 - Fixed a bug where newly-selected elements weren’t being rendered correctly for relational fields set to the “Card grid” view mode. ([#18362](https://github.com/craftcms/cms/issues/18362))
+- Fixed a bug where card previews weren’t getting updated when a selected field was removed from the field layout.
+- Fixed potential JavaScript errors that could occur if a disclosure menu’s trigger or target elements were missing. ([#18358](https://github.com/craftcms/cms/issues/18358))
+- Fixed a JavaScript error that occurred if a Matrix field’s label was hidden. ([#18366](https://github.com/craftcms/cms/issues/18366))
+- Fixed an infinite recursion bug. ([#18363](https://github.com/craftcms/cms/issues/18363))
 
 ## 5.9.5 - 2026-01-31
 
