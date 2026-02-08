@@ -399,6 +399,10 @@ final class Fields
     {
         $context ??= $this->fieldContext;
 
+        if (! Cms::isInstalled()) {
+            return new MemoizableArray([], fn () => []);
+        }
+
         $this->_fields ??= new MemoizableArray(
             $this->_createFieldQuery()->get()->all(),
             fn (object $config) => $this->createField((array) $config),
