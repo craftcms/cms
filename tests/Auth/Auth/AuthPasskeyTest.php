@@ -6,9 +6,14 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Event;
+
+beforeEach(function () {
+    Cms::config()->isSystemLive = true;
+});
 
 test('authenticateWithPasskey with valid response', function () {
     $user = User::factory()->withPasskey('valid-credential-id')->createElement();

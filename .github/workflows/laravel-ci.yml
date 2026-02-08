@@ -34,6 +34,44 @@ jobs:
       - name: Run Pint
         run: pint --parallel --test --verbose
 
+  rector:
+    name: 'Code Quality / Rector'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      - name: Set version
+        run: composer config version "6.x-dev"
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+      
+      - name: Run Rector
+        run: vendor/bin/rector process --dry-run --ansi
+
   phpstan:
     name: 'Code Quality / Phpstan'
     runs-on: ubuntu-latest

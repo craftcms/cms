@@ -240,6 +240,8 @@ final readonly class JobProgress
                 'dateUpdated' => $now,
             ]);
 
+            DB::commit();
+
             return;
         }
 
@@ -256,5 +258,7 @@ final readonly class JobProgress
         }
 
         $this->db->table(Table::JOBPROGRESS)->where('uid', $uid)->update($data);
+
+        DB::commit();
     }
 }
