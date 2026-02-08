@@ -122,6 +122,13 @@ final readonly class CustomFieldIdeHelperGenerator
         $this->groupSubclasses($namespaces, $entryTypeFields, 'CraftCms\Cms\Entry\Elements', 'Entry');
         $this->groupSubclasses($namespaces, $volumeFields, 'CraftCms\Cms\Asset\Elements', 'Asset');
 
+        // Sort namespaces and classes within each namespace for deterministic output
+        ksort($namespaces);
+        foreach ($namespaces as &$classes) {
+            usort($classes, fn (array $a, array $b) => $a['className'] <=> $b['className']);
+        }
+        unset($classes);
+
         // Render one namespace block per namespace
         foreach ($namespaces as $namespace => $classes) {
             $lines[] = "namespace {$namespace} {";
