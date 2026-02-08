@@ -1,5 +1,6 @@
 <?php
 
+use yii\base\Event;
 
 return [
     'allowedTags' => [
@@ -134,5 +135,7 @@ return [
     ],
     'allowedMethods' => [],
     'allowedProperties' => [],
-    'allowedClasses' => [],
+    'allowedClasses' => [
+        Event::class,
+    ],
 ];
