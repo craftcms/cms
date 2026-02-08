@@ -46,7 +46,6 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -759,12 +758,7 @@ final class Fields
         }
 
         // Clear caches
-        $this->_fields = null;
-        $this->_allFieldHandles = null;
-        $this->_allGeneratedFieldHandles = null;
-
-        // Update the field version
-        $this->updateFieldVersion();
+        $this->invalidateCaches();
 
         event(new FieldDeleted($field));
 
@@ -781,8 +775,6 @@ final class Fields
     public function refreshFields(): void
     {
         $this->invalidateCaches();
-
-        $this->updateFieldVersion();
     }
 
     /**
@@ -1067,12 +1059,7 @@ final class Fields
         event(new FieldLayoutSaved($layout, $isNewLayout));
 
         // Clear caches
-        $this->_layouts = null;
-        $this->_allFieldHandles = null;
-        $this->_allGeneratedFieldHandles = null;
-
-        // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
-        $this->updateFieldVersion();
+        $this->invalidateCaches();
 
         return true;
     }
@@ -1156,32 +1143,6 @@ final class Fields
         $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
-    }
-
-    /**
-     * Returns the current field version.
-     */
-    public function getFieldVersion(): ?string
-    {
-        $fieldVersion = Info::fetch()->fieldVersion;
-
-        // If it doesn't start with `3@`, then it needs to be updated
-        if ($fieldVersion === null || ! str_starts_with($fieldVersion, '3@')) {
-            return null;
-        }
-
-        return $fieldVersion;
-    }
-
-    /**
-     * Sets a new field version, so the CustomFieldBehavior class
-     * will get regenerated on the next request.
-     */
-    public function updateFieldVersion(): void
-    {
-        Info::fetch()->update([
-            'fieldVersion' => '3@'.Str::random(10),
-        ]);
     }
 
     /**

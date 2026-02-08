@@ -9,8 +9,6 @@
 
 namespace craft\behaviors;
 
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use yii\base\Behavior;
 
 /**
@@ -18,9 +16,7 @@ use yii\base\Behavior;
  *
  * This class provides magic access for all custom field handles.
  *
- * @template T of ElementInterface|ElementQueryInterface
- *
- * @extends Behavior<T>
+ * @property \CraftCms\Cms\Element\Element $owner
  */
 class CustomFieldBehavior extends Behavior
 {

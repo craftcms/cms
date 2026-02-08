@@ -680,7 +680,7 @@ class Fields extends Component
      */
     public function getFieldVersion(): ?string
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->getFieldVersion();
+        return null;
     }
 
     /**
@@ -689,7 +689,7 @@ class Fields extends Component
      */
     public function updateFieldVersion(): void
     {
-        app(\CraftCms\Cms\Field\Fields::class)->updateFieldVersion();
+        // Not implemented
     }
 
     /**

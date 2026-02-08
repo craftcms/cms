@@ -26,7 +26,7 @@ final class FieldsServiceProvider extends ServiceProvider
 
     private function registerIdeHelperListeners(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void
     {
-        $regenerate = fn () => $generator->generate();
+        $regenerate = fn () => once(fn () => $generator->generate());
 
         $paths = [
             ProjectConfig::PATH_ENTRY_TYPES.'.{uid}',

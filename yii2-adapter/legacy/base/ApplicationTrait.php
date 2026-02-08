@@ -709,7 +709,7 @@ trait ApplicationTrait
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion'];
         }
 
         if (! $info->validate($attributeNames)) {
