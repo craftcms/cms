@@ -294,7 +294,7 @@ trait FormatsResults
 
         $elementQuery->subQuery->orders = array_filter(
             $elementQuery->subQuery->orders ?? [],
-            fn (array $order) => $order['column'] !== 'score',
+            fn (array $order) => isset($order['column']) && $order['column'] !== 'score',
         );
 
         if (! $elementQuery->searchResults) {

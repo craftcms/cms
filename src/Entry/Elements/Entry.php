@@ -10,8 +10,6 @@ use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
-use craft\db\Connection;
-use craft\db\FixedOrderExpression;
 use craft\elements\actions\Copy;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -38,6 +36,7 @@ use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -48,6 +47,7 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Events\DefineEntryTypes;
+use CraftCms\Cms\Entry\Events\DefineMetaFields;
 use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
@@ -595,13 +595,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                         ->pluck('id')
                         ->all();
 
-                    return new \CraftCms\Cms\Database\Expressions\FixedOrderExpression('entries.sectionId', $sectionIds);
+                    return new FixedOrderExpression('entries.sectionId', $sectionIds);
                 },
                 'attribute' => 'section',
             ],
             [
                 'label' => t('Entry Type'),
-                'orderBy' => function (int $dir, Connection $db) {
+                'orderBy' => function (int $dir) {
                     $entryTypeIds = EntryTypes::getAllEntryTypes()
                         ->sort(fn (EntryType $a, EntryType $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
@@ -609,7 +609,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                         ->pluck('id')
                         ->all();
 
-                    return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
+                    return new FixedOrderExpression('entries.typeId', $entryTypeIds);
                 },
                 'attribute' => 'type',
             ],
@@ -617,13 +617,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
                     if ($dir === SORT_ASC) {
-                        if (Craft::$app->getDb()->getIsMysql()) {
+                        if (DB::getDriverName() === 'mysql') {
                             return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
                         }
 
                         return DB::raw('postDate ASC NULLS LAST');
                     }
-                    if (Craft::$app->getDb()->getIsMysql()) {
+                    if (DB::getDriverName() === 'mysql') {
                         return DB::raw('postDate IS NULL DESC, postDate DESC');
                     }
 
@@ -2420,7 +2420,7 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        event($event = new \CraftCms\Cms\Entry\Events\DefineMetaFields($this, $static, $fields));
+        event($event = new DefineMetaFields($this, $static, $fields));
 
         return implode("\n", $event->fields);
     }
