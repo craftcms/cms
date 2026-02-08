@@ -87,6 +87,7 @@ use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
@@ -138,6 +139,7 @@ use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 use Yiisoft\Translator\Translator;
+
 use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -173,6 +175,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
             if (!is_array($config)) {
                 Config::set($key, []);
+
                 continue;
             }
 
@@ -180,7 +183,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 continue;
             }
 
-            Deprecator::log("config-{$file}", "Using multi-environment config files is deprecated.", $file->getPathname());
+            Deprecator::log("config-{$file}", 'Using multi-environment config files is deprecated.', $file->getPathname());
 
             $merged = Arr::merge($config['*'], $config[$environment] ?? []);
 
@@ -356,6 +359,11 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         app('Craft');
 
+        /**
+         * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
+         */
+        Event::listen(FieldCachesInvalidated::class, fn() => Craft::populateCustomFieldBehavior());
+
         $this->ensureNewMigrationTable();
         $this->ensureNewSessionsTable();
 
@@ -383,7 +391,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         foreach ($commands as $command) {
             if (str_contains($command['description'], '. ')) {
-                $command['description'] = Str::before($command['description'], ". ") . '. ';
+                $command['description'] = Str::before($command['description'], '. ') . '. ';
             }
 
             $signature = str_replace('/', ':', $command['name']);
@@ -459,7 +467,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
             $definitionSignature .= "={$definition['default']}";
         } elseif ($type === 'option' && ($definition['required'] ?? true)) {
-            $definitionSignature .= "=";
+            $definitionSignature .= '=';
         }
 
         if ($definition['description']) {
@@ -569,7 +577,6 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Deprecated concepts
          */
-
         Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
             if (self::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
@@ -980,7 +987,9 @@ class Yii2ServiceProvider extends ServiceProvider
     }
 
     private static ?bool $supportsCategories = null;
+
     private static ?bool $supportsGlobalSets = null;
+
     private static ?bool $supportsTags = null;
 
     public static function supportsCategories(): bool
@@ -1016,8 +1025,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return category group permissions.
-     *
-     * @return array
      */
     private static function categorySchemaComponents(): array
     {
@@ -1060,8 +1067,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return global set permissions.
-     *
-     * @return array
      */
     private static function globalSetSchemaComponents(): array
     {
@@ -1092,8 +1097,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return tag group permissions.
-     *
-     * @return array
      */
     private static function tagSchemaComponents(): array
     {

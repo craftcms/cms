@@ -28,6 +28,7 @@ use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
@@ -190,6 +191,8 @@ final class Fields
         $this->_layouts = null;
         $this->_allFieldHandles = null;
         $this->_allGeneratedFieldHandles = null;
+
+        event(new FieldCachesInvalidated);
     }
 
     // Fields
