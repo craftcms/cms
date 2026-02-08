@@ -1507,7 +1507,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Creates a new object.
      *
-     * @template T of BaseObject
+     * @template T of object
      * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>} $type
      * @param array $params
      * @return T
@@ -1516,7 +1516,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function createFunction(string|array $type, array $params = []): object
     {
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
-        if (!is_subclass_of($class, BaseObject::class) && !str_starts_with($class, '\\CraftCms\\Cms\\')) {
+        if (
+            !is_subclass_of($class, BaseObject::class) &&
+            !str_starts_with($class, 'craft\\helpers\\') &&
+            !str_starts_with($class, '\\CraftCms\\Cms\\')
+        ) {
             throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
         }
 

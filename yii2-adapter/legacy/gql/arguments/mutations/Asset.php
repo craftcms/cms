@@ -30,6 +30,11 @@ class Asset extends ElementMutationArguments
                 'description' => 'The file to use for this asset',
                 'type' => File::getType(),
             ],
+            'alt' => [
+                'name' => 'alt',
+                'description' => 'Alternative text for the asset.',
+                'type' => Type::string(),
+            ],
             'newFolderId' => [
                 'name' => 'newFolderId',
                 'description' => 'ID of the new folder for this asset',

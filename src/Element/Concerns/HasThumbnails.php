@@ -32,10 +32,13 @@ trait HasThumbnails
      */
     public function getThumbHtml(int $size): ?string
     {
-        $thumbField = $this->getFieldLayout()?->getThumbField();
+        $fieldLayout = $this->getFieldLayout();
 
-        if ($thumbField && $thumbHtml = $thumbField->thumbHtml($this, $size)) {
-            return $thumbHtml;
+        if ($fieldLayout?->thumbFieldKey) {
+            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size);
+            if ($thumbHtml) {
+                return $thumbHtml;
+            }
         }
 
         if ($thumbUrl = $this->thumbUrl($size)) {
