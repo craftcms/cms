@@ -1,6 +1,5 @@
 <?php
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
@@ -31,7 +30,7 @@ test('related elements', function () {
         ]);
     }
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+    Fields::invalidateCaches();
 
     Fields::refreshFields();
 

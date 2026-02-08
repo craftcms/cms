@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -19,7 +18,7 @@ test('content block field merges nested field errors onto the element', function
         'type' => PlainText::class,
     ]);
 
-    CustomFieldBehavior::$fieldHandles[$innerField->handle] = true;
+    Fields::invalidateCaches();
     Fields::refreshFields();
 
     $layoutUid = Str::uuid()->toString();

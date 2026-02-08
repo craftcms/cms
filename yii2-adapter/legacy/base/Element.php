@@ -10,6 +10,7 @@
 namespace craft\base;
 
 use craft\base\Event as YiiEvent;
+use craft\behaviors\CustomFieldBehavior;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -84,10 +85,12 @@ use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use Illuminate\Support\Facades\Event;
+use Override;
 
 /**
  * @since 3.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Element} instead.
+ * @mixin CustomFieldBehavior
  */
 abstract class Element extends \CraftCms\Cms\Element\Element
 {
@@ -487,6 +490,29 @@ abstract class Element extends \CraftCms\Cms\Element\Element
      * @deprecated 6.0.0 Use {@see AfterMoveInStructure} instead.
      */
     public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
+
+    public function init(): void
+    {
+        parent::init();
+
+        // Stop allowing setting custom field values directly on the behavior
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+        $behavior->canSetProperties = false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    protected function defineBehaviors(): array
+    {
+        return [
+            'customFields' => [
+                'class' => CustomFieldBehavior::class,
+            ],
+        ];
+    }
 
     public static function registerEvents(): void
     {

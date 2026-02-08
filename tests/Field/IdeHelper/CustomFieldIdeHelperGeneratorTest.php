@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
@@ -45,7 +44,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
         $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
@@ -71,7 +70,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
         $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        app(Fields::class)->invalidateCaches();
         $fieldsService = app(Fields::class);
         $fieldsService->refreshFields();
 
@@ -82,6 +81,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         // Save the field through the real code path, which triggers project config events
         $fieldType = $fieldsService->getFieldById($field->id);
         $fieldType->name = $fieldType->name.' Updated';
+
         $fieldsService->saveField($fieldType);
 
         expect(File::exists($helperFile))->toBeTrue();
@@ -109,7 +109,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
         $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
@@ -143,7 +143,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
@@ -186,8 +186,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'fieldLayoutId' => $fieldLayout2->id,
         ]);
 
-        CustomFieldBehavior::$fieldHandles[$field1->handle] = true;
-        CustomFieldBehavior::$fieldHandles[$field2->handle] = true;
+        app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
@@ -232,7 +231,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
         $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
         $this->artisan('craft:ide-helper:custom-fields')

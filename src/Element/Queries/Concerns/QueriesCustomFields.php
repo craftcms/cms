@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use craft\behaviors\CustomFieldBehavior;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\QueryParam;
@@ -53,7 +52,11 @@ trait QueriesCustomFields
 
     protected function initQueriesCustomFields(): void
     {
-        foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
+        foreach (array_keys(Fields::allFieldHandles()) as $handle) {
+            $this->customFieldValues[$handle] = null;
+        }
+
+        foreach (array_keys(Fields::allGeneratedFieldHandles()) as $handle) {
             $this->customFieldValues[$handle] = null;
         }
 
@@ -193,7 +196,7 @@ trait QueriesCustomFields
 
         $fieldsByHandle = $this->fieldsByHandle($elementQuery);
 
-        foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
+        foreach (array_keys(Fields::allFieldHandles()) as $handle) {
             // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
             if ($handle === 'owner') {
                 continue;

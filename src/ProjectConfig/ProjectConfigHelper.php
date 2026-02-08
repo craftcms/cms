@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
@@ -117,17 +116,9 @@ final class ProjectConfigHelper
             $projectConfig->processConfigChanges(ProjectConfig::PATH_FIELDS.'.'.$fieldUid);
         }
 
-        // Now that all fields are processed, make sure that CustomFieldBehavior::$fieldHandles
-        // is up-to-date with any overridden field handles in field layouts.
-        // (This could not be the case if any Content Block fields define a field layout that reference
-        // fields which weren’t processed yet at the time their layout was saved, for example.)
-        foreach (Fields::getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFieldElements() as $layoutElement) {
-                if (isset($layoutElement->handle)) {
-                    CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
-                }
-            }
-        }
+        // Now that all fields are processed, invalidate the field handle caches
+        // so they are rebuilt with any overridden field handles in field layouts.
+        app(\CraftCms\Cms\Field\Fields::class)->invalidateCaches();
     }
 
     /**

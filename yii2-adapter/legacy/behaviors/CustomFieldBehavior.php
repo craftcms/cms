@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,6 +19,7 @@ use yii\base\Behavior;
  * This class provides magic access for all custom field handles.
  *
  * @template T of ElementInterface|ElementQueryInterface
+ *
  * @extends Behavior<T>
  */
 class CustomFieldBehavior extends Behavior
@@ -47,7 +50,7 @@ class CustomFieldBehavior extends Behavior
     private array $_customFieldValues = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __call($name, $params)
     {
@@ -57,69 +60,91 @@ class CustomFieldBehavior extends Behavior
             count($params) === 1
         ) {
             $this->$name = $params[0];
+
             return $this->owner;
         }
+
         return parent::__call($name, $params);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function hasMethod($name): bool
     {
         if ($this->hasMethods && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
+
         return parent::hasMethod($name);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __isset($name): bool
     {
         if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
             return true;
         }
+
         return parent::__isset($name);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __get($name)
     {
         if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
+            if (method_exists($this->owner, 'getCustomFieldRawValue')) {
+                return isset(self::$generatedFieldHandles[$name])
+                    ? $this->owner->getGeneratedFieldRawValue($name)
+                    : $this->owner->getCustomFieldRawValue($name);
+            }
+
             return $this->_customFieldValues[$name] ?? null;
         }
+
         return parent::__get($name);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __set($name, $value)
     {
         if (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name])) {
+            if (method_exists($this->owner, 'setCustomFieldRawValue')) {
+                if (isset(self::$generatedFieldHandles[$name])) {
+                    $this->owner->setGeneratedFieldRawValue($name, $value);
+                } else {
+                    $this->owner->setCustomFieldRawValue($name, $value);
+                }
+
+                return;
+            }
             $this->_customFieldValues[$name] = $value;
+
             return;
         }
         parent::__set($name, $value);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canGetProperty($name, $checkVars = true): bool
     {
         if ($checkVars && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
+
         return parent::canGetProperty($name, $checkVars);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canSetProperty($name, $checkVars = true): bool
     {
@@ -129,6 +154,7 @@ class CustomFieldBehavior extends Behavior
         if ($checkVars && (isset(self::$fieldHandles[$name]) || isset(self::$generatedFieldHandles[$name]))) {
             return true;
         }
+
         return parent::canSetProperty($name, $checkVars);
     }
 }

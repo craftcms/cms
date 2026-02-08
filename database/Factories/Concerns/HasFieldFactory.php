@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories\Concerns;
 
-use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Database\Factories\ElementFactoryResult;
 use CraftCms\Cms\Element\Element;
@@ -88,7 +87,6 @@ trait HasFieldFactory
                 'settings' => $config->settings,
             ]);
             $fields->put($config->handle, $field);
-            CustomFieldBehavior::$fieldHandles[$config->handle] = true;
         }
 
         // Create field layout with all fields

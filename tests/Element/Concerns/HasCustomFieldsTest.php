@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use craft\base\ElementInterface;
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -31,7 +30,7 @@ beforeEach(function () {
     $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
     $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+    Fields::invalidateCaches();
     Fields::refreshFields();
 
     $this->entry = entryQuery()->id($entryModel->id)->one();
@@ -309,31 +308,5 @@ describe('modified fields (_modifiedFields)', function () {
         $draft = ($this->reloadDraft)($draft);
 
         expect($draft->isFieldModified('testField'))->toBeTrue();
-    });
-});
-
-describe('customFields behavior runtime', function () {
-    test('reads and writes field values via the customFields behavior', function () {
-        $behavior = $this->entry->getBehavior('customFields');
-
-        expect($behavior)->toBeInstanceOf(CustomFieldBehavior::class);
-
-        $behavior->testField = 'behavior direct value';
-
-        expect($behavior->testField)->toBe('behavior direct value');
-    });
-
-    test('stores custom field values in the behavior', function () {
-        $this->entry->setFieldValue('testField', 'stored value');
-
-        $behavior = $this->entry->getBehavior('customFields');
-
-        expect($behavior->testField)->toBe('stored value');
-    });
-
-    test('behavior supports unknown field handles gracefully', function () {
-        $behavior = $this->entry->getBehavior('customFields');
-
-        expect($behavior->nonExistentField ?? null)->toBeNull();
     });
 });

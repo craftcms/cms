@@ -17,6 +17,7 @@ beforeEach(function () {
 
 it('aborts when Craft is already installed', function () {
     Cms::setIsInstalled();
+    Config::set('app.debug', false);
 
     get(action([InstallController::class, 'index']))->assertNotFound();
 });

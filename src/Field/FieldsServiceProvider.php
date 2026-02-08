@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Commands\DeleteFieldsCommand;
 use CraftCms\Cms\Field\Commands\FieldsAutoMergeCommand;
 use CraftCms\Cms\Field\Commands\FieldsMergeCommand;
@@ -27,10 +26,6 @@ final class FieldsServiceProvider extends ServiceProvider
 
     private function registerIdeHelperListeners(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void
     {
-        if (! Cms::config()->ideHelperEnabled) {
-            return;
-        }
-
         $regenerate = fn () => $generator->generate();
 
         $paths = [

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,7 +10,6 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -20,6 +21,7 @@ use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
+
 use function GuzzleHttp\default_user_agent;
 
 /**
@@ -27,13 +29,16 @@ use function GuzzleHttp\default_user_agent;
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @mixin CraftTrait
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Craft extends Yii
 {
     /** @deprecated in 5.0.0. [[\craft\enums\Edition::Solo]] should be used instead. */
     public const Solo = 0;
+
     /** @deprecated in 5.0.0. [[\craft\enums\Edition::Pro]] should be used instead. */
     public const Pro = 2;
 
@@ -43,7 +48,8 @@ class Craft extends Yii
     private static array $_baseCookieConfig;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @deprecated 6.0.0 use {@see Aliases::get()} instead.
      */
     public static function getAlias($alias, $throwException = true)
@@ -65,10 +71,11 @@ class Craft extends Yii
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @template T
-     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>}|callable():T $type
-     * @param array $params
+     *
+     * @param  class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>}|callable():T  $type
      * @return T
      */
     public static function createObject($type, array $params = [])
@@ -94,9 +101,9 @@ class Craft extends Yii
      * $value2 = Craft::parseEnv('@webroot');
      * ```
      *
-     * @param string|null $str
      * @return string|null|false The parsed value, or the original value if it didn’t
-     * reference an environment variable or alias.
+     *                           reference an environment variable or alias.
+     *
      * @since 3.1.0
      * @deprecated in 3.7.29. [[\CraftCms\Cms\Support\Env::parse()]] should be used instead.
      */
@@ -115,8 +122,6 @@ class Craft extends Yii
      * $status = Craft::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
      * ```
      *
-     * @param mixed $value
-     * @return bool|null
      * @since 3.7.22
      * @deprecated in 3.7.29. [[\CraftCms\Cms\Support\Env::parseBoolean()]] should be used instead.
      */
@@ -128,10 +133,10 @@ class Craft extends Yii
     /**
      * Displays a variable.
      *
-     * @param mixed $var The variable to be dumped.
-     * @param int $depth The maximum depth that the dumper should go into the variable.
-     * @param bool $highlight Whether the result should be syntax-highlighted.
-     * @param bool $return Whether the dump result should be returned instead of output.
+     * @param  mixed  $var  The variable to be dumped.
+     * @param  int  $depth  The maximum depth that the dumper should go into the variable.
+     * @param  bool  $highlight  Whether the result should be syntax-highlighted.
+     * @param  bool  $return  Whether the dump result should be returned instead of output.
      * @return string|null The output, if `$return` is true
      */
     public static function dump(mixed $var, int $depth = 20, bool $highlight = true, bool $return = false): ?string
@@ -142,19 +147,22 @@ class Craft extends Yii
             }
             VarDumper::dump($var, $depth);
             echo "\n";
+
             return $return ? ob_get_clean() : null;
         }
 
         $data = (new VarCloner())->cloneVar($var)->withMaxDepth($depth);
+
         return Craft::$app->getDumper()->dump($data, $return ? true : null);
     }
 
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
-     * @param mixed $var The variable to be dumped.
-     * @param int $depth The maximum depth that the dumper should go into the variable.
-     * @param bool $highlight Whether the result should be syntax-highlighted.
+     * @param  mixed  $var  The variable to be dumped.
+     * @param  int  $depth  The maximum depth that the dumper should go into the variable.
+     * @param  bool  $highlight  Whether the result should be syntax-highlighted.
+     *
      * @throws ExitException if the application is in testing mode
      */
     public static function dd(mixed $var, int $depth = 20, bool $highlight = true): void
@@ -175,8 +183,8 @@ class Craft extends Yii
     /**
      * Generates and returns a cookie config.
      *
-     * @param array $config Any config options that should be included in the config.
-     * @param Request|null $request The request object
+     * @param  array  $config  Any config options that should be included in the config.
+     * @param  Request|null  $request  The request object
      * @return array The cookie config array.
      */
     public static function cookieConfig(array $config = [], ?Request $request = null): array
@@ -214,53 +222,16 @@ class Craft extends Yii
             return;
         }
 
-        [$fields, $generatedFieldHandles] = self::_fields();
-
-        foreach ($fields as $field) {
-            CustomFieldBehavior::$fieldHandles[$field->handle] = true;
-        }
-
-        foreach ($generatedFieldHandles as $handle) {
-            CustomFieldBehavior::$generatedFieldHandles[$handle] = true;
-        }
-    }
-
-    /**
-     * @return array{0:FieldInterface[],1:string[]}
-     */
-    private static function _fields(): array
-    {
         $fieldsService = app(Fields::class);
-        /** @var FieldInterface[] $fields */
-        $fields = $fieldsService->getAllFields(false)->all();
-        $generatedFieldHandles = [];
-
-        foreach ($fieldsService->getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFields() as $field) {
-                if ($field->handle !== $field->layoutElement->getOriginalHandle()) {
-                    $fields[] = $field;
-                }
-            }
-            foreach ($layout->getGeneratedFields() as $generatedField) {
-                $handle = $generatedField['handle'] ?? '';
-                if ($handle !== '') {
-                    $generatedFieldHandles[$handle] = true;
-                }
-            }
-        }
-
-        // Sort custom fields by handle
-        // Note: we can't use array_multisort here! https://github.com/craftcms/cms/issues/17556
-        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
-
-        return [$fields, array_keys($generatedFieldHandles)];
+        CustomFieldBehavior::$fieldHandles = $fieldsService->allFieldHandles();
+        CustomFieldBehavior::$generatedFieldHandles = $fieldsService->allGeneratedFieldHandles();
     }
 
     /**
      * Creates a Guzzle client configured with the given array merged with any default values in config/guzzle.php.
      *
-     * @param array $config Guzzle client config settings
-     * @return Client
+     * @param  array  $config  Guzzle client config settings
+     *
      * @deprecated 6.0.0 use {@see Http::create()} instead.
      */
     public static function createGuzzleClient(array $config = []): Client

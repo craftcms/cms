@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementRelations;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -48,8 +47,8 @@ describe('updateRelations', function () {
             'fieldLayoutId' => $this->fieldLayout->id,
         ]);
 
-        CustomFieldBehavior::$fieldHandles[$this->field->handle] = true;
-        Fields::refreshFields();
+        app(Fields::class)->invalidateCaches();
+        app(Fields::class)->refreshFields();
     });
 
     it('creates relations for a new element', function () {
@@ -238,8 +237,8 @@ describe('deleteSiteRelations', function () {
             'fieldLayoutId' => $this->fieldLayout->id,
         ]);
 
-        CustomFieldBehavior::$fieldHandles[$this->field->handle] = true;
-        Fields::refreshFields();
+        app(Fields::class)->invalidateCaches();
+        app(Fields::class)->refreshFields();
     });
 
     it('deletes site-specific relations', function () {
@@ -397,8 +396,8 @@ describe('relationalFields', function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        CustomFieldBehavior::$fieldHandles[$field->handle] = true;
-        Fields::refreshFields();
+        app(Fields::class)->invalidateCaches();
+        app(Fields::class)->refreshFields();
 
         $entry = EntryModel::factory()->create([
             'sectionId' => $section->id,

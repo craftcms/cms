@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\behaviors\CustomFieldBehavior;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\web\UploadedFile;
@@ -50,6 +49,9 @@ trait HasCustomFields
     private ?string $_fieldParamNamePrefix = null;
 
     private ?array $_normalizedFieldValues = null;
+
+    /** @var array<string, mixed> */
+    private array $_customFieldValues = [];
 
     /** @var array<string, mixed> */
     private array $_generatedFieldValues;
@@ -120,13 +122,12 @@ trait HasCustomFields
 
         $this->normalizeFieldValue($fieldHandle);
 
-        return $this->getBehavior('customFields')->$fieldHandle;
+        return $this->_customFieldValues[$fieldHandle] ?? null;
     }
 
     public function setFieldValue(string $fieldHandle, mixed $value): void
     {
-        $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $value;
+        $this->_customFieldValues[$fieldHandle] = $value;
 
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
@@ -328,6 +329,35 @@ trait HasCustomFields
         $this->_generatedFieldValues = $values;
     }
 
+    public function getCustomFieldRawValue(string $handle): mixed
+    {
+        return $this->_customFieldValues[$handle] ?? null;
+    }
+
+    public function setCustomFieldRawValue(string $handle, mixed $value): void
+    {
+        $this->_customFieldValues[$handle] = $value;
+    }
+
+    public function hasCustomFieldValue(string $handle): bool
+    {
+        return array_key_exists($handle, $this->_customFieldValues);
+    }
+
+    public function getGeneratedFieldRawValue(string $handle): mixed
+    {
+        return ($this->_generatedFieldValues ?? [])[$handle] ?? null;
+    }
+
+    public function setGeneratedFieldRawValue(string $handle, mixed $value): void
+    {
+        if (! isset($this->_generatedFieldValues)) {
+            $this->_generatedFieldValues = [];
+        }
+
+        $this->_generatedFieldValues[$handle] = $value;
+    }
+
     protected function normalizeFieldValue(string $fieldHandle): void
     {
         if (isset($this->_normalizedFieldValues[$fieldHandle])) {
@@ -340,24 +370,20 @@ trait HasCustomFields
             throw new InvalidFieldException($fieldHandle);
         }
 
-        $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $this->_customFieldValues[$fieldHandle] = $field->normalizeValue($this->_customFieldValues[$fieldHandle] ?? null, $this);
         $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
-        if (! isset(CustomFieldBehavior::$fieldHandles[$handle])) {
+        if (! app(Fields::class)->isFieldHandle($handle)) {
             return null;
         }
 
         $field = $this->getFieldLayout()?->getFieldByHandle($handle);
 
-        if (! $field) {
-            $behavior = $this->getBehavior('customFields');
-            if (isset($behavior->$handle)) {
-                $behavior->$handle = null;
-            }
+        if (! $field && array_key_exists($handle, $this->_customFieldValues)) {
+            $this->_customFieldValues[$handle] = null;
         }
 
         return $field;

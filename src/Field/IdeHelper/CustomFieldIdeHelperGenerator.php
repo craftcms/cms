@@ -165,7 +165,7 @@ final readonly class CustomFieldIdeHelperGenerator
     /**
      * Group subclass stubs (e.g. Entry types, Asset volumes) into the namespaces map.
      *
-     * @param  array<string, list<array{className: string, fields: array<string, string>, extends?: string, see?: string}>>  $namespaces
+     * @param  array<string, list<array{className: string, fields: array<string, string>, extends?: string, see?: string, mixin?: string}>>  $namespaces
      * @param  array<string, array<string, string>>  $classFields
      */
     private function groupSubclasses(array &$namespaces, array $classFields, string $namespace, string $parentClass): void

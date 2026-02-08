@@ -9,7 +9,6 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -862,12 +861,10 @@ JS, [
         }
 
         // Make sure none of the other instances have values
-        /** @var CustomFieldBehavior $behavior */
-        $behavior = $element->getBehavior('customFields');
         foreach ($fieldInstances as $fieldInstance) {
             /** @var self $field */
             $field = $fieldInstance->getField();
-            if (isset($behavior->{$field->handle})) {
+            if ($element->hasCustomFieldValue($field->handle)) {
                 return false;
             }
         }
@@ -1048,7 +1045,7 @@ JS, [
             $value = $this->_all($value, $element)->all();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
-            $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
+            $rawValue = $element->getCustomFieldRawValue($this->handle);
             if (is_array($rawValue)) {
                 $ids = array_flip($rawValue);
                 $value = $value->filter(fn (ElementInterface $element) => isset($ids[$element->id]));
@@ -1103,7 +1100,7 @@ JS, [
         $missingSourceElementIds = [];
 
         foreach ($sourceElements as $sourceElement) {
-            $rawValue = $sourceElement->getBehavior('customFields')->{$this->handle} ?? null;
+            $rawValue = $sourceElement->getCustomFieldRawValue($this->handle);
             if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }

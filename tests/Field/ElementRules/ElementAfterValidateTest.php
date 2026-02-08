@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\behaviors\CustomFieldBehavior;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -19,7 +18,7 @@ test('afterValidate merges field errors onto the element', function () {
         'type' => Email::class,
     ]);
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+    Fields::invalidateCaches();
     Fields::refreshFields();
 
     $layout = Fields::createLayout([

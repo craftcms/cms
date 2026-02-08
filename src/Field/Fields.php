@@ -8,7 +8,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
-use craft\behaviors\CustomFieldBehavior;
 use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
@@ -88,6 +87,110 @@ final class Fields
     private ?MemoizableArray $_layouts = null;
 
     private array $_savingFields = [];
+
+    /**
+     * @var array<string,bool>|null Memoized map of all known custom field handles.
+     */
+    private ?array $_allFieldHandles = null;
+
+    /**
+     * @var array<string,bool>|null Memoized map of all generated field handles.
+     */
+    private ?array $_allGeneratedFieldHandles = null;
+
+    // Handle Registry
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a map of all known custom field handles (including layout-overridden handles).
+     *
+     * @return array<string,bool>
+     */
+    public function allFieldHandles(): array
+    {
+        if ($this->_allFieldHandles !== null) {
+            return $this->_allFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllFields(false) as $field) {
+            $handles[$field->handle] = true;
+        }
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFields() as $field) {
+                $handles[$field->handle] = true;
+            }
+        }
+
+        return $this->_allFieldHandles = $handles;
+    }
+
+    /**
+     * Returns a map of all generated field handles from all layouts.
+     *
+     * @return array<string,bool>
+     */
+    public function allGeneratedFieldHandles(): array
+    {
+        if ($this->_allGeneratedFieldHandles !== null) {
+            return $this->_allGeneratedFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                if (isset($generatedField['handle'])) {
+                    $handles[$generatedField['handle']] = true;
+                }
+            }
+        }
+
+        return $this->_allGeneratedFieldHandles = $handles;
+    }
+
+    /**
+     * Returns whether the given handle belongs to a custom field.
+     */
+    public function isFieldHandle(string $handle): bool
+    {
+        return isset($this->allFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to a generated field.
+     */
+    public function isGeneratedFieldHandle(string $handle): bool
+    {
+        return isset($this->allGeneratedFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to any known field (custom or generated).
+     */
+    public function isKnownFieldHandle(string $handle): bool
+    {
+        if ($this->isFieldHandle($handle)) {
+            return true;
+        }
+
+        return $this->isGeneratedFieldHandle($handle);
+    }
+
+    /**
+     * Invalidates all memoized field and layout caches including handle maps.
+     *
+     * Call this whenever fields or layouts change, without writing a new field version to the database.
+     */
+    public function invalidateCaches(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
+    }
 
     // Fields
     // -------------------------------------------------------------------------
@@ -654,6 +757,8 @@ final class Fields
 
         // Clear caches
         $this->_fields = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         // Update the field version
         $this->updateFieldVersion();
@@ -672,8 +777,7 @@ final class Fields
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
-        $this->_layouts = null;
+        $this->invalidateCaches();
 
         $this->updateFieldVersion();
     }
@@ -961,16 +1065,11 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
         $this->updateFieldVersion();
-
-        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
-        foreach ($layout->getCustomFieldElements() as $layoutElement) {
-            if (isset($layoutElement->handle)) {
-                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
-            }
-        }
 
         return true;
     }
@@ -1012,6 +1111,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return true;
     }
@@ -1030,6 +1131,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
     }
@@ -1046,6 +1149,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
     }
@@ -1071,10 +1176,6 @@ final class Fields
      */
     public function updateFieldVersion(): void
     {
-        // Make sure that CustomFieldBehavior has already been loaded,
-        // so the field version change won't be detected until the next request
-        class_exists(CustomFieldBehavior::class);
-
         Info::fetch()->update([
             'fieldVersion' => '3@'.Str::random(10),
         ]);
@@ -1138,9 +1239,6 @@ final class Fields
 
         // Clear caches
         $this->refreshFields();
-
-        // Tell the current CustomFieldBehavior class about the field
-        CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
         // Now get the field, if it's not a field save request
         $field ??= $this->getFieldById($fieldRecord->id);
