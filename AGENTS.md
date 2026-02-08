@@ -122,6 +122,7 @@ Element queries (`src/Database/Queries/`) are the primary way to query content:
 - Craft config: `config/craft/` (general.php, custom-fields.php, etc.)
 - Project config: `config/craft/project/` (YAML files for schema)
 - Laravel config: `config/` (standard Laravel configuration)
+- Craft-specific configuration lives in the `GeneralConfig` class, not in generic Laravel config files. When adding new configuration options, add them as properties on `GeneralConfig`.
 
 ### Testing
 
@@ -210,6 +211,20 @@ if (!$event->isValid) {
 - `src/Entry/Events/` - Entry-specific events
 - `src/User/Events/` - User-related events
 - `src/Plugin/Events/` - Plugin lifecycle events
+
+## Common Pitfalls
+
+### Unicode Characters in Source Files
+
+Some source files contain Unicode characters (e.g., curly/smart quotes `'` instead of ASCII `'`) in comments and strings. These cause `edit_file` string matching to fail silently. If edits fail to match, inspect the file with hex tools to check for non-ASCII characters.
+
+### Autoloading and Namespace Mapping
+
+The `yii2-adapter/composer.json` maps the `craft\` namespace to the `legacy/` directory. New classes in the adapter must be placed under `yii2-adapter/legacy/` to be autoloaded correctly. Placing files in `yii2-adapter/lib/` will cause "Class not found" errors.
+
+### PHP Trait Constants
+
+PHP 8.2+ does not allow accessing constants on traits directly (e.g., `MyTrait::SOME_CONSTANT`). Access them through a class that uses the trait instead.
 
 ## Code Style
 
