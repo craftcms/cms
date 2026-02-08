@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
 
@@ -211,7 +212,7 @@ final class ClearCaches extends Utility
                 ]),
                 'action' => function () {
                     $configPath = Cms::config()->ideHelperPath;
-                    $path = str_starts_with($configPath, '/') ? $configPath : base_path($configPath);
+                    $path = Path::isAbsolute($configPath) ? $configPath : base_path($configPath);
                     if (File::isDirectory($path)) {
                         File::cleanDirectory($path);
                     }

@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Filesystem\Path;
 use Throwable;
 
 #[Singleton]
@@ -54,7 +55,7 @@ final readonly class CustomFieldIdeHelperGenerator
     {
         $path = Cms::config()->ideHelperPath;
 
-        if (str_starts_with($path, '/') || str_starts_with($path, DIRECTORY_SEPARATOR)) {
+        if (Path::isAbsolute($path)) {
             return $path;
         }
 
