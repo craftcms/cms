@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- GraphQL API requests no longer get cache response headers; only no-cache headers, and only if the request had a `X-Craft-Gql-Cache: no-cache` header, or if the request contained any mutations. ([#18348](https://github.com/craftcms/cms/issues/18348))
 - `config/twig-sandbox.php` can now include an `allowedClasses` array, with class names whose entire collection of properties and methods should be allowed in sandboxed Twig environments.
 - `craft\base\ElementInterface`, `craft\base\Event`, `craft\fields\data\ColorData`, `craft\fields\data\MultiOptionsFieldData`, and `craft\fields\data\OptionData` are now allowed in their entirety within sandboxed Twig environments.
 - Fixed a bug where Dashboard columns weren’t getting refreshed when the window was resized. ([#18389](https://github.com/craftcms/cms/issues/18389))

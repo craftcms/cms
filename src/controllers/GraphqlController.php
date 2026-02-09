@@ -181,9 +181,10 @@ class GraphqlController extends Controller
 
         // Check for the cache-bust header
         $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
-        if ($cacheHeader === 'no-cache') {
+        $cache = $cacheHeader ? ($cacheHeader === 'cache') : null;
+        if ($cache !== null) {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
-            $generalConfig->enableGraphqlCaching = false;
+            $generalConfig->enableGraphqlCaching = $cache;
         }
 
         $result = [];
@@ -229,11 +230,8 @@ class GraphqlController extends Controller
         $this->response->format = Response::FORMAT_GQL;
         $this->response->data = $singleQuery ? reset($result) : $result;
 
-        // send cache headers
-        $cache = isset($cacheHeader) ? $cacheHeader === 'cache' : !$hasMutations;
-        if ($cache) {
-            $this->response->setCacheHeaders();
-        } else {
+        // send no-cache headers?
+        if (!($cache ?? !$hasMutations)) {
             $this->response->setNoCacheHeaders();
         }
 
