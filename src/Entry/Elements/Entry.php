@@ -1399,7 +1399,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             foreach ($ancestors->all() as $ancestor) {
                 if ($elementsService->canView($ancestor, $user)) {
                     $crumbs[] = [
-                        'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                        'html' => Cp::elementChipHtml($ancestor, [
+                            'class' => 'chromeless',
+                            'hyperlink' => true,
+                        ]),
                     ];
                 }
             }

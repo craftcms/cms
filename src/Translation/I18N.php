@@ -295,7 +295,14 @@ final class I18N
          * Translate it using Laravel's translations.
          */
         if ($translation === (string) $message) {
-            return __($message, $parameters, $locale);
+            $result = __($message, $parameters, $locale);
+
+            // We're dealing with a message that's equal to a translation file (for example 'site')
+            if (is_array($result)) {
+                return $translation;
+            }
+
+            return $result;
         }
 
         return $translation;

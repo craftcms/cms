@@ -16,6 +16,7 @@ use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;
@@ -113,7 +114,7 @@ class ControllerTest extends TestCase
         $default = $this->controller->redirectToPostedUrl();
 
         // Test that with nothing passed in. It defaults to the base. See self::getBaseUrlForRedirect() for more info.
-        self::assertSame(TestSetup::SITE_URL, $default->headers->get('Location'));
+        self::assertSame(rtrim(TestSetup::SITE_URL, '/'), Str::before($default->headers->get('Location'), ':80'));
 
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
@@ -168,7 +169,7 @@ class ControllerTest extends TestCase
         self::assertSame(TestSetup::SITE_URL . 'do/stuff', $this->controller->redirect('do/stuff')->headers->get('Location'));
 
         // We dont use _getBaseUrlForRedirect because the :port80 wont work with urlWithScheme.
-        self::assertSame(TestSetup::SITE_URL, $this->controller->redirect(null)->headers->get('Location'));
+        self::assertSame(rtrim(TestSetup::SITE_URL, '/'), Str::before($this->controller->redirect(null)->headers->get('Location'), ':80'));
 
         // Absolute url
         self::assertSame(
