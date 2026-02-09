@@ -944,7 +944,7 @@ JS, [
             ];
         }
 
-        if ($hasMoreRevisions) {
+        if ($hasMoreRevisions && $revisionsPageUrl) {
             $items[] = ['type' => MenuItemType::HR];
             $items[] = [
                 'label' => Craft::t('app', 'View all revisions'),

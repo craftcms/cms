@@ -19,6 +19,7 @@
 - Fixed an error that occurred when creating a new element on multi-site installs, if its field layout contained any generated fields. ([#18393](https://github.com/craftcms/cms/pull/18393))
 - Fixed a bug where pressing <kbd>Return</kbd> on a textarea when bulk-editing elements would submit the changes.
 - Fixed a bug where it wasn’t possible to save an entry with a pre-selected author that is no longer allowed to author entries for the section. ([#18397](https://github.com/craftcms/cms/issues/18397))
+- Fixed a bug where the “View all revisions” button wasn’t working for nested entries. ([#18398](https://github.com/craftcms/cms/issues/18398))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-vg3j-hpm9-8v5v)
 

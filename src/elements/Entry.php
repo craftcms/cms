@@ -2278,6 +2278,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function cpRevisionsUrl(): ?string
     {
+        if (!$this->sectionId) {
+            return ElementHelper::elementRevisionsUrl($this);
+        }
+
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
