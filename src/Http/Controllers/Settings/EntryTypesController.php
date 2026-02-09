@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;

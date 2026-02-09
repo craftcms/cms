@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;

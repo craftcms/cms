@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\base\FieldLayoutElement;
 
 /**
  * DefineFieldLayoutElementsEvent event class.
@@ -20,7 +19,7 @@ use craft\base\FieldLayoutElement;
 class DefineFieldLayoutElementsEvent extends Event
 {
     /**
-     * @var FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
+     * @var \CraftCms\Cms\FieldLayout\FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
      */
     public array $elements = [];
 }

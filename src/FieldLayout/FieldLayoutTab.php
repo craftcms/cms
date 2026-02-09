@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;

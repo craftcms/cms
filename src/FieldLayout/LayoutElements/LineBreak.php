@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Html;
 use Override;
 

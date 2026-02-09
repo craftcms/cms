@@ -2,27 +2,13 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+namespace CraftCms\Cms\FieldLayout;
 
-namespace craft\base;
-
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use craft\base\ElementInterface;
 use DateTime;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
- *
- * @property FieldLayout $layout The layout this element belongs to
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
  */
 abstract class FieldLayoutElement extends FieldLayoutComponent
 {
@@ -33,10 +19,15 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * @var DateTime|null The date that the element was added to the field layout.
-     *
-     * @since 5.3.0
      */
     public ?DateTime $dateAdded = null;
+
+    public FieldLayout $layout {
+        get => $this->getLayout();
+        set {
+            $this->setLayout($value);
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -55,8 +46,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * Returns whether the element can be included multiple times.
-     *
-     * @since 5.0.0
      */
     public function isMultiInstance(): bool
     {
@@ -88,8 +77,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
-     *
-     * @since 5.7.0
      */
     public function alwaysRefresh(): bool
     {
@@ -105,6 +92,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = [];
+
         if ($this->hasCustomWidth()) {
             $attributes['class'][] = 'width-'.($this->width ?? 100);
         }

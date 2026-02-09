@@ -7,7 +7,6 @@ namespace CraftCms\Cms\FieldLayout;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

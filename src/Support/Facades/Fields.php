@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use craft\base\FieldLayoutElement;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;

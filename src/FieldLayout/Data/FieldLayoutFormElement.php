@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Data;
 
-use craft\base\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use Spatie\LaravelData\Dto;
 
 final class FieldLayoutFormElement extends Dto

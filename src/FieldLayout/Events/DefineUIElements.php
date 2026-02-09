@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Events;
 
-use craft\base\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
@@ -28,7 +27,7 @@ final class DefineUIElements
         public FieldLayout $fieldLayout,
 
         /**
-         * @var FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
+         * @var \CraftCms\Cms\FieldLayout\FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
          */
         public array $elements = [],
     ) {}

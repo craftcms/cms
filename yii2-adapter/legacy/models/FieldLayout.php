@@ -6,7 +6,6 @@ namespace craft\models;
 
 use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
-use craft\base\FieldLayoutElement;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -15,6 +14,7 @@ use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
 use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\Events\DefineUIElements;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use Deprecated;
 use Generator;

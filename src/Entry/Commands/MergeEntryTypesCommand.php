@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Commands;
 
-use craft\base\FieldLayoutElement;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;

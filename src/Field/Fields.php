@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\errors\MissingComponentException;
 use craft\helpers\AdminTable;
@@ -40,6 +39,7 @@ use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
@@ -958,7 +958,7 @@ final class Fields
     /**
      * Creates a field layout element instance from its config.
      *
-     * @template T of FieldLayoutElement
+     * @template T of \CraftCms\Cms\FieldLayout\FieldLayoutElement
      *
      * @phpstan-param array{type:class-string<T>} $config
      *

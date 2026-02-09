@@ -6,10 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;

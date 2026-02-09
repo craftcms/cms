@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -579,7 +579,7 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
-     * @template T of FieldLayoutElement
+     * @template T of \CraftCms\Cms\FieldLayout\FieldLayoutElement
      * @param array $config
      *
      * @phpstan-param array{type:class-string<T>} $config
